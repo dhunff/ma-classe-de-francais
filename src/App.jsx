@@ -1,6 +1,7 @@
 import './storageShim.js'
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import PracticeHub from './PracticeHub.jsx'
+import mammoth from 'mammoth/mammoth.browser'
 import { BarChart, Bar, LineChart, Line, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from "recharts";
 
 /* ================= Ma Classe de Français v3 =================
@@ -70,6 +71,38 @@ const targetedAccounts = (ex, accounts) => (ex.assignedTo && ex.assignedTo.lengt
 const norm = (s) => (s || "").trim().toLowerCase().normalize("NFC").replace(/\s+/g, " ").replace(/[’]/g, "'");
 const stripHtml = (h) => (h || "").replace(/<[^>]*>/g, " ").replace(/&nbsp;/gi, " ").replace(/\s+/g, " ").trim();
 const wordCount = (h) => { const t = stripHtml(h); return t ? t.split(" ").length : 0; };
+/* ---- Import DOCX (CE) : tách bài đọc + câu hỏi ----
+   Quy tắc: phần trước ---QUESTIONS--- = bài đọc;
+   sau đó mỗi câu bắt đầu "1. ", đáp án "A. " ... , đáp án đúng có dấu * ở cuối. */
+function parseDocxText(raw) {
+  const marker = /-{2,}\s*QUESTIONS\s*-{2,}/i;
+  const [textPart, qPart = ""] = raw.split(marker);
+  const questions = [];
+  let cur = null;
+  qPart.split(/\r?\n/).map((l) => l.trim()).forEach((line) => {
+    if (!line) return;
+    const mQ = line.match(/^\d+[.)]\s*(.+)/);
+    const mO = line.match(/^([A-D])[.)]\s*(.+)/i);
+    if (mQ && !mO) {
+      if (cur) questions.push(cur);
+      cur = { id: uid(), type: "qcm", prompt: mQ[1].trim(), options: [], answer: 0 };
+    } else if (mO && cur) {
+      let opt = mO[2].trim();
+      const isAnswer = /\*\s*$/.test(opt);
+      opt = opt.replace(/\s*\*\s*$/, "");
+      if (isAnswer) cur.answer = cur.options.length;
+      cur.options.push(opt);
+    } else if (cur && cur.options.length === 0) {
+      cur.prompt += " " + line; // câu hỏi xuống dòng
+    }
+  });
+  if (cur) questions.push(cur);
+  return {
+    readingText: textPart.trim(),
+    questions: questions.filter((q) => q.prompt && q.options.length >= 2),
+  };
+}
+
 const fillOk = (q, ans) => (q.accepted || "").split("|").map(norm).filter(Boolean).includes(norm(ans));
 const autoQ = (q) => q.type === "qcm" || q.type === "fill" || q.type === "conj";
 
@@ -526,6 +559,34 @@ function StudentTable({ accounts, exercises, submissions }) {
 
 /* ================= Builder ================= */
 function Builder({ draft, setDraft, publish, cancel, accounts }) {
+  const fileRef = React.useRef(null);
+  const [importMsg, setImportMsg] = useState("");
+
+  const importDocx = async (file) => {
+    if (!file) return;
+    setImportMsg("⏳ Đang đọc file…");
+    try {
+      const arrayBuffer = await file.arrayBuffer();
+      const { value: raw } = await mammoth.extractRawText({ arrayBuffer });
+      const { readingText, questions } = parseDocxText(raw);
+      if (!questions.length) {
+        setImportMsg("⚠ Không tìm thấy câu hỏi. Kiểm tra file có dòng ---QUESTIONS--- và câu hỏi dạng « 1. », đáp án « A. » (đáp án đúng thêm * ở cuối).");
+        return;
+      }
+      setDraft({
+        ...draft,
+        title: draft.title || file.name.replace(/\.docx$/i, "").replace(/[_-]+/g, " "),
+        skill: "Lecture",
+        readingText,
+        questions: [...draft.questions, ...questions],
+      });
+      setImportMsg(`✅ Đã import : bài đọc (${readingText.split(/\s+/).length} mots) + ${questions.length} câu hỏi. Hãy kiểm tra lại rồi bấm Publier.`);
+    } catch (e) {
+      setImportMsg("❌ Lỗi đọc file : " + e.message);
+    }
+    if (fileRef.current) fileRef.current.value = "";
+  };
+
   const addQ = (type) => {
     const base = { id: uid(), type, prompt: "" };
     const q = type === "qcm" ? { ...base, options: ["", "", "", ""], answer: 0 }
@@ -549,7 +610,23 @@ function Builder({ draft, setDraft, publish, cancel, accounts }) {
 
   return (
     <div>
-      <h2 style={{ ...S.display, marginTop: 0 }}>{draft.title ? "Modifier l'exercice" : "Nouvel exercice"}</h2>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 10 }}>
+        <h2 style={{ ...S.display, marginTop: 0, marginBottom: 0 }}>{draft.title ? "Modifier l'exercice" : "Nouvel exercice"}</h2>
+        <div>
+          <input ref={fileRef} type="file" accept=".docx" style={{ display: "none" }}
+            onChange={(e) => importDocx(e.target.files?.[0])} />
+          <button style={S.btn(false)} onClick={() => fileRef.current?.click()}>📄 Import DOCX (bài đọc CE)</button>
+        </div>
+      </div>
+      {importMsg && (
+        <div className="mcf-card" style={{ ...S.card, margin: "12px 0", padding: "10px 16px", fontSize: 13.5,
+          borderLeft: `3px solid ${importMsg.startsWith("✅") ? C.ok : importMsg.startsWith("⏳") ? C.primary : C.danger}` }}>
+          {importMsg}
+          <div style={{ fontSize: 12, color: C.soft, marginTop: 4 }}>
+            Định dạng file Word : bài đọc ở trên → dòng <b>---QUESTIONS---</b> → «&nbsp;1. Câu hỏi&nbsp;» với đáp án «&nbsp;A. …&nbsp;», «&nbsp;B. …&nbsp;» ; đáp án đúng kết thúc bằng dấu <b>*</b>.
+          </div>
+        </div>
+      )}
       <div className="mcf-card" style={{ ...S.card, marginBottom: 16 }}>
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
           <div style={{ flex: "2 1 240px" }}>
@@ -1079,10 +1156,16 @@ function Taking({ ex, name, setSubmissions, done }) {
       {/* 📖 Bố cục 2 cột nếu có bài đọc */}
       {ex.readingText ? (
         <div style={{ display: "flex", gap: 16, alignItems: "flex-start", flexWrap: "wrap" }}>
-          <div className="mcf-card" style={{ ...S.card, flex: "1 1 340px", minWidth: 0, maxHeight: "72vh", overflowY: "auto",
-            position: "sticky", top: ex.audioUrl ? 110 : 8 }}>
-            <div style={{ ...S.label, marginBottom: 10 }}>📖 Texte à lire</div>
-            <div style={{ whiteSpace: "pre-wrap", lineHeight: 1.85, fontSize: 15.5 }}>{ex.readingText}</div>
+          <div className="mcf-card"
+            onContextMenu={(e) => e.preventDefault()}
+            onCopy={(e) => e.preventDefault()}
+            onCut={(e) => e.preventDefault()}
+            onDragStart={(e) => e.preventDefault()}
+            style={{ ...S.card, flex: "1 1 340px", minWidth: 0, maxHeight: "72vh", overflowY: "auto",
+              position: "sticky", top: ex.audioUrl ? 110 : 8,
+              userSelect: "none", WebkitUserSelect: "none", MozUserSelect: "none", msUserSelect: "none" }}>
+            <div style={{ ...S.label, marginBottom: 10 }}>📖 Texte à lire <span style={{ fontWeight: 400, textTransform: "none", letterSpacing: 0 }}>· protégé contre la copie</span></div>
+            <div style={{ whiteSpace: "pre-wrap", lineHeight: 1.85, fontSize: 15.5, cursor: "default" }}>{ex.readingText}</div>
           </div>
           <div style={{ flex: "1 1 360px", minWidth: 0, display: "grid", gap: 16 }}>{questionCards}</div>
         </div>
