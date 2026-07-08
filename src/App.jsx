@@ -283,7 +283,7 @@ function Teacher({ exercises, setExercises, submissions, setSubmissions, account
   const [draft, setDraft] = useState(null);
 
   const tabs = [["list", "📚 Exercices"], ["students", "👥 Élèves"], ["stats", "📊 Statistiques"], ["practice", "🏋️ Entraînement"]];
-  const blank = () => ({ id: uid(), title: "", level: "B1", skill: "Grammaire", deadline: "", audioUrl: "", readingText: "", assignedTo: null, createdAt: Date.now(), questions: [] });
+  const blank = () => ({ id: uid(), title: "", level: "B1", skill: "Grammaire", deadline: "", audioUrl: "", readingText: "", timeLimit: "", assignedTo: null, createdAt: Date.now(), questions: [] });
 
   const publish = async () => {
     const others = exercises.filter((e) => e.id !== draft.id);
@@ -340,6 +340,7 @@ function Teacher({ exercises, setExercises, submissions, setSubmissions, account
                       {toGrade > 0 && <span style={{ color: C.accent, fontWeight: 700 }}> · ✏️ {toGrade} à corriger</span>}
                       {ex.deadline && <span style={{ color: late ? C.danger : C.warn, fontWeight: 700 }}> · ⏰ {fmtDate(ex.deadline)}{late && " (clôturé)"}</span>}
                       {ex.audioUrl && " · 🎧 audio"}
+                      {ex.timeLimit && <span style={{ fontWeight: 700 }}> · ⏱ {ex.timeLimit} min</span>}
                     </div>
                   </div>
                   <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
@@ -651,6 +652,11 @@ function Builder({ draft, setDraft, publish, cancel, accounts }) {
             <input type="datetime-local" style={{ ...S.input, marginTop: 6 }} value={draft.deadline}
               onChange={(e) => setDraft({ ...draft, deadline: e.target.value })} />
           </div>
+          <div>
+            <div style={S.label}>⏱ Temps limite (min)</div>
+            <input type="number" min="1" style={{ ...S.input, marginTop: 6, width: 110 }} value={draft.timeLimit || ""}
+              placeholder="∞" onChange={(e) => setDraft({ ...draft, timeLimit: e.target.value })} />
+          </div>
         </div>
         <div style={{ marginTop: 12 }}>
           <div style={S.label}>Lien audio pour compréhension orale (optionnel — URL mp3)</div>
@@ -814,6 +820,7 @@ function Progress({ ex, submissions, setSubmissions, accounts, back }) {
                     <span style={{ color: C.ok, fontWeight: 700 }}>Rendu</span>
                     {" · "}<strong>{t.score}/{t.max}{t.pending && " ⏳"}</strong>
                     {" · "}{fmtDate(sub.at)}
+                    {sub.timedOut && " · ⏱ auto (hết giờ)"}
                     {sub.graded && " · ✅ corrigé"}
                     <button style={{ ...S.btn(false), marginLeft: 12, padding: "4px 10px", fontSize: 12 }}
                       onClick={() => setOpen(open === name ? null : name)}>{open === name ? "Fermer" : "Corriger / voir"}</button>
@@ -944,7 +951,7 @@ function Student({ name, exercises, submissions, setSubmissions, accounts, setAc
             <span style={S.chip(C.primarySoft, C.primary)}>{ex.skill}</span>{" "}
             <strong style={{ fontSize: 16 }}>{ex.title}</strong>
             <div style={{ fontSize: 12, color: C.soft, marginTop: 5 }}>
-              {ex.questions.length} question(s){ex.audioUrl && " · 🎧"}
+              {ex.questions.length} question(s){ex.audioUrl && " · 🎧"}{ex.timeLimit && ` · ⏱ ${ex.timeLimit} min`}
               {ex.deadline && <span style={{ color: late ? C.danger : C.warn, fontWeight: 700 }}> · ⏰ {late ? "en retard si rendu maintenant" : `avant le ${fmtDate(ex.deadline)}`}</span>}
             </div>
           </div>
@@ -1075,10 +1082,54 @@ function PasswordForm({ changePw }) {
 /* ================= Taking (with auto-save) ================= */
 function Taking({ ex, name, setSubmissions, done }) {
   const draftKey = `mcf-draft-${ex.id}-${name}`;
+  const startKey = `mcf-start-${ex.id}-${name}`;
   const [answers, setAnswers] = useState({});
   const [saving, setSaving] = useState(false);
   const [savedAt, setSavedAt] = useState(null);
   const [err, setErr] = useState("");
+  const [remaining, setRemaining] = useState(null); // giây còn lại (null = không giới hạn)
+  const [locked, setLocked] = useState(false);
+  const answersRef = React.useRef(answers);
+  answersRef.current = answers;
+
+  // ⏱ Đồng hồ đếm ngược : giờ bắt đầu lưu lại để reload trang không reset
+  useEffect(() => {
+    if (!ex.timeLimit) return;
+    let timer;
+    (async () => {
+      let started = await load(startKey, null, false);
+      if (!started) { started = Date.now(); await save(startKey, started, false); }
+      const limitMs = Number(ex.timeLimit) * 60 * 1000;
+      const tick = () => {
+        const left = Math.max(0, Math.round((started + limitMs - Date.now()) / 1000));
+        setRemaining(left);
+        if (left <= 0) { clearInterval(timer); setLocked(true); autoSubmit(); }
+      };
+      tick();
+      timer = setInterval(tick, 1000);
+    })();
+    return () => clearInterval(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ex.id]);
+
+  const autoSubmit = async () => {
+    const a = answersRef.current;
+    const autos = ex.questions.filter(autoQ);
+    const autoScore = autos.reduce((n, q) =>
+      n + (q.type === "qcm" ? (a[q.id] === q.answer ? 1 : 0) : (fillOk(q, a[q.id]) ? 1 : 0)), 0);
+    const sub = {
+      id: uid(), exerciseId: ex.id, student: name, answers: a,
+      autoScore, autoMax: autos.length, openMarks: {}, qComments: {},
+      late: isLate(ex), at: Date.now(), comment: "", graded: false, timedOut: true,
+    };
+    const latest = await load("mcf-submissions", []);
+    const next = [...latest.filter((s) => !(s.exerciseId === ex.id && s.student === name)), sub];
+    await save("mcf-submissions", next);
+    setSubmissions(next); await del(draftKey); await del(startKey);
+    setTimeout(done, 1800); // cho học sinh thấy thông báo hết giờ rồi thoát
+  };
+
+  const fmtLeft = (sec) => `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, "0")}`;
 
   useEffect(() => { load(draftKey, null, false).then((d) => d && setAnswers(d)); }, [draftKey]);
   useEffect(() => {
@@ -1106,7 +1157,7 @@ function Taking({ ex, name, setSubmissions, done }) {
     const latest = await load("mcf-submissions", []);
     const next = [...latest.filter((s) => !(s.exerciseId === ex.id && s.student === name)), sub];
     const ok = await save("mcf-submissions", next);
-    if (ok) { setSubmissions(next); await del(draftKey); done(); }
+    if (ok) { setSubmissions(next); await del(draftKey); await del(startKey); done(); }
     else { setErr("Impossible d'enregistrer la copie. Réessaie."); setSaving(false); }
   };
 
@@ -1121,15 +1172,15 @@ function Taking({ ex, name, setSubmissions, done }) {
             <label key={j} style={{ fontSize: 15, display: "flex", gap: 10, alignItems: "center", padding: "9px 13px", borderRadius: 10, cursor: "pointer",
               border: `1.5px solid ${answers[q.id] === j ? C.primary : C.line}`,
               background: answers[q.id] === j ? C.primarySoft : "#fff" }}>
-              <input type="radio" name={q.id} checked={answers[q.id] === j} onChange={() => setAnswers({ ...answers, [q.id]: j })} />
+              <input type="radio" name={q.id} disabled={locked} checked={answers[q.id] === j} onChange={() => setAnswers({ ...answers, [q.id]: j })} />
               <strong>{String.fromCharCode(65 + j)}.</strong> {o}
             </label>
           ))}
         </div>
       ) : q.type === "open" ? (
-        <RichTextEditor value={answers[q.id] || ""} onChange={(html) => setAnswers({ ...answers, [q.id]: html })} />
+        <RichTextEditor value={answers[q.id] || ""} readOnly={locked} onChange={(html) => setAnswers({ ...answers, [q.id]: html })} />
       ) : (
-        <input style={S.input} placeholder="Ta réponse…" value={answers[q.id] || ""}
+        <input style={S.input} disabled={locked} placeholder="Ta réponse…" value={answers[q.id] || ""}
           onChange={(e) => setAnswers({ ...answers, [q.id]: e.target.value })} />
       )}
     </div>
@@ -1137,8 +1188,23 @@ function Taking({ ex, name, setSubmissions, done }) {
 
   return (
     <div>
+      {/* ⏱ Đồng hồ đếm ngược trôi nổi */}
+      {remaining != null && (
+        <div style={{ position: "fixed", bottom: 20, right: 20, zIndex: 100,
+          display: "flex", alignItems: "center", gap: 8, padding: "10px 18px", borderRadius: 999,
+          background: remaining <= 300 ? C.danger : C.ink, color: "#fff", fontWeight: 800, fontSize: 17,
+          boxShadow: "0 8px 22px rgba(27,37,89,.35)", fontVariantNumeric: "tabular-nums" }}>
+          ⏱ {fmtLeft(remaining)}
+        </div>
+      )}
+      {locked && (
+        <div className="mcf-card" style={{ ...S.card, marginBottom: 16, borderLeft: `3px solid ${C.danger}`, fontWeight: 700, color: C.danger }}>
+          ⏰ Temps écoulé ! Ta copie a été rendue automatiquement.
+        </div>
+      )}
       <h2 style={{ ...S.display, marginTop: 0 }}>{ex.title} <span style={{ fontSize: 13, color: C.soft, fontFamily: "'Be Vietnam Pro',sans-serif" }}>({ex.level} · {ex.skill})</span></h2>
       <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap", marginBottom: 12 }}>
+        {ex.timeLimit && !locked && <span style={{ fontSize: 13, color: C.primary, fontWeight: 700 }}>⏱ Temps limite : {ex.timeLimit} minutes</span>}
         {ex.deadline && <span style={{ fontSize: 13, color: isLate(ex) ? C.danger : C.warn, fontWeight: 700 }}>
           ⏰ {isLate(ex) ? "Date limite dépassée — la copie sera marquée en retard" : `À rendre avant le ${fmtDate(ex.deadline)}`}
         </span>}
@@ -1175,7 +1241,7 @@ function Taking({ ex, name, setSubmissions, done }) {
 
       {err && <p style={{ color: C.danger, fontSize: 13 }}>{err}</p>}
       <div style={{ display: "flex", gap: 10, marginTop: 20 }}>
-        <button style={{ ...S.btn(true), opacity: allAnswered && !saving ? 1 : 0.4 }} disabled={!allAnswered || saving} onClick={submit}>
+        <button style={{ ...S.btn(true), opacity: allAnswered && !saving && !locked ? 1 : 0.4 }} disabled={!allAnswered || saving || locked} onClick={submit}>
           {saving ? "Envoi…" : "Rendre ma copie"}
         </button>
         <button style={S.btn(false)} onClick={done}>Quitter (brouillon sauvegardé)</button>
@@ -1188,7 +1254,7 @@ function Taking({ ex, name, setSubmissions, done }) {
    Bộ soạn thảo không cần thư viện ngoài — xuất HTML.
    Toolbar: font, cỡ chữ, B/I/U/S, x₂ x², màu chữ, highlight,
    căn lề, danh sách, indent, giãn dòng, xóa định dạng. */
-function RichTextEditor({ value, onChange, wordLimit }) {
+function RichTextEditor({ value, onChange, wordLimit, readOnly }) {
   const ref = React.useRef(null);
   const [lineH, setLineH] = useState("1.8");
   const words = wordCount(value);
@@ -1270,7 +1336,7 @@ function RichTextEditor({ value, onChange, wordLimit }) {
       </div>
 
       {/* Vùng viết — "tờ giấy" */}
-      <div ref={ref} contentEditable suppressContentEditableWarning
+      <div ref={ref} contentEditable={!readOnly} suppressContentEditableWarning
         onInput={() => onChange(ref.current?.innerHTML || "")}
         style={{ minHeight: 280, maxHeight: 560, overflowY: "auto", padding: "20px 24px", fontSize: 15.5,
           lineHeight: lineH, color: C.ink, outline: "none", fontFamily: "'Be Vietnam Pro', sans-serif" }} />
