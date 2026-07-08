@@ -68,6 +68,8 @@ const isLate = (ex) => ex.deadline && Date.now() > new Date(ex.deadline).getTime
 const assignedTo = (ex, name) => !ex.assignedTo || ex.assignedTo.length === 0 || ex.assignedTo.includes(name);
 const targetedAccounts = (ex, accounts) => (ex.assignedTo && ex.assignedTo.length ? accounts.filter((a) => ex.assignedTo.includes(a.name)) : accounts);
 const norm = (s) => (s || "").trim().toLowerCase().normalize("NFC").replace(/\s+/g, " ").replace(/[’]/g, "'");
+const stripHtml = (h) => (h || "").replace(/<[^>]*>/g, " ").replace(/&nbsp;/gi, " ").replace(/\s+/g, " ").trim();
+const wordCount = (h) => { const t = stripHtml(h); return t ? t.split(" ").length : 0; };
 const fillOk = (q, ans) => (q.accepted || "").split("|").map(norm).filter(Boolean).includes(norm(ans));
 const autoQ = (q) => q.type === "qcm" || q.type === "fill" || q.type === "conj";
 
@@ -248,7 +250,7 @@ function Teacher({ exercises, setExercises, submissions, setSubmissions, account
   const [draft, setDraft] = useState(null);
 
   const tabs = [["list", "📚 Exercices"], ["students", "👥 Élèves"], ["stats", "📊 Statistiques"], ["practice", "🏋️ Entraînement"]];
-  const blank = () => ({ id: uid(), title: "", level: "B1", skill: "Grammaire", deadline: "", audioUrl: "", assignedTo: null, createdAt: Date.now(), questions: [] });
+  const blank = () => ({ id: uid(), title: "", level: "B1", skill: "Grammaire", deadline: "", audioUrl: "", readingText: "", assignedTo: null, createdAt: Date.now(), questions: [] });
 
   const publish = async () => {
     const others = exercises.filter((e) => e.id !== draft.id);
@@ -577,6 +579,14 @@ function Builder({ draft, setDraft, publish, cancel, accounts }) {
           <div style={S.label}>Lien audio pour compréhension orale (optionnel — URL mp3)</div>
           <input style={{ ...S.input, marginTop: 6 }} value={draft.audioUrl} placeholder="https://…/audio.mp3"
             onChange={(e) => setDraft({ ...draft, audioUrl: e.target.value })} />
+          <div style={{ fontSize: 12, color: C.soft, marginTop: 5 }}>💡 Mẹo tải file mp3 của bạn: upload vào Supabase Storage (bucket public) hoặc Google Drive (link chia sẻ trực tiếp) rồi dán URL vào đây.</div>
+        </div>
+
+        <div style={{ marginTop: 12 }}>
+          <div style={S.label}>📖 Texte de lecture (CE — optionnel) : dán bài đọc vào đây, học sinh sẽ thấy bố cục 2 cột (văn bản | câu hỏi)</div>
+          <textarea style={{ ...S.input, marginTop: 6, minHeight: 110, resize: "vertical" }} value={draft.readingText || ""}
+            placeholder="Collez ici l'article ou le texte à lire…"
+            onChange={(e) => setDraft({ ...draft, readingText: e.target.value })} />
         </div>
 
         <div style={{ marginTop: 14 }}>
@@ -660,6 +670,7 @@ function Builder({ draft, setDraft, publish, cancel, accounts }) {
         <button style={S.btn(false)} onClick={() => addQ("fill")}>+ Texte à trous</button>
         <button style={S.btn(false)} onClick={() => addQ("conj")}>+ Conjugaison</button>
         <button style={S.btn(false)} onClick={() => addQ("open")}>+ Réponse libre</button>
+        <button style={S.btn(false)} onClick={() => setDraft({ ...draft, questions: [...draft.questions, { id: uid(), type: "qcm", prompt: "", options: ["Vrai", "Faux", "On ne sait pas"], answer: 0 }] })}>+ Vrai / Faux / ?</button>
       </div>
       <div style={{ display: "flex", gap: 10 }}>
         <button style={{ ...S.btn(true), opacity: ready ? 1 : 0.4 }} disabled={!ready} onClick={publish}>Publier l'exercice</button>
@@ -744,7 +755,9 @@ function Progress({ ex, submissions, setSubmissions, accounts, back }) {
                         <div style={{ fontSize: 14 }}>
                           Réponse : {q.type === "qcm"
                             ? <strong style={{ color: good ? C.ok : C.danger }}>{a != null ? String.fromCharCode(65 + a) + ". " + q.options[a] : "—"}</strong>
-                            : <em style={{ color: good == null ? C.ink : good ? C.ok : C.danger }}>{a || "—"}</em>}
+                            : q.type === "open"
+                            ? <div style={{ marginTop: 6, background: "#fff", border: `1px solid ${C.line}`, borderRadius: 10, padding: "10px 14px", lineHeight: 1.7 }} dangerouslySetInnerHTML={{ __html: a || "—" }} />
+                            : <em style={{ color: good ? C.ok : C.danger }}>{a || "—"}</em>}
                           {good === false && q.type === "qcm" && <span> · attendu : <strong>{String.fromCharCode(65 + q.answer)}. {q.options[q.answer]}</strong></span>}
                           {good === false && (q.type === "fill" || q.type === "conj") && <span> · attendu : <strong>{q.accepted.split("|")[0]}</strong></span>}
                           {q.type === "open" && q.model && <div style={{ color: C.soft, marginTop: 4 }}>Modèle : {q.model}</div>}
@@ -999,7 +1012,9 @@ function Taking({ ex, name, setSubmissions, done }) {
   }, [answers, draftKey]);
 
   const allAnswered = ex.questions.every((q) =>
-    q.type === "qcm" ? answers[q.id] != null : (answers[q.id] || "").trim() !== "");
+    q.type === "qcm" ? answers[q.id] != null
+    : q.type === "open" ? stripHtml(answers[q.id]) !== ""
+    : (answers[q.id] || "").trim() !== "");
 
   const submit = async () => {
     setSaving(true); setErr("");
@@ -1018,6 +1033,31 @@ function Taking({ ex, name, setSubmissions, done }) {
     else { setErr("Impossible d'enregistrer la copie. Réessaie."); setSaving(false); }
   };
 
+  const questionCards = ex.questions.map((q, i) => (
+    <div key={q.id} className="mcf-card" style={S.card}>
+      <div style={{ fontWeight: 700, marginBottom: 10 }}>
+        <span style={S.chip(C.primarySoft, C.primary)}>{QTYPES[q.type]}</span> {i + 1}. {q.prompt}
+      </div>
+      {q.type === "qcm" ? (
+        <div style={{ display: "grid", gap: 8 }}>
+          {q.options.map((o, j) => (
+            <label key={j} style={{ fontSize: 15, display: "flex", gap: 10, alignItems: "center", padding: "9px 13px", borderRadius: 10, cursor: "pointer",
+              border: `1.5px solid ${answers[q.id] === j ? C.primary : C.line}`,
+              background: answers[q.id] === j ? C.primarySoft : "#fff" }}>
+              <input type="radio" name={q.id} checked={answers[q.id] === j} onChange={() => setAnswers({ ...answers, [q.id]: j })} />
+              <strong>{String.fromCharCode(65 + j)}.</strong> {o}
+            </label>
+          ))}
+        </div>
+      ) : q.type === "open" ? (
+        <RichTextEditor value={answers[q.id] || ""} onChange={(html) => setAnswers({ ...answers, [q.id]: html })} />
+      ) : (
+        <input style={S.input} placeholder="Ta réponse…" value={answers[q.id] || ""}
+          onChange={(e) => setAnswers({ ...answers, [q.id]: e.target.value })} />
+      )}
+    </div>
+  ));
+
   return (
     <div>
       <h2 style={{ ...S.display, marginTop: 0 }}>{ex.title} <span style={{ fontSize: 13, color: C.soft, fontFamily: "'Be Vietnam Pro',sans-serif" }}>({ex.level} · {ex.skill})</span></h2>
@@ -1028,46 +1068,135 @@ function Taking({ ex, name, setSubmissions, done }) {
         <span style={{ fontSize: 12, color: C.soft }}>{savedAt ? `💾 Brouillon enregistré à ${savedAt.toLocaleTimeString("fr-FR")}` : "💾 Enregistrement automatique activé"}</span>
       </div>
 
+      {/* 🎧 Audio player cố định (sticky) — cuộn trang vẫn thấy */}
       {ex.audioUrl && (
-        <div className="mcf-card" style={{ ...S.card, marginBottom: 16 }}>
-          <div style={{ ...S.label, marginBottom: 8 }}>🎧 Écoute le document audio</div>
+        <div className="mcf-card" style={{ ...S.card, marginBottom: 16, position: "sticky", top: 8, zIndex: 30, boxShadow: "0 6px 18px rgba(27,37,89,.12)" }}>
+          <div style={{ ...S.label, marginBottom: 8 }}>🎧 Écoute le document audio (le lecteur reste visible pendant que tu réponds)</div>
           <audio controls style={{ width: "100%" }} src={ex.audioUrl} />
         </div>
       )}
 
-      <div style={{ display: "grid", gap: 16 }}>
-        {ex.questions.map((q, i) => (
-          <div key={q.id} className="mcf-card" style={S.card}>
-            <div style={{ fontWeight: 700, marginBottom: 10 }}>
-              <span style={S.chip(C.primarySoft, C.primary)}>{QTYPES[q.type]}</span> {i + 1}. {q.prompt}
-            </div>
-            {q.type === "qcm" ? (
-              <div style={{ display: "grid", gap: 8 }}>
-                {q.options.map((o, j) => (
-                  <label key={j} style={{ fontSize: 15, display: "flex", gap: 10, alignItems: "center", padding: "9px 13px", borderRadius: 10, cursor: "pointer",
-                    border: `1.5px solid ${answers[q.id] === j ? C.primary : C.line}`,
-                    background: answers[q.id] === j ? C.primarySoft : "#fff" }}>
-                    <input type="radio" name={q.id} checked={answers[q.id] === j} onChange={() => setAnswers({ ...answers, [q.id]: j })} />
-                    <strong>{String.fromCharCode(65 + j)}.</strong> {o}
-                  </label>
-                ))}
-              </div>
-            ) : q.type === "open" ? (
-              <textarea style={{ ...S.input, minHeight: 70, resize: "vertical" }} placeholder="Écris ta réponse ici…"
-                value={answers[q.id] || ""} onChange={(e) => setAnswers({ ...answers, [q.id]: e.target.value })} />
-            ) : (
-              <input style={S.input} placeholder="Ta réponse…" value={answers[q.id] || ""}
-                onChange={(e) => setAnswers({ ...answers, [q.id]: e.target.value })} />
-            )}
+      {/* 📖 Bố cục 2 cột nếu có bài đọc */}
+      {ex.readingText ? (
+        <div style={{ display: "flex", gap: 16, alignItems: "flex-start", flexWrap: "wrap" }}>
+          <div className="mcf-card" style={{ ...S.card, flex: "1 1 340px", minWidth: 0, maxHeight: "72vh", overflowY: "auto",
+            position: "sticky", top: ex.audioUrl ? 110 : 8 }}>
+            <div style={{ ...S.label, marginBottom: 10 }}>📖 Texte à lire</div>
+            <div style={{ whiteSpace: "pre-wrap", lineHeight: 1.85, fontSize: 15.5 }}>{ex.readingText}</div>
           </div>
-        ))}
-      </div>
+          <div style={{ flex: "1 1 360px", minWidth: 0, display: "grid", gap: 16 }}>{questionCards}</div>
+        </div>
+      ) : (
+        <div style={{ display: "grid", gap: 16 }}>{questionCards}</div>
+      )}
+
       {err && <p style={{ color: C.danger, fontSize: 13 }}>{err}</p>}
       <div style={{ display: "flex", gap: 10, marginTop: 20 }}>
         <button style={{ ...S.btn(true), opacity: allAnswered && !saving ? 1 : 0.4 }} disabled={!allAnswered || saving} onClick={submit}>
           {saving ? "Envoi…" : "Rendre ma copie"}
         </button>
         <button style={S.btn(false)} onClick={done}>Quitter (brouillon sauvegardé)</button>
+      </div>
+    </div>
+  );
+}
+
+/* ================= Rich Text Editor (PE) =================
+   Bộ soạn thảo không cần thư viện ngoài — xuất HTML.
+   Toolbar: font, cỡ chữ, B/I/U/S, x₂ x², màu chữ, highlight,
+   căn lề, danh sách, indent, giãn dòng, xóa định dạng. */
+function RichTextEditor({ value, onChange, wordLimit }) {
+  const ref = React.useRef(null);
+  const [lineH, setLineH] = useState("1.8");
+  const words = wordCount(value);
+
+  // Đồng bộ khi nạp draft từ storage
+  useEffect(() => {
+    if (ref.current && ref.current.innerHTML !== value && document.activeElement !== ref.current) {
+      ref.current.innerHTML = value || "";
+    }
+  }, [value]);
+
+  const exec = (cmd, arg = null) => {
+    ref.current?.focus();
+    document.execCommand(cmd, false, arg);
+    onChange(ref.current?.innerHTML || "");
+  };
+
+  const TBtn = ({ label, title, cmd, arg, wide }) => (
+    <button type="button" title={title} onMouseDown={(e) => { e.preventDefault(); exec(cmd, arg); }}
+      style={{ minWidth: wide ? 34 : 30, height: 30, borderRadius: 7, border: "1px solid transparent", background: "transparent",
+        color: C.ink, fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", display: "inline-flex", alignItems: "center", justifyContent: "center" }}
+      onMouseEnter={(e) => { e.currentTarget.style.background = "#E4E8F4"; }}
+      onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}>
+      {label}
+    </button>
+  );
+  const Sep = () => <span style={{ width: 1, height: 20, background: C.line, margin: "0 4px" }} />;
+  const sel = { height: 30, borderRadius: 7, border: `1px solid ${C.line}`, background: "#fff", fontSize: 13, fontFamily: "inherit", color: C.ink, padding: "0 6px" };
+
+  return (
+    <div style={{ borderRadius: 14, boxShadow: "0 4px 16px rgba(27,37,89,.10)", border: `1px solid ${C.line}`, overflow: "hidden", background: "#fff" }}>
+      {/* Toolbar */}
+      <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 3, padding: "8px 10px", background: "#F4F6FB", borderBottom: `1px solid ${C.line}` }}>
+        <select style={sel} defaultValue="" title="Police" onChange={(e) => { if (e.target.value) exec("fontName", e.target.value); }}>
+          <option value="" disabled>Police</option>
+          <option value="'Segoe UI', sans-serif">Aptos / Segoe UI</option>
+          <option value="Lora, Georgia, serif">Lora</option>
+          <option value="'Be Vietnam Pro', sans-serif">Sans-serif</option>
+          <option value="'Times New Roman', serif">Times New Roman</option>
+        </select>
+        <select style={sel} defaultValue="" title="Taille" onChange={(e) => { if (e.target.value) exec("fontSize", e.target.value); }}>
+          <option value="" disabled>Taille</option>
+          <option value="2">Petit</option><option value="3">Normal</option>
+          <option value="4">Grand</option><option value="5">Très grand</option>
+        </select>
+        <Sep />
+        <TBtn label="B" title="Gras (in đậm)" cmd="bold" />
+        <TBtn label={<i>I</i>} title="Italique" cmd="italic" />
+        <TBtn label={<u>U</u>} title="Souligné" cmd="underline" />
+        <TBtn label={<s>abc</s>} title="Barré" cmd="strikeThrough" wide />
+        <TBtn label={<span>x<sub>2</sub></span>} title="Indice" cmd="subscript" wide />
+        <TBtn label={<span>x<sup>2</sup></span>} title="Exposant" cmd="superscript" wide />
+        <Sep />
+        <label title="Couleur du texte" style={{ display: "inline-flex", alignItems: "center", cursor: "pointer", width: 34, height: 30, justifyContent: "center", borderRadius: 7 }}
+          onMouseEnter={(e) => e.currentTarget.style.background = "#E4E8F4"} onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}>
+          <span style={{ fontWeight: 800, borderBottom: "3px solid #DE4B4B", lineHeight: 1 }}>A</span>
+          <input type="color" defaultValue="#DE4B4B" style={{ width: 0, height: 0, opacity: 0 }} onChange={(e) => exec("foreColor", e.target.value)} />
+        </label>
+        <label title="Surligneur (highlight)" style={{ display: "inline-flex", alignItems: "center", cursor: "pointer", width: 34, height: 30, justifyContent: "center", borderRadius: 7 }}
+          onMouseEnter={(e) => e.currentTarget.style.background = "#E4E8F4"} onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}>
+          <span style={{ fontWeight: 800, background: "#FFE066", padding: "0 4px", borderRadius: 3, lineHeight: 1.3 }}>ab</span>
+          <input type="color" defaultValue="#FFE066" style={{ width: 0, height: 0, opacity: 0 }} onChange={(e) => exec("hiliteColor", e.target.value)} />
+        </label>
+        <Sep />
+        <TBtn label="⯇" title="Aligner à gauche" cmd="justifyLeft" />
+        <TBtn label="☰" title="Centrer" cmd="justifyCenter" />
+        <TBtn label="⯈" title="Aligner à droite" cmd="justifyRight" />
+        <TBtn label="≡" title="Justifier" cmd="justifyFull" />
+        <Sep />
+        <TBtn label="•≡" title="Liste à puces" cmd="insertUnorderedList" wide />
+        <TBtn label="1≡" title="Liste numérotée" cmd="insertOrderedList" wide />
+        <TBtn label="⇤" title="Diminuer le retrait" cmd="outdent" />
+        <TBtn label="⇥" title="Augmenter le retrait" cmd="indent" />
+        <Sep />
+        <select style={sel} value={lineH} title="Interligne (giãn dòng)" onChange={(e) => setLineH(e.target.value)}>
+          <option value="1.4">1,0</option><option value="1.8">1,5</option><option value="2.2">2,0</option>
+        </select>
+        <TBtn label="🧹" title="Effacer la mise en forme" cmd="removeFormat" wide />
+      </div>
+
+      {/* Vùng viết — "tờ giấy" */}
+      <div ref={ref} contentEditable suppressContentEditableWarning
+        onInput={() => onChange(ref.current?.innerHTML || "")}
+        style={{ minHeight: 280, maxHeight: 560, overflowY: "auto", padding: "20px 24px", fontSize: 15.5,
+          lineHeight: lineH, color: C.ink, outline: "none", fontFamily: "'Be Vietnam Pro', sans-serif" }} />
+
+      {/* Word counter */}
+      <div style={{ display: "flex", justifyContent: "flex-end", padding: "6px 14px", borderTop: `1px solid ${C.line}`, background: "#FBFCFE" }}>
+        <span style={{ fontSize: 12.5, fontWeight: 700, color: wordLimit && words > wordLimit ? C.danger : C.soft }}>
+          {words}{wordLimit ? `/${wordLimit}` : ""} mots
+        </span>
       </div>
     </div>
   );
