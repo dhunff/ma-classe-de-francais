@@ -1,5 +1,6 @@
 import './storageShim.js'
 import React, { useState, useEffect, useCallback, useMemo } from "react";
+import PracticeHub from './PracticeHub.jsx'
 import { BarChart, Bar, LineChart, Line, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from "recharts";
 
 /* ================= Ma Classe de Français v3 =================
@@ -64,6 +65,8 @@ async function del(key, shared = false) { try { await window.storage.delete(key,
 const uid = () => Math.random().toString(36).slice(2, 9);
 const fmtDate = (d) => new Date(d).toLocaleString("fr-FR", { dateStyle: "short", timeStyle: "short" });
 const isLate = (ex) => ex.deadline && Date.now() > new Date(ex.deadline).getTime();
+const assignedTo = (ex, name) => !ex.assignedTo || ex.assignedTo.length === 0 || ex.assignedTo.includes(name);
+const targetedAccounts = (ex, accounts) => (ex.assignedTo && ex.assignedTo.length ? accounts.filter((a) => ex.assignedTo.includes(a.name)) : accounts);
 const norm = (s) => (s || "").trim().toLowerCase().normalize("NFC").replace(/\s+/g, " ").replace(/[’]/g, "'");
 const fillOk = (q, ans) => (q.accepted || "").split("|").map(norm).filter(Boolean).includes(norm(ans));
 const autoQ = (q) => q.type === "qcm" || q.type === "fill" || q.type === "conj";
@@ -133,7 +136,7 @@ function Bell({ name, exercises, submissions }) {
   const notifs = useMemo(() => {
     const list = [];
     const now = Date.now();
-    exercises.forEach((ex) => {
+    exercises.filter((ex) => assignedTo(ex, name)).forEach((ex) => {
       const sub = submissions.find((s) => s.exerciseId === ex.id && s.student === name);
       if (ex.deadline && !sub) {
         const dt = new Date(ex.deadline).getTime() - now;
@@ -244,8 +247,8 @@ function Teacher({ exercises, setExercises, submissions, setSubmissions, account
   const [view, setView] = useState("list");
   const [draft, setDraft] = useState(null);
 
-  const tabs = [["list", "📚 Exercices"], ["students", "👥 Élèves"], ["stats", "📊 Statistiques"]];
-  const blank = () => ({ id: uid(), title: "", level: "B1", skill: "Grammaire", deadline: "", audioUrl: "", createdAt: Date.now(), questions: [] });
+  const tabs = [["list", "📚 Exercices"], ["students", "👥 Élèves"], ["stats", "📊 Statistiques"], ["practice", "🏋️ Entraînement"]];
+  const blank = () => ({ id: uid(), title: "", level: "B1", skill: "Grammaire", deadline: "", audioUrl: "", assignedTo: null, createdAt: Date.now(), questions: [] });
 
   const publish = async () => {
     const others = exercises.filter((e) => e.id !== draft.id);
@@ -257,7 +260,7 @@ function Teacher({ exercises, setExercises, submissions, setSubmissions, account
     setExercises(next); await save("mcf-exercises", next);
   };
 
-  if (view === "new") return <Builder draft={draft} setDraft={setDraft} publish={publish} cancel={() => setView("list")} />;
+  if (view === "new") return <Builder draft={draft} setDraft={setDraft} publish={publish} cancel={() => setView("list")} accounts={accounts} />;
   if (view.startsWith("progress:")) {
     const ex = exercises.find((e) => e.id === view.slice(9));
     return <Progress ex={ex} submissions={submissions} setSubmissions={setSubmissions} accounts={accounts} back={() => setView("list")} />;
@@ -276,6 +279,7 @@ function Teacher({ exercises, setExercises, submissions, setSubmissions, account
       </div>
 
       {view === "students" && <Accounts accounts={accounts} setAccounts={setAccounts} />}
+      {view === "practice" && <PracticeHub role="prof" />}
       {view === "stats" && <Stats accounts={accounts} exercises={exercises} submissions={submissions} />}
       {view === "list" && (
         exercises.length === 0 ? (
@@ -288,6 +292,7 @@ function Teacher({ exercises, setExercises, submissions, setSubmissions, account
               const subs = submissions.filter((s) => s.exerciseId === ex.id);
               const toGrade = subs.filter((s) => !s.graded && ex.questions.some((q) => q.type === "open")).length;
               const late = isLate(ex);
+              const targets = targetedAccounts(ex, accounts);
               return (
                 <div key={ex.id} className="mcf-card" style={{ ...S.card, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
                   <div>
@@ -295,7 +300,8 @@ function Teacher({ exercises, setExercises, submissions, setSubmissions, account
                     <span style={S.chip(C.primarySoft, C.primary)}>{ex.skill}</span>{" "}
                     <strong style={{ fontSize: 17 }}>{ex.title}</strong>
                     <div style={{ fontSize: 12, color: C.soft, marginTop: 5 }}>
-                      {ex.questions.length} question(s) · {subs.length}/{accounts.length} copies
+                      {ex.questions.length} question(s) · {subs.length}/{targets.length} copies
+                      {ex.assignedTo?.length ? <span style={{ color: C.primary, fontWeight: 700 }}> · 👤 {ex.assignedTo.join(", ")}</span> : " · 👥 toute la classe"}
                       {toGrade > 0 && <span style={{ color: C.accent, fontWeight: 700 }}> · ✏️ {toGrade} à corriger</span>}
                       {ex.deadline && <span style={{ color: late ? C.danger : C.warn, fontWeight: 700 }}> · ⏰ {fmtDate(ex.deadline)}{late && " (clôturé)"}</span>}
                       {ex.audioUrl && " · 🎧 audio"}
@@ -487,19 +493,21 @@ function StudentTable({ accounts, exercises, submissions }) {
           <tbody>
             {accounts.map((a) => {
               const cells = exercises.map((ex) => {
+                if (!assignedTo(ex, a.name)) return { na: true };
                 const s = submissions.find((x) => x.exerciseId === ex.id && x.student === a.name);
                 if (!s) return null;
                 return { ...totalScore(s, ex), late: s.late };
               });
-              const pcts = cells.filter((c) => c && c.max).map((c) => (c.score / c.max) * 100);
+              const pcts = cells.filter((c) => c && !c.na && c.max).map((c) => (c.score / c.max) * 100);
               const avg = pcts.length ? Math.round(pcts.reduce((x, y) => x + y, 0) / pcts.length) : null;
+              const nAssigned = cells.filter((c) => !c || !c.na).length;
               return (
                 <tr key={a.name}>
                   <td style={{ ...td, fontWeight: 700 }}>{a.name}</td>
-                  <td style={td}>{cells.filter(Boolean).length}/{exercises.length}</td>
+                  <td style={td}>{cells.filter((c) => c && !c.na).length}/{nAssigned}</td>
                   {cells.map((c, i) => (
-                    <td key={i} style={{ ...td, fontWeight: c ? 700 : 400, color: !c ? C.soft : c.pending ? C.warn : c.score / c.max >= 0.5 ? C.ok : C.danger }}>
-                      {!c ? "—" : `${c.score}/${c.max}${c.pending ? " ⏳" : ""}${c.late ? " 🕐" : ""}`}
+                    <td key={i} style={{ ...td, fontWeight: c && !c.na ? 700 : 400, color: !c ? C.soft : c.na ? C.line : c.pending ? C.warn : c.score / c.max >= 0.5 ? C.ok : C.danger }}>
+                      {!c ? "—" : c.na ? "·" : `${c.score}/${c.max}${c.pending ? " ⏳" : ""}${c.late ? " 🕐" : ""}`}
                     </td>
                   ))}
                   <td style={{ ...td, fontWeight: 800, color: avg == null ? C.soft : avg >= 50 ? C.ok : C.danger }}>{avg == null ? "—" : avg + " %"}</td>
@@ -509,13 +517,13 @@ function StudentTable({ accounts, exercises, submissions }) {
           </tbody>
         </table>
       )}
-      <p style={{ fontSize: 12, color: C.soft, marginTop: 10, marginBottom: 0 }}>⏳ = réponses libres pas encore corrigées · 🕐 = rendu en retard</p>
+      <p style={{ fontSize: 12, color: C.soft, marginTop: 10, marginBottom: 0 }}>⏳ = réponses libres pas encore corrigées · 🕐 = rendu en retard · « · » = bài không giao cho học sinh này</p>
     </div>
   );
 }
 
 /* ================= Builder ================= */
-function Builder({ draft, setDraft, publish, cancel }) {
+function Builder({ draft, setDraft, publish, cancel, accounts }) {
   const addQ = (type) => {
     const base = { id: uid(), type, prompt: "" };
     const q = type === "qcm" ? { ...base, options: ["", "", "", ""], answer: 0 }
@@ -527,6 +535,7 @@ function Builder({ draft, setDraft, publish, cancel }) {
   const delQ = (id) => setDraft({ ...draft, questions: draft.questions.filter((q) => q.id !== id) });
 
   const ready = draft.title.trim() && draft.questions.length > 0 &&
+    (!draft.assignedTo || draft.assignedTo.length > 0) &&
     draft.questions.every((q) => q.prompt.trim() &&
       (q.type === "qcm" ? q.options.every((o) => o.trim()) : true) &&
       ((q.type === "fill" || q.type === "conj") ? q.accepted.trim() : true));
@@ -568,6 +577,42 @@ function Builder({ draft, setDraft, publish, cancel }) {
           <div style={S.label}>Lien audio pour compréhension orale (optionnel — URL mp3)</div>
           <input style={{ ...S.input, marginTop: 6 }} value={draft.audioUrl} placeholder="https://…/audio.mp3"
             onChange={(e) => setDraft({ ...draft, audioUrl: e.target.value })} />
+        </div>
+
+        <div style={{ marginTop: 14 }}>
+          <div style={S.label}>Destinataires — Giao bài cho ai ?</div>
+          <div style={{ display: "flex", gap: 16, marginTop: 8, flexWrap: "wrap" }}>
+            <label style={{ display: "flex", alignItems: "center", gap: 7, fontSize: 14, cursor: "pointer" }}>
+              <input type="radio" checked={!draft.assignedTo}
+                onChange={() => setDraft({ ...draft, assignedTo: null })} />
+              👥 Toute la classe (tất cả học sinh)
+            </label>
+            <label style={{ display: "flex", alignItems: "center", gap: 7, fontSize: 14, cursor: "pointer" }}>
+              <input type="radio" checked={!!draft.assignedTo}
+                onChange={() => setDraft({ ...draft, assignedTo: [] })} />
+              👤 Élèves choisis (chọn học sinh cụ thể)
+            </label>
+          </div>
+          {draft.assignedTo && (
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 10, background: "#FBFCFE", border: `1px solid ${C.line}`, borderRadius: 12, padding: "12px 14px" }}>
+              {accounts.length === 0 && <span style={{ fontSize: 13, color: C.soft }}>Aucun élève inscrit.</span>}
+              {accounts.map((a) => {
+                const on = draft.assignedTo.includes(a.name);
+                return (
+                  <label key={a.name} style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13.5, cursor: "pointer",
+                    padding: "6px 12px", borderRadius: 999, fontWeight: 600,
+                    border: `1.5px solid ${on ? C.primary : C.line}`,
+                    background: on ? C.primarySoft : "#fff", color: on ? C.primary : C.ink }}>
+                    <input type="checkbox" checked={on} style={{ display: "none" }}
+                      onChange={() => setDraft({ ...draft, assignedTo: on ? draft.assignedTo.filter((n) => n !== a.name) : [...draft.assignedTo, a.name] })} />
+                    {on ? "✓ " : ""}{a.name}
+                  </label>
+                );
+              })}
+              {draft.assignedTo.length === 0 && accounts.length > 0 &&
+                <span style={{ fontSize: 12.5, color: C.warn, fontWeight: 700, alignSelf: "center" }}>⚠ Chưa chọn học sinh nào — bấm vào tên để chọn.</span>}
+            </div>
+          )}
         </div>
       </div>
 
@@ -634,6 +679,7 @@ function Progress({ ex, submissions, setSubmissions, accounts, back }) {
   const subs = submissions.filter((s) => s.exerciseId === ex.id);
   const byName = Object.fromEntries(subs.map((s) => [s.student, s]));
   const opens = ex.questions.filter((q) => q.type === "open");
+  const roster = targetedAccounts(ex, accounts);
 
   const saveGrading = async (student) => {
     const sub = byName[student];
@@ -660,14 +706,15 @@ function Progress({ ex, submissions, setSubmissions, accounts, back }) {
 
       <div className="mcf-card" style={{ ...S.card, marginBottom: 20 }}>
         <div style={S.label}>Progression de la classe</div>
-        <div style={{ fontSize: 14, marginTop: 8 }}>{subs.length} copie(s) rendue(s) sur {accounts.length} élève(s)</div>
+        <div style={{ fontSize: 14, marginTop: 8 }}>{subs.length} copie(s) rendue(s) sur {roster.length} élève(s) concerné(s)
+          {ex.assignedTo?.length ? <span style={{ color: C.primary, fontWeight: 700 }}> · 👤 devoir individuel</span> : null}</div>
         <div style={{ height: 10, background: C.line, borderRadius: 99, marginTop: 8 }}>
-          <div style={{ height: "100%", width: `${accounts.length ? (subs.length / accounts.length) * 100 : 0}%`, background: `linear-gradient(90deg, ${C.ok}, #37C48E)`, borderRadius: 99 }} />
+          <div style={{ height: "100%", width: `${roster.length ? (subs.length / roster.length) * 100 : 0}%`, background: `linear-gradient(90deg, ${C.ok}, #37C48E)`, borderRadius: 99 }} />
         </div>
       </div>
 
       <div style={{ display: "grid", gap: 12 }}>
-        {accounts.map(({ name }) => {
+        {roster.map(({ name }) => {
           const sub = byName[name];
           const t = sub && totalScore(sub, ex);
           return (
@@ -752,12 +799,13 @@ function Student({ name, exercises, submissions, setSubmissions, accounts, setAc
 
   if (taking) return <Taking ex={taking} name={name} setSubmissions={setSubmissions} done={() => { setTaking(null); refresh(); }} />;
 
-  const todo = exercises.filter((ex) => !mine(ex.id))
+  const visible = exercises.filter((ex) => assignedTo(ex, name));
+  const todo = visible.filter((ex) => !mine(ex.id))
     .sort((a, b) => (a.deadline ? new Date(a.deadline) : Infinity) - (b.deadline ? new Date(b.deadline) : Infinity));
-  const doneList = exercises.filter((ex) => mine(ex.id));
+  const doneList = visible.filter((ex) => mine(ex.id));
   const gradedList = doneList.filter((ex) => mine(ex.id).graded || !ex.questions.some((q) => q.type === "open"));
 
-  const myScores = exercises.map((ex, i) => {
+  const myScores = visible.map((ex, i) => {
     const s = mine(ex.id); if (!s) return null;
     const t = totalScore(s, ex); if (!t.max) return null;
     return { name: `Ex.${i + 1}`, full: ex.title, pct: Math.round((t.score / t.max) * 100), at: s.at };
@@ -765,14 +813,14 @@ function Student({ name, exercises, submissions, setSubmissions, accounts, setAc
 
   const radar = SKILLS.map((skill) => {
     const pcts = [];
-    exercises.filter((e) => e.skill === skill).forEach((ex) => {
+    visible.filter((e) => e.skill === skill).forEach((ex) => {
       const s = mine(ex.id); if (!s) return;
       const t = totalScore(s, ex); if (t.max) pcts.push((t.score / t.max) * 100);
     });
     return { skill, moi: pcts.length ? Math.round(pcts.reduce((a, b) => a + b, 0) / pcts.length) : 0 };
   });
 
-  const stamps = exercises.filter((ex) => {
+  const stamps = visible.filter((ex) => {
     const s = mine(ex.id); if (!s) return false;
     const t = totalScore(s, ex); return t.max && t.score / t.max >= 0.8;
   }).length;
@@ -782,7 +830,7 @@ function Student({ name, exercises, submissions, setSubmissions, accounts, setAc
     { need: 12, icon: "✈️", label: "Départ pour Paris !" },
   ];
 
-  const tabs = [["todo", `📝 À faire (${todo.length})`], ["done", `📤 Rendus (${doneList.length})`], ["progress", "📈 Ma progression"], ["settings", "⚙️ Mon compte"]];
+  const tabs = [["todo", `📝 À faire (${todo.length})`], ["done", `📤 Rendus (${doneList.length})`], ["practice", "🏋️ Tự luyện"], ["progress", "📈 Ma progression"], ["settings", "⚙️ Mon compte"]];
 
   const changePw = async (oldPw, newPw, setMsg) => {
     const acc = accounts.find((a) => a.name === name);
@@ -913,6 +961,7 @@ function Student({ name, exercises, submissions, setSubmissions, accounts, setAc
         </div>
       )}
 
+      {tab === "practice" && <PracticeHub role="eleve" />}
       {tab === "settings" && <PasswordForm changePw={changePw} showPw={showPw} setShowPw={setShowPw} />}
     </div>
   );
