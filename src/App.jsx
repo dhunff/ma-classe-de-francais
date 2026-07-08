@@ -16,12 +16,13 @@ Personal keys (per viewer): "mcf-draft-<exId>-<name>", "mcf-seen-<name>"
 ============================================================== */
 
 const C = {
-  bg: "#F4F6FB", card: "#FFFFFF", ink: "#1B2559", soft: "#6E7691", line: "#E4E8F4",
+  bg: "#F8F9FA", card: "#FFFFFF", ink: "#111827", soft: "#6B7280", line: "#EEF0F4",
   primary: "#3D5AF1", primarySoft: "#EDF1FE", accent: "#F26B4E",
   ok: "#1E9E6A", okSoft: "#E7F7F0", warn: "#C98412", warnSoft: "#FFF6E8",
   danger: "#DE4B4B", dangerSoft: "#FDEEEE",
 };
 const LEVEL_COLORS = { A1: "#1E9E6A", A2: "#2A9D8F", B1: "#3D5AF1", B2: "#7048E8", "B2+": "#D6336C" };
+const LEVEL_PASTEL = { A1: "#DDF6EB", A2: "#DDF2F0", B1: "#E6EBFE", B2: "#EFE9FC", "B2+": "#FBE3ED" };
 const SKILLS = ["Grammaire", "Vocabulaire", "Écoute", "Lecture", "Production écrite", "Traduction", "Communication"];
 const QTYPES = { qcm: "QCM", fill: "Texte à trous", conj: "Conjugaison", open: "Réponse libre / traduction" };
 
@@ -38,20 +39,45 @@ input:focus, textarea:focus, select:focus { outline: none; border-color: #3D5AF1
 
 const S = {
   font: { fontFamily: "'Be Vietnam Pro', -apple-system, 'Segoe UI', sans-serif", color: C.ink },
-  display: { fontFamily: "'Lora', Georgia, serif" },
-  card: { background: C.card, border: `1px solid ${C.line}`, borderRadius: 16, boxShadow: "0 2px 10px rgba(27,37,89,0.05)", padding: "18px 22px" },
+  display: { fontFamily: "'Be Vietnam Pro', sans-serif", fontWeight: 800, letterSpacing: "-0.5px", fontSize: 26, color: "#111827" },
+  card: { background: C.card, border: `1px solid ${C.line}`, borderRadius: 32, boxShadow: "0 10px 30px rgba(17,24,39,0.06)", padding: "24px 28px" },
   btn: (primary, danger) => ({
-    padding: "10px 18px", borderRadius: 10, fontWeight: 600, fontSize: 14, cursor: "pointer", fontFamily: "inherit",
+    padding: "11px 22px", borderRadius: 999, fontWeight: 700, fontSize: 14, cursor: "pointer", fontFamily: "inherit",
     border: primary ? "none" : `1.5px solid ${danger ? C.danger : C.line}`,
     background: primary ? `linear-gradient(135deg, ${C.primary}, #5B7CFA)` : C.card,
     color: primary ? "#fff" : danger ? C.danger : C.ink,
     boxShadow: primary ? "0 4px 12px rgba(61,90,241,0.28)" : "0 1px 3px rgba(27,37,89,0.06)",
   }),
-  input: { width: "100%", padding: "11px 14px", border: `1.5px solid ${C.line}`, borderRadius: 10, fontSize: 15, color: C.ink, background: "#FBFCFE", fontFamily: "inherit" },
+  input: { width: "100%", padding: "12px 16px", border: `1.5px solid ${C.line}`, borderRadius: 16, fontSize: 15, color: C.ink, background: "#FBFCFE", fontFamily: "inherit" },
   label: { fontSize: 11.5, letterSpacing: 1.2, textTransform: "uppercase", color: C.soft, fontWeight: 700 },
-  badge: (lv) => ({ fontSize: 11, fontWeight: 800, color: "#fff", background: LEVEL_COLORS[lv] || C.primary, borderRadius: 999, padding: "3px 10px", marginRight: 8, letterSpacing: 0.5 }),
+  badge: (lv) => ({ fontSize: 11.5, fontWeight: 800, color: LEVEL_COLORS[lv] || C.primary, background: LEVEL_PASTEL[lv] || C.primarySoft, borderRadius: 999, padding: "4px 12px", marginRight: 8, letterSpacing: 0.5 }),
   chip: (bg, col) => ({ fontSize: 12, fontWeight: 700, background: bg, color: col, borderRadius: 999, padding: "3px 10px" }),
 };
+
+/* ---------- Doodles trang trí nền (Bento / Creative EdTech) ---------- */
+function Doodles() {
+  const star = (x, y, size, color, rot = 0) => (
+    <div key={x + "-" + y} style={{ position: "absolute", left: x, top: y, fontSize: size, color, fontWeight: 900,
+      transform: `rotate(${rot}deg)`, lineHeight: 1, userSelect: "none" }}>✳</div>
+  );
+  return (
+    <div aria-hidden style={{ position: "fixed", inset: 0, pointerEvents: "none", zIndex: 0, overflow: "hidden" }}>
+      {star("6%", "18%", 26, "#FFD43B", 12)}
+      {star("92%", "12%", 20, "#74C0FC", -8)}
+      {star("88%", "72%", 30, "#FFD43B", 20)}
+      {star("4%", "78%", 18, "#B197FC", 0)}
+      <div style={{ position: "absolute", left: "12%", top: "60%", width: 14, height: 14, borderRadius: "50%", border: "3px solid #74C0FC" }} />
+      <div style={{ position: "absolute", left: "80%", top: "38%", width: 10, height: 10, borderRadius: "50%", background: "#FFD43B" }} />
+      <div style={{ position: "absolute", left: "45%", top: "8%", width: 12, height: 12, borderRadius: "50%", border: "3px solid #63E6BE" }} />
+      <svg style={{ position: "absolute", left: "-2%", top: "40%", opacity: 0.7 }} width="140" height="40" viewBox="0 0 140 40" fill="none">
+        <path d="M2 20 Q 20 2, 38 20 T 74 20 T 110 20 T 146 20" stroke="#FFD43B" strokeWidth="4" strokeLinecap="round" />
+      </svg>
+      <svg style={{ position: "absolute", right: "-2%", bottom: "12%", opacity: 0.6 }} width="140" height="40" viewBox="0 0 140 40" fill="none">
+        <path d="M2 20 Q 20 2, 38 20 T 74 20 T 110 20 T 146 20" stroke="#74C0FC" strokeWidth="4" strokeLinecap="round" />
+      </svg>
+    </div>
+  );
+}
 
 /* ---------- storage helpers ---------- */
 async function load(key, fallback, shared = true) {
@@ -114,8 +140,18 @@ function totalScore(sub, ex) {
 }
 
 /* ================= Root ================= */
+const SESSION_KEY = "mcf-session";
+
 export default function App() {
-  const [session, setSession] = useState(null);
+  const [session, setSessionRaw] = useState(null);
+  // Duy trì đăng nhập : lưu phiên vào localStorage
+  const setSession = (s) => {
+    setSessionRaw(s);
+    try {
+      if (s) localStorage.setItem(SESSION_KEY, JSON.stringify(s));
+      else localStorage.removeItem(SESSION_KEY);
+    } catch {}
+  };
   const [exercises, setExercises] = useState([]);
   const [submissions, setSubmissions] = useState([]);
   const [accounts, setAccounts] = useState([]);
@@ -129,29 +165,45 @@ export default function App() {
   }, []);
   useEffect(() => { refresh(); }, [refresh]);
 
+  // Auto-login : khôi phục phiên từ localStorage khi app khởi chạy
+  useEffect(() => {
+    if (loading) return;
+    try {
+      const raw = localStorage.getItem(SESSION_KEY);
+      if (!raw) return;
+      const saved = JSON.parse(raw);
+      if (saved.role === "prof") setSessionRaw(saved);
+      else if (saved.role === "eleve" && accounts.some((a) => a.name === saved.name)) setSessionRaw(saved);
+      else localStorage.removeItem(SESSION_KEY);
+    } catch {}
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading]);
+
   return (
     <div style={{ background: C.bg, ...S.font, minHeight: "100vh" }}>
       <style>{FONTS}</style>
-      <header style={{ background: `linear-gradient(120deg, ${C.ink} 0%, #2A3A8C 55%, ${C.primary} 100%)`, padding: "18px 24px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10 }}>
+      <Doodles />
+      <header style={{ background: "transparent", padding: "26px 28px 8px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12, position: "relative", zIndex: 1 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-          <div style={{ width: 44, height: 44, borderRadius: 12, background: "rgba(255,255,255,0.14)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22 }}>🇫🇷</div>
+          <div style={{ width: 52, height: 52, borderRadius: 20, background: "#FFD43B", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26, boxShadow: "0 8px 20px rgba(255,212,59,.4)" }}>🇫🇷</div>
           <div>
-            <div style={{ ...S.display, fontSize: 23, fontWeight: 700, color: "#fff" }}>Ma Classe de Français</div>
-            <div style={{ fontSize: 12.5, color: "rgba(255,255,255,0.75)" }}>Professeur Do Quoc Hung · exercices & suivi des élèves</div>
+            <div style={{ fontWeight: 800, fontSize: 27, letterSpacing: "-0.8px", color: "#111827", lineHeight: 1.1 }}>
+              Le Français Avec Hung<span style={{ color: "#FFD43B" }}> ✳</span>
+            </div>
+            <div style={{ fontSize: 13, color: C.soft, fontWeight: 600 }}>Parcours d'apprentissage · exercices & suivi des élèves</div>
           </div>
         </div>
         {session && (
           <div style={{ fontSize: 13, display: "flex", gap: 10, alignItems: "center" }}>
             {session.role === "eleve" && <Bell name={session.name} exercises={exercises} submissions={submissions} />}
-            <span style={{ color: "#fff", background: "rgba(255,255,255,0.14)", borderRadius: 999, padding: "6px 14px", fontWeight: 600 }}>
+            <span style={{ color: C.ink, background: "#E6EBFE", borderRadius: 999, padding: "8px 16px", fontWeight: 700, fontSize: 13 }}>
               {session.role === "prof" ? "👨‍🏫 Professeur" : `🎒 ${session.name}`}
             </span>
-            <button style={{ ...S.btn(false), background: "transparent", border: "1.5px solid rgba(255,255,255,0.45)", color: "#fff", boxShadow: "none" }}
-              onClick={() => setSession(null)}>Se déconnecter</button>
+            <button style={S.btn(false)} onClick={() => setSession(null)}>Se déconnecter</button>
           </div>
         )}
       </header>
-      <main style={{ maxWidth: 1000, margin: "0 auto", padding: "26px 16px 60px" }}>
+      <main style={{ maxWidth: 1000, margin: "0 auto", padding: "26px 16px 60px", position: "relative", zIndex: 1 }}>
         {loading ? <p style={{ textAlign: "center", color: C.soft }}>Ouverture du cahier…</p>
           : !session ? <Login accounts={accounts} setAccounts={setAccounts} onLogin={(s) => { setSession(s); refresh(); }} />
           : session.role === "prof"
@@ -195,7 +247,7 @@ function Bell({ name, exercises, submissions }) {
 
   return (
     <div style={{ position: "relative" }}>
-      <button onClick={openBell} style={{ background: "rgba(255,255,255,0.14)", border: "none", borderRadius: 999, width: 38, height: 38, cursor: "pointer", fontSize: 17, color: "#fff", position: "relative" }}>
+      <button onClick={openBell} style={{ background: "#fff", border: `1.5px solid ${C.line}`, borderRadius: 999, width: 42, height: 42, cursor: "pointer", fontSize: 17, position: "relative", boxShadow: "0 4px 12px rgba(17,24,39,.06)" }}>
         🔔
         {notifs.length > 0 && (
           <span style={{ position: "absolute", top: -3, right: -3, background: C.accent, color: "#fff", fontSize: 10, fontWeight: 800, borderRadius: 999, minWidth: 17, height: 17, display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -204,7 +256,7 @@ function Bell({ name, exercises, submissions }) {
         )}
       </button>
       {open && (
-        <div style={{ position: "absolute", right: 0, top: 46, width: 300, background: "#fff", borderRadius: 14, boxShadow: "0 10px 30px rgba(27,37,89,0.18)", zIndex: 50, padding: 10, color: C.ink }}>
+        <div style={{ position: "absolute", right: 0, top: 46, width: 300, background: "#fff", borderRadius: 24, boxShadow: "0 14px 36px rgba(17,24,39,0.14)", zIndex: 50, padding: 10, color: C.ink }}>
           {notifs.length === 0
             ? <div style={{ padding: 12, fontSize: 13, color: C.soft }}>Aucune notification. Tout est à jour ! 🎉</div>
             : notifs.map((n) => (
@@ -244,11 +296,11 @@ function Login({ accounts, setAccounts, onLogin }) {
   return (
     <div style={{ maxWidth: 420, margin: "36px auto" }}>
       <div className="mcf-card" style={{ ...S.card, padding: 28 }}>
-        <div style={{ display: "flex", gap: 6, marginBottom: 22, background: C.primarySoft, padding: 5, borderRadius: 12 }}>
+        <div style={{ display: "flex", gap: 6, marginBottom: 22, background: C.primarySoft, padding: 6, borderRadius: 999 }}>
           {[["eleve", "Élève"], ["prof", "Professeur"]].map(([k, l]) => (
             <button key={k} onClick={() => { setTab(k); setMsg(""); }}
               style={{ flex: 1, padding: 11, border: "none", cursor: "pointer", fontWeight: 700, fontSize: 14, fontFamily: "inherit",
-                background: tab === k ? C.primary : "transparent", color: tab === k ? "#fff" : C.soft, borderRadius: 10 }}>{l}</button>
+                background: tab === k ? C.primary : "transparent", color: tab === k ? "#fff" : C.soft, borderRadius: 999 }}>{l}</button>
           ))}
         </div>
         {tab === "eleve" ? (
@@ -1285,7 +1337,7 @@ function RichTextEditor({ value, onChange, wordLimit, readOnly }) {
   const sel = { height: 30, borderRadius: 7, border: `1px solid ${C.line}`, background: "#fff", fontSize: 13, fontFamily: "inherit", color: C.ink, padding: "0 6px" };
 
   return (
-    <div style={{ borderRadius: 14, boxShadow: "0 4px 16px rgba(27,37,89,.10)", border: `1px solid ${C.line}`, overflow: "hidden", background: "#fff" }}>
+    <div style={{ borderRadius: 24, boxShadow: "0 8px 24px rgba(17,24,39,.08)", border: `1px solid ${C.line}`, overflow: "hidden", background: "#fff" }}>
       {/* Toolbar */}
       <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 3, padding: "8px 10px", background: "#F4F6FB", borderBottom: `1px solid ${C.line}` }}>
         <select style={sel} defaultValue="" title="Police" onChange={(e) => { if (e.target.value) exec("fontName", e.target.value); }}>
