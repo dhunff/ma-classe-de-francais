@@ -22,7 +22,7 @@ const C = {
   danger: "#DE4B4B", dangerSoft: "#FDEEEE",
 };
 const LEVEL_COLORS = { A1: "#1E9E6A", A2: "#2A9D8F", B1: "#3D5AF1", B2: "#7048E8", "B2+": "#D6336C" };
-const SKILLS = ["Grammaire", "Vocabulaire", "Écoute", "Lecture", "Traduction", "Communication"];
+const SKILLS = ["Grammaire", "Vocabulaire", "Écoute", "Lecture", "Production écrite", "Traduction", "Communication"];
 const QTYPES = { qcm: "QCM", fill: "Texte à trous", conj: "Conjugaison", open: "Réponse libre / traduction" };
 
 const FONTS = `
@@ -1058,7 +1058,7 @@ function Student({ name, exercises, submissions, setSubmissions, accounts, setAc
         </div>
       )}
 
-      {tab === "practice" && <PracticeHub role="eleve" />}
+      {tab === "practice" && <PracticeHub role="eleve" name={name} />}
       {tab === "settings" && <PasswordForm changePw={changePw} showPw={showPw} setShowPw={setShowPw} />}
     </div>
   );
@@ -1350,3 +1350,7 @@ function RichTextEditor({ value, onChange, wordLimit, readOnly }) {
     </div>
   );
 }
+
+
+/* ---- Xuất dùng chung cho PracticeHub ---- */
+export { C, S, SKILLS, QTYPES, LEVEL_COLORS, uid, fillOk, stripHtml, wordCount, autoQ, isLate, RichTextEditor, Builder, load, save };

@@ -1,159 +1,151 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
-  Headphones, BookOpen, PenLine, Puzzle, BookA,
-  Play, Pause, RotateCcw, CheckCircle2, XCircle, Plus,
-  ChevronLeft, PartyPopper, Clock, Trash2,
+  Headphones, BookOpen, PenLine, Puzzle, BookA, Sparkles,
+  RotateCcw, CheckCircle2, XCircle, Plus, ChevronLeft, PartyPopper, Trash2, Pencil,
 } from "lucide-react";
+import {
+  C, S, QTYPES, uid, fillOk, stripHtml, autoQ,
+  RichTextEditor, Builder, load, save,
+} from "./App.jsx";
 
 /* ============================================================
-   PRACTICE HUB — Kho bài tập tự luyện
-   Component độc lập, chỉ cần: npm install lucide-react
-   Style inline (không cần Tailwind) — tông navy / trắng / pastel
+   PRACTICE HUB v3 — Tự luyện tập
+   Dùng CHUNG Builder với phần Giao bài : trộn QCM / điền từ /
+   chia động từ / tự luận, audio sticky, bài đọc split-screen,
+   Import DOCX, giới hạn thời gian. Chấm ngay + lưu lịch sử.
+   Shared key: "mcf-practice" · Lịch sử cá nhân: "mcf-ph-<name>"
 ============================================================ */
 
-/* ---------------- Mock data ---------------- */
-const CATEGORIES = [
-  { id: "CO", label: "Compréhension Orale", vi: "Luyện nghe", Icon: Headphones, color: "#3D5AF1", pastel: "#EDF1FE", progress: 65 },
-  { id: "CE", label: "Compréhension Écrite", vi: "Đọc hiểu", Icon: BookOpen, color: "#1E9E6A", pastel: "#E7F7F0", progress: 40 },
-  { id: "PE", label: "Production Écrite", vi: "Luyện viết", Icon: PenLine, color: "#D6336C", pastel: "#FDEEF4", progress: 20 },
-  { id: "GR", label: "Grammaire", vi: "Ngữ pháp", Icon: Puzzle, color: "#7048E8", pastel: "#F1EDFD", progress: 80 },
-  { id: "VO", label: "Vocabulaire", vi: "Từ vựng", Icon: BookA, color: "#C98412", pastel: "#FFF6E8", progress: 55 },
+const CATS = [
+  { skill: "Écoute", label: "Compréhension Orale", vi: "Luyện nghe", Icon: Headphones, color: "#3D5AF1", pastel: "#EDF1FE" },
+  { skill: "Lecture", label: "Compréhension Écrite", vi: "Đọc hiểu", Icon: BookOpen, color: "#1E9E6A", pastel: "#E7F7F0" },
+  { skill: "Production écrite", label: "Production Écrite", vi: "Luyện viết", Icon: PenLine, color: "#D6336C", pastel: "#FDEEF4" },
+  { skill: "Grammaire", label: "Grammaire", vi: "Ngữ pháp", Icon: Puzzle, color: "#7048E8", pastel: "#F1EDFD" },
+  { skill: "Vocabulaire", label: "Vocabulaire", vi: "Từ vựng", Icon: BookA, color: "#C98412", pastel: "#FFF6E8" },
+  { skill: "__autres__", label: "Autres", vi: "Khác (dịch, giao tiếp…)", Icon: Sparkles, color: "#6E7691", pastel: "#F0F1F6" },
 ];
+const catOf = (ex) => CATS.some((c) => c.skill === ex.skill) ? ex.skill : "__autres__";
 
-const MOCK_EXERCISES = [
-  {
-    id: "ex1", category: "GR", level: "B1", type: "qcm",
-    title: "Le passé composé — auxiliaire être ou avoir ?",
-    question: "Hier soir, nous ______ au cinéma avec des amis.",
-    options: ["avons allé", "sommes allés", "sommes allé", "avons allés"],
-    answer: 1,
-    explanation: "« Aller » se conjugue avec être ; le participe s'accorde avec « nous » → sommes allés.",
-  },
-  {
-    id: "ex2", category: "VO", level: "A2", type: "fill",
-    title: "Les transports — complétez le texte",
-    // Các đoạn text xen kẽ ô trống; blanks[i] là đáp án của ô thứ i (nhiều đáp án cách nhau bằng |)
-    segments: ["Chaque matin, je prends le ", " pour aller au travail. Aux heures de pointe, il y a beaucoup de ", " sur la route, donc le métro est plus ", " que la voiture."],
-    blanks: ["métro|bus", "monde|circulation|embouteillages", "rapide|pratique"],
-  },
-  {
-    id: "ex3", category: "CO", level: "B1", type: "listening",
-    title: "Journal en français facile — le smartphone",
-    audioUrl: "https://aod-rfi.akamaized.net/rfi/francais/audio/jff/r001/journal_francais_facile.mp3",
-    question: "D'après le journal, qu'est-ce qui fait baisser le nombre de naissances ?",
-    options: ["Les ondes des téléphones", "Une baisse des relations sociales", "Le prix des logements", "Le climat"],
-    answer: 1,
-  },
-  {
-    id: "ex4", category: "PE", level: "B1", type: "writing",
-    title: "Écrivez un e-mail — annuler un rendez-vous",
-    question: "Écrivez un court e-mail (40-60 mots) à un ami pour annuler votre rendez-vous de demain. Excusez-vous, expliquez la raison et proposez une autre date.",
-    sample: "Salut Marie ! Je suis vraiment désolé, mais je dois annuler notre rendez-vous de demain : je suis malade et je dois rester chez moi. Est-ce qu'on peut se voir vendredi à la place ? Encore pardon, et à très vite ! Hung",
-  },
-];
-
-/* ---------------- Design tokens ---------------- */
-const T = {
-  navy: "#1B2559", soft: "#6E7691", line: "#E4E8F4", bg: "#F4F6FB",
-  primary: "#3D5AF1", ok: "#1E9E6A", okBg: "#E7F7F0", bad: "#DE4B4B", badBg: "#FDEEEE",
-  card: { background: "#fff", border: "1px solid #E4E8F4", borderRadius: 16, boxShadow: "0 2px 10px rgba(27,37,89,.05)" },
-  btn: (primary) => ({
-    display: "inline-flex", alignItems: "center", gap: 8, padding: "10px 18px", borderRadius: 10,
-    fontWeight: 600, fontSize: 14, cursor: "pointer", fontFamily: "inherit",
-    border: primary ? "none" : "1.5px solid #E4E8F4",
-    background: primary ? "linear-gradient(135deg,#3D5AF1,#5B7CFA)" : "#fff",
-    color: primary ? "#fff" : "#1B2559",
-    boxShadow: primary ? "0 4px 12px rgba(61,90,241,.28)" : "0 1px 3px rgba(27,37,89,.06)",
-  }),
-  input: { width: "100%", padding: "10px 13px", border: "1.5px solid #E4E8F4", borderRadius: 10, fontSize: 15, color: "#1B2559", background: "#FBFCFE", fontFamily: "inherit", boxSizing: "border-box" },
-  label: { fontSize: 11.5, letterSpacing: 1.2, textTransform: "uppercase", color: "#6E7691", fontWeight: 700 },
-};
-
-/* ============================================================ */
-export default function PracticeHub({ role = "eleve" }) {
-  const teacherMode = role === "prof";
-  const [exercises, setExercises] = useState(MOCK_EXERCISES);
+export default function PracticeHub({ role = "eleve", name = "" }) {
+  const teacher = role === "prof";
+  const [exercises, setExercises] = useState([]);
+  const [hist, setHist] = useState({});
   const [loaded, setLoaded] = useState(false);
   const [view, setView] = useState({ page: "home" });
-  const [showForm, setShowForm] = useState(false);
+  const [draft, setDraft] = useState(null);
 
-  // Nạp bài tập tự luyện từ kho chung (shared storage)
   useEffect(() => {
     (async () => {
-      try {
-        const r = await window.storage.get("mcf-practice", true);
-        if (r) setExercises(JSON.parse(r.value));
-      } catch {}
+      setExercises(await load("mcf-practice", []));
+      if (name) setHist(await load(`mcf-ph-${name}`, {}, false));
       setLoaded(true);
     })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const persist = async (next) => {
-    setExercises(next);
-    try { await window.storage.set("mcf-practice", JSON.stringify(next), true); } catch {}
+  const persist = async (next) => { setExercises(next); await save("mcf-practice", next); };
+  const saveHist = async (exId, score, max) => {
+    const prev = hist[exId] || { best: -1, tries: 0 };
+    const next = { ...hist, [exId]: { best: Math.max(prev.best, score), max, tries: prev.tries + 1, at: Date.now() } };
+    setHist(next); if (name) await save(`mcf-ph-${name}`, next, false);
   };
 
-  if (!loaded) return <p style={{ color: T.soft, textAlign: "center" }}>Chargement…</p>;
+  const blank = () => ({ id: uid(), title: "", level: "B1", skill: "Grammaire", deadline: "", audioUrl: "", readingText: "", timeLimit: "", assignedTo: null, createdAt: Date.now(), questions: [] });
 
-  return (
-    <div style={{ color: T.navy }}>
-      <style>{`
-        @keyframes pop{0%{transform:scale(.6);opacity:0}100%{transform:scale(1);opacity:1}}
-        .ph-pop{animation:pop .3s ease both}
-        @keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
-        .ph-card{animation:rise .25s ease both}
-      `}</style>
+  if (!loaded) return <p style={{ color: C.soft, textAlign: "center" }}>Chargement…</p>;
 
-      {view.page === "home" && (
-        <Dashboard exercises={exercises} teacherMode={teacherMode}
-          openCategory={(id) => setView({ page: "category", cat: id })}
-          onAdd={() => setShowForm(true)} />
-      )}
-      {view.page === "category" && (
-        <CategoryList cat={view.cat} exercises={exercises} teacherMode={teacherMode}
-          back={() => setView({ page: "home" })}
-          open={(ex) => setView({ page: "quiz", cat: view.cat, exId: ex.id })}
-          onAdd={() => setShowForm(true)}
-          onDelete={(id) => persist(exercises.filter((e) => e.id !== id))} />
-      )}
-      {view.page === "quiz" && (
-        <Workspace ex={exercises.find((e) => e.id === view.exId)}
-          back={() => setView({ page: "category", cat: view.cat })} />
-      )}
+  if (view.page === "builder") {
+    return <Builder draft={draft} setDraft={setDraft} accounts={[]}
+      publish={async () => {
+        const others = exercises.filter((e) => e.id !== draft.id);
+        await persist([...others, draft].sort((a, b) => a.createdAt - b.createdAt));
+        setView({ page: "category", cat: catOf(draft) });
+      }}
+      cancel={() => setView({ page: "home" })} />;
+  }
 
-      {showForm && <TeacherForm close={() => setShowForm(false)}
-        add={(ex) => { persist([...exercises, ex]); setShowForm(false); }} />}
-    </div>
-  );
-}
+  if (view.page === "quiz") {
+    const ex = exercises.find((e) => e.id === view.exId);
+    return <PracticeWorkspace ex={ex} back={() => setView({ page: "category", cat: view.cat })}
+      onFinish={(score, max) => saveHist(ex.id, score, max)} />;
+  }
 
-/* ============ 1. Category Dashboard ============ */
-function Dashboard({ exercises, teacherMode, openCategory, onAdd }) {
+  if (view.page === "category") {
+    const meta = CATS.find((c) => c.skill === view.cat);
+    const list = exercises.filter((e) => catOf(e) === view.cat);
+    return (
+      <div>
+        <button style={{ ...S.btn(false), marginBottom: 16 }} onClick={() => setView({ page: "home" })}><ChevronLeft size={16} /> Quay lại</button>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18, flexWrap: "wrap", gap: 10 }}>
+          <h2 style={{ ...S.display, margin: 0, display: "flex", alignItems: "center", gap: 10 }}>
+            <meta.Icon size={24} color={meta.color} /> {meta.label}
+          </h2>
+          {teacher && <button style={S.btn(true)} onClick={() => { setDraft({ ...blank(), skill: view.cat === "__autres__" ? "Traduction" : view.cat }); setView({ page: "builder" }); }}><Plus size={16} /> Thêm bài</button>}
+        </div>
+        {list.length === 0 ? (
+          <div className="mcf-card" style={{ ...S.card, padding: 40, textAlign: "center", color: C.soft }}>Chưa có bài tập nào trong mục này.</div>
+        ) : (
+          <div style={{ display: "grid", gap: 12 }}>
+            {list.map((ex) => {
+              const h = hist[ex.id];
+              return (
+                <div key={ex.id} className="mcf-card" style={{ ...S.card, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+                  <div>
+                    <span style={S.badge(ex.level)}>{ex.level}</span>
+                    <strong>{ex.title}</strong>
+                    <div style={{ fontSize: 12.5, color: C.soft, marginTop: 4 }}>
+                      {ex.questions.length} câu · {[...new Set(ex.questions.map((q) => QTYPES[q.type]))].join(" + ")}
+                      {ex.audioUrl && " · 🎧"}{ex.readingText && " · 📖"}{ex.timeLimit && ` · ⏱ ${ex.timeLimit} min`}
+                      {h && <span style={{ color: h.max && h.best / h.max >= 0.8 ? C.ok : C.primary, fontWeight: 700 }}> · 🏆 Meilleur : {h.best}/{h.max} ({h.tries} lần)</span>}
+                    </div>
+                  </div>
+                  <div style={{ display: "flex", gap: 8 }}>
+                    <button style={S.btn(true)} onClick={() => setView({ page: "quiz", cat: view.cat, exId: ex.id })}>Luyện tập</button>
+                    {teacher && <>
+                      <button style={S.btn(false)} onClick={() => { setDraft(JSON.parse(JSON.stringify(ex))); setView({ page: "builder" }); }}><Pencil size={15} /></button>
+                      <button style={{ ...S.btn(false), color: C.danger, borderColor: C.danger }} onClick={() => persist(exercises.filter((e) => e.id !== ex.id))}><Trash2 size={15} /></button>
+                    </>}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  /* -------- Home dashboard -------- */
   return (
     <div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20, flexWrap: "wrap", gap: 10 }}>
-        <h2 style={{ fontFamily: "'Lora',serif", margin: 0, fontSize: 24 }}>Chọn kỹ năng luyện tập</h2>
-        {teacherMode && <button style={T.btn(true)} onClick={onAdd}><Plus size={16} /> Thêm bài tập mới</button>}
+        <h2 style={{ ...S.display, margin: 0 }}>🏋️ Kho bài tập tự luyện</h2>
+        {teacher && <button style={S.btn(true)} onClick={() => { setDraft(blank()); setView({ page: "builder" }); }}><Plus size={16} /> Thêm bài tập mới</button>}
       </div>
-
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(260px,1fr))", gap: 16 }}>
-        {CATEGORIES.map(({ id, label, vi, Icon, color, pastel, progress }, i) => {
-          const count = exercises.filter((e) => e.category === id).length;
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(250px,1fr))", gap: 16 }}>
+        {CATS.map((cat, i) => {
+          const list = exercises.filter((e) => catOf(e) === cat.skill);
+          if (cat.skill === "__autres__" && list.length === 0) return null;
+          const doneCount = list.filter((e) => hist[e.id]).length;
+          const pct = list.length ? Math.round((doneCount / list.length) * 100) : 0;
           return (
-            <div key={id} className="ph-card" onClick={() => openCategory(id)}
-              style={{ ...T.card, padding: 22, cursor: "pointer", animationDelay: `${i * 40}ms` }}>
-              <div style={{ width: 52, height: 52, borderRadius: 14, background: pastel, display: "grid", placeItems: "center", marginBottom: 14 }}>
-                <Icon size={26} color={color} />
+            <div key={cat.skill} className="mcf-card" onClick={() => setView({ page: "category", cat: cat.skill })}
+              style={{ ...S.card, padding: 22, cursor: "pointer", animationDelay: `${i * 40}ms` }}>
+              <div style={{ width: 52, height: 52, borderRadius: 14, background: cat.pastel, display: "grid", placeItems: "center", marginBottom: 14 }}>
+                <cat.Icon size={26} color={cat.color} />
               </div>
-              <div style={{ fontWeight: 800, fontSize: 16.5 }}>{label}</div>
-              <div style={{ fontSize: 13, color: T.soft, margin: "3px 0 14px" }}>{vi} · {count} bài tập</div>
-              {/* Progress bar */}
-              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, fontWeight: 700, color: T.soft, marginBottom: 5 }}>
-                <span>Tiến độ lớp</span><span style={{ color }}>{progress} %</span>
-              </div>
-              <div style={{ height: 8, borderRadius: 99, background: T.line }}>
-                <div style={{ height: "100%", width: `${progress}%`, borderRadius: 99, background: `linear-gradient(90deg,${color},${color}AA)`, transition: "width .4s" }} />
-              </div>
+              <div style={{ fontWeight: 800, fontSize: 16 }}>{cat.label}</div>
+              <div style={{ fontSize: 13, color: C.soft, margin: "3px 0 14px" }}>{cat.vi} · {list.length} bài</div>
+              {!teacher && (
+                <>
+                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, fontWeight: 700, color: C.soft, marginBottom: 5 }}>
+                    <span>Đã luyện</span><span style={{ color: cat.color }}>{doneCount}/{list.length || 0}</span>
+                  </div>
+                  <div style={{ height: 8, borderRadius: 99, background: C.line }}>
+                    <div style={{ height: "100%", width: `${pct}%`, borderRadius: 99, background: `linear-gradient(90deg,${cat.color},${cat.color}AA)`, transition: "width .4s" }} />
+                  </div>
+                </>
+              )}
             </div>
           );
         })}
@@ -162,310 +154,150 @@ function Dashboard({ exercises, teacherMode, openCategory, onAdd }) {
   );
 }
 
-/* ============ Category exercise list ============ */
-function CategoryList({ cat, exercises, teacherMode, back, open, onAdd, onDelete }) {
-  const meta = CATEGORIES.find((c) => c.id === cat);
-  const list = exercises.filter((e) => e.category === cat);
-  return (
-    <div>
-      <button style={{ ...T.btn(false), marginBottom: 16 }} onClick={back}><ChevronLeft size={16} /> Quay lại</button>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18, flexWrap: "wrap", gap: 10 }}>
-        <h2 style={{ fontFamily: "'Lora',serif", margin: 0, display: "flex", alignItems: "center", gap: 10 }}>
-          <meta.Icon size={24} color={meta.color} /> {meta.label}
-        </h2>
-        {teacherMode && <button style={T.btn(true)} onClick={onAdd}><Plus size={16} /> Thêm bài tập mới</button>}
-      </div>
-      {list.length === 0 ? (
-        <div className="ph-card" style={{ ...T.card, padding: 40, textAlign: "center", color: T.soft }}>Chưa có bài tập nào trong mục này.</div>
-      ) : (
-        <div style={{ display: "grid", gap: 12 }}>
-          {list.map((ex) => (
-            <div key={ex.id} className="ph-card" style={{ ...T.card, padding: "16px 20px", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
-              <div>
-                <span style={{ fontSize: 11, fontWeight: 800, color: "#fff", background: meta.color, borderRadius: 999, padding: "3px 10px", marginRight: 10 }}>{ex.level}</span>
-                <strong>{ex.title}</strong>
-                <div style={{ fontSize: 12.5, color: T.soft, marginTop: 4 }}>
-                  {ex.type === "qcm" ? "Trắc nghiệm" : ex.type === "fill" ? "Điền từ vào chỗ trống" : ex.type === "listening" ? "Bài nghe" : "Bài viết tự luận"}
-                </div>
-              </div>
-              <div style={{ display: "flex", gap: 8 }}>
-                <button style={T.btn(true)} onClick={() => open(ex)}>Luyện tập</button>
-                {teacherMode && (
-                  <button style={{ ...T.btn(false), color: "#DE4B4B", borderColor: "#DE4B4B" }} onClick={() => onDelete(ex.id)}>
-                    <Trash2 size={15} />
-                  </button>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
+/* ============ Workspace tự luyện — chấm ngay ============ */
+function PracticeWorkspace({ ex, back, onFinish }) {
+  const [answers, setAnswers] = useState({});
+  const [graded, setGraded] = useState(false);
+  const [remaining, setRemaining] = useState(null);
+  const answersRef = useRef(answers); answersRef.current = answers;
+  const gradedRef = useRef(false);
 
-/* ============ 2. Student Workspace ============ */
-function Workspace({ ex, back }) {
-  const [mcq, setMcq] = useState(null);
-  const [fills, setFills] = useState({});
-  const [text, setText] = useState("");
-  const [result, setResult] = useState(null); // {score,max} | {writing:true}
+  // ⏱ Đếm ngược (nếu có giới hạn thời gian) — tự chấm khi hết giờ
+  useEffect(() => {
+    if (!ex?.timeLimit) return;
+    const end = Date.now() + Number(ex.timeLimit) * 60 * 1000;
+    const timer = setInterval(() => {
+      const left = Math.max(0, Math.round((end - Date.now()) / 1000));
+      setRemaining(left);
+      if (left <= 0) { clearInterval(timer); if (!gradedRef.current) grade(true); }
+    }, 1000);
+    return () => clearInterval(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ex?.id]);
 
   if (!ex) return null;
-  const norm = (s) => (s || "").trim().toLowerCase().normalize("NFC");
-  const okFill = (i) => ex.blanks[i].split("|").map(norm).includes(norm(fills[i]));
+  const autos = ex.questions.filter(autoQ);
+  const opens = ex.questions.filter((q) => q.type === "open");
+  const isGood = (q) => q.type === "qcm" ? answersRef.current[q.id] === q.answer : fillOk(q, answersRef.current[q.id]);
 
-  const submit = () => {
-    if (ex.type === "writing") { setResult({ writing: true }); return; }
-    if (ex.type === "fill") {
-      const score = ex.blanks.reduce((n, _, i) => n + (okFill(i) ? 1 : 0), 0);
-      setResult({ score, max: ex.blanks.length });
-    } else {
-      setResult({ score: mcq === ex.answer ? 1 : 0, max: 1 });
-    }
+  const grade = (timedOut = false) => {
+    gradedRef.current = true;
+    setGraded(timedOut ? "timeout" : true);
+    const score = autos.reduce((n, q) => n + (isGood(q) ? 1 : 0), 0);
+    onFinish(score, autos.length || 0);
   };
+  const retry = () => { gradedRef.current = false; setGraded(false); setAnswers({}); };
 
-  const graded = result && !result.writing;
-  const perfect = graded && result.score === result.max;
+  const score = graded ? autos.reduce((n, q) => n + (isGood(q) ? 1 : 0), 0) : 0;
+  const perfect = graded && autos.length > 0 && score === autos.length;
+  const allAnswered = ex.questions.every((q) =>
+    q.type === "qcm" ? answers[q.id] != null : q.type === "open" ? stripHtml(answers[q.id]) !== "" : (answers[q.id] || "").trim() !== "");
+  const fmtLeft = (s) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
 
-  return (
-    <div style={{ maxWidth: 720, margin: "0 auto" }}>
-      <button style={{ ...T.btn(false), marginBottom: 16 }} onClick={back}><ChevronLeft size={16} /> Quay lại</button>
-
-      <div className="ph-card" style={{ ...T.card, padding: 26 }}>
-        <div style={{ fontSize: 12, fontWeight: 800, color: T.primary, letterSpacing: 1, textTransform: "uppercase", marginBottom: 6 }}>
-          {ex.level} · {CATEGORIES.find((c) => c.id === ex.category)?.label}
+  const questionCards = ex.questions.map((q, i) => {
+    const a = answers[q.id];
+    const good = graded && autoQ(q) ? isGood(q) : null;
+    return (
+      <div key={q.id} className="mcf-card" style={S.card}>
+        <div style={{ fontWeight: 700, marginBottom: 10 }}>
+          <span style={S.chip(C.primarySoft, C.primary)}>{QTYPES[q.type]}</span> {i + 1}. {q.prompt}
         </div>
-        <h2 style={{ fontFamily: "'Lora',serif", margin: "0 0 18px", fontSize: 21 }}>{ex.title}</h2>
 
-        {ex.type === "listening" && <AudioPlayer src={ex.audioUrl} />}
-
-        {/* ----- QCM / listening MCQ ----- */}
-        {(ex.type === "qcm" || ex.type === "listening") && (
+        {q.type === "qcm" ? (
+          <div style={{ display: "grid", gap: 8 }}>
+            {q.options.map((o, j) => {
+              let bg = "#fff", border = C.line, icon = null;
+              if (graded) {
+                if (j === q.answer) { bg = C.okSoft; border = C.ok; icon = <CheckCircle2 size={17} color={C.ok} />; }
+                else if (j === a) { bg = C.dangerSoft; border = C.danger; icon = <XCircle size={17} color={C.danger} />; }
+              } else if (j === a) { bg = C.primarySoft; border = C.primary; }
+              return (
+                <button key={j} disabled={!!graded} onClick={() => setAnswers({ ...answers, [q.id]: j })}
+                  style={{ display: "flex", alignItems: "center", gap: 10, textAlign: "left", padding: "10px 14px", borderRadius: 10, fontSize: 15,
+                    fontFamily: "inherit", cursor: graded ? "default" : "pointer", background: bg, border: `1.5px solid ${border}`, color: C.ink,
+                    textDecoration: graded && j === a && j !== q.answer ? "line-through" : "none" }}>
+                  <strong>{String.fromCharCode(65 + j)}.</strong> {o}<span style={{ marginLeft: "auto" }}>{icon}</span>
+                </button>
+              );
+            })}
+          </div>
+        ) : q.type === "open" ? (
           <>
-            <p style={{ fontSize: 16, fontWeight: 600 }}>{ex.question}</p>
-            <div style={{ display: "grid", gap: 10 }}>
-              {ex.options.map((o, i) => {
-                let bg = "#fff", border = T.line, icon = null;
-                if (graded) {
-                  if (i === ex.answer) { bg = T.okBg; border = T.ok; icon = <CheckCircle2 size={18} color={T.ok} />; }
-                  else if (i === mcq) { bg = T.badBg; border = T.bad; icon = <XCircle size={18} color={T.bad} />; }
-                } else if (i === mcq) { bg = "#EDF1FE"; border = T.primary; }
-                return (
-                  <button key={i} disabled={graded} onClick={() => setMcq(i)}
-                    style={{ display: "flex", alignItems: "center", gap: 10, textAlign: "left", padding: "12px 15px", borderRadius: 12, fontSize: 15, fontFamily: "inherit", cursor: graded ? "default" : "pointer", background: bg, border: `1.5px solid ${border}`, color: T.navy, textDecoration: graded && i === mcq && i !== ex.answer ? "line-through" : "none" }}>
-                    <strong>{String.fromCharCode(65 + i)}.</strong> {o}
-                    <span style={{ marginLeft: "auto" }}>{icon}</span>
-                  </button>
-                );
-              })}
-            </div>
-            {graded && ex.explanation && (
-              <div style={{ marginTop: 14, background: "#FFF6E8", border: "1px solid #C9841244", borderRadius: 12, padding: "10px 14px", fontSize: 14 }}>
-                💡 {ex.explanation}
+            <RichTextEditor value={a || ""} readOnly={!!graded} onChange={(html) => setAnswers({ ...answers, [q.id]: html })} />
+            {graded && q.model && (
+              <div style={{ marginTop: 12 }}>
+                <div style={{ ...S.label }}>📄 Bài mẫu tham khảo — tự đối chiếu</div>
+                <div style={{ marginTop: 6, background: "#FBFCFE", border: `1px solid ${C.line}`, borderRadius: 12, padding: "12px 15px", fontSize: 14.5, fontStyle: "italic", lineHeight: 1.7 }}>{q.model}</div>
               </div>
             )}
           </>
-        )}
-
-        {/* ----- Fill in the blanks ----- */}
-        {ex.type === "fill" && (
-          <p style={{ fontSize: 16.5, lineHeight: 2.2 }}>
-            {ex.segments.map((seg, i) => (
-              <React.Fragment key={i}>
-                {seg}
-                {i < ex.blanks.length && (
-                  <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
-                    <input disabled={graded} value={fills[i] || ""}
-                      onChange={(e) => setFills({ ...fills, [i]: e.target.value })}
-                      style={{ width: 130, padding: "5px 10px", borderRadius: 8, fontSize: 15, fontFamily: "inherit", textAlign: "center",
-                        border: `1.5px solid ${graded ? (okFill(i) ? T.ok : T.bad) : T.line}`,
-                        background: graded ? (okFill(i) ? T.okBg : T.badBg) : "#FBFCFE",
-                        color: T.navy, textDecoration: graded && !okFill(i) ? "line-through" : "none" }} />
-                    {graded && (okFill(i)
-                      ? <CheckCircle2 size={16} color={T.ok} />
-                      : <span style={{ fontSize: 13, color: T.ok, fontWeight: 700 }}>✗ → {ex.blanks[i].split("|")[0]}</span>)}
-                  </span>
-                )}
-              </React.Fragment>
-            ))}
-          </p>
-        )}
-
-        {/* ----- Writing ----- */}
-        {ex.type === "writing" && (
-          <>
-            <p style={{ fontSize: 15.5 }}>{ex.question}</p>
-            <textarea disabled={!!result} value={text} onChange={(e) => setText(e.target.value)}
-              placeholder="Écris ta réponse ici…"
-              style={{ ...T.input, minHeight: 130, resize: "vertical" }} />
-          </>
-        )}
-
-        {/* ----- Submit / Result ----- */}
-        {!result ? (
-          <button style={{ ...T.btn(true), marginTop: 20, opacity: (ex.type === "writing" ? text.trim() : ex.type === "fill" ? Object.keys(fills).length === ex.blanks.length : mcq != null) ? 1 : 0.4 }}
-            disabled={ex.type === "writing" ? !text.trim() : ex.type === "fill" ? Object.keys(fills).length !== ex.blanks.length : mcq == null}
-            onClick={submit}>
-            Nộp bài
-          </button>
-        ) : result.writing ? (
-          <div className="ph-pop" style={{ marginTop: 20 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 10, background: "#FFF6E8", border: "1px solid #C9841244", borderRadius: 12, padding: "12px 16px", fontWeight: 700, color: "#C98412" }}>
-              <Clock size={18} /> Đã lưu — Chờ giáo viên chấm
-            </div>
-            <div style={{ marginTop: 14 }}>
-              <div style={T.label}>📄 Bài mẫu tham khảo</div>
-              <div style={{ marginTop: 8, background: "#FBFCFE", border: `1px solid ${T.line}`, borderRadius: 12, padding: "13px 16px", fontSize: 14.5, fontStyle: "italic", lineHeight: 1.7 }}>
-                {ex.sample}
-              </div>
-            </div>
-          </div>
         ) : (
-          <div className="ph-pop" style={{ marginTop: 20, textAlign: "center", background: perfect ? T.okBg : "#EDF1FE", borderRadius: 14, padding: "18px 16px" }}>
-            <div style={{ fontSize: 30 }}>{perfect ? <PartyPopper size={34} color={T.ok} /> : "💪"}</div>
-            <div style={{ fontWeight: 800, fontSize: 19, marginTop: 6, color: perfect ? T.ok : T.primary }}>
-              Bạn đạt {result.score}/{result.max} điểm{perfect ? " — Xuất sắc ! 🎉" : ""}
-            </div>
-            {!perfect && <div style={{ fontSize: 13.5, color: T.soft, marginTop: 4 }}>Xem đáp án đúng được đánh dấu xanh phía trên để rút kinh nghiệm nhé !</div>}
-            <button style={{ ...T.btn(false), marginTop: 14 }} onClick={() => { setResult(null); setMcq(null); setFills({}); setText(""); }}>
-              <RotateCcw size={15} /> Làm lại
-            </button>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+            <input disabled={!!graded} value={a || ""} placeholder="Ta réponse…"
+              onChange={(e) => setAnswers({ ...answers, [q.id]: e.target.value })}
+              style={{ ...S.input, maxWidth: 320,
+                border: `1.5px solid ${graded ? (good ? C.ok : C.danger) : C.line}`,
+                background: graded ? (good ? C.okSoft : C.dangerSoft) : "#FBFCFE",
+                textDecoration: graded && !good ? "line-through" : "none" }} />
+            {graded && (good
+              ? <CheckCircle2 size={18} color={C.ok} />
+              : <span style={{ fontSize: 13.5, color: C.ok, fontWeight: 700 }}>✗ → {(q.accepted || "").split("|")[0]}</span>)}
           </div>
         )}
       </div>
-    </div>
-  );
-}
-
-/* ============ Audio player ============ */
-function AudioPlayer({ src }) {
-  const ref = useRef(null);
-  const [playing, setPlaying] = useState(false);
-  const [t, setT] = useState(0);
-  const [dur, setDur] = useState(0);
-
-  useEffect(() => {
-    const a = ref.current; if (!a) return;
-    const onTime = () => setT(a.currentTime);
-    const onMeta = () => setDur(a.duration || 0);
-    const onEnd = () => setPlaying(false);
-    a.addEventListener("timeupdate", onTime); a.addEventListener("loadedmetadata", onMeta); a.addEventListener("ended", onEnd);
-    return () => { a.removeEventListener("timeupdate", onTime); a.removeEventListener("loadedmetadata", onMeta); a.removeEventListener("ended", onEnd); };
-  }, []);
-
-  const toggle = () => { const a = ref.current; if (!a) return; playing ? a.pause() : a.play(); setPlaying(!playing); };
-  const fmt = (s) => isNaN(s) ? "0:00" : `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
+    );
+  });
 
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: 12, background: "#EDF1FE", borderRadius: 14, padding: "12px 16px", marginBottom: 18 }}>
-      <audio ref={ref} src={src} preload="metadata" />
-      <button onClick={toggle} style={{ width: 42, height: 42, borderRadius: "50%", border: "none", background: "linear-gradient(135deg,#3D5AF1,#5B7CFA)", display: "grid", placeItems: "center", cursor: "pointer", boxShadow: "0 4px 10px rgba(61,90,241,.3)" }}>
-        {playing ? <Pause size={18} color="#fff" /> : <Play size={18} color="#fff" style={{ marginLeft: 2 }} />}
-      </button>
-      <input type="range" min={0} max={dur || 1} step={0.1} value={t}
-        onChange={(e) => { ref.current.currentTime = +e.target.value; setT(+e.target.value); }}
-        style={{ flex: 1, accentColor: "#3D5AF1" }} />
-      <span style={{ fontSize: 12.5, fontWeight: 700, color: T.soft, minWidth: 76, textAlign: "right" }}>{fmt(t)} / {fmt(dur)}</span>
-    </div>
-  );
-}
-
-/* ============ 3. Teacher form ============ */
-function TeacherForm({ close, add }) {
-  const [f, setF] = useState({ title: "", category: "GR", level: "B1", type: "qcm", question: "", options: ["", "", "", ""], answer: 0, blanksRaw: "", sample: "", audioUrl: "" });
-  const set = (patch) => setF({ ...f, ...patch });
-
-  const submit = () => {
-    const base = { id: "t" + Date.now(), category: f.category, level: f.level, title: f.title.trim(), type: f.type };
-    let ex;
-    if (f.type === "qcm" || f.type === "listening") {
-      ex = { ...base, question: f.question, options: f.options, answer: f.answer, ...(f.type === "listening" ? { audioUrl: f.audioUrl } : {}) };
-    } else if (f.type === "fill") {
-      // Cú pháp: dùng [đáp án] trong câu, ví dụ: "Je [vais] à l'école en [bus|vélo]."
-      const parts = f.question.split(/\[([^\]]+)\]/);
-      const segments = parts.filter((_, i) => i % 2 === 0);
-      const blanks = parts.filter((_, i) => i % 2 === 1);
-      ex = { ...base, segments, blanks };
-    } else {
-      ex = { ...base, question: f.question, sample: f.sample };
-    }
-    add(ex);
-  };
-
-  const ready = f.title.trim() && f.question.trim() &&
-    (f.type !== "qcm" && f.type !== "listening" || f.options.every((o) => o.trim())) &&
-    (f.type !== "fill" || /\[[^\]]+\]/.test(f.question));
-
-  return (
-    <div style={{ position: "fixed", inset: 0, background: "rgba(27,37,89,.45)", display: "grid", placeItems: "center", padding: 16, zIndex: 100 }} onClick={close}>
-      <div className="ph-pop" style={{ ...T.card, padding: 26, width: "100%", maxWidth: 560, maxHeight: "90vh", overflowY: "auto" }} onClick={(e) => e.stopPropagation()}>
-        <h3 style={{ fontFamily: "'Lora',serif", marginTop: 0 }}>➕ Thêm bài tập mới</h3>
-
-        <div style={T.label}>Tên bài</div>
-        <input style={{ ...T.input, margin: "6px 0 14px" }} value={f.title} onChange={(e) => set({ title: e.target.value })} placeholder="ex. Le passé composé — exercice 2" />
-
-        <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 14 }}>
-          <div style={{ flex: 1 }}>
-            <div style={T.label}>Phân loại</div>
-            <select style={{ ...T.input, marginTop: 6 }} value={f.category} onChange={(e) => set({ category: e.target.value })}>
-              {CATEGORIES.map((c) => <option key={c.id} value={c.id}>{c.label}</option>)}
-            </select>
-          </div>
-          <div>
-            <div style={T.label}>Niveau</div>
-            <select style={{ ...T.input, marginTop: 6 }} value={f.level} onChange={(e) => set({ level: e.target.value })}>
-              {["A1", "A2", "B1", "B2", "B2+"].map((l) => <option key={l}>{l}</option>)}
-            </select>
-          </div>
-          <div>
-            <div style={T.label}>Dạng bài</div>
-            <select style={{ ...T.input, marginTop: 6 }} value={f.type} onChange={(e) => set({ type: e.target.value })}>
-              <option value="qcm">Trắc nghiệm</option>
-              <option value="fill">Điền từ</option>
-              <option value="listening">Bài nghe</option>
-              <option value="writing">Bài viết</option>
-            </select>
-          </div>
+    <div>
+      {remaining != null && !graded && (
+        <div style={{ position: "fixed", bottom: 20, right: 20, zIndex: 100, display: "flex", alignItems: "center", gap: 8,
+          padding: "10px 18px", borderRadius: 999, background: remaining <= 60 ? C.danger : C.ink, color: "#fff",
+          fontWeight: 800, fontSize: 17, boxShadow: "0 8px 22px rgba(27,37,89,.35)", fontVariantNumeric: "tabular-nums" }}>
+          ⏱ {fmtLeft(remaining)}
         </div>
+      )}
 
-        {f.type === "listening" && (
-          <>
-            <div style={T.label}>Link audio (mp3)</div>
-            <input style={{ ...T.input, margin: "6px 0 14px" }} value={f.audioUrl} onChange={(e) => set({ audioUrl: e.target.value })} placeholder="https://…/audio.mp3" />
-          </>
-        )}
+      <button style={{ ...S.btn(false), marginBottom: 16 }} onClick={back}><ChevronLeft size={16} /> Quay lại</button>
+      <h2 style={{ ...S.display, marginTop: 0 }}>{ex.title} <span style={{ fontSize: 13, color: C.soft, fontFamily: "'Be Vietnam Pro',sans-serif" }}>({ex.level} · {ex.skill})</span></h2>
+      {ex.timeLimit && !graded && <p style={{ fontSize: 13, color: C.primary, fontWeight: 700 }}>⏱ Temps limite : {ex.timeLimit} minutes</p>}
 
-        <div style={T.label}>{f.type === "fill" ? "Đoạn văn — đặt đáp án trong [ngoặc vuông]" : "Nội dung câu hỏi"}</div>
-        <textarea style={{ ...T.input, margin: "6px 0 14px", minHeight: 70, resize: "vertical" }} value={f.question}
-          onChange={(e) => set({ question: e.target.value })}
-          placeholder={f.type === "fill" ? "ex. Je [vais] à l'école en [bus|vélo] chaque matin." : "Énoncé de la question…"} />
-
-        {(f.type === "qcm" || f.type === "listening") && (
-          <div style={{ display: "grid", gap: 8, marginBottom: 14 }}>
-            <div style={T.label}>4 phương án — chọn nút tròn ở đáp án đúng (Answer Key)</div>
-            {f.options.map((o, i) => (
-              <div key={i} style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                <input type="radio" checked={f.answer === i} onChange={() => set({ answer: i })} />
-                <strong style={{ width: 18 }}>{String.fromCharCode(65 + i)}.</strong>
-                <input style={T.input} value={o} onChange={(e) => set({ options: f.options.map((x, k) => k === i ? e.target.value : x) })} placeholder={`Option ${String.fromCharCode(65 + i)}`} />
-              </div>
-            ))}
-          </div>
-        )}
-
-        {f.type === "writing" && (
-          <>
-            <div style={T.label}>Bài mẫu (hiện cho học sinh sau khi nộp)</div>
-            <textarea style={{ ...T.input, margin: "6px 0 14px", minHeight: 60, resize: "vertical" }} value={f.sample} onChange={(e) => set({ sample: e.target.value })} />
-          </>
-        )}
-
-        <div style={{ display: "flex", gap: 10, marginTop: 6 }}>
-          <button style={{ ...T.btn(true), opacity: ready ? 1 : 0.4 }} disabled={!ready} onClick={submit}>Lưu bài tập</button>
-          <button style={T.btn(false)} onClick={close}>Hủy</button>
+      {ex.audioUrl && (
+        <div className="mcf-card" style={{ ...S.card, marginBottom: 16, position: "sticky", top: 8, zIndex: 30, boxShadow: "0 6px 18px rgba(27,37,89,.12)" }}>
+          <div style={{ ...S.label, marginBottom: 8 }}>🎧 Écoute le document audio</div>
+          <audio controls style={{ width: "100%" }} src={ex.audioUrl} />
         </div>
-      </div>
+      )}
+
+      {ex.readingText ? (
+        <div style={{ display: "flex", gap: 16, alignItems: "flex-start", flexWrap: "wrap" }}>
+          <div className="mcf-card" onContextMenu={(e) => e.preventDefault()} onCopy={(e) => e.preventDefault()} onCut={(e) => e.preventDefault()} onDragStart={(e) => e.preventDefault()}
+            style={{ ...S.card, flex: "1 1 340px", minWidth: 0, maxHeight: "72vh", overflowY: "auto", position: "sticky",
+              top: ex.audioUrl ? 110 : 8, userSelect: "none", WebkitUserSelect: "none" }}>
+            <div style={{ ...S.label, marginBottom: 10 }}>📖 Texte à lire</div>
+            <div style={{ whiteSpace: "pre-wrap", lineHeight: 1.85, fontSize: 15.5, cursor: "default" }}>{ex.readingText}</div>
+          </div>
+          <div style={{ flex: "1 1 360px", minWidth: 0, display: "grid", gap: 16 }}>{questionCards}</div>
+        </div>
+      ) : (
+        <div style={{ display: "grid", gap: 16 }}>{questionCards}</div>
+      )}
+
+      {!graded ? (
+        <button style={{ ...S.btn(true), marginTop: 20, opacity: allAnswered ? 1 : 0.4 }} disabled={!allAnswered} onClick={() => grade(false)}>
+          Nộp bài & xem kết quả
+        </button>
+      ) : (
+        <div className="mcf-card" style={{ marginTop: 20, textAlign: "center", background: perfect ? C.okSoft : C.primarySoft, borderRadius: 14, padding: "18px 16px" }}>
+          {graded === "timeout" && <div style={{ color: C.danger, fontWeight: 800, marginBottom: 6 }}>⏰ Hết giờ — bài đã được chấm tự động</div>}
+          <div style={{ fontSize: 30 }}>{perfect ? <PartyPopper size={34} color={C.ok} /> : "💪"}</div>
+          <div style={{ fontWeight: 800, fontSize: 19, marginTop: 6, color: perfect ? C.ok : C.primary }}>
+            {autos.length > 0 ? <>Bạn đạt {score}/{autos.length} điểm{perfect ? " — Xuất sắc ! 🎉" : ""}</> : "Đã hoàn thành !"}
+          </div>
+          {opens.length > 0 && <div style={{ fontSize: 13.5, color: C.soft, marginTop: 4 }}>({opens.length} câu tự luận — tự đối chiếu với bài mẫu phía trên)</div>}
+          <button style={{ ...S.btn(false), marginTop: 14 }} onClick={retry}><RotateCcw size={15} /> Làm lại</button>
+        </div>
+      )}
     </div>
   );
 }
