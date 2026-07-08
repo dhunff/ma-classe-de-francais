@@ -5,7 +5,7 @@ import {
 } from "lucide-react";
 import {
   C, S, QTYPES, uid, fillOk, stripHtml, autoQ,
-  RichTextEditor, Builder, load, save,
+  RichTextEditor, Builder, ReadingPanel, load, save,
 } from "./App.jsx";
 
 /* ============================================================
@@ -270,14 +270,12 @@ function PracticeWorkspace({ ex, back, onFinish }) {
       )}
 
       {ex.readingText ? (
-        <div style={{ display: "flex", gap: 16, alignItems: "flex-start", flexWrap: "wrap" }}>
-          <div className="mcf-card" onContextMenu={(e) => e.preventDefault()} onCopy={(e) => e.preventDefault()} onCut={(e) => e.preventDefault()} onDragStart={(e) => e.preventDefault()}
-            style={{ ...S.card, flex: "1 1 340px", minWidth: 0, maxHeight: "72vh", overflowY: "auto", position: "sticky",
-              top: ex.audioUrl ? 110 : 8, userSelect: "none", WebkitUserSelect: "none" }}>
-            <div style={{ ...S.label, marginBottom: 10 }}>📖 Texte à lire</div>
-            <div style={{ whiteSpace: "pre-wrap", lineHeight: 1.85, fontSize: 15.5, cursor: "default" }}>{ex.readingText}</div>
+        <div className="mcf-wide" style={{ display: "flex", gap: 20, alignItems: "flex-start", flexWrap: "wrap" }}>
+          <ReadingPanel text={ex.readingText} stickyTop={ex.audioUrl ? 110 : 8} />
+          <div className="mcf-scroll" style={{ flex: "5 1 340px", minWidth: 0, display: "grid", gap: 16,
+            maxHeight: "76vh", overflowY: "auto", position: "sticky", top: ex.audioUrl ? 110 : 8, paddingRight: 4 }}>
+            {questionCards}
           </div>
-          <div style={{ flex: "1 1 360px", minWidth: 0, display: "grid", gap: 16 }}>{questionCards}</div>
         </div>
       ) : (
         <div style={{ display: "grid", gap: 16 }}>{questionCards}</div>

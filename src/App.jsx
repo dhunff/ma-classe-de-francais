@@ -34,6 +34,13 @@ button:hover:not(:disabled) { transform: translateY(-1px); }
 input:focus, textarea:focus, select:focus { outline: none; border-color: #3D5AF1 !important; box-shadow: 0 0 0 3px #3D5AF122; }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
 @keyframes fadeUp { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.mcf-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
+.mcf-scroll::-webkit-scrollbar-track { background: transparent; }
+.mcf-scroll::-webkit-scrollbar-thumb { background: #D6DAE3; border-radius: 99px; }
+.mcf-scroll::-webkit-scrollbar-thumb:hover { background: #B9BFCC; }
+.mcf-scroll { scrollbar-width: thin; scrollbar-color: #D6DAE3 transparent; }
+.mcf-wide { position: relative; left: 50%; transform: translateX(-50%); width: min(100vw - 24px, 1600px); }
+mark.mcf-hl { background: rgba(255, 224, 102, .85); border-radius: 4px; padding: 0 2px; }
 .mcf-card { animation: fadeUp .25s ease both; }
 `;
 
@@ -1273,19 +1280,12 @@ function Taking({ ex, name, setSubmissions, done }) {
 
       {/* 📖 Bố cục 2 cột nếu có bài đọc */}
       {ex.readingText ? (
-        <div style={{ display: "flex", gap: 16, alignItems: "flex-start", flexWrap: "wrap" }}>
-          <div className="mcf-card"
-            onContextMenu={(e) => e.preventDefault()}
-            onCopy={(e) => e.preventDefault()}
-            onCut={(e) => e.preventDefault()}
-            onDragStart={(e) => e.preventDefault()}
-            style={{ ...S.card, flex: "1 1 340px", minWidth: 0, maxHeight: "72vh", overflowY: "auto",
-              position: "sticky", top: ex.audioUrl ? 110 : 8,
-              userSelect: "none", WebkitUserSelect: "none", MozUserSelect: "none", msUserSelect: "none" }}>
-            <div style={{ ...S.label, marginBottom: 10 }}>📖 Texte à lire <span style={{ fontWeight: 400, textTransform: "none", letterSpacing: 0 }}>· protégé contre la copie</span></div>
-            <div style={{ whiteSpace: "pre-wrap", lineHeight: 1.85, fontSize: 15.5, cursor: "default" }}>{ex.readingText}</div>
+        <div className="mcf-wide" style={{ display: "flex", gap: 20, alignItems: "flex-start", flexWrap: "wrap" }}>
+          <ReadingPanel text={ex.readingText} stickyTop={ex.audioUrl ? 110 : 8} />
+          <div className="mcf-scroll" style={{ flex: "5 1 340px", minWidth: 0, display: "grid", gap: 16,
+            maxHeight: "76vh", overflowY: "auto", position: "sticky", top: ex.audioUrl ? 110 : 8, paddingRight: 4 }}>
+            {questionCards}
           </div>
-          <div style={{ flex: "1 1 360px", minWidth: 0, display: "grid", gap: 16 }}>{questionCards}</div>
         </div>
       ) : (
         <div style={{ display: "grid", gap: 16 }}>{questionCards}</div>
@@ -1299,6 +1299,60 @@ function Taking({ ex, name, setSubmissions, done }) {
         <button style={S.btn(false)} onClick={done}>Quitter (brouillon sauvegardé)</button>
       </div>
     </div>
+  );
+}
+
+/* ============ Panel bài đọc : highlight + chống copy ============
+   Học sinh bôi đen văn bản → hiện nút 🖍 nổi → bấm để tô vàng.
+   Vẫn chặn Copy / chuột phải / kéo-thả để chống sao chép. */
+function ReadingPanel({ text, stickyTop = 8 }) {
+  const boxRef = React.useRef(null);
+  const [btn, setBtn] = useState(null); // {x, y}
+
+  const onSelect = () => {
+    const sel = window.getSelection();
+    if (!sel || sel.isCollapsed || !sel.rangeCount) { setBtn(null); return; }
+    const range = sel.getRangeAt(0);
+    if (!boxRef.current?.contains(range.commonAncestorContainer)) { setBtn(null); return; }
+    const rect = range.getBoundingClientRect();
+    setBtn({ x: rect.left + rect.width / 2, y: rect.top });
+  };
+
+  const highlight = () => {
+    const sel = window.getSelection();
+    if (!sel || !sel.rangeCount) return;
+    const range = sel.getRangeAt(0);
+    const mark = document.createElement("mark");
+    mark.className = "mcf-hl";
+    try { range.surroundContents(mark); }
+    catch { mark.appendChild(range.extractContents()); range.insertNode(mark); }
+    sel.removeAllRanges();
+    setBtn(null);
+  };
+
+  return (
+    <>
+      {btn && (
+        <button onMouseDown={(e) => { e.preventDefault(); highlight(); }}
+          style={{ position: "fixed", left: btn.x, top: btn.y - 44, transform: "translateX(-50%)", zIndex: 200,
+            display: "flex", alignItems: "center", gap: 6, padding: "7px 14px", borderRadius: 999, border: "none",
+            background: "#111827", color: "#FFD43B", fontWeight: 800, fontSize: 13, cursor: "pointer",
+            boxShadow: "0 8px 20px rgba(17,24,39,.3)", fontFamily: "inherit" }}>
+          🖍 Surligner
+        </button>
+      )}
+      <div ref={boxRef} className="mcf-card mcf-scroll"
+        onMouseUp={onSelect} onTouchEnd={onSelect}
+        onContextMenu={(e) => e.preventDefault()}
+        onCopy={(e) => e.preventDefault()}
+        onCut={(e) => e.preventDefault()}
+        onDragStart={(e) => e.preventDefault()}
+        style={{ ...S.card, flex: "6 1 380px", minWidth: 0, maxHeight: "76vh", overflowY: "auto",
+          position: "sticky", top: stickyTop }}>
+        <div style={{ ...S.label, marginBottom: 10 }}>📖 Texte à lire <span style={{ fontWeight: 400, textTransform: "none", letterSpacing: 0 }}>· bôi đen để tô vàng 🖍 · protégé contre la copie</span></div>
+        <div style={{ whiteSpace: "pre-wrap", lineHeight: 1.9, fontSize: 16 }}>{text}</div>
+      </div>
+    </>
   );
 }
 
@@ -1405,4 +1459,4 @@ function RichTextEditor({ value, onChange, wordLimit, readOnly }) {
 
 
 /* ---- Xuất dùng chung cho PracticeHub ---- */
-export { C, S, SKILLS, QTYPES, LEVEL_COLORS, uid, fillOk, stripHtml, wordCount, autoQ, isLate, RichTextEditor, Builder, load, save };
+export { C, S, SKILLS, QTYPES, LEVEL_COLORS, uid, fillOk, stripHtml, wordCount, autoQ, isLate, RichTextEditor, Builder, ReadingPanel, load, save };
