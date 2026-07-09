@@ -2,7 +2,7 @@ import './storageShim.js'
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import PracticeHub from './PracticeHub.jsx'
 import mammoth from 'mammoth/mammoth.browser'
-import { BookOpen, GraduationCap, Wine, Croissant, Landmark, Stamp, Feather, Coffee, BookMarked } from 'lucide-react'
+import { BookOpen, GraduationCap, Wine, Croissant, Landmark, Stamp, Feather, Coffee, BookMarked, MoreVertical, Pencil, Copy, Trash2, RotateCcw } from 'lucide-react'
 import { BarChart, Bar, LineChart, Line, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from "recharts";
 
 /* ================= Ma Classe de Français v3 =================
@@ -83,6 +83,42 @@ function Doodles() {
       <svg style={{ position: "absolute", right: "-2%", bottom: "12%", opacity: 0.6 }} width="140" height="40" viewBox="0 0 140 40" fill="none">
         <path d="M2 20 Q 20 2, 38 20 T 74 20 T 110 20 T 146 20" stroke="#74C0FC" strokeWidth="4" strokeLinecap="round" />
       </svg>
+    </div>
+  );
+}
+
+/* ---------- Dropdown menu (⋮) dùng chung ---------- */
+function KebabMenu({ items }) {
+  const [open, setOpen] = useState(false);
+  const ref = React.useRef(null);
+  useEffect(() => {
+    const close = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    document.addEventListener("mousedown", close);
+    return () => document.removeEventListener("mousedown", close);
+  }, []);
+  return (
+    <div ref={ref} style={{ position: "relative" }}>
+      <button onClick={() => setOpen(!open)} title="Plus d'options"
+        style={{ width: 40, height: 40, borderRadius: 999, border: `1.5px solid ${C.line}`, background: "#fff",
+          cursor: "pointer", display: "grid", placeItems: "center", boxShadow: "0 2px 8px rgba(17,24,39,.06)" }}>
+        <MoreVertical size={18} color={C.ink} />
+      </button>
+      {open && (
+        <div style={{ position: "absolute", right: 0, top: 46, minWidth: 190, background: "#fff", borderRadius: 20,
+          boxShadow: "0 14px 36px rgba(17,24,39,.16)", border: `1px solid ${C.line}`, padding: 6, zIndex: 60 }}>
+          {items.map(({ label, icon, danger, onClick }, i) => (
+            <button key={i} onClick={() => { setOpen(false); onClick(); }}
+              style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "10px 14px",
+                border: "none", background: "transparent", cursor: "pointer", fontFamily: "inherit",
+                fontSize: 14, fontWeight: 600, borderRadius: 14, textAlign: "left",
+                color: danger ? C.danger : C.ink }}
+              onMouseEnter={(e) => e.currentTarget.style.background = danger ? C.dangerSoft : "#F4F6FB"}
+              onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}>
+              {icon} {label}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -242,8 +278,10 @@ function Bell({ name, exercises, submissions }) {
         if (dt > 0 && dt < 24 * 3600 * 1000)
           list.push({ id: "due-" + ex.id, icon: "⏰", text: `« ${ex.title} » est à rendre avant ${fmtDate(ex.deadline)} !` });
       }
-      if (sub?.graded && !seen["graded-" + sub.id])
+      if (sub?.graded && !sub.redo && !seen["graded-" + sub.id])
         list.push({ id: "graded-" + sub.id, icon: "✅", text: `Ta copie « ${ex.title} » a été corrigée.` });
+      if (sub?.redo)
+        list.push({ id: "redo-" + sub.id, icon: "🔁", text: `Le professeur te demande de refaire « ${ex.title} »${sub.redoNote ? " : " + sub.redoNote : ""}.` });
     });
     return list;
   }, [exercises, submissions, name, seen]);
@@ -491,7 +529,7 @@ function Teacher({ exercises, setExercises, submissions, setSubmissions, account
         ) : (
           <div style={{ display: "grid", gap: 14 }}>
             {exercises.map((ex) => {
-              const subs = submissions.filter((s) => s.exerciseId === ex.id);
+              const subs = submissions.filter((s) => s.exerciseId === ex.id && !s.redo);
               const toGrade = subs.filter((s) => !s.graded && ex.questions.some((q) => q.type === "open")).length;
               const late = isLate(ex);
               const targets = targetedAccounts(ex, accounts);
@@ -510,10 +548,13 @@ function Teacher({ exercises, setExercises, submissions, setSubmissions, account
                       {ex.timeLimit && <span style={{ fontWeight: 700 }}> · ⏱ {ex.timeLimit} min</span>}
                     </div>
                   </div>
-                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                  <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
                     <button style={S.btn(true)} onClick={() => setView("progress:" + ex.id)}>Suivi & correction</button>
-                    <button style={S.btn(false)} onClick={() => { setDraft(JSON.parse(JSON.stringify(ex))); setView("new"); }}>Modifier</button>
-                    <button style={S.btn(false, true)} onClick={() => remove(ex.id)}>Supprimer</button>
+                    <KebabMenu items={[
+                      { label: "Modifier", icon: <Pencil size={16} />, onClick: () => { setDraft(JSON.parse(JSON.stringify(ex))); setView("new"); } },
+                      { label: "Dupliquer", icon: <Copy size={16} />, onClick: () => duplicate(ex) },
+                      { label: "Supprimer", icon: <Trash2 size={16} />, danger: true, onClick: () => remove(ex.id) },
+                    ]} />
                   </div>
                 </div>
               );
@@ -699,18 +740,19 @@ function StudentTable({ accounts, exercises, submissions }) {
                 if (!assignedTo(ex, a.name)) return { na: true };
                 const s = submissions.find((x) => x.exerciseId === ex.id && x.student === a.name);
                 if (!s) return null;
+                if (s.redo) return { redo: true };
                 return { ...totalScore(s, ex), late: s.late };
               });
-              const pcts = cells.filter((c) => c && !c.na && c.max).map((c) => (c.score / c.max) * 100);
+              const pcts = cells.filter((c) => c && !c.na && !c.redo && c.max).map((c) => (c.score / c.max) * 100);
               const avg = pcts.length ? Math.round(pcts.reduce((x, y) => x + y, 0) / pcts.length) : null;
               const nAssigned = cells.filter((c) => !c || !c.na).length;
               return (
                 <tr key={a.name}>
                   <td style={{ ...td, fontWeight: 700 }}>{a.name}</td>
-                  <td style={td}>{cells.filter((c) => c && !c.na).length}/{nAssigned}</td>
+                  <td style={td}>{cells.filter((c) => c && !c.na && !c.redo).length}/{nAssigned}</td>
                   {cells.map((c, i) => (
                     <td key={i} style={{ ...td, fontWeight: c && !c.na ? 700 : 400, color: !c ? C.soft : c.na ? C.line : c.pending ? C.warn : c.score / c.max >= 0.5 ? C.ok : C.danger }}>
-                      {!c ? "—" : c.na ? "·" : `${c.score}/${c.max}${c.pending ? " ⏳" : ""}${c.late ? " 🕐" : ""}`}
+                      {!c ? "—" : c.na ? "·" : c.redo ? "🔁" : `${c.score}/${c.max}${c.pending ? " ⏳" : ""}${c.late ? " 🕐" : ""}`}
                     </td>
                   ))}
                   <td style={{ ...td, fontWeight: 800, color: avg == null ? C.soft : avg >= 50 ? C.ok : C.danger }}>{avg == null ? "—" : avg + " %"}</td>
@@ -720,7 +762,7 @@ function StudentTable({ accounts, exercises, submissions }) {
           </tbody>
         </table>
       )}
-      <p style={{ fontSize: 12, color: C.soft, marginTop: 10, marginBottom: 0 }}>⏳ = réponses libres pas encore corrigées · 🕐 = rendu en retard · « · » = bài không giao cho học sinh này</p>
+      <p style={{ fontSize: 12, color: C.soft, marginTop: 10, marginBottom: 0 }}>⏳ = réponses libres pas encore corrigées · 🕐 = rendu en retard · « · » = bài không giao cho học sinh này · 🔁 = yêu cầu làm lại</p>
     </div>
   );
 }
@@ -780,11 +822,13 @@ function Builder({ draft, setDraft, publish, cancel, accounts }) {
     <div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 10 }}>
         <h2 style={{ ...S.display, marginTop: 0, marginBottom: 0 }}>{draft.title ? "Modifier l'exercice" : "Nouvel exercice"}</h2>
+        {draft.skill === "Lecture" && (
         <div>
           <input ref={fileRef} type="file" accept=".docx" style={{ display: "none" }}
             onChange={(e) => importDocx(e.target.files?.[0])} />
           <button style={S.btn(false)} onClick={() => fileRef.current?.click()}>📄 Import DOCX (bài đọc CE)</button>
         </div>
+        )}
       </div>
       {importMsg && (
         <div className="mcf-card" style={{ ...S.card, margin: "12px 0", padding: "10px 16px", fontSize: 13.5,
@@ -810,7 +854,14 @@ function Builder({ draft, setDraft, publish, cancel, accounts }) {
           </div>
           <div>
             <div style={S.label}>Compétence</div>
-            <select style={{ ...S.input, marginTop: 6 }} value={draft.skill} onChange={(e) => setDraft({ ...draft, skill: e.target.value })}>
+            <select style={{ ...S.input, marginTop: 6 }} value={draft.skill}
+              onChange={(e) => {
+                const v = e.target.value;
+                // Ẩn trường nào thì reset dữ liệu trường đó về rỗng
+                setDraft({ ...draft, skill: v,
+                  audioUrl: v === "Écoute" ? draft.audioUrl : "",
+                  readingText: v === "Lecture" ? draft.readingText : "" });
+              }}>
               {SKILLS.map((s) => <option key={s}>{s}</option>)}
             </select>
           </div>
@@ -825,19 +876,23 @@ function Builder({ draft, setDraft, publish, cancel, accounts }) {
               placeholder="∞" onChange={(e) => setDraft({ ...draft, timeLimit: e.target.value })} />
           </div>
         </div>
+        {draft.skill === "Écoute" && (
         <div style={{ marginTop: 12 }}>
           <div style={S.label}>Lien audio pour compréhension orale (optionnel — URL mp3)</div>
           <input style={{ ...S.input, marginTop: 6 }} value={draft.audioUrl} placeholder="https://…/audio.mp3"
             onChange={(e) => setDraft({ ...draft, audioUrl: e.target.value })} />
           <div style={{ fontSize: 12, color: C.soft, marginTop: 5 }}>💡 Mẹo tải file mp3 của bạn: upload vào Supabase Storage (bucket public) hoặc Google Drive (link chia sẻ trực tiếp) rồi dán URL vào đây.</div>
         </div>
+        )}
 
+        {draft.skill === "Lecture" && (
         <div style={{ marginTop: 12 }}>
           <div style={S.label}>📖 Texte de lecture (CE — optionnel) : dán bài đọc vào đây, học sinh sẽ thấy bố cục 2 cột (văn bản | câu hỏi)</div>
           <textarea style={{ ...S.input, marginTop: 6, minHeight: 110, resize: "vertical" }} value={draft.readingText || ""}
             placeholder="Collez ici l'article ou le texte à lire…"
             onChange={(e) => setDraft({ ...draft, readingText: e.target.value })} />
         </div>
+        )}
 
         <div style={{ marginTop: 14 }}>
           <div style={S.label}>Destinataires — Giao bài cho ai ?</div>
@@ -937,10 +992,24 @@ function Progress({ ex, submissions, setSubmissions, accounts, back }) {
   const [qDrafts, setQDrafts] = useState({});
   const [marks, setMarks] = useState({});
   if (!ex) return null;
-  const subs = submissions.filter((s) => s.exerciseId === ex.id);
-  const byName = Object.fromEntries(subs.map((s) => [s.student, s]));
+  const subs = submissions.filter((s) => s.exerciseId === ex.id && !s.redo);
+  const byName = Object.fromEntries(submissions.filter((s) => s.exerciseId === ex.id).map((s) => [s.student, s]));
   const opens = ex.questions.filter((q) => q.type === "open");
   const roster = targetedAccounts(ex, accounts);
+
+  const [redoFor, setRedoFor] = useState(null); // tên học sinh đang yêu cầu làm lại
+  const [redoNote, setRedoNote] = useState("");
+
+  // 🔁 Yêu cầu làm lại : reset điểm, đổi trạng thái sang redo + lưu lý do
+  const requestRedo = async (student) => {
+    const latest = await load("mcf-submissions", []);
+    const next = latest.map((s) => {
+      if (!(s.exerciseId === ex.id && s.student === student)) return s;
+      return { ...s, redo: true, redoNote: redoNote.trim(), graded: false, openMarks: {}, autoScore: 0 };
+    });
+    await save("mcf-submissions", next);
+    setSubmissions(next); setRedoFor(null); setRedoNote("");
+  };
 
   const saveGrading = async (student) => {
     const sub = byName[student];
@@ -982,7 +1051,9 @@ function Progress({ ex, submissions, setSubmissions, accounts, back }) {
             <div key={name} className="mcf-card" style={S.card}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
                 <strong>{name}{sub?.late && <span style={S.chip(C.warnSoft, C.warn)}> 🕐 En retard</span>}</strong>
-                {sub ? (
+                {sub?.redo ? (
+                  <span style={{ fontSize: 13, color: C.warn, fontWeight: 700 }}>🔁 À refaire demandé{sub.redoNote && ` — « ${sub.redoNote} »`}</span>
+                ) : sub ? (
                   <span style={{ fontSize: 13 }}>
                     <span style={{ color: C.ok, fontWeight: 700 }}>Rendu</span>
                     {" · "}<strong>{t.score}/{t.max}{t.pending && " ⏳"}</strong>
@@ -1040,9 +1111,15 @@ function Progress({ ex, submissions, setSubmissions, accounts, back }) {
                       value={drafts[name] ?? sub.comment ?? ""}
                       placeholder="ex. Très bon travail ! Revois l'accord du participe passé."
                       onChange={(e) => setDrafts({ ...drafts, [name]: e.target.value })} />
-                    <button style={{ ...S.btn(true), marginTop: 8 }} onClick={() => saveGrading(name)}>
-                      Enregistrer la correction {opens.length > 0 && "et la note"}
-                    </button>
+                    <div style={{ display: "flex", gap: 10, marginTop: 8, flexWrap: "wrap" }}>
+                      <button style={S.btn(true)} onClick={() => saveGrading(name)}>
+                        Enregistrer la correction {opens.length > 0 && "et la note"}
+                      </button>
+                      <button onClick={() => { setRedoFor(name); setRedoNote(""); }}
+                        style={{ ...S.btn(false), color: C.warn, borderColor: C.warn, display: "inline-flex", alignItems: "center", gap: 7 }}>
+                        <RotateCcw size={15} /> Demander de refaire
+                      </button>
+                    </div>
                   </div>
                 </div>
               )}
@@ -1050,6 +1127,26 @@ function Progress({ ex, submissions, setSubmissions, accounts, back }) {
           );
         })}
       </div>
+
+      {/* Dialog lý do yêu cầu làm lại */}
+      {redoFor && (
+        <div style={{ position: "fixed", inset: 0, background: "rgba(17,24,39,.45)", display: "grid", placeItems: "center", padding: 16, zIndex: 200 }}
+          onClick={() => setRedoFor(null)}>
+          <div className="mcf-card" style={{ ...S.card, width: "100%", maxWidth: 480 }} onClick={(e) => e.stopPropagation()}>
+            <h3 style={{ ...S.display, fontSize: 20, marginTop: 0 }}>🔁 Demander à {redoFor} de refaire</h3>
+            <p style={{ fontSize: 13.5, color: C.soft, marginTop: 0 }}>La note sera remise à zéro et l'exercice retournera dans « À faire » de l'élève.</p>
+            <div style={S.label}>Lý do / Remarque (hiện trên dashboard học sinh)</div>
+            <textarea style={{ ...S.input, marginTop: 6, minHeight: 70, resize: "vertical" }} value={redoNote}
+              placeholder="ex. Attention à l'accord du participe passé — refais les questions 3 et 5."
+              onChange={(e) => setRedoNote(e.target.value)} autoFocus />
+            <div style={{ display: "flex", gap: 10, marginTop: 14 }}>
+              <button style={{ ...S.btn(true), background: `linear-gradient(135deg, ${C.warn}, #E09A2B)`, boxShadow: "0 6px 16px rgba(201,132,18,.35)" }}
+                onClick={() => requestRedo(redoFor)}>Confirmer</button>
+              <button style={S.btn(false)} onClick={() => setRedoFor(null)}>Annuler</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -1060,17 +1157,18 @@ function Student({ name, exercises, submissions, setSubmissions, accounts, setAc
   const [tab, setTab] = useState("todo");
   const [showPw, setShowPw] = useState(false);
   const mine = (exId) => submissions.find((s) => s.exerciseId === exId && s.student === name);
+  const mineDone = (exId) => { const s0 = mine(exId); return s0 && !s0.redo ? s0 : null; };
 
   if (taking) return <Taking ex={taking} name={name} setSubmissions={setSubmissions} done={() => { setTaking(null); refresh(); }} />;
 
   const visible = exercises.filter((ex) => assignedTo(ex, name));
-  const todo = visible.filter((ex) => !mine(ex.id))
+  const todo = visible.filter((ex) => !mineDone(ex.id))
     .sort((a, b) => (a.deadline ? new Date(a.deadline) : Infinity) - (b.deadline ? new Date(b.deadline) : Infinity));
-  const doneList = visible.filter((ex) => mine(ex.id));
+  const doneList = visible.filter((ex) => mineDone(ex.id));
   const gradedList = doneList.filter((ex) => mine(ex.id).graded || !ex.questions.some((q) => q.type === "open"));
 
   const myScores = visible.map((ex, i) => {
-    const s = mine(ex.id); if (!s) return null;
+    const s = mineDone(ex.id); if (!s) return null;
     const t = totalScore(s, ex); if (!t.max) return null;
     return { name: `Ex.${i + 1}`, full: ex.title, pct: Math.round((t.score / t.max) * 100), at: s.at };
   }).filter(Boolean).sort((a, b) => a.at - b.at);
@@ -1078,14 +1176,14 @@ function Student({ name, exercises, submissions, setSubmissions, accounts, setAc
   const radar = SKILLS.map((skill) => {
     const pcts = [];
     visible.filter((e) => e.skill === skill).forEach((ex) => {
-      const s = mine(ex.id); if (!s) return;
+      const s = mineDone(ex.id); if (!s) return;
       const t = totalScore(s, ex); if (t.max) pcts.push((t.score / t.max) * 100);
     });
     return { skill, moi: pcts.length ? Math.round(pcts.reduce((a, b) => a + b, 0) / pcts.length) : 0 };
   });
 
   const stamps = visible.filter((ex) => {
-    const s = mine(ex.id); if (!s) return false;
+    const s = mineDone(ex.id); if (!s) return false;
     const t = totalScore(s, ex); return t.max && t.score / t.max >= 0.8;
   }).length;
   const JOURNEY = [
@@ -1107,7 +1205,9 @@ function Student({ name, exercises, submissions, setSubmissions, accounts, setAc
   };
 
   const Card = ({ ex }) => {
-    const sub = mine(ex.id);
+    const subRaw = mine(ex.id);
+    const redo = subRaw?.redo;
+    const sub = redo ? null : subRaw;
     const late = isLate(ex);
     const t = sub && totalScore(sub, ex);
     return (
@@ -1130,6 +1230,12 @@ function Student({ name, exercises, submissions, setSubmissions, accounts, setAc
             <button style={S.btn(true)} onClick={() => setTaking(ex)}>Commencer</button>
           )}
         </div>
+        {redo && (
+          <div style={{ marginTop: 12, background: C.warnSoft, border: `2px solid ${C.warn}`, borderRadius: 16, padding: "12px 16px", fontSize: 14, fontWeight: 600 }}>
+            🔁 <strong>Le professeur te demande de refaire cet exercice.</strong>
+            {subRaw.redoNote && <div style={{ marginTop: 4, fontWeight: 400 }}>💬 {subRaw.redoNote}</div>}
+          </div>
+        )}
         {sub?.comment && (
           <div style={{ marginTop: 12, background: C.warnSoft, border: `1px solid ${C.warn}44`, borderRadius: 12, padding: "10px 14px", fontSize: 14 }}>
             💬 <strong>Professeur :</strong> {sub.comment}
@@ -1396,7 +1502,7 @@ function Taking({ ex, name, setSubmissions, done }) {
           </div>
         </div>
       ) : (
-        <div style={{ display: "grid", gap: 16 }}>{questionCards}</div>
+        <div style={{ display: "grid", gap: 16, maxWidth: 780, margin: "0 auto" }}>{questionCards}</div>
       )}
 
       {err && <p style={{ color: C.danger, fontSize: 13 }}>{err}</p>}

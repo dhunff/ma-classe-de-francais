@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import {
   Headphones, BookOpen, PenLine, Puzzle, BookA, Sparkles,
-  RotateCcw, CheckCircle2, XCircle, Plus, ChevronLeft, PartyPopper, Trash2, Pencil,
+  RotateCcw, CheckCircle2, XCircle, Plus, ChevronLeft, PartyPopper, Trash2, Pencil, Copy, MoreVertical,
 } from "lucide-react";
 import {
   C, S, QTYPES, uid, fillOk, stripHtml, autoQ,
@@ -44,6 +44,13 @@ export default function PracticeHub({ role = "eleve", name = "" }) {
   }, []);
 
   const persist = async (next) => { setExercises(next); await save("mcf-practice", next); };
+  const duplicate = async (ex) => {
+    const copy = JSON.parse(JSON.stringify(ex));
+    copy.id = uid(); copy.createdAt = Date.now(); copy.title = ex.title + " (Copie)";
+    copy.assignedTo = null; copy.deadline = "";
+    copy.questions = copy.questions.map((q) => ({ ...q, id: uid() }));
+    await persist([...exercises, copy]);
+  };
   const saveHist = async (exId, score, max) => {
     const prev = hist[exId] || { best: -1, tries: 0 };
     const next = { ...hist, [exId]: { best: Math.max(prev.best, score), max, tries: prev.tries + 1, at: Date.now() } };
@@ -99,12 +106,12 @@ export default function PracticeHub({ role = "eleve", name = "" }) {
                       {h && <span style={{ color: h.max && h.best / h.max >= 0.8 ? C.ok : C.primary, fontWeight: 700 }}> · 🏆 Meilleur : {h.best}/{h.max} ({h.tries} lần)</span>}
                     </div>
                   </div>
-                  <div style={{ display: "flex", gap: 8 }}>
+                  <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
                     <button style={S.btn(true)} onClick={() => setView({ page: "quiz", cat: view.cat, exId: ex.id })}>Luyện tập</button>
-                    {teacher && <>
-                      <button style={S.btn(false)} onClick={() => { setDraft(JSON.parse(JSON.stringify(ex))); setView({ page: "builder" }); }}><Pencil size={15} /></button>
-                      <button style={{ ...S.btn(false), color: C.danger, borderColor: C.danger }} onClick={() => persist(exercises.filter((e) => e.id !== ex.id))}><Trash2 size={15} /></button>
-                    </>}
+                    {teacher && <HubMenu
+                      onEdit={() => { setDraft(JSON.parse(JSON.stringify(ex))); setView({ page: "builder" }); }}
+                      onDup={() => duplicate(ex)}
+                      onDel={() => persist(exercises.filter((e) => e.id !== ex.id))} />}
                   </div>
                 </div>
               );
@@ -150,6 +157,44 @@ export default function PracticeHub({ role = "eleve", name = "" }) {
           );
         })}
       </div>
+    </div>
+  );
+}
+
+/* ---- Dropdown ⋮ cho thẻ bài tự luyện ---- */
+function HubMenu({ onEdit, onDup, onDel }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+  useEffect(() => {
+    const close = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    document.addEventListener("mousedown", close);
+    return () => document.removeEventListener("mousedown", close);
+  }, []);
+  const item = (label, icon, onClick, danger) => (
+    <button onClick={() => { setOpen(false); onClick(); }}
+      style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "10px 14px", border: "none",
+        background: "transparent", cursor: "pointer", fontFamily: "inherit", fontSize: 14, fontWeight: 600,
+        borderRadius: 14, textAlign: "left", color: danger ? C.danger : C.ink }}
+      onMouseEnter={(e) => e.currentTarget.style.background = danger ? C.dangerSoft : "#F4F6FB"}
+      onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}>
+      {icon} {label}
+    </button>
+  );
+  return (
+    <div ref={ref} style={{ position: "relative" }}>
+      <button onClick={() => setOpen(!open)} title="Plus d'options"
+        style={{ width: 40, height: 40, borderRadius: 999, border: `1.5px solid ${C.line}`, background: "#fff",
+          cursor: "pointer", display: "grid", placeItems: "center", boxShadow: "0 2px 8px rgba(17,24,39,.06)" }}>
+        <MoreVertical size={18} color={C.ink} />
+      </button>
+      {open && (
+        <div style={{ position: "absolute", right: 0, top: 46, minWidth: 180, background: "#fff", borderRadius: 20,
+          boxShadow: "0 14px 36px rgba(17,24,39,.16)", border: `1px solid ${C.line}`, padding: 6, zIndex: 60 }}>
+          {item("Modifier", <Pencil size={16} />, onEdit)}
+          {item("Dupliquer", <Copy size={16} />, onDup)}
+          {item("Supprimer", <Trash2 size={16} />, onDel, true)}
+        </div>
+      )}
     </div>
   );
 }
@@ -278,7 +323,7 @@ function PracticeWorkspace({ ex, back, onFinish }) {
           </div>
         </div>
       ) : (
-        <div style={{ display: "grid", gap: 16 }}>{questionCards}</div>
+        <div style={{ display: "grid", gap: 16, maxWidth: 780, margin: "0 auto" }}>{questionCards}</div>
       )}
 
       {!graded ? (
