@@ -328,6 +328,29 @@ function Login({ accounts, onLogin }) {
   const [pin, setPin] = useState("");
   const [msg, setMsg] = useState("");
 
+  // 💬 Câu động lực tiếng Pháp — đổi câu mỗi 7 giây với hiệu ứng fade
+  const QUOTES = [
+    "« Le succès est la somme de petits efforts, répétés jour après jour. »",
+    "« Petit à petit, l'oiseau fait son nid. »",
+    "« Paris ne s'est pas fait en un jour. »",
+    "« Vouloir, c'est pouvoir. »",
+    "« L'éducation est l'arme la plus puissante qu'on puisse utiliser pour changer le monde. »",
+    "« Il n'y a pas de réussite facile ni d'échecs définitifs. »",
+  ];
+  const [quoteIdx, setQuoteIdx] = useState(() => Math.floor(Math.random() * QUOTES.length));
+  const [quoteVisible, setQuoteVisible] = useState(true);
+  useEffect(() => {
+    const t = setInterval(() => {
+      setQuoteVisible(false);                          // mờ đi
+      setTimeout(() => {
+        setQuoteIdx((i) => (i + 1) % QUOTES.length);   // đổi câu
+        setQuoteVisible(true);                         // hiện lại
+      }, 500);
+    }, 7000);
+    return () => clearInterval(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const loginStudent = () => {
     const acc = accounts.find((a) => a.name.toLowerCase() === name.trim().toLowerCase());
     if (!acc) { setMsg("Compte introuvable. Demande à ton professeur de créer ton compte."); return; }
@@ -393,13 +416,14 @@ function Login({ accounts, onLogin }) {
 
       {/* ---- Branding ---- */}
       <div style={{ textAlign: "center", marginBottom: 34, position: "relative", zIndex: 2 }}>
-        <h1 style={{ ...serif, fontWeight: 800, fontSize: "clamp(28px, 5vw, 40px)", color: "#152A6E", margin: 0,
+        <h1 style={{ fontFamily: "'Be Vietnam Pro', -apple-system, sans-serif", fontWeight: 800, letterSpacing: "-1px",
+          fontSize: "clamp(28px, 5vw, 40px)", color: "#152A6E", margin: 0,
           display: "flex", alignItems: "center", justifyContent: "center", gap: 12, flexWrap: "wrap" }}>
           <span style={{ color: GOLD, fontSize: "0.8em" }}>✳</span>
           Le Français Avec Hung
           <FlagFR w={30} round />
         </h1>
-        <p style={{ ...serif, fontStyle: "italic", color: "#4B5563", fontSize: "clamp(14px, 2.4vw, 17px)", marginTop: 8 }}>
+        <p style={{ fontFamily: "'Be Vietnam Pro', sans-serif", fontStyle: "italic", color: "#6B7280", fontSize: "clamp(14px, 2.4vw, 16px)", marginTop: 8 }}>
           Une méthode classique de style en France
         </p>
       </div>
@@ -471,6 +495,15 @@ function Login({ accounts, onLogin }) {
 
         <p style={{ fontSize: 12, color: "#9A937F", textAlign: "center", marginTop: 16 }}>
           Seuls les élèves dont le compte a été créé par le professeur peuvent se connecter.
+        </p>
+      </div>
+
+      {/* 💬 Câu động lực — fade đổi câu mỗi 7s */}
+      <div style={{ position: "absolute", bottom: 58, left: "50%", transform: "translateX(-50%)", zIndex: 2,
+        width: "min(92vw, 620px)", textAlign: "center" }}>
+        <p style={{ fontSize: 14, fontStyle: "italic", color: "#9CA3AF", margin: 0, lineHeight: 1.6,
+          opacity: quoteVisible ? 1 : 0, transition: "opacity .5s ease" }}>
+          {QUOTES[quoteIdx]}
         </p>
       </div>
 
