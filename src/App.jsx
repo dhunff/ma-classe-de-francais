@@ -2,6 +2,7 @@ import './storageShim.js'
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import PracticeHub from './PracticeHub.jsx'
 import mammoth from 'mammoth/mammoth.browser'
+import { BookOpen, GraduationCap, Wine, Croissant, Landmark, Stamp, Feather, Coffee, BookMarked } from 'lucide-react'
 import { BarChart, Bar, LineChart, Line, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from "recharts";
 
 /* ================= Ma Classe de Français v3 =================
@@ -27,7 +28,7 @@ const SKILLS = ["Grammaire", "Vocabulaire", "Écoute", "Lecture", "Production é
 const QTYPES = { qcm: "QCM", fill: "Texte à trous", conj: "Conjugaison", open: "Réponse libre / traduction" };
 
 const FONTS = `
-@import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,500;0,600;0,700;1,600&family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,500;0,600;0,700;1,600&family=Playfair+Display:ital,wght@0,700;0,800;1,500&family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap');
 * { box-sizing: border-box; }
 button { transition: transform .12s ease, box-shadow .12s ease, opacity .12s ease; }
 button:hover:not(:disabled) { transform: translateY(-1px); }
@@ -186,6 +187,10 @@ export default function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loading]);
 
+  if (!loading && !session) {
+    return <Login accounts={accounts} setAccounts={setAccounts} onLogin={(s) => { setSession(s); refresh(); }} />;
+  }
+
   return (
     <div style={{ background: C.bg, ...S.font, minHeight: "100vh" }}>
       <style>{FONTS}</style>
@@ -212,7 +217,7 @@ export default function App() {
       </header>
       <main style={{ maxWidth: 1000, margin: "0 auto", padding: "26px 16px 60px", position: "relative", zIndex: 1 }}>
         {loading ? <p style={{ textAlign: "center", color: C.soft }}>Ouverture du cahier…</p>
-          : !session ? <Login accounts={accounts} setAccounts={setAccounts} onLogin={(s) => { setSession(s); refresh(); }} />
+          : !session ? null
           : session.role === "prof"
             ? <Teacher {...{ exercises, setExercises, submissions, setSubmissions, accounts, setAccounts, refresh }} />
             : <Student name={session.name} {...{ exercises, submissions, setSubmissions, accounts, setAccounts, refresh }} />}
@@ -277,8 +282,8 @@ function Bell({ name, exercises, submissions }) {
   );
 }
 
-/* ================= Login ================= */
-function Login({ accounts, setAccounts, onLogin }) {
+/* ================= Login — Classic Parisian ================= */
+function Login({ accounts, onLogin }) {
   const [tab, setTab] = useState("eleve");
   const [name, setName] = useState("");
   const [code, setCode] = useState("");
@@ -300,37 +305,140 @@ function Login({ accounts, setAccounts, onLogin }) {
     else setMsg("Code PIN incorrect.");
   };
 
+  const NAVY = "#1e3a8a", CREAM = "#F8F5F0", GOLD = "#C9A227";
+  const serif = { fontFamily: "'Playfair Display', Georgia, serif" };
+
+  // Vị trí trang trí (placeholder lucide — thay bằng hình minh họa sau)
+  const DECOR = [
+    { Icon: Landmark, x: "6%", y: "10%", size: 90, rot: 0 },      // Tháp / công trình
+    { Icon: Landmark, x: "84%", y: "8%", size: 84, rot: 0 },      // Khải Hoàn Môn
+    { Icon: Croissant, x: "20%", y: "24%", size: 42, rot: -15 },
+    { Icon: Wine, x: "74%", y: "30%", size: 40, rot: 8 },
+    { Icon: Coffee, x: "8%", y: "52%", size: 44, rot: 0 },
+    { Icon: Stamp, x: "88%", y: "50%", size: 46, rot: 12 },
+    { Icon: BookMarked, x: "16%", y: "76%", size: 52, rot: -8 },
+    { Icon: Feather, x: "46%", y: "84%", size: 42, rot: 15 },
+    { Icon: Croissant, x: "70%", y: "78%", size: 40, rot: 20 },
+    { Icon: Wine, x: "30%", y: "60%", size: 34, rot: -10 },
+    { Icon: BookOpen, x: "60%", y: "14%", size: 38, rot: -5 },
+  ];
+
+  const inputStyle = {
+    width: "100%", padding: "10px 2px", fontSize: 16, color: "#1B2559", background: "transparent",
+    border: "none", borderBottom: "1.5px solid #D8D2C7", borderRadius: 0, fontFamily: "inherit", outline: "none",
+  };
+  const labelStyle = { fontSize: 11, letterSpacing: 2.2, textTransform: "uppercase", color: "#6B7280", fontWeight: 700, fontFamily: "'Be Vietnam Pro', sans-serif" };
+
+  const FlagFR = ({ w = 30, round = false }) => (
+    <span style={{ display: "inline-flex", width: w, height: round ? w : w * 0.66, borderRadius: round ? "50%" : 3,
+      overflow: "hidden", boxShadow: "0 1px 4px rgba(0,0,0,.2)", flexShrink: 0 }}>
+      <span style={{ flex: 1, background: "#0B3D91" }} /><span style={{ flex: 1, background: "#fff" }} /><span style={{ flex: 1, background: "#CE1126" }} />
+    </span>
+  );
+
   return (
-    <div style={{ maxWidth: 420, margin: "36px auto" }}>
-      <div className="mcf-card" style={{ ...S.card, padding: 28 }}>
-        <div style={{ display: "flex", gap: 6, marginBottom: 22, background: C.primarySoft, padding: 6, borderRadius: 999 }}>
-          {[["eleve", "Élève"], ["prof", "Professeur"]].map(([k, l]) => (
-            <button key={k} onClick={() => { setTab(k); setMsg(""); }}
-              style={{ flex: 1, padding: 11, border: "none", cursor: "pointer", fontWeight: 700, fontSize: 14, fontFamily: "inherit",
-                background: tab === k ? C.primary : "transparent", color: tab === k ? "#fff" : C.soft, borderRadius: 999 }}>{l}</button>
-          ))}
+    <div style={{ minHeight: "100vh", background: CREAM, position: "relative", overflow: "hidden",
+      fontFamily: "'Be Vietnam Pro', -apple-system, sans-serif", display: "flex", flexDirection: "column",
+      alignItems: "center", justifyContent: "center", padding: "40px 16px" }}>
+      <style>{FONTS + `
+        .lp-input:focus { border-bottom-color: ${NAVY} !important; border-bottom-width: 2px !important; }
+        @media (max-width: 640px) { .lp-decor { display: none; } }
+      `}</style>
+
+      {/* ---- Trang trí xung quanh (placeholder lucide, nét mảnh xám nhạt) ---- */}
+      {DECOR.map(({ Icon, x, y, size, rot }, i) => (
+        <div key={i} className="lp-decor" aria-hidden
+          style={{ position: "absolute", left: x, top: y, transform: `rotate(${rot}deg)`, pointerEvents: "none", opacity: 0.55 }}>
+          <Icon size={size} color="#B9B2A4" strokeWidth={1.1} />
         </div>
-        {tab === "eleve" ? (
-          <>
-            <div style={S.label}>Ton prénom</div>
-            <input style={{ ...S.input, margin: "6px 0 12px" }} value={name} onChange={(e) => setName(e.target.value)} placeholder="ex. Linh" />
-            <div style={S.label}>Ton mot de passe</div>
-            <input style={{ ...S.input, margin: "6px 0 14px" }} type="password" value={code} onChange={(e) => setCode(e.target.value)}
-              placeholder="Donné par le professeur" onKeyDown={(e) => e.key === "Enter" && loginStudent()} />
-            <button style={{ ...S.btn(true), width: "100%" }} onClick={loginStudent}>Entrer en classe</button>
-            <p style={{ fontSize: 12, color: C.soft, marginTop: 12, marginBottom: 0 }}>
-              Pas de compte ? L'inscription est fermée : seul le professeur peut créer les comptes.
-            </p>
-          </>
-        ) : (
-          <>
-            <div style={S.label}>Code PIN professeur</div>
-            <input style={{ ...S.input, margin: "6px 0 14px" }} type="password" value={pin} onChange={(e) => setPin(e.target.value)}
-              placeholder="Défini à la première connexion" onKeyDown={(e) => e.key === "Enter" && loginTeacher()} />
-            <button style={{ ...S.btn(true), width: "100%" }} onClick={loginTeacher}>Ouvrir le tableau de bord</button>
-          </>
-        )}
-        {msg && <p style={{ color: C.danger, fontSize: 13, marginTop: 12 }}>{msg}</p>}
+      ))}
+
+      {/* ---- Branding ---- */}
+      <div style={{ textAlign: "center", marginBottom: 34, position: "relative", zIndex: 2 }}>
+        <h1 style={{ ...serif, fontWeight: 800, fontSize: "clamp(28px, 5vw, 40px)", color: "#152A6E", margin: 0,
+          display: "flex", alignItems: "center", justifyContent: "center", gap: 12, flexWrap: "wrap" }}>
+          <span style={{ color: GOLD, fontSize: "0.8em" }}>✳</span>
+          Le Français Avec Hung
+          <FlagFR w={30} round />
+        </h1>
+        <p style={{ ...serif, fontStyle: "italic", color: "#4B5563", fontSize: "clamp(14px, 2.4vw, 17px)", marginTop: 8 }}>
+          Une méthode classique de style en France
+        </p>
+      </div>
+
+      {/* ---- Login card ---- */}
+      <div style={{ position: "relative", zIndex: 2, width: "100%", maxWidth: 420 }}>
+        {/* Con dấu sáp */}
+        <div aria-hidden style={{ position: "absolute", top: 34, right: -26, width: 62, height: 62, borderRadius: "50%",
+          background: "radial-gradient(circle at 32% 30%, #C08552, #8B4A2F 62%, #6E3821)",
+          display: "grid", placeItems: "center", boxShadow: "0 8px 18px rgba(110,56,33,.4), inset 0 2px 6px rgba(255,255,255,.3)",
+          border: "3px solid #A0623F", zIndex: 3 }}>
+          <span style={{ ...serif, color: "#F3E2CE", fontWeight: 800, fontSize: 26, textShadow: "0 1px 2px rgba(0,0,0,.35)" }}>H</span>
+        </div>
+
+        <div style={{ background: "rgba(255,255,255,0.9)", backdropFilter: "blur(8px)", borderRadius: "2rem",
+          padding: "30px 30px 34px", boxShadow: "0 30px 70px rgba(30,58,138,0.16), 0 10px 26px rgba(30,58,138,0.08)" }}>
+
+          {/* Tabs */}
+          <div style={{ display: "flex", background: "#EEEBE4", borderRadius: 999, padding: 5, marginBottom: 26 }}>
+            {[["eleve", "Élève", BookOpen], ["prof", "Professeur", GraduationCap]].map(([k, l, Icon]) => (
+              <button key={k} onClick={() => { setTab(k); setMsg(""); }}
+                style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+                  padding: "11px 10px", border: "none", cursor: "pointer", fontWeight: 700, fontSize: 14.5,
+                  fontFamily: "inherit", borderRadius: 999, transition: "all .18s ease",
+                  background: tab === k ? NAVY : "transparent",
+                  color: tab === k ? "#fff" : "#8B8577",
+                  boxShadow: tab === k ? "0 6px 14px rgba(30,58,138,.35)" : "none" }}>
+                <Icon size={17} /> {l}
+              </button>
+            ))}
+          </div>
+
+          {tab === "eleve" ? (
+            <>
+              <div style={labelStyle}>Ton prénom</div>
+              <input className="lp-input" style={{ ...inputStyle, margin: "4px 0 22px" }} value={name}
+                onChange={(e) => setName(e.target.value)} placeholder="ex. Linh" />
+              <div style={labelStyle}>Ton mot de passe</div>
+              <input className="lp-input" type="password" style={{ ...inputStyle, margin: "4px 0 28px" }} value={code}
+                onChange={(e) => setCode(e.target.value)} placeholder="Donné par le professeur"
+                onKeyDown={(e) => e.key === "Enter" && loginStudent()} />
+              <button onClick={loginStudent}
+                style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
+                  padding: "14px", borderRadius: 999, border: "none", cursor: "pointer", fontFamily: "inherit",
+                  fontWeight: 700, fontSize: 15.5, color: "#fff",
+                  background: `linear-gradient(135deg, ${NAVY}, #2b4cad)`,
+                  boxShadow: "0 10px 24px rgba(30,58,138,.38), inset 0 1px 0 rgba(255,255,255,.25)" }}>
+                <BookOpen size={18} /> Entrer en classe
+              </button>
+            </>
+          ) : (
+            <>
+              <div style={labelStyle}>Code PIN professeur</div>
+              <input className="lp-input" type="password" style={{ ...inputStyle, margin: "4px 0 28px" }} value={pin}
+                onChange={(e) => setPin(e.target.value)} placeholder="Défini à la première connexion"
+                onKeyDown={(e) => e.key === "Enter" && loginTeacher()} />
+              <button onClick={loginTeacher}
+                style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
+                  padding: "14px", borderRadius: 999, border: "none", cursor: "pointer", fontFamily: "inherit",
+                  fontWeight: 700, fontSize: 15.5, color: "#fff",
+                  background: `linear-gradient(135deg, ${NAVY}, #2b4cad)`,
+                  boxShadow: "0 10px 24px rgba(30,58,138,.38), inset 0 1px 0 rgba(255,255,255,.25)" }}>
+                <GraduationCap size={18} /> Ouvrir le tableau de bord
+              </button>
+            </>
+          )}
+          {msg && <p style={{ color: "#C0392B", fontSize: 13, marginTop: 16, marginBottom: 0, textAlign: "center" }}>{msg}</p>}
+        </div>
+
+        <p style={{ fontSize: 12, color: "#9A937F", textAlign: "center", marginTop: 16 }}>
+          Seuls les élèves dont le compte a été créé par le professeur peuvent se connecter.
+        </p>
+      </div>
+
+      {/* Cờ Pháp dưới cùng */}
+      <div style={{ position: "absolute", bottom: 22, left: "50%", transform: "translateX(-50%)", zIndex: 2 }}>
+        <FlagFR w={42} />
       </div>
     </div>
   );
