@@ -44,12 +44,18 @@ export default function PracticeHub({ role = "eleve", name = "" }) {
   }, []);
 
   const persist = async (next) => { setExercises(next); await save("mcf-practice", next); };
+  // 📋 Dupliquer : deep copy + regenerate toàn bộ ID (bài + câu hỏi)
   const duplicate = async (ex) => {
-    const copy = JSON.parse(JSON.stringify(ex));
-    copy.id = uid(); copy.createdAt = Date.now(); copy.title = ex.title + " (Copie)";
+    const copy = typeof structuredClone === "function" ? structuredClone(ex) : JSON.parse(JSON.stringify(ex));
+    copy.id = uid();
+    copy.createdAt = Date.now();
+    copy.title = (ex.title || "Exercice") + " (Copie)";
     copy.assignedTo = null; copy.deadline = "";
-    copy.questions = copy.questions.map((q) => ({ ...q, id: uid() }));
-    await persist([...exercises, copy]);
+    copy.questions = (copy.questions || []).map((q) => ({ ...q, id: uid() }));
+    const latest = await load("mcf-practice", []);
+    const next = [...latest, copy];
+    setExercises(next);
+    await save("mcf-practice", next);
   };
   const saveHist = async (exId, score, max) => {
     const prev = hist[exId] || { best: -1, tries: 0 };

@@ -133,7 +133,7 @@ async function save(key, value, shared = true) {
 }
 async function del(key, shared = false) { try { await window.storage.delete(key, shared); } catch {} }
 
-const uid = () => Math.random().toString(36).slice(2, 9);
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
 const fmtDate = (d) => new Date(d).toLocaleString("fr-FR", { dateStyle: "short", timeStyle: "short" });
 const isLate = (ex) => ex.deadline && Date.now() > new Date(ex.deadline).getTime();
 const assignedTo = (ex, name) => !ex.assignedTo || ex.assignedTo.length === 0 || ex.assignedTo.includes(name);
@@ -810,7 +810,7 @@ function Builder({ draft, setDraft, publish, cancel, accounts }) {
   const ready = draft.title.trim() && draft.questions.length > 0 &&
     (!draft.assignedTo || draft.assignedTo.length > 0) &&
     draft.questions.every((q) => q.prompt.trim() &&
-      (q.type === "qcm" ? q.options.every((o) => o.trim()) : true) &&
+      (q.type === "qcm" ? q.options.length >= 2 && q.options.every((o) => o.trim()) : true) &&
       ((q.type === "fill" || q.type === "conj") ? q.accepted.trim() : true));
 
   const hint = {
@@ -945,12 +945,32 @@ function Builder({ draft, setDraft, publish, cancel, accounts }) {
               {q.options.map((o, j) => (
                 <div key={j} style={{ display: "flex", gap: 8, alignItems: "center" }}>
                   <input type="radio" checked={q.answer === j} onChange={() => setQ(q.id, { answer: j })} title="Bonne réponse" />
-                  <span style={{ fontWeight: 700, width: 18 }}>{String.fromCharCode(65 + j)}.</span>
+                  <span style={{ fontWeight: 700, width: 20 }}>{String.fromCharCode(65 + j)}.</span>
                   <input style={S.input} value={o} placeholder={`Option ${String.fromCharCode(65 + j)}`}
                     onChange={(e) => setQ(q.id, { options: q.options.map((x, k) => (k === j ? e.target.value : x)) })} />
+                  <button type="button" title={q.options.length > 2 ? "Supprimer cette option" : "Minimum 2 options"}
+                    disabled={q.options.length <= 2}
+                    onClick={() => {
+                      const options = q.options.filter((_, k) => k !== j);
+                      const answer = q.answer === j ? 0 : q.answer > j ? q.answer - 1 : q.answer;
+                      setQ(q.id, { options, answer });
+                    }}
+                    style={{ border: "none", background: "transparent", cursor: q.options.length > 2 ? "pointer" : "not-allowed",
+                      opacity: q.options.length > 2 ? 0.55 : 0.18, padding: 6, display: "grid", placeItems: "center" }}
+                    onMouseEnter={(e) => { if (q.options.length > 2) e.currentTarget.style.opacity = 1; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.opacity = q.options.length > 2 ? 0.55 : 0.18; }}>
+                    <Trash2 size={17} color={C.danger} />
+                  </button>
                 </div>
               ))}
-              <div style={{ fontSize: 12, color: C.soft }}>Cochez la bonne réponse à gauche.</div>
+              <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+                <button type="button" disabled={q.options.length >= 6}
+                  onClick={() => setQ(q.id, { options: [...q.options, ""] })}
+                  style={{ ...S.btn(false), padding: "7px 16px", fontSize: 13, opacity: q.options.length >= 6 ? 0.4 : 1 }}>
+                  + Ajouter une option
+                </button>
+                <span style={{ fontSize: 12, color: C.soft }}>2-6 options · cochez la bonne réponse à gauche.</span>
+              </div>
             </div>
           )}
           {(q.type === "fill" || q.type === "conj") && (
