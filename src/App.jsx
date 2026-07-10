@@ -2,7 +2,7 @@ import './storageShim.js'
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import PracticeHub from './PracticeHub.jsx'
 import mammoth from 'mammoth/mammoth.browser'
-import { BookOpen, GraduationCap, Wine, Croissant, Landmark, Stamp, Feather, Coffee, BookMarked, MoreVertical, Pencil, Copy, Trash2, RotateCcw } from 'lucide-react'
+import { BookOpen, GraduationCap, Wine, Croissant, Landmark, Stamp, Feather, Coffee, BookMarked, MoreVertical, Pencil, Copy, Trash2, RotateCcw, Image as ImageIcon, X } from 'lucide-react'
 import { BarChart, Bar, LineChart, Line, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from "recharts";
 
 /* ================= Ma Classe de Français v3 =================
@@ -43,6 +43,8 @@ input:focus, textarea:focus, select:focus { outline: none; border-color: #3D5AF1
 .mcf-wide { position: relative; left: 50%; transform: translateX(-50%); width: min(100vw - 24px, 1600px); }
 mark.mcf-hl { background: rgba(255, 224, 102, .85); border-radius: 4px; padding: 0 2px; }
 .mcf-card { animation: fadeUp .25s ease both; }
+@keyframes mcfPulse { 0%,100% { box-shadow: 0 0 0 0 rgba(34,197,94,.55); } 50% { box-shadow: 0 0 0 6px rgba(34,197,94,0); } }
+.mcf-pulse { animation: mcfPulse 1.8s ease-out infinite; }
 `;
 
 const S = {
@@ -139,6 +141,18 @@ const isLate = (ex) => ex.deadline && Date.now() > new Date(ex.deadline).getTime
 const assignedTo = (ex, name) => !ex.assignedTo || ex.assignedTo.length === 0 || ex.assignedTo.includes(name);
 const targetedAccounts = (ex, accounts) => (ex.assignedTo && ex.assignedTo.length ? accounts.filter((a) => ex.assignedTo.includes(a.name)) : accounts);
 const norm = (s) => (s || "").trim().toLowerCase().normalize("NFC").replace(/\s+/g, " ").replace(/[’]/g, "'");
+/* 🟢 Trạng thái online : quy đổi timestamp → nhãn tiếng Pháp */
+function formatLastSeen(ts) {
+  if (!ts) return { online: false, label: "Jamais connecté" };
+  const mins = Math.floor((Date.now() - ts) / 60000);
+  if (mins < 5) return { online: true, label: "En ligne" };
+  if (mins < 60) return { online: false, label: `Il y a ${mins} min` };
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return { online: false, label: `Il y a ${hours} heure${hours > 1 ? "s" : ""}` };
+  const days = Math.floor(hours / 24);
+  return { online: false, label: `Il y a ${days} jour${days > 1 ? "s" : ""}` };
+}
+
 const stripHtml = (h) => (h || "").replace(/<[^>]*>/g, " ").replace(/&nbsp;/gi, " ").replace(/\s+/g, " ").trim();
 const wordCount = (h) => { const t = stripHtml(h); return t ? t.split(" ").length : 0; };
 /* ---- Import DOCX (CE) : tách bài đọc + câu hỏi ----
@@ -521,7 +535,7 @@ function Teacher({ exercises, setExercises, submissions, setSubmissions, account
   const [draft, setDraft] = useState(null);
 
   const tabs = [["list", "📚 Exercices"], ["students", "👥 Élèves"], ["stats", "📊 Statistiques"], ["practice", "🏋️ Entraînement"]];
-  const blank = () => ({ id: uid(), title: "", level: "B1", skill: "Grammaire", deadline: "", audioUrl: "", readingText: "", timeLimit: "", assignedTo: null, createdAt: Date.now(), questions: [] });
+  const blank = () => ({ id: uid(), title: "", level: "B1", skill: "Grammaire", deadline: "", audioUrl: "", readingText: "", imageUrl: "", timeLimit: "", assignedTo: null, createdAt: Date.now(), questions: [] });
 
   const publish = async () => {
     const others = exercises.filter((e) => e.id !== draft.id);
@@ -605,6 +619,16 @@ function Accounts({ accounts, setAccounts }) {
   const [code, setCode] = useState("");
   const [msg, setMsg] = useState("");
   const [show, setShow] = useState(false);
+  const [presence, setPresence] = useState({});
+  const [, forceTick] = useState(0);
+
+  // Nạp presence + tự làm mới mỗi 60 giây
+  useEffect(() => {
+    const fetchP = () => load("mcf-presence", {}).then(setPresence);
+    fetchP();
+    const t = setInterval(() => { fetchP(); forceTick((x) => x + 1); }, 60_000);
+    return () => clearInterval(t);
+  }, []);
 
   const add = async () => {
     const n = name.trim(), c = code.trim();
@@ -645,8 +669,19 @@ function Accounts({ accounts, setAccounts }) {
       <div style={{ display: "grid", gap: 10 }}>
         {accounts.map((a) => (
           <div key={a.name} className="mcf-card" style={{ ...S.card, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
-            <span><strong>{a.name}</strong>
-              <span style={{ fontSize: 13, color: C.soft, marginLeft: 12 }}>mot de passe : {show ? a.code : "••••"}</span>
+            <span style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+              <strong>{a.name}</strong>
+              {(() => {
+                const st = formatLastSeen(presence[a.name]);
+                return (
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12.5, color: st.online ? C.ok : C.soft, fontWeight: st.online ? 700 : 500 }}>
+                    <span className={st.online ? "mcf-pulse" : ""}
+                      style={{ width: 9, height: 9, borderRadius: "50%", background: st.online ? "#22C55E" : "#9CA3AF", flexShrink: 0 }} />
+                    {st.label}
+                  </span>
+                );
+              })()}
+              <span style={{ fontSize: 13, color: C.soft }}>mot de passe : {show ? a.code : "••••"}</span>
             </span>
             <div style={{ display: "flex", gap: 8 }}>
               <button style={{ ...S.btn(false), padding: "5px 12px", fontSize: 12 }} onClick={() => reset(a.name)}>Réinitialiser</button>
@@ -804,6 +839,17 @@ function StudentTable({ accounts, exercises, submissions }) {
 function Builder({ draft, setDraft, publish, cancel, accounts }) {
   const fileRef = React.useRef(null);
   const [importMsg, setImportMsg] = useState("");
+  const [imgMsg, setImgMsg] = useState("");
+
+  // Đọc file ảnh → base64 (giới hạn 1,5 MB để không vượt hạn mức lưu trữ)
+  const handleImageFile = (file) => {
+    setImgMsg("");
+    if (!file.type.startsWith("image/")) { setImgMsg("⚠ Fichier non valide — choisissez une image."); return; }
+    if (file.size > 1.5 * 1024 * 1024) { setImgMsg("⚠ Ảnh quá lớn (>1,5 MB). Hãy nén lại hoặc dán URL ảnh online."); return; }
+    const reader = new FileReader();
+    reader.onload = () => setDraft((d) => ({ ...d, imageUrl: reader.result }));
+    reader.readAsDataURL(file);
+  };
 
   const importDocx = async (file) => {
     if (!file) return;
@@ -909,6 +955,45 @@ function Builder({ draft, setDraft, publish, cancel, accounts }) {
               placeholder="∞" onChange={(e) => setDraft({ ...draft, timeLimit: e.target.value })} />
           </div>
         </div>
+        {/* 🖼 Image d'illustration (optionnel) — URL hoặc kéo thả file */}
+        <div style={{ marginTop: 14 }}>
+          <div style={S.label}>🖼 Image d'illustration (optionnel)</div>
+          <div style={{ display: "flex", gap: 12, marginTop: 8, flexWrap: "wrap", alignItems: "stretch" }}>
+            <input style={{ ...S.input, flex: "1 1 260px" }} value={draft.imageUrl || ""}
+              placeholder="https://…/image.jpg"
+              onChange={(e) => setDraft({ ...draft, imageUrl: e.target.value })} />
+            <label
+              onDragOver={(e) => e.preventDefault()}
+              onDrop={(e) => {
+                e.preventDefault();
+                const f = e.dataTransfer.files?.[0];
+                if (f) handleImageFile(f);
+              }}
+              style={{ flex: "1 1 240px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+                gap: 6, padding: "14px 16px", borderRadius: 20, cursor: "pointer",
+                border: `2px dashed ${C.line}`, background: "#FBFCFE", color: C.soft, fontSize: 12.5, textAlign: "center" }}>
+              <ImageIcon size={22} color={C.soft} />
+              Collez l'URL de l'image ou téléversez un fichier
+              <input type="file" accept="image/*" style={{ display: "none" }}
+                onChange={(e) => e.target.files?.[0] && handleImageFile(e.target.files[0])} />
+            </label>
+          </div>
+          {imgMsg && <div style={{ fontSize: 12.5, color: C.danger, marginTop: 6 }}>{imgMsg}</div>}
+          {draft.imageUrl && (
+            <div style={{ position: "relative", display: "inline-block", marginTop: 12 }}>
+              <img src={draft.imageUrl} alt="aperçu"
+                onError={(e) => { e.currentTarget.style.opacity = 0.3; }}
+                style={{ maxHeight: 160, maxWidth: "100%", borderRadius: 16, boxShadow: "0 4px 14px rgba(17,24,39,.12)", objectFit: "contain", display: "block" }} />
+              <button title="Retirer l'image" onClick={() => setDraft({ ...draft, imageUrl: "" })}
+                style={{ position: "absolute", top: -10, right: -10, width: 28, height: 28, borderRadius: "50%",
+                  border: "none", background: C.danger, color: "#fff", cursor: "pointer", display: "grid",
+                  placeItems: "center", boxShadow: "0 4px 10px rgba(222,75,75,.4)" }}>
+                <X size={15} />
+              </button>
+            </div>
+          )}
+        </div>
+
         {draft.skill === "Écoute" && (
         <div style={{ marginTop: 12 }}>
           <div style={S.label}>Lien audio pour compréhension orale (optionnel — URL mp3)</div>
@@ -1207,6 +1292,24 @@ function Progress({ ex, submissions, setSubmissions, accounts, back }) {
 /* ================= Student ================= */
 function Student({ name, exercises, submissions, setSubmissions, accounts, setAccounts, refresh }) {
   const [taking, setTaking] = useState(null);
+
+  // 🟢 Presence heartbeat : cập nhật last_active_at (debounce 90s) khi có tương tác
+  useEffect(() => {
+    let lastBeat = 0;
+    const beat = async () => {
+      lastBeat = Date.now();
+      try {
+        const p = await load("mcf-presence", {});
+        p[name] = Date.now();
+        await save("mcf-presence", p);
+      } catch {}
+    };
+    const onActivity = () => { if (Date.now() - lastBeat > 90_000) beat(); };
+    beat(); // đánh dấu online ngay khi vào
+    const events = ["mousemove", "keydown", "scroll", "touchstart", "click"];
+    events.forEach((ev) => window.addEventListener(ev, onActivity, { passive: true }));
+    return () => events.forEach((ev) => window.removeEventListener(ev, onActivity));
+  }, [name]);
   const [tab, setTab] = useState("todo");
   const [showPw, setShowPw] = useState(false);
   const mine = (exId) => submissions.find((s) => s.exerciseId === exId && s.student === name);
@@ -1538,6 +1641,14 @@ function Taking({ ex, name, setSubmissions, done }) {
       </div>
 
       {/* 🎧 Audio player cố định (sticky) — cuộn trang vẫn thấy */}
+      {ex.imageUrl && (
+        <div style={{ display: "flex", justifyContent: "center", marginBottom: 16 }}>
+          <img src={ex.imageUrl} alt="illustration"
+            style={{ maxHeight: 400, maxWidth: "100%", width: "auto", objectFit: "contain",
+              borderRadius: 24, boxShadow: "0 6px 20px rgba(17,24,39,.10)" }} />
+        </div>
+      )}
+
       {ex.audioUrl && (
         <div className="mcf-card" style={{ ...S.card, marginBottom: 16, position: "sticky", top: 8, zIndex: 30, boxShadow: "0 6px 18px rgba(27,37,89,.12)" }}>
           <div style={{ ...S.label, marginBottom: 8 }}>🎧 Écoute le document audio (le lecteur reste visible pendant que tu réponds)</div>
