@@ -28,6 +28,7 @@ const SKILLS = ["Grammaire", "Vocabulaire", "Écoute", "Lecture", "Production é
 const QTYPES = { qcm: "QCM", fill: "Texte à trous", conj: "Conjugaison", open: "Réponse libre / traduction" };
 
 const FONTS = `
+@import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,500;0,600;0,700;1,600&family=Playfair+Display:ital,wght@0,700;0,800;1,500&family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap');
 .mcf-root {
   --mcf-bg: #F8F9FA; --mcf-card: #FFFFFF; --mcf-surface: #FFFFFF; --mcf-surface2: #FBFCFE;
   --mcf-ink: #111827; --mcf-soft: #6B7280; --mcf-line: #EEF0F4;
@@ -41,7 +42,6 @@ const FONTS = `
 .mcf-dark input, .mcf-dark textarea, .mcf-dark select { color: var(--mcf-ink); }
 .mcf-dark img { filter: brightness(.92); }
 
-@import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,500;0,600;0,700;1,600&family=Playfair+Display:ital,wght@0,700;0,800;1,500&family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap');
 * { box-sizing: border-box; }
 button { transition: transform .12s ease, box-shadow .12s ease, opacity .12s ease; }
 button:hover:not(:disabled) { transform: translateY(-1px); }
@@ -566,7 +566,9 @@ function Teacher({ exercises, setExercises, submissions, setSubmissions, account
   const publish = async () => {
     const others = exercises.filter((e) => e.id !== draft.id);
     const next = [...others, draft].sort((a, b) => a.createdAt - b.createdAt);
-    setExercises(next); await save("mcf-exercises", next); setView("list");
+    const ok = await save("mcf-exercises", next);
+    if (!ok) { alert("❌ Lưu thất bại — dữ liệu quá lớn (thường do ảnh base64). Hãy dùng Public URL của ảnh thay vì upload trực tiếp."); return; }
+    setExercises(next); setView("list");
   };
   const remove = async (id) => {
     const next = exercises.filter((e) => e.id !== id);
@@ -602,10 +604,11 @@ function Teacher({ exercises, setExercises, submissions, setSubmissions, account
         ) : (
           <div style={{ display: "grid", gap: 14 }}>
             {exercises.map((ex) => {
-              const subs = submissions.filter((s) => s.exerciseId === ex.id && !s.redo);
+              const targets = targetedAccounts(ex, accounts);
+              const tNames = new Set(targets.map((a) => a.name));
+              const subs = submissions.filter((s) => s.exerciseId === ex.id && !s.redo && tNames.has(s.student));
               const toGrade = subs.filter((s) => !s.graded && ex.questions.some((q) => q.type === "open")).length;
               const late = isLate(ex);
-              const targets = targetedAccounts(ex, accounts);
               return (
                 <div key={ex.id} className="mcf-card" style={{ ...S.card, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
                   <div>
@@ -871,7 +874,7 @@ function Builder({ draft, setDraft, publish, cancel, accounts }) {
   const handleImageFile = (file) => {
     setImgMsg("");
     if (!file.type.startsWith("image/")) { setImgMsg("⚠ Fichier non valide — choisissez une image."); return; }
-    if (file.size > 1.5 * 1024 * 1024) { setImgMsg("⚠ Ảnh quá lớn (>1,5 MB). Hãy nén lại hoặc dán URL ảnh online."); return; }
+    if (file.size > 800 * 1024) { setImgMsg("⚠ Ảnh quá lớn (>800 KB) — vượt hạn mức lưu trữ. Hãy nén ảnh (tinypng.com) hoặc upload lên Supabase Storage rồi dán Public URL."); return; }
     const reader = new FileReader();
     reader.onload = () => setDraft((d) => ({ ...d, imageUrl: reader.result }));
     reader.readAsDataURL(file);
@@ -1156,10 +1159,12 @@ function Progress({ ex, submissions, setSubmissions, accounts, back }) {
   const [qDrafts, setQDrafts] = useState({});
   const [marks, setMarks] = useState({});
   if (!ex) return null;
-  const subs = submissions.filter((s) => s.exerciseId === ex.id && !s.redo);
+  const roster = targetedAccounts(ex, accounts);
+  const rosterNames = new Set(roster.map((a) => a.name));
+  // Chỉ đếm bài nộp của học sinh ĐANG được giao (tránh 2/1 khi đổi danh sách giao bài)
+  const subs = submissions.filter((s) => s.exerciseId === ex.id && !s.redo && rosterNames.has(s.student));
   const byName = Object.fromEntries(submissions.filter((s) => s.exerciseId === ex.id).map((s) => [s.student, s]));
   const opens = ex.questions.filter((q) => q.type === "open");
-  const roster = targetedAccounts(ex, accounts);
 
   const [attachDrafts, setAttachDrafts] = useState({});
   const [redoFor, setRedoFor] = useState(null); // tên học sinh đang yêu cầu làm lại
@@ -1205,7 +1210,7 @@ function Progress({ ex, submissions, setSubmissions, accounts, back }) {
         <div style={{ fontSize: 14, marginTop: 8 }}>{subs.length} copie(s) rendue(s) sur {roster.length} élève(s) concerné(s)
           {ex.assignedTo?.length ? <span style={{ color: C.primary, fontWeight: 700 }}> · 👤 devoir individuel</span> : null}</div>
         <div style={{ height: 10, background: C.line, borderRadius: 99, marginTop: 8 }}>
-          <div style={{ height: "100%", width: `${roster.length ? (subs.length / roster.length) * 100 : 0}%`, background: `linear-gradient(90deg, ${C.ok}, #37C48E)`, borderRadius: 99 }} />
+          <div style={{ height: "100%", width: `${Math.min(100, roster.length ? (subs.length / roster.length) * 100 : 0)}%`, background: `linear-gradient(90deg, ${C.ok}, #37C48E)`, borderRadius: 99 }} />
         </div>
       </div>
 

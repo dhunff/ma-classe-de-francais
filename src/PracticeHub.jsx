@@ -75,7 +75,7 @@ export default function PracticeHub({ role = "eleve", name = "" }) {
     setNewCat(""); setCatPopup(false);
   };
 
-  const blank = () => ({ id: uid(), title: "", level: "B1", skill: "Grammaire", deadline: "", audioUrl: "", readingText: "", timeLimit: "", assignedTo: null, createdAt: Date.now(), questions: [] });
+  const blank = () => ({ id: uid(), title: "", level: "B1", skill: "Grammaire", deadline: "", audioUrl: "", readingText: "", imageUrl: "", timeLimit: "", assignedTo: null, createdAt: Date.now(), questions: [] });
 
   if (!loaded) return <p style={{ color: C.soft, textAlign: "center" }}>Chargement…</p>;
 
@@ -83,7 +83,10 @@ export default function PracticeHub({ role = "eleve", name = "" }) {
     return <Builder draft={draft} setDraft={setDraft} accounts={[]}
       publish={async () => {
         const others = exercises.filter((e) => e.id !== draft.id);
-        await persist([...others, draft].sort((a, b) => a.createdAt - b.createdAt));
+        const next = [...others, draft].sort((a, b) => a.createdAt - b.createdAt);
+        const ok = await save("mcf-practice", next);
+        if (!ok) { alert("❌ Lưu thất bại — dữ liệu quá lớn (thường do ảnh base64). Hãy dùng Public URL của ảnh."); return; }
+        setExercises(next);
         setView(draft.customCat ? { page: "category", cat: "__autres__", folder: draft.customCat } : { page: "category", cat: catOf(draft) });
       }}
       cancel={() => setView({ page: "home" })} />;
