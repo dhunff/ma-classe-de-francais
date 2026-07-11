@@ -268,7 +268,7 @@ export default function App() {
       <Doodles />
       <header style={{ background: "transparent", padding: "26px 28px 8px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12, position: "relative", zIndex: 1 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-          <div style={{ width: 52, height: 52, borderRadius: 20, background: "#FFD43B", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26, boxShadow: "0 8px 20px rgba(255,212,59,.4)" }}>🇫🇷</div>
+          <img src="/logo.png" alt="Logo" style={{ width: 52, height: 52, borderRadius: 16, objectFit: "contain", background: "#fff", boxShadow: "0 8px 20px rgba(30,58,138,.18)", padding: 4 }} />
           <div>
             <div style={{ fontWeight: 800, fontSize: 27, letterSpacing: "-0.8px", color: C.ink, lineHeight: 1.1 }}>
               Apprendre le français avec Do Hung<span style={{ color: "#FFD43B" }}> ✳</span>
@@ -459,7 +459,7 @@ function Login({ accounts, onLogin }) {
         <h1 style={{ fontFamily: "'Be Vietnam Pro', -apple-system, sans-serif", fontWeight: 800, letterSpacing: "-1px",
           fontSize: "clamp(28px, 5vw, 40px)", color: "#152A6E", margin: 0,
           display: "flex", alignItems: "center", justifyContent: "center", gap: 12, flexWrap: "wrap" }}>
-          <span style={{ color: GOLD, fontSize: "0.8em" }}>✳</span>
+          <img src="/logo.png" alt="Logo" style={{ width: 46, height: 46, objectFit: "contain" }} />
           Apprendre le français avec Do Hung
           <FlagFR w={30} round />
         </h1>
