@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import {
   Headphones, BookOpen, PenLine, Puzzle, BookA, Sparkles,
-  RotateCcw, CheckCircle2, XCircle, Plus, ChevronLeft, PartyPopper, Trash2, Pencil, Copy, MoreVertical,
+  RotateCcw, CheckCircle2, XCircle, Plus, ChevronLeft, PartyPopper, Trash2, Pencil, Copy, MoreVertical, Folder, FolderPlus,
 } from "lucide-react";
 import {
   C, S, QTYPES, uid, fillOk, stripHtml, autoQ,
@@ -29,6 +29,9 @@ const catOf = (ex) => CATS.some((c) => c.skill === ex.skill) ? ex.skill : "__aut
 export default function PracticeHub({ role = "eleve", name = "" }) {
   const teacher = role === "prof";
   const [exercises, setExercises] = useState([]);
+  const [cats, setCats] = useState([]);          // danh mục con của "Autres"
+  const [catPopup, setCatPopup] = useState(false);
+  const [newCat, setNewCat] = useState("");
   const [hist, setHist] = useState({});
   const [loaded, setLoaded] = useState(false);
   const [view, setView] = useState({ page: "home" });
@@ -37,6 +40,7 @@ export default function PracticeHub({ role = "eleve", name = "" }) {
   useEffect(() => {
     (async () => {
       setExercises(await load("mcf-practice", []));
+      setCats(await load("mcf-custom-cats", []));
       if (name) setHist(await load(`mcf-ph-${name}`, {}, false));
       setLoaded(true);
     })();
@@ -63,6 +67,14 @@ export default function PracticeHub({ role = "eleve", name = "" }) {
     setHist(next); if (name) await save(`mcf-ph-${name}`, next, false);
   };
 
+  const addCat = async () => {
+    const n = newCat.trim();
+    if (!n || cats.includes(n)) return;
+    const next = [...cats, n];
+    setCats(next); await save("mcf-custom-cats", next);
+    setNewCat(""); setCatPopup(false);
+  };
+
   const blank = () => ({ id: uid(), title: "", level: "B1", skill: "Grammaire", deadline: "", audioUrl: "", readingText: "", timeLimit: "", assignedTo: null, createdAt: Date.now(), questions: [] });
 
   if (!loaded) return <p style={{ color: C.soft, textAlign: "center" }}>Chargement…</p>;
@@ -72,28 +84,104 @@ export default function PracticeHub({ role = "eleve", name = "" }) {
       publish={async () => {
         const others = exercises.filter((e) => e.id !== draft.id);
         await persist([...others, draft].sort((a, b) => a.createdAt - b.createdAt));
-        setView({ page: "category", cat: catOf(draft) });
+        setView(draft.customCat ? { page: "category", cat: "__autres__", folder: draft.customCat } : { page: "category", cat: catOf(draft) });
       }}
       cancel={() => setView({ page: "home" })} />;
   }
 
   if (view.page === "quiz") {
     const ex = exercises.find((e) => e.id === view.exId);
-    return <PracticeWorkspace ex={ex} back={() => setView({ page: "category", cat: view.cat })}
+    return <PracticeWorkspace ex={ex} back={() => setView({ page: "category", cat: view.cat, folder: view.folder })}
       onFinish={(score, max) => saveHist(ex.id, score, max)} />;
+  }
+
+  /* -------- Sub-view "Autres" : thư mục danh mục con -------- */
+  if (view.page === "autres") {
+    const autresEx = exercises.filter((e) => catOf(e) === "__autres__");
+    const unclassified = autresEx.filter((e) => !e.customCat);
+    const folders = [
+      ...cats.map((c) => ({ name: c, count: autresEx.filter((e) => e.customCat === c).length })),
+      ...(unclassified.length ? [{ name: "__nc__", label: "Non classé", count: unclassified.length }] : []),
+    ];
+    return (
+      <div>
+        <button style={{ ...S.btn(false), marginBottom: 16 }} onClick={() => setView({ page: "home" })}><ChevronLeft size={16} /> Quay lại</button>
+        <h2 style={{ ...S.display, margin: "0 0 18px", display: "flex", alignItems: "center", gap: 10 }}>
+          <Sparkles size={24} color="#6E7691" /> Autres — Catégories
+        </h2>
+
+        {folders.length === 0 && !teacher ? (
+          <div className="mcf-card" style={{ ...S.card, padding: 50, textAlign: "center" }}>
+            <div style={{ fontSize: 40, marginBottom: 10 }}>🗂️</div>
+            <div style={{ fontWeight: 800, fontSize: 17 }}>Chưa có bài tập nào trong mục này</div>
+            <div style={{ fontSize: 13.5, color: C.soft, marginTop: 6 }}>Le professeur n'a pas encore créé de catégorie. Reviens bientôt !</div>
+          </div>
+        ) : (
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(230px,1fr))", gap: 16 }}>
+            {folders.map((f) => (
+              <div key={f.name} className="mcf-card"
+                onClick={() => setView({ page: "category", cat: "__autres__", folder: f.name })}
+                style={{ ...S.card, padding: 22, cursor: "pointer" }}>
+                <div style={{ width: 48, height: 48, borderRadius: 14, background: "#F0F1F6", display: "grid", placeItems: "center", marginBottom: 12 }}>
+                  <Folder size={24} color="#6E7691" />
+                </div>
+                <div style={{ fontWeight: 800, fontSize: 16 }}>{f.label || f.name}</div>
+                <div style={{ fontSize: 13, color: C.soft, marginTop: 3 }}>{f.count} bài tập</div>
+              </div>
+            ))}
+            {/* Thẻ + chỉ dành cho giáo viên */}
+            {teacher && (
+              <div onClick={() => setCatPopup(true)}
+                style={{ borderRadius: 32, border: `2px dashed ${C.line}`, background: "transparent", cursor: "pointer",
+                  padding: 22, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+                  gap: 10, minHeight: 150, color: C.soft }}>
+                <FolderPlus size={30} color={C.primary} />
+                <div style={{ fontWeight: 700, fontSize: 14.5, color: C.primary }}>+ Créer une catégorie</div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Popup tạo danh mục */}
+        {catPopup && (
+          <div style={{ position: "fixed", inset: 0, background: "rgba(17,24,39,.45)", display: "grid", placeItems: "center", padding: 16, zIndex: 200 }}
+            onClick={() => setCatPopup(false)}>
+            <div className="mcf-card" style={{ ...S.card, width: "100%", maxWidth: 400 }} onClick={(e) => e.stopPropagation()}>
+              <h3 style={{ ...S.display, fontSize: 19, marginTop: 0 }}>🗂️ Nouvelle catégorie</h3>
+              <input style={{ ...S.input }} value={newCat} autoFocus
+                placeholder="ex. Traduction, Culture, Argot…"
+                onChange={(e) => setNewCat(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && addCat()} />
+              <div style={{ display: "flex", gap: 10, marginTop: 14 }}>
+                <button style={S.btn(true)} onClick={addCat}>Créer</button>
+                <button style={S.btn(false)} onClick={() => setCatPopup(false)}>Annuler</button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
   }
 
   if (view.page === "category") {
     const meta = CATS.find((c) => c.skill === view.cat);
-    const list = exercises.filter((e) => catOf(e) === view.cat);
+    let list = exercises.filter((e) => catOf(e) === view.cat);
+    if (view.cat === "__autres__" && view.folder) {
+      list = view.folder === "__nc__" ? list.filter((e) => !e.customCat) : list.filter((e) => e.customCat === view.folder);
+    }
     return (
       <div>
-        <button style={{ ...S.btn(false), marginBottom: 16 }} onClick={() => setView({ page: "home" })}><ChevronLeft size={16} /> Quay lại</button>
+        <button style={{ ...S.btn(false), marginBottom: 16 }}
+          onClick={() => setView(view.folder ? { page: "autres" } : { page: "home" })}><ChevronLeft size={16} /> Quay lại</button>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18, flexWrap: "wrap", gap: 10 }}>
           <h2 style={{ ...S.display, margin: 0, display: "flex", alignItems: "center", gap: 10 }}>
-            <meta.Icon size={24} color={meta.color} /> {meta.label}
+            <meta.Icon size={24} color={meta.color} /> {view.folder ? (view.folder === "__nc__" ? "Non classé" : view.folder) : meta.label}
           </h2>
-          {teacher && <button style={S.btn(true)} onClick={() => { setDraft({ ...blank(), skill: view.cat === "__autres__" ? "Traduction" : view.cat }); setView({ page: "builder" }); }}><Plus size={16} /> Thêm bài</button>}
+          {teacher && <button style={S.btn(true)} onClick={() => {
+            const d = { ...blank(), skill: view.cat === "__autres__" ? "Traduction" : view.cat };
+            if (view.folder && view.folder !== "__nc__") d.customCat = view.folder;
+            setDraft(d); setView({ page: "builder" });
+          }}><Plus size={16} /> Thêm bài</button>}
         </div>
         {list.length === 0 ? (
           <div className="mcf-card" style={{ ...S.card, padding: 40, textAlign: "center", color: C.soft }}>Chưa có bài tập nào trong mục này.</div>
@@ -113,7 +201,7 @@ export default function PracticeHub({ role = "eleve", name = "" }) {
                     </div>
                   </div>
                   <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                    <button style={S.btn(true)} onClick={() => setView({ page: "quiz", cat: view.cat, exId: ex.id })}>Luyện tập</button>
+                    <button style={S.btn(true)} onClick={() => setView({ page: "quiz", cat: view.cat, folder: view.folder, exId: ex.id })}>Luyện tập</button>
                     {teacher && <HubMenu
                       onEdit={() => { setDraft(JSON.parse(JSON.stringify(ex))); setView({ page: "builder" }); }}
                       onDup={() => duplicate(ex)}
@@ -138,11 +226,12 @@ export default function PracticeHub({ role = "eleve", name = "" }) {
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(250px,1fr))", gap: 16 }}>
         {CATS.map((cat, i) => {
           const list = exercises.filter((e) => catOf(e) === cat.skill);
-          if (cat.skill === "__autres__" && list.length === 0) return null;
+          if (cat.skill === "__autres__" && list.length === 0 && cats.length === 0 && !teacher) return null;
           const doneCount = list.filter((e) => hist[e.id]).length;
           const pct = list.length ? Math.round((doneCount / list.length) * 100) : 0;
           return (
-            <div key={cat.skill} className="mcf-card" onClick={() => setView({ page: "category", cat: cat.skill })}
+            <div key={cat.skill} className="mcf-card"
+              onClick={() => setView(cat.skill === "__autres__" ? { page: "autres" } : { page: "category", cat: cat.skill })}
               style={{ ...S.card, padding: 22, cursor: "pointer", animationDelay: `${i * 40}ms` }}>
               <div style={{ width: 52, height: 52, borderRadius: 14, background: cat.pastel, display: "grid", placeItems: "center", marginBottom: 14 }}>
                 <cat.Icon size={26} color={cat.color} />
@@ -210,6 +299,7 @@ function PracticeWorkspace({ ex, back, onFinish }) {
   const [answers, setAnswers] = useState({});
   const [graded, setGraded] = useState(false);
   const [remaining, setRemaining] = useState(null);
+  const [zen, setZen] = useState(false); // 🧘 chế độ tập trung
   const answersRef = useRef(answers); answersRef.current = answers;
   const gradedRef = useRef(false);
 
@@ -300,7 +390,17 @@ function PracticeWorkspace({ ex, back, onFinish }) {
   });
 
   return (
-    <div>
+    <div style={zen ? { position: "fixed", inset: 0, zIndex: 90, background: "var(--mcf-bg)", overflowY: "auto", padding: "28px 16px 80px" } : undefined}>
+      {zen && (
+        <button onClick={() => setZen(false)} title="Quitter le mode Zen"
+          style={{ position: "fixed", top: 16, right: 16, zIndex: 120, display: "flex", alignItems: "center", gap: 8,
+            padding: "10px 18px", borderRadius: 999, border: "none", cursor: "pointer", fontFamily: "inherit",
+            background: C.ink, color: "var(--mcf-bg)", fontWeight: 700, fontSize: 13.5,
+            boxShadow: "0 8px 22px rgba(17,24,39,.3)" }}>
+          ⤡ Quitter le Zen
+        </button>
+      )}
+      <div style={zen ? { maxWidth: 920, margin: "0 auto" } : undefined}>
       {remaining != null && !graded && (
         <div style={{ position: "fixed", bottom: 20, right: 20, zIndex: 100, display: "flex", alignItems: "center", gap: 8,
           padding: "10px 18px", borderRadius: 999, background: remaining <= 60 ? C.danger : C.ink, color: "#fff",
@@ -311,12 +411,27 @@ function PracticeWorkspace({ ex, back, onFinish }) {
 
       <button style={{ ...S.btn(false), marginBottom: 16 }} onClick={back}><ChevronLeft size={16} /> Quay lại</button>
       <h2 style={{ ...S.display, marginTop: 0 }}>{ex.title} <span style={{ fontSize: 13, color: C.soft, fontFamily: "'Be Vietnam Pro',sans-serif" }}>({ex.level} · {ex.skill})</span></h2>
-      {ex.timeLimit && !graded && <p style={{ fontSize: 13, color: C.primary, fontWeight: 700 }}>⏱ Temps limite : {ex.timeLimit} minutes</p>}
+      <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap", marginBottom: 8 }}>
+        {!zen && (
+          <button onClick={() => setZen(true)}
+            style={{ ...S.btn(false), padding: "7px 16px", fontSize: 13 }}>🧘 Mode Zen</button>
+        )}
+        {ex.timeLimit && !graded && <span style={{ fontSize: 13, color: C.primary, fontWeight: 700 }}>⏱ Temps limite : {ex.timeLimit} minutes</span>}
+      </div>
+
+      {ex.imageUrl && (
+        <div style={{ display: "flex", justifyContent: "center", marginBottom: 16 }}>
+          <img src={ex.imageUrl} alt="illustration"
+            style={{ maxHeight: 400, maxWidth: "100%", width: "auto", objectFit: "contain",
+              borderRadius: 24, boxShadow: "0 6px 20px rgba(17,24,39,.10)" }} />
+        </div>
+      )}
 
       {ex.audioUrl && (
         <div className="mcf-card" style={{ ...S.card, marginBottom: 16, position: "sticky", top: 8, zIndex: 30, boxShadow: "0 6px 18px rgba(27,37,89,.12)" }}>
           <div style={{ ...S.label, marginBottom: 8 }}>🎧 Écoute le document audio</div>
-          <audio controls style={{ width: "100%" }} src={ex.audioUrl} />
+          <audio controls controlsList="nodownload noplaybackrate" onContextMenu={(e) => e.preventDefault()}
+            style={{ width: "100%" }} src={ex.audioUrl} />
         </div>
       )}
 
@@ -347,6 +462,7 @@ function PracticeWorkspace({ ex, back, onFinish }) {
           <button style={{ ...S.btn(false), marginTop: 14 }} onClick={retry}><RotateCcw size={15} /> Làm lại</button>
         </div>
       )}
+      </div>
     </div>
   );
 }

@@ -17,10 +17,10 @@ Personal keys (per viewer): "mcf-draft-<exId>-<name>", "mcf-seen-<name>"
 ============================================================== */
 
 const C = {
-  bg: "#F8F9FA", card: "#FFFFFF", ink: "#111827", soft: "#6B7280", line: "#EEF0F4",
-  primary: "#3D5AF1", primarySoft: "#EDF1FE", accent: "#F26B4E",
-  ok: "#1E9E6A", okSoft: "#E7F7F0", warn: "#C98412", warnSoft: "#FFF6E8",
-  danger: "#DE4B4B", dangerSoft: "#FDEEEE",
+  bg: "var(--mcf-bg)", card: "var(--mcf-card)", ink: "var(--mcf-ink)", soft: "var(--mcf-soft)", line: "var(--mcf-line)",
+  primary: "#3D5AF1", primarySoft: "var(--mcf-primarysoft)", accent: "#F26B4E",
+  ok: "#1E9E6A", okSoft: "var(--mcf-oksoft)", warn: "#C98412", warnSoft: "var(--mcf-warnsoft)",
+  danger: "#DE4B4B", dangerSoft: "var(--mcf-dangersoft)",
 };
 const LEVEL_COLORS = { A1: "#1E9E6A", A2: "#2A9D8F", B1: "#3D5AF1", B2: "#7048E8", "B2+": "#D6336C" };
 const LEVEL_PASTEL = { A1: "#DDF6EB", A2: "#DDF2F0", B1: "#E6EBFE", B2: "#EFE9FC", "B2+": "#FBE3ED" };
@@ -28,6 +28,19 @@ const SKILLS = ["Grammaire", "Vocabulaire", "Écoute", "Lecture", "Production é
 const QTYPES = { qcm: "QCM", fill: "Texte à trous", conj: "Conjugaison", open: "Réponse libre / traduction" };
 
 const FONTS = `
+.mcf-root {
+  --mcf-bg: #F8F9FA; --mcf-card: #FFFFFF; --mcf-surface: #FFFFFF; --mcf-surface2: #FBFCFE;
+  --mcf-ink: #111827; --mcf-soft: #6B7280; --mcf-line: #EEF0F4;
+  --mcf-primarysoft: #EDF1FE; --mcf-oksoft: #E7F7F0; --mcf-warnsoft: #FFF6E8; --mcf-dangersoft: #FDEEEE;
+}
+.mcf-root.mcf-dark {
+  --mcf-bg: #0F172A; --mcf-card: #1E293B; --mcf-surface: #1E293B; --mcf-surface2: #0B1120;
+  --mcf-ink: #E5E7EB; --mcf-soft: #94A3B8; --mcf-line: #334155;
+  --mcf-primarysoft: #1E2A4D; --mcf-oksoft: #0F2E22; --mcf-warnsoft: #33290F; --mcf-dangersoft: #331616;
+}
+.mcf-dark input, .mcf-dark textarea, .mcf-dark select { color: var(--mcf-ink); }
+.mcf-dark img { filter: brightness(.92); }
+
 @import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,500;0,600;0,700;1,600&family=Playfair+Display:ital,wght@0,700;0,800;1,500&family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap');
 * { box-sizing: border-box; }
 button { transition: transform .12s ease, box-shadow .12s ease, opacity .12s ease; }
@@ -49,7 +62,7 @@ mark.mcf-hl { background: rgba(255, 224, 102, .85); border-radius: 4px; padding:
 
 const S = {
   font: { fontFamily: "'Be Vietnam Pro', -apple-system, 'Segoe UI', sans-serif", color: C.ink },
-  display: { fontFamily: "'Be Vietnam Pro', sans-serif", fontWeight: 800, letterSpacing: "-0.5px", fontSize: 26, color: "#111827" },
+  display: { fontFamily: "'Be Vietnam Pro', sans-serif", fontWeight: 800, letterSpacing: "-0.5px", fontSize: 26, color: "var(--mcf-ink)" },
   card: { background: C.card, border: `1px solid ${C.line}`, borderRadius: 32, boxShadow: "0 10px 30px rgba(17,24,39,0.06)", padding: "24px 28px" },
   btn: (primary, danger) => ({
     padding: "11px 22px", borderRadius: 999, fontWeight: 700, fontSize: 14, cursor: "pointer", fontFamily: "inherit",
@@ -58,7 +71,7 @@ const S = {
     color: primary ? "#fff" : danger ? C.danger : C.ink,
     boxShadow: primary ? "0 4px 12px rgba(61,90,241,0.28)" : "0 1px 3px rgba(27,37,89,0.06)",
   }),
-  input: { width: "100%", padding: "12px 16px", border: `1.5px solid ${C.line}`, borderRadius: 16, fontSize: 15, color: C.ink, background: "#FBFCFE", fontFamily: "inherit" },
+  input: { width: "100%", padding: "12px 16px", border: `1.5px solid ${C.line}`, borderRadius: 16, fontSize: 15, color: C.ink, background: "var(--mcf-surface2)", fontFamily: "inherit" },
   label: { fontSize: 11.5, letterSpacing: 1.2, textTransform: "uppercase", color: C.soft, fontWeight: 700 },
   badge: (lv) => ({ fontSize: 11.5, fontWeight: 800, color: LEVEL_COLORS[lv] || C.primary, background: LEVEL_PASTEL[lv] || C.primarySoft, borderRadius: 999, padding: "4px 12px", marginRight: 8, letterSpacing: 0.5 }),
   chip: (bg, col) => ({ fontSize: 12, fontWeight: 700, background: bg, color: col, borderRadius: 999, padding: "3px 10px" }),
@@ -101,12 +114,12 @@ function KebabMenu({ items }) {
   return (
     <div ref={ref} style={{ position: "relative" }}>
       <button onClick={() => setOpen(!open)} title="Plus d'options"
-        style={{ width: 40, height: 40, borderRadius: 999, border: `1.5px solid ${C.line}`, background: "#fff",
+        style={{ width: 40, height: 40, borderRadius: 999, border: `1.5px solid ${C.line}`, background: "var(--mcf-surface)",
           cursor: "pointer", display: "grid", placeItems: "center", boxShadow: "0 2px 8px rgba(17,24,39,.06)" }}>
         <MoreVertical size={18} color={C.ink} />
       </button>
       {open && (
-        <div style={{ position: "absolute", right: 0, top: 46, minWidth: 190, background: "#fff", borderRadius: 20,
+        <div style={{ position: "absolute", right: 0, top: 46, minWidth: 190, background: "var(--mcf-surface)", borderRadius: 20,
           boxShadow: "0 14px 36px rgba(17,24,39,.16)", border: `1px solid ${C.line}`, padding: 6, zIndex: 60 }}>
           {items.map(({ label, icon, danger, onClick }, i) => (
             <button key={i} onClick={() => { setOpen(false); onClick(); }}
@@ -114,7 +127,7 @@ function KebabMenu({ items }) {
                 border: "none", background: "transparent", cursor: "pointer", fontFamily: "inherit",
                 fontSize: 14, fontWeight: 600, borderRadius: 14, textAlign: "left",
                 color: danger ? C.danger : C.ink }}
-              onMouseEnter={(e) => e.currentTarget.style.background = danger ? C.dangerSoft : "#F4F6FB"}
+              onMouseEnter={(e) => e.currentTarget.style.background = danger ? C.dangerSoft : "var(--mcf-bg)"}
               onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}>
               {icon} {label}
             </button>
@@ -141,6 +154,11 @@ const isLate = (ex) => ex.deadline && Date.now() > new Date(ex.deadline).getTime
 const assignedTo = (ex, name) => !ex.assignedTo || ex.assignedTo.length === 0 || ex.assignedTo.includes(name);
 const targetedAccounts = (ex, accounts) => (ex.assignedTo && ex.assignedTo.length ? accounts.filter((a) => ex.assignedTo.includes(a.name)) : accounts);
 const norm = (s) => (s || "").trim().toLowerCase().normalize("NFC").replace(/\s+/g, " ").replace(/[’]/g, "'");
+const fileNameFromUrl = (u) => {
+  try { return decodeURIComponent((u || "").split("/").pop().split("?")[0]) || "fichier"; }
+  catch { return "fichier"; }
+};
+
 /* 🟢 Trạng thái online : quy đổi timestamp → nhãn tiếng Pháp */
 function formatLastSeen(ts) {
   if (!ts) return { online: false, label: "Jamais connecté" };
@@ -199,8 +217,11 @@ function totalScore(sub, ex) {
 
 /* ================= Root ================= */
 const SESSION_KEY = "mcf-session";
+const THEME_KEY = "mcf-theme";
 
 export default function App() {
+  const [dark, setDark] = useState(() => { try { return localStorage.getItem(THEME_KEY) === "dark"; } catch { return false; } });
+  const toggleTheme = () => setDark((d) => { const n = !d; try { localStorage.setItem(THEME_KEY, n ? "dark" : "light"); } catch {} return n; });
   const [session, setSessionRaw] = useState(null);
   // Duy trì đăng nhập : lưu phiên vào localStorage
   const setSession = (s) => {
@@ -242,14 +263,14 @@ export default function App() {
   }
 
   return (
-    <div style={{ background: C.bg, ...S.font, minHeight: "100vh" }}>
+    <div className={"mcf-root" + (dark ? " mcf-dark" : "")} style={{ background: C.bg, ...S.font, minHeight: "100vh" }}>
       <style>{FONTS}</style>
       <Doodles />
       <header style={{ background: "transparent", padding: "26px 28px 8px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12, position: "relative", zIndex: 1 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
           <div style={{ width: 52, height: 52, borderRadius: 20, background: "#FFD43B", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26, boxShadow: "0 8px 20px rgba(255,212,59,.4)" }}>🇫🇷</div>
           <div>
-            <div style={{ fontWeight: 800, fontSize: 27, letterSpacing: "-0.8px", color: "#111827", lineHeight: 1.1 }}>
+            <div style={{ fontWeight: 800, fontSize: 27, letterSpacing: "-0.8px", color: C.ink, lineHeight: 1.1 }}>
               Le Français Avec Hung<span style={{ color: "#FFD43B" }}> ✳</span>
             </div>
             <div style={{ fontSize: 13, color: C.soft, fontWeight: 600 }}>Parcours d'apprentissage · exercices & suivi des élèves</div>
@@ -257,6 +278,11 @@ export default function App() {
         </div>
         {session && (
           <div style={{ fontSize: 13, display: "flex", gap: 10, alignItems: "center" }}>
+            <button onClick={toggleTheme} title={dark ? "Mode clair" : "Mode sombre"}
+              style={{ width: 42, height: 42, borderRadius: 999, border: `1.5px solid ${C.line}`, background: "var(--mcf-surface)",
+                cursor: "pointer", fontSize: 17, boxShadow: "0 4px 12px rgba(17,24,39,.06)" }}>
+              {dark ? "☀️" : "🌙"}
+            </button>
             {session.role === "eleve" && <Bell name={session.name} exercises={exercises} submissions={submissions} />}
             <span style={{ color: C.ink, background: "#E6EBFE", borderRadius: 999, padding: "8px 16px", fontWeight: 700, fontSize: 13 }}>
               {session.role === "prof" ? "👨‍🏫 Professeur" : `🎒 ${session.name}`}
@@ -311,7 +337,7 @@ function Bell({ name, exercises, submissions }) {
 
   return (
     <div style={{ position: "relative" }}>
-      <button onClick={openBell} style={{ background: "#fff", border: `1.5px solid ${C.line}`, borderRadius: 999, width: 42, height: 42, cursor: "pointer", fontSize: 17, position: "relative", boxShadow: "0 4px 12px rgba(17,24,39,.06)" }}>
+      <button onClick={openBell} style={{ background: "var(--mcf-surface)", border: `1.5px solid ${C.line}`, borderRadius: 999, width: 42, height: 42, cursor: "pointer", fontSize: 17, position: "relative", boxShadow: "0 4px 12px rgba(17,24,39,.06)" }}>
         🔔
         {notifs.length > 0 && (
           <span style={{ position: "absolute", top: -3, right: -3, background: C.accent, color: "#fff", fontSize: 10, fontWeight: 800, borderRadius: 999, minWidth: 17, height: 17, display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -320,7 +346,7 @@ function Bell({ name, exercises, submissions }) {
         )}
       </button>
       {open && (
-        <div style={{ position: "absolute", right: 0, top: 46, width: 300, background: "#fff", borderRadius: 24, boxShadow: "0 14px 36px rgba(17,24,39,0.14)", zIndex: 50, padding: 10, color: C.ink }}>
+        <div style={{ position: "absolute", right: 0, top: 46, width: 300, background: "var(--mcf-surface)", borderRadius: 24, boxShadow: "0 14px 36px rgba(17,24,39,0.14)", zIndex: 50, padding: 10, color: C.ink }}>
           {notifs.length === 0
             ? <div style={{ padding: 12, fontSize: 13, color: C.soft }}>Aucune notification. Tout est à jour ! 🎉</div>
             : notifs.map((n) => (
@@ -407,7 +433,7 @@ function Login({ accounts, onLogin }) {
   const FlagFR = ({ w = 30, round = false }) => (
     <span style={{ display: "inline-flex", width: w, height: round ? w : w * 0.66, borderRadius: round ? "50%" : 3,
       overflow: "hidden", boxShadow: "0 1px 4px rgba(0,0,0,.2)", flexShrink: 0 }}>
-      <span style={{ flex: 1, background: "#0B3D91" }} /><span style={{ flex: 1, background: "#fff" }} /><span style={{ flex: 1, background: "#CE1126" }} />
+      <span style={{ flex: 1, background: "#0B3D91" }} /><span style={{ flex: 1, background: "var(--mcf-surface)" }} /><span style={{ flex: 1, background: "#CE1126" }} />
     </span>
   );
 
@@ -971,7 +997,7 @@ function Builder({ draft, setDraft, publish, cancel, accounts }) {
               }}
               style={{ flex: "1 1 240px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
                 gap: 6, padding: "14px 16px", borderRadius: 20, cursor: "pointer",
-                border: `2px dashed ${C.line}`, background: "#FBFCFE", color: C.soft, fontSize: 12.5, textAlign: "center" }}>
+                border: `2px dashed ${C.line}`, background: "var(--mcf-surface2)", color: C.soft, fontSize: 12.5, textAlign: "center" }}>
               <ImageIcon size={22} color={C.soft} />
               Collez l'URL de l'image ou téléversez un fichier
               <input type="file" accept="image/*" style={{ display: "none" }}
@@ -1027,7 +1053,7 @@ function Builder({ draft, setDraft, publish, cancel, accounts }) {
             </label>
           </div>
           {draft.assignedTo && (
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 10, background: "#FBFCFE", border: `1px solid ${C.line}`, borderRadius: 12, padding: "12px 14px" }}>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 10, background: "var(--mcf-surface2)", border: `1px solid ${C.line}`, borderRadius: 12, padding: "12px 14px" }}>
               {accounts.length === 0 && <span style={{ fontSize: 13, color: C.soft }}>Aucun élève inscrit.</span>}
               {accounts.map((a) => {
                 const on = draft.assignedTo.includes(a.name);
@@ -1135,6 +1161,7 @@ function Progress({ ex, submissions, setSubmissions, accounts, back }) {
   const opens = ex.questions.filter((q) => q.type === "open");
   const roster = targetedAccounts(ex, accounts);
 
+  const [attachDrafts, setAttachDrafts] = useState({});
   const [redoFor, setRedoFor] = useState(null); // tên học sinh đang yêu cầu làm lại
   const [redoNote, setRedoNote] = useState("");
 
@@ -1157,6 +1184,7 @@ function Progress({ ex, submissions, setSubmissions, accounts, back }) {
       return {
         ...s,
         comment: (drafts[student] ?? s.comment ?? ""),
+        feedbackUrl: (attachDrafts[student] ?? s.feedbackUrl ?? "").trim(),
         qComments: { ...(s.qComments || {}), ...(qDrafts[student] || {}) },
         openMarks: { ...(s.openMarks || {}), ...(marks[student] || {}) },
         graded: true,
@@ -1210,13 +1238,13 @@ function Progress({ ex, submissions, setSubmissions, accounts, back }) {
                     const a = sub.answers[q.id];
                     const good = q.type === "qcm" ? a === q.answer : (q.type === "fill" || q.type === "conj") ? fillOk(q, a) : null;
                     return (
-                      <div key={q.id} style={{ background: "#FBFCFE", borderRadius: 12, padding: "12px 14px", border: `1px solid ${C.line}` }}>
+                      <div key={q.id} style={{ background: "var(--mcf-surface2)", borderRadius: 12, padding: "12px 14px", border: `1px solid ${C.line}` }}>
                         <div style={{ fontWeight: 700, marginBottom: 6 }}>{i + 1}. {q.prompt}</div>
                         <div style={{ fontSize: 14 }}>
                           Réponse : {q.type === "qcm"
                             ? <strong style={{ color: good ? C.ok : C.danger }}>{a != null ? String.fromCharCode(65 + a) + ". " + q.options[a] : "—"}</strong>
                             : q.type === "open"
-                            ? <div style={{ marginTop: 6, background: "#fff", border: `1px solid ${C.line}`, borderRadius: 10, padding: "10px 14px", lineHeight: 1.7 }} dangerouslySetInnerHTML={{ __html: a || "—" }} />
+                            ? <div style={{ marginTop: 6, background: "var(--mcf-surface)", border: `1px solid ${C.line}`, borderRadius: 10, padding: "10px 14px", lineHeight: 1.7 }} dangerouslySetInnerHTML={{ __html: a || "—" }} />
                             : <em style={{ color: good ? C.ok : C.danger }}>{a || "—"}</em>}
                           {good === false && q.type === "qcm" && <span> · attendu : <strong>{String.fromCharCode(65 + q.answer)}. {q.options[q.answer]}</strong></span>}
                           {good === false && (q.type === "fill" || q.type === "conj") && <span> · attendu : <strong>{q.accepted.split("|")[0]}</strong></span>}
@@ -1249,7 +1277,26 @@ function Progress({ ex, submissions, setSubmissions, accounts, back }) {
                       value={drafts[name] ?? sub.comment ?? ""}
                       placeholder="ex. Très bon travail ! Revois l'accord du participe passé."
                       onChange={(e) => setDrafts({ ...drafts, [name]: e.target.value })} />
-                    <div style={{ display: "flex", gap: 10, marginTop: 8, flexWrap: "wrap" }}>
+
+                    {/* 📎 File chữa bài đính kèm (optionnel) */}
+                    <div style={{ marginTop: 10 }}>
+                      <div style={S.label}>📎 Joindre un fichier (optionnel) — URL bản chữa bài (PDF, DOCX, ảnh…)</div>
+                      <input style={{ ...S.input, marginTop: 6 }}
+                        value={attachDrafts[name] ?? sub.feedbackUrl ?? ""}
+                        placeholder="https://…/correction.pdf"
+                        onChange={(e) => setAttachDrafts({ ...attachDrafts, [name]: e.target.value })} />
+                      {(attachDrafts[name] ?? sub.feedbackUrl) && (
+                        <span style={{ display: "inline-flex", alignItems: "center", gap: 8, marginTop: 8,
+                          background: C.primarySoft, color: C.primary, borderRadius: 999, padding: "6px 14px",
+                          fontSize: 12.5, fontWeight: 700, maxWidth: "100%", overflow: "hidden" }}>
+                          📄 {fileNameFromUrl(attachDrafts[name] ?? sub.feedbackUrl)}
+                          <button title="Retirer" onClick={() => setAttachDrafts({ ...attachDrafts, [name]: "" })}
+                            style={{ border: "none", background: "transparent", cursor: "pointer", color: C.danger, fontWeight: 800, padding: 0 }}>✕</button>
+                        </span>
+                      )}
+                    </div>
+
+                    <div style={{ display: "flex", gap: 10, marginTop: 12, flexWrap: "wrap" }}>
                       <button style={S.btn(true)} onClick={() => saveGrading(name)}>
                         Enregistrer la correction {opens.length > 0 && "et la note"}
                       </button>
@@ -1397,12 +1444,26 @@ function Student({ name, exercises, submissions, setSubmissions, accounts, setAc
             💬 <strong>Professeur :</strong> {sub.comment}
           </div>
         )}
+        {sub?.feedbackUrl && (
+          <div style={{ marginTop: 10, display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap",
+            background: C.primarySoft, border: `1px solid ${C.primary}33`, borderRadius: 16, padding: "12px 16px" }}>
+            <span style={{ fontSize: 22 }}>📄</span>
+            <div style={{ flex: 1, minWidth: 140 }}>
+              <div style={{ fontSize: 12, fontWeight: 800, color: C.primary, letterSpacing: 0.5, textTransform: "uppercase" }}>Correction du professeur</div>
+              <div style={{ fontSize: 13.5, fontWeight: 600, wordBreak: "break-all" }}>{fileNameFromUrl(sub.feedbackUrl)}</div>
+            </div>
+            <a href={sub.feedbackUrl} target="_blank" rel="noopener noreferrer"
+              style={{ ...S.btn(true), textDecoration: "none", fontSize: 13, padding: "9px 18px" }}>
+              Voir le fichier ↗
+            </a>
+          </div>
+        )}
         {sub && Object.values(sub.qComments || {}).some(Boolean) && (
           <details style={{ marginTop: 8, fontSize: 13 }}>
             <summary style={{ cursor: "pointer", color: C.primary, fontWeight: 600 }}>Voir les remarques question par question</summary>
             <div style={{ marginTop: 8, display: "grid", gap: 6 }}>
               {ex.questions.map((q, i) => sub.qComments?.[q.id] ? (
-                <div key={q.id} style={{ background: "#FBFCFE", borderRadius: 8, padding: "8px 12px", border: `1px solid ${C.line}` }}>
+                <div key={q.id} style={{ background: "var(--mcf-surface2)", borderRadius: 8, padding: "8px 12px", border: `1px solid ${C.line}` }}>
                   <strong>Q{i + 1} :</strong> {sub.qComments[q.id]}
                 </div>
               ) : null)}
@@ -1518,6 +1579,7 @@ function Taking({ ex, name, setSubmissions, done }) {
   const [err, setErr] = useState("");
   const [remaining, setRemaining] = useState(null); // giây còn lại (null = không giới hạn)
   const [locked, setLocked] = useState(false);
+  const [zen, setZen] = useState(false); // 🧘 chế độ tập trung
   const answersRef = React.useRef(answers);
   answersRef.current = answers;
 
@@ -1616,7 +1678,18 @@ function Taking({ ex, name, setSubmissions, done }) {
   ));
 
   return (
-    <div>
+    <div style={zen ? { position: "fixed", inset: 0, zIndex: 90, background: "var(--mcf-bg)", overflowY: "auto", padding: "28px 16px 80px" } : undefined}>
+      {/* 🧘 Nút thoát Zen nổi */}
+      {zen && (
+        <button onClick={() => setZen(false)} title="Quitter le mode Zen"
+          style={{ position: "fixed", top: 16, right: 16, zIndex: 120, display: "flex", alignItems: "center", gap: 8,
+            padding: "10px 18px", borderRadius: 999, border: "none", cursor: "pointer", fontFamily: "inherit",
+            background: C.ink, color: "var(--mcf-bg)", fontWeight: 700, fontSize: 13.5,
+            boxShadow: "0 8px 22px rgba(17,24,39,.3)" }}>
+          ⤡ Quitter le Zen
+        </button>
+      )}
+      <div style={zen ? { maxWidth: 920, margin: "0 auto" } : undefined}>
       {/* ⏱ Đồng hồ đếm ngược trôi nổi */}
       {remaining != null && (
         <div style={{ position: "fixed", bottom: 20, right: 20, zIndex: 100,
@@ -1633,6 +1706,12 @@ function Taking({ ex, name, setSubmissions, done }) {
       )}
       <h2 style={{ ...S.display, marginTop: 0 }}>{ex.title} <span style={{ fontSize: 13, color: C.soft, fontFamily: "'Be Vietnam Pro',sans-serif" }}>({ex.level} · {ex.skill})</span></h2>
       <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap", marginBottom: 12 }}>
+        {!zen && (
+          <button onClick={() => setZen(true)}
+            style={{ ...S.btn(false), padding: "7px 16px", fontSize: 13, display: "inline-flex", alignItems: "center", gap: 7 }}>
+            🧘 Mode Zen
+          </button>
+        )}
         {ex.timeLimit && !locked && <span style={{ fontSize: 13, color: C.primary, fontWeight: 700 }}>⏱ Temps limite : {ex.timeLimit} minutes</span>}
         {ex.deadline && <span style={{ fontSize: 13, color: isLate(ex) ? C.danger : C.warn, fontWeight: 700 }}>
           ⏰ {isLate(ex) ? "Date limite dépassée — la copie sera marquée en retard" : `À rendre avant le ${fmtDate(ex.deadline)}`}
@@ -1652,7 +1731,8 @@ function Taking({ ex, name, setSubmissions, done }) {
       {ex.audioUrl && (
         <div className="mcf-card" style={{ ...S.card, marginBottom: 16, position: "sticky", top: 8, zIndex: 30, boxShadow: "0 6px 18px rgba(27,37,89,.12)" }}>
           <div style={{ ...S.label, marginBottom: 8 }}>🎧 Écoute le document audio (le lecteur reste visible pendant que tu réponds)</div>
-          <audio controls style={{ width: "100%" }} src={ex.audioUrl} />
+          <audio controls controlsList="nodownload noplaybackrate" onContextMenu={(e) => e.preventDefault()}
+            style={{ width: "100%" }} src={ex.audioUrl} />
         </div>
       )}
 
@@ -1676,6 +1756,7 @@ function Taking({ ex, name, setSubmissions, done }) {
         </button>
         <button style={S.btn(false)} onClick={done}>Quitter (brouillon sauvegardé)</button>
       </div>
+      </div>
     </div>
   );
 }
@@ -1686,6 +1767,7 @@ function Taking({ ex, name, setSubmissions, done }) {
 function ReadingPanel({ text, stickyTop = 8 }) {
   const boxRef = React.useRef(null);
   const [btn, setBtn] = useState(null); // {x, y}
+  const [fontSize, setFontSize] = useState(16); // 14 → 24 px
 
   const onSelect = () => {
     const sel = window.getSelection();
@@ -1727,8 +1809,24 @@ function ReadingPanel({ text, stickyTop = 8 }) {
         onDragStart={(e) => e.preventDefault()}
         style={{ ...S.card, flex: "6 1 380px", minWidth: 0, maxHeight: "76vh", overflowY: "auto",
           position: "sticky", top: stickyTop }}>
-        <div style={{ ...S.label, marginBottom: 10 }}>📖 Texte à lire <span style={{ fontWeight: 400, textTransform: "none", letterSpacing: 0 }}>· bôi đen để tô vàng 🖍 · protégé contre la copie</span></div>
-        <div style={{ whiteSpace: "pre-wrap", lineHeight: 1.9, fontSize: 16 }}>{text}</div>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, marginBottom: 10, flexWrap: "wrap" }}>
+          <div style={S.label}>📖 Texte à lire <span style={{ fontWeight: 400, textTransform: "none", letterSpacing: 0 }}>· bôi đen để tô vàng 🖍</span></div>
+          {/* A- / A+ : chỉnh cỡ chữ 14-24px */}
+          <div style={{ display: "flex", gap: 6 }}>
+            {[["A−", -2], ["A+", 2]].map(([lbl, delta]) => (
+              <button key={lbl} title={delta > 0 ? "Agrandir le texte" : "Réduire le texte"}
+                disabled={delta > 0 ? fontSize >= 24 : fontSize <= 14}
+                onClick={() => setFontSize((f) => Math.min(24, Math.max(14, f + delta)))}
+                style={{ width: 36, height: 30, borderRadius: 999, border: `1.5px solid ${C.line}`,
+                  background: "var(--mcf-surface)", color: C.ink, cursor: "pointer", fontWeight: 800,
+                  fontSize: delta > 0 ? 14 : 11.5, fontFamily: "inherit",
+                  opacity: (delta > 0 ? fontSize >= 24 : fontSize <= 14) ? 0.35 : 1 }}>
+                {lbl}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div style={{ whiteSpace: "pre-wrap", lineHeight: 1.9, fontSize }}>{text}</div>
       </div>
     </>
   );
@@ -1760,18 +1858,18 @@ function RichTextEditor({ value, onChange, wordLimit, readOnly }) {
     <button type="button" title={title} onMouseDown={(e) => { e.preventDefault(); exec(cmd, arg); }}
       style={{ minWidth: wide ? 34 : 30, height: 30, borderRadius: 7, border: "1px solid transparent", background: "transparent",
         color: C.ink, fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", display: "inline-flex", alignItems: "center", justifyContent: "center" }}
-      onMouseEnter={(e) => { e.currentTarget.style.background = "#E4E8F4"; }}
+      onMouseEnter={(e) => { e.currentTarget.style.background = "var(--mcf-line)"; }}
       onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}>
       {label}
     </button>
   );
   const Sep = () => <span style={{ width: 1, height: 20, background: C.line, margin: "0 4px" }} />;
-  const sel = { height: 30, borderRadius: 7, border: `1px solid ${C.line}`, background: "#fff", fontSize: 13, fontFamily: "inherit", color: C.ink, padding: "0 6px" };
+  const sel = { height: 30, borderRadius: 7, border: `1px solid ${C.line}`, background: "var(--mcf-surface)", fontSize: 13, fontFamily: "inherit", color: C.ink, padding: "0 6px" };
 
   return (
-    <div style={{ borderRadius: 24, boxShadow: "0 8px 24px rgba(17,24,39,.08)", border: `1px solid ${C.line}`, overflow: "hidden", background: "#fff" }}>
+    <div style={{ borderRadius: 24, boxShadow: "0 8px 24px rgba(17,24,39,.08)", border: `1px solid ${C.line}`, overflow: "hidden", background: "var(--mcf-surface)" }}>
       {/* Toolbar */}
-      <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 3, padding: "8px 10px", background: "#F4F6FB", borderBottom: `1px solid ${C.line}` }}>
+      <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 3, padding: "8px 10px", background: "var(--mcf-bg)", borderBottom: `1px solid ${C.line}` }}>
         <select style={sel} defaultValue="" title="Police" onChange={(e) => { if (e.target.value) exec("fontName", e.target.value); }}>
           <option value="" disabled>Police</option>
           <option value="'Segoe UI', sans-serif">Aptos / Segoe UI</option>
@@ -1793,12 +1891,12 @@ function RichTextEditor({ value, onChange, wordLimit, readOnly }) {
         <TBtn label={<span>x<sup>2</sup></span>} title="Exposant" cmd="superscript" wide />
         <Sep />
         <label title="Couleur du texte" style={{ display: "inline-flex", alignItems: "center", cursor: "pointer", width: 34, height: 30, justifyContent: "center", borderRadius: 7 }}
-          onMouseEnter={(e) => e.currentTarget.style.background = "#E4E8F4"} onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}>
+          onMouseEnter={(e) => e.currentTarget.style.background = "var(--mcf-line)"} onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}>
           <span style={{ fontWeight: 800, borderBottom: "3px solid #DE4B4B", lineHeight: 1 }}>A</span>
           <input type="color" defaultValue="#DE4B4B" style={{ width: 0, height: 0, opacity: 0 }} onChange={(e) => exec("foreColor", e.target.value)} />
         </label>
         <label title="Surligneur (highlight)" style={{ display: "inline-flex", alignItems: "center", cursor: "pointer", width: 34, height: 30, justifyContent: "center", borderRadius: 7 }}
-          onMouseEnter={(e) => e.currentTarget.style.background = "#E4E8F4"} onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}>
+          onMouseEnter={(e) => e.currentTarget.style.background = "var(--mcf-line)"} onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}>
           <span style={{ fontWeight: 800, background: "#FFE066", padding: "0 4px", borderRadius: 3, lineHeight: 1.3 }}>ab</span>
           <input type="color" defaultValue="#FFE066" style={{ width: 0, height: 0, opacity: 0 }} onChange={(e) => exec("hiliteColor", e.target.value)} />
         </label>
@@ -1826,7 +1924,7 @@ function RichTextEditor({ value, onChange, wordLimit, readOnly }) {
           lineHeight: lineH, color: C.ink, outline: "none", fontFamily: "'Be Vietnam Pro', sans-serif" }} />
 
       {/* Word counter */}
-      <div style={{ display: "flex", justifyContent: "flex-end", padding: "6px 14px", borderTop: `1px solid ${C.line}`, background: "#FBFCFE" }}>
+      <div style={{ display: "flex", justifyContent: "flex-end", padding: "6px 14px", borderTop: `1px solid ${C.line}`, background: "var(--mcf-surface2)" }}>
         <span style={{ fontSize: 12.5, fontWeight: 700, color: wordLimit && words > wordLimit ? C.danger : C.soft }}>
           {words}{wordLimit ? `/${wordLimit}` : ""} mots
         </span>
