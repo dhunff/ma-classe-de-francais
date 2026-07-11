@@ -17,12 +17,12 @@ import {
 ============================================================ */
 
 const CATS = [
-  { skill: "Écoute", label: "Compréhension Orale", vi: "Luyện nghe", Icon: Headphones, color: "#3D5AF1", pastel: "#EDF1FE" },
-  { skill: "Lecture", label: "Compréhension Écrite", vi: "Đọc hiểu", Icon: BookOpen, color: "#1E9E6A", pastel: "#E7F7F0" },
-  { skill: "Production écrite", label: "Production Écrite", vi: "Luyện viết", Icon: PenLine, color: "#D6336C", pastel: "#FDEEF4" },
-  { skill: "Grammaire", label: "Grammaire", vi: "Ngữ pháp", Icon: Puzzle, color: "#7048E8", pastel: "#F1EDFD" },
-  { skill: "Vocabulaire", label: "Vocabulaire", vi: "Từ vựng", Icon: BookA, color: "#C98412", pastel: "#FFF6E8" },
-  { skill: "__autres__", label: "Autres", vi: "Khác (dịch, giao tiếp…)", Icon: Sparkles, color: "#6E7691", pastel: "#F0F1F6" },
+  { skill: "Écoute", label: "Compréhension Orale", vi: "Écoute", Icon: Headphones, color: "#3D5AF1", pastel: "#EDF1FE" },
+  { skill: "Lecture", label: "Compréhension Écrite", vi: "Lecture", Icon: BookOpen, color: "#1E9E6A", pastel: "#E7F7F0" },
+  { skill: "Production écrite", label: "Production Écrite", vi: "Écriture", Icon: PenLine, color: "#D6336C", pastel: "#FDEEF4" },
+  { skill: "Grammaire", label: "Grammaire", vi: "Règles et structure", Icon: Puzzle, color: "#7048E8", pastel: "#F1EDFD" },
+  { skill: "Vocabulaire", label: "Vocabulaire", vi: "Mots et expressions", Icon: BookA, color: "#C98412", pastel: "#FFF6E8" },
+  { skill: "__autres__", label: "Autres", vi: "Traduction, communication…", Icon: Sparkles, color: "#6E7691", pastel: "#F0F1F6" },
 ];
 const catOf = (ex) => CATS.some((c) => c.skill === ex.skill) ? ex.skill : "__autres__";
 
@@ -94,7 +94,7 @@ export default function PracticeHub({ role = "eleve", name = "" }) {
 
   if (view.page === "quiz") {
     const ex = exercises.find((e) => e.id === view.exId);
-    return <PracticeWorkspace ex={ex} back={() => setView({ page: "category", cat: view.cat, folder: view.folder })}
+    return <PracticeWorkspace ex={ex} back={() => setView({ page: "category", cat: view.cat, folder: view.folder, niveau: view.niveau })}
       onFinish={(score, max) => saveHist(ex.id, score, max)} />;
   }
 
@@ -108,7 +108,7 @@ export default function PracticeHub({ role = "eleve", name = "" }) {
     ];
     return (
       <div>
-        <button style={{ ...S.btn(false), marginBottom: 16 }} onClick={() => setView({ page: "home" })}><ChevronLeft size={16} /> Quay lại</button>
+        <button style={{ ...S.btn(false), marginBottom: 16 }} onClick={() => setView({ page: "home" })}><ChevronLeft size={16} /> Retour</button>
         <h2 style={{ ...S.display, margin: "0 0 18px", display: "flex", alignItems: "center", gap: 10 }}>
           <Sparkles size={24} color="#6E7691" /> Autres — Catégories
         </h2>
@@ -116,7 +116,7 @@ export default function PracticeHub({ role = "eleve", name = "" }) {
         {folders.length === 0 && !teacher ? (
           <div className="mcf-card" style={{ ...S.card, padding: 50, textAlign: "center" }}>
             <div style={{ fontSize: 40, marginBottom: 10 }}>🗂️</div>
-            <div style={{ fontWeight: 800, fontSize: 17 }}>Chưa có bài tập nào trong mục này</div>
+            <div style={{ fontWeight: 800, fontSize: 17 }}>Aucun exercice dans cette section</div>
             <div style={{ fontSize: 13.5, color: C.soft, marginTop: 6 }}>Le professeur n'a pas encore créé de catégorie. Reviens bientôt !</div>
           </div>
         ) : (
@@ -129,7 +129,7 @@ export default function PracticeHub({ role = "eleve", name = "" }) {
                   <Folder size={24} color="#6E7691" />
                 </div>
                 <div style={{ fontWeight: 800, fontSize: 16 }}>{f.label || f.name}</div>
-                <div style={{ fontSize: 13, color: C.soft, marginTop: 3 }}>{f.count} bài tập</div>
+                <div style={{ fontSize: 13, color: C.soft, marginTop: 3 }}>{f.count} exercice{f.count > 1 ? "s" : ""}</div>
               </div>
             ))}
             {/* Thẻ + chỉ dành cho giáo viên */}
@@ -168,26 +168,57 @@ export default function PracticeHub({ role = "eleve", name = "" }) {
 
   if (view.page === "category") {
     const meta = CATS.find((c) => c.skill === view.cat);
-    let list = exercises.filter((e) => catOf(e) === view.cat);
+    let all = exercises.filter((e) => catOf(e) === view.cat);
     if (view.cat === "__autres__" && view.folder) {
-      list = view.folder === "__nc__" ? list.filter((e) => !e.customCat) : list.filter((e) => e.customCat === view.folder);
+      all = view.folder === "__nc__" ? all.filter((e) => !e.customCat) : all.filter((e) => e.customCat === view.folder);
     }
+    const NIVEAUX = ["A1", "A2", "B1", "B2", "B2+"];
+    // Tab par defaut : niveau du dernier exercice pratique dans cette categorie, sinon A1
+    const defaultNiveau = (() => {
+      const recent = all.filter((e) => hist[e.id]).sort((a, b) => (hist[b.id].at || 0) - (hist[a.id].at || 0))[0];
+      return recent ? recent.level : "A1";
+    })();
+    const niveau = view.niveau || defaultNiveau;
+    const list = all.filter((e) => e.level === niveau);
     return (
       <div>
         <button style={{ ...S.btn(false), marginBottom: 16 }}
-          onClick={() => setView(view.folder ? { page: "autres" } : { page: "home" })}><ChevronLeft size={16} /> Quay lại</button>
+          onClick={() => setView(view.folder ? { page: "autres" } : { page: "home" })}><ChevronLeft size={16} /> Retour</button>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18, flexWrap: "wrap", gap: 10 }}>
           <h2 style={{ ...S.display, margin: 0, display: "flex", alignItems: "center", gap: 10 }}>
             <meta.Icon size={24} color={meta.color} /> {view.folder ? (view.folder === "__nc__" ? "Non classé" : view.folder) : meta.label}
           </h2>
           {teacher && <button style={S.btn(true)} onClick={() => {
-            const d = { ...blank(), skill: view.cat === "__autres__" ? "Traduction" : view.cat };
+            const d = { ...blank(), skill: view.cat === "__autres__" ? "Traduction" : view.cat, level: niveau };
             if (view.folder && view.folder !== "__nc__") d.customCat = view.folder;
             setDraft(d); setView({ page: "builder" });
-          }}><Plus size={16} /> Thêm bài</button>}
+          }}><Plus size={16} /> Nouvel exercice</button>}
+        </div>
+
+        {/* Tabs niveau A1 -> B2+ */}
+        <div style={{ display: "flex", gap: 8, marginBottom: 20, flexWrap: "wrap" }}>
+          {NIVEAUX.map((lv) => {
+            const active = niveau === lv;
+            const count = all.filter((e) => e.level === lv).length;
+            return (
+              <button key={lv} onClick={() => setView({ ...view, niveau: lv })}
+                style={{ padding: "9px 20px", borderRadius: 999, fontWeight: 800, fontSize: 14, cursor: "pointer",
+                  fontFamily: "inherit", border: active ? "none" : `1.5px solid ${C.line}`,
+                  background: active ? "linear-gradient(135deg, #1e3a8a, #3D5AF1)" : "var(--mcf-surface)",
+                  color: active ? "#fff" : C.soft,
+                  boxShadow: active ? "0 6px 16px rgba(30,58,138,.32)" : "none",
+                  transition: "all .15s ease" }}>
+                {lv}{count > 0 && <span style={{ marginLeft: 6, fontSize: 11.5, opacity: 0.75 }}>({count})</span>}
+              </button>
+            );
+          })}
         </div>
         {list.length === 0 ? (
-          <div className="mcf-card" style={{ ...S.card, padding: 40, textAlign: "center", color: C.soft }}>Chưa có bài tập nào trong mục này.</div>
+          <div className="mcf-card" style={{ ...S.card, padding: 50, textAlign: "center" }}>
+            <div style={{ fontSize: 40, marginBottom: 10 }}>📦</div>
+            <div style={{ fontWeight: 800, fontSize: 16, color: C.ink }}>Aucun exercice disponible pour ce niveau pour le moment.</div>
+            <div style={{ fontSize: 13.5, color: C.soft, marginTop: 6 }}>Essaie un autre niveau ou reviens bientôt !</div>
+          </div>
         ) : (
           <div style={{ display: "grid", gap: 12 }}>
             {list.map((ex) => {
@@ -198,13 +229,13 @@ export default function PracticeHub({ role = "eleve", name = "" }) {
                     <span style={S.badge(ex.level)}>{ex.level}</span>
                     <strong>{ex.title}</strong>
                     <div style={{ fontSize: 12.5, color: C.soft, marginTop: 4 }}>
-                      {ex.questions.length} câu · {[...new Set(ex.questions.map((q) => QTYPES[q.type]))].join(" + ")}
+                      {ex.questions.length} question{ex.questions.length > 1 ? "s" : ""} · {[...new Set(ex.questions.map((q) => QTYPES[q.type]))].join(" + ")}
                       {ex.audioUrl && " · 🎧"}{ex.readingText && " · 📖"}{ex.timeLimit && ` · ⏱ ${ex.timeLimit} min`}
-                      {h && <span style={{ color: h.max && h.best / h.max >= 0.8 ? C.ok : C.primary, fontWeight: 700 }}> · 🏆 Meilleur : {h.best}/{h.max} ({h.tries} lần)</span>}
+                      {h && <span style={{ color: h.max && h.best / h.max >= 0.8 ? C.ok : C.primary, fontWeight: 700 }}> · 🏆 Meilleur : {h.best}/{h.max} ({h.tries} essai{h.tries > 1 ? "s" : ""})</span>}
                     </div>
                   </div>
                   <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                    <button style={S.btn(true)} onClick={() => setView({ page: "quiz", cat: view.cat, folder: view.folder, exId: ex.id })}>Luyện tập</button>
+                    <button style={S.btn(true)} onClick={() => setView({ page: "quiz", cat: view.cat, folder: view.folder, niveau, exId: ex.id })}>S'entraîner</button>
                     {teacher && <HubMenu
                       onEdit={() => { setDraft(JSON.parse(JSON.stringify(ex))); setView({ page: "builder" }); }}
                       onDup={() => duplicate(ex)}
@@ -223,8 +254,8 @@ export default function PracticeHub({ role = "eleve", name = "" }) {
   return (
     <div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20, flexWrap: "wrap", gap: 10 }}>
-        <h2 style={{ ...S.display, margin: 0 }}>🏋️ Kho bài tập tự luyện</h2>
-        {teacher && <button style={S.btn(true)} onClick={() => { setDraft(blank()); setView({ page: "builder" }); }}><Plus size={16} /> Thêm bài tập mới</button>}
+        <h2 style={{ ...S.display, margin: 0 }}>🏋️ Bibliothèque d'entraînement</h2>
+        {teacher && <button style={S.btn(true)} onClick={() => { setDraft(blank()); setView({ page: "builder" }); }}><Plus size={16} /> Nouvel exercice</button>}
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(250px,1fr))", gap: 16 }}>
         {CATS.map((cat, i) => {
@@ -240,11 +271,11 @@ export default function PracticeHub({ role = "eleve", name = "" }) {
                 <cat.Icon size={26} color={cat.color} />
               </div>
               <div style={{ fontWeight: 800, fontSize: 16 }}>{cat.label}</div>
-              <div style={{ fontSize: 13, color: C.soft, margin: "3px 0 14px" }}>{cat.vi} · {list.length} bài</div>
+              <div style={{ fontSize: 13, color: C.soft, margin: "3px 0 14px" }}>{cat.vi} · {list.length} exercice{list.length > 1 ? "s" : ""}</div>
               {!teacher && (
                 <>
                   <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, fontWeight: 700, color: C.soft, marginBottom: 5 }}>
-                    <span>Đã luyện</span><span style={{ color: cat.color }}>{doneCount}/{list.length || 0}</span>
+                    <span>Complétés</span><span style={{ color: cat.color }}>{doneCount}/{list.length || 0}</span>
                   </div>
                   <div style={{ height: 8, borderRadius: 99, background: C.line }}>
                     <div style={{ height: "100%", width: `${pct}%`, borderRadius: 99, background: `linear-gradient(90deg,${cat.color},${cat.color}AA)`, transition: "width .4s" }} />
@@ -370,7 +401,7 @@ function PracticeWorkspace({ ex, back, onFinish }) {
             <RichTextEditor value={a || ""} readOnly={!!graded} onChange={(html) => setAnswers({ ...answers, [q.id]: html })} />
             {graded && q.model && (
               <div style={{ marginTop: 12 }}>
-                <div style={{ ...S.label }}>📄 Bài mẫu tham khảo — tự đối chiếu</div>
+                <div style={{ ...S.label }}>📄 Réponse modèle — à comparer</div>
                 <div style={{ marginTop: 6, background: "#FBFCFE", border: `1px solid ${C.line}`, borderRadius: 12, padding: "12px 15px", fontSize: 14.5, fontStyle: "italic", lineHeight: 1.7 }}>{q.model}</div>
               </div>
             )}
@@ -412,7 +443,7 @@ function PracticeWorkspace({ ex, back, onFinish }) {
         </div>
       )}
 
-      <button style={{ ...S.btn(false), marginBottom: 16 }} onClick={back}><ChevronLeft size={16} /> Quay lại</button>
+      <button style={{ ...S.btn(false), marginBottom: 16 }} onClick={back}><ChevronLeft size={16} /> Retour</button>
       <h2 style={{ ...S.display, marginTop: 0 }}>{ex.title} <span style={{ fontSize: 13, color: C.soft, fontFamily: "'Be Vietnam Pro',sans-serif" }}>({ex.level} · {ex.skill})</span></h2>
       <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap", marginBottom: 8 }}>
         {!zen && (
@@ -452,17 +483,17 @@ function PracticeWorkspace({ ex, back, onFinish }) {
 
       {!graded ? (
         <button style={{ ...S.btn(true), marginTop: 20, opacity: allAnswered ? 1 : 0.4 }} disabled={!allAnswered} onClick={() => grade(false)}>
-          Nộp bài & xem kết quả
+          Rendre & voir le résultat
         </button>
       ) : (
         <div className="mcf-card" style={{ marginTop: 20, textAlign: "center", background: perfect ? C.okSoft : C.primarySoft, borderRadius: 14, padding: "18px 16px" }}>
-          {graded === "timeout" && <div style={{ color: C.danger, fontWeight: 800, marginBottom: 6 }}>⏰ Hết giờ — bài đã được chấm tự động</div>}
+          {graded === "timeout" && <div style={{ color: C.danger, fontWeight: 800, marginBottom: 6 }}>⏰ Temps écoulé — correction automatique effectuée</div>}
           <div style={{ fontSize: 30 }}>{perfect ? <PartyPopper size={34} color={C.ok} /> : "💪"}</div>
           <div style={{ fontWeight: 800, fontSize: 19, marginTop: 6, color: perfect ? C.ok : C.primary }}>
-            {autos.length > 0 ? <>Bạn đạt {score}/{autos.length} điểm{perfect ? " — Xuất sắc ! 🎉" : ""}</> : "Đã hoàn thành !"}
+            {autos.length > 0 ? <>Tu as obtenu {score}/{autos.length}{perfect ? " — Excellent ! 🎉" : ""}</> : "Terminé !"}
           </div>
-          {opens.length > 0 && <div style={{ fontSize: 13.5, color: C.soft, marginTop: 4 }}>({opens.length} câu tự luận — tự đối chiếu với bài mẫu phía trên)</div>}
-          <button style={{ ...S.btn(false), marginTop: 14 }} onClick={retry}><RotateCcw size={15} /> Làm lại</button>
+          {opens.length > 0 && <div style={{ fontSize: 13.5, color: C.soft, marginTop: 4 }}>({opens.length} réponse(s) libre(s) — à comparer avec le modèle ci-dessus)</div>}
+          <button style={{ ...S.btn(false), marginTop: 14 }} onClick={retry}><RotateCcw size={15} /> Recommencer</button>
         </div>
       )}
       </div>

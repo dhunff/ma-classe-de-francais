@@ -271,7 +271,7 @@ export default function App() {
           <div style={{ width: 52, height: 52, borderRadius: 20, background: "#FFD43B", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26, boxShadow: "0 8px 20px rgba(255,212,59,.4)" }}>🇫🇷</div>
           <div>
             <div style={{ fontWeight: 800, fontSize: 27, letterSpacing: "-0.8px", color: C.ink, lineHeight: 1.1 }}>
-              Le Français Avec Hung<span style={{ color: "#FFD43B" }}> ✳</span>
+              Apprendre le français avec Do Hung<span style={{ color: "#FFD43B" }}> ✳</span>
             </div>
             <div style={{ fontSize: 13, color: C.soft, fontWeight: 600 }}>Parcours d'apprentissage · exercices & suivi des élèves</div>
           </div>
@@ -460,7 +460,7 @@ function Login({ accounts, onLogin }) {
           fontSize: "clamp(28px, 5vw, 40px)", color: "#152A6E", margin: 0,
           display: "flex", alignItems: "center", justifyContent: "center", gap: 12, flexWrap: "wrap" }}>
           <span style={{ color: GOLD, fontSize: "0.8em" }}>✳</span>
-          Le Français Avec Hung
+          Apprendre le français avec Do Hung
           <FlagFR w={30} round />
         </h1>
         <p style={{ fontFamily: "'Be Vietnam Pro', sans-serif", fontStyle: "italic", color: "#6B7280", fontSize: "clamp(14px, 2.4vw, 16px)", marginTop: 8 }}>
@@ -567,7 +567,7 @@ function Teacher({ exercises, setExercises, submissions, setSubmissions, account
     const others = exercises.filter((e) => e.id !== draft.id);
     const next = [...others, draft].sort((a, b) => a.createdAt - b.createdAt);
     const ok = await save("mcf-exercises", next);
-    if (!ok) { alert("❌ Lưu thất bại — dữ liệu quá lớn (thường do ảnh base64). Hãy dùng Public URL của ảnh thay vì upload trực tiếp."); return; }
+    if (!ok) { alert("❌ Échec de l'enregistrement — données trop volumineuses (image base64). Utilisez plutôt une URL publique."); return; }
     setExercises(next); setView("list");
   };
   const remove = async (id) => {
@@ -859,7 +859,7 @@ function StudentTable({ accounts, exercises, submissions }) {
           </tbody>
         </table>
       )}
-      <p style={{ fontSize: 12, color: C.soft, marginTop: 10, marginBottom: 0 }}>⏳ = réponses libres pas encore corrigées · 🕐 = rendu en retard · « · » = bài không giao cho học sinh này · 🔁 = yêu cầu làm lại</p>
+      <p style={{ fontSize: 12, color: C.soft, marginTop: 10, marginBottom: 0 }}>⏳ = réponses libres pas encore corrigées · 🕐 = rendu en retard · « · » = exercice non assigné à cet élève · 🔁 = à refaire</p>
     </div>
   );
 }
@@ -874,7 +874,7 @@ function Builder({ draft, setDraft, publish, cancel, accounts }) {
   const handleImageFile = (file) => {
     setImgMsg("");
     if (!file.type.startsWith("image/")) { setImgMsg("⚠ Fichier non valide — choisissez une image."); return; }
-    if (file.size > 800 * 1024) { setImgMsg("⚠ Ảnh quá lớn (>800 KB) — vượt hạn mức lưu trữ. Hãy nén ảnh (tinypng.com) hoặc upload lên Supabase Storage rồi dán Public URL."); return; }
+    if (file.size > 800 * 1024) { setImgMsg("⚠ Image trop lourde (>800 Ko). Compressez-la (tinypng.com) ou collez une URL publique (Supabase Storage)."); return; }
     const reader = new FileReader();
     reader.onload = () => setDraft((d) => ({ ...d, imageUrl: reader.result }));
     reader.readAsDataURL(file);
@@ -934,7 +934,7 @@ function Builder({ draft, setDraft, publish, cancel, accounts }) {
         <div>
           <input ref={fileRef} type="file" accept=".docx" style={{ display: "none" }}
             onChange={(e) => importDocx(e.target.files?.[0])} />
-          <button style={S.btn(false)} onClick={() => fileRef.current?.click()}>📄 Import DOCX (bài đọc CE)</button>
+          <button style={S.btn(false)} onClick={() => fileRef.current?.click()}>📄 Import DOCX (texte CE)</button>
         </div>
         )}
       </div>
@@ -1028,13 +1028,13 @@ function Builder({ draft, setDraft, publish, cancel, accounts }) {
           <div style={S.label}>Lien audio pour compréhension orale (optionnel — URL mp3)</div>
           <input style={{ ...S.input, marginTop: 6 }} value={draft.audioUrl} placeholder="https://…/audio.mp3"
             onChange={(e) => setDraft({ ...draft, audioUrl: e.target.value })} />
-          <div style={{ fontSize: 12, color: C.soft, marginTop: 5 }}>💡 Mẹo tải file mp3 của bạn: upload vào Supabase Storage (bucket public) hoặc Google Drive (link chia sẻ trực tiếp) rồi dán URL vào đây.</div>
+          <div style={{ fontSize: 12, color: C.soft, marginTop: 5 }}>💡 Astuce : téléversez votre mp3 sur Supabase Storage (bucket public) puis collez l'URL publique ici.</div>
         </div>
         )}
 
         {draft.skill === "Lecture" && (
         <div style={{ marginTop: 12 }}>
-          <div style={S.label}>📖 Texte de lecture (CE — optionnel) : dán bài đọc vào đây, học sinh sẽ thấy bố cục 2 cột (văn bản | câu hỏi)</div>
+          <div style={S.label}>📖 Texte de lecture (CE — optionnel) : l'élève verra une mise en page en 2 colonnes (texte | questions)</div>
           <textarea style={{ ...S.input, marginTop: 6, minHeight: 110, resize: "vertical" }} value={draft.readingText || ""}
             placeholder="Collez ici l'article ou le texte à lire…"
             onChange={(e) => setDraft({ ...draft, readingText: e.target.value })} />
@@ -1042,17 +1042,17 @@ function Builder({ draft, setDraft, publish, cancel, accounts }) {
         )}
 
         <div style={{ marginTop: 14 }}>
-          <div style={S.label}>Destinataires — Giao bài cho ai ?</div>
+          <div style={S.label}>Destinataires</div>
           <div style={{ display: "flex", gap: 16, marginTop: 8, flexWrap: "wrap" }}>
             <label style={{ display: "flex", alignItems: "center", gap: 7, fontSize: 14, cursor: "pointer" }}>
               <input type="radio" checked={!draft.assignedTo}
                 onChange={() => setDraft({ ...draft, assignedTo: null })} />
-              👥 Toute la classe (tất cả học sinh)
+              👥 Toute la classe
             </label>
             <label style={{ display: "flex", alignItems: "center", gap: 7, fontSize: 14, cursor: "pointer" }}>
               <input type="radio" checked={!!draft.assignedTo}
                 onChange={() => setDraft({ ...draft, assignedTo: [] })} />
-              👤 Élèves choisis (chọn học sinh cụ thể)
+              👤 Élèves choisis
             </label>
           </div>
           {draft.assignedTo && (
@@ -1072,7 +1072,7 @@ function Builder({ draft, setDraft, publish, cancel, accounts }) {
                 );
               })}
               {draft.assignedTo.length === 0 && accounts.length > 0 &&
-                <span style={{ fontSize: 12.5, color: C.warn, fontWeight: 700, alignSelf: "center" }}>⚠ Chưa chọn học sinh nào — bấm vào tên để chọn.</span>}
+                <span style={{ fontSize: 12.5, color: C.warn, fontWeight: 700, alignSelf: "center" }}>⚠ Aucun élève sélectionné — cliquez sur un prénom.</span>}
             </div>
           )}
         </div>
@@ -1229,7 +1229,7 @@ function Progress({ ex, submissions, setSubmissions, accounts, back }) {
                     <span style={{ color: C.ok, fontWeight: 700 }}>Rendu</span>
                     {" · "}<strong>{t.score}/{t.max}{t.pending && " ⏳"}</strong>
                     {" · "}{fmtDate(sub.at)}
-                    {sub.timedOut && " · ⏱ auto (hết giờ)"}
+                    {sub.timedOut && " · ⏱ auto (temps écoulé)"}
                     {sub.graded && " · ✅ corrigé"}
                     <button style={{ ...S.btn(false), marginLeft: 12, padding: "4px 10px", fontSize: 12 }}
                       onClick={() => setOpen(open === name ? null : name)}>{open === name ? "Fermer" : "Corriger / voir"}</button>
@@ -1285,7 +1285,7 @@ function Progress({ ex, submissions, setSubmissions, accounts, back }) {
 
                     {/* 📎 File chữa bài đính kèm (optionnel) */}
                     <div style={{ marginTop: 10 }}>
-                      <div style={S.label}>📎 Joindre un fichier (optionnel) — URL bản chữa bài (PDF, DOCX, ảnh…)</div>
+                      <div style={S.label}>📎 Joindre un fichier (optionnel) — URL de la correction (PDF, DOCX, image…)</div>
                       <input style={{ ...S.input, marginTop: 6 }}
                         value={attachDrafts[name] ?? sub.feedbackUrl ?? ""}
                         placeholder="https://…/correction.pdf"
@@ -1325,7 +1325,7 @@ function Progress({ ex, submissions, setSubmissions, accounts, back }) {
           <div className="mcf-card" style={{ ...S.card, width: "100%", maxWidth: 480 }} onClick={(e) => e.stopPropagation()}>
             <h3 style={{ ...S.display, fontSize: 20, marginTop: 0 }}>🔁 Demander à {redoFor} de refaire</h3>
             <p style={{ fontSize: 13.5, color: C.soft, marginTop: 0 }}>La note sera remise à zéro et l'exercice retournera dans « À faire » de l'élève.</p>
-            <div style={S.label}>Lý do / Remarque (hiện trên dashboard học sinh)</div>
+            <div style={S.label}>Remarque (visible sur le tableau de bord de l'élève)</div>
             <textarea style={{ ...S.input, marginTop: 6, minHeight: 70, resize: "vertical" }} value={redoNote}
               placeholder="ex. Attention à l'accord du participe passé — refais les questions 3 et 5."
               onChange={(e) => setRedoNote(e.target.value)} autoFocus />
@@ -1400,7 +1400,7 @@ function Student({ name, exercises, submissions, setSubmissions, accounts, setAc
     { need: 12, icon: "✈️", label: "Départ pour Paris !" },
   ];
 
-  const tabs = [["todo", `📝 À faire (${todo.length})`], ["done", `📤 Rendus (${doneList.length})`], ["practice", "🏋️ Tự luyện"], ["progress", "📈 Ma progression"], ["settings", "⚙️ Mon compte"]];
+  const tabs = [["todo", `📝 À faire (${todo.length})`], ["done", `📤 Rendus (${doneList.length})`], ["practice", "🏋️ Entraînement"], ["progress", "📈 Ma progression"], ["settings", "⚙️ Mon compte"]];
 
   const changePw = async (oldPw, newPw, setMsg) => {
     const acc = accounts.find((a) => a.name === name);
@@ -1815,7 +1815,7 @@ function ReadingPanel({ text, stickyTop = 8 }) {
         style={{ ...S.card, flex: "6 1 380px", minWidth: 0, maxHeight: "76vh", overflowY: "auto",
           position: "sticky", top: stickyTop }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, marginBottom: 10, flexWrap: "wrap" }}>
-          <div style={S.label}>📖 Texte à lire <span style={{ fontWeight: 400, textTransform: "none", letterSpacing: 0 }}>· bôi đen để tô vàng 🖍</span></div>
+          <div style={S.label}>📖 Texte à lire <span style={{ fontWeight: 400, textTransform: "none", letterSpacing: 0 }}>· surlignez une phrase pour la marquer 🖍</span></div>
           {/* A- / A+ : chỉnh cỡ chữ 14-24px */}
           <div style={{ display: "flex", gap: 6 }}>
             {[["A−", -2], ["A+", 2]].map(([lbl, delta]) => (
