@@ -1,7 +1,6 @@
 import './storageShim.js'
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import PracticeHub from './PracticeHub.jsx'
-import mammoth from 'mammoth/mammoth.browser'
 import { BookOpen, GraduationCap, Wine, Croissant, Landmark, Stamp, Feather, Coffee, BookMarked, MoreVertical, Pencil, Copy, Trash2, RotateCcw, Image as ImageIcon, X } from 'lucide-react'
 import { BarChart, Bar, LineChart, Line, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from "recharts";
 
@@ -175,37 +174,6 @@ function formatLastSeen(ts) {
 
 const stripHtml = (h) => (h || "").replace(/<[^>]*>/g, " ").replace(/&nbsp;/gi, " ").replace(/\s+/g, " ").trim();
 const wordCount = (h) => { const t = stripHtml(h); return t ? t.split(" ").length : 0; };
-/* ---- Import DOCX (CE) : tách bài đọc + câu hỏi ----
-   Quy tắc: phần trước ---QUESTIONS--- = bài đọc;
-   sau đó mỗi câu bắt đầu "1. ", đáp án "A. " ... , đáp án đúng có dấu * ở cuối. */
-function parseDocxText(raw) {
-  const marker = /-{2,}\s*QUESTIONS\s*-{2,}/i;
-  const [textPart, qPart = ""] = raw.split(marker);
-  const questions = [];
-  let cur = null;
-  qPart.split(/\r?\n/).map((l) => l.trim()).forEach((line) => {
-    if (!line) return;
-    const mQ = line.match(/^\d+[.)]\s*(.+)/);
-    const mO = line.match(/^([A-D])[.)]\s*(.+)/i);
-    if (mQ && !mO) {
-      if (cur) questions.push(cur);
-      cur = { id: uid(), type: "qcm", prompt: mQ[1].trim(), options: [], answer: 0 };
-    } else if (mO && cur) {
-      let opt = mO[2].trim();
-      const isAnswer = /\*\s*$/.test(opt);
-      opt = opt.replace(/\s*\*\s*$/, "");
-      if (isAnswer) cur.answer = cur.options.length;
-      cur.options.push(opt);
-    } else if (cur && cur.options.length === 0) {
-      cur.prompt += " " + line; // câu hỏi xuống dòng
-    }
-  });
-  if (cur) questions.push(cur);
-  return {
-    readingText: textPart.trim(),
-    questions: questions.filter((q) => q.prompt && q.options.length >= 2),
-  };
-}
 
 const vfOk = (q, ans) => ans != null && ans.choice === q.answer;
 const fillOk = (q, ans) => (q.accepted || "").split("|").map(norm).filter(Boolean).includes(norm(ans));
@@ -966,8 +934,85 @@ function Builder({ draft, setDraft, publish, cancel, accounts, classes = [] }) {
   (draft.assignedClasses || []).forEach((cid) => accounts.filter((a) => a.classId === cid).forEach((a) => classMembers.add(a.name)));
   const mergedTargets = new Set([...classMembers, ...(draft.assignedExtra || [])]);
   const className = (cid) => classes.find((c) => c.id === cid)?.name;
-  const fileRef = React.useRef(null);
-  const [importMsg, setImportMsg] = useState("");
+  const jsonFileRef = React.useRef(null);
+  const [jsonModal, setJsonModal] = useState(false);
+  const [jsonText, setJsonText] = useState("");
+  const [jsonMsg, setJsonMsg] = useState("");
+  const [toast, setToast] = useState(null); // {type:'ok'|'err', msg}
+  const showToast = (type, msg) => { setToast({ type, msg }); setTimeout(() => setToast(null), 3500); };
+
+  /* ---- Import JSON : auto-remplissage complet du formulaire ---- */
+  const handleImportJSON = (raw) => {
+    try {
+      const data = JSON.parse(raw);
+      const LEVELS = Object.keys(LEVEL_COLORS);
+
+      // -- questions mapping (IDs régénérés OBLIGATOIREMENT) --
+      const normVF = (r) => {
+        if (typeof r === "number") return Math.min(2, Math.max(0, r));
+        const t = String(r || "").toLowerCase();
+        if (t.startsWith("v")) return 0;
+        if (t.startsWith("f")) return 1;
+        return 2; // ONSP / "on ne sait pas" / "?"
+      };
+      const qs = (Array.isArray(data.questions) ? data.questions : []).map((it) => {
+        const prompt = String(it.question ?? it.prompt ?? it.enonce ?? "").trim();
+        if (!prompt) return null;
+        const type = String(it.type || "").toUpperCase();
+        switch (type) {
+          case "QCM": case "MCQ": {
+            const options = (it.options || it.choix || []).map((o) => String(o));
+            if (options.length < 2) return null;
+            let answer = it.reponse ?? it.answer ?? 0;
+            if (typeof answer !== "number") answer = Math.max(0, options.indexOf(String(answer)));
+            return { id: uid(), type: "qcm", prompt, options, answer: Math.min(answer, options.length - 1) };
+          }
+          case "TEXTE_A_TROUS": case "FILL":
+            return { id: uid(), type: "fill", prompt, answer: String(it.reponse ?? it.answer ?? "") };
+          case "CONJUGAISON": case "CONJ":
+            return { id: uid(), type: "conj", prompt, answer: String(it.reponse ?? it.answer ?? "") };
+          case "VRAI_FAUX_ONSP": case "VF": case "VRAI_FAUX":
+            return { id: uid(), type: "vf", prompt, answer: normVF(it.reponse ?? it.answer),
+              justification: String(it.justification ?? it.justification_attendue ?? "") };
+          case "REPONSE_LIBRE": case "OPEN":
+            return { id: uid(), type: "open", prompt, model: String(it.corrige_type ?? it.reponse_suggeree ?? it.model ?? "") };
+          default: return null;
+        }
+      }).filter(Boolean);
+
+      if (!qs.length) throw new Error("Aucune question valide");
+
+      // -- infos générales --
+      const rawSkills = data.competences ?? data.skills ?? [];
+      const skills = (Array.isArray(rawSkills) ? rawSkills : [rawSkills]).filter((k) => SKILLS.includes(k));
+      const lv = data.niveau ?? data.level;
+      const consigne = data.consigne_generale ?? data.consigne ?? "";
+
+      setDraft({
+        ...draft,
+        title: String(data.titre ?? data.title ?? draft.title),
+        level: LEVELS.includes(lv) ? lv : draft.level,
+        ...(skills.length ? { skills, skill: skills[0] } : {}),
+        consigne: consigne ? (/</.test(consigne) ? consigne : `<p>${consigne}</p>`) : draft.consigne,
+        readingText: String(data.texte_support ?? data.readingText ?? draft.readingText ?? ""),
+        audioUrl: String(data.audio_url ?? data.audioUrl ?? draft.audioUrl ?? ""),
+        questions: qs,
+      });
+      setJsonModal(false);
+      showToast("ok", "✅ Import bài tập thành công !");
+    } catch (e) {
+      setJsonMsg("❌ Lỗi định dạng JSON ! Vui lòng kiểm tra lại cấu trúc (thiếu ngoặc, dư dấu phẩy, thiếu trường questions…).");
+    }
+  };
+
+  const onJsonFile = (file) => {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => { setJsonText(String(reader.result || "")); setJsonMsg("📂 Fichier chargé — cliquez sur « Importer »."); };
+    reader.onerror = () => setJsonMsg("❌ Impossible de lire le fichier.");
+    reader.readAsText(file);
+    if (jsonFileRef.current) jsonFileRef.current.value = "";
+  };
   const [imgMsg, setImgMsg] = useState("");
 
   // Đọc file ảnh → base64 (giới hạn 1,5 MB để không vượt hạn mức lưu trữ)
@@ -980,31 +1025,6 @@ function Builder({ draft, setDraft, publish, cancel, accounts, classes = [] }) {
     reader.readAsDataURL(file);
   };
 
-  const importDocx = async (file) => {
-    if (!file) return;
-    setImportMsg("⏳ Đang đọc file…");
-    try {
-      const arrayBuffer = await file.arrayBuffer();
-      const { value: raw } = await mammoth.extractRawText({ arrayBuffer });
-      const { readingText, questions } = parseDocxText(raw);
-      if (!questions.length) {
-        setImportMsg("⚠ Không tìm thấy câu hỏi. Kiểm tra file có dòng ---QUESTIONS--- và câu hỏi dạng « 1. », đáp án « A. » (đáp án đúng thêm * ở cuối).");
-        return;
-      }
-      setDraft({
-        ...draft,
-        title: draft.title || file.name.replace(/\.docx$/i, "").replace(/[_-]+/g, " "),
-        skill: (draft.skills && draft.skills[0]) || "Lecture",
-        skills: [...new Set([...(draft.skills || []), "Lecture"])],
-        readingText,
-        questions: [...draft.questions, ...questions],
-      });
-      setImportMsg(`✅ Đã import : bài đọc (${readingText.split(/\s+/).length} mots) + ${questions.length} câu hỏi. Hãy kiểm tra lại rồi bấm Publier.`);
-    } catch (e) {
-      setImportMsg("❌ Lỗi đọc file : " + e.message);
-    }
-    if (fileRef.current) fileRef.current.value = "";
-  };
 
   const addQ = (type) => {
     const base = { id: uid(), type, prompt: "" };
@@ -1044,23 +1064,11 @@ function Builder({ draft, setDraft, publish, cancel, accounts, classes = [] }) {
     <div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 10 }}>
         <h2 style={{ ...S.display, marginTop: 0, marginBottom: 0 }}>{draft.title ? "Modifier l'exercice" : "Nouvel exercice"}</h2>
-        {dSkills.includes("Lecture") && (
-        <div>
-          <input ref={fileRef} type="file" accept=".docx" style={{ display: "none" }}
-            onChange={(e) => importDocx(e.target.files?.[0])} />
-          <button style={S.btn(false)} onClick={() => fileRef.current?.click()}>📄 Import DOCX (texte CE)</button>
-        </div>
-        )}
+        <button style={{ ...S.btn(false), display: "inline-flex", alignItems: "center", gap: 8 }}
+          onClick={() => { setJsonModal(true); setJsonText(""); setJsonMsg(""); }}>
+          🪄 Import JSON
+        </button>
       </div>
-      {importMsg && (
-        <div className="mcf-card" style={{ ...S.card, margin: "12px 0", padding: "10px 16px", fontSize: 13.5,
-          borderLeft: `3px solid ${importMsg.startsWith("✅") ? C.ok : importMsg.startsWith("⏳") ? C.primary : C.danger}` }}>
-          {importMsg}
-          <div style={{ fontSize: 12, color: C.soft, marginTop: 4 }}>
-            Định dạng file Word : bài đọc ở trên → dòng <b>---QUESTIONS---</b> → «&nbsp;1. Câu hỏi&nbsp;» với đáp án «&nbsp;A. …&nbsp;», «&nbsp;B. …&nbsp;» ; đáp án đúng kết thúc bằng dấu <b>*</b>.
-          </div>
-        </div>
-      )}
       <div className="mcf-card" style={{ ...S.card, marginBottom: 16 }}>
         {/* Type d'utilisation : Devoir vs Entraînement */}
         <div style={{ marginBottom: 16 }}>
@@ -1352,6 +1360,53 @@ function Builder({ draft, setDraft, publish, cancel, accounts, classes = [] }) {
         <button style={S.btn(false)} onClick={() => addQ("open")}>+ Réponse libre</button>
         <button style={S.btn(false)} onClick={() => setDraft({ ...draft, questions: [...draft.questions, { id: uid(), type: "vf", prompt: "", answer: 0, justification: "" }] })}>+ Vrai / Faux / ?</button>
       </div>
+      {/* 🪄 Modal Import JSON */}
+      {jsonModal && (
+        <div style={{ position: "fixed", inset: 0, background: "rgba(17,24,39,.55)", display: "grid", placeItems: "center", padding: 16, zIndex: 250 }}
+          onClick={() => setJsonModal(false)}>
+          <div className="mcf-card" style={{ ...S.card, width: "100%", maxWidth: 640, maxHeight: "88vh", overflowY: "auto" }} onClick={(e) => e.stopPropagation()}>
+            <h3 style={{ ...S.display, fontSize: 20, marginTop: 0, display: "flex", alignItems: "center", gap: 10 }}>🪄 Import JSON</h3>
+            <div style={{ fontSize: 13, color: C.soft, marginBottom: 10 }}>
+              Collez le JSON généré par une IA, ou chargez un fichier <b>.json</b>. Champs : <code>titre, niveau, competences[], consigne_generale, texte_support, audio_url, questions[]</code> — types : <code>QCM, TEXTE_A_TROUS, CONJUGAISON, VRAI_FAUX_ONSP, REPONSE_LIBRE</code>.
+            </div>
+
+            <textarea value={jsonText} onChange={(e) => { setJsonText(e.target.value); setJsonMsg(""); }} spellCheck={false}
+              placeholder={'{\n  "titre": "Les transports",\n  "niveau": "B1",\n  "competences": ["Grammaire"],\n  "questions": [\n    { "type": "QCM", "question": "…", "options": ["a","b","c"], "reponse": 0 }\n  ]\n}'}
+              style={{ width: "100%", minHeight: 240, boxSizing: "border-box", borderRadius: 14, border: `1.5px solid ${C.line}`,
+                background: "#0B1120", color: "#4ADE80", fontFamily: "'Consolas','Menlo',monospace", fontSize: 13,
+                padding: 16, resize: "vertical", lineHeight: 1.55 }} />
+
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 12, flexWrap: "wrap" }}>
+              <input ref={jsonFileRef} type="file" accept=".json,application/json" style={{ display: "none" }}
+                onChange={(e) => onJsonFile(e.target.files?.[0])} />
+              <button style={S.btn(false)} onClick={() => jsonFileRef.current?.click()}>📂 Charger un fichier .json</button>
+              <span style={{ fontSize: 12, color: C.soft }}>ou glissez-collez le texte ci-dessus</span>
+            </div>
+
+            {jsonMsg && (
+              <div style={{ marginTop: 12, padding: "10px 14px", borderRadius: 12, fontSize: 13.5, fontWeight: 600,
+                background: jsonMsg.startsWith("❌") ? C.dangerSoft : C.primarySoft,
+                color: jsonMsg.startsWith("❌") ? C.danger : C.primary }}>{jsonMsg}</div>
+            )}
+
+            <div style={{ display: "flex", gap: 10, marginTop: 16 }}>
+              <button style={{ ...S.btn(true), opacity: jsonText.trim() ? 1 : 0.4, pointerEvents: jsonText.trim() ? "auto" : "none" }}
+                onClick={() => handleImportJSON(jsonText)}>🪄 Importer</button>
+              <button style={S.btn(false)} onClick={() => setJsonModal(false)}>Annuler</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Toast */}
+      {toast && (
+        <div style={{ position: "fixed", bottom: 24, left: "50%", transform: "translateX(-50%)", zIndex: 300,
+          background: toast.type === "ok" ? C.ok : C.danger, color: "#fff", padding: "12px 26px", borderRadius: 999,
+          fontWeight: 700, fontSize: 14, boxShadow: "0 10px 30px rgba(17,24,39,.35)" }}>
+          {toast.msg}
+        </div>
+      )}
+
       <div style={{ display: "flex", gap: 10 }}>
         <button style={{ ...S.btn(true), opacity: ready ? 1 : 0.4 }} disabled={!ready} onClick={publish}>Publier l'exercice</button>
         <button style={S.btn(false)} onClick={cancel}>Annuler</button>
