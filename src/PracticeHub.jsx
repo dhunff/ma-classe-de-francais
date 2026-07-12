@@ -5,7 +5,7 @@ import {
 } from "lucide-react";
 import {
   C, S, QTYPES, VF_OPTS, uid, fillOk, vfOk, stripHtml, autoQ,
-  RichTextEditor, Builder, ReadingPanel, load, save,
+  RichTextEditor, Builder, ReadingPanel, load, save, exSkills,
 } from "./App.jsx";
 
 /* ============================================================
@@ -24,7 +24,11 @@ const CATS = [
   { skill: "Vocabulaire", label: "Vocabulaire", vi: "Mots et expressions", Icon: BookA, color: "#C98412", pastel: "#FFF6E8" },
   { skill: "__autres__", label: "Autres", vi: "Traduction, communication…", Icon: Sparkles, color: "#6E7691", pastel: "#F0F1F6" },
 ];
-const catOf = (ex) => CATS.some((c) => c.skill === ex.skill) ? ex.skill : "__autres__";
+const MAIN_SKILLS = CATS.filter((c) => !c.skill.startsWith("__")).map((c) => c.skill);
+const inCat = (ex, sk) => sk === "__autres__"
+  ? exSkills(ex).every((s) => !MAIN_SKILLS.includes(s))
+  : exSkills(ex).includes(sk);
+const catOf = (ex) => MAIN_SKILLS.find((sk) => exSkills(ex).includes(sk)) || "__autres__";
 
 export default function PracticeHub({ role = "eleve", name = "" }) {
   const teacher = role === "prof";
@@ -75,7 +79,7 @@ export default function PracticeHub({ role = "eleve", name = "" }) {
     setNewCat(""); setCatPopup(false);
   };
 
-  const blank = () => ({ id: uid(), title: "", level: "B1", skill: "Grammaire", deadline: "", audioUrl: "", readingText: "", imageUrl: "", timeLimit: "", assignedTo: null, createdAt: Date.now(), questions: [] });
+  const blank = () => ({ id: uid(), title: "", level: "B1", skill: "Grammaire", skills: ["Grammaire"], consigne: "", deadline: "", audioUrl: "", readingText: "", imageUrl: "", timeLimit: "", targeted: false, assignedClasses: [], assignedExtra: [], assignedTo: null, createdAt: Date.now(), questions: [] });
 
   if (!loaded) return <p style={{ color: C.soft, textAlign: "center" }}>Chargement…</p>;
 
@@ -100,7 +104,7 @@ export default function PracticeHub({ role = "eleve", name = "" }) {
 
   /* -------- Sub-view "Autres" : thư mục danh mục con -------- */
   if (view.page === "autres") {
-    const autresEx = exercises.filter((e) => catOf(e) === "__autres__");
+    const autresEx = exercises.filter((e) => inCat(e, "__autres__"));
     const unclassified = autresEx.filter((e) => !e.customCat);
     const folders = [
       ...cats.map((c) => ({ name: c, count: autresEx.filter((e) => e.customCat === c).length })),
@@ -168,7 +172,7 @@ export default function PracticeHub({ role = "eleve", name = "" }) {
 
   if (view.page === "category") {
     const meta = CATS.find((c) => c.skill === view.cat);
-    let all = exercises.filter((e) => catOf(e) === view.cat);
+    let all = exercises.filter((e) => inCat(e, view.cat));
     if (view.cat === "__autres__" && view.folder) {
       all = view.folder === "__nc__" ? all.filter((e) => !e.customCat) : all.filter((e) => e.customCat === view.folder);
     }
@@ -189,7 +193,8 @@ export default function PracticeHub({ role = "eleve", name = "" }) {
             <meta.Icon size={24} color={meta.color} /> {view.folder ? (view.folder === "__nc__" ? "Non classé" : view.folder) : meta.label}
           </h2>
           {teacher && <button style={S.btn(true)} onClick={() => {
-            const d = { ...blank(), skill: view.cat === "__autres__" ? "Traduction" : view.cat, level: niveau };
+            const sk = view.cat === "__autres__" ? "Traduction" : view.cat;
+            const d = { ...blank(), skill: sk, skills: [sk], level: niveau };
             if (view.folder && view.folder !== "__nc__") d.customCat = view.folder;
             setDraft(d); setView({ page: "builder" });
           }}><Plus size={16} /> Nouvel exercice</button>}
@@ -237,7 +242,7 @@ export default function PracticeHub({ role = "eleve", name = "" }) {
                   <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
                     <button style={S.btn(true)} onClick={() => setView({ page: "quiz", cat: view.cat, folder: view.folder, niveau, exId: ex.id })}>S'entraîner</button>
                     {teacher && <HubMenu
-                      onEdit={() => { setDraft(JSON.parse(JSON.stringify(ex))); setView({ page: "builder" }); }}
+                      onEdit={() => { const c = JSON.parse(JSON.stringify(ex)); if (!c.skills || !c.skills.length) c.skills = c.skill ? [c.skill] : []; if (c.consigne === undefined) c.consigne = ""; setDraft(c); setView({ page: "builder" }); }}
                       onDup={() => duplicate(ex)}
                       onDel={() => persist(exercises.filter((e) => e.id !== ex.id))} />}
                   </div>
@@ -259,7 +264,7 @@ export default function PracticeHub({ role = "eleve", name = "" }) {
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(250px,1fr))", gap: 16 }}>
         {CATS.map((cat, i) => {
-          const list = exercises.filter((e) => catOf(e) === cat.skill);
+          const list = exercises.filter((e) => inCat(e, cat.skill));
           if (cat.skill === "__autres__" && list.length === 0 && cats.length === 0 && !teacher) return null;
           const doneCount = list.filter((e) => hist[e.id]).length;
           const pct = list.length ? Math.round((doneCount / list.length) * 100) : 0;
@@ -486,7 +491,7 @@ function PracticeWorkspace({ ex, back, onFinish }) {
       )}
 
       <button style={{ ...S.btn(false), marginBottom: 16 }} onClick={back}><ChevronLeft size={16} /> Retour</button>
-      <h2 style={{ ...S.display, marginTop: 0 }}>{ex.title} <span style={{ fontSize: 13, color: C.soft, fontFamily: "'Be Vietnam Pro',sans-serif" }}>({ex.level} · {ex.skill})</span></h2>
+      <h2 style={{ ...S.display, marginTop: 0 }}>{ex.title} <span style={{ fontSize: 13, color: C.soft, fontFamily: "'Be Vietnam Pro',sans-serif" }}>({ex.level} · {exSkills(ex).join(" + ")})</span></h2>
       <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap", marginBottom: 8 }}>
         {!zen && (
           <button onClick={() => setZen(true)}
@@ -494,6 +499,13 @@ function PracticeWorkspace({ ex, back, onFinish }) {
         )}
         {ex.timeLimit && !graded && <span style={{ fontSize: 13, color: C.primary, fontWeight: 700 }}>⏱ Temps limite : {ex.timeLimit} minutes</span>}
       </div>
+
+      {ex.consigne && (
+        <div className="mcf-card" style={{ ...S.card, marginBottom: 16, borderLeft: `4px solid #3D5AF1` }}>
+          <div style={S.label}>📋 Consigne</div>
+          <div style={{ fontSize: 15.5, lineHeight: 1.75, marginTop: 6, whiteSpace: "pre-wrap", fontWeight: 500 }}>{ex.consigne}</div>
+        </div>
+      )}
 
       {ex.imageUrl && (
         <div style={{ display: "flex", justifyContent: "center", marginBottom: 16 }}>

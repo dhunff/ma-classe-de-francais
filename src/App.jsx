@@ -152,6 +152,7 @@ async function del(key, shared = false) { try { await window.storage.delete(key,
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
 const fmtDate = (d) => new Date(d).toLocaleString("fr-FR", { dateStyle: "short", timeStyle: "short" });
 const isLate = (ex) => ex.deadline && Date.now() > new Date(ex.deadline).getTime();
+const exSkills = (ex) => (ex.skills && ex.skills.length ? ex.skills : ex.skill ? [ex.skill] : []);
 const assignedTo = (ex, name) => !ex.assignedTo || ex.assignedTo.length === 0 || ex.assignedTo.includes(name);
 const targetedAccounts = (ex, accounts) => (ex.assignedTo && ex.assignedTo.length ? accounts.filter((a) => ex.assignedTo.includes(a.name)) : accounts);
 const norm = (s) => (s || "").trim().toLowerCase().normalize("NFC").replace(/\s+/g, " ").replace(/[’]/g, "'");
@@ -238,11 +239,12 @@ export default function App() {
   const [accounts, setAccounts] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  const [classes, setClasses] = useState([]);
   const refresh = useCallback(async () => {
-    const [ex, sub, ac] = await Promise.all([
-      load("mcf-exercises", []), load("mcf-submissions", []), load("mcf-accounts", []),
+    const [ex, sub, ac, cl] = await Promise.all([
+      load("mcf-exercises", []), load("mcf-submissions", []), load("mcf-accounts", []), load("mcf-classes", []),
     ]);
-    setExercises(ex); setSubmissions(sub); setAccounts(ac); setLoading(false);
+    setExercises(ex); setSubmissions(sub); setAccounts(ac); setClasses(cl); setLoading(false);
   }, []);
   useEffect(() => { refresh(); }, [refresh]);
 
@@ -297,7 +299,7 @@ export default function App() {
         {loading ? <p style={{ textAlign: "center", color: C.soft }}>Ouverture du cahier…</p>
           : !session ? null
           : session.role === "prof"
-            ? <Teacher {...{ exercises, setExercises, submissions, setSubmissions, accounts, setAccounts, refresh }} />
+            ? <Teacher {...{ exercises, setExercises, submissions, setSubmissions, accounts, setAccounts, classes, setClasses, refresh }} />
             : <Student name={session.name} {...{ exercises, submissions, setSubmissions, accounts, setAccounts, refresh }} />}
       </main>
     </div>
@@ -558,16 +560,39 @@ function Login({ accounts, onLogin }) {
 }
 
 /* ================= Teacher ================= */
-function Teacher({ exercises, setExercises, submissions, setSubmissions, accounts, setAccounts, refresh }) {
+function Teacher({ exercises, setExercises, submissions, setSubmissions, accounts, setAccounts, classes, setClasses, refresh }) {
   const [view, setView] = useState("list");
   const [draft, setDraft] = useState(null);
 
   const tabs = [["list", "📚 Exercices"], ["students", "👥 Élèves"], ["stats", "📊 Statistiques"], ["practice", "🏋️ Entraînement"]];
-  const blank = () => ({ id: uid(), title: "", level: "B1", skill: "Grammaire", deadline: "", audioUrl: "", readingText: "", imageUrl: "", timeLimit: "", assignedTo: null, createdAt: Date.now(), questions: [] });
+  const blank = () => ({ id: uid(), title: "", level: "B1", skill: "Grammaire", skills: ["Grammaire"], consigne: "", deadline: "", audioUrl: "", readingText: "", imageUrl: "", timeLimit: "", targeted: false, assignedClasses: [], assignedExtra: [], assignedTo: null, createdAt: Date.now(), questions: [] });
+
+  // Gom danh sách học sinh được giao : lớp đã tick ∪ học sinh chọn lẻ → mảng unique
+  const finalizeTargets = (d) => {
+    if (!d.targeted) return { ...d, assignedTo: null };
+    const names = new Set(d.assignedExtra || []);
+    (d.assignedClasses || []).forEach((cid) =>
+      accounts.filter((a) => a.classId === cid).forEach((a) => names.add(a.name)));
+    return { ...d, assignedTo: [...names] };
+  };
+
+  // Chuẩn hoá bài cũ khi mở Modifier (chưa có skills/targeted)
+  const editPrep = (ex) => {
+    const c = JSON.parse(JSON.stringify(ex));
+    if (!c.skills || !c.skills.length) c.skills = c.skill ? [c.skill] : [];
+    if (c.consigne === undefined) c.consigne = "";
+    if (c.targeted === undefined) {
+      c.targeted = !!(c.assignedTo && c.assignedTo.length);
+      c.assignedExtra = c.assignedTo || [];
+      c.assignedClasses = [];
+    }
+    return c;
+  };
 
   const publish = async () => {
-    const others = exercises.filter((e) => e.id !== draft.id);
-    const next = [...others, draft].sort((a, b) => a.createdAt - b.createdAt);
+    const final = finalizeTargets(draft);
+    const others = exercises.filter((e) => e.id !== final.id);
+    const next = [...others, final].sort((a, b) => a.createdAt - b.createdAt);
     const ok = await save("mcf-exercises", next);
     if (!ok) { alert("❌ Échec de l'enregistrement — données trop volumineuses (image base64). Utilisez plutôt une URL publique."); return; }
     setExercises(next); setView("list");
@@ -577,7 +602,7 @@ function Teacher({ exercises, setExercises, submissions, setSubmissions, account
     setExercises(next); await save("mcf-exercises", next);
   };
 
-  if (view === "new") return <Builder draft={draft} setDraft={setDraft} publish={publish} cancel={() => setView("list")} accounts={accounts} />;
+  if (view === "new") return <Builder draft={draft} setDraft={setDraft} publish={publish} cancel={() => setView("list")} accounts={accounts} classes={classes} />;
   if (view.startsWith("progress:")) {
     const ex = exercises.find((e) => e.id === view.slice(9));
     return <Progress ex={ex} submissions={submissions} setSubmissions={setSubmissions} accounts={accounts} back={() => setView("list")} />;
@@ -595,7 +620,7 @@ function Teacher({ exercises, setExercises, submissions, setSubmissions, account
         </div>
       </div>
 
-      {view === "students" && <Accounts accounts={accounts} setAccounts={setAccounts} />}
+      {view === "students" && <Accounts accounts={accounts} setAccounts={setAccounts} classes={classes} setClasses={setClasses} />}
       {view === "practice" && <PracticeHub role="prof" />}
       {view === "stats" && <Stats accounts={accounts} exercises={exercises} submissions={submissions} />}
       {view === "list" && (
@@ -615,11 +640,13 @@ function Teacher({ exercises, setExercises, submissions, setSubmissions, account
                 <div key={ex.id} className="mcf-card" style={{ ...S.card, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
                   <div>
                     <span style={S.badge(ex.level)}>{ex.level}</span>
-                    <span style={S.chip(C.primarySoft, C.primary)}>{ex.skill}</span>{" "}
+                    <span style={S.chip(C.primarySoft, C.primary)}>{exSkills(ex).join(" · ")}</span>{" "}
                     <strong style={{ fontSize: 17 }}>{ex.title}</strong>
                     <div style={{ fontSize: 12, color: C.soft, marginTop: 5 }}>
                       {ex.questions.length} question(s) · {subs.length}/{targets.length} copies
-                      {ex.assignedTo?.length ? <span style={{ color: C.primary, fontWeight: 700 }}> · 👤 {ex.assignedTo.join(", ")}</span> : " · 👥 toute la classe"}
+                      {ex.assignedTo?.length
+                        ? <span style={{ color: C.primary, fontWeight: 700 }} title={ex.assignedTo.join(", ")}> · 👤 {ex.assignedTo.length} élève{ex.assignedTo.length > 1 ? "s" : ""}{ex.assignedClasses?.length ? ` · 🏫 ${ex.assignedClasses.map((id) => classes.find((c) => c.id === id)?.name).filter(Boolean).join(", ")}` : ""}</span>
+                        : " · 👥 tous les élèves"}
                       {toGrade > 0 && <span style={{ color: C.accent, fontWeight: 700 }}> · ✏️ {toGrade} à corriger</span>}
                       {ex.deadline && <span style={{ color: late ? C.danger : C.warn, fontWeight: 700 }}> · ⏰ {fmtDate(ex.deadline)}{late && " (clôturé)"}</span>}
                       {ex.audioUrl && " · 🎧 audio"}
@@ -629,7 +656,7 @@ function Teacher({ exercises, setExercises, submissions, setSubmissions, account
                   <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
                     <button style={S.btn(true)} onClick={() => setView("progress:" + ex.id)}>Suivi & correction</button>
                     <KebabMenu items={[
-                      { label: "Modifier", icon: <Pencil size={16} />, onClick: () => { setDraft(JSON.parse(JSON.stringify(ex))); setView("new"); } },
+                      { label: "Modifier", icon: <Pencil size={16} />, onClick: () => { setDraft(editPrep(ex)); setView("new"); } },
                       { label: "Dupliquer", icon: <Copy size={16} />, onClick: () => duplicate(ex) },
                       { label: "Supprimer", icon: <Trash2 size={16} />, danger: true, onClick: () => remove(ex.id) },
                     ]} />
@@ -645,7 +672,22 @@ function Teacher({ exercises, setExercises, submissions, setSubmissions, account
 }
 
 /* ================= Accounts ================= */
-function Accounts({ accounts, setAccounts }) {
+function Accounts({ accounts, setAccounts, classes, setClasses }) {
+  const [newClass, setNewClass] = useState("");
+  const addClass = async () => {
+    const n = newClass.trim(); if (!n) return;
+    const next = [...classes, { id: uid(), name: n }];
+    setClasses(next); await save("mcf-classes", next); setNewClass("");
+  };
+  const delClass = async (id) => {
+    const next = classes.filter((c) => c.id !== id);
+    setClasses(next); await save("mcf-classes", next);
+  };
+  const setStudentClass = async (name, classId) => {
+    const latest = await load("mcf-accounts", []);
+    const next = latest.map((a) => (a.name === name ? { ...a, classId: classId || undefined } : a));
+    setAccounts(next); await save("mcf-accounts", next);
+  };
   const [name, setName] = useState("");
   const [code, setCode] = useState("");
   const [msg, setMsg] = useState("");
@@ -683,6 +725,27 @@ function Accounts({ accounts, setAccounts }) {
   return (
     <div>
       <div className="mcf-card" style={{ ...S.card, marginBottom: 16 }}>
+        <div style={S.label}>🏫 Classes</div>
+        <div style={{ display: "flex", gap: 10, marginTop: 8, flexWrap: "wrap" }}>
+          <input style={{ ...S.input, flex: "1 1 200px", maxWidth: 280 }} value={newClass}
+            placeholder="ex. B1-Matin, A1-K1…" onChange={(e) => setNewClass(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && addClass()} />
+          <button style={S.btn(true)} onClick={addClass}>Créer la classe</button>
+        </div>
+        {classes.length > 0 && (
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 12 }}>
+            {classes.map((cl) => (
+              <span key={cl.id} style={{ ...S.chip(C.primarySoft, C.primary), display: "inline-flex", alignItems: "center", gap: 8, padding: "6px 14px" }}>
+                🏫 {cl.name} ({accounts.filter((a) => a.classId === cl.id).length})
+                <button title="Supprimer la classe" onClick={() => delClass(cl.id)}
+                  style={{ border: "none", background: "transparent", color: C.danger, cursor: "pointer", fontWeight: 800, padding: 0 }}>✕</button>
+              </span>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div className="mcf-card" style={{ ...S.card, marginBottom: 16 }}>
         <div style={S.label}>Créer un compte élève (l'élève pourra changer son mot de passe)</div>
         <div style={{ display: "flex", gap: 10, marginTop: 8, flexWrap: "wrap" }}>
           <input style={{ ...S.input, flex: "1 1 160px" }} value={name} placeholder="Prénom de l'élève" onChange={(e) => setName(e.target.value)} />
@@ -713,6 +776,11 @@ function Accounts({ accounts, setAccounts }) {
                 );
               })()}
               <span style={{ fontSize: 13, color: C.soft }}>mot de passe : {show ? a.code : "••••"}</span>
+              <select value={a.classId || ""} onChange={(e) => setStudentClass(a.name, e.target.value)}
+                style={{ ...S.input, width: "auto", padding: "5px 10px", fontSize: 12.5 }}>
+                <option value="">— Sans classe —</option>
+                {classes.map((cl) => <option key={cl.id} value={cl.id}>{cl.name}</option>)}
+              </select>
             </span>
             <div style={{ display: "flex", gap: 8 }}>
               <button style={{ ...S.btn(false), padding: "5px 12px", fontSize: 12 }} onClick={() => reset(a.name)}>Réinitialiser</button>
@@ -734,12 +802,12 @@ function Stats({ accounts, exercises, submissions }) {
     }).filter((x) => x != null);
     const mean = pcts.length ? pcts.reduce((a, b) => a + b, 0) / pcts.length : null;
     const sd = pcts.length > 1 ? Math.sqrt(pcts.reduce((a, b) => a + (b - mean) ** 2, 0) / (pcts.length - 1)) : 0;
-    return { name: ex.title.length > 16 ? ex.title.slice(0, 15) + "…" : ex.title, full: ex.title, skill: ex.skill, moyenne: mean == null ? null : Math.round(mean), ecartType: Math.round(sd * 10) / 10, copies: pcts.length };
+    return { name: ex.title.length > 16 ? ex.title.slice(0, 15) + "…" : ex.title, full: ex.title, skill: exSkills(ex).join(" · "), moyenne: mean == null ? null : Math.round(mean), ecartType: Math.round(sd * 10) / 10, copies: pcts.length };
   });
 
   const radar = SKILLS.map((skill) => {
     const pcts = [];
-    exercises.filter((e) => e.skill === skill).forEach((ex) => {
+    exercises.filter((e) => exSkills(e).includes(skill)).forEach((ex) => {
       submissions.filter((s) => s.exerciseId === ex.id).forEach((s) => {
         const t = totalScore(s, ex); if (t.max) pcts.push((t.score / t.max) * 100);
       });
@@ -867,7 +935,19 @@ function StudentTable({ accounts, exercises, submissions }) {
 }
 
 /* ================= Builder ================= */
-function Builder({ draft, setDraft, publish, cancel, accounts }) {
+function Builder({ draft, setDraft, publish, cancel, accounts, classes = [] }) {
+  const dSkills = draft.skills && draft.skills.length ? draft.skills : draft.skill ? [draft.skill] : [];
+  const toggleSkill = (sk) => {
+    const next = dSkills.includes(sk) ? dSkills.filter((x) => x !== sk) : [...dSkills, sk];
+    setDraft({ ...draft, skills: next, skill: next[0] || "",
+      audioUrl: next.includes("Écoute") ? draft.audioUrl : "",
+      readingText: next.includes("Lecture") ? draft.readingText : "" });
+  };
+  const [studentSearch, setStudentSearch] = useState("");
+  const classMembers = new Set();
+  (draft.assignedClasses || []).forEach((cid) => accounts.filter((a) => a.classId === cid).forEach((a) => classMembers.add(a.name)));
+  const mergedTargets = new Set([...classMembers, ...(draft.assignedExtra || [])]);
+  const className = (cid) => classes.find((c) => c.id === cid)?.name;
   const fileRef = React.useRef(null);
   const [importMsg, setImportMsg] = useState("");
   const [imgMsg, setImgMsg] = useState("");
@@ -896,7 +976,8 @@ function Builder({ draft, setDraft, publish, cancel, accounts }) {
       setDraft({
         ...draft,
         title: draft.title || file.name.replace(/\.docx$/i, "").replace(/[_-]+/g, " "),
-        skill: "Lecture",
+        skill: (draft.skills && draft.skills[0]) || "Lecture",
+        skills: [...new Set([...(draft.skills || []), "Lecture"])],
         readingText,
         questions: [...draft.questions, ...questions],
       });
@@ -918,7 +999,8 @@ function Builder({ draft, setDraft, publish, cancel, accounts }) {
   const delQ = (id) => setDraft({ ...draft, questions: draft.questions.filter((q) => q.id !== id) });
 
   const ready = draft.title.trim() && draft.questions.length > 0 &&
-    (!draft.assignedTo || draft.assignedTo.length > 0) &&
+    dSkills.length > 0 &&
+    (!draft.targeted || mergedTargets.size > 0) &&
     draft.questions.every((q) => q.prompt.trim() &&
       (q.type === "qcm" ? q.options.length >= 2 && q.options.every((o) => o.trim()) : true) &&
       ((q.type === "fill" || q.type === "conj") ? q.accepted.trim() : true));
@@ -932,7 +1014,7 @@ function Builder({ draft, setDraft, publish, cancel, accounts }) {
     <div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 10 }}>
         <h2 style={{ ...S.display, marginTop: 0, marginBottom: 0 }}>{draft.title ? "Modifier l'exercice" : "Nouvel exercice"}</h2>
-        {draft.skill === "Lecture" && (
+        {dSkills.includes("Lecture") && (
         <div>
           <input ref={fileRef} type="file" accept=".docx" style={{ display: "none" }}
             onChange={(e) => importDocx(e.target.files?.[0])} />
@@ -955,6 +1037,10 @@ function Builder({ draft, setDraft, publish, cancel, accounts }) {
             <div style={S.label}>Titre</div>
             <input style={{ ...S.input, marginTop: 6 }} value={draft.title} placeholder="ex. Passé composé — les transports"
               onChange={(e) => setDraft({ ...draft, title: e.target.value })} />
+            <div style={{ ...S.label, marginTop: 12 }}>Consigne / Énoncé de l'exercice (optionnel)</div>
+            <textarea style={{ ...S.input, marginTop: 6, minHeight: 60, resize: "vertical" }} value={draft.consigne || ""}
+              placeholder="ex. Lisez attentivement le texte puis répondez aux questions suivantes…"
+              onChange={(e) => setDraft({ ...draft, consigne: e.target.value })} />
           </div>
           <div>
             <div style={S.label}>Niveau</div>
@@ -962,18 +1048,22 @@ function Builder({ draft, setDraft, publish, cancel, accounts }) {
               {Object.keys(LEVEL_COLORS).map((l) => <option key={l}>{l}</option>)}
             </select>
           </div>
-          <div>
-            <div style={S.label}>Compétence</div>
-            <select style={{ ...S.input, marginTop: 6 }} value={draft.skill}
-              onChange={(e) => {
-                const v = e.target.value;
-                // Ẩn trường nào thì reset dữ liệu trường đó về rỗng
-                setDraft({ ...draft, skill: v,
-                  audioUrl: v === "Écoute" ? draft.audioUrl : "",
-                  readingText: v === "Lecture" ? draft.readingText : "" });
-              }}>
-              {SKILLS.map((s) => <option key={s}>{s}</option>)}
-            </select>
+          <div style={{ flex: "1 1 100%" }}>
+            <div style={S.label}>Compétences (sélection multiple)</div>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 8 }}>
+              {SKILLS.map((sk) => {
+                const on = dSkills.includes(sk);
+                return (
+                  <label key={sk} style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13.5, cursor: "pointer",
+                    padding: "8px 16px", borderRadius: 999, fontWeight: 700,
+                    border: `1.5px solid ${on ? C.primary : C.line}`,
+                    background: on ? C.primarySoft : "var(--mcf-surface)", color: on ? C.primary : C.ink }}>
+                    <input type="checkbox" checked={on} style={{ display: "none" }} onChange={() => toggleSkill(sk)} />
+                    {on ? "✓ " : ""}{sk}
+                  </label>
+                );
+              })}
+            </div>
           </div>
           <div>
             <div style={S.label}>Date limite (optionnel)</div>
@@ -1025,7 +1115,7 @@ function Builder({ draft, setDraft, publish, cancel, accounts }) {
           )}
         </div>
 
-        {draft.skill === "Écoute" && (
+        {dSkills.includes("Écoute") && (
         <div style={{ marginTop: 12 }}>
           <div style={S.label}>Lien audio pour compréhension orale (optionnel — URL mp3)</div>
           <input style={{ ...S.input, marginTop: 6 }} value={draft.audioUrl} placeholder="https://…/audio.mp3"
@@ -1034,7 +1124,7 @@ function Builder({ draft, setDraft, publish, cancel, accounts }) {
         </div>
         )}
 
-        {draft.skill === "Lecture" && (
+        {dSkills.includes("Lecture") && (
         <div style={{ marginTop: 12 }}>
           <div style={S.label}>📖 Texte de lecture (CE — optionnel) : l'élève verra une mise en page en 2 colonnes (texte | questions)</div>
           <textarea style={{ ...S.input, marginTop: 6, minHeight: 110, resize: "vertical" }} value={draft.readingText || ""}
@@ -1043,41 +1133,76 @@ function Builder({ draft, setDraft, publish, cancel, accounts }) {
         </div>
         )}
 
+        {accounts.length > 0 && (
         <div style={{ marginTop: 14 }}>
-          <div style={S.label}>Destinataires</div>
-          <div style={{ display: "flex", gap: 16, marginTop: 8, flexWrap: "wrap" }}>
-            <label style={{ display: "flex", alignItems: "center", gap: 7, fontSize: 14, cursor: "pointer" }}>
-              <input type="radio" checked={!draft.assignedTo}
-                onChange={() => setDraft({ ...draft, assignedTo: null })} />
-              👥 Toute la classe
-            </label>
-            <label style={{ display: "flex", alignItems: "center", gap: 7, fontSize: 14, cursor: "pointer" }}>
-              <input type="radio" checked={!!draft.assignedTo}
-                onChange={() => setDraft({ ...draft, assignedTo: [] })} />
-              👤 Élèves choisis
-            </label>
-          </div>
-          {draft.assignedTo && (
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 10, background: "var(--mcf-surface2)", border: `1px solid ${C.line}`, borderRadius: 12, padding: "12px 14px" }}>
-              {accounts.length === 0 && <span style={{ fontSize: 13, color: C.soft }}>Aucun élève inscrit.</span>}
-              {accounts.map((a) => {
-                const on = draft.assignedTo.includes(a.name);
-                return (
-                  <label key={a.name} style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13.5, cursor: "pointer",
-                    padding: "6px 12px", borderRadius: 999, fontWeight: 600,
-                    border: `1.5px solid ${on ? C.primary : C.line}`,
-                    background: on ? C.primarySoft : "#fff", color: on ? C.primary : C.ink }}>
-                    <input type="checkbox" checked={on} style={{ display: "none" }}
-                      onChange={() => setDraft({ ...draft, assignedTo: on ? draft.assignedTo.filter((n) => n !== a.name) : [...draft.assignedTo, a.name] })} />
-                    {on ? "✓ " : ""}{a.name}
-                  </label>
-                );
-              })}
-              {draft.assignedTo.length === 0 && accounts.length > 0 &&
-                <span style={{ fontSize: 12.5, color: C.warn, fontWeight: 700, alignSelf: "center" }}>⚠ Aucun élève sélectionné — cliquez sur un prénom.</span>}
+          <div style={S.label}>Destinataires — qui reçoit ce devoir ?</div>
+
+          {/* Cấp 1 : tất cả */}
+          <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 14.5, fontWeight: 700, cursor: "pointer", marginTop: 10 }}>
+            <input type="checkbox" checked={!draft.targeted}
+              onChange={(e) => setDraft({ ...draft, targeted: !e.target.checked })} />
+            👥 Toute la classe / Tous les élèves
+          </label>
+
+          {draft.targeted && (
+            <div style={{ marginTop: 12, background: "var(--mcf-surface2)", border: `1px solid ${C.line}`, borderRadius: 16, padding: "14px 16px", display: "grid", gap: 14 }}>
+              {/* Cấp 2 : theo lớp */}
+              <div>
+                <div style={{ ...S.label, fontSize: 10.5 }}>🏫 Par classes</div>
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 8 }}>
+                  {classes.length === 0 && <span style={{ fontSize: 12.5, color: C.soft }}>Aucune classe — créez-en dans l'onglet Élèves.</span>}
+                  {classes.map((cl) => {
+                    const on = (draft.assignedClasses || []).includes(cl.id);
+                    const n = accounts.filter((a) => a.classId === cl.id).length;
+                    return (
+                      <label key={cl.id} style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, cursor: "pointer",
+                        padding: "7px 14px", borderRadius: 999, fontWeight: 700,
+                        border: `1.5px solid ${on ? C.primary : C.line}`,
+                        background: on ? C.primarySoft : "var(--mcf-surface)", color: on ? C.primary : C.ink }}>
+                        <input type="checkbox" checked={on} style={{ display: "none" }}
+                          onChange={() => setDraft({ ...draft, assignedClasses: on ? draft.assignedClasses.filter((x) => x !== cl.id) : [...(draft.assignedClasses || []), cl.id] })} />
+                        {on ? "✓ " : ""}{cl.name} ({n})
+                      </label>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Cấp 3 : chọn đích danh */}
+              <div>
+                <div style={{ ...S.label, fontSize: 10.5 }}>👤 Par élèves spécifiques</div>
+                <input style={{ ...S.input, marginTop: 8, maxWidth: 320 }} value={studentSearch}
+                  placeholder="🔍 Rechercher un élève…" onChange={(e) => setStudentSearch(e.target.value)} />
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 10, maxHeight: 180, overflowY: "auto" }} className="mcf-scroll">
+                  {accounts
+                    .filter((a) => a.name.toLowerCase().includes(studentSearch.trim().toLowerCase()))
+                    .map((a) => {
+                      const viaClass = classMembers.has(a.name);
+                      const on = viaClass || (draft.assignedExtra || []).includes(a.name);
+                      return (
+                        <label key={a.name} title={viaClass ? "Déjà inclus via sa classe" : ""}
+                          style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, cursor: viaClass ? "default" : "pointer",
+                            padding: "7px 14px", borderRadius: 999, fontWeight: 600, opacity: viaClass ? 0.65 : 1,
+                            border: `1.5px solid ${on ? C.primary : C.line}`,
+                            background: on ? C.primarySoft : "var(--mcf-surface)", color: on ? C.primary : C.ink }}>
+                          <input type="checkbox" checked={on} disabled={viaClass} style={{ display: "none" }}
+                            onChange={() => setDraft({ ...draft, assignedExtra: on ? (draft.assignedExtra || []).filter((n) => n !== a.name) : [...(draft.assignedExtra || []), a.name] })} />
+                          {on ? "✓ " : ""}{a.name}{a.classId && className(a.classId) ? ` (${className(a.classId)})` : ""}
+                        </label>
+                      );
+                    })}
+                </div>
+              </div>
+
+              <div style={{ fontSize: 13, fontWeight: 700, color: mergedTargets.size ? C.ok : C.warn }}>
+                {mergedTargets.size
+                  ? `✓ ${mergedTargets.size} élève${mergedTargets.size > 1 ? "s" : ""} sélectionné${mergedTargets.size > 1 ? "s" : ""}`
+                  : "⚠ Aucun élève sélectionné — cochez une classe ou un élève."}
+              </div>
             </div>
           )}
         </div>
+        )}
       </div>
 
       {draft.questions.map((q, i) => (
@@ -1226,7 +1351,7 @@ function Progress({ ex, submissions, setSubmissions, accounts, back }) {
   return (
     <div>
       <button style={{ ...S.btn(false), marginBottom: 16 }} onClick={back}>← Retour</button>
-      <h2 style={{ ...S.display, marginTop: 0 }}>{ex.title} <span style={{ fontSize: 13, color: C.soft, fontFamily: "'Be Vietnam Pro',sans-serif" }}>({ex.level} · {ex.skill})</span></h2>
+      <h2 style={{ ...S.display, marginTop: 0 }}>{ex.title} <span style={{ fontSize: 13, color: C.soft, fontFamily: "'Be Vietnam Pro',sans-serif" }}>({ex.level} · {exSkills(ex).join(" + ")})</span></h2>
       {ex.deadline && <p style={{ fontSize: 13, color: isLate(ex) ? C.danger : C.warn, fontWeight: 700 }}>⏰ Date limite : {fmtDate(ex.deadline)}{isLate(ex) && " — les rendus tardifs sont marqués 🕐"}</p>}
 
       <div className="mcf-card" style={{ ...S.card, marginBottom: 20 }}>
@@ -1421,7 +1546,7 @@ function Student({ name, exercises, submissions, setSubmissions, accounts, setAc
 
   const radar = SKILLS.map((skill) => {
     const pcts = [];
-    visible.filter((e) => e.skill === skill).forEach((ex) => {
+    visible.filter((e) => exSkills(e).includes(skill)).forEach((ex) => {
       const s = mineDone(ex.id); if (!s) return;
       const t = totalScore(s, ex); if (t.max) pcts.push((t.score / t.max) * 100);
     });
@@ -1461,7 +1586,7 @@ function Student({ name, exercises, submissions, setSubmissions, accounts, setAc
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
           <div>
             <span style={S.badge(ex.level)}>{ex.level}</span>
-            <span style={S.chip(C.primarySoft, C.primary)}>{ex.skill}</span>{" "}
+            <span style={S.chip(C.primarySoft, C.primary)}>{exSkills(ex).join(" · ")}</span>{" "}
             <strong style={{ fontSize: 16 }}>{ex.title}</strong>
             <div style={{ fontSize: 12, color: C.soft, marginTop: 5 }}>
               {ex.questions.length} question(s){ex.audioUrl && " · 🎧"}{ex.timeLimit && ` · ⏱ ${ex.timeLimit} min`}
@@ -1815,7 +1940,7 @@ function Taking({ ex, name, setSubmissions, done }) {
           ⏰ Temps écoulé ! Ta copie a été rendue automatiquement.
         </div>
       )}
-      <h2 style={{ ...S.display, marginTop: 0 }}>{ex.title} <span style={{ fontSize: 13, color: C.soft, fontFamily: "'Be Vietnam Pro',sans-serif" }}>({ex.level} · {ex.skill})</span></h2>
+      <h2 style={{ ...S.display, marginTop: 0 }}>{ex.title} <span style={{ fontSize: 13, color: C.soft, fontFamily: "'Be Vietnam Pro',sans-serif" }}>({ex.level} · {exSkills(ex).join(" + ")})</span></h2>
       <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap", marginBottom: 12 }}>
         {!zen && (
           <button onClick={() => setZen(true)}
@@ -1831,6 +1956,13 @@ function Taking({ ex, name, setSubmissions, done }) {
       </div>
 
       {/* 🎧 Audio player cố định (sticky) — cuộn trang vẫn thấy */}
+      {ex.consigne && (
+        <div className="mcf-card" style={{ ...S.card, marginBottom: 16, borderLeft: `4px solid ${C.primary}` }}>
+          <div style={S.label}>📋 Consigne</div>
+          <div style={{ fontSize: 15.5, lineHeight: 1.75, marginTop: 6, whiteSpace: "pre-wrap", fontWeight: 500 }}>{ex.consigne}</div>
+        </div>
+      )}
+
       {ex.imageUrl && (
         <div style={{ display: "flex", justifyContent: "center", marginBottom: 16 }}>
           <img src={ex.imageUrl} alt="illustration"
@@ -2046,4 +2178,4 @@ function RichTextEditor({ value, onChange, wordLimit, readOnly }) {
 
 
 /* ---- Xuất dùng chung cho PracticeHub ---- */
-export { C, S, SKILLS, QTYPES, VF_OPTS, LEVEL_COLORS, uid, fillOk, vfOk, stripHtml, wordCount, autoQ, isLate, RichTextEditor, Builder, ReadingPanel, load, save };
+export { C, S, SKILLS, QTYPES, VF_OPTS, LEVEL_COLORS, uid, fillOk, vfOk, stripHtml, wordCount, autoQ, isLate, exSkills, RichTextEditor, Builder, ReadingPanel, load, save };
