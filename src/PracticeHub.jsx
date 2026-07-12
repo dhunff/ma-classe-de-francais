@@ -4,7 +4,7 @@ import {
   RotateCcw, CheckCircle2, XCircle, Plus, ChevronLeft, PartyPopper, Trash2, Pencil, Copy, MoreVertical, Folder, FolderPlus,
 } from "lucide-react";
 import {
-  C, S, QTYPES, uid, fillOk, stripHtml, autoQ,
+  C, S, QTYPES, VF_OPTS, uid, fillOk, vfOk, stripHtml, autoQ,
   RichTextEditor, Builder, ReadingPanel, load, save,
 } from "./App.jsx";
 
@@ -353,7 +353,9 @@ function PracticeWorkspace({ ex, back, onFinish }) {
   if (!ex) return null;
   const autos = ex.questions.filter(autoQ);
   const opens = ex.questions.filter((q) => q.type === "open");
-  const isGood = (q) => q.type === "qcm" ? answersRef.current[q.id] === q.answer : fillOk(q, answersRef.current[q.id]);
+  const isGood = (q) => q.type === "qcm" ? answersRef.current[q.id] === q.answer
+    : q.type === "vf" ? vfOk(q, answersRef.current[q.id])
+    : fillOk(q, answersRef.current[q.id]);
 
   const grade = (timedOut = false) => {
     gradedRef.current = true;
@@ -366,7 +368,9 @@ function PracticeWorkspace({ ex, back, onFinish }) {
   const score = graded ? autos.reduce((n, q) => n + (isGood(q) ? 1 : 0), 0) : 0;
   const perfect = graded && autos.length > 0 && score === autos.length;
   const allAnswered = ex.questions.every((q) =>
-    q.type === "qcm" ? answers[q.id] != null : q.type === "open" ? stripHtml(answers[q.id]) !== "" : (answers[q.id] || "").trim() !== "");
+    q.type === "qcm" ? answers[q.id] != null
+    : q.type === "vf" ? (answers[q.id]?.choice != null && (answers[q.id].choice === 2 || (answers[q.id].just || "").trim() !== ""))
+    : q.type === "open" ? stripHtml(answers[q.id]) !== "" : (answers[q.id] || "").trim() !== "");
   const fmtLeft = (s) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
 
   const questionCards = ex.questions.map((q, i) => {
@@ -396,13 +400,51 @@ function PracticeWorkspace({ ex, back, onFinish }) {
               );
             })}
           </div>
+        ) : q.type === "vf" ? (
+          <div style={{ display: "grid", gap: 10 }}>
+            <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+              {VF_OPTS.map((o, j) => {
+                const sel = a?.choice === j;
+                let bg = sel ? C.primarySoft : "var(--mcf-surface)", border = sel ? C.primary : C.line, col = sel ? C.primary : C.ink;
+                if (graded) {
+                  if (j === q.answer) { bg = C.okSoft; border = C.ok; col = C.ok; }
+                  else if (sel) { bg = C.dangerSoft; border = C.danger; col = C.danger; }
+                }
+                return (
+                  <button key={j} disabled={!!graded}
+                    onClick={() => setAnswers({ ...answers, [q.id]: { choice: j, just: j === 2 ? "" : (a?.just || "") } })}
+                    style={{ padding: "10px 22px", borderRadius: 999, fontSize: 14.5, fontWeight: 700,
+                      cursor: graded ? "default" : "pointer", fontFamily: "inherit",
+                      border: `1.5px solid ${border}`, background: bg, color: col }}>
+                    {o}{graded && j === q.answer && " ✓"}
+                  </button>
+                );
+              })}
+            </div>
+            {!graded && (a?.choice === 0 || a?.choice === 1) && (
+              <textarea value={a?.just || ""}
+                placeholder="Justifiez votre réponse en citant le texte…"
+                onChange={(e) => setAnswers({ ...answers, [q.id]: { ...a, just: e.target.value } })}
+                style={{ ...S.input, minHeight: 60, resize: "vertical" }} />
+            )}
+            {graded && (
+              <div style={{ fontSize: 14 }}>
+                {a?.just && <div style={{ fontStyle: "italic" }}>Ma justification : « {a.just} »</div>}
+                {q.answer !== 2 && q.justification && (
+                  <div style={{ marginTop: 8, background: C.okSoft, border: `1.5px solid ${C.ok}55`, borderRadius: 12, padding: "10px 14px" }}>
+                    💡 <strong>Justification attendue :</strong> <em>{q.justification}</em>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         ) : q.type === "open" ? (
           <>
             <RichTextEditor value={a || ""} readOnly={!!graded} onChange={(html) => setAnswers({ ...answers, [q.id]: html })} />
             {graded && q.model && (
-              <div style={{ marginTop: 12 }}>
-                <div style={{ ...S.label }}>📄 Réponse modèle — à comparer</div>
-                <div style={{ marginTop: 6, background: "#FBFCFE", border: `1px solid ${C.line}`, borderRadius: 12, padding: "12px 15px", fontSize: 14.5, fontStyle: "italic", lineHeight: 1.7 }}>{q.model}</div>
+              <div style={{ marginTop: 12, background: C.okSoft, border: `1.5px solid ${C.ok}55`, borderRadius: 12, padding: "12px 15px" }}>
+                💡 <strong>Réponse suggérée :</strong>
+                <div style={{ marginTop: 4, fontSize: 14.5, fontStyle: "italic", lineHeight: 1.7 }}>{q.model}</div>
               </div>
             )}
           </>

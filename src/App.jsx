@@ -25,7 +25,8 @@ const C = {
 const LEVEL_COLORS = { A1: "#1E9E6A", A2: "#2A9D8F", B1: "#3D5AF1", B2: "#7048E8", "B2+": "#D6336C" };
 const LEVEL_PASTEL = { A1: "#DDF6EB", A2: "#DDF2F0", B1: "#E6EBFE", B2: "#EFE9FC", "B2+": "#FBE3ED" };
 const SKILLS = ["Grammaire", "Vocabulaire", "Écoute", "Lecture", "Production écrite", "Traduction", "Communication"];
-const QTYPES = { qcm: "QCM", fill: "Texte à trous", conj: "Conjugaison", open: "Réponse libre / traduction" };
+const QTYPES = { qcm: "QCM", fill: "Texte à trous", conj: "Conjugaison", vf: "Vrai / Faux / ?", open: "Réponse libre / traduction" };
+const VF_OPTS = ["Vrai", "Faux", "On ne sait pas"];
 
 const FONTS = `
 @import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,500;0,600;0,700;1,600&family=Playfair+Display:ital,wght@0,700;0,800;1,500&family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap');
@@ -205,8 +206,9 @@ function parseDocxText(raw) {
   };
 }
 
+const vfOk = (q, ans) => ans != null && ans.choice === q.answer;
 const fillOk = (q, ans) => (q.accepted || "").split("|").map(norm).filter(Boolean).includes(norm(ans));
-const autoQ = (q) => q.type === "qcm" || q.type === "fill" || q.type === "conj";
+const autoQ = (q) => q.type === "qcm" || q.type === "fill" || q.type === "conj" || q.type === "vf";
 
 function totalScore(sub, ex) {
   const opens = ex.questions.filter((q) => q.type === "open");
@@ -1127,9 +1129,31 @@ function Builder({ draft, setDraft, publish, cancel, accounts }) {
                 onChange={(e) => setQ(q.id, { accepted: e.target.value })} />
             </div>
           )}
+          {q.type === "vf" && (
+            <div style={{ marginTop: 10, display: "grid", gap: 10 }}>
+              <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
+                {VF_OPTS.map((o, j) => (
+                  <label key={j} style={{ display: "flex", alignItems: "center", gap: 7, fontSize: 14.5, cursor: "pointer", fontWeight: q.answer === j ? 700 : 500 }}>
+                    <input type="radio" checked={q.answer === j}
+                      onChange={() => setQ(q.id, { answer: j, justification: j === 2 ? "" : q.justification })} />
+                    {o}
+                  </label>
+                ))}
+              </div>
+              {q.answer !== 2 && (
+                <div>
+                  <div style={S.label}>Justification attendue (trích dẫn từ bài đọc)</div>
+                  <textarea style={{ ...S.input, marginTop: 6, minHeight: 50, resize: "vertical" }}
+                    value={q.justification || ""}
+                    placeholder="ex. « Le taux de fécondité a chuté de 22 % depuis 2007. »"
+                    onChange={(e) => setQ(q.id, { justification: e.target.value })} />
+                </div>
+              )}
+            </div>
+          )}
           {q.type === "open" && (
             <div style={{ marginTop: 10 }}>
-              <div style={S.label}>Réponse modèle (visible pour vous seulement)</div>
+              <div style={S.label}>Corrigé type / Réponse suggérée (optionnel)</div>
               <textarea style={{ ...S.input, marginTop: 6, minHeight: 44, resize: "vertical" }} value={q.model}
                 onChange={(e) => setQ(q.id, { model: e.target.value })} />
             </div>
@@ -1142,7 +1166,7 @@ function Builder({ draft, setDraft, publish, cancel, accounts }) {
         <button style={S.btn(false)} onClick={() => addQ("fill")}>+ Texte à trous</button>
         <button style={S.btn(false)} onClick={() => addQ("conj")}>+ Conjugaison</button>
         <button style={S.btn(false)} onClick={() => addQ("open")}>+ Réponse libre</button>
-        <button style={S.btn(false)} onClick={() => setDraft({ ...draft, questions: [...draft.questions, { id: uid(), type: "qcm", prompt: "", options: ["Vrai", "Faux", "On ne sait pas"], answer: 0 }] })}>+ Vrai / Faux / ?</button>
+        <button style={S.btn(false)} onClick={() => setDraft({ ...draft, questions: [...draft.questions, { id: uid(), type: "vf", prompt: "", answer: 0, justification: "" }] })}>+ Vrai / Faux / ?</button>
       </div>
       <div style={{ display: "flex", gap: 10 }}>
         <button style={{ ...S.btn(true), opacity: ready ? 1 : 0.4 }} disabled={!ready} onClick={publish}>Publier l'exercice</button>
@@ -1241,18 +1265,32 @@ function Progress({ ex, submissions, setSubmissions, accounts, back }) {
                 <div style={{ marginTop: 14, borderTop: `1px solid ${C.line}`, paddingTop: 12, display: "grid", gap: 14 }}>
                   {ex.questions.map((q, i) => {
                     const a = sub.answers[q.id];
-                    const good = q.type === "qcm" ? a === q.answer : (q.type === "fill" || q.type === "conj") ? fillOk(q, a) : null;
+                    const good = q.type === "qcm" ? a === q.answer
+                      : q.type === "vf" ? vfOk(q, a)
+                      : (q.type === "fill" || q.type === "conj") ? fillOk(q, a) : null;
                     return (
                       <div key={q.id} style={{ background: "var(--mcf-surface2)", borderRadius: 12, padding: "12px 14px", border: `1px solid ${C.line}` }}>
                         <div style={{ fontWeight: 700, marginBottom: 6 }}>{i + 1}. {q.prompt}</div>
                         <div style={{ fontSize: 14 }}>
-                          Réponse : {q.type === "qcm"
+                          {q.type !== "vf" && <>Réponse : </>}{q.type === "vf" ? null : q.type === "qcm"
                             ? <strong style={{ color: good ? C.ok : C.danger }}>{a != null ? String.fromCharCode(65 + a) + ". " + q.options[a] : "—"}</strong>
                             : q.type === "open"
                             ? <div style={{ marginTop: 6, background: "var(--mcf-surface)", border: `1px solid ${C.line}`, borderRadius: 10, padding: "10px 14px", lineHeight: 1.7 }} dangerouslySetInnerHTML={{ __html: a || "—" }} />
                             : <em style={{ color: good ? C.ok : C.danger }}>{a || "—"}</em>}
                           {good === false && q.type === "qcm" && <span> · attendu : <strong>{String.fromCharCode(65 + q.answer)}. {q.options[q.answer]}</strong></span>}
                           {good === false && (q.type === "fill" || q.type === "conj") && <span> · attendu : <strong>{q.accepted.split("|")[0]}</strong></span>}
+                          {q.type === "vf" && (
+                            <div style={{ marginTop: 4 }}>
+                              Choix : <strong style={{ color: good ? C.ok : C.danger }}>{a?.choice != null ? VF_OPTS[a.choice] : "—"}</strong>
+                              {good === false && <span> · attendu : <strong>{VF_OPTS[q.answer]}</strong></span>}
+                              {a?.just && <div style={{ fontStyle: "italic", marginTop: 3 }}>Justification de l'élève : « {a.just} »</div>}
+                              {q.answer !== 2 && q.justification && (
+                                <div style={{ marginTop: 6, background: C.okSoft, border: `1px solid ${C.ok}44`, borderRadius: 10, padding: "8px 12px" }}>
+                                  💡 <strong>Justification attendue :</strong> {q.justification}
+                                </div>
+                              )}
+                            </div>
+                          )}
                           {q.type === "open" && q.model && <div style={{ color: C.soft, marginTop: 4 }}>Modèle : {q.model}</div>}
                         </div>
                         {q.type === "open" && (
@@ -1463,6 +1501,46 @@ function Student({ name, exercises, submissions, setSubmissions, accounts, setAc
             </a>
           </div>
         )}
+        {sub?.graded && ex.questions.some((q) => q.type === "open" || q.type === "vf") && (
+          <details style={{ marginTop: 10, fontSize: 13.5 }}>
+            <summary style={{ cursor: "pointer", color: C.primary, fontWeight: 700 }}>📋 Voir ma copie corrigée</summary>
+            <div style={{ marginTop: 10, display: "grid", gap: 12 }}>
+              {ex.questions.map((q, i) => {
+                const a = sub.answers[q.id];
+                if (q.type === "open") return (
+                  <div key={q.id} style={{ background: "var(--mcf-surface2)", borderRadius: 14, padding: "12px 15px", border: `1px solid ${C.line}` }}>
+                    <div style={{ fontWeight: 700, marginBottom: 6 }}>{i + 1}. {q.prompt}</div>
+                    <div style={{ fontSize: 12, color: C.soft, fontWeight: 700, marginBottom: 4 }}>MA RÉPONSE</div>
+                    <div style={{ lineHeight: 1.7 }} dangerouslySetInnerHTML={{ __html: a || "—" }} />
+                    {q.model && (
+                      <div style={{ marginTop: 10, background: C.okSoft, border: `1.5px solid ${C.ok}55`, borderRadius: 12, padding: "10px 14px" }}>
+                        💡 <strong>Réponse suggérée :</strong>
+                        <div style={{ marginTop: 4, fontStyle: "italic", lineHeight: 1.7 }}>{q.model}</div>
+                      </div>
+                    )}
+                  </div>
+                );
+                if (q.type === "vf") {
+                  const good = vfOk(q, a);
+                  return (
+                    <div key={q.id} style={{ background: "var(--mcf-surface2)", borderRadius: 14, padding: "12px 15px", border: `1px solid ${C.line}` }}>
+                      <div style={{ fontWeight: 700, marginBottom: 6 }}>{i + 1}. {q.prompt}</div>
+                      Mon choix : <strong style={{ color: good ? C.ok : C.danger }}>{a?.choice != null ? VF_OPTS[a.choice] : "—"}</strong>
+                      {!good && <span> · Bonne réponse : <strong>{VF_OPTS[q.answer]}</strong></span>}
+                      {a?.just && <div style={{ fontStyle: "italic", marginTop: 4 }}>Ma justification : « {a.just} »</div>}
+                      {q.answer !== 2 && q.justification && (
+                        <div style={{ marginTop: 8, background: C.okSoft, border: `1.5px solid ${C.ok}55`, borderRadius: 12, padding: "10px 14px" }}>
+                          💡 <strong>Justification attendue :</strong> <em>{q.justification}</em>
+                        </div>
+                      )}
+                    </div>
+                  );
+                }
+                return null;
+              })}
+            </div>
+          </details>
+        )}
         {sub && Object.values(sub.qComments || {}).some(Boolean) && (
           <details style={{ marginTop: 8, fontSize: 13 }}>
             <summary style={{ cursor: "pointer", color: C.primary, fontWeight: 600 }}>Voir les remarques question par question</summary>
@@ -1612,7 +1690,9 @@ function Taking({ ex, name, setSubmissions, done }) {
     const a = answersRef.current;
     const autos = ex.questions.filter(autoQ);
     const autoScore = autos.reduce((n, q) =>
-      n + (q.type === "qcm" ? (a[q.id] === q.answer ? 1 : 0) : (fillOk(q, a[q.id]) ? 1 : 0)), 0);
+      n + (q.type === "qcm" ? (a[q.id] === q.answer ? 1 : 0)
+        : q.type === "vf" ? (vfOk(q, a[q.id]) ? 1 : 0)
+        : (fillOk(q, a[q.id]) ? 1 : 0)), 0);
     const sub = {
       id: uid(), exerciseId: ex.id, student: name, answers: a,
       autoScore, autoMax: autos.length, openMarks: {}, qComments: {},
@@ -1637,6 +1717,7 @@ function Taking({ ex, name, setSubmissions, done }) {
 
   const allAnswered = ex.questions.every((q) =>
     q.type === "qcm" ? answers[q.id] != null
+    : q.type === "vf" ? (answers[q.id]?.choice != null && (answers[q.id].choice === 2 || (answers[q.id].just || "").trim() !== ""))
     : q.type === "open" ? stripHtml(answers[q.id]) !== ""
     : (answers[q.id] || "").trim() !== "");
 
@@ -1644,7 +1725,9 @@ function Taking({ ex, name, setSubmissions, done }) {
     setSaving(true); setErr("");
     const autos = ex.questions.filter(autoQ);
     const autoScore = autos.reduce((n, q) =>
-      n + (q.type === "qcm" ? (answers[q.id] === q.answer ? 1 : 0) : (fillOk(q, answers[q.id]) ? 1 : 0)), 0);
+      n + (q.type === "qcm" ? (answers[q.id] === q.answer ? 1 : 0)
+        : q.type === "vf" ? (vfOk(q, answers[q.id]) ? 1 : 0)
+        : (fillOk(q, answers[q.id]) ? 1 : 0)), 0);
     const sub = {
       id: uid(), exerciseId: ex.id, student: name, answers,
       autoScore, autoMax: autos.length, openMarks: {}, qComments: {},
@@ -1672,6 +1755,29 @@ function Taking({ ex, name, setSubmissions, done }) {
               <strong>{String.fromCharCode(65 + j)}.</strong> {o}
             </label>
           ))}
+        </div>
+      ) : q.type === "vf" ? (
+        <div style={{ display: "grid", gap: 10 }}>
+          <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+            {VF_OPTS.map((o, j) => {
+              const sel = answers[q.id]?.choice === j;
+              return (
+                <button key={j} disabled={locked}
+                  onClick={() => setAnswers({ ...answers, [q.id]: { choice: j, just: j === 2 ? "" : (answers[q.id]?.just || "") } })}
+                  style={{ padding: "10px 22px", borderRadius: 999, fontSize: 14.5, fontWeight: 700, cursor: locked ? "default" : "pointer",
+                    fontFamily: "inherit", border: `1.5px solid ${sel ? C.primary : C.line}`,
+                    background: sel ? C.primarySoft : "var(--mcf-surface)", color: sel ? C.primary : C.ink }}>
+                  {o}
+                </button>
+              );
+            })}
+          </div>
+          {(answers[q.id]?.choice === 0 || answers[q.id]?.choice === 1) && (
+            <textarea disabled={locked} value={answers[q.id]?.just || ""}
+              placeholder="Justifiez votre réponse en citant le texte…"
+              onChange={(e) => setAnswers({ ...answers, [q.id]: { ...answers[q.id], just: e.target.value } })}
+              style={{ ...S.input, minHeight: 60, resize: "vertical" }} />
+          )}
         </div>
       ) : q.type === "open" ? (
         <RichTextEditor value={answers[q.id] || ""} readOnly={locked} onChange={(html) => setAnswers({ ...answers, [q.id]: html })} />
@@ -1940,4 +2046,4 @@ function RichTextEditor({ value, onChange, wordLimit, readOnly }) {
 
 
 /* ---- Xuất dùng chung cho PracticeHub ---- */
-export { C, S, SKILLS, QTYPES, LEVEL_COLORS, uid, fillOk, stripHtml, wordCount, autoQ, isLate, RichTextEditor, Builder, ReadingPanel, load, save };
+export { C, S, SKILLS, QTYPES, VF_OPTS, LEVEL_COLORS, uid, fillOk, vfOk, stripHtml, wordCount, autoQ, isLate, RichTextEditor, Builder, ReadingPanel, load, save };
