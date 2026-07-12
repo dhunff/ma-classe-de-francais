@@ -36,6 +36,10 @@ export default function PracticeHub({ role = "eleve", name = "" }) {
   const [cats, setCats] = useState([]);
   const [folders, setFolders] = useState([]);    // dossiers par compétence [{id,name,cat}]
   const [folderPopup, setFolderPopup] = useState(false);
+  const [renameFolder, setRenameFolder] = useState(null); // {id, name}
+  const [deleteFolder, setDeleteFolder] = useState(null); // {id, name}
+  const [toast, setToast] = useState(null);
+  const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(null), 3200); };
   const [newFolder, setNewFolder] = useState("");
   const [moveEx, setMoveEx] = useState(null);    // exercice đang được "Déplacer vers…"          // danh mục con của "Autres"
   const [catPopup, setCatPopup] = useState(false);
@@ -82,6 +86,25 @@ export default function PracticeHub({ role = "eleve", name = "" }) {
     setFolders(next); await save("mcf-folders", next);
     setNewFolder(""); setFolderPopup(false);
   };
+  const doRenameFolder = async () => {
+    const n = (renameFolder?.name || "").trim();
+    if (!n) return;
+    const next = folders.map((f) => (f.id === renameFolder.id ? { ...f, name: n } : f));
+    setFolders(next); await save("mcf-folders", next);
+    setRenameFolder(null); showToast("✅ Dossier renommé !");
+  };
+
+  /* Suppression SÛRE : 1) libérer les exercices (folderId -> null)  2) supprimer le dossier */
+  const doDeleteFolder = async () => {
+    const id = deleteFolder.id;
+    const latest = await load("mcf-practice", []);
+    const freed = latest.map((e) => (e.folderId === id ? { ...e, folderId: undefined } : e));
+    setExercises(freed); await save("mcf-practice", freed);
+    const next = folders.filter((f) => f.id !== id);
+    setFolders(next); await save("mcf-folders", next);
+    setDeleteFolder(null); showToast("✅ Dossier supprimé — les exercices ont été conservés.");
+  };
+
   const moveTo = async (exId, folderId) => {
     const latest = await load("mcf-practice", []);
     const next = latest.map((e) => (e.id === exId ? { ...e, folderId: folderId || undefined } : e));
@@ -198,6 +221,12 @@ export default function PracticeHub({ role = "eleve", name = "" }) {
     );
   }
 
+  const Toast = toast ? (
+    <div style={{ position: "fixed", bottom: 24, left: "50%", transform: "translateX(-50%)", zIndex: 300,
+      background: "#1E9E6A", color: "#fff", padding: "12px 26px", borderRadius: 999,
+      fontWeight: 700, fontSize: 14, boxShadow: "0 10px 30px rgba(17,24,39,.35)" }}>{toast}</div>
+  ) : null;
+
   if (view.page === "category") {
     const meta = CATS.find((c) => c.skill === view.cat);
     let all = exercises.filter((e) => inCat(e, view.cat));
@@ -213,15 +242,18 @@ export default function PracticeHub({ role = "eleve", name = "" }) {
     const niveau = view.niveau || defaultNiveau;
     const catFolders = view.cat === "__autres__" ? [] : folders.filter((f) => f.cat === view.cat);
     const curFolder = view.folderId ? catFolders.find((f) => f.id === view.folderId) : null;
-    const inFolder = (e) => (view.folderId ? e.folderId === view.folderId : !e.folderId || !catFolders.some((f) => f.id === e.folderId));
+    // Dossier = TAG/FILTRE : par défaut on montre TOUT ; un dossier actif filtre la liste
+    const inFolder = (e) => (view.folderId ? e.folderId === view.folderId : true);
+    const folderName = (id) => catFolders.find((f) => f.id === id)?.name;
     const list = all.filter((e) => e.level === niveau && inFolder(e));
     return (
       <div>
+        {Toast}
         <button style={{ ...S.btn(false), marginBottom: 16 }}
-          onClick={() => setView(view.folderId ? { page: "category", cat: view.cat, niveau: view.niveau } : view.folder ? { page: "autres" } : { page: "home" })}><ChevronLeft size={16} /> Retour</button>
+          onClick={() => setView(view.folder ? { page: "autres" } : { page: "home" })}><ChevronLeft size={16} /> Retour</button>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18, flexWrap: "wrap", gap: 10 }}>
           <h2 style={{ ...S.display, margin: 0, display: "flex", alignItems: "center", gap: 10 }}>
-            <meta.Icon size={24} color={meta.color} /> {curFolder ? `${meta.label} / 📂 ${curFolder.name}` : view.folder ? (view.folder === "__nc__" ? "Non classé" : view.folder) : meta.label}
+            <meta.Icon size={24} color={meta.color} /> {view.folder ? (view.folder === "__nc__" ? "Non classé" : view.folder) : meta.label}
           </h2>
           {teacher && <button style={S.btn(true)} onClick={() => {
             const sk = view.cat === "__autres__" ? "Traduction" : view.cat;
@@ -231,27 +263,52 @@ export default function PracticeHub({ role = "eleve", name = "" }) {
           }}><Plus size={16} /> Nouvel exercice</button>}
         </div>
 
-        {/* 📂 Dossiers de la compétence (racine uniquement) */}
-        {view.cat !== "__autres__" && !view.folderId && (catFolders.length > 0 || teacher) && (
-          <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 18 }}>
+        {/* 📂 Dossiers = filtres (pills) */}
+        {view.cat !== "__autres__" && (catFolders.length > 0 || teacher) && (
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 14, alignItems: "center" }}>
+            <button onClick={() => setView({ ...view, folderId: null })}
+              style={{ padding: "8px 18px", borderRadius: 999, fontFamily: "inherit", fontWeight: 700, fontSize: 13,
+                cursor: "pointer", border: `1.5px solid ${!view.folderId ? meta.color : C.line}`,
+                background: !view.folderId ? `${meta.color}18` : "var(--mcf-surface)",
+                color: !view.folderId ? meta.color : C.soft }}>
+              Tous
+            </button>
             {catFolders.map((f) => {
+              const active = view.folderId === f.id;
               const n = all.filter((e) => e.folderId === f.id).length;
               return (
-                <button key={f.id} onClick={() => setView({ ...view, folderId: f.id })}
-                  style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 18px", borderRadius: 16,
-                    border: `1.5px solid ${C.line}`, background: "var(--mcf-surface)", cursor: "pointer",
-                    fontFamily: "inherit", fontWeight: 700, fontSize: 13.5, color: C.ink }}>
-                  <Folder size={17} color={meta.color} /> {f.name}
-                  <span style={{ fontSize: 11.5, color: C.soft }}>({n})</span>
-                </button>
+                <span key={f.id} style={{ display: "inline-flex", alignItems: "center", gap: 4,
+                  padding: "6px 8px 6px 16px", borderRadius: 999,
+                  border: `1.5px solid ${active ? meta.color : C.line}`,
+                  background: active ? `${meta.color}18` : "var(--mcf-surface)" }}>
+                  <button onClick={() => setView({ ...view, folderId: active ? null : f.id })}
+                    style={{ display: "inline-flex", alignItems: "center", gap: 6, border: "none", background: "transparent",
+                      cursor: "pointer", fontFamily: "inherit", fontWeight: 700, fontSize: 13,
+                      color: active ? meta.color : C.ink, padding: 0 }}>
+                    <Folder size={14} color={meta.color} /> {f.name}
+                    <span style={{ fontSize: 11, color: C.soft }}>({n})</span>
+                  </button>
+                  {teacher && (
+                    <>
+                      <button title="Renommer" onClick={() => setRenameFolder({ id: f.id, name: f.name })}
+                        style={{ border: "none", background: "transparent", cursor: "pointer", padding: "2px 4px", color: C.soft, display: "flex" }}>
+                        <Pencil size={13} />
+                      </button>
+                      <button title="Supprimer" onClick={() => setDeleteFolder(f)}
+                        style={{ border: "none", background: "transparent", cursor: "pointer", padding: "2px 4px", color: "#DE4B4B", display: "flex" }}>
+                        <Trash2 size={13} />
+                      </button>
+                    </>
+                  )}
+                </span>
               );
             })}
             {teacher && (
               <button onClick={() => { setNewFolder(""); setFolderPopup(true); }}
-                style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 18px", borderRadius: 16,
+                style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 16px", borderRadius: 999,
                   border: `2px dashed ${C.line}`, background: "transparent", cursor: "pointer",
-                  fontFamily: "inherit", fontWeight: 700, fontSize: 13.5, color: C.primary }}>
-                <FolderPlus size={17} /> + Créer un dossier
+                  fontFamily: "inherit", fontWeight: 700, fontSize: 13, color: C.primary }}>
+                <FolderPlus size={14} /> Créer un dossier
               </button>
             )}
           </div>
@@ -275,6 +332,39 @@ export default function PracticeHub({ role = "eleve", name = "" }) {
             );
           })}
         </div>
+        {renameFolder && (
+          <div style={{ position: "fixed", inset: 0, background: "rgba(17,24,39,.45)", display: "grid", placeItems: "center", padding: 16, zIndex: 200 }}
+            onClick={() => setRenameFolder(null)}>
+            <div className="mcf-card" style={{ ...S.card, width: "100%", maxWidth: 400 }} onClick={(e) => e.stopPropagation()}>
+              <h3 style={{ ...S.display, fontSize: 19, marginTop: 0 }}>✏️ Renommer le dossier</h3>
+              <input style={{ ...S.input }} value={renameFolder.name} autoFocus
+                onChange={(e) => setRenameFolder({ ...renameFolder, name: e.target.value })}
+                onKeyDown={(e) => e.key === "Enter" && doRenameFolder()} />
+              <div style={{ display: "flex", gap: 10, marginTop: 14 }}>
+                <button style={S.btn(true)} onClick={doRenameFolder}>Enregistrer</button>
+                <button style={S.btn(false)} onClick={() => setRenameFolder(null)}>Annuler</button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {deleteFolder && (
+          <div style={{ position: "fixed", inset: 0, background: "rgba(17,24,39,.45)", display: "grid", placeItems: "center", padding: 16, zIndex: 200 }}
+            onClick={() => setDeleteFolder(null)}>
+            <div className="mcf-card" style={{ ...S.card, width: "100%", maxWidth: 440, borderTop: "4px solid #DE4B4B" }} onClick={(e) => e.stopPropagation()}>
+              <h3 style={{ ...S.display, fontSize: 19, marginTop: 0 }}>🗑 Supprimer « {deleteFolder.name} » ?</h3>
+              <p style={{ fontSize: 14, lineHeight: 1.65 }}>
+                Êtes-vous sûr de vouloir supprimer ce dossier ?<br />
+                <strong>Les exercices à l'intérieur ne seront PAS supprimés</strong> — ils redeviendront simplement visibles sans dossier.
+              </p>
+              <div style={{ display: "flex", gap: 10, marginTop: 14 }}>
+                <button style={{ ...S.btn(true), background: "#DE4B4B" }} onClick={doDeleteFolder}>Oui, supprimer</button>
+                <button style={S.btn(false)} onClick={() => setDeleteFolder(null)}>Annuler</button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {folderPopup && (
           <div style={{ position: "fixed", inset: 0, background: "rgba(17,24,39,.45)", display: "grid", placeItems: "center", padding: 16, zIndex: 200 }}
             onClick={() => setFolderPopup(false)}>
@@ -329,6 +419,12 @@ export default function PracticeHub({ role = "eleve", name = "" }) {
                 <div key={ex.id} className="mcf-card" style={{ ...S.card, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
                   <div>
                     <span style={S.badge(ex.level)}>{ex.level}</span>
+                    {ex.folderId && folderName(ex.folderId) && (
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "var(--mcf-surface2)",
+                        border: `1px solid ${C.line}`, borderRadius: 999, padding: "3px 12px", fontSize: 11.5, fontWeight: 700, color: C.soft, marginRight: 8 }}>
+                        <Folder size={11} /> {folderName(ex.folderId)}
+                      </span>
+                    )}
                     <strong>{ex.title}</strong>
                     <div style={{ fontSize: 12.5, color: C.soft, marginTop: 4 }}>
                       {ex.questions.length} question{ex.questions.length > 1 ? "s" : ""} · {[...new Set(ex.questions.map((q) => QTYPES[q.type]))].join(" + ")}
