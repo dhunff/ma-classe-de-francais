@@ -33,7 +33,11 @@ const catOf = (ex) => MAIN_SKILLS.find((sk) => exSkills(ex).includes(sk)) || "__
 export default function PracticeHub({ role = "eleve", name = "" }) {
   const teacher = role === "prof";
   const [exercises, setExercises] = useState([]);
-  const [cats, setCats] = useState([]);          // danh mục con của "Autres"
+  const [cats, setCats] = useState([]);
+  const [folders, setFolders] = useState([]);    // dossiers par compétence [{id,name,cat}]
+  const [folderPopup, setFolderPopup] = useState(false);
+  const [newFolder, setNewFolder] = useState("");
+  const [moveEx, setMoveEx] = useState(null);    // exercice đang được "Déplacer vers…"          // danh mục con của "Autres"
   const [catPopup, setCatPopup] = useState(false);
   const [newCat, setNewCat] = useState("");
   const [hist, setHist] = useState({});
@@ -45,6 +49,7 @@ export default function PracticeHub({ role = "eleve", name = "" }) {
     (async () => {
       setExercises(await load("mcf-practice", []));
       setCats(await load("mcf-custom-cats", []));
+      setFolders(await load("mcf-folders", []));
       if (name) setHist(await load(`mcf-ph-${name}`, {}, false));
       setLoaded(true);
     })();
@@ -71,6 +76,19 @@ export default function PracticeHub({ role = "eleve", name = "" }) {
     setHist(next); if (name) await save(`mcf-ph-${name}`, next, false);
   };
 
+  const addFolder = async (cat) => {
+    const n = newFolder.trim(); if (!n) return;
+    const next = [...folders, { id: uid(), name: n, cat }];
+    setFolders(next); await save("mcf-folders", next);
+    setNewFolder(""); setFolderPopup(false);
+  };
+  const moveTo = async (exId, folderId) => {
+    const latest = await load("mcf-practice", []);
+    const next = latest.map((e) => (e.id === exId ? { ...e, folderId: folderId || undefined } : e));
+    setExercises(next); await save("mcf-practice", next);
+    setMoveEx(null);
+  };
+
   const addCat = async () => {
     const n = newCat.trim();
     if (!n || cats.includes(n)) return;
@@ -79,17 +97,27 @@ export default function PracticeHub({ role = "eleve", name = "" }) {
     setNewCat(""); setCatPopup(false);
   };
 
-  const blank = () => ({ id: uid(), title: "", level: "B1", skill: "Grammaire", skills: ["Grammaire"], consigne: "", deadline: "", audioUrl: "", readingText: "", imageUrl: "", timeLimit: "", targeted: false, assignedClasses: [], assignedExtra: [], assignedTo: null, createdAt: Date.now(), questions: [] });
+  const blank = () => ({ id: uid(), title: "", level: "B1", skill: "Grammaire", skills: ["Grammaire"], consigne: "", usageType: "practice", deadline: "", audioUrl: "", readingText: "", imageUrl: "", timeLimit: "", targeted: false, assignedClasses: [], assignedExtra: [], assignedTo: null, createdAt: Date.now(), questions: [] });
 
   if (!loaded) return <p style={{ color: C.soft, textAlign: "center" }}>Chargement…</p>;
 
   if (view.page === "builder") {
     return <Builder draft={draft} setDraft={setDraft} accounts={[]}
       publish={async () => {
+        if ((draft.usageType || "practice") === "assignment") {
+          // → Chuyển sang danh sách Devoir (À faire)
+          const exs = await load("mcf-exercises", []);
+          const ne = [...exs.filter((e) => e.id !== draft.id), { ...draft, folderId: undefined }].sort((a, b) => a.createdAt - b.createdAt);
+          const okE = await save("mcf-exercises", ne);
+          if (!okE) { alert("❌ Échec de l'enregistrement."); return; }
+          const next = exercises.filter((e) => e.id !== draft.id);
+          setExercises(next); await save("mcf-practice", next);
+          setView({ page: "home" }); return;
+        }
         const others = exercises.filter((e) => e.id !== draft.id);
         const next = [...others, draft].sort((a, b) => a.createdAt - b.createdAt);
         const ok = await save("mcf-practice", next);
-        if (!ok) { alert("❌ Lưu thất bại — dữ liệu quá lớn (thường do ảnh base64). Hãy dùng Public URL của ảnh."); return; }
+        if (!ok) { alert("❌ Échec de l'enregistrement — données trop volumineuses (image base64). Utilisez plutôt une URL publique."); return; }
         setExercises(next);
         setView(draft.customCat ? { page: "category", cat: "__autres__", folder: draft.customCat } : { page: "category", cat: catOf(draft) });
       }}
@@ -183,14 +211,17 @@ export default function PracticeHub({ role = "eleve", name = "" }) {
       return recent ? recent.level : "A1";
     })();
     const niveau = view.niveau || defaultNiveau;
-    const list = all.filter((e) => e.level === niveau);
+    const catFolders = view.cat === "__autres__" ? [] : folders.filter((f) => f.cat === view.cat);
+    const curFolder = view.folderId ? catFolders.find((f) => f.id === view.folderId) : null;
+    const inFolder = (e) => (view.folderId ? e.folderId === view.folderId : !e.folderId || !catFolders.some((f) => f.id === e.folderId));
+    const list = all.filter((e) => e.level === niveau && inFolder(e));
     return (
       <div>
         <button style={{ ...S.btn(false), marginBottom: 16 }}
-          onClick={() => setView(view.folder ? { page: "autres" } : { page: "home" })}><ChevronLeft size={16} /> Retour</button>
+          onClick={() => setView(view.folderId ? { page: "category", cat: view.cat, niveau: view.niveau } : view.folder ? { page: "autres" } : { page: "home" })}><ChevronLeft size={16} /> Retour</button>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18, flexWrap: "wrap", gap: 10 }}>
           <h2 style={{ ...S.display, margin: 0, display: "flex", alignItems: "center", gap: 10 }}>
-            <meta.Icon size={24} color={meta.color} /> {view.folder ? (view.folder === "__nc__" ? "Non classé" : view.folder) : meta.label}
+            <meta.Icon size={24} color={meta.color} /> {curFolder ? `${meta.label} / 📂 ${curFolder.name}` : view.folder ? (view.folder === "__nc__" ? "Non classé" : view.folder) : meta.label}
           </h2>
           {teacher && <button style={S.btn(true)} onClick={() => {
             const sk = view.cat === "__autres__" ? "Traduction" : view.cat;
@@ -199,6 +230,32 @@ export default function PracticeHub({ role = "eleve", name = "" }) {
             setDraft(d); setView({ page: "builder" });
           }}><Plus size={16} /> Nouvel exercice</button>}
         </div>
+
+        {/* 📂 Dossiers de la compétence (racine uniquement) */}
+        {view.cat !== "__autres__" && !view.folderId && (catFolders.length > 0 || teacher) && (
+          <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 18 }}>
+            {catFolders.map((f) => {
+              const n = all.filter((e) => e.folderId === f.id).length;
+              return (
+                <button key={f.id} onClick={() => setView({ ...view, folderId: f.id })}
+                  style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 18px", borderRadius: 16,
+                    border: `1.5px solid ${C.line}`, background: "var(--mcf-surface)", cursor: "pointer",
+                    fontFamily: "inherit", fontWeight: 700, fontSize: 13.5, color: C.ink }}>
+                  <Folder size={17} color={meta.color} /> {f.name}
+                  <span style={{ fontSize: 11.5, color: C.soft }}>({n})</span>
+                </button>
+              );
+            })}
+            {teacher && (
+              <button onClick={() => { setNewFolder(""); setFolderPopup(true); }}
+                style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 18px", borderRadius: 16,
+                  border: `2px dashed ${C.line}`, background: "transparent", cursor: "pointer",
+                  fontFamily: "inherit", fontWeight: 700, fontSize: 13.5, color: C.primary }}>
+                <FolderPlus size={17} /> + Créer un dossier
+              </button>
+            )}
+          </div>
+        )}
 
         {/* Tabs niveau A1 -> B2+ */}
         <div style={{ display: "flex", gap: 8, marginBottom: 20, flexWrap: "wrap" }}>
@@ -218,6 +275,46 @@ export default function PracticeHub({ role = "eleve", name = "" }) {
             );
           })}
         </div>
+        {folderPopup && (
+          <div style={{ position: "fixed", inset: 0, background: "rgba(17,24,39,.45)", display: "grid", placeItems: "center", padding: 16, zIndex: 200 }}
+            onClick={() => setFolderPopup(false)}>
+            <div className="mcf-card" style={{ ...S.card, width: "100%", maxWidth: 400 }} onClick={(e) => e.stopPropagation()}>
+              <h3 style={{ ...S.display, fontSize: 19, marginTop: 0 }}>📂 Nouveau dossier — {meta.label}</h3>
+              <input style={{ ...S.input }} value={newFolder} autoFocus
+                placeholder="ex. Passé composé, DELF B1…"
+                onChange={(e) => setNewFolder(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && addFolder(view.cat)} />
+              <div style={{ display: "flex", gap: 10, marginTop: 14 }}>
+                <button style={S.btn(true)} onClick={() => addFolder(view.cat)}>Créer</button>
+                <button style={S.btn(false)} onClick={() => setFolderPopup(false)}>Annuler</button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {moveEx && (
+          <div style={{ position: "fixed", inset: 0, background: "rgba(17,24,39,.45)", display: "grid", placeItems: "center", padding: 16, zIndex: 200 }}
+            onClick={() => setMoveEx(null)}>
+            <div className="mcf-card" style={{ ...S.card, width: "100%", maxWidth: 420 }} onClick={(e) => e.stopPropagation()}>
+              <h3 style={{ ...S.display, fontSize: 19, marginTop: 0 }}>📂 Déplacer « {moveEx.title} » vers…</h3>
+              <div style={{ display: "grid", gap: 8, marginTop: 4 }}>
+                <button onClick={() => moveTo(moveEx.id, null)}
+                  style={{ ...S.btn(false), justifyContent: "flex-start", textAlign: "left", opacity: !moveEx.folderId ? 0.5 : 1 }}>
+                  🏠 Racine ({meta.label})
+                </button>
+                {catFolders.map((f) => (
+                  <button key={f.id} onClick={() => moveTo(moveEx.id, f.id)}
+                    style={{ ...S.btn(false), justifyContent: "flex-start", textAlign: "left", opacity: moveEx.folderId === f.id ? 0.5 : 1 }}>
+                    📂 {f.name}
+                  </button>
+                ))}
+                {catFolders.length === 0 && <span style={{ fontSize: 13, color: C.soft }}>Aucun dossier — créez-en un d'abord.</span>}
+              </div>
+              <button style={{ ...S.btn(false), marginTop: 14 }} onClick={() => setMoveEx(null)}>Annuler</button>
+            </div>
+          </div>
+        )}
+
         {list.length === 0 ? (
           <div className="mcf-card" style={{ ...S.card, padding: 50, textAlign: "center" }}>
             <div style={{ fontSize: 40, marginBottom: 10 }}>📦</div>
@@ -242,8 +339,9 @@ export default function PracticeHub({ role = "eleve", name = "" }) {
                   <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
                     <button style={S.btn(true)} onClick={() => setView({ page: "quiz", cat: view.cat, folder: view.folder, niveau, exId: ex.id })}>S'entraîner</button>
                     {teacher && <HubMenu
-                      onEdit={() => { const c = JSON.parse(JSON.stringify(ex)); if (!c.skills || !c.skills.length) c.skills = c.skill ? [c.skill] : []; if (c.consigne === undefined) c.consigne = ""; setDraft(c); setView({ page: "builder" }); }}
+                      onEdit={() => { const c = JSON.parse(JSON.stringify(ex)); if (!c.skills || !c.skills.length) c.skills = c.skill ? [c.skill] : []; if (c.consigne === undefined) c.consigne = ""; if (!c.usageType) c.usageType = "practice"; setDraft(c); setView({ page: "builder" }); }}
                       onDup={() => duplicate(ex)}
+                      onMove={view.cat !== "__autres__" ? () => setMoveEx(ex) : null}
                       onDel={() => persist(exercises.filter((e) => e.id !== ex.id))} />}
                   </div>
                 </div>
@@ -296,7 +394,7 @@ export default function PracticeHub({ role = "eleve", name = "" }) {
 }
 
 /* ---- Dropdown ⋮ cho thẻ bài tự luyện ---- */
-function HubMenu({ onEdit, onDup, onDel }) {
+function HubMenu({ onEdit, onDup, onDel, onMove }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
   useEffect(() => {
@@ -326,6 +424,7 @@ function HubMenu({ onEdit, onDup, onDel }) {
           boxShadow: "0 14px 36px rgba(17,24,39,.16)", border: `1px solid ${C.line}`, padding: 6, zIndex: 60 }}>
           {item("Modifier", <Pencil size={16} />, onEdit)}
           {item("Dupliquer", <Copy size={16} />, onDup)}
+          {onMove && item("Déplacer vers…", <Folder size={16} />, onMove)}
           {item("Supprimer", <Trash2 size={16} />, onDel, true)}
         </div>
       )}
@@ -503,7 +602,7 @@ function PracticeWorkspace({ ex, back, onFinish }) {
       {ex.consigne && (
         <div className="mcf-card" style={{ ...S.card, marginBottom: 16, borderLeft: `4px solid #3D5AF1` }}>
           <div style={S.label}>📋 Consigne</div>
-          <div style={{ fontSize: 15.5, lineHeight: 1.75, marginTop: 6, whiteSpace: "pre-wrap", fontWeight: 500 }}>{ex.consigne}</div>
+          <div style={{ fontSize: 15.5, lineHeight: 1.75, marginTop: 6, fontWeight: 500 }} dangerouslySetInnerHTML={{ __html: ex.consigne }} />
         </div>
       )}
 

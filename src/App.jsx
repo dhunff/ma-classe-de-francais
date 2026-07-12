@@ -565,7 +565,7 @@ function Teacher({ exercises, setExercises, submissions, setSubmissions, account
   const [draft, setDraft] = useState(null);
 
   const tabs = [["list", "📚 Exercices"], ["students", "👥 Élèves"], ["stats", "📊 Statistiques"], ["practice", "🏋️ Entraînement"]];
-  const blank = () => ({ id: uid(), title: "", level: "B1", skill: "Grammaire", skills: ["Grammaire"], consigne: "", deadline: "", audioUrl: "", readingText: "", imageUrl: "", timeLimit: "", targeted: false, assignedClasses: [], assignedExtra: [], assignedTo: null, createdAt: Date.now(), questions: [] });
+  const blank = () => ({ id: uid(), title: "", level: "B1", skill: "Grammaire", skills: ["Grammaire"], consigne: "", usageType: "assignment", deadline: "", audioUrl: "", readingText: "", imageUrl: "", timeLimit: "", targeted: false, assignedClasses: [], assignedExtra: [], assignedTo: null, createdAt: Date.now(), questions: [] });
 
   // Gom danh sách học sinh được giao : lớp đã tick ∪ học sinh chọn lẻ → mảng unique
   const finalizeTargets = (d) => {
@@ -581,6 +581,7 @@ function Teacher({ exercises, setExercises, submissions, setSubmissions, account
     const c = JSON.parse(JSON.stringify(ex));
     if (!c.skills || !c.skills.length) c.skills = c.skill ? [c.skill] : [];
     if (c.consigne === undefined) c.consigne = "";
+    if (!c.usageType) c.usageType = "assignment";
     if (c.targeted === undefined) {
       c.targeted = !!(c.assignedTo && c.assignedTo.length);
       c.assignedExtra = c.assignedTo || [];
@@ -591,10 +592,27 @@ function Teacher({ exercises, setExercises, submissions, setSubmissions, account
 
   const publish = async () => {
     const final = finalizeTargets(draft);
+    final.usageType = final.usageType || "assignment";
+
+    if (final.usageType === "practice") {
+      // → Đẩy sang kho Entraînement, gỡ khỏi danh sách devoir
+      const prac = await load("mcf-practice", []);
+      const np = [...prac.filter((e) => e.id !== final.id),
+        { ...final, assignedTo: null, targeted: false, deadline: "" }].sort((a, b) => a.createdAt - b.createdAt);
+      const okP = await save("mcf-practice", np);
+      if (!okP) { alert("❌ Échec de l'enregistrement — données trop volumineuses. Utilisez une URL publique pour l'image."); return; }
+      const next = exercises.filter((e) => e.id !== final.id);
+      setExercises(next); await save("mcf-exercises", next);
+      setView("list"); return;
+    }
+
     const others = exercises.filter((e) => e.id !== final.id);
     const next = [...others, final].sort((a, b) => a.createdAt - b.createdAt);
     const ok = await save("mcf-exercises", next);
     if (!ok) { alert("❌ Échec de l'enregistrement — données trop volumineuses (image base64). Utilisez plutôt une URL publique."); return; }
+    // Nếu bài này từng nằm bên Entraînement → gỡ khỏi đó (chuyển trạng thái)
+    const prac = await load("mcf-practice", []);
+    if (prac.some((e) => e.id === final.id)) await save("mcf-practice", prac.filter((e) => e.id !== final.id));
     setExercises(next); setView("list");
   };
   const remove = async (id) => {
@@ -997,6 +1015,18 @@ function Builder({ draft, setDraft, publish, cancel, accounts, classes = [] }) {
   };
   const setQ = (id, patch) => setDraft({ ...draft, questions: draft.questions.map((q) => (q.id === id ? { ...q, ...patch } : q)) });
   const delQ = (id) => setDraft({ ...draft, questions: draft.questions.filter((q) => q.id !== id) });
+  // ⧉ Nhân bản 1 câu hỏi : DEEP CLONE + id mới, options được copy giá trị mới hoàn toàn
+  const duplicateQuestion = (id) => {
+    const idx = draft.questions.findIndex((q) => q.id === id);
+    if (idx < 0) return;
+    const src = draft.questions[idx];
+    const clone = typeof structuredClone === "function" ? structuredClone(src) : JSON.parse(JSON.stringify(src));
+    clone.id = uid();
+    if (Array.isArray(clone.options)) clone.options = clone.options.map((o) => String(o)); // mảng options mới, độc lập
+    const qs = [...draft.questions];
+    qs.splice(idx + 1, 0, clone);
+    setDraft({ ...draft, questions: qs });
+  };
 
   const ready = draft.title.trim() && draft.questions.length > 0 &&
     dSkills.length > 0 &&
@@ -1032,15 +1062,39 @@ function Builder({ draft, setDraft, publish, cancel, accounts, classes = [] }) {
         </div>
       )}
       <div className="mcf-card" style={{ ...S.card, marginBottom: 16 }}>
+        {/* Type d'utilisation : Devoir vs Entraînement */}
+        <div style={{ marginBottom: 16 }}>
+          <div style={S.label}>Type d'utilisation</div>
+          <div style={{ display: "flex", gap: 10, marginTop: 8, flexWrap: "wrap" }}>
+            {[["assignment", "📝 Devoir (À faire)"], ["practice", "🏋️ Entraînement libre"]].map(([v, l]) => {
+              const on = (draft.usageType || "assignment") === v;
+              return (
+                <label key={v} style={{ display: "flex", alignItems: "center", gap: 7, fontSize: 14, cursor: "pointer",
+                  padding: "9px 18px", borderRadius: 999, fontWeight: 700,
+                  border: `1.5px solid ${on ? C.primary : C.line}`,
+                  background: on ? C.primarySoft : "var(--mcf-surface)", color: on ? C.primary : C.ink }}>
+                  <input type="radio" checked={on} style={{ display: "none" }}
+                    onChange={() => setDraft({ ...draft, usageType: v, ...(v === "practice" ? { deadline: "", targeted: false } : {}) })} />
+                  {on ? "✓ " : ""}{l}
+                </label>
+              );
+            })}
+          </div>
+          {(draft.usageType || "assignment") === "practice" && (
+            <div style={{ fontSize: 12.5, color: C.soft, marginTop: 6 }}>Cet exercice sera publié dans la Bibliothèque d'entraînement, accessible librement par tous les élèves.</div>
+          )}
+        </div>
+
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
           <div style={{ flex: "2 1 240px" }}>
             <div style={S.label}>Titre</div>
             <input style={{ ...S.input, marginTop: 6 }} value={draft.title} placeholder="ex. Passé composé — les transports"
               onChange={(e) => setDraft({ ...draft, title: e.target.value })} />
             <div style={{ ...S.label, marginTop: 12 }}>Consigne / Énoncé de l'exercice (optionnel)</div>
-            <textarea style={{ ...S.input, marginTop: 6, minHeight: 60, resize: "vertical" }} value={draft.consigne || ""}
-              placeholder="ex. Lisez attentivement le texte puis répondez aux questions suivantes…"
-              onChange={(e) => setDraft({ ...draft, consigne: e.target.value })} />
+            <div style={{ marginTop: 6 }}>
+              <RichTextEditor minHeight={110} value={draft.consigne || ""}
+                onChange={(html) => setDraft({ ...draft, consigne: stripHtml(html) ? html : "" })} />
+            </div>
           </div>
           <div>
             <div style={S.label}>Niveau</div>
@@ -1065,11 +1119,13 @@ function Builder({ draft, setDraft, publish, cancel, accounts, classes = [] }) {
               })}
             </div>
           </div>
+          {(draft.usageType || "assignment") !== "practice" && (
           <div>
             <div style={S.label}>Date limite (optionnel)</div>
             <input type="datetime-local" style={{ ...S.input, marginTop: 6 }} value={draft.deadline}
               onChange={(e) => setDraft({ ...draft, deadline: e.target.value })} />
           </div>
+          )}
           <div>
             <div style={S.label}>⏱ Temps limite (min)</div>
             <input type="number" min="1" style={{ ...S.input, marginTop: 6, width: 110 }} value={draft.timeLimit || ""}
@@ -1133,7 +1189,7 @@ function Builder({ draft, setDraft, publish, cancel, accounts, classes = [] }) {
         </div>
         )}
 
-        {accounts.length > 0 && (
+        {accounts.length > 0 && (draft.usageType || "assignment") !== "practice" && (
         <div style={{ marginTop: 14 }}>
           <div style={S.label}>Destinataires — qui reçoit ce devoir ?</div>
 
@@ -1209,7 +1265,10 @@ function Builder({ draft, setDraft, publish, cancel, accounts, classes = [] }) {
         <div key={q.id} className="mcf-card" style={{ ...S.card, marginBottom: 14 }}>
           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
             <span style={S.label}>Question {i + 1} — {QTYPES[q.type]}{autoQ(q) && " (corrigé automatique)"}</span>
-            <button style={{ background: "none", border: "none", color: C.danger, cursor: "pointer", fontWeight: 700, fontFamily: "inherit" }} onClick={() => delQ(q.id)}>retirer</button>
+            <div style={{ display: "flex", gap: 14 }}>
+              <button style={{ background: "none", border: "none", color: C.primary, cursor: "pointer", fontWeight: 700, fontFamily: "inherit" }} onClick={() => duplicateQuestion(q.id)}>⧉ dupliquer</button>
+              <button style={{ background: "none", border: "none", color: C.danger, cursor: "pointer", fontWeight: 700, fontFamily: "inherit" }} onClick={() => delQ(q.id)}>retirer</button>
+            </div>
           </div>
           <textarea style={{ ...S.input, minHeight: 54, resize: "vertical" }} value={q.prompt}
             placeholder={q.type === "fill" || q.type === "conj" ? hint[q.type] : q.type === "qcm" ? "Énoncé de la question…" : "Consigne (ex. phrase à traduire)…"}
@@ -1959,7 +2018,7 @@ function Taking({ ex, name, setSubmissions, done }) {
       {ex.consigne && (
         <div className="mcf-card" style={{ ...S.card, marginBottom: 16, borderLeft: `4px solid ${C.primary}` }}>
           <div style={S.label}>📋 Consigne</div>
-          <div style={{ fontSize: 15.5, lineHeight: 1.75, marginTop: 6, whiteSpace: "pre-wrap", fontWeight: 500 }}>{ex.consigne}</div>
+          <div style={{ fontSize: 15.5, lineHeight: 1.75, marginTop: 6, fontWeight: 500 }} dangerouslySetInnerHTML={{ __html: ex.consigne }} />
         </div>
       )}
 
@@ -2079,7 +2138,7 @@ function ReadingPanel({ text, stickyTop = 8 }) {
    Bộ soạn thảo không cần thư viện ngoài — xuất HTML.
    Toolbar: font, cỡ chữ, B/I/U/S, x₂ x², màu chữ, highlight,
    căn lề, danh sách, indent, giãn dòng, xóa định dạng. */
-function RichTextEditor({ value, onChange, wordLimit, readOnly }) {
+function RichTextEditor({ value, onChange, wordLimit, readOnly, minHeight = 280 }) {
   const ref = React.useRef(null);
   const [lineH, setLineH] = useState("1.8");
   const words = wordCount(value);
@@ -2157,13 +2216,19 @@ function RichTextEditor({ value, onChange, wordLimit, readOnly }) {
         <select style={sel} value={lineH} title="Interligne (giãn dòng)" onChange={(e) => setLineH(e.target.value)}>
           <option value="1.4">1,0</option><option value="1.8">1,5</option><option value="2.2">2,0</option>
         </select>
+        <button type="button" title="Insérer un lien"
+          onMouseDown={(e) => { e.preventDefault(); const url = prompt("URL du lien :", "https://"); if (url) exec("createLink", url); }}
+          style={{ minWidth: 34, height: 30, borderRadius: 7, border: "1px solid transparent", background: "transparent",
+            color: C.ink, fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}
+          onMouseEnter={(e) => { e.currentTarget.style.background = "var(--mcf-line)"; }}
+          onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}>🔗</button>
         <TBtn label="🧹" title="Effacer la mise en forme" cmd="removeFormat" wide />
       </div>
 
       {/* Vùng viết — "tờ giấy" */}
       <div ref={ref} contentEditable={!readOnly} suppressContentEditableWarning
         onInput={() => onChange(ref.current?.innerHTML || "")}
-        style={{ minHeight: 280, maxHeight: 560, overflowY: "auto", padding: "20px 24px", fontSize: 15.5,
+        style={{ minHeight, maxHeight: 560, overflowY: "auto", padding: "20px 24px", fontSize: 15.5,
           lineHeight: lineH, color: C.ink, outline: "none", fontFamily: "'Be Vietnam Pro', sans-serif" }} />
 
       {/* Word counter */}
