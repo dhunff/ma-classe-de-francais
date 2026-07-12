@@ -961,18 +961,31 @@ function Builder({ draft, setDraft, publish, cancel, accounts, classes = [] }) {
         const type = String(it.type || "").toUpperCase();
         switch (type) {
           case "QCM": case "MCQ": {
-            const options = (it.options || it.choix || []).map((o) => String(o));
+            const rawOpts = it.options || it.choix || [];
+            let options, answer;
+            if (rawOpts.length && typeof rawOpts[0] === "object" && rawOpts[0] !== null) {
+              // Gemini format : [{id, texte, isCorrect}]
+              options = rawOpts.map((o) => String(o.texte ?? o.text ?? o.label ?? ""));
+              const ci = rawOpts.findIndex((o) => o.isCorrect === true || o.correct === true);
+              answer = ci >= 0 ? ci : 0;
+            } else {
+              options = rawOpts.map((o) => String(o));
+              answer = it.reponse ?? it.answer ?? it.reponse_correcte ?? 0;
+              if (typeof answer === "string") answer = Math.max(0, options.indexOf(answer));
+            }
             if (options.length < 2) return null;
-            let answer = it.reponse ?? it.answer ?? 0;
-            if (typeof answer !== "number") answer = Math.max(0, options.indexOf(String(answer)));
             return { id: uid(), type: "qcm", prompt, options, answer: Math.min(answer, options.length - 1) };
           }
-          case "TEXTE_A_TROUS": case "FILL":
-            return { id: uid(), type: "fill", prompt, answer: String(it.reponse ?? it.answer ?? "") };
+          case "TEXTE_A_TROUS": case "FILL": {
+            let fa = it.reponse ?? it.reponse_attendue ?? it.answer ?? "";
+            if (!fa && it.reponses_attendues && typeof it.reponses_attendues === "object")
+              fa = Object.values(it.reponses_attendues).join("|");
+            return { id: uid(), type: "fill", prompt, answer: String(fa) };
+          }
           case "CONJUGAISON": case "CONJ":
-            return { id: uid(), type: "conj", prompt, answer: String(it.reponse ?? it.answer ?? "") };
+            return { id: uid(), type: "conj", prompt, answer: String(it.reponse ?? it.reponse_attendue ?? it.answer ?? "") };
           case "VRAI_FAUX_ONSP": case "VF": case "VRAI_FAUX":
-            return { id: uid(), type: "vf", prompt, answer: normVF(it.reponse ?? it.answer),
+            return { id: uid(), type: "vf", prompt, answer: normVF(it.reponse ?? it.reponse_correcte ?? it.answer),
               justification: String(it.justification ?? it.justification_attendue ?? "") };
           case "REPONSE_LIBRE": case "OPEN":
             return { id: uid(), type: "open", prompt, model: String(it.corrige_type ?? it.reponse_suggeree ?? it.model ?? "") };
