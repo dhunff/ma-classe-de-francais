@@ -4,7 +4,7 @@ import {
   RotateCcw, CheckCircle2, XCircle, Plus, ChevronLeft, PartyPopper, Trash2, Pencil, Copy, MoreVertical, Folder, FolderPlus,
 } from "lucide-react";
 import {
-  C, S, QTYPES, VF_OPTS, uid, fillOk, vfOk, stripHtml, autoQ,
+  C, S, QTYPES, VF_OPTS, uid, fillOk, vfOk, stripHtml, autoQ, tableauOk, tableauCells, TableauCompare,
   RichTextEditor, Builder, ReadingPanel, load, save, exSkills,
 } from "./App.jsx";
 
@@ -555,6 +555,7 @@ function PracticeWorkspace({ ex, back, onFinish }) {
   const opens = ex.questions.filter((q) => q.type === "open");
   const isGood = (q) => q.type === "qcm" ? answersRef.current[q.id] === q.answer
     : q.type === "vf" ? vfOk(q, answersRef.current[q.id])
+    : q.type === "tableau" ? tableauOk(q, answersRef.current[q.id])
     : fillOk(q, answersRef.current[q.id]);
 
   const grade = (timedOut = false) => {
@@ -569,6 +570,7 @@ function PracticeWorkspace({ ex, back, onFinish }) {
   const perfect = graded && autos.length > 0 && score === autos.length;
   const allAnswered = ex.questions.every((q) =>
     q.type === "qcm" ? answers[q.id] != null
+    : q.type === "tableau" ? tableauCells(q).every((k) => answers[q.id] && answers[q.id][k])
     : q.type === "vf" ? (answers[q.id]?.choice != null && (answers[q.id].choice === 2 || (answers[q.id].just || "").trim() !== ""))
     : q.type === "open" ? stripHtml(answers[q.id]) !== "" : (answers[q.id] || "").trim() !== "");
   const fmtLeft = (s) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
@@ -600,6 +602,9 @@ function PracticeWorkspace({ ex, back, onFinish }) {
               );
             })}
           </div>
+        ) : q.type === "tableau" ? (
+          <TableauCompare q={q} value={a || {}} readOnly={!!graded} correction={!!graded}
+            onChange={(v) => setAnswers({ ...answers, [q.id]: v })} />
         ) : q.type === "vf" ? (
           <div style={{ display: "grid", gap: 10 }}>
             <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>

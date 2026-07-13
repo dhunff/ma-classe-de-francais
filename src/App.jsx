@@ -24,7 +24,7 @@ const C = {
 const LEVEL_COLORS = { A1: "#1E9E6A", A2: "#2A9D8F", B1: "#3D5AF1", B2: "#7048E8", "B2+": "#D6336C" };
 const LEVEL_PASTEL = { A1: "#DDF6EB", A2: "#DDF2F0", B1: "#E6EBFE", B2: "#EFE9FC", "B2+": "#FBE3ED" };
 const SKILLS = ["Grammaire", "Vocabulaire", "Écoute", "Lecture", "Production écrite", "Traduction", "Communication"];
-const QTYPES = { qcm: "QCM", fill: "Texte à trous", conj: "Conjugaison", vf: "Vrai / Faux / ?", open: "Réponse libre / traduction" };
+const QTYPES = { qcm: "QCM", fill: "Texte à trous", conj: "Conjugaison", vf: "Vrai / Faux / ?", tableau: "Tableau OUI/NON", open: "Réponse libre / traduction" };
 const VF_OPTS = ["Vrai", "Faux", "On ne sait pas"];
 
 const FONTS = `
@@ -177,7 +177,9 @@ const wordCount = (h) => { const t = stripHtml(h); return t ? t.split(" ").lengt
 
 const vfOk = (q, ans) => ans != null && ans.choice === q.answer;
 const fillOk = (q, ans) => (q.accepted || "").split("|").map(norm).filter(Boolean).includes(norm(ans));
-const autoQ = (q) => q.type === "qcm" || q.type === "fill" || q.type === "conj" || q.type === "vf";
+const autoQ = (q) => q.type === "qcm" || q.type === "fill" || q.type === "conj" || q.type === "vf" || q.type === "tableau";
+const tableauCells = (q) => (q.criteres || []).flatMap((cr) => (q.colonnes || []).map((co) => `${cr.id}_${co.id}`));
+const tableauOk = (q, ans) => { const cells = tableauCells(q); return cells.length > 0 && cells.every((k) => ans && ans[k] === q.answers?.[k]); };
 
 function totalScore(sub, ex) {
   const opens = ex.questions.filter((q) => q.type === "open");
@@ -987,6 +989,22 @@ function Builder({ draft, setDraft, publish, cancel, accounts, classes = [] }) {
           case "VRAI_FAUX_ONSP": case "VF": case "VRAI_FAUX":
             return { id: uid(), type: "vf", prompt, answer: normVF(it.reponse ?? it.reponse_correcte ?? it.answer),
               justification: String(it.justification ?? it.justification_attendue ?? "") };
+          case "TABLEAU_COMPARAISON": case "TABLEAU": {
+            const colonnes = (it.colonnes || []).map((c) => ({ id: uid(), titre: String(c.titre ?? c.title ?? c) }));
+            const criteres = (it.criteres || []).map((c) => ({ id: uid(), texte: String(c.texte ?? c.text ?? c) }));
+            if (!colonnes.length || !criteres.length) return null;
+            // remap réponses_attendues (clés "crit_x_col_y" d'origine) -> nouvelles clés
+            const srcCols = (it.colonnes || []).map((c) => c.id);
+            const srcCrits = (it.criteres || []).map((c) => c.id);
+            const rep = it.reponses_attendues || it.answers || {};
+            const answers = {};
+            criteres.forEach((cr, ci) => colonnes.forEach((co, oi) => {
+              const srcKey = `${srcCrits[ci]}_${srcCols[oi]}`;
+              const v = String(rep[srcKey] || "").toUpperCase();
+              if (v === "OUI" || v === "NON") answers[`${cr.id}_${co.id}`] = v;
+            }));
+            return { id: uid(), type: "tableau", prompt, colonnes, criteres, answers };
+          }
           case "REPONSE_LIBRE": case "OPEN":
             return { id: uid(), type: "open", prompt, model: String(it.corrige_type ?? it.reponse_suggeree ?? it.model ?? "") };
           default: return null;
@@ -1334,6 +1352,77 @@ function Builder({ draft, setDraft, publish, cancel, accounts, classes = [] }) {
                 onChange={(e) => setQ(q.id, { accepted: e.target.value })} />
             </div>
           )}
+          {q.type === "tableau" && (
+            <div style={{ marginTop: 10, display: "grid", gap: 12 }}>
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                <button style={{ ...S.btn(false), fontSize: 12.5, padding: "7px 14px" }}
+                  onClick={() => setQ(q.id, { colonnes: [...q.colonnes, { id: uid(), titre: `Élément ${q.colonnes.length + 1}` }] })}>+ Ajouter un élément à comparer</button>
+                <button style={{ ...S.btn(false), fontSize: 12.5, padding: "7px 14px" }}
+                  onClick={() => setQ(q.id, { criteres: [...q.criteres, { id: uid(), texte: `Critère ${q.criteres.length + 1}` }] })}>+ Ajouter un critère</button>
+              </div>
+
+              {/* Éditer les titres de colonnes */}
+              <div style={{ display: "grid", gap: 6 }}>
+                {q.colonnes.map((co, ci) => (
+                  <div key={co.id} style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                    <span style={{ fontSize: 12, color: C.soft, minWidth: 60 }}>Élément {ci + 1}</span>
+                    <input style={{ ...S.input, flex: 1 }} value={co.titre}
+                      onChange={(e) => setQ(q.id, { colonnes: q.colonnes.map((x) => x.id === co.id ? { ...x, titre: e.target.value } : x) })} />
+                    {q.colonnes.length > 1 && (
+                      <button title="Supprimer" onClick={() => { const rm = q.colonnes.filter((x) => x.id !== co.id); const na = { ...q.answers }; q.criteres.forEach((cr) => delete na[`${cr.id}_${co.id}`]); setQ(q.id, { colonnes: rm, answers: na }); }}
+                        style={{ border: "none", background: "transparent", color: C.danger, cursor: "pointer" }}>🗑</button>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              {/* Preview + set corrigé */}
+              <div style={{ overflowX: "auto" }} className="mcf-scroll">
+                <table style={{ borderCollapse: "collapse", width: "100%", minWidth: 380, fontSize: 13 }}>
+                  <thead>
+                    <tr>
+                      <th style={{ border: `1px solid ${C.line}`, padding: 8, textAlign: "left", background: "var(--mcf-surface2)" }}>Critère</th>
+                      {q.colonnes.map((co) => <th key={co.id} style={{ border: `1px solid ${C.line}`, padding: 8, background: "var(--mcf-surface2)" }}>{co.titre}</th>)}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {q.criteres.map((cr) => (
+                      <tr key={cr.id}>
+                        <td style={{ border: `1px solid ${C.line}`, padding: 6 }}>
+                          <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+                            <input style={{ ...S.input, flex: 1, padding: "6px 10px", fontSize: 12.5 }} value={cr.texte}
+                              onChange={(e) => setQ(q.id, { criteres: q.criteres.map((x) => x.id === cr.id ? { ...x, texte: e.target.value } : x) })} />
+                            {q.criteres.length > 1 && (
+                              <button title="Supprimer" onClick={() => { const rm = q.criteres.filter((x) => x.id !== cr.id); const na = { ...q.answers }; q.colonnes.forEach((co) => delete na[`${cr.id}_${co.id}`]); setQ(q.id, { criteres: rm, answers: na }); }}
+                                style={{ border: "none", background: "transparent", color: C.danger, cursor: "pointer" }}>🗑</button>
+                            )}
+                          </div>
+                        </td>
+                        {q.colonnes.map((co) => {
+                          const key = `${cr.id}_${co.id}`;
+                          return (
+                            <td key={co.id} style={{ border: `1px solid ${C.line}`, padding: 6, textAlign: "center" }}>
+                              <div style={{ display: "flex", gap: 10, justifyContent: "center" }}>
+                                {["OUI", "NON"].map((v) => (
+                                  <label key={v} style={{ display: "flex", alignItems: "center", gap: 3, fontSize: 12, fontWeight: 700, cursor: "pointer",
+                                    color: q.answers?.[key] === v ? (v === "OUI" ? C.ok : C.danger) : C.soft }}>
+                                    <input type="radio" checked={q.answers?.[key] === v}
+                                      onChange={() => setQ(q.id, { answers: { ...q.answers, [key]: v } })} />
+                                    {v}
+                                  </label>
+                                ))}
+                              </div>
+                            </td>
+                          );
+                        })}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div style={{ fontSize: 12, color: C.soft }}>Cochez OUI ou NON dans chaque cellule pour définir le corrigé.</div>
+            </div>
+          )}
           {q.type === "vf" && (
             <div style={{ marginTop: 10, display: "grid", gap: 10 }}>
               <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
@@ -1372,6 +1461,7 @@ function Builder({ draft, setDraft, publish, cancel, accounts, classes = [] }) {
         <button style={S.btn(false)} onClick={() => addQ("conj")}>+ Conjugaison</button>
         <button style={S.btn(false)} onClick={() => addQ("open")}>+ Réponse libre</button>
         <button style={S.btn(false)} onClick={() => setDraft({ ...draft, questions: [...draft.questions, { id: uid(), type: "vf", prompt: "", answer: 0, justification: "" }] })}>+ Vrai / Faux / ?</button>
+        <button style={S.btn(false)} onClick={() => setDraft({ ...draft, questions: [...draft.questions, { id: uid(), type: "tableau", prompt: "Pour chaque élément, cochez OUI ou NON selon le critère.", colonnes: [{ id: uid(), titre: "Élément 1" }, { id: uid(), titre: "Élément 2" }], criteres: [{ id: uid(), texte: "Critère 1" }], answers: {} }] })}>+ Tableau OUI/NON</button>
       </div>
       {/* 🪄 Modal Import JSON */}
       {jsonModal && (
@@ -1519,19 +1609,92 @@ function Progress({ ex, submissions, setSubmissions, accounts, back }) {
                     const a = sub.answers[q.id];
                     const good = q.type === "qcm" ? a === q.answer
                       : q.type === "vf" ? vfOk(q, a)
+                      : q.type === "tableau" ? tableauOk(q, a)
                       : (q.type === "fill" || q.type === "conj") ? fillOk(q, a) : null;
                     return (
                       <div key={q.id} style={{ background: "var(--mcf-surface2)", borderRadius: 12, padding: "12px 14px", border: `1px solid ${C.line}` }}>
                         <div style={{ fontWeight: 700, marginBottom: 6 }}>{i + 1}. {q.prompt}</div>
                         <div style={{ fontSize: 14 }}>
-                          {q.type !== "vf" && <>Réponse : </>}{q.type === "vf" ? null : q.type === "qcm"
+                          {q.type === "tableau" && <div style={{ marginTop: 6 }}><TableauCompare q={q} value={a || {}} readOnly correction /></div>}
+                          {q.type !== "vf" && q.type !== "tableau" && <>Réponse : </>}{q.type === "vf" || q.type === "tableau" ? null : q.type === "qcm"
                             ? <strong style={{ color: good ? C.ok : C.danger }}>{a != null ? String.fromCharCode(65 + a) + ". " + q.options[a] : "—"}</strong>
                             : q.type === "open"
                             ? <div style={{ marginTop: 6, background: "var(--mcf-surface)", border: `1px solid ${C.line}`, borderRadius: 10, padding: "10px 14px", lineHeight: 1.7 }} dangerouslySetInnerHTML={{ __html: a || "—" }} />
                             : <em style={{ color: good ? C.ok : C.danger }}>{a || "—"}</em>}
                           {good === false && q.type === "qcm" && <span> · attendu : <strong>{String.fromCharCode(65 + q.answer)}. {q.options[q.answer]}</strong></span>}
                           {good === false && (q.type === "fill" || q.type === "conj") && <span> · attendu : <strong>{q.accepted.split("|")[0]}</strong></span>}
-                          {q.type === "vf" && (
+                          {q.type === "tableau" && (
+            <div style={{ marginTop: 10, display: "grid", gap: 12 }}>
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                <button style={{ ...S.btn(false), fontSize: 12.5, padding: "7px 14px" }}
+                  onClick={() => setQ(q.id, { colonnes: [...q.colonnes, { id: uid(), titre: `Élément ${q.colonnes.length + 1}` }] })}>+ Ajouter un élément à comparer</button>
+                <button style={{ ...S.btn(false), fontSize: 12.5, padding: "7px 14px" }}
+                  onClick={() => setQ(q.id, { criteres: [...q.criteres, { id: uid(), texte: `Critère ${q.criteres.length + 1}` }] })}>+ Ajouter un critère</button>
+              </div>
+
+              {/* Éditer les titres de colonnes */}
+              <div style={{ display: "grid", gap: 6 }}>
+                {q.colonnes.map((co, ci) => (
+                  <div key={co.id} style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                    <span style={{ fontSize: 12, color: C.soft, minWidth: 60 }}>Élément {ci + 1}</span>
+                    <input style={{ ...S.input, flex: 1 }} value={co.titre}
+                      onChange={(e) => setQ(q.id, { colonnes: q.colonnes.map((x) => x.id === co.id ? { ...x, titre: e.target.value } : x) })} />
+                    {q.colonnes.length > 1 && (
+                      <button title="Supprimer" onClick={() => { const rm = q.colonnes.filter((x) => x.id !== co.id); const na = { ...q.answers }; q.criteres.forEach((cr) => delete na[`${cr.id}_${co.id}`]); setQ(q.id, { colonnes: rm, answers: na }); }}
+                        style={{ border: "none", background: "transparent", color: C.danger, cursor: "pointer" }}>🗑</button>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              {/* Preview + set corrigé */}
+              <div style={{ overflowX: "auto" }} className="mcf-scroll">
+                <table style={{ borderCollapse: "collapse", width: "100%", minWidth: 380, fontSize: 13 }}>
+                  <thead>
+                    <tr>
+                      <th style={{ border: `1px solid ${C.line}`, padding: 8, textAlign: "left", background: "var(--mcf-surface2)" }}>Critère</th>
+                      {q.colonnes.map((co) => <th key={co.id} style={{ border: `1px solid ${C.line}`, padding: 8, background: "var(--mcf-surface2)" }}>{co.titre}</th>)}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {q.criteres.map((cr) => (
+                      <tr key={cr.id}>
+                        <td style={{ border: `1px solid ${C.line}`, padding: 6 }}>
+                          <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+                            <input style={{ ...S.input, flex: 1, padding: "6px 10px", fontSize: 12.5 }} value={cr.texte}
+                              onChange={(e) => setQ(q.id, { criteres: q.criteres.map((x) => x.id === cr.id ? { ...x, texte: e.target.value } : x) })} />
+                            {q.criteres.length > 1 && (
+                              <button title="Supprimer" onClick={() => { const rm = q.criteres.filter((x) => x.id !== cr.id); const na = { ...q.answers }; q.colonnes.forEach((co) => delete na[`${cr.id}_${co.id}`]); setQ(q.id, { criteres: rm, answers: na }); }}
+                                style={{ border: "none", background: "transparent", color: C.danger, cursor: "pointer" }}>🗑</button>
+                            )}
+                          </div>
+                        </td>
+                        {q.colonnes.map((co) => {
+                          const key = `${cr.id}_${co.id}`;
+                          return (
+                            <td key={co.id} style={{ border: `1px solid ${C.line}`, padding: 6, textAlign: "center" }}>
+                              <div style={{ display: "flex", gap: 10, justifyContent: "center" }}>
+                                {["OUI", "NON"].map((v) => (
+                                  <label key={v} style={{ display: "flex", alignItems: "center", gap: 3, fontSize: 12, fontWeight: 700, cursor: "pointer",
+                                    color: q.answers?.[key] === v ? (v === "OUI" ? C.ok : C.danger) : C.soft }}>
+                                    <input type="radio" checked={q.answers?.[key] === v}
+                                      onChange={() => setQ(q.id, { answers: { ...q.answers, [key]: v } })} />
+                                    {v}
+                                  </label>
+                                ))}
+                              </div>
+                            </td>
+                          );
+                        })}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div style={{ fontSize: 12, color: C.soft }}>Cochez OUI ou NON dans chaque cellule pour définir le corrigé.</div>
+            </div>
+          )}
+          {q.type === "vf" && (
                             <div style={{ marginTop: 4 }}>
                               Choix : <strong style={{ color: good ? C.ok : C.danger }}>{a?.choice != null ? VF_OPTS[a.choice] : "—"}</strong>
                               {good === false && <span> · attendu : <strong>{VF_OPTS[q.answer]}</strong></span>}
@@ -1753,7 +1916,7 @@ function Student({ name, exercises, submissions, setSubmissions, accounts, setAc
             </a>
           </div>
         )}
-        {sub?.graded && ex.questions.some((q) => q.type === "open" || q.type === "vf") && (
+        {sub?.graded && ex.questions.some((q) => q.type === "open" || q.type === "vf" || q.type === "tableau") && (
           <details style={{ marginTop: 10, fontSize: 13.5 }}>
             <summary style={{ cursor: "pointer", color: C.primary, fontWeight: 700 }}>📋 Voir ma copie corrigée</summary>
             <div style={{ marginTop: 10, display: "grid", gap: 12 }}>
@@ -1788,6 +1951,12 @@ function Student({ name, exercises, submissions, setSubmissions, accounts, setAc
                     </div>
                   );
                 }
+                if (q.type === "tableau") return (
+                  <div key={q.id} style={{ background: "var(--mcf-surface2)", borderRadius: 14, padding: "12px 15px", border: `1px solid ${C.line}` }}>
+                    <div style={{ fontWeight: 700, marginBottom: 8 }}>{i + 1}. {q.prompt}</div>
+                    <TableauCompare q={q} value={a || {}} readOnly correction />
+                  </div>
+                );
                 return null;
               })}
             </div>
@@ -1905,6 +2074,61 @@ function PasswordForm({ changePw }) {
 }
 
 /* ================= Taking (with auto-save) ================= */
+function TableauCompare({ q, value, onChange, readOnly, correction }) {
+  const set = (key, v) => { if (readOnly) return; onChange({ ...value, [key]: value?.[key] === v ? undefined : v }); };
+  return (
+    <div style={{ overflowX: "auto" }} className="mcf-scroll">
+      <table style={{ borderCollapse: "collapse", width: "100%", minWidth: 420, fontSize: 13.5 }}>
+        <thead>
+          <tr>
+            <th rowSpan={2} style={{ border: `1px solid ${C.line}`, padding: "8px 12px", textAlign: "left", background: "var(--mcf-surface2)", position: "sticky", left: 0, zIndex: 1 }}></th>
+            {q.colonnes.map((co) => (
+              <th key={co.id} colSpan={2} style={{ border: `1px solid ${C.line}`, padding: "8px 12px", background: "var(--mcf-surface2)", fontSize: 13 }}>{co.titre}</th>
+            ))}
+          </tr>
+          <tr>
+            {q.colonnes.map((co) => (
+              <React.Fragment key={co.id}>
+                <th style={{ border: `1px solid ${C.line}`, padding: "5px 10px", background: "var(--mcf-surface2)", fontSize: 12, color: C.ok }}>OUI</th>
+                <th style={{ border: `1px solid ${C.line}`, padding: "5px 10px", background: "var(--mcf-surface2)", fontSize: 12, color: C.danger }}>NON</th>
+              </React.Fragment>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {q.criteres.map((cr, ri) => (
+            <tr key={cr.id} style={{ background: ri % 2 ? "var(--mcf-surface2)" : "transparent" }}>
+              <td style={{ border: `1px solid ${C.line}`, padding: "8px 12px", fontWeight: 600, position: "sticky", left: 0, background: ri % 2 ? "var(--mcf-surface2)" : "var(--mcf-surface)", zIndex: 1 }}>{cr.texte}</td>
+              {q.colonnes.map((co) => {
+                const key = `${cr.id}_${co.id}`;
+                const stu = value?.[key];
+                const good = q.answers?.[key];
+                return ["OUI", "NON"].map((v) => {
+                  let bg = "transparent", mark = null;
+                  if (correction) {
+                    if (good === v) { bg = C.okSoft; if (stu === v) mark = "✓"; }
+                    if (stu === v && good !== v) { bg = C.dangerSoft; mark = "✗"; }
+                  }
+                  return (
+                    <td key={v} onClick={() => set(key, v)}
+                      style={{ border: `1px solid ${C.line}`, padding: "8px 10px", textAlign: "center", cursor: readOnly ? "default" : "pointer", background: bg }}>
+                      <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 22, height: 22, borderRadius: 6,
+                        border: `2px solid ${stu === v ? (v === "OUI" ? C.ok : C.danger) : C.line}`,
+                        background: stu === v ? (v === "OUI" ? C.ok : C.danger) : "transparent", color: "#fff", fontWeight: 800, fontSize: 13 }}>
+                        {stu === v ? (mark || "✓") : (correction && good === v ? "·" : "")}
+                      </span>
+                    </td>
+                  );
+                });
+              })}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 function Taking({ ex, name, setSubmissions, done }) {
   const draftKey = `mcf-draft-${ex.id}-${name}`;
   const startKey = `mcf-start-${ex.id}-${name}`;
@@ -1944,6 +2168,7 @@ function Taking({ ex, name, setSubmissions, done }) {
     const autoScore = autos.reduce((n, q) =>
       n + (q.type === "qcm" ? (a[q.id] === q.answer ? 1 : 0)
         : q.type === "vf" ? (vfOk(q, a[q.id]) ? 1 : 0)
+        : q.type === "tableau" ? (tableauOk(q, a[q.id]) ? 1 : 0)
         : (fillOk(q, a[q.id]) ? 1 : 0)), 0);
     const sub = {
       id: uid(), exerciseId: ex.id, student: name, answers: a,
@@ -1969,6 +2194,7 @@ function Taking({ ex, name, setSubmissions, done }) {
 
   const allAnswered = ex.questions.every((q) =>
     q.type === "qcm" ? answers[q.id] != null
+    : q.type === "tableau" ? tableauCells(q).every((k) => answers[q.id] && answers[q.id][k])
     : q.type === "vf" ? (answers[q.id]?.choice != null && (answers[q.id].choice === 2 || (answers[q.id].just || "").trim() !== ""))
     : q.type === "open" ? stripHtml(answers[q.id]) !== ""
     : (answers[q.id] || "").trim() !== "");
@@ -1979,6 +2205,7 @@ function Taking({ ex, name, setSubmissions, done }) {
     const autoScore = autos.reduce((n, q) =>
       n + (q.type === "qcm" ? (answers[q.id] === q.answer ? 1 : 0)
         : q.type === "vf" ? (vfOk(q, answers[q.id]) ? 1 : 0)
+        : q.type === "tableau" ? (tableauOk(q, answers[q.id]) ? 1 : 0)
         : (fillOk(q, answers[q.id]) ? 1 : 0)), 0);
     const sub = {
       id: uid(), exerciseId: ex.id, student: name, answers,
@@ -2008,6 +2235,9 @@ function Taking({ ex, name, setSubmissions, done }) {
             </label>
           ))}
         </div>
+      ) : q.type === "tableau" ? (
+        <TableauCompare q={q} value={answers[q.id] || {}} readOnly={locked}
+          onChange={(v) => setAnswers({ ...answers, [q.id]: v })} />
       ) : q.type === "vf" ? (
         <div style={{ display: "grid", gap: 10 }}>
           <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
@@ -2311,4 +2541,4 @@ function RichTextEditor({ value, onChange, wordLimit, readOnly, minHeight = 280 
 
 
 /* ---- Xuất dùng chung cho PracticeHub ---- */
-export { C, S, SKILLS, QTYPES, VF_OPTS, LEVEL_COLORS, uid, fillOk, vfOk, stripHtml, wordCount, autoQ, isLate, exSkills, RichTextEditor, Builder, ReadingPanel, load, save };
+export { C, S, SKILLS, QTYPES, VF_OPTS, LEVEL_COLORS, uid, fillOk, vfOk, stripHtml, wordCount, autoQ, isLate, exSkills, tableauOk, tableauCells, TableauCompare, RichTextEditor, Builder, ReadingPanel, load, save };
