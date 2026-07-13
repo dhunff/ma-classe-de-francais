@@ -237,7 +237,10 @@ export default function PracticeHub({ role = "eleve", name = "" }) {
     // Tab par defaut : niveau du dernier exercice pratique dans cette categorie, sinon A1
     const defaultNiveau = (() => {
       const recent = all.filter((e) => hist[e.id]).sort((a, b) => (hist[b.id].at || 0) - (hist[a.id].at || 0))[0];
-      return recent ? recent.level : "A1";
+      if (recent) return recent.level;
+      // Sinon : premier niveau qui contient réellement des exercices (évite un écran vide, ex. « Non classé »)
+      const firstWith = NIVEAUX.find((lv) => all.some((e) => e.level === lv));
+      return firstWith || "A1";
     })();
     const niveau = view.niveau || defaultNiveau;
     const catFolders = view.cat === "__autres__" ? [] : folders.filter((f) => f.cat === view.cat);
@@ -534,6 +537,7 @@ function PracticeWorkspace({ ex, back, onFinish }) {
   const [graded, setGraded] = useState(false);
   const [remaining, setRemaining] = useState(null);
   const [zen, setZen] = useState(false); // 🧘 chế độ tập trung
+  const [imgZoom, setImgZoom] = useState(false); // 🔍 lightbox ảnh đề bài
   const answersRef = useRef(answers); answersRef.current = answers;
   const gradedRef = useRef(false);
 
@@ -708,10 +712,27 @@ function PracticeWorkspace({ ex, back, onFinish }) {
       )}
 
       {ex.imageUrl && (
-        <div style={{ display: "flex", justifyContent: "center", marginBottom: 16 }}>
-          <img src={ex.imageUrl} alt="illustration"
-            style={{ maxHeight: 400, maxWidth: "100%", width: "auto", objectFit: "contain",
-              borderRadius: 24, boxShadow: "0 6px 20px rgba(17,24,39,.10)" }} />
+        <div style={{ marginBottom: 16 }}>
+          <img src={ex.imageUrl} alt="illustration — cliquez pour agrandir" title="Cliquez pour agrandir 🔍"
+            onClick={() => setImgZoom(true)}
+            onMouseEnter={(e) => (e.currentTarget.style.opacity = 0.9)}
+            onMouseLeave={(e) => (e.currentTarget.style.opacity = 1)}
+            style={{ display: "block", width: "100%", maxWidth: 900, margin: "0 auto", objectFit: "contain",
+              borderRadius: 16, border: `1px solid ${C.line}`, boxShadow: "0 3px 12px rgba(17,24,39,.08)",
+              cursor: "zoom-in", transition: "opacity .15s ease" }} />
+          <div style={{ textAlign: "center", fontSize: 12, color: C.soft, marginTop: 6 }}>🔍 Cliquez sur l'image pour l'agrandir</div>
+        </div>
+      )}
+      {imgZoom && (
+        <div onClick={() => setImgZoom(false)}
+          style={{ position: "fixed", inset: 0, zIndex: 400, background: "rgba(0,0,0,.9)", backdropFilter: "blur(4px)",
+            display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
+          <button onClick={() => setImgZoom(false)} title="Fermer"
+            style={{ position: "fixed", top: 16, right: 16, zIndex: 401, width: 44, height: 44, borderRadius: 999,
+              border: "none", background: "rgba(255,255,255,.15)", color: "#fff", fontSize: 22, fontWeight: 800,
+              cursor: "pointer", display: "grid", placeItems: "center" }}>✕</button>
+          <img src={ex.imageUrl} alt="illustration agrandie" onClick={(e) => e.stopPropagation()}
+            style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain", borderRadius: 8, cursor: "zoom-out" }} />
         </div>
       )}
 
