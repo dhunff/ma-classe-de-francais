@@ -2638,7 +2638,7 @@ function Taking({ ex, name, setSubmissions, done }) {
       {remaining != null && (
         <div style={{ position: "fixed", bottom: 20, right: 20, zIndex: 100,
           display: "flex", alignItems: "center", gap: 8, padding: "10px 18px", borderRadius: 999,
-          background: remaining <= 300 ? C.danger : C.ink, color: "#fff", fontWeight: 800, fontSize: 17,
+          background: remaining <= 300 ? C.danger : "#111827", color: "#fff", border: "1px solid var(--mcf-line)", fontWeight: 800, fontSize: 17,
           boxShadow: "0 8px 22px rgba(27,37,89,.35)", fontVariantNumeric: "tabular-nums" }}>
           ⏱ {fmtLeft(remaining)}
         </div>
