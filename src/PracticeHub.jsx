@@ -207,16 +207,9 @@ export default function PracticeHub({ role = "eleve", name = "" }) {
               {unclassified.map((ex) => {
                 const hh = hist[ex.id];
                 return (
-                  <div key={ex.id} className="mcf-card" style={{ ...S.card, padding: "16px 20px", display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
-                    {ex.imageUrl ? (
-                      <img src={ex.imageUrl} alt="" loading="lazy"
-                        style={{ width: 64, height: 64, objectFit: "cover", borderRadius: 12, flexShrink: 0, border: `1px solid ${C.line}` }} />
-                    ) : (
-                      <div style={{ width: 64, height: 64, borderRadius: 12, flexShrink: 0, background: "var(--mcf-surface2)",
-                        border: `1px solid ${C.line}`, display: "grid", placeItems: "center" }}>
-                        <ImageIcon size={22} color="#9CA3AF" />
-                      </div>
-                    )}
+                  <div key={ex.id} className="mcf-card" style={{ ...S.card, padding: "18px 20px", display: "flex", flexDirection: "column", width: "100%" }}>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 4, marginBottom: ex.imageUrl ? 14 : 10 }}>
+                    <div>
                     <span style={S.badge(ex.level)}>{ex.level}</span>
                     <div style={{ flex: 1, minWidth: 160 }}>
                       <div style={{ fontWeight: 800, fontSize: 15.5 }}>{ex.title}</div>
@@ -225,7 +218,14 @@ export default function PracticeHub({ role = "eleve", name = "" }) {
                         {hh && <> · 🏆 Meilleur : {hh.best}/{hh.max} ({hh.tries} essai{hh.tries > 1 ? "s" : ""})</>}
                       </div>
                     </div>
-                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+    </div>
+                    </div>
+                    {ex.imageUrl && (
+                      <img src={ex.imageUrl} alt="" loading="lazy"
+                        style={{ width: "100%", height: 210, objectFit: "cover", borderRadius: 14,
+                          border: `1px solid ${C.line}`, marginBottom: 14 }} />
+                    )}
+                    <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 8, marginTop: "auto" }}>
                       <button style={S.btn(true)} onClick={() => setView({ page: "quiz", cat: "__autres__", exId: ex.id })}>S'entraîner</button>
                       {teacher && <HubMenu
                         onEdit={() => { const c = JSON.parse(JSON.stringify(ex)); if (!c.skills || !c.skills.length) c.skills = c.skill ? [c.skill] : []; if (c.consigne === undefined) c.consigne = ""; if (!c.usageType) c.usageType = "practice"; setDraft(c); setView({ page: "builder" }); }}
@@ -459,17 +459,9 @@ export default function PracticeHub({ role = "eleve", name = "" }) {
             {list.map((ex) => {
               const h = hist[ex.id];
               return (
-                <div key={ex.id} className="mcf-card" style={{ ...S.card, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 14, flex: 1, minWidth: 220 }}>
-                  {ex.imageUrl ? (
-                    <img src={ex.imageUrl} alt="" loading="lazy"
-                      style={{ width: 64, height: 64, objectFit: "cover", borderRadius: 12, flexShrink: 0, border: `1px solid ${C.line}` }} />
-                  ) : (
-                    <div style={{ width: 64, height: 64, borderRadius: 12, flexShrink: 0, background: "var(--mcf-surface2)",
-                      border: `1px solid ${C.line}`, display: "grid", placeItems: "center" }}>
-                      <ImageIcon size={22} color="#9CA3AF" />
-                    </div>
-                  )}
+                <div key={ex.id} className="mcf-card" style={{ ...S.card, display: "flex", flexDirection: "column", gap: 0, width: "100%" }}>
+                  {/* Header : badges + titre + méta */}
+                  <div style={{ display: "flex", flexDirection: "column", gap: 4, marginBottom: ex.imageUrl ? 14 : 10 }}>
                   <div>
                     <span style={S.badge(ex.level)}>{ex.level}</span>
                     {ex.folderId && folderName(ex.folderId) && (
@@ -486,7 +478,14 @@ export default function PracticeHub({ role = "eleve", name = "" }) {
                     </div>
                   </div>
                   </div>
-                  <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                  {/* Thumbnail lớn dưới header */}
+                  {ex.imageUrl && (
+                    <img src={ex.imageUrl} alt="" loading="lazy"
+                      style={{ width: "100%", height: 210, objectFit: "cover", borderRadius: 14,
+                        border: `1px solid ${C.line}`, marginBottom: 14 }} />
+                  )}
+                  {/* Actions dưới cùng, căn phải */}
+                  <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, alignItems: "center", marginTop: "auto" }}>
                     <button style={S.btn(true)} onClick={() => setView({ page: "quiz", cat: view.cat, folder: view.folder, niveau, exId: ex.id })}>S'entraîner</button>
                     {teacher && <HubMenu
                       onEdit={() => { const c = JSON.parse(JSON.stringify(ex)); if (!c.skills || !c.skills.length) c.skills = c.skill ? [c.skill] : []; if (c.consigne === undefined) c.consigne = ""; if (!c.usageType) c.usageType = "practice"; setDraft(c); setView({ page: "builder" }); }}
@@ -565,12 +564,12 @@ function HubMenu({ onEdit, onDup, onDel, onMove }) {
   return (
     <div ref={ref} style={{ position: "relative" }}>
       <button onClick={() => setOpen(!open)} title="Plus d'options"
-        style={{ width: 40, height: 40, borderRadius: 999, border: `1.5px solid ${C.line}`, background: "#fff",
+        style={{ width: 40, height: 40, borderRadius: 999, border: `1.5px solid ${C.line}`, background: "var(--mcf-surface)",
           cursor: "pointer", display: "grid", placeItems: "center", boxShadow: "0 2px 8px rgba(17,24,39,.06)" }}>
         <MoreVertical size={18} color={C.ink} />
       </button>
       {open && (
-        <div style={{ position: "absolute", right: 0, top: 46, minWidth: 180, background: "#fff", borderRadius: 20,
+        <div style={{ position: "absolute", right: 0, top: 46, minWidth: 180, background: "var(--mcf-surface)", borderRadius: 20,
           boxShadow: "0 14px 36px rgba(17,24,39,.16)", border: `1px solid ${C.line}`, padding: 6, zIndex: 60 }}>
           {item("Modifier", <Pencil size={16} />, onEdit)}
           {item("Dupliquer", <Copy size={16} />, onDup)}
@@ -644,7 +643,7 @@ function PracticeWorkspace({ ex, back, onFinish }) {
         {q.type === "qcm" ? (
           <div style={{ display: "grid", gap: 8 }}>
             {q.options.map((o, j) => {
-              let bg = "#fff", border = C.line, icon = null;
+              let bg = "var(--mcf-surface)", border = C.line, icon = null;
               if (graded) {
                 if (j === q.answer) { bg = C.okSoft; border = C.ok; icon = <CheckCircle2 size={17} color={C.ok} />; }
                 else if (j === a) { bg = C.dangerSoft; border = C.danger; icon = <XCircle size={17} color={C.danger} />; }
@@ -738,12 +737,12 @@ function PracticeWorkspace({ ex, back, onFinish }) {
   return (
     <div style={zen ? { position: "fixed", inset: 0, zIndex: 90, background: "var(--mcf-bg)", overflowY: "auto", padding: "28px 16px 80px" } : undefined}>
       {zen && (
-        <button onClick={() => setZen(false)} title="Quitter le mode Zen"
+        <button onClick={() => setZen(false)} title="Quitter le mode Focus"
           style={{ position: "fixed", top: 16, right: 16, zIndex: 120, display: "flex", alignItems: "center", gap: 8,
             padding: "10px 18px", borderRadius: 999, border: "none", cursor: "pointer", fontFamily: "inherit",
             background: C.ink, color: "var(--mcf-bg)", fontWeight: 700, fontSize: 13.5,
             boxShadow: "0 8px 22px rgba(17,24,39,.3)" }}>
-          ⤡ Quitter le Zen
+          ⤡ Quitter le Focus
         </button>
       )}
       <div style={zen ? { maxWidth: 920, margin: "0 auto" } : undefined}>
@@ -760,7 +759,7 @@ function PracticeWorkspace({ ex, back, onFinish }) {
       <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap", marginBottom: 8 }}>
         {!zen && (
           <button onClick={() => setZen(true)}
-            style={{ ...S.btn(false), padding: "7px 16px", fontSize: 13 }}>🧘 Mode Zen</button>
+            style={{ ...S.btn(false), padding: "7px 16px", fontSize: 13 }}>🎯 Focus</button>
         )}
         {ex.timeLimit && !graded && <span style={{ fontSize: 13, color: C.primary, fontWeight: 700 }}>⏱ Temps limite : {ex.timeLimit} minutes</span>}
       </div>

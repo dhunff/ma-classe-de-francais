@@ -294,10 +294,23 @@ export default function App() {
 function Bell({ name, exercises, submissions }) {
   const [open, setOpen] = useState(false);
   const [seen, setSeen] = useState({});
+  const [annonces, setAnnonces] = useState([]);
   useEffect(() => { load(`mcf-seen-${name}`, {}, false).then(setSeen); }, [name]);
+  // 📣 Annonces du professeur : charge + rafraîchit toutes les 60 s
+  useEffect(() => {
+    const fetchA = () => load("mcf-notifs", []).then((all) =>
+      setAnnonces(all.filter((n) => !n.targets || n.targets.includes(name))));
+    fetchA();
+    const t = setInterval(fetchA, 60_000);
+    return () => clearInterval(t);
+  }, [name]);
 
   const notifs = useMemo(() => {
     const list = [];
+    annonces.forEach((n) => {
+      if (!seen["ann-" + n.id])
+        list.push({ id: "ann-" + n.id, icon: "📣", text: n.message, ts: n.createdAt });
+    });
     const now = Date.now();
     exercises.filter((ex) => assignedTo(ex, name)).forEach((ex) => {
       const sub = submissions.find((s) => s.exerciseId === ex.id && s.student === name);
@@ -312,13 +325,13 @@ function Bell({ name, exercises, submissions }) {
         list.push({ id: "redo-" + sub.id, icon: "🔁", text: `Le professeur te demande de refaire « ${ex.title} »${sub.redoNote ? " : " + sub.redoNote : ""}.` });
     });
     return list;
-  }, [exercises, submissions, name, seen]);
+  }, [exercises, submissions, name, seen, annonces]);
 
   const openBell = async () => {
     setOpen(!open);
     if (!open && notifs.length) {
       const next = { ...seen };
-      notifs.forEach((n) => { if (n.id.startsWith("graded-")) next[n.id] = true; });
+      notifs.forEach((n) => { if (n.id.startsWith("graded-") || n.id.startsWith("ann-")) next[n.id] = true; });
       setSeen(next); await save(`mcf-seen-${name}`, next, false);
     }
   };
@@ -334,7 +347,7 @@ function Bell({ name, exercises, submissions }) {
         )}
       </button>
       {open && (
-        <div style={{ position: "absolute", right: 0, top: 46, width: 300, background: "var(--mcf-surface)", borderRadius: 24, boxShadow: "0 14px 36px rgba(17,24,39,0.14)", zIndex: 50, padding: 10, color: C.ink }}>
+        <div style={{ position: "absolute", right: 0, top: 46, width: 300, background: "var(--mcf-surface)", borderRadius: 24, boxShadow: "0 14px 36px rgba(17,24,39,0.14)", zIndex: 9999, padding: 10, color: C.ink }}>
           {notifs.length === 0
             ? <div style={{ padding: 12, fontSize: 13, color: C.soft }}>Aucune notification. Tout est à jour ! 🎉</div>
             : notifs.map((n) => (
@@ -546,6 +559,32 @@ function Login({ accounts, onLogin }) {
 /* ================= Teacher ================= */
 function Teacher({ exercises, setExercises, submissions, setSubmissions, accounts, setAccounts, classes, setClasses, refresh }) {
   const [view, setView] = useState("list");
+  // 📣 Annonces
+  const [annModal, setAnnModal] = useState(false);
+  const [annMsg, setAnnMsg] = useState("");
+  const [annAll, setAnnAll] = useState(true);
+  const [annClasses, setAnnClasses] = useState([]);
+  const [annStudents, setAnnStudents] = useState([]);
+  const [annSearch, setAnnSearch] = useState("");
+  const [annToast, setAnnToast] = useState("");
+
+  const sendAnnonce = async () => {
+    const msg = annMsg.trim();
+    if (!msg) return;
+    let targets = null; // null = broadcast à tous
+    if (!annAll) {
+      const names = new Set(annStudents);
+      annClasses.forEach((cid) => accounts.filter((a) => a.classId === cid).forEach((a) => names.add(a.name)));
+      if (!names.size) return;
+      targets = [...names];
+    }
+    const latest = await load("mcf-notifs", []);
+    const next = [...latest, { id: uid(), message: msg, targets, createdAt: Date.now() }].slice(-30);
+    await save("mcf-notifs", next);
+    setAnnModal(false);
+    setAnnToast("✅ Annonce envoyée !");
+    setTimeout(() => setAnnToast(""), 3200);
+  };
   const [draft, setDraft] = useState(null);
 
   const tabs = [["list", "📚 Exercices"], ["students", "👥 Élèves"], ["stats", "📊 Statistiques"], ["practice", "🏋️ Entraînement"]];
@@ -618,10 +657,83 @@ function Teacher({ exercises, setExercises, submissions, setSubmissions, account
         </div>
         <div style={{ display: "flex", gap: 10 }}>
           <button style={S.btn(false)} onClick={refresh}>↻ Actualiser</button>
+          {view === "list" && <button style={S.btn(false)} onClick={() => { setAnnModal(true); setAnnMsg(""); setAnnAll(true); setAnnClasses([]); setAnnStudents([]); setAnnSearch(""); }}>📣 Annonce</button>}
           {view === "list" && <button style={S.btn(true)} onClick={() => { setDraft(blank()); setView("new"); }}>+ Nouvel exercice</button>}
         </div>
       </div>
 
+      {annModal && (
+        <div style={{ position: "fixed", inset: 0, background: "rgba(17,24,39,.55)", display: "grid", placeItems: "center", padding: 16, zIndex: 9999 }}
+          onClick={() => setAnnModal(false)}>
+          <div className="mcf-card" style={{ ...S.card, width: "100%", maxWidth: 520, maxHeight: "88vh", overflowY: "auto" }} onClick={(e) => e.stopPropagation()}>
+            <h3 style={{ ...S.display, fontSize: 20, marginTop: 0 }}>📣 Envoyer une annonce</h3>
+            <textarea style={{ ...S.input, minHeight: 90, resize: "vertical" }} value={annMsg} autoFocus
+              placeholder="ex. Rappel : rendez le devoir B1 avant vendredi 19h !"
+              onChange={(e) => setAnnMsg(e.target.value)} />
+
+            <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 14.5, fontWeight: 700, cursor: "pointer", marginTop: 12 }}>
+              <input type="checkbox" checked={annAll} onChange={(e) => setAnnAll(e.target.checked)} />
+              👥 Envoyer à tous les élèves
+            </label>
+
+            {!annAll && (
+              <div style={{ marginTop: 10, background: "var(--mcf-surface2)", border: `1px solid ${C.line}`, borderRadius: 14, padding: "12px 14px", display: "grid", gap: 12 }}>
+                <div>
+                  <div style={{ ...S.label, fontSize: 10.5 }}>🏫 Par classes</div>
+                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 8 }}>
+                    {classes.length === 0 && <span style={{ fontSize: 12.5, color: C.soft }}>Aucune classe créée.</span>}
+                    {classes.map((cl) => {
+                      const on = annClasses.includes(cl.id);
+                      return (
+                        <label key={cl.id} style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, cursor: "pointer",
+                          padding: "6px 13px", borderRadius: 999, fontWeight: 700,
+                          border: `1.5px solid ${on ? C.primary : C.line}`,
+                          background: on ? C.primarySoft : "var(--mcf-surface)", color: on ? C.primary : C.ink }}>
+                          <input type="checkbox" checked={on} style={{ display: "none" }}
+                            onChange={() => setAnnClasses(on ? annClasses.filter((x) => x !== cl.id) : [...annClasses, cl.id])} />
+                          {on ? "✓ " : ""}{cl.name}
+                        </label>
+                      );
+                    })}
+                  </div>
+                </div>
+                <div>
+                  <div style={{ ...S.label, fontSize: 10.5 }}>👤 Par élèves</div>
+                  <input style={{ ...S.input, marginTop: 8, maxWidth: 280 }} value={annSearch}
+                    placeholder="🔍 Rechercher…" onChange={(e) => setAnnSearch(e.target.value)} />
+                  <div className="mcf-scroll" style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 10, maxHeight: 140, overflowY: "auto" }}>
+                    {accounts.filter((a) => a.name.toLowerCase().includes(annSearch.trim().toLowerCase())).map((a) => {
+                      const on = annStudents.includes(a.name);
+                      return (
+                        <label key={a.name} style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, cursor: "pointer",
+                          padding: "6px 13px", borderRadius: 999, fontWeight: 600,
+                          border: `1.5px solid ${on ? C.primary : C.line}`,
+                          background: on ? C.primarySoft : "var(--mcf-surface)", color: on ? C.primary : C.ink }}>
+                          <input type="checkbox" checked={on} style={{ display: "none" }}
+                            onChange={() => setAnnStudents(on ? annStudents.filter((n) => n !== a.name) : [...annStudents, a.name])} />
+                          {on ? "✓ " : ""}{a.name}
+                        </label>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div style={{ display: "flex", gap: 10, marginTop: 16 }}>
+              <button style={{ ...S.btn(true), opacity: annMsg.trim() && (annAll || annClasses.length || annStudents.length) ? 1 : 0.4 }}
+                disabled={!annMsg.trim() || (!annAll && !annClasses.length && !annStudents.length)}
+                onClick={sendAnnonce}>📣 Envoyer</button>
+              <button style={S.btn(false)} onClick={() => setAnnModal(false)}>Annuler</button>
+            </div>
+          </div>
+        </div>
+      )}
+      {annToast && (
+        <div style={{ position: "fixed", bottom: 24, left: "50%", transform: "translateX(-50%)", zIndex: 9999,
+          background: C.ok, color: "#fff", padding: "12px 26px", borderRadius: 999, fontWeight: 700, fontSize: 14,
+          boxShadow: "0 10px 30px rgba(17,24,39,.35)" }}>{annToast}</div>
+      )}
       {view === "students" && <Accounts accounts={accounts} setAccounts={setAccounts} classes={classes} setClasses={setClasses} />}
       {view === "practice" && <PracticeHub role="prof" />}
       {view === "stats" && <Stats accounts={accounts} exercises={exercises} submissions={submissions} />}
@@ -1587,7 +1699,7 @@ function Builder({ draft, setDraft, publish, cancel, accounts, classes = [] }) {
 
       {/* Toast */}
       {toast && (
-        <div style={{ position: "fixed", bottom: 24, left: "50%", transform: "translateX(-50%)", zIndex: 300,
+        <div style={{ position: "fixed", bottom: 24, left: "50%", transform: "translateX(-50%)", zIndex: 9999,
           background: toast.type === "ok" ? C.ok : C.danger, color: "#fff", padding: "12px 26px", borderRadius: 999,
           fontWeight: 700, fontSize: 14, boxShadow: "0 10px 30px rgba(17,24,39,.35)" }}>
           {toast.msg}
@@ -2464,7 +2576,8 @@ function Taking({ ex, name, setSubmissions, done }) {
           {q.options.map((o, j) => (
             <label key={j} style={{ fontSize: 15, display: "flex", gap: 10, alignItems: "center", padding: "9px 13px", borderRadius: 10, cursor: "pointer",
               border: `1.5px solid ${answers[q.id] === j ? C.primary : C.line}`,
-              background: answers[q.id] === j ? C.primarySoft : "#fff" }}>
+              background: answers[q.id] === j ? C.primarySoft : "var(--mcf-surface)",
+              color: answers[q.id] === j ? C.primary : C.ink }}>
               <input type="radio" name={q.id} disabled={locked} checked={answers[q.id] === j} onChange={() => setAnswers({ ...answers, [q.id]: j })} />
               <strong>{String.fromCharCode(65 + j)}.</strong> {o}
             </label>
@@ -2512,12 +2625,12 @@ function Taking({ ex, name, setSubmissions, done }) {
     <div style={zen ? { position: "fixed", inset: 0, zIndex: 90, background: "var(--mcf-bg)", overflowY: "auto", padding: "28px 16px 80px" } : undefined}>
       {/* 🧘 Nút thoát Zen nổi */}
       {zen && (
-        <button onClick={() => setZen(false)} title="Quitter le mode Zen"
+        <button onClick={() => setZen(false)} title="Quitter le mode Focus"
           style={{ position: "fixed", top: 16, right: 16, zIndex: 120, display: "flex", alignItems: "center", gap: 8,
             padding: "10px 18px", borderRadius: 999, border: "none", cursor: "pointer", fontFamily: "inherit",
             background: C.ink, color: "var(--mcf-bg)", fontWeight: 700, fontSize: 13.5,
             boxShadow: "0 8px 22px rgba(17,24,39,.3)" }}>
-          ⤡ Quitter le Zen
+          ⤡ Quitter le Focus
         </button>
       )}
       <div style={zen ? { maxWidth: 920, margin: "0 auto" } : undefined}>
@@ -2540,7 +2653,7 @@ function Taking({ ex, name, setSubmissions, done }) {
         {!zen && (
           <button onClick={() => setZen(true)}
             style={{ ...S.btn(false), padding: "7px 16px", fontSize: 13, display: "inline-flex", alignItems: "center", gap: 7 }}>
-            🧘 Mode Zen
+            🎯 Focus
           </button>
         )}
         {ex.timeLimit && !locked && <span style={{ fontSize: 13, color: C.primary, fontWeight: 700 }}>⏱ Temps limite : {ex.timeLimit} minutes</span>}
