@@ -30,7 +30,7 @@ const inCat = (ex, sk) => sk === "__autres__"
   : exSkills(ex).includes(sk);
 const catOf = (ex) => MAIN_SKILLS.find((sk) => exSkills(ex).includes(sk)) || "__autres__";
 
-export default function PracticeHub({ role = "eleve", name = "" }) {
+function PracticeHubInner({ role = "eleve", name = "" }) {
   const teacher = role === "prof";
   const [exercises, setExercises] = useState([]);
   const [cats, setCats] = useState([]);
@@ -836,4 +836,34 @@ function PracticeWorkspace({ ex, back, onFinish }) {
       </div>
     </div>
   );
+}
+
+
+/* ---- Error Boundary : crash hiện hộp lỗi rõ ràng thay vì trang trắng ---- */
+class HubErrorBoundary extends React.Component {
+  constructor(p) { super(p); this.state = { err: null }; }
+  static getDerivedStateFromError(err) { return { err }; }
+  render() {
+    if (this.state.err) {
+      return (
+        <div className="mcf-card" style={{ ...S.card, borderTop: "4px solid #DE4B4B", padding: 30 }}>
+          <div style={{ fontSize: 34, marginBottom: 8 }}>⚠️</div>
+          <div style={{ fontWeight: 800, fontSize: 17, marginBottom: 6 }}>Une erreur est survenue dans la Bibliothèque</div>
+          <div style={{ fontSize: 13, color: "#DE4B4B", fontFamily: "monospace", background: "var(--mcf-surface2)", borderRadius: 10, padding: "10px 14px", wordBreak: "break-all" }}>
+            {String(this.state.err?.message || this.state.err)}
+          </div>
+          <button onClick={() => this.setState({ err: null })}
+            style={{ marginTop: 14, padding: "10px 22px", borderRadius: 999, border: "none", cursor: "pointer",
+              background: "#3D5AF1", color: "#fff", fontWeight: 700, fontFamily: "inherit" }}>
+            ↻ Réessayer
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
+export default function PracticeHub(props) {
+  return <HubErrorBoundary><PracticeHubInner {...props} /></HubErrorBoundary>;
 }
