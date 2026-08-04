@@ -70,49 +70,58 @@ const LANGS = [["vi", "🇻🇳", "Tiếng Việt"], ["fr", "🇫🇷", "França
 
 const I18N = {
   vi: {
-    submit_button: "Nộp bài & xem kết quả",
-    submit_copy: "Nộp bài làm",
-    sending: "Đang gửi…",
-    quit_draft: "Thoát (đã lưu nháp)",
-    back: "Quay lại",
+    header: { title: "Học tiếng Pháp cùng Đỗ Hùng", subtitle: "Lộ trình học tập · bài tập & theo dõi học sinh",
+      logout: "Đăng xuất", teacher: "Giáo viên" },
+    nav: { exercises: "Bài tập", students: "Học sinh", stats: "Thống kê",
+      todo: "Cần làm", done: "Đã nộp", practice: "Luyện tập", progress: "Tiến độ của tôi", account: "Tài khoản" },
+    actions: { refresh: "Làm mới", new_exercise: "+ Bài tập mới", announce: "Thông báo" },
+    empty: { no_submission: "Hiện tại chưa có bài nộp nào.", all_done: "🎉 Đã nộp hết bài! Không còn bài nào đang chờ.",
+      no_exercise: "Chưa có bài tập nào. Hãy tạo bài đầu tiên với « + Bài tập mới »." },
+    submit_button: "Nộp bài & xem kết quả", submit_copy: "Nộp bài làm", sending: "Đang gửi…",
+    quit_draft: "Thoát (đã lưu nháp)", back: "Quay lại",
     incomplete_title: "Bài làm chưa hoàn tất",
     incomplete_body: "Bạn vẫn còn {count} câu hỏi chưa hoàn thành. Bạn có chắc chắn muốn nộp bài ngay bây giờ không ? Điểm số sẽ được tính dựa trên những câu đã trả lời.",
-    keep_working: "Tiếp tục làm bài",
-    submit_anyway: "Vẫn nộp bài",
-    lang_label: "Ngôn ngữ",
+    keep_working: "Tiếp tục làm bài", submit_anyway: "Vẫn nộp bài", lang_label: "Ngôn ngữ",
   },
   fr: {
-    submit_button: "Rendre & voir le résultat",
-    submit_copy: "Rendre ma copie",
-    sending: "Envoi…",
-    quit_draft: "Quitter (brouillon sauvegardé)",
-    back: "Retour",
+    header: { title: "Apprendre le français avec Do Hung", subtitle: "Parcours d'apprentissage · exercices & suivi des élèves",
+      logout: "Se déconnecter", teacher: "Professeur" },
+    nav: { exercises: "Exercices", students: "Élèves", stats: "Statistiques",
+      todo: "À faire", done: "Rendus", practice: "Entraînement", progress: "Ma progression", account: "Mon compte" },
+    actions: { refresh: "Actualiser", new_exercise: "+ Nouvel exercice", announce: "Annonce" },
+    empty: { no_submission: "Aucune copie rendue pour l'instant.", all_done: "🎉 Tout est rendu ! Aucun exercice en attente.",
+      no_exercise: "Aucun exercice pour le moment. Créez le premier avec « + Nouvel exercice »." },
+    submit_button: "Rendre & voir le résultat", submit_copy: "Rendre ma copie", sending: "Envoi…",
+    quit_draft: "Quitter (brouillon sauvegardé)", back: "Retour",
     incomplete_title: "Copie incomplète",
     incomplete_body: "Il vous reste {count} question(s) sans réponse. Voulez-vous vraiment rendre votre copie maintenant ? La note sera calculée uniquement sur les questions répondues.",
-    keep_working: "Continuer l'exercice",
-    submit_anyway: "Rendre quand même",
-    lang_label: "Langue",
+    keep_working: "Continuer l'exercice", submit_anyway: "Rendre quand même", lang_label: "Langue",
   },
   en: {
-    submit_button: "Submit & see result",
-    submit_copy: "Submit my work",
-    sending: "Sending…",
-    quit_draft: "Quit (draft saved)",
-    back: "Back",
+    header: { title: "Learn French with Do Hung", subtitle: "Learning path · exercises & student tracking",
+      logout: "Log out", teacher: "Teacher" },
+    nav: { exercises: "Exercises", students: "Students", stats: "Statistics",
+      todo: "To do", done: "Submitted", practice: "Practice", progress: "My progress", account: "My account" },
+    actions: { refresh: "Refresh", new_exercise: "+ New exercise", announce: "Announcement" },
+    empty: { no_submission: "No submissions yet.", all_done: "🎉 Everything submitted! Nothing pending.",
+      no_exercise: "No exercises yet. Create the first one with « + New exercise »." },
+    submit_button: "Submit & see result", submit_copy: "Submit my work", sending: "Sending…",
+    quit_draft: "Quit (draft saved)", back: "Back",
     incomplete_title: "Incomplete submission",
     incomplete_body: "You still have {count} unanswered question(s). Are you sure you want to submit now? Your score will be based only on the answered questions.",
-    keep_working: "Keep working",
-    submit_anyway: "Submit anyway",
-    lang_label: "Language",
+    keep_working: "Keep working", submit_anyway: "Submit anyway", lang_label: "Language",
   },
 };
 
 const getLang = () => { try { return localStorage.getItem(LANG_KEY) || "vi"; } catch { return "vi"; } };
 const LangCtx = React.createContext("vi");
+const digKey = (obj, key) => key.split(".").reduce((o, k) => (o == null ? undefined : o[k]), obj);
 function useT() {
   const lang = React.useContext(LangCtx);
   return React.useCallback((key, vars) => {
-    let str = (I18N[lang] && I18N[lang][key]) || I18N.vi[key] || key;   // fallback : vi
+    let str = digKey(I18N[lang], key);
+    if (typeof str !== "string") str = digKey(I18N.vi, key);   // fallback : vi
+    if (typeof str !== "string") str = key;
     if (vars) Object.entries(vars).forEach(([k, v]) => { str = str.split(`{${k}}`).join(String(v)); });
     return str;
   }, [lang]);
@@ -376,6 +385,13 @@ function AppInner() {
   const [dark, setDark] = useState(() => { try { return localStorage.getItem(THEME_KEY) === "dark"; } catch { return false; } });
   const toggleTheme = () => setDark((d) => { const n = !d; try { localStorage.setItem(THEME_KEY, n ? "dark" : "light"); } catch {} return n; });
   const [lang, setLang] = useState(getLang);
+  const t = React.useCallback((key, vars) => {
+    let str = digKey(I18N[lang], key);
+    if (typeof str !== "string") str = digKey(I18N.vi, key);
+    if (typeof str !== "string") str = key;
+    if (vars) Object.entries(vars).forEach(([k, v]) => { str = str.split(`{${k}}`).join(String(v)); });
+    return str;
+  }, [lang]);
   useEffect(() => { try { localStorage.setItem(LANG_KEY, lang); } catch {} }, [lang]);
   const [session, setSessionRaw] = useState(null);
   // Duy trì đăng nhập : lưu phiên vào localStorage
@@ -440,9 +456,9 @@ function AppInner() {
           <img src="/logo.png" alt="Logo" style={{ width: 52, height: 52, borderRadius: 16, objectFit: "contain", background: "#fff", boxShadow: "0 8px 20px rgba(30,58,138,.18)", padding: 4 }} />
           <div>
             <div style={{ fontWeight: 800, fontSize: 27, letterSpacing: "-0.8px", color: C.ink, lineHeight: 1.1 }}>
-              Apprendre le français avec Do Hung<span style={{ color: "#FFD43B" }}> ✳</span>
+              {t("header.title")}<span style={{ color: "#FFD43B" }}> ✳</span>
             </div>
-            <div style={{ fontSize: 13, color: C.soft, fontWeight: 600 }}>Parcours d'apprentissage · exercices & suivi des élèves</div>
+            <div style={{ fontSize: 13, color: C.soft, fontWeight: 600 }}>{t("header.subtitle")}</div>
           </div>
         </div>
         {session && (
@@ -458,9 +474,9 @@ function AppInner() {
             </button>
             {session.role === "eleve" && <Bell name={session.name} exercises={exercises} submissions={submissions} />}
             <span style={{ color: C.primary, background: "var(--mcf-primarysoft)", border: `1.5px solid ${C.line}`, borderRadius: 999, padding: "8px 16px", fontWeight: 700, fontSize: 13 }}>
-              {session.role === "prof" ? "👨‍🏫 Professeur" : `🎒 ${session.name}`}
+              {session.role === "prof" ? `👨‍🏫 ${t("header.teacher")}` : `🎒 ${session.name}`}
             </span>
-            <button style={S.btn(false)} onClick={() => setSession(null)}>Se déconnecter</button>
+            <button style={S.btn(false)} onClick={() => setSession(null)}>{t("header.logout")}</button>
           </div>
         )}
       </header>
@@ -774,7 +790,8 @@ function Teacher({ exercises, setExercises, submissions, setSubmissions, account
   };
   const [draft, setDraft] = useState(null);
 
-  const tabs = [["list", "📚 Exercices"], ["students", "👥 Élèves"], ["stats", "📊 Statistiques"], ["practice", "🏋️ Entraînement"]];
+  const t = useT();
+  const tabs = [["list", `📚 ${t("nav.exercises")}`], ["students", `👥 ${t("nav.students")}`], ["stats", `📊 ${t("nav.stats")}`], ["practice", `🏋️ ${t("nav.practice")}`]];
   const blank = () => ({ id: uid(), title: "", level: "B1", skill: "Grammaire", skills: ["Grammaire"], consigne: "", usageType: "assignment", deadline: "", audioUrl: "", readingText: "", imageUrl: "", timeLimit: "", targeted: false, assignedClasses: [], assignedExtra: [], assignedTo: null, createdAt: Date.now(), questions: [] });
 
   // Gom danh sách học sinh được giao : lớp đã tick ∪ học sinh chọn lẻ → mảng unique
@@ -843,9 +860,9 @@ function Teacher({ exercises, setExercises, submissions, setSubmissions, account
           {tabs.map(([k, l]) => <button key={k} onClick={() => setView(k)} style={{ ...S.btn(view === k), padding: "8px 14px" }}>{l}</button>)}
         </div>
         <div style={{ display: "flex", gap: 10 }}>
-          <button style={S.btn(false)} onClick={refresh}>↻ Actualiser</button>
-          {view === "list" && <button style={S.btn(false)} onClick={() => { setAnnModal(true); setAnnMsg(""); setAnnAll(true); setAnnClasses([]); setAnnStudents([]); setAnnSearch(""); }}>📣 Annonce</button>}
-          {view === "list" && <button style={S.btn(true)} onClick={() => { setDraft(blank()); setView("new"); }}>+ Nouvel exercice</button>}
+          <button style={S.btn(false)} onClick={refresh}>↻ {t("actions.refresh")}</button>
+          {view === "list" && <button style={S.btn(false)} onClick={() => { setAnnModal(true); setAnnMsg(""); setAnnAll(true); setAnnClasses([]); setAnnStudents([]); setAnnSearch(""); }}>📣 {t("actions.announce")}</button>}
+          {view === "list" && <button style={S.btn(true)} onClick={() => { setDraft(blank()); setView("new"); }}>{t("actions.new_exercise")}</button>}
         </div>
       </div>
 
@@ -927,7 +944,7 @@ function Teacher({ exercises, setExercises, submissions, setSubmissions, account
       {view === "list" && (
         exercises.length === 0 ? (
           <div className="mcf-card" style={{ ...S.card, textAlign: "center", padding: 40, color: C.soft }}>
-            Aucun exercice pour le moment. Créez le premier avec « + Nouvel exercice ».
+            {t("empty.no_exercise")}
           </div>
         ) : (
           <div style={{ display: "grid", gap: 14 }}>
@@ -2332,6 +2349,7 @@ function Student({ name, exercises, submissions, setSubmissions, accounts, setAc
   }, [name]);
   const [tab, setTab] = useState("todo");
   const [showPw, setShowPw] = useState(false);
+  const t = useT();
   const mine = (exId) => submissions.find((s) => s.exerciseId === exId && s.student === name);
   const mineDone = (exId) => { const s0 = mine(exId); return s0 && !s0.redo ? s0 : null; };
 
@@ -2368,7 +2386,8 @@ function Student({ name, exercises, submissions, setSubmissions, accounts, setAc
     { need: 12, icon: "✈️", label: "Départ pour Paris !" },
   ];
 
-  const tabs = [["todo", `📝 À faire (${todo.length})`], ["done", `📤 Rendus (${doneList.length})`], ["practice", "🏋️ Entraînement"], ["progress", "📈 Ma progression"], ["settings", "⚙️ Mon compte"]];
+  const tabs = [["todo", `📝 ${t("nav.todo")} (${todo.length})`], ["done", `📤 ${t("nav.done")} (${doneList.length})`],
+    ["practice", `🏋️ ${t("nav.practice")}`], ["progress", `📈 ${t("nav.progress")}`], ["settings", `⚙️ ${t("nav.account")}`]];
 
   const changePw = async (oldPw, newPw, setMsg) => {
     const acc = accounts.find((a) => a.name === name);
@@ -2515,17 +2534,17 @@ function Student({ name, exercises, submissions, setSubmissions, accounts, setAc
     <div>
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 20 }}>
         {tabs.map(([k, l]) => <button key={k} onClick={() => setTab(k)} style={{ ...S.btn(tab === k), padding: "8px 14px" }}>{l}</button>)}
-        <button style={{ ...S.btn(false), marginLeft: "auto" }} onClick={refresh}>↻ Actualiser</button>
+        <button style={{ ...S.btn(false), marginLeft: "auto" }} onClick={refresh}>↻ {t("actions.refresh")}</button>
       </div>
 
       {tab === "todo" && (
         todo.length === 0
-          ? <div className="mcf-card" style={{ ...S.card, textAlign: "center", padding: 36, color: C.soft }}>🎉 Tout est rendu ! Aucun exercice en attente.</div>
+          ? <div className="mcf-card" style={{ ...S.card, textAlign: "center", padding: 36, color: C.soft }}>{t("empty.all_done")}</div>
           : <div style={{ display: "grid", gap: 14 }}>{todo.map((ex) => <Card key={ex.id} ex={ex} />)}</div>
       )}
       {tab === "done" && (
         doneList.length === 0
-          ? <div className="mcf-card" style={{ ...S.card, textAlign: "center", padding: 36, color: C.soft }}>Aucune copie rendue pour l'instant.</div>
+          ? <div className="mcf-card" style={{ ...S.card, textAlign: "center", padding: 36, color: C.soft }}>{t("empty.no_submission")}</div>
           : <div style={{ display: "grid", gap: 14 }}>{doneList.map((ex) => <Card key={ex.id} ex={ex} />)}</div>
       )}
 
