@@ -278,7 +278,7 @@ export default function App() {
               {dark ? "☀️" : "🌙"}
             </button>
             {session.role === "eleve" && <Bell name={session.name} exercises={exercises} submissions={submissions} />}
-            <span style={{ color: C.ink, background: "#E6EBFE", borderRadius: 999, padding: "8px 16px", fontWeight: 700, fontSize: 13 }}>
+            <span style={{ color: C.primary, background: "var(--mcf-primarysoft)", border: `1.5px solid ${C.line}`, borderRadius: 999, padding: "8px 16px", fontWeight: 700, fontSize: 13 }}>
               {session.role === "prof" ? "👨‍🏫 Professeur" : `🎒 ${session.name}`}
             </span>
             <button style={S.btn(false)} onClick={() => setSession(null)}>Se déconnecter</button>
@@ -741,7 +741,7 @@ function Teacher({ exercises, setExercises, submissions, setSubmissions, account
           boxShadow: "0 10px 30px rgba(17,24,39,.35)" }}>{annToast}</div>
       )}
       {view === "students" && <Accounts accounts={accounts} setAccounts={setAccounts} classes={classes} setClasses={setClasses} />}
-      {view === "practice" && <PracticeHub role="prof" />}
+      {view === "practice" && <PracticeHub role="prof" accounts={accounts} />}
       {view === "stats" && <Stats accounts={accounts} exercises={exercises} submissions={submissions} />}
       {view === "list" && (
         exercises.length === 0 ? (
@@ -1285,6 +1285,22 @@ function Builder({ draft, setDraft, publish, cancel, accounts, classes = [] }) {
           {(draft.usageType || "assignment") === "practice" && (
             <div style={{ fontSize: 12.5, color: C.soft, marginTop: 6 }}>Cet exercice sera publié dans la Bibliothèque d'entraînement, accessible librement par tous les élèves.</div>
           )}
+        {(draft.usageType || "assignment") === "practice" && (
+          <div style={{ marginTop: 12, display: "grid", gap: 12, background: "var(--mcf-surface2)", border: `1px solid ${C.line}`, borderRadius: 16, padding: "14px 16px" }}>
+            <div>
+              <div style={S.label}>📖 Vocabulaire (optionnel) — visible via le menu « S'entraîner ▾ »</div>
+              <textarea style={{ ...S.input, marginTop: 6, minHeight: 80, resize: "vertical" }}
+                value={draft.vocabulaire || ""} placeholder={"la forêt = khu rừng\nprotéger = bảo vệ\u2026"}
+                onChange={(e) => setDraft({ ...draft, vocabulaire: e.target.value })} />
+            </div>
+            <div>
+              <div style={S.label}>💡 Explications / Tips (optionnel)</div>
+              <textarea style={{ ...S.input, marginTop: 6, minHeight: 80, resize: "vertical" }}
+                value={draft.explications || ""} placeholder={"Rappel : « grâce à » = cause positive ; « à cause de » = cause négative\u2026"}
+                onChange={(e) => setDraft({ ...draft, explications: e.target.value })} />
+            </div>
+          </div>
+        )}
         </div>
 
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
@@ -1827,116 +1843,7 @@ function Progress({ ex, submissions, setSubmissions, accounts, back }) {
                             : <em style={{ color: good ? C.ok : C.danger }}>{a || "—"}</em>}
                           {good === false && q.type === "qcm" && <span> · attendu : <strong>{String.fromCharCode(65 + q.answer)}. {q.options[q.answer]}</strong></span>}
                           {(q.type === "fill" || q.type === "conj") && <span> · 💡 attendu : <strong>{String(fillAccepted(q)).split("|")[0]}</strong></span>}
-                          {q.type === "ordre" && (
-            <div style={{ marginTop: 10, display: "grid", gap: 10 }}>
-              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                <input style={{ ...S.input, flex: "1 1 280px" }} value={q.sentence || ""}
-                  placeholder="Tapez la phrase complète, ex. Je vais à l'école tous les jours."
-                  onChange={(e) => setQ(q.id, { sentence: e.target.value })} />
-                <button style={S.btn(false)} onClick={() => {
-                  const parts = (q.sentence || "").trim().split(/\s+/).filter(Boolean);
-                  if (parts.length) setQ(q.id, { elements: parts.map((t) => ({ id: uid(), texte: t })) });
-                }}>⚡ Générer les blocs</button>
-              </div>
-              {(q.elements || []).length > 0 && (
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                  {q.elements.map((el, i) => (
-                    <span key={el.id} style={{ display: "inline-flex", alignItems: "center", gap: 4,
-                      padding: "6px 8px", borderRadius: 12, background: "var(--mcf-surface)",
-                      borderStyle: "solid", borderColor: C.line, borderWidth: "1.5px 1.5px 4px 1.5px" }}>
-                      <input value={el.texte}
-                        style={{ border: "none", background: "transparent", fontWeight: 700, fontSize: 13.5,
-                          width: Math.max(30, el.texte.length * 8 + 12), color: "var(--mcf-ink)", outline: "none", fontFamily: "inherit" }}
-                        onChange={(e) => setQ(q.id, { elements: q.elements.map((x) => x.id === el.id ? { ...x, texte: e.target.value } : x) })} />
-                      {i > 0 && (
-                        <button title="Fusionner avec le bloc précédent"
-                          onClick={() => { const els = [...q.elements]; els[i - 1] = { ...els[i - 1], texte: els[i - 1].texte + " " + el.texte }; els.splice(i, 1); setQ(q.id, { elements: els }); }}
-                          style={{ border: "none", background: "transparent", cursor: "pointer", color: C.primary, fontWeight: 800, padding: 0 }}>⇤</button>
-                      )}
-                      {q.elements.length > 2 && (
-                        <button title="Supprimer ce bloc"
-                          onClick={() => setQ(q.id, { elements: q.elements.filter((x) => x.id !== el.id) })}
-                          style={{ border: "none", background: "transparent", cursor: "pointer", color: C.danger, fontWeight: 800, padding: 0 }}>✕</button>
-                      )}
-                    </span>
-                  ))}
-                </div>
-              )}
-              <div style={{ fontSize: 12, color: C.soft }}>⇤ = fusionner avec le bloc précédent (ex. « à » + « l'école »). L'ordre ci-dessus est le corrigé — les blocs seront mélangés automatiquement pour l'élève.</div>
-            </div>
-          )}
-          {q.type === "tableau" && (
-            <div style={{ marginTop: 10, display: "grid", gap: 12 }}>
-              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                <button style={{ ...S.btn(false), fontSize: 12.5, padding: "7px 14px" }}
-                  onClick={() => setQ(q.id, { colonnes: [...q.colonnes, { id: uid(), titre: `Élément ${q.colonnes.length + 1}` }] })}>+ Ajouter un élément à comparer</button>
-                <button style={{ ...S.btn(false), fontSize: 12.5, padding: "7px 14px" }}
-                  onClick={() => setQ(q.id, { criteres: [...q.criteres, { id: uid(), texte: `Critère ${q.criteres.length + 1}` }] })}>+ Ajouter un critère</button>
-              </div>
-
-              {/* Éditer les titres de colonnes */}
-              <div style={{ display: "grid", gap: 6 }}>
-                {q.colonnes.map((co, ci) => (
-                  <div key={co.id} style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                    <span style={{ fontSize: 12, color: C.soft, minWidth: 60 }}>Élément {ci + 1}</span>
-                    <input style={{ ...S.input, flex: 1 }} value={co.titre}
-                      onChange={(e) => setQ(q.id, { colonnes: q.colonnes.map((x) => x.id === co.id ? { ...x, titre: e.target.value } : x) })} />
-                    {q.colonnes.length > 1 && (
-                      <button title="Supprimer" onClick={() => { const rm = q.colonnes.filter((x) => x.id !== co.id); const na = { ...q.answers }; q.criteres.forEach((cr) => delete na[`${cr.id}_${co.id}`]); setQ(q.id, { colonnes: rm, answers: na }); }}
-                        style={{ border: "none", background: "transparent", color: C.danger, cursor: "pointer" }}>🗑</button>
-                    )}
-                  </div>
-                ))}
-              </div>
-
-              {/* Preview + set corrigé */}
-              <div style={{ overflowX: "auto" }} className="mcf-scroll">
-                <table style={{ borderCollapse: "collapse", width: "100%", minWidth: 380, fontSize: 13 }}>
-                  <thead>
-                    <tr>
-                      <th style={{ border: `1px solid ${C.line}`, padding: 8, textAlign: "left", background: "var(--mcf-surface2)" }}>Critère</th>
-                      {q.colonnes.map((co) => <th key={co.id} style={{ border: `1px solid ${C.line}`, padding: 8, background: "var(--mcf-surface2)" }}>{co.titre}</th>)}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {q.criteres.map((cr) => (
-                      <tr key={cr.id}>
-                        <td style={{ border: `1px solid ${C.line}`, padding: 6 }}>
-                          <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-                            <input style={{ ...S.input, flex: 1, padding: "6px 10px", fontSize: 12.5 }} value={cr.texte}
-                              onChange={(e) => setQ(q.id, { criteres: q.criteres.map((x) => x.id === cr.id ? { ...x, texte: e.target.value } : x) })} />
-                            {q.criteres.length > 1 && (
-                              <button title="Supprimer" onClick={() => { const rm = q.criteres.filter((x) => x.id !== cr.id); const na = { ...q.answers }; q.colonnes.forEach((co) => delete na[`${cr.id}_${co.id}`]); setQ(q.id, { criteres: rm, answers: na }); }}
-                                style={{ border: "none", background: "transparent", color: C.danger, cursor: "pointer" }}>🗑</button>
-                            )}
-                          </div>
-                        </td>
-                        {q.colonnes.map((co) => {
-                          const key = `${cr.id}_${co.id}`;
-                          return (
-                            <td key={co.id} style={{ border: `1px solid ${C.line}`, padding: 6, textAlign: "center" }}>
-                              <div style={{ display: "flex", gap: 10, justifyContent: "center" }}>
-                                {["OUI", "NON"].map((v) => (
-                                  <label key={v} style={{ display: "flex", alignItems: "center", gap: 3, fontSize: 12, fontWeight: 700, cursor: "pointer",
-                                    color: q.answers?.[key] === v ? (v === "OUI" ? C.ok : C.danger) : C.soft }}>
-                                    <input type="radio" checked={q.answers?.[key] === v}
-                                      onChange={() => setQ(q.id, { answers: { ...q.answers, [key]: v } })} />
-                                    {v}
-                                  </label>
-                                ))}
-                              </div>
-                            </td>
-                          );
-                        })}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-              <div style={{ fontSize: 12, color: C.soft }}>Cochez OUI ou NON dans chaque cellule pour définir le corrigé.</div>
-            </div>
-          )}
-          {q.type === "vf" && (
+                          {q.type === "vf" && (
                             <div style={{ marginTop: 4 }}>
                               Choix : <strong style={{ color: good ? C.ok : C.danger }}>{a?.choice != null ? VF_OPTS[a.choice] : "—"}</strong>
                               {good === false && <span> · attendu : <strong>{VF_OPTS[q.answer]}</strong></span>}

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import {
   Headphones, BookOpen, PenLine, Puzzle, BookA, Sparkles,
-  RotateCcw, CheckCircle2, XCircle, Plus, ChevronLeft, PartyPopper, Trash2, Pencil, Copy, MoreVertical, Folder, FolderPlus, Image as ImageIcon,
+  RotateCcw, CheckCircle2, XCircle, Plus, ChevronLeft, PartyPopper, Trash2, Pencil, Copy, MoreVertical, Folder, FolderPlus, Image as ImageIcon, ChevronDown, Lightbulb, FileCheck,
 } from "lucide-react";
 import {
   C, S, QTYPES, VF_OPTS, uid, fillOk, fillAccepted, vfOk, stripHtml, autoQ, tableauOk, tableauCells, TableauCompare, ordreOk, OrdreBlocks,
@@ -30,7 +30,11 @@ const inCat = (ex, sk) => sk === "__autres__"
   : exSkills(ex).includes(sk);
 const catOf = (ex) => MAIN_SKILLS.find((sk) => exSkills(ex).includes(sk)) || "__autres__";
 
-function PracticeHubInner({ role = "eleve", name = "" }) {
+function PracticeHubInner({ role = "eleve", name = "", accounts = [] }) {
+  const [topTab, setTopTab] = useState("bib");      // "bib" | "suivi" (prof)
+  const [suivi, setSuivi] = useState(null);          // null = en cours de chargement
+  const [suiviOpen, setSuiviOpen] = useState(null);  // ligne dépliée
+  const [matModal, setMatModal] = useState(null);    // {exId, kind: "vocab"|"expl"|"corrige"}
   const teacher = role === "prof";
   const [exercises, setExercises] = useState([]);
   const [cats, setCats] = useState([]);
@@ -68,6 +72,26 @@ function PracticeHubInner({ role = "eleve", name = "" }) {
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // 📊 Suivi des élèves (prof) : lit l'historique d'entraînement de chaque élève
+  const loadSuivi = async () => {
+    setSuivi(null);
+    const rows = [];
+    await Promise.all(accounts.map(async (a) => {
+      const ph = await load(`mcf-ph-${a.name}`, {}, false);
+      if (ph && typeof ph === "object")
+        Object.entries(ph).forEach(([exId, r]) => {
+          if (r && r.max) rows.push({ id: a.name + "__" + exId, student: a.name, exId,
+            best: r.best ?? 0, max: r.max, tries: r.tries ?? 1, at: r.at ?? 0 });
+        });
+    }));
+    rows.sort((x, y) => y.at - x.at);
+    setSuivi(rows);
+  };
+  useEffect(() => {
+    if (teacher && topTab === "suivi") loadSuivi();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [topTab]);
 
   const persist = async (next) => { setExercises(next); await save("mcf-practice", next); };
   // 📋 Dupliquer : deep copy + regenerate toàn bộ ID (bài + câu hỏi)
@@ -171,6 +195,7 @@ function PracticeHubInner({ role = "eleve", name = "" }) {
     const folders = cats.map((c) => ({ name: c, count: autresEx.filter((e) => e.customCat === c).length }));
     return (
       <div>
+        {MatModal()}
         <button style={{ ...S.btn(false), marginBottom: 16 }} onClick={() => setView({ page: "home" })}><ChevronLeft size={16} /> Retour</button>
         <h2 style={{ ...S.display, margin: "0 0 18px", display: "flex", alignItems: "center", gap: 10 }}>
           <Sparkles size={24} color="#6E7691" /> Autres — Catégories
@@ -235,7 +260,8 @@ function PracticeHubInner({ role = "eleve", name = "" }) {
                       border: `1px solid ${C.line}`, marginBottom: 14, alignSelf: "flex-start" }} />
                     )}
                     <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 8, marginTop: "auto" }}>
-                      <button style={S.btn(true)} onClick={() => setView({ page: "quiz", cat: "__autres__", exId: ex.id })}>S'entraîner</button>
+                      <SplitTrain onStart={() => setView({ page: "quiz", cat: "__autres__", exId: ex.id })}
+                        onPick={(kind) => setMatModal({ exId: ex.id, kind })} />
                       {teacher && <HubMenu
                         onEdit={() => { const c = JSON.parse(JSON.stringify(ex)); if (!c.skills || !c.skills.length) c.skills = c.skill ? [c.skill] : []; if (c.consigne === undefined) c.consigne = ""; if (!c.usageType) c.usageType = "practice"; setDraft(c); setView({ page: "builder" }); }}
                         onDup={() => duplicate(ex)}
@@ -300,6 +326,7 @@ function PracticeHubInner({ role = "eleve", name = "" }) {
     const list = all.filter((e) => e.level === niveau && inFolder(e));
     return (
       <div>
+        {MatModal()}
         {Toast}
         <button style={{ ...S.btn(false), marginBottom: 16 }}
           onClick={() => setView(view.folder ? { page: "autres" } : { page: "home" })}><ChevronLeft size={16} /> Retour</button>
@@ -495,7 +522,8 @@ function PracticeHubInner({ role = "eleve", name = "" }) {
                   )}
                   {/* Actions dưới cùng, căn phải */}
                   <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, alignItems: "center", marginTop: "auto" }}>
-                    <button style={S.btn(true)} onClick={() => setView({ page: "quiz", cat: view.cat, folder: view.folder, niveau, exId: ex.id })}>S'entraîner</button>
+                    <SplitTrain onStart={() => setView({ page: "quiz", cat: view.cat, folder: view.folder, niveau, exId: ex.id })}
+                      onPick={(kind) => setMatModal({ exId: ex.id, kind })} />
                     {teacher && <HubMenu
                       onEdit={() => { const c = JSON.parse(JSON.stringify(ex)); if (!c.skills || !c.skills.length) c.skills = c.skill ? [c.skill] : []; if (c.consigne === undefined) c.consigne = ""; if (!c.usageType) c.usageType = "practice"; setDraft(c); setView({ page: "builder" }); }}
                       onDup={() => duplicate(ex)}
@@ -511,13 +539,162 @@ function PracticeHubInner({ role = "eleve", name = "" }) {
     );
   }
 
+  /* -------- 📚 Modal matériaux (Vocabulaire / Explications / Corrigé) -------- */
+  const MatModal = () => {
+    if (!matModal) return null;
+    const ex = exercises.find((e) => e.id === matModal.exId);
+    if (!ex) return null;
+    const kind = matModal.kind;
+    const TITLES = { vocab: ["📖 Vocabulaire", "vocabulaire"], expl: ["💡 Explications", "explications"], corrige: ["📝 Sujet et Corrigé", null] };
+    const [title] = TITLES[kind] || ["", null];
+    const content = kind === "vocab" ? (ex.vocabulaire || "") : kind === "expl" ? (ex.explications || "") : null;
+    return (
+      <div style={{ position: "fixed", inset: 0, background: "rgba(17,24,39,.55)", display: "grid", placeItems: "center", padding: 16, zIndex: 9999 }}
+        onClick={() => setMatModal(null)}>
+        <div className="mcf-card mcf-scroll" style={{ ...S.card, width: "100%", maxWidth: 640, maxHeight: "86vh", overflowY: "auto" }} onClick={(e) => e.stopPropagation()}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, marginBottom: 4 }}>
+            <h3 style={{ ...S.display, fontSize: 20, margin: 0 }}>{title}</h3>
+            <button onClick={() => setMatModal(null)} title="Fermer"
+              style={{ width: 34, height: 34, borderRadius: 999, border: `1.5px solid ${C.line}`, background: "var(--mcf-surface)", cursor: "pointer", fontWeight: 800, color: C.ink }}>✕</button>
+          </div>
+          <div style={{ fontSize: 13, color: C.soft, marginBottom: 14 }}>
+            <span style={S.badge(ex.level)}>{ex.level}</span> {ex.title}
+          </div>
+
+          {kind !== "corrige" ? (
+            content && content.trim() ? (
+              <div style={{ whiteSpace: "pre-wrap", lineHeight: 1.85, fontSize: 15 }}>{content}</div>
+            ) : (
+              <div style={{ textAlign: "center", padding: "34px 16px", color: C.soft }}>
+                <div style={{ fontSize: 38, marginBottom: 8 }}>{kind === "vocab" ? "📖" : "💡"}</div>
+                <div style={{ fontWeight: 700, fontSize: 15, color: C.ink }}>Pas encore de {kind === "vocab" ? "vocabulaire" : "d'explications"} pour cet exercice</div>
+                <div style={{ fontSize: 13, marginTop: 6 }}>Le professeur peut l'ajouter en modifiant l'exercice (champ « {kind === "vocab" ? "Vocabulaire" : "Explications"} »).</div>
+              </div>
+            )
+          ) : (
+            <div style={{ display: "grid", gap: 12 }}>
+              {ex.questions.map((q, i) => (
+                <div key={q.id} style={{ background: "var(--mcf-surface2)", borderRadius: 14, padding: "12px 15px", border: `1px solid ${C.line}` }}>
+                  <div style={{ fontWeight: 700, marginBottom: 6 }}>
+                    <span style={S.chip(C.primarySoft, C.primary)}>{QTYPES[q.type]}</span> {i + 1}. {q.prompt}
+                  </div>
+                  {q.type === "qcm" && (
+                    <div style={{ fontSize: 14 }}>✅ <strong style={{ color: C.ok }}>{String.fromCharCode(65 + q.answer)}. {q.options[q.answer]}</strong></div>
+                  )}
+                  {(q.type === "fill" || q.type === "conj") && (
+                    <div style={{ fontSize: 14 }}>✅ <strong style={{ color: C.ok }}>{String(fillAccepted(q)).split("|").join(" / ")}</strong></div>
+                  )}
+                  {q.type === "vf" && (
+                    <div style={{ fontSize: 14 }}>
+                      ✅ <strong style={{ color: C.ok }}>{VF_OPTS[q.answer]}</strong>
+                      {q.answer !== 2 && q.justification && <div style={{ fontStyle: "italic", marginTop: 4, color: C.soft }}>💡 {q.justification}</div>}
+                    </div>
+                  )}
+                  {q.type === "ordre" && (
+                    <div style={{ fontSize: 14 }}>✅ <strong style={{ color: C.ok }}>{(q.elements || []).map((e) => e.texte).join(" ")}</strong></div>
+                  )}
+                  {q.type === "tableau" && <TableauCompare q={q} value={q.answers || {}} readOnly correction />}
+                  {q.type === "open" && (
+                    q.model ? <div style={{ fontSize: 14, fontStyle: "italic", lineHeight: 1.7 }}>💡 {q.model}</div>
+                      : <div style={{ fontSize: 13, color: C.soft }}>Réponse libre — pas de corrigé type fourni.</div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  /* -------- 📊 Suivi des élèves (prof) -------- */
+  const fmtAt = (t) => t ? new Date(t).toLocaleString("fr-FR", { dateStyle: "short", timeStyle: "short" }) : "—";
+  const AVATAR_COLORS = ["#3D5AF1", "#1E9E6A", "#D6336C", "#7048E8", "#C98412", "#0CA678"];
+  const avatarColor = (n) => AVATAR_COLORS[[...n].reduce((a, c) => a + c.charCodeAt(0), 0) % AVATAR_COLORS.length];
+
+  const renderSuivi = () => {
+    if (suivi === null) return <p style={{ color: C.soft, textAlign: "center", padding: 30 }}>Chargement du suivi…</p>;
+    if (suivi.length === 0) return (
+      <div className="mcf-card" style={{ ...S.card, padding: 50, textAlign: "center" }}>
+        <div style={{ fontSize: 44, marginBottom: 10 }}>🏋️</div>
+        <div style={{ fontWeight: 800, fontSize: 17 }}>Aucun entraînement n'a été effectué pour le moment</div>
+        <div style={{ fontSize: 13.5, color: C.soft, marginTop: 6 }}>Dès qu'un élève termine un exercice de la bibliothèque, ses résultats apparaîtront ici.</div>
+      </div>
+    );
+    return (
+      <div style={{ display: "grid", gap: 10 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
+          <span style={{ fontSize: 13, color: C.soft }}>{suivi.length} entraînement{suivi.length > 1 ? "s" : ""} enregistré{suivi.length > 1 ? "s" : ""} · {new Set(suivi.map((r) => r.student)).size} élève{new Set(suivi.map((r) => r.student)).size > 1 ? "s" : ""}</span>
+          <button style={{ ...S.btn(false), padding: "6px 14px", fontSize: 12.5 }} onClick={loadSuivi}>↻ Actualiser</button>
+        </div>
+        {suivi.map((r) => {
+          const ex = exercises.find((e) => e.id === r.exId);
+          const pct = r.max ? Math.round((r.best / r.max) * 100) : 0;
+          const open = suiviOpen === r.id;
+          return (
+            <div key={r.id} className="mcf-card" style={{ ...S.card, padding: "16px 20px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
+                {/* Élève */}
+                <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 140 }}>
+                  <span style={{ width: 38, height: 38, borderRadius: "50%", background: avatarColor(r.student),
+                    color: "#fff", fontWeight: 800, fontSize: 15, display: "grid", placeItems: "center", flexShrink: 0 }}>
+                    {r.student.charAt(0).toUpperCase()}
+                  </span>
+                  <strong style={{ fontSize: 14.5 }}>{r.student}</strong>
+                </div>
+                {/* Exercice */}
+                <div style={{ flex: 1, minWidth: 180 }}>
+                  {ex ? (
+                    <>
+                      <span style={S.badge(ex.level)}>{ex.level}</span>
+                      <strong style={{ fontSize: 14 }}>{ex.title}</strong>
+                      <div style={{ fontSize: 12, color: C.soft, marginTop: 2 }}>{exSkills(ex).join(" · ") || "—"}</div>
+                    </>
+                  ) : <em style={{ color: C.soft, fontSize: 13 }}>Exercice supprimé</em>}
+                </div>
+                {/* Score */}
+                <div style={{ textAlign: "center", minWidth: 90 }}>
+                  <div style={{ fontWeight: 800, fontSize: 16, color: pct >= 80 ? C.ok : pct >= 50 ? C.warn : C.danger }}>{r.best}/{r.max}</div>
+                  <div style={{ fontSize: 11.5, color: C.soft }}>{pct} % · {r.tries} essai{r.tries > 1 ? "s" : ""}</div>
+                </div>
+                {/* Date */}
+                <div style={{ fontSize: 12.5, color: C.soft, minWidth: 110 }}>{fmtAt(r.at)}</div>
+                <button style={{ ...S.btn(false), padding: "7px 14px", fontSize: 12.5 }}
+                  onClick={() => setSuiviOpen(open ? null : r.id)}>{open ? "Fermer" : "Voir les détails"}</button>
+              </div>
+              {open && (
+                <div style={{ marginTop: 12, borderTop: `1px solid ${C.line}`, paddingTop: 12, fontSize: 13.5, display: "grid", gap: 6 }}>
+                  <div>🏆 <strong>Meilleur score :</strong> {r.best}/{r.max} ({pct} %)</div>
+                  <div>🔁 <strong>Nombre d'essais :</strong> {r.tries}</div>
+                  <div>🕐 <strong>Dernière tentative :</strong> {fmtAt(r.at)}</div>
+                  {ex && <div>📚 <strong>Compétence(s) :</strong> {exSkills(ex).join(", ") || "—"} · <strong>Niveau :</strong> {ex.level}</div>}
+                  <div style={{ fontSize: 12, color: C.soft, marginTop: 4 }}>ℹ️ L'entraînement est corrigé instantanément côté élève : seuls le meilleur score, le nombre d'essais et la date sont conservés (pas les réponses détaillées).</div>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
+
   /* -------- Home dashboard -------- */
   return (
     <div>
+      {MatModal()}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20, flexWrap: "wrap", gap: 10 }}>
         <h2 style={{ ...S.display, margin: 0 }}>🏋️ Bibliothèque d'entraînement</h2>
-        {teacher && <button style={S.btn(true)} onClick={() => { setDraft(blank()); setView({ page: "builder" }); }}><Plus size={16} /> Nouvel exercice</button>}
+        {teacher && topTab === "bib" && <button style={S.btn(true)} onClick={() => { setDraft(blank()); setView({ page: "builder" }); }}><Plus size={16} /> Nouvel exercice</button>}
       </div>
+      {teacher && (
+        <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
+          {[["bib", "📚 Bibliothèque"], ["suivi", "📊 Suivi des élèves"]].map(([k, l]) => (
+            <button key={k} onClick={() => setTopTab(k)} style={{ ...S.btn(topTab === k), padding: "8px 16px" }}>{l}</button>
+          ))}
+        </div>
+      )}
+      {teacher && topTab === "suivi" ? renderSuivi() : null}
+      {teacher && topTab === "suivi" ? null : (<>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(250px,1fr))", gap: 16 }}>
         {CATS.map((cat, i) => {
           const list = exercises.filter((e) => inCat(e, cat.skill));
@@ -547,6 +724,50 @@ function PracticeHubInner({ role = "eleve", name = "" }) {
           );
         })}
       </div>
+      </>)}
+    </div>
+  );
+}
+
+/* ---- Split button "S'entraîner ▾" : làm bài + tài liệu bổ trợ ---- */
+function SplitTrain({ onStart, onPick }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+  useEffect(() => {
+    const close = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    document.addEventListener("mousedown", close);
+    return () => document.removeEventListener("mousedown", close);
+  }, []);
+  const ITEMS = [
+    ["vocab", <BookOpen size={16} key="i" />, "Vocabulaire"],
+    ["expl", <Lightbulb size={16} key="i" />, "Explications"],
+    ["corrige", <FileCheck size={16} key="i" />, "Sujet et Corrigé"],
+  ];
+  return (
+    <div ref={ref} style={{ position: "relative", display: "inline-flex" }}>
+      <button onClick={onStart}
+        style={{ ...S.btn(true), borderRadius: "999px 0 0 999px", paddingRight: 14 }}>S'entraîner</button>
+      <button onClick={() => setOpen(!open)} title="Ressources de l'exercice" aria-haspopup="menu" aria-expanded={open}
+        style={{ ...S.btn(true), borderRadius: "0 999px 999px 0", padding: "11px 12px", marginLeft: 1,
+          display: "inline-flex", alignItems: "center" }}>
+        <ChevronDown size={17} style={{ transition: "transform .15s ease", transform: open ? "rotate(180deg)" : "none" }} />
+      </button>
+      {open && (
+        <div style={{ position: "absolute", right: 0, top: "calc(100% + 6px)", minWidth: 200, zIndex: 9999,
+          background: "var(--mcf-surface)", borderRadius: 16, border: `1px solid ${C.line}`,
+          boxShadow: "0 14px 36px rgba(17,24,39,.16)", padding: 6 }}>
+          {ITEMS.map(([k, icon, label]) => (
+            <button key={k} onClick={() => { setOpen(false); onPick(k); }}
+              style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "10px 14px",
+                border: "none", background: "transparent", cursor: "pointer", fontFamily: "inherit",
+                fontSize: 14, fontWeight: 600, borderRadius: 12, textAlign: "left", color: C.ink }}
+              onMouseEnter={(e) => e.currentTarget.style.background = "var(--mcf-bg)"}
+              onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}>
+              {icon} {label}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
