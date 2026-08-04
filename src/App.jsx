@@ -300,14 +300,15 @@ export default function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loading]);
 
-  if (!loading && !session) {
-    return <Login accounts={accounts} setAccounts={setAccounts} onLogin={(s) => { setSession(s); refresh(); }} />;
-  }
-
+  // 🌙 Đồng bộ class dark lên <html> để các lớp Portal (ngoài .mcf-root) đọc đúng biến CSS
   useEffect(() => {
     if (typeof document === "undefined") return;
     document.documentElement.classList.toggle("mcf-dark-root", !!dark);
   }, [dark]);
+
+  if (!loading && !session) {
+    return <Login accounts={accounts} setAccounts={setAccounts} onLogin={(s) => { setSession(s); refresh(); }} />;
+  }
 
   return (
     <div className={"mcf-root" + (dark ? " mcf-dark" : "")} style={{ background: C.bg, ...S.font, minHeight: "100vh" }}>
