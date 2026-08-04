@@ -35,6 +35,7 @@ function PracticeHubInner({ role = "eleve", name = "", accounts = [] }) {
   const [suivi, setSuivi] = useState(null);          // null = en cours de chargement
   const [suiviOpen, setSuiviOpen] = useState(null);  // ligne dépliée
   const [matModal, setMatModal] = useState(null);    // {exId, kind: "vocab"|"expl"|"corrige"}
+  const [trainMenu, setTrainMenu] = useState(null);  // id thẻ đang mở dropdown → nâng z-index
   const teacher = role === "prof";
   const [exercises, setExercises] = useState([]);
   const [cats, setCats] = useState([]);
@@ -241,7 +242,8 @@ function PracticeHubInner({ role = "eleve", name = "", accounts = [] }) {
               {unclassified.map((ex) => {
                 const hh = hist[ex.id];
                 return (
-                  <div key={ex.id} className="mcf-card" style={{ ...S.card, padding: "18px 20px", display: "flex", flexDirection: "column", width: "100%" }}>
+                  <div key={ex.id} className="mcf-card" style={{ ...S.card, padding: "18px 20px", display: "flex", flexDirection: "column", width: "100%",
+                    position: "relative", zIndex: trainMenu === ex.id ? 50 : 1 }}>
                     <div style={{ display: "flex", flexDirection: "column", gap: 4, marginBottom: ex.imageUrl ? 14 : 10 }}>
                     <div>
                     <span style={S.badge(ex.level)}>{ex.level}</span>
@@ -260,7 +262,8 @@ function PracticeHubInner({ role = "eleve", name = "", accounts = [] }) {
                       border: `1px solid ${C.line}`, marginBottom: 14, alignSelf: "flex-start" }} />
                     )}
                     <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 8, marginTop: "auto" }}>
-                      <SplitTrain onStart={() => setView({ page: "quiz", cat: "__autres__", exId: ex.id })}
+                      <SplitTrain open={trainMenu === ex.id} setOpen={(v) => setTrainMenu(v ? ex.id : null)}
+                        onStart={() => setView({ page: "quiz", cat: "__autres__", exId: ex.id })}
                         onPick={(kind) => setMatModal({ exId: ex.id, kind })} />
                       {teacher && <HubMenu
                         onEdit={() => { const c = JSON.parse(JSON.stringify(ex)); if (!c.skills || !c.skills.length) c.skills = c.skill ? [c.skill] : []; if (c.consigne === undefined) c.consigne = ""; if (!c.usageType) c.usageType = "practice"; setDraft(c); setView({ page: "builder" }); }}
@@ -495,7 +498,8 @@ function PracticeHubInner({ role = "eleve", name = "", accounts = [] }) {
             {list.map((ex) => {
               const h = hist[ex.id];
               return (
-                <div key={ex.id} className="mcf-card" style={{ ...S.card, display: "flex", flexDirection: "column", gap: 0, width: "100%" }}>
+                <div key={ex.id} className="mcf-card" style={{ ...S.card, display: "flex", flexDirection: "column", gap: 0, width: "100%",
+                  position: "relative", zIndex: trainMenu === ex.id ? 50 : 1 }}>
                   {/* Header : badges + titre + méta */}
                   <div style={{ display: "flex", flexDirection: "column", gap: 4, marginBottom: ex.imageUrl ? 14 : 10 }}>
                   <div>
@@ -522,7 +526,8 @@ function PracticeHubInner({ role = "eleve", name = "", accounts = [] }) {
                   )}
                   {/* Actions dưới cùng, căn phải */}
                   <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, alignItems: "center", marginTop: "auto" }}>
-                    <SplitTrain onStart={() => setView({ page: "quiz", cat: view.cat, folder: view.folder, niveau, exId: ex.id })}
+                    <SplitTrain open={trainMenu === ex.id} setOpen={(v) => setTrainMenu(v ? ex.id : null)}
+                      onStart={() => setView({ page: "quiz", cat: view.cat, folder: view.folder, niveau, exId: ex.id })}
                       onPick={(kind) => setMatModal({ exId: ex.id, kind })} />
                     {teacher && <HubMenu
                       onEdit={() => { const c = JSON.parse(JSON.stringify(ex)); if (!c.skills || !c.skills.length) c.skills = c.skill ? [c.skill] : []; if (c.consigne === undefined) c.consigne = ""; if (!c.usageType) c.usageType = "practice"; setDraft(c); setView({ page: "builder" }); }}
@@ -730,13 +735,13 @@ function PracticeHubInner({ role = "eleve", name = "", accounts = [] }) {
 }
 
 /* ---- Split button "S'entraîner ▾" : làm bài + tài liệu bổ trợ ---- */
-function SplitTrain({ onStart, onPick }) {
-  const [open, setOpen] = useState(false);
+function SplitTrain({ onStart, onPick, open, setOpen }) {
   const ref = useRef(null);
   useEffect(() => {
     const close = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
     document.addEventListener("mousedown", close);
     return () => document.removeEventListener("mousedown", close);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const ITEMS = [
     ["vocab", <BookOpen size={16} key="i" />, "Vocabulaire"],
@@ -780,6 +785,7 @@ function HubMenu({ onEdit, onDup, onDel, onMove }) {
     const close = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
     document.addEventListener("mousedown", close);
     return () => document.removeEventListener("mousedown", close);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const item = (label, icon, onClick, danger) => (
     <button onClick={() => { setOpen(false); onClick(); }}

@@ -59,6 +59,9 @@ input:focus, textarea:focus, select:focus { outline: none; border-color: #3D5AF1
 .mcf-wide { position: relative; left: 50%; transform: translateX(-50%); width: min(100vw - 24px, 1600px); }
 mark.mcf-hl { background: rgba(255, 224, 102, .85); border-radius: 4px; padding: 0 2px; }
 .mcf-card { animation: fadeUp .25s ease both; }
+/* animation tạo stacking context làm kẹt dropdown bên trong thẻ → gỡ sau khi chạy xong */
+.mcf-card { animation-fill-mode: both; }
+@media (prefers-reduced-motion: reduce) { .mcf-card { animation: none; } }
 @keyframes mcfPulse { 0%,100% { box-shadow: 0 0 0 0 rgba(34,197,94,.55); } 50% { box-shadow: 0 0 0 6px rgba(34,197,94,0); } }
 .mcf-pulse { animation: mcfPulse 1.8s ease-out infinite; }
 `;
