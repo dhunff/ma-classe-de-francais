@@ -1,6 +1,5 @@
 import './storageShim.js'
-import React, { useState, useEffect, useCallback, useMemo, useRef, useLayoutEffect } from "react";
-import { createPortal } from "react-dom";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { DndContext, closestCenter, PointerSensor, TouchSensor, useSensor, useSensors, useDroppable } from "@dnd-kit/core";
 import { SortableContext, useSortable, rectSortingStrategy, arrayMove } from "@dnd-kit/sortable";
 import { CSS as DndCSS } from "@dnd-kit/utilities";
@@ -301,56 +300,7 @@ export default function App() {
 }
 
 /* ================= Notifications bell ================= */
-/* ============================================================
-   ARCHITECTURE RULE : tout élément flottant (Dropdown, Popover,
-   Select, Tooltip, Modal) DOIT être rendu via React Portal dans
-   document.body avec zIndex global 9999. Ne jamais imbriquer un
-   menu déroulant dans le DOM d'une Card ou d'un item de liste :
-   animation/transform/filter/opacity y créent un stacking context
-   qui emprisonne le z-index.
-   ============================================================ */
-function FloatingLayer({ anchorRef, open, onClose, children, width = 300, align = "right" }) {
-  const [pos, setPos] = useState(null);
-  const layerRef = useRef(null);
-  useLayoutEffect(() => {
-    if (!open || !anchorRef.current) return;
-    const place = () => {
-      const r = anchorRef.current?.getBoundingClientRect();
-      if (!r) return;
-      let left = align === "right" ? r.right - width : r.left;
-      left = Math.max(8, Math.min(left, window.innerWidth - width - 8));
-      setPos({ top: r.bottom + 6, left });
-    };
-    place();
-    window.addEventListener("scroll", place, true);
-    window.addEventListener("resize", place);
-    return () => { window.removeEventListener("scroll", place, true); window.removeEventListener("resize", place); };
-  }, [open, width, align, anchorRef]);
-  useEffect(() => {
-    if (!open) return;
-    const onDown = (e) => {
-      if (layerRef.current?.contains(e.target) || anchorRef.current?.contains(e.target)) return;
-      onClose();
-    };
-    const onKey = (e) => { if (e.key === "Escape") onClose(); };
-    document.addEventListener("mousedown", onDown);
-    document.addEventListener("keydown", onKey);
-    return () => { document.removeEventListener("mousedown", onDown); document.removeEventListener("keydown", onKey); };
-  }, [open, onClose, anchorRef]);
-  if (!open || typeof document === "undefined") return null;
-  return createPortal(
-    <div ref={layerRef} style={{ position: "fixed", top: pos?.top ?? -9999, left: pos?.left ?? -9999, width,
-      zIndex: 9999, background: "var(--mcf-surface)", borderRadius: 24, padding: 10, color: "var(--mcf-ink)",
-      border: "1px solid var(--mcf-line)", boxShadow: "0 16px 40px rgba(17,24,39,.22)",
-      visibility: pos ? "visible" : "hidden" }}>
-      {children}
-    </div>,
-    document.body
-  );
-}
-
 function Bell({ name, exercises, submissions }) {
-  const bellRef = useRef(null);
   const [open, setOpen] = useState(false);
   const [seen, setSeen] = useState({});
   const [annonces, setAnnonces] = useState([]);
@@ -396,7 +346,7 @@ function Bell({ name, exercises, submissions }) {
   };
 
   return (
-    <div ref={bellRef} style={{ position: "relative" }}>
+    <div style={{ position: "relative" }}>
       <button onClick={openBell} style={{ background: "var(--mcf-surface)", border: `1.5px solid ${C.line}`, borderRadius: 999, width: 42, height: 42, cursor: "pointer", fontSize: 17, position: "relative", boxShadow: "0 4px 12px rgba(17,24,39,.06)" }}>
         🔔
         {notifs.length > 0 && (
@@ -405,8 +355,8 @@ function Bell({ name, exercises, submissions }) {
           </span>
         )}
       </button>
-      <FloatingLayer anchorRef={bellRef} open={open} onClose={() => setOpen(false)} width={300}>
-        <div>
+      {open && (
+        <div style={{ position: "absolute", right: 0, top: 46, width: 300, background: "var(--mcf-surface)", borderRadius: 24, boxShadow: "0 14px 36px rgba(17,24,39,0.14)", zIndex: 9999, padding: 10, color: C.ink }}>
           {notifs.length === 0
             ? <div style={{ padding: 12, fontSize: 13, color: C.soft }}>Aucune notification. Tout est à jour ! 🎉</div>
             : notifs.map((n) => (
@@ -415,7 +365,7 @@ function Bell({ name, exercises, submissions }) {
               </div>
             ))}
         </div>
-      </FloatingLayer>
+      )}
     </div>
   );
 }
