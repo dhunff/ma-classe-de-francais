@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useLayoutEffect } from "react";
+import { createPortal } from "react-dom";
 import {
   Headphones, BookOpen, PenLine, Puzzle, BookA, Sparkles,
   RotateCcw, CheckCircle2, XCircle, Plus, ChevronLeft, PartyPopper, Trash2, Pencil, Copy, MoreVertical, Folder, FolderPlus, Image as ImageIcon, ChevronDown, Lightbulb, FileCheck,
@@ -734,15 +735,67 @@ function PracticeHubInner({ role = "eleve", name = "", accounts = [] }) {
   );
 }
 
+/* ============================================================
+   🏗️ RÈGLE D'ARCHITECTURE (à respecter pour tout nouveau code)
+   Tout élément flottant (Dropdown, Popover, Select, Tooltip, Modal)
+   DOIT être rendu via React Portal dans document.body avec un
+   z-index global (9999). Ne JAMAIS rendre un menu déroulant à
+   l'intérieur du DOM d'une Card ou d'un élément de liste :
+   les propriétés animation / transform / filter / opacity des
+   cartes créent un stacking context qui emprisonne le z-index.
+   ============================================================ */
+function FloatingMenu({ anchorRef, open, onClose, children, minWidth = 180, align = "right" }) {
+  const [pos, setPos] = useState(null);
+  const menuRef = useRef(null);
+
+  useLayoutEffect(() => {
+    if (!open || !anchorRef.current) return;
+    const place = () => {
+      const r = anchorRef.current?.getBoundingClientRect();
+      if (!r) return;
+      const w = Math.max(minWidth, menuRef.current?.offsetWidth || minWidth);
+      const h = menuRef.current?.offsetHeight || 200;
+      let left = align === "right" ? r.right - w : r.left;
+      left = Math.max(8, Math.min(left, window.innerWidth - w - 8));
+      // bascule au-dessus si pas de place en bas
+      const below = r.bottom + 6;
+      const top = (below + h > window.innerHeight - 8 && r.top - h - 6 > 8) ? r.top - h - 6 : below;
+      setPos({ top, left, width: w });
+    };
+    place();
+    window.addEventListener("scroll", place, true);
+    window.addEventListener("resize", place);
+    return () => { window.removeEventListener("scroll", place, true); window.removeEventListener("resize", place); };
+  }, [open, minWidth, align, anchorRef]);
+
+  useEffect(() => {
+    if (!open) return;
+    const onDown = (e) => {
+      if (menuRef.current?.contains(e.target) || anchorRef.current?.contains(e.target)) return;
+      onClose();
+    };
+    const onKey = (e) => { if (e.key === "Escape") onClose(); };
+    document.addEventListener("mousedown", onDown);
+    document.addEventListener("keydown", onKey);
+    return () => { document.removeEventListener("mousedown", onDown); document.removeEventListener("keydown", onKey); };
+  }, [open, onClose, anchorRef]);
+
+  if (!open || typeof document === "undefined") return null;
+  return createPortal(
+    <div ref={menuRef} role="menu"
+      style={{ position: "fixed", top: pos?.top ?? -9999, left: pos?.left ?? -9999, minWidth,
+        zIndex: 9999, background: "var(--mcf-surface)", borderRadius: 18, padding: 6,
+        border: "1px solid var(--mcf-line)", color: "var(--mcf-ink)",
+        boxShadow: "0 16px 40px rgba(17,24,39,.22)", visibility: pos ? "visible" : "hidden" }}>
+      {children}
+    </div>,
+    document.body
+  );
+}
+
 /* ---- Split button "S'entraîner ▾" : làm bài + tài liệu bổ trợ ---- */
 function SplitTrain({ onStart, onPick, open, setOpen }) {
   const ref = useRef(null);
-  useEffect(() => {
-    const close = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
-    document.addEventListener("mousedown", close);
-    return () => document.removeEventListener("mousedown", close);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
   const ITEMS = [
     ["vocab", <BookOpen size={16} key="i" />, "Vocabulaire"],
     ["expl", <Lightbulb size={16} key="i" />, "Explications"],
@@ -757,22 +810,18 @@ function SplitTrain({ onStart, onPick, open, setOpen }) {
           display: "inline-flex", alignItems: "center" }}>
         <ChevronDown size={17} style={{ transition: "transform .15s ease", transform: open ? "rotate(180deg)" : "none" }} />
       </button>
-      {open && (
-        <div style={{ position: "absolute", right: 0, top: "calc(100% + 6px)", minWidth: 200, zIndex: 9999,
-          background: "var(--mcf-surface)", borderRadius: 16, border: `1px solid ${C.line}`,
-          boxShadow: "0 14px 36px rgba(17,24,39,.16)", padding: 6 }}>
-          {ITEMS.map(([k, icon, label]) => (
-            <button key={k} onClick={() => { setOpen(false); onPick(k); }}
-              style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "10px 14px",
-                border: "none", background: "transparent", cursor: "pointer", fontFamily: "inherit",
-                fontSize: 14, fontWeight: 600, borderRadius: 12, textAlign: "left", color: C.ink }}
-              onMouseEnter={(e) => e.currentTarget.style.background = "var(--mcf-bg)"}
-              onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}>
-              {icon} {label}
-            </button>
-          ))}
-        </div>
-      )}
+      <FloatingMenu anchorRef={ref} open={open} onClose={() => setOpen(false)} minWidth={210}>
+        {ITEMS.map(([k, icon, label]) => (
+          <button key={k} onClick={() => { setOpen(false); onPick(k); }} role="menuitem"
+            style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "10px 14px",
+              border: "none", background: "transparent", cursor: "pointer", fontFamily: "inherit",
+              fontSize: 14, fontWeight: 600, borderRadius: 12, textAlign: "left", color: "var(--mcf-ink)" }}
+            onMouseEnter={(e) => e.currentTarget.style.background = "var(--mcf-bg)"}
+            onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}>
+            {icon} {label}
+          </button>
+        ))}
+      </FloatingMenu>
     </div>
   );
 }
@@ -781,18 +830,12 @@ function SplitTrain({ onStart, onPick, open, setOpen }) {
 function HubMenu({ onEdit, onDup, onDel, onMove }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
-  useEffect(() => {
-    const close = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
-    document.addEventListener("mousedown", close);
-    return () => document.removeEventListener("mousedown", close);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
   const item = (label, icon, onClick, danger) => (
     <button onClick={() => { setOpen(false); onClick(); }}
       style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "10px 14px", border: "none",
         background: "transparent", cursor: "pointer", fontFamily: "inherit", fontSize: 14, fontWeight: 600,
         borderRadius: 14, textAlign: "left", color: danger ? C.danger : C.ink }}
-      onMouseEnter={(e) => e.currentTarget.style.background = danger ? C.dangerSoft : "#F4F6FB"}
+      onMouseEnter={(e) => e.currentTarget.style.background = danger ? C.dangerSoft : "var(--mcf-bg)"}
       onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}>
       {icon} {label}
     </button>
@@ -804,15 +847,12 @@ function HubMenu({ onEdit, onDup, onDel, onMove }) {
           cursor: "pointer", display: "grid", placeItems: "center", boxShadow: "0 2px 8px rgba(17,24,39,.06)" }}>
         <MoreVertical size={18} color={C.ink} />
       </button>
-      {open && (
-        <div style={{ position: "absolute", right: 0, top: 46, minWidth: 180, background: "var(--mcf-surface)", borderRadius: 20,
-          boxShadow: "0 14px 36px rgba(17,24,39,.16)", border: `1px solid ${C.line}`, padding: 6, zIndex: 60 }}>
-          {item("Modifier", <Pencil size={16} />, onEdit)}
-          {item("Dupliquer", <Copy size={16} />, onDup)}
-          {onMove && item("Déplacer vers…", <Folder size={16} />, onMove)}
-          {item("Supprimer", <Trash2 size={16} />, onDel, true)}
-        </div>
-      )}
+      <FloatingMenu anchorRef={ref} open={open} onClose={() => setOpen(false)} minWidth={190}>
+        {item("Modifier", <Pencil size={16} />, onEdit)}
+        {item("Dupliquer", <Copy size={16} />, onDup)}
+        {onMove && item("Déplacer vers…", <Folder size={16} />, onMove)}
+        {item("Supprimer", <Trash2 size={16} />, onDel, true)}
+      </FloatingMenu>
     </div>
   );
 }
