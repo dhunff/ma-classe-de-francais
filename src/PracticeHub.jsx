@@ -556,10 +556,12 @@ function PracticeHubInner({ role = "eleve", name = "", accounts = [] }) {
     const content = kind === "vocab" ? (ex.vocabulaire || "") : kind === "expl" ? (ex.explications || "") : null;
     if (typeof document === "undefined") return null;
     return createPortal(
-      <div style={{ position: "fixed", inset: 0, background: "rgba(17,24,39,.55)", backdropFilter: "blur(4px)",
+      <div className="mcf-float" style={{ position: "fixed", inset: 0, background: "rgba(15,23,42,.45)", backdropFilter: "blur(4px)",
         display: "grid", placeItems: "center", padding: 16, zIndex: 9999 }}
         onClick={() => setMatModal(null)}>
-        <div className="mcf-card mcf-scroll" style={{ ...S.card, width: "100%", maxWidth: 640, maxHeight: "86vh", overflowY: "auto" }} onClick={(e) => e.stopPropagation()}>
+        <div className="mcf-scroll" style={{ ...S.card, width: "100%", maxWidth: 640, maxHeight: "86vh", overflowY: "auto",
+          background: "var(--mcf-card, #FFFFFF)", color: "var(--mcf-ink, #111827)", opacity: 1,
+          border: "1px solid var(--mcf-line, #EEF0F4)", boxShadow: "0 24px 60px rgba(15,23,42,.35)" }} onClick={(e) => e.stopPropagation()}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, marginBottom: 4 }}>
             <h3 style={{ ...S.display, fontSize: 20, margin: 0 }}>{title}</h3>
             <button onClick={() => setMatModal(null)} title="Fermer"
@@ -785,11 +787,11 @@ function FloatingMenu({ anchorRef, open, onClose, children, minWidth = 180, alig
 
   if (!open || typeof document === "undefined") return null;
   return createPortal(
-    <div ref={menuRef} role="menu"
+    <div ref={menuRef} role="menu" className="mcf-float"
       style={{ position: "fixed", top: pos?.top ?? -9999, left: pos?.left ?? -9999, minWidth,
-        zIndex: 9999, background: "var(--mcf-surface)", borderRadius: 18, padding: 6,
-        border: "1px solid var(--mcf-line)", color: "var(--mcf-ink)",
-        boxShadow: "0 16px 40px rgba(17,24,39,.22)", visibility: pos ? "visible" : "hidden" }}>
+        zIndex: 9999, background: "var(--mcf-surface, #FFFFFF)", borderRadius: 18, padding: 6,
+        border: "1px solid var(--mcf-line, #EEF0F4)", color: "var(--mcf-ink, #111827)", opacity: 1,
+        boxShadow: "0 18px 44px rgba(17,24,39,.28)", visibility: pos ? "visible" : "hidden" }}>
       {children}
     </div>,
     document.body

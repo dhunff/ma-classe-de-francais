@@ -67,16 +67,24 @@ const VF_OPTS = ["Vrai", "Faux", "On ne sait pas"];
 
 const FONTS = `
 @import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,500;0,600;0,700;1,600&family=Playfair+Display:ital,wght@0,700;0,800;1,500&family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap');
-.mcf-root {
+/* Biến CSS đặt ở :root — các thành phần render qua React Portal (document.body)
+   nằm NGOÀI .mcf-root nên nếu để biến trong .mcf-root chúng sẽ mất nền + mất font. */
+:root, .mcf-root {
   --mcf-bg: #F8F9FA; --mcf-card: #FFFFFF; --mcf-surface: #FFFFFF; --mcf-surface2: #FBFCFE;
   --mcf-ink: #111827; --mcf-soft: #6B7280; --mcf-line: #EEF0F4;
   --mcf-primarysoft: #EDF1FE; --mcf-oksoft: #E7F7F0; --mcf-warnsoft: #FFF6E8; --mcf-dangersoft: #FDEEEE;
 }
-.mcf-root.mcf-dark {
+html.mcf-dark-root, html.mcf-dark-root body, .mcf-root.mcf-dark {
   --mcf-bg: #0F172A; --mcf-card: #1E293B; --mcf-surface: #1E293B; --mcf-surface2: #0B1120;
   --mcf-ink: #E5E7EB; --mcf-soft: #94A3B8; --mcf-line: #334155;
   --mcf-primarysoft: #1E2A4D; --mcf-oksoft: #0F2E22; --mcf-warnsoft: #33290F; --mcf-dangersoft: #331616;
 }
+/* Font + màu chữ cho mọi lớp nổi render qua Portal */
+.mcf-float {
+  font-family: 'Be Vietnam Pro', -apple-system, 'Segoe UI', sans-serif;
+  color: var(--mcf-ink);
+}
+.mcf-float button, .mcf-float input, .mcf-float textarea, .mcf-float select { font-family: inherit; }
 .mcf-dark input, .mcf-dark textarea, .mcf-dark select { color: var(--mcf-ink); }
 .mcf-dark img { filter: brightness(.92); }
 
@@ -296,6 +304,11 @@ export default function App() {
     return <Login accounts={accounts} setAccounts={setAccounts} onLogin={(s) => { setSession(s); refresh(); }} />;
   }
 
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    document.documentElement.classList.toggle("mcf-dark-root", !!dark);
+  }, [dark]);
+
   return (
     <div className={"mcf-root" + (dark ? " mcf-dark" : "")} style={{ background: C.bg, ...S.font, minHeight: "100vh" }}>
       <style>{FONTS}</style>
@@ -375,9 +388,9 @@ function FloatingLayer({ anchorRef, open, onClose, children, width = 300, align 
   }, [open, onClose, anchorRef]);
   if (!open || typeof document === "undefined") return null;
   return createPortal(
-    <div ref={layerRef} style={{ position: "fixed", top: pos?.top ?? -9999, left: pos?.left ?? -9999, width,
-      zIndex: 9999, background: "var(--mcf-surface)", borderRadius: 24, padding: 10, color: "var(--mcf-ink)",
-      border: "1px solid var(--mcf-line)", boxShadow: "0 16px 40px rgba(17,24,39,.22)",
+    <div ref={layerRef} className="mcf-float" style={{ position: "fixed", top: pos?.top ?? -9999, left: pos?.left ?? -9999, width,
+      zIndex: 9999, background: "var(--mcf-surface, #FFFFFF)", borderRadius: 24, padding: 10, color: "var(--mcf-ink, #111827)",
+      border: "1px solid var(--mcf-line, #EEF0F4)", boxShadow: "0 18px 44px rgba(17,24,39,.28)", opacity: 1,
       visibility: pos ? "visible" : "hidden" }}>
       {children}
     </div>,
