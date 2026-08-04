@@ -4,7 +4,7 @@ import { DndContext, closestCenter, PointerSensor, TouchSensor, useSensor, useSe
 import { SortableContext, useSortable, rectSortingStrategy, arrayMove } from "@dnd-kit/sortable";
 import { CSS as DndCSS } from "@dnd-kit/utilities";
 import PracticeHub from './PracticeHub.jsx'
-import { BookOpen, GraduationCap, Wine, Croissant, Landmark, Stamp, Feather, Coffee, BookMarked, MoreVertical, Pencil, Copy, Trash2, RotateCcw, Image as ImageIcon, X } from 'lucide-react'
+import { BookOpen, GraduationCap, Wine, Croissant, Landmark, Stamp, Feather, Coffee, BookMarked, MoreVertical, Pencil, Copy, Trash2, RotateCcw, Image as ImageIcon, X, Phone, Calendar, Target, Briefcase, ChevronLeft, TrendingUp, Clock, CheckCircle } from 'lucide-react'
 import { BarChart, Bar, LineChart, Line, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from "recharts";
 
 /* ================= Ma Classe de Français v3 =================
@@ -779,7 +779,7 @@ function Teacher({ exercises, setExercises, submissions, setSubmissions, account
           background: C.ok, color: "#fff", padding: "12px 26px", borderRadius: 999, fontWeight: 700, fontSize: 14,
           boxShadow: "0 10px 30px rgba(17,24,39,.35)" }}>{annToast}</div>
       )}
-      {view === "students" && <Accounts accounts={accounts} setAccounts={setAccounts} classes={classes} setClasses={setClasses} />}
+      {view === "students" && <Accounts accounts={accounts} setAccounts={setAccounts} classes={classes} setClasses={setClasses} exercises={exercises} submissions={submissions} />}
       {view === "practice" && <PracticeHub role="prof" accounts={accounts} />}
       {view === "stats" && <Stats accounts={accounts} exercises={exercises} submissions={submissions} />}
       {view === "list" && (
@@ -831,7 +831,8 @@ function Teacher({ exercises, setExercises, submissions, setSubmissions, account
 }
 
 /* ================= Accounts ================= */
-function Accounts({ accounts, setAccounts, classes, setClasses }) {
+function Accounts({ accounts, setAccounts, classes, setClasses, exercises = [], submissions = [] }) {
+  const [openStudent, setOpenStudent] = useState(null);   // 📂 dossier détaillé
   const [newClass, setNewClass] = useState("");
   const addClass = async () => {
     const n = newClass.trim(); if (!n) return;
@@ -881,6 +882,13 @@ function Accounts({ accounts, setAccounts, classes, setClasses }) {
     setAccounts(next); await save("mcf-accounts", next);
   };
 
+  if (openStudent) {
+    const acc = accounts.find((a) => a.name === openStudent);
+    if (!acc) { setOpenStudent(null); return null; }
+    return <StudentDossier acc={acc} classes={classes} exercises={exercises} submissions={submissions}
+      presence={presence} back={() => setOpenStudent(null)} />;
+  }
+
   return (
     <div>
       <div className="mcf-card" style={{ ...S.card, marginBottom: 16 }}>
@@ -923,7 +931,11 @@ function Accounts({ accounts, setAccounts, classes, setClasses }) {
         {accounts.map((a) => (
           <div key={a.name} className="mcf-card" style={{ ...S.card, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
             <span style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
-              <strong>{a.name}</strong>
+              <button onClick={() => setOpenStudent(a.name)} title="Voir le dossier de l'élève"
+                style={{ border: "none", background: "transparent", cursor: "pointer", fontFamily: "inherit",
+                  fontWeight: 800, fontSize: 15, color: C.primary, padding: 0, textDecoration: "underline", textUnderlineOffset: 3 }}>
+                {a.name}
+              </button>
               {(() => {
                 const st = formatLastSeen(presence[a.name]);
                 return (
@@ -948,6 +960,180 @@ function Accounts({ accounts, setAccounts, classes, setClasses }) {
           </div>
         ))}
         {accounts.length === 0 && <p style={{ color: C.soft }}>Aucun compte. Les élèves ne peuvent pas encore se connecter.</p>}
+      </div>
+    </div>
+  );
+}
+
+/* ================= 📂 Dossier de l'élève (vue prof) ================= */
+const AVA_COLORS = ["#3D5AF1", "#1E9E6A", "#D6336C", "#7048E8", "#C98412", "#0CA678"];
+const avaColor = (n) => AVA_COLORS[[...String(n)].reduce((a, c) => a + c.charCodeAt(0), 0) % AVA_COLORS.length];
+const fmtDateFR = (v) => { if (!v) return null; const d = new Date(v); return isNaN(d) ? null : d.toLocaleDateString("fr-FR"); };
+const fmtDuration = (ms) => {
+  if (!ms || ms < 1000) return "—";
+  const m = Math.round(ms / 60000);
+  return m < 60 ? `${m} min` : `${Math.floor(m / 60)} h ${String(m % 60).padStart(2, "0")}`;
+};
+
+function StudentDossier({ acc, classes, exercises, submissions, presence, back }) {
+  const name = acc.name;
+  const [profile, setProfile] = useState(null);
+  const [notes, setNotes] = useState("");
+  const [notesSaved, setNotesSaved] = useState(false);
+  const [practice, setPractice] = useState({});
+  const [pracEx, setPracEx] = useState([]);
+
+  useEffect(() => {
+    (async () => {
+      const [profs, notesAll, ph, prac] = await Promise.all([
+        load("mcf-profiles", {}), load("mcf-teacher-notes", {}),
+        load(`mcf-ph-${name}`, {}, false), load("mcf-practice", []),
+      ]);
+      setProfile((profs && profs[name]) || {});
+      setNotes((notesAll && notesAll[name]) || "");
+      setPractice(ph && typeof ph === "object" ? ph : {});
+      setPracEx(Array.isArray(prac) ? prac : []);
+    })();
+  }, [name]);
+
+  const saveNotes = async () => {
+    const all = await load("mcf-teacher-notes", {});
+    all[name] = notes;
+    await save("mcf-teacher-notes", all);
+    setNotesSaved(true);
+    setTimeout(() => setNotesSaved(false), 2500);
+  };
+
+  // ---- statistiques ----
+  const mySubs = submissions.filter((s) => s.student === name);
+  const scored = mySubs.map((s) => {
+    const ex = exercises.find((e) => e.id === s.exerciseId);
+    if (!ex) return null;
+    const t = totalScore(s, ex);
+    return t.max ? { ex, s, pct: Math.round((t.score / t.max) * 100), score: t.score, max: t.max } : null;
+  }).filter(Boolean);
+  const avg = scored.length ? Math.round(scored.reduce((a, b) => a + b.pct, 0) / scored.length) : null;
+  const practiceRows = Object.entries(practice).filter(([, r]) => r && r.max);
+  const totalDone = mySubs.length + practiceRows.length;
+  const totalTime = mySubs.reduce((a, s) => a + (s.durationMs || 0), 0);
+  const recent = [
+    ...scored.map((r) => ({ title: r.ex.title, level: r.ex.level, pct: r.pct, label: `${r.score}/${r.max}`, at: r.s.at, kind: "Devoir" })),
+    ...practiceRows.map(([exId, r]) => {
+      const ex = pracEx.find((e) => e.id === exId);
+      return { title: ex ? ex.title : "Exercice supprimé", level: ex ? ex.level : "", pct: Math.round((r.best / r.max) * 100), label: `${r.best}/${r.max}`, at: r.at || 0, kind: "Entraînement" };
+    }),
+  ].sort((a, b) => b.at - a.at).slice(0, 5);
+
+  const st = formatLastSeen(presence[name]);
+  const cls = classes.find((c) => c.id === acc.classId);
+  const pct = calculateProfileCompletion(profile);
+
+  const infoRow = (Icon, label, value) => (
+    <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
+      <Icon size={17} color={C.primary} style={{ marginTop: 2, flexShrink: 0 }} />
+      <div>
+        <div style={{ fontSize: 11.5, color: C.soft, fontWeight: 700, letterSpacing: .3, textTransform: "uppercase" }}>{label}</div>
+        <div style={{ fontSize: 14.5, fontWeight: 600, marginTop: 1 }}>{value || <span style={{ color: C.soft, fontWeight: 400 }}>Non renseigné</span>}</div>
+      </div>
+    </div>
+  );
+
+  const statCard = (Icon, label, value, color) => (
+    <div className="mcf-card" style={{ ...S.card, padding: "16px 18px", textAlign: "center" }}>
+      <Icon size={20} color={color} style={{ marginBottom: 6 }} />
+      <div style={{ fontSize: 22, fontWeight: 800, color }}>{value}</div>
+      <div style={{ fontSize: 12, color: C.soft, marginTop: 2 }}>{label}</div>
+    </div>
+  );
+
+  return (
+    <div>
+      <button style={{ ...S.btn(false), marginBottom: 16, display: "inline-flex", alignItems: "center", gap: 6 }} onClick={back}>
+        <ChevronLeft size={16} /> Retour aux élèves
+      </button>
+
+      <div style={{ display: "grid", gridTemplateColumns: "minmax(230px, 1fr) minmax(300px, 2fr)", gap: 16, alignItems: "start" }}>
+        {/* ---- Colonne gauche : carte profil ---- */}
+        <div className="mcf-card" style={{ ...S.card, textAlign: "center" }}>
+          <div style={{ width: 96, height: 96, borderRadius: "50%", background: avaColor(name), color: "#fff",
+            fontSize: 40, fontWeight: 800, display: "grid", placeItems: "center", margin: "0 auto 14px" }}>
+            {name.charAt(0).toUpperCase()}
+          </div>
+          <h2 style={{ ...S.display, fontSize: 22, margin: "0 0 6px" }}>{name}</h2>
+          <div style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12.5, marginBottom: 10,
+            color: st.online ? C.ok : C.soft, fontWeight: st.online ? 700 : 500 }}>
+            <span className={st.online ? "mcf-pulse" : ""} style={{ width: 9, height: 9, borderRadius: "50%", background: st.online ? "#22C55E" : "#9CA3AF" }} />
+            {st.label}
+          </div>
+          {cls && <div><span style={S.chip(C.primarySoft, C.primary)}>🏫 {cls.name}</span></div>}
+          <div style={{ marginTop: 16, textAlign: "left" }}>
+            <div style={{ fontSize: 11.5, color: C.soft, fontWeight: 700, marginBottom: 6 }}>PROFIL COMPLÉTÉ À {pct} %</div>
+            <div style={{ width: "100%", height: 8, borderRadius: 999, background: "var(--mcf-surface2)", border: `1px solid ${C.line}`, overflow: "hidden" }}>
+              <div style={{ width: `${pct}%`, height: "100%", background: pct === 100 ? C.ok : C.primary, transition: "width .4s ease" }} />
+            </div>
+          </div>
+        </div>
+
+        {/* ---- Colonne droite ---- */}
+        <div style={{ display: "grid", gap: 16 }}>
+          {/* Informations personnelles */}
+          <div className="mcf-card" style={{ ...S.card }}>
+            <h3 style={{ ...S.display, fontSize: 17, margin: "0 0 16px" }}>📋 Informations personnelles</h3>
+            {profile === null ? <p style={{ color: C.soft, margin: 0 }}>Chargement…</p> : (
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(190px, 1fr))", gap: 16 }}>
+                {infoRow(Phone, "Téléphone", profile.phone)}
+                {infoRow(Calendar, "Date de naissance", fmtDateFR(profile.dob))}
+                {infoRow(Briefcase, "École / Profession", profile.school)}
+                {infoRow(GraduationCap, "Niveau actuel", profile.level)}
+                {infoRow(Target, "Objectif", profile.goal)}
+              </div>
+            )}
+            <div style={{ marginTop: 20, paddingTop: 16, borderTop: `1px solid ${C.line}` }}>
+              <div style={S.label}>🗝️ Notes privées (visibles uniquement par vous)</div>
+              <textarea style={{ ...S.input, marginTop: 8, minHeight: 76, resize: "vertical" }} value={notes}
+                placeholder="ex. Prononciation du « r » à travailler ; très bon à l'écrit…"
+                onChange={(e) => setNotes(e.target.value)} />
+              <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 10 }}>
+                <button style={{ ...S.btn(true), padding: "8px 18px", fontSize: 13 }} onClick={saveNotes}>💾 Enregistrer les notes</button>
+                {notesSaved && <span style={{ fontSize: 13, color: C.ok, fontWeight: 700 }}>✅ Notes enregistrées</span>}
+              </div>
+            </div>
+          </div>
+
+          {/* Aperçu des performances */}
+          <div>
+            <h3 style={{ ...S.display, fontSize: 17, margin: "0 0 12px" }}>📈 Aperçu des performances</h3>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 12 }}>
+              {statCard(CheckCircle, "Exercices terminés", totalDone, C.primary)}
+              {statCard(TrendingUp, "Score moyen", avg == null ? "—" : `${avg} %`, avg == null ? C.soft : avg >= 80 ? C.ok : avg >= 50 ? C.warn : C.danger)}
+              {statCard(Clock, "Temps total", fmtDuration(totalTime), C.accent)}
+            </div>
+          </div>
+
+          {/* Activités récentes */}
+          <div className="mcf-card" style={{ ...S.card }}>
+            <h3 style={{ ...S.display, fontSize: 17, margin: "0 0 14px" }}>⏱️ Activités récentes</h3>
+            {recent.length === 0 ? (
+              <p style={{ color: C.soft, margin: 0, fontSize: 14 }}>Aucune activité pour le moment.</p>
+            ) : (
+              <div style={{ display: "grid", gap: 8 }}>
+                {recent.map((r, i) => (
+                  <div key={i} style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap",
+                    background: "var(--mcf-surface2)", border: `1px solid ${C.line}`, borderRadius: 14, padding: "10px 14px" }}>
+                    {r.level && <span style={S.badge(r.level)}>{r.level}</span>}
+                    <div style={{ flex: 1, minWidth: 150 }}>
+                      <div style={{ fontWeight: 700, fontSize: 14 }}>{r.title}</div>
+                      <div style={{ fontSize: 11.5, color: C.soft, marginTop: 1 }}>{r.kind} · {r.at ? new Date(r.at).toLocaleString("fr-FR", { dateStyle: "short", timeStyle: "short" }) : "—"}</div>
+                    </div>
+                    <span style={{ fontWeight: 800, fontSize: 14.5, color: r.pct >= 80 ? C.ok : r.pct >= 50 ? C.warn : C.danger }}>
+                      {r.label} <span style={{ fontSize: 12, fontWeight: 600 }}>({r.pct} %)</span>
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -2567,6 +2753,15 @@ function Taking({ ex, name, setSubmissions, done }) {
   const [imgZoom, setImgZoom] = useState(false); // 🔍 lightbox ảnh đề bài
   const answersRef = React.useRef(answers);
   answersRef.current = answers;
+  const startedAtRef = React.useRef(Date.now());   // ⏱ đo thời lượng làm bài
+  React.useEffect(() => {
+    (async () => {
+      const saved = await load(`mcf-began-${ex.id}-${name}`, null, false);
+      if (saved) startedAtRef.current = saved;
+      else await save(`mcf-began-${ex.id}-${name}`, startedAtRef.current, false);
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // ⏱ Đồng hồ đếm ngược : giờ bắt đầu lưu lại để reload trang không reset
   useEffect(() => {
@@ -2601,6 +2796,7 @@ function Taking({ ex, name, setSubmissions, done }) {
       id: uid(), exerciseId: ex.id, student: name, answers: a,
       autoScore, autoMax: autos.length, openMarks: {}, qComments: {},
       late: isLate(ex), at: Date.now(), comment: "", graded: false, timedOut: true,
+      durationMs: Date.now() - startedAtRef.current,
     };
     const latest = await load("mcf-submissions", []);
     const next = [...latest.filter((s) => !(s.exerciseId === ex.id && s.student === name)), sub];
@@ -2638,6 +2834,7 @@ function Taking({ ex, name, setSubmissions, done }) {
         : (fillOk(q, answers[q.id]) ? 1 : 0)), 0);
     const sub = {
       id: uid(), exerciseId: ex.id, student: name, answers,
+      durationMs: Date.now() - startedAtRef.current,
       autoScore, autoMax: autos.length, openMarks: {}, qComments: {},
       late: isLate(ex), at: Date.now(), comment: "", graded: false,
     };
