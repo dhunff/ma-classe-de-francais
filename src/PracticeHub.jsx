@@ -6,7 +6,7 @@ import {
 } from "lucide-react";
 import {
   C, S, QTYPES, VF_OPTS, uid, fillOk, fillAccepted, vfOk, stripHtml, autoQ, tableauOk, tableauCells, TableauCompare, ordreOk, OrdreBlocks,
-  RichTextEditor, Builder, ReadingPanel, load, save, exSkills,
+  RichTextEditor, Builder, ReadingPanel, load, save, exSkills, useT, getUnansweredQuestionsCount, ConfirmSubmitModal,
 } from "./App.jsx";
 
 /* ============================================================
@@ -910,6 +910,8 @@ function PracticeWorkspace({ ex, back, onFinish }) {
     : q.type === "ordre" ? (Array.isArray(answers[q.id]) && answers[q.id].length === (q.elements || []).length)
     : q.type === "vf" ? (answers[q.id]?.choice != null && (answers[q.id].choice === 2 || (answers[q.id].just || "").trim() !== ""))
     : q.type === "open" ? stripHtml(answers[q.id]) !== "" : (answers[q.id] || "").trim() !== "");
+  const [confirmCount, setConfirmCount] = useState(null);   // ⚠️ copie incomplète
+  const t = useT();
   const fmtLeft = (s) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
 
   const questionCards = ex.questions.map((q, i) => {
@@ -1098,9 +1100,20 @@ function PracticeWorkspace({ ex, back, onFinish }) {
       )}
 
       {!graded ? (
-        <button style={{ ...S.btn(true), marginTop: 20, opacity: allAnswered ? 1 : 0.4 }} disabled={!allAnswered} onClick={() => grade(false)}>
-          Rendre & voir le résultat
+        <>
+        <button style={{ ...S.btn(true), marginTop: 20 }}
+          onClick={() => {
+            const n = getUnansweredQuestionsCount(answers, ex.questions);
+            if (n > 0) setConfirmCount(n); else grade(false);
+          }}>
+          {t("submit_button")}
         </button>
+        {confirmCount != null && (
+          <ConfirmSubmitModal count={confirmCount}
+            onCancel={() => setConfirmCount(null)}
+            onConfirm={() => { setConfirmCount(null); grade(false); }} />
+        )}
+        </>
       ) : (
         <div className="mcf-card" style={{ marginTop: 20, textAlign: "center", background: perfect ? C.okSoft : C.primarySoft, borderRadius: 14, padding: "18px 16px" }}>
           {graded === "timeout" && <div style={{ color: C.danger, fontWeight: 800, marginBottom: 6 }}>⏰ Temps écoulé — correction automatique effectuée</div>}

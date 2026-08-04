@@ -62,6 +62,81 @@ const validateProfile = (p) => {
   return errs;
 };
 
+/* ================= 🌐 i18n (léger, sans dépendance) =================
+   Langue par défaut : vi. Choix mémorisé dans localStorage ("mcf-lang").
+   Ajouter une chaîne = ajouter une clé dans les 3 objets ci-dessous. */
+const LANG_KEY = "mcf-lang";
+const LANGS = [["vi", "🇻🇳", "Tiếng Việt"], ["fr", "🇫🇷", "Français"], ["en", "🇬🇧", "English"]];
+
+const I18N = {
+  vi: {
+    submit_button: "Nộp bài & xem kết quả",
+    submit_copy: "Nộp bài làm",
+    sending: "Đang gửi…",
+    quit_draft: "Thoát (đã lưu nháp)",
+    back: "Quay lại",
+    incomplete_title: "Bài làm chưa hoàn tất",
+    incomplete_body: "Bạn vẫn còn {count} câu hỏi chưa hoàn thành. Bạn có chắc chắn muốn nộp bài ngay bây giờ không ? Điểm số sẽ được tính dựa trên những câu đã trả lời.",
+    keep_working: "Tiếp tục làm bài",
+    submit_anyway: "Vẫn nộp bài",
+    lang_label: "Ngôn ngữ",
+  },
+  fr: {
+    submit_button: "Rendre & voir le résultat",
+    submit_copy: "Rendre ma copie",
+    sending: "Envoi…",
+    quit_draft: "Quitter (brouillon sauvegardé)",
+    back: "Retour",
+    incomplete_title: "Copie incomplète",
+    incomplete_body: "Il vous reste {count} question(s) sans réponse. Voulez-vous vraiment rendre votre copie maintenant ? La note sera calculée uniquement sur les questions répondues.",
+    keep_working: "Continuer l'exercice",
+    submit_anyway: "Rendre quand même",
+    lang_label: "Langue",
+  },
+  en: {
+    submit_button: "Submit & see result",
+    submit_copy: "Submit my work",
+    sending: "Sending…",
+    quit_draft: "Quit (draft saved)",
+    back: "Back",
+    incomplete_title: "Incomplete submission",
+    incomplete_body: "You still have {count} unanswered question(s). Are you sure you want to submit now? Your score will be based only on the answered questions.",
+    keep_working: "Keep working",
+    submit_anyway: "Submit anyway",
+    lang_label: "Language",
+  },
+};
+
+const getLang = () => { try { return localStorage.getItem(LANG_KEY) || "vi"; } catch { return "vi"; } };
+const LangCtx = React.createContext("vi");
+function useT() {
+  const lang = React.useContext(LangCtx);
+  return React.useCallback((key, vars) => {
+    let str = (I18N[lang] && I18N[lang][key]) || I18N.vi[key] || key;   // fallback : vi
+    if (vars) Object.entries(vars).forEach(([k, v]) => { str = str.split(`{${k}}`).join(String(v)); });
+    return str;
+  }, [lang]);
+}
+
+/* ---- ✅ Compte des questions sans réponse (toutes les types gérées) ---- */
+const isQuestionAnswered = (q, answers) => {
+  const a = answers ? answers[q.id] : undefined;
+  switch (q.type) {
+    case "qcm": return a != null;
+    case "tableau": {
+      // répondu seulement si CHAQUE ligne × colonne est cochée
+      const cells = tableauCells(q);
+      return cells.length > 0 && cells.every((k) => a && a[k]);
+    }
+    case "ordre": return Array.isArray(a) && a.length === (q.elements || []).length && a.length > 0;
+    case "vf": return a?.choice != null && (a.choice === 2 || String(a.just || "").trim() !== "");
+    case "open": return stripHtml(a) !== "";
+    default: return String(a || "").trim() !== "";   // fill / conj
+  }
+};
+const getUnansweredQuestionsCount = (answers, questions) =>
+  (Array.isArray(questions) ? questions : []).filter((q) => !isQuestionAnswered(q, answers)).length;
+
 const QTYPES = { qcm: "QCM", fill: "Texte à trous", conj: "Conjugaison", vf: "Vrai / Faux / ?", tableau: "Tableau OUI/NON", ordre: "Remettre en ordre", open: "Réponse libre / traduction" };
 const VF_OPTS = ["Vrai", "Faux", "On ne sait pas"];
 
@@ -369,6 +444,10 @@ export default function App() {
         </div>
         {session && (
           <div style={{ fontSize: 13, display: "flex", gap: 10, alignItems: "center" }}>
+            <select value={lang} onChange={(e) => setLang(e.target.value)} title="Langue / Ngôn ngữ"
+              style={{ ...S.input, width: "auto", padding: "9px 10px", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
+              {LANGS.map(([code, flag, label]) => <option key={code} value={code}>{flag} {label}</option>)}
+            </select>
             <button onClick={toggleTheme} title={dark ? "Mode clair" : "Mode sombre"}
               style={{ width: 42, height: 42, borderRadius: 999, border: `1.5px solid ${C.line}`, background: "var(--mcf-surface)",
                 cursor: "pointer", fontSize: 17, boxShadow: "0 4px 12px rgba(17,24,39,.06)" }}>
@@ -2799,6 +2878,31 @@ function TableauCompare({ q, value, onChange, readOnly, correction }) {
   );
 }
 
+/* ---- ⚠️ Modal de confirmation : copie incomplète ---- */
+function ConfirmSubmitModal({ count, onCancel, onConfirm }) {
+  const t = useT();
+  if (typeof document === "undefined") return null;
+  return createPortal(
+    <div className="mcf-float" style={{ position: "fixed", inset: 0, background: "rgba(15,23,42,.45)", backdropFilter: "blur(4px)",
+      display: "grid", placeItems: "center", padding: 16, zIndex: 9999 }} onClick={onCancel}>
+      <div style={{ ...S.card, width: "100%", maxWidth: 460, background: "var(--mcf-card, #FFFFFF)",
+        color: "var(--mcf-ink, #111827)", opacity: 1, border: "1px solid var(--mcf-line, #EEF0F4)",
+        boxShadow: "0 24px 60px rgba(15,23,42,.35)" }} onClick={(e) => e.stopPropagation()}>
+        <div style={{ fontSize: 38, marginBottom: 6 }}>⚠️</div>
+        <h3 style={{ ...S.display, fontSize: 20, margin: "0 0 10px" }}>{t("incomplete_title")}</h3>
+        <p style={{ fontSize: 14.5, lineHeight: 1.7, margin: "0 0 20px", color: "var(--mcf-ink, #111827)" }}>
+          {t("incomplete_body", { count })}
+        </p>
+        <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+          <button style={S.btn(false)} onClick={onCancel}>{t("keep_working")}</button>
+          <button style={{ ...S.btn(true), background: C.danger, boxShadow: "none" }} onClick={onConfirm}>{t("submit_anyway")}</button>
+        </div>
+      </div>
+    </div>,
+    document.body
+  );
+}
+
 function Taking({ ex, name, setSubmissions, done }) {
   const draftKey = `mcf-draft-${ex.id}-${name}`;
   const startKey = `mcf-start-${ex.id}-${name}`;
@@ -2812,6 +2916,8 @@ function Taking({ ex, name, setSubmissions, done }) {
   const [imgZoom, setImgZoom] = useState(false); // 🔍 lightbox ảnh đề bài
   const answersRef = React.useRef(answers);
   answersRef.current = answers;
+  const [confirmCount, setConfirmCount] = useState(null);   // ⚠️ modal copie incomplète
+  const t = useT();
   const startedAtRef = React.useRef(Date.now());   // ⏱ đo thời lượng làm bài
   React.useEffect(() => {
     (async () => {
@@ -3057,10 +3163,21 @@ function Taking({ ex, name, setSubmissions, done }) {
 
       {err && <p style={{ color: C.danger, fontSize: 13 }}>{err}</p>}
       <div style={{ display: "flex", gap: 10, marginTop: 20 }}>
-        <button style={{ ...S.btn(true), opacity: allAnswered && !saving && !locked ? 1 : 0.4 }} disabled={!allAnswered || saving || locked} onClick={submit}>
-          {saving ? "Envoi…" : "Rendre ma copie"}
+        <button style={{ ...S.btn(true), opacity: !saving && !locked ? 1 : 0.4 }} disabled={saving || locked}
+          onClick={() => {
+            const n = getUnansweredQuestionsCount(answers, ex.questions);
+            if (n > 0) setConfirmCount(n); else submit();
+          }}>
+          {saving ? t("sending") : t("submit_copy")}
         </button>
-        <button style={S.btn(false)} onClick={done}>Quitter (brouillon sauvegardé)</button>
+        <button style={S.btn(false)} onClick={done}>{t("quit_draft")}</button>
+      </div>
+      {confirmCount != null && (
+        <ConfirmSubmitModal count={confirmCount}
+          onCancel={() => setConfirmCount(null)}
+          onConfirm={() => { setConfirmCount(null); submit(); }} />
+      )}
+      <div style={{ display: "none" }}>
       </div>
       </div>
     </div>
@@ -3247,4 +3364,4 @@ function RichTextEditor({ value, onChange, wordLimit, readOnly, minHeight = 280 
 
 
 /* ---- Xuất dùng chung cho PracticeHub ---- */
-export { C, S, SKILLS, QTYPES, VF_OPTS, LEVEL_COLORS, uid, fillOk, fillAccepted, vfOk, stripHtml, wordCount, autoQ, isLate, exSkills, tableauOk, tableauCells, TableauCompare, ordreOk, OrdreBlocks, RichTextEditor, Builder, ReadingPanel, load, save };
+export { C, S, SKILLS, QTYPES, VF_OPTS, LEVEL_COLORS, uid, fillOk, fillAccepted, vfOk, stripHtml, wordCount, autoQ, isLate, exSkills, tableauOk, tableauCells, TableauCompare, ordreOk, OrdreBlocks, useT, getUnansweredQuestionsCount, ConfirmSubmitModal, RichTextEditor, Builder, ReadingPanel, load, save };
