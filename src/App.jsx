@@ -228,7 +228,13 @@ export default function App() {
     const [ex, sub, ac, cl] = await Promise.all([
       load("mcf-exercises", []), load("mcf-submissions", []), load("mcf-accounts", []), load("mcf-classes", []),
     ]);
-    setExercises(ex); setSubmissions(sub); setAccounts(ac); setClasses(cl); setLoading(false);
+    const cleanEx = (Array.isArray(ex) ? ex : []).map((e) => ({
+      ...e,
+      questions: Array.isArray(e.questions) ? e.questions : [],
+      level: e.level || "B1",
+      title: e.title || "(Sans titre)",
+    }));
+    setExercises(cleanEx); setSubmissions(Array.isArray(sub) ? sub : []); setAccounts(Array.isArray(ac) ? ac : []); setClasses(Array.isArray(cl) ? cl : []); setLoading(false);
   }, []);
   useEffect(() => { refresh(); }, [refresh]);
 

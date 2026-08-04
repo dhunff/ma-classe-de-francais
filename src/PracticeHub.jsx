@@ -51,7 +51,14 @@ function PracticeHubInner({ role = "eleve", name = "" }) {
 
   useEffect(() => {
     (async () => {
-      setExercises(await load("mcf-practice", []));
+      const rawEx = await load("mcf-practice", []);
+      // Chuẩn hoá : bài hỏng (thiếu questions/level/title) không thể làm sập trang
+      setExercises((Array.isArray(rawEx) ? rawEx : []).map((e) => ({
+        ...e,
+        questions: Array.isArray(e.questions) ? e.questions : [],
+        level: e.level || "B1",
+        title: e.title || "(Sans titre)",
+      })));
       const rawCats = await load("mcf-custom-cats", []);
       setCats(Array.isArray(rawCats) ? rawCats.filter((c) => typeof c === "string" && c.trim()) : []);
       const rawFolders = await load("mcf-folders", []);
