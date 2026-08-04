@@ -372,9 +372,11 @@ function totalScore(sub, ex) {
 const SESSION_KEY = "mcf-session";
 const THEME_KEY = "mcf-theme";
 
-export default function App() {
+function AppInner() {
   const [dark, setDark] = useState(() => { try { return localStorage.getItem(THEME_KEY) === "dark"; } catch { return false; } });
   const toggleTheme = () => setDark((d) => { const n = !d; try { localStorage.setItem(THEME_KEY, n ? "dark" : "light"); } catch {} return n; });
+  const [lang, setLang] = useState(getLang);
+  useEffect(() => { try { localStorage.setItem(LANG_KEY, lang); } catch {} }, [lang]);
   const [session, setSessionRaw] = useState(null);
   // Duy trì đăng nhập : lưu phiên vào localStorage
   const setSession = (s) => {
@@ -429,6 +431,7 @@ export default function App() {
   }
 
   return (
+    <LangCtx.Provider value={lang}>
     <div className={"mcf-root" + (dark ? " mcf-dark" : "")} style={{ background: C.bg, ...S.font, minHeight: "100vh" }}>
       <style>{FONTS}</style>
       <Doodles />
@@ -469,6 +472,7 @@ export default function App() {
             : <Student name={session.name} {...{ exercises, submissions, setSubmissions, accounts, setAccounts, refresh }} />}
       </main>
     </div>
+    </LangCtx.Provider>
   );
 }
 
@@ -3362,3 +3366,56 @@ function RichTextEditor({ value, onChange, wordLimit, readOnly, minHeight = 280 
 
 /* ---- Xuất dùng chung cho PracticeHub ---- */
 export { C, S, SKILLS, QTYPES, VF_OPTS, LEVEL_COLORS, uid, fillOk, fillAccepted, vfOk, stripHtml, wordCount, autoQ, isLate, exSkills, tableauOk, tableauCells, TableauCompare, ordreOk, OrdreBlocks, useT, getUnansweredQuestionsCount, ConfirmSubmitModal, RichTextEditor, Builder, ReadingPanel, load, save };
+
+
+/* ================= 🛡️ Lưới an toàn toàn cục =================
+   Bất kỳ lỗi runtime nào cũng hiện hộp đỏ có thông báo + stack
+   thay vì màn hình trắng, giúp chẩn đoán ngay lập tức. */
+class RootErrorBoundary extends React.Component {
+  constructor(p) { super(p); this.state = { err: null, info: null }; }
+  static getDerivedStateFromError(err) { return { err }; }
+  componentDidCatch(err, info) { this.setState({ info }); }
+  render() {
+    if (this.state.err) {
+      const msg = String(this.state.err?.message || this.state.err);
+      const stack = String(this.state.info?.componentStack || this.state.err?.stack || "").split("\n").slice(0, 8).join("\n");
+      return (
+        <div style={{ minHeight: "100vh", background: "#F8F9FA", padding: 24, fontFamily: "'Be Vietnam Pro', -apple-system, sans-serif", color: "#111827" }}>
+          <div style={{ maxWidth: 720, margin: "40px auto", background: "#fff", border: "1px solid #EEF0F4",
+            borderTop: "5px solid #DE4B4B", borderRadius: 24, padding: 28, boxShadow: "0 10px 30px rgba(17,24,39,.08)" }}>
+            <div style={{ fontSize: 40, marginBottom: 8 }}>⚠️</div>
+            <h2 style={{ margin: "0 0 6px", fontSize: 21, fontWeight: 800 }}>Une erreur est survenue</h2>
+            <p style={{ fontSize: 13.5, color: "#6B7280", margin: "0 0 16px" }}>
+              Envoyez cette capture d'écran au développeur / Gửi ảnh chụp màn hình này để được hỗ trợ.
+            </p>
+            <div style={{ background: "#FDEEEE", color: "#B42318", border: "1px solid #F5C2C2", borderRadius: 12,
+              padding: "12px 16px", fontFamily: "monospace", fontSize: 13.5, fontWeight: 700, wordBreak: "break-word" }}>
+              {msg}
+            </div>
+            {stack && (
+              <pre style={{ marginTop: 12, background: "#F4F6FB", borderRadius: 12, padding: "12px 16px",
+                fontSize: 11.5, lineHeight: 1.6, overflowX: "auto", color: "#374151", whiteSpace: "pre-wrap" }}>{stack}</pre>
+            )}
+            <div style={{ display: "flex", gap: 10, marginTop: 18, flexWrap: "wrap" }}>
+              <button onClick={() => window.location.reload()}
+                style={{ padding: "11px 22px", borderRadius: 999, border: "none", cursor: "pointer",
+                  background: "#3D5AF1", color: "#fff", fontWeight: 700, fontFamily: "inherit", fontSize: 14 }}>
+                ↻ Recharger la page
+              </button>
+              <button onClick={() => { try { localStorage.removeItem("mcf-session"); } catch {} window.location.reload(); }}
+                style={{ padding: "11px 22px", borderRadius: 999, border: "1.5px solid #EEF0F4", cursor: "pointer",
+                  background: "#fff", color: "#111827", fontWeight: 700, fontFamily: "inherit", fontSize: 14 }}>
+                🚪 Se déconnecter et recharger
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
+export default function App() {
+  return <RootErrorBoundary><AppInner /></RootErrorBoundary>;
+}
