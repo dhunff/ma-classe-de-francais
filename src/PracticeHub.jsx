@@ -865,6 +865,8 @@ function HubMenu({ onEdit, onDup, onDel, onMove }) {
 /* ============ Workspace tự luyện — chấm ngay ============ */
 function PracticeWorkspace({ ex, back, onFinish }) {
   const [answers, setAnswers] = useState({});
+  const [confirmCount, setConfirmCount] = useState(null);   // ⚠️ copie incomplète
+  const t = useT();
   const [graded, setGraded] = useState(false);
   const [remaining, setRemaining] = useState(null);
   const [zen, setZen] = useState(false); // 🧘 chế độ tập trung
@@ -910,8 +912,6 @@ function PracticeWorkspace({ ex, back, onFinish }) {
     : q.type === "ordre" ? (Array.isArray(answers[q.id]) && answers[q.id].length === (q.elements || []).length)
     : q.type === "vf" ? (answers[q.id]?.choice != null && (answers[q.id].choice === 2 || (answers[q.id].just || "").trim() !== ""))
     : q.type === "open" ? stripHtml(answers[q.id]) !== "" : (answers[q.id] || "").trim() !== "");
-  const [confirmCount, setConfirmCount] = useState(null);   // ⚠️ copie incomplète
-  const t = useT();
   const fmtLeft = (s) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
 
   const questionCards = ex.questions.map((q, i) => {

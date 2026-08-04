@@ -2105,6 +2105,9 @@ function Progress({ ex, submissions, setSubmissions, accounts, back }) {
   const [drafts, setDrafts] = useState({});
   const [qDrafts, setQDrafts] = useState({});
   const [marks, setMarks] = useState({});
+  const [attachDrafts, setAttachDrafts] = useState({});
+  const [redoFor, setRedoFor] = useState(null); // tên học sinh đang yêu cầu làm lại
+  const [redoNote, setRedoNote] = useState("");
   if (!ex) return null;
   const roster = targetedAccounts(ex, accounts);
   const rosterNames = new Set(roster.map((a) => a.name));
@@ -2112,10 +2115,6 @@ function Progress({ ex, submissions, setSubmissions, accounts, back }) {
   const subs = submissions.filter((s) => s.exerciseId === ex.id && !s.redo && rosterNames.has(s.student));
   const byName = Object.fromEntries(submissions.filter((s) => s.exerciseId === ex.id).map((s) => [s.student, s]));
   const opens = ex.questions.filter((q) => q.type === "open");
-
-  const [attachDrafts, setAttachDrafts] = useState({});
-  const [redoFor, setRedoFor] = useState(null); // tên học sinh đang yêu cầu làm lại
-  const [redoNote, setRedoNote] = useState("");
 
   // 🔁 Yêu cầu làm lại : reset điểm, đổi trạng thái sang redo + lưu lý do
   const requestRedo = async (student) => {
@@ -3177,8 +3176,6 @@ function Taking({ ex, name, setSubmissions, done }) {
           onCancel={() => setConfirmCount(null)}
           onConfirm={() => { setConfirmCount(null); submit(); }} />
       )}
-      <div style={{ display: "none" }}>
-      </div>
       </div>
     </div>
   );
