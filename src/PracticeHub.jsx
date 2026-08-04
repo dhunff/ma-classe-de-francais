@@ -540,7 +540,7 @@ function PracticeHubInner({ role = "eleve", name = "", accounts = [] }) {
   }
 
   /* -------- 📚 Modal matériaux (Vocabulaire / Explications / Corrigé) -------- */
-  const MatModal = () => {
+  function MatModal() {
     if (!matModal) return null;
     const ex = exercises.find((e) => e.id === matModal.exId);
     if (!ex) return null;
@@ -605,7 +605,7 @@ function PracticeHubInner({ role = "eleve", name = "", accounts = [] }) {
         </div>
       </div>
     );
-  };
+  }
 
   /* -------- 📊 Suivi des élèves (prof) -------- */
   const fmtAt = (t) => t ? new Date(t).toLocaleString("fr-FR", { dateStyle: "short", timeStyle: "short" }) : "—";
