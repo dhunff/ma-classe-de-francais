@@ -27,6 +27,40 @@ const C = {
 const LEVEL_COLORS = { A1: "#1E9E6A", A2: "#2A9D8F", B1: "#3D5AF1", B2: "#7048E8", "B2+": "#D6336C" };
 const LEVEL_PASTEL = { A1: "#DDF6EB", A2: "#DDF2F0", B1: "#E6EBFE", B2: "#EFE9FC", "B2+": "#FBE3ED" };
 const SKILLS = ["Grammaire", "Vocabulaire", "Écoute", "Lecture", "Production écrite", "Traduction", "Communication"];
+/* ================= 👤 Profil élève =================
+   Stockage : clé partagée "mcf-profiles" = { [nom]: {phone, dob, level, goal, school, updatedAt} }
+   (le prof peut ainsi consulter les profils ; chaque élève n'écrit que sa propre entrée) */
+const PROFILE_FIELDS = ["phone", "dob", "level", "goal", "school"];
+const LEVELS_PROFILE = ["Débutant", "A1", "A2", "B1", "B2", "C1", "C2"];
+const GOALS_PROFILE = ["DELF A1", "DELF A2", "DELF B1", "DELF B2", "DALF C1", "DALF C2",
+  "Étudier en France", "Travailler en français", "Communication quotidienne", "Voyage", "Plaisir personnel"];
+
+const emptyProfile = () => ({ phone: "", dob: "", level: "", goal: "", school: "" });
+
+// % de complétion du profil (gamification)
+const calculateProfileCompletion = (p) => {
+  if (!p) return 0;
+  const filled = PROFILE_FIELDS.filter((k) => String(p[k] ?? "").trim()).length;
+  return Math.round((filled / PROFILE_FIELDS.length) * 100);
+};
+
+// Validation côté client (équivalent Zod : format + longueur)
+const validateProfile = (p) => {
+  const errs = {};
+  const phone = String(p.phone || "").trim();
+  if (phone && !/^[+]?[\d\s.\-()]{8,20}$/.test(phone)) errs.phone = "Numéro invalide (8 à 15 chiffres).";
+  if (p.dob) {
+    const d = new Date(p.dob), now = new Date();
+    if (isNaN(d)) errs.dob = "Date invalide.";
+    else if (d > now) errs.dob = "La date ne peut pas être dans le futur.";
+    else if (now.getFullYear() - d.getFullYear() > 120) errs.dob = "Date trop ancienne.";
+  }
+  if (p.level && !LEVELS_PROFILE.includes(p.level)) errs.level = "Niveau invalide.";
+  if (p.goal && !GOALS_PROFILE.includes(p.goal)) errs.goal = "Objectif invalide.";
+  if (String(p.school || "").trim().length > 120) errs.school = "120 caractères maximum.";
+  return errs;
+};
+
 const QTYPES = { qcm: "QCM", fill: "Texte à trous", conj: "Conjugaison", vf: "Vrai / Faux / ?", tableau: "Tableau OUI/NON", ordre: "Remettre en ordre", open: "Réponse libre / traduction" };
 const VF_OPTS = ["Vrai", "Faux", "On ne sait pas"];
 
@@ -59,6 +93,8 @@ input:focus, textarea:focus, select:focus { outline: none; border-color: #3D5AF1
 .mcf-wide { position: relative; left: 50%; transform: translateX(-50%); width: min(100vw - 24px, 1600px); }
 mark.mcf-hl { background: rgba(255, 224, 102, .85); border-radius: 4px; padding: 0 2px; }
 .mcf-card { animation: fadeUp .25s ease both; }
+@keyframes mcfSpin { to { transform: rotate(360deg); } }
+.mcf-spin { animation: mcfSpin .7s linear infinite; }
 /* animation tạo stacking context làm kẹt dropdown bên trong thẻ → gỡ sau khi chạy xong */
 .mcf-card { animation-fill-mode: both; }
 @media (prefers-reduced-motion: reduce) { .mcf-card { animation: none; } }
@@ -2223,7 +2259,137 @@ function Student({ name, exercises, submissions, setSubmissions, accounts, setAc
       )}
 
       {tab === "practice" && <PracticeHub role="eleve" name={name} />}
-      {tab === "settings" && <PasswordForm changePw={changePw} showPw={showPw} setShowPw={setShowPw} />}
+      {tab === "settings" && (
+        <div style={{ display: "grid", gap: 18 }}>
+          <ProfileForm name={name} />
+          <PasswordForm changePw={changePw} showPw={showPw} setShowPw={setShowPw} />
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ProfileForm({ name }) {
+  const [p, setP] = useState(emptyProfile());
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [errs, setErrs] = useState({});
+  const [toast, setToast] = useState("");
+
+  useEffect(() => {
+    (async () => {
+      const all = await load("mcf-profiles", {});
+      setP({ ...emptyProfile(), ...((all && all[name]) || {}) });
+      setLoading(false);
+    })();
+  }, [name]);
+
+  const pct = calculateProfileCompletion(p);
+  const set = (k, v) => { setP({ ...p, [k]: v }); if (errs[k]) setErrs({ ...errs, [k]: undefined }); };
+
+  const submit = async () => {
+    const e = validateProfile(p);
+    setErrs(e);
+    if (Object.keys(e).some((k) => e[k])) return;
+    setSaving(true);
+    try {
+      const all = await load("mcf-profiles", {});            // relire pour ne pas écraser les autres
+      all[name] = { ...p, updatedAt: Date.now() };
+      await save("mcf-profiles", all);
+      setToast("✅ Profil mis à jour avec succès !");
+    } catch {
+      setToast("❌ Erreur lors de l'enregistrement.");
+    }
+    setSaving(false);
+    setTimeout(() => setToast(""), 3200);
+  };
+
+  if (loading) return <p style={{ color: C.soft }}>Chargement du profil…</p>;
+
+  const field = (label, node, key) => (
+    <div>
+      <div style={S.label}>{label}</div>
+      <div style={{ marginTop: 6 }}>{node}</div>
+      {errs[key] && <div style={{ fontSize: 12, color: C.danger, marginTop: 4 }}>{errs[key]}</div>}
+    </div>
+  );
+
+  return (
+    <div style={{ display: "grid", gap: 16, maxWidth: 760 }}>
+      {/* 🎮 Barre de progression du profil */}
+      <div className="mcf-card" style={{ ...S.card, padding: "18px 22px" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 10, flexWrap: "wrap" }}>
+          <strong style={{ fontSize: 15 }}>
+            {pct === 100 ? "🎉 Votre profil est complet à 100 % ! Merci !"
+              : `Votre profil est complété à ${pct} % !`}
+          </strong>
+          {pct < 100 && <span style={{ fontSize: 12.5, color: C.soft }}>Complétez-le pour une meilleure expérience.</span>}
+        </div>
+        <div style={{ width: "100%", height: 10, borderRadius: 999, background: "var(--mcf-surface2)",
+          border: `1px solid ${C.line}`, marginTop: 12, overflow: "hidden" }}>
+          <div style={{ width: `${pct}%`, height: "100%", borderRadius: 999,
+            background: pct === 100 ? C.ok : C.primary, transition: "width .45s cubic-bezier(.4,0,.2,1)" }} />
+        </div>
+      </div>
+
+      {/* 📝 Formulaire */}
+      <div className="mcf-card" style={{ ...S.card }}>
+        <h3 style={{ ...S.display, fontSize: 19, margin: "0 0 4px" }}>👤 Compléter mon profil</h3>
+        <p style={{ fontSize: 13, color: C.soft, margin: "0 0 18px" }}>
+          Ces informations aident votre professeur à mieux adapter les exercices à vos besoins.
+        </p>
+
+        <div className="mcf-grid2" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 16 }}>
+          {field("📞 Téléphone", (
+            <input style={S.input} type="tel" value={p.phone} placeholder="ex. 0912 345 678"
+              onChange={(e) => set("phone", e.target.value)} />
+          ), "phone")}
+
+          {field("🎂 Date de naissance", (
+            <input style={S.input} type="date" value={p.dob} max={new Date().toISOString().slice(0, 10)}
+              onChange={(e) => set("dob", e.target.value)} />
+          ), "dob")}
+
+          {field("📊 Niveau actuel", (
+            <select style={S.input} value={p.level} onChange={(e) => set("level", e.target.value)}>
+              <option value="">— Choisir —</option>
+              {LEVELS_PROFILE.map((l) => <option key={l} value={l}>{l}</option>)}
+            </select>
+          ), "level")}
+
+          {field("🎯 Objectif d'apprentissage", (
+            <select style={S.input} value={p.goal} onChange={(e) => set("goal", e.target.value)}>
+              <option value="">— Choisir —</option>
+              {GOALS_PROFILE.map((g) => <option key={g} value={g}>{g}</option>)}
+            </select>
+          ), "goal")}
+
+          <div style={{ gridColumn: "1 / -1" }}>
+            {field("🏫 École ou lieu de travail", (
+              <input style={S.input} value={p.school} placeholder="ex. Lycée Chu Văn An / Entreprise ABC"
+                onChange={(e) => set("school", e.target.value)} />
+            ), "school")}
+          </div>
+        </div>
+
+        <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 20 }}>
+          <button style={{ ...S.btn(true), opacity: saving ? 0.65 : 1, display: "inline-flex", alignItems: "center", gap: 8 }}
+            disabled={saving} onClick={submit}>
+            {saving && <span className="mcf-spin" style={{ width: 14, height: 14, borderRadius: "50%",
+              border: "2px solid rgba(255,255,255,.4)", borderTopColor: "#fff", display: "inline-block" }} />}
+            {saving ? "Enregistrement…" : "💾 Enregistrer"}
+          </button>
+          {p.updatedAt && <span style={{ fontSize: 12, color: C.soft }}>
+            Dernière mise à jour : {new Date(p.updatedAt).toLocaleDateString("fr-FR")}
+          </span>}
+        </div>
+      </div>
+
+      {toast && (
+        <div style={{ position: "fixed", bottom: 24, left: "50%", transform: "translateX(-50%)", zIndex: 9999,
+          background: toast.startsWith("✅") ? C.ok : C.danger, color: "#fff", padding: "12px 26px",
+          borderRadius: 999, fontWeight: 700, fontSize: 14, boxShadow: "0 10px 30px rgba(17,24,39,.35)" }}>{toast}</div>
+      )}
     </div>
   );
 }
