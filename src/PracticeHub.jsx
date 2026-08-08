@@ -4,10 +4,15 @@ import {
   Headphones, BookOpen, PenLine, Puzzle, BookA, Sparkles,
   RotateCcw, CheckCircle2, XCircle, Plus, ChevronLeft, PartyPopper, Trash2, Pencil, Copy, MoreVertical, Folder, FolderPlus, Image as ImageIcon, ChevronDown, Lightbulb, FileCheck,
 } from "lucide-react";
-import {
-  C, S, QTYPES, VF_OPTS, uid, fillOk, fillAccepted, vfOk, stripHtml, autoQ, tableauOk, tableauCells, TableauCompare, ordreOk, OrdreBlocks,
-  RichTextEditor, Builder, ReadingPanel, load, save, exSkills, useT, getUnansweredQuestionsCount, ConfirmSubmitModal,
-} from "./App.jsx";
+import { C, S, QTYPES, VF_OPTS } from "./shared/tokens.js";
+import { uid, fillOk, fillAccepted, vfOk, stripHtml, autoQ, tableauOk, tableauCells, ordreOk, getUnansweredQuestionsCount } from "./shared/questions.js";
+import { load, save } from "./shared/storage.js";
+import { exSkills } from "./shared/exercises.js";
+import { useT } from "./shared/i18n.jsx";
+import { TableauCompare, OrdreBlocks, ConfirmSubmitModal } from "./screens/student/answers.jsx";
+import RichTextEditor from "./editor/RichTextEditor.jsx";
+import ReadingPanel from "./editor/ReadingPanel.jsx";
+import Builder from "./screens/teacher/Builder.jsx";
 
 /* ============================================================
    PRACTICE HUB v3 — Tự luyện tập
