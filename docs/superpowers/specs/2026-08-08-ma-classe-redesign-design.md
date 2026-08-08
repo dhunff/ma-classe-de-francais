@@ -8,7 +8,9 @@
 
 ## 1. Bối cảnh
 
-`ma-classe-de-francais` là nền tảng bài tập tiếng Pháp: giáo viên soạn và chấm bài, học sinh làm bài và theo dõi tiến độ. React 18 + Vite, dữ liệu qua `src/storageShim.js` (localStorage).
+`ma-classe-de-francais` là nền tảng bài tập tiếng Pháp: giáo viên soạn và chấm bài, học sinh làm bài và theo dõi tiến độ. React 18 + Vite.
+
+**Dữ liệu nằm ở Supabase thật, không phải localStorage.** `src/storageShim.js` tạo một `createClient` thẳng tới `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` trong `.env`, đọc ghi bảng `kv_store`. README của dự án nói dữ liệu ở localStorage — **README đã lỗi thời**. Điều này có hậu quả trực tiếp: chạy `npm run dev` là nối vào lớp học thật, nên mọi bước kiểm chứng có ghi dữ liệu phải trỏ vào một Supabase project riêng qua `.env.local` (xem mục 7).
 
 ### Hiện trạng kỹ thuật
 
@@ -346,7 +348,8 @@ Không tuyên bố "xong" cho đợt nào trước khi 5 bước trên chạy th
 
 Những việc sau **không** thuộc lần này, dù có thể đáng làm:
 
-- Chuyển `storageShim.js` sang Supabase. `@supabase/supabase-js` đã nằm trong `package.json` nhưng chưa được dùng; dữ liệu vẫn ở localStorage.
+- Bất cứ thay đổi nào ở tầng dữ liệu. `storageShim.js` **đã dùng Supabase rồi** — bản spec đầu ghi sai rằng nó còn ở localStorage và rằng việc chuyển sang Supabase là việc tương lai. Tầng này giữ nguyên không đụng tới.
+- Sửa tư thế bảo mật của bảng `kv_store`. Khoá `VITE_SUPABASE_ANON_KEY` theo thiết kế của Vite luôn được nhúng vào bundle phía trình duyệt, nên nó không phải bí mật; nhưng điều đó có nghĩa quyền đọc/ghi thật sự phụ thuộc hoàn toàn vào Row Level Security phía Supabase. Đây là việc đáng rà soát riêng, không thuộc lần thiết kế lại này.
 - Thêm test tự động.
 - Thay đổi tính năng, thêm loại câu hỏi mới, đổi cách tính điểm.
 - Tối ưu hiệu năng ngoài việc chuyển cách nạp font.

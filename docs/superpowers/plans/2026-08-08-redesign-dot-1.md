@@ -24,6 +24,7 @@
 - **Một phần tử hoặc dùng inline hoặc dùng class, không trộn** — inline luôn thắng class.
 - **Không file nào được import từ `App.jsx`** sau Task 5.
 - Sau mỗi task: `npm run build` phải chạy được.
+- **Không bao giờ ghi vào dữ liệu thật.** `src/storageShim.js` nối thẳng tới Supabase thật qua `.env`; `npm run dev` là nối vào lớp học đang chạy. Mọi bước kiểm chứng có tạo/sửa/xoá dữ liệu (tạo bài tập, tạo tài khoản, nộp bài, chấm bài) **chỉ được chạy khi `.env.local` đang trỏ vào Supabase project test**. Nếu `.env.local` không tồn tại, dừng lại và báo lên — tuyệt đối không đăng nhập bằng PIN thật để "thử cho nhanh".
 
 ---
 

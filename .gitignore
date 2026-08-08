@@ -1,2 +1,10 @@
 node_modules/
 dist/
+
+# Biến môi trường cục bộ — .env.local đè lên .env khi chạy Vite.
+# Dùng file này để trỏ vào Supabase project TEST, tránh ghi vào dữ liệu lớp học thật.
+.env.local
+.env.*.local
+
+# Scratch của quy trình subagent-driven development
+.superpowers/
