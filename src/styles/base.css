@@ -34,7 +34,7 @@ body {
 
 .mcf-wide { position: relative; left: 50%; transform: translateX(-50%); width: min(100vw - 24px, 1600px); }
 
-mark.mcf-hl { background: var(--mcf-warnsoft); color: var(--mcf-ink); border-radius: var(--r-sm); padding: 0 2px; }
+.mcf-hl { background: var(--mcf-warnsoft); color: var(--mcf-ink); border-radius: var(--r-sm); padding: 0 2px; }
 
 @keyframes mcfSpin { to { transform: rotate(360deg); } }
 .mcf-spin { animation: mcfSpin .7s linear infinite; }
