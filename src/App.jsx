@@ -20,10 +20,12 @@ Personal keys (per viewer): "mcf-draft-<exId>-<name>", "mcf-seen-<name>"
 ============================================================== */
 
 const C = {
-  bg: "var(--mcf-bg)", card: "var(--mcf-card)", ink: "var(--mcf-ink)", soft: "var(--mcf-soft)", line: "var(--mcf-line)",
-  primary: "#3D5AF1", primarySoft: "var(--mcf-primarysoft)", accent: "#F26B4E",
-  ok: "#1E9E6A", okSoft: "var(--mcf-oksoft)", warn: "#C98412", warnSoft: "var(--mcf-warnsoft)",
-  danger: "#DE4B4B", dangerSoft: "var(--mcf-dangersoft)",
+  bg: "var(--mcf-bg)", card: "var(--mcf-card)", surface: "var(--mcf-surface)", surface2: "var(--mcf-surface2)",
+  ink: "var(--mcf-ink)", soft: "var(--mcf-soft)", line: "var(--mcf-line)", lineStrong: "var(--mcf-line-strong)",
+  primary: "var(--mcf-primary)", primarySoft: "var(--mcf-primarysoft)",
+  ok: "var(--mcf-ok)", okSoft: "var(--mcf-oksoft)",
+  warn: "var(--mcf-warn)", warnSoft: "var(--mcf-warnsoft)",
+  danger: "var(--mcf-danger)", dangerSoft: "var(--mcf-dangersoft)",
 };
 const LEVEL_COLORS = { A1: "#1E9E6A", A2: "#2A9D8F", B1: "#3D5AF1", B2: "#7048E8", "B2+": "#D6336C" };
 const LEVEL_PASTEL = { A1: "#DDF6EB", A2: "#DDF2F0", B1: "#E6EBFE", B2: "#EFE9FC", "B2+": "#FBE3ED" };
@@ -149,67 +151,21 @@ const getUnansweredQuestionsCount = (answers, questions) =>
 const QTYPES = { qcm: "QCM", fill: "Texte à trous", conj: "Conjugaison", vf: "Vrai / Faux / ?", tableau: "Tableau OUI/NON", ordre: "Remettre en ordre", open: "Réponse libre / traduction" };
 const VF_OPTS = ["Vrai", "Faux", "On ne sait pas"];
 
-const FONTS = `
-@import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,500;0,600;0,700;1,600&family=Playfair+Display:ital,wght@0,700;0,800;1,500&family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap');
-/* Biến CSS đặt ở :root — các thành phần render qua React Portal (document.body)
-   nằm NGOÀI .mcf-root nên nếu để biến trong .mcf-root chúng sẽ mất nền + mất font. */
-:root, .mcf-root {
-  --mcf-bg: #F8F9FA; --mcf-card: #FFFFFF; --mcf-surface: #FFFFFF; --mcf-surface2: #FBFCFE;
-  --mcf-ink: #111827; --mcf-soft: #6B7280; --mcf-line: #EEF0F4;
-  --mcf-primarysoft: #EDF1FE; --mcf-oksoft: #E7F7F0; --mcf-warnsoft: #FFF6E8; --mcf-dangersoft: #FDEEEE;
-}
-html.mcf-dark-root, html.mcf-dark-root body, .mcf-root.mcf-dark {
-  --mcf-bg: #0F172A; --mcf-card: #1E293B; --mcf-surface: #1E293B; --mcf-surface2: #0B1120;
-  --mcf-ink: #E5E7EB; --mcf-soft: #94A3B8; --mcf-line: #334155;
-  --mcf-primarysoft: #1E2A4D; --mcf-oksoft: #0F2E22; --mcf-warnsoft: #33290F; --mcf-dangersoft: #331616;
-}
-/* Font + màu chữ cho mọi lớp nổi render qua Portal */
-.mcf-float {
-  font-family: 'Be Vietnam Pro', -apple-system, 'Segoe UI', sans-serif;
-  color: var(--mcf-ink);
-}
-.mcf-float button, .mcf-float input, .mcf-float textarea, .mcf-float select { font-family: inherit; }
-.mcf-dark input, .mcf-dark textarea, .mcf-dark select { color: var(--mcf-ink); }
-.mcf-dark img { filter: brightness(.92); }
-
-* { box-sizing: border-box; }
-button { transition: transform .12s ease, box-shadow .12s ease, opacity .12s ease; }
-button:hover:not(:disabled) { transform: translateY(-1px); }
-input:focus, textarea:focus, select:focus { outline: none; border-color: #3D5AF1 !important; box-shadow: 0 0 0 3px #3D5AF122; }
-@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
-@keyframes fadeUp { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
-.mcf-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
-.mcf-scroll::-webkit-scrollbar-track { background: transparent; }
-.mcf-scroll::-webkit-scrollbar-thumb { background: #D6DAE3; border-radius: 99px; }
-.mcf-scroll::-webkit-scrollbar-thumb:hover { background: #B9BFCC; }
-.mcf-scroll { scrollbar-width: thin; scrollbar-color: #D6DAE3 transparent; }
-.mcf-wide { position: relative; left: 50%; transform: translateX(-50%); width: min(100vw - 24px, 1600px); }
-mark.mcf-hl { background: rgba(255, 224, 102, .85); border-radius: 4px; padding: 0 2px; }
-.mcf-card { animation: fadeUp .25s ease both; }
-@keyframes mcfSpin { to { transform: rotate(360deg); } }
-.mcf-spin { animation: mcfSpin .7s linear infinite; }
-/* animation tạo stacking context làm kẹt dropdown bên trong thẻ → gỡ sau khi chạy xong */
-.mcf-card { animation-fill-mode: both; }
-@media (prefers-reduced-motion: reduce) { .mcf-card { animation: none; } }
-@keyframes mcfPulse { 0%,100% { box-shadow: 0 0 0 0 rgba(34,197,94,.55); } 50% { box-shadow: 0 0 0 6px rgba(34,197,94,0); } }
-.mcf-pulse { animation: mcfPulse 1.8s ease-out infinite; }
-`;
-
 const S = {
-  font: { fontFamily: "'Be Vietnam Pro', -apple-system, 'Segoe UI', sans-serif", color: C.ink },
-  display: { fontFamily: "'Be Vietnam Pro', sans-serif", fontWeight: 800, letterSpacing: "-0.5px", fontSize: 26, color: "var(--mcf-ink)" },
-  card: { background: C.card, border: `1px solid ${C.line}`, borderRadius: 32, boxShadow: "0 10px 30px rgba(17,24,39,0.06)", padding: "24px 28px" },
+  font: { fontFamily: "var(--f-ui)", color: C.ink },
+  display: { fontFamily: "var(--f-display)", fontWeight: 700, letterSpacing: "-0.02em", fontSize: 26, color: C.ink },
+  card: { background: C.card, border: `1px solid ${C.line}`, borderRadius: "var(--r-md)", boxShadow: "var(--sh-1)", padding: "var(--sp-5)" },
   btn: (primary, danger) => ({
-    padding: "11px 22px", borderRadius: 999, fontWeight: 700, fontSize: 14, cursor: "pointer", fontFamily: "inherit",
-    border: primary ? "none" : `1.5px solid ${danger ? C.danger : C.line}`,
-    background: primary ? `linear-gradient(135deg, ${C.primary}, #5B7CFA)` : C.card,
+    padding: "10px 18px", borderRadius: "var(--r-md)", fontWeight: 600, fontSize: 14, cursor: "pointer", fontFamily: "inherit",
+    border: primary ? "1px solid transparent" : `1px solid ${danger ? C.danger : C.lineStrong}`,
+    background: primary ? C.primary : C.surface,
     color: primary ? "#fff" : danger ? C.danger : C.ink,
-    boxShadow: primary ? "0 4px 12px rgba(61,90,241,0.28)" : "0 1px 3px rgba(27,37,89,0.06)",
+    boxShadow: "none",
   }),
-  input: { width: "100%", padding: "12px 16px", border: `1.5px solid ${C.line}`, borderRadius: 16, fontSize: 15, color: C.ink, background: "var(--mcf-surface2)", fontFamily: "inherit" },
-  label: { fontSize: 11.5, letterSpacing: 1.2, textTransform: "uppercase", color: C.soft, fontWeight: 700 },
-  badge: (lv) => ({ fontSize: 11.5, fontWeight: 800, color: LEVEL_COLORS[lv] || C.primary, background: LEVEL_PASTEL[lv] || C.primarySoft, borderRadius: 999, padding: "4px 12px", marginRight: 8, letterSpacing: 0.5 }),
-  chip: (bg, col) => ({ fontSize: 12, fontWeight: 700, background: bg, color: col, borderRadius: 999, padding: "3px 10px" }),
+  input: { width: "100%", padding: "10px 12px", border: `1px solid ${C.lineStrong}`, borderRadius: "var(--r-sm)", fontSize: 15, color: C.ink, background: C.surface, fontFamily: "inherit" },
+  label: { fontSize: 11, letterSpacing: "0.12em", textTransform: "uppercase", color: C.soft, fontWeight: 600 },
+  badge: (lv) => ({ fontSize: 11, fontWeight: 700, color: LEVEL_COLORS[lv] || C.primary, background: LEVEL_PASTEL[lv] || C.primarySoft, borderRadius: "var(--r-sm)", padding: "3px 8px", marginRight: 8, letterSpacing: "0.02em" }),
+  chip: (bg, col) => ({ fontSize: 12, fontWeight: 600, background: bg, color: col, borderRadius: "var(--r-sm)", padding: "3px 10px" }),
 };
 
 /* ---------- Doodles trang trí nền (Bento / Creative EdTech) ---------- */
@@ -449,7 +405,6 @@ function AppInner() {
   return (
     <LangCtx.Provider value={lang}>
     <div className={"mcf-root" + (dark ? " mcf-dark" : "")} style={{ background: C.bg, ...S.font, minHeight: "100vh" }}>
-      <style>{FONTS}</style>
       <Doodles />
       <header style={{ background: "transparent", padding: "26px 28px 8px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12, position: "relative", zIndex: 1 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
@@ -544,7 +499,7 @@ function Bell({ name, exercises, submissions }) {
       <button onClick={openBell} style={{ background: "var(--mcf-surface)", border: `1.5px solid ${C.line}`, borderRadius: 999, width: 42, height: 42, cursor: "pointer", fontSize: 17, position: "relative", boxShadow: "0 4px 12px rgba(17,24,39,.06)" }}>
         🔔
         {notifs.length > 0 && (
-          <span style={{ position: "absolute", top: -3, right: -3, background: C.accent, color: "#fff", fontSize: 10, fontWeight: 800, borderRadius: 999, minWidth: 17, height: 17, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <span style={{ position: "absolute", top: -3, right: -3, background: C.danger, color: "#fff", fontSize: 10, fontWeight: 800, borderRadius: 999, minWidth: 17, height: 17, display: "flex", alignItems: "center", justifyContent: "center" }}>
             {notifs.length}
           </span>
         )}
@@ -645,7 +600,7 @@ function Login({ accounts, onLogin }) {
     <div style={{ minHeight: "100vh", background: CREAM, position: "relative", overflow: "hidden",
       fontFamily: "'Be Vietnam Pro', -apple-system, sans-serif", display: "flex", flexDirection: "column",
       alignItems: "center", justifyContent: "center", padding: "40px 16px" }}>
-      <style>{FONTS + `
+      <style>{`
         .lp-input:focus { border-bottom-color: ${NAVY} !important; border-bottom-width: 2px !important; }
         @media (max-width: 640px) { .lp-decor { display: none; } }
       `}</style>
@@ -965,7 +920,7 @@ function Teacher({ exercises, setExercises, submissions, setSubmissions, account
                       {ex.assignedTo?.length
                         ? <span style={{ color: C.primary, fontWeight: 700 }} title={ex.assignedTo.join(", ")}> · 👤 {ex.assignedTo.length} élève{ex.assignedTo.length > 1 ? "s" : ""}{ex.assignedClasses?.length ? ` · 🏫 ${ex.assignedClasses.map((id) => classes.find((c) => c.id === id)?.name).filter(Boolean).join(", ")}` : ""}</span>
                         : " · 👥 tous les élèves"}
-                      {toGrade > 0 && <span style={{ color: C.accent, fontWeight: 700 }}> · ✏️ {toGrade} à corriger</span>}
+                      {toGrade > 0 && <span style={{ color: C.warn, fontWeight: 700 }}> · ✏️ {toGrade} à corriger</span>}
                       {ex.deadline && <span style={{ color: late ? C.danger : C.warn, fontWeight: 700 }}> · ⏰ {fmtDate(ex.deadline)}{late && " (clôturé)"}</span>}
                       {ex.audioUrl && " · 🎧 audio"}
                       {ex.timeLimit && <span style={{ fontWeight: 700 }}> · ⏱ {ex.timeLimit} min</span>}
@@ -1265,7 +1220,7 @@ function StudentDossier({ acc, classes, exercises, submissions, presence, back }
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 12 }}>
               {statCard(CheckCircle, "Exercices terminés", totalDone, C.primary)}
               {statCard(TrendingUp, "Score moyen", avg == null ? "—" : `${avg} %`, avg == null ? C.soft : avg >= 80 ? C.ok : avg >= 50 ? C.warn : C.danger)}
-              {statCard(Clock, "Temps total", fmtDuration(totalTime), C.accent)}
+              {statCard(Clock, "Temps total", fmtDuration(totalTime), C.primary)}
             </div>
           </div>
 
@@ -1365,7 +1320,7 @@ function Stats({ accounts, exercises, submissions }) {
                 <Tooltip formatter={(v, k) => [k === "moyenne" ? v + " %" : v, k === "moyenne" ? "Moyenne" : "Écart-type"]} />
                 <Legend />
                 <Bar dataKey="moyenne" name="Moyenne (%)" fill={C.primary} radius={[6, 6, 0, 0]} />
-                <Bar dataKey="ecartType" name="Écart-type" fill={C.accent} radius={[6, 6, 0, 0]} />
+                <Bar dataKey="ecartType" name="Écart-type" fill={C.primary} radius={[6, 6, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -2595,7 +2550,7 @@ function Student({ name, exercises, submissions, setSubmissions, accounts, setAc
                   <PolarGrid stroke={C.line} />
                   <PolarAngleAxis dataKey="skill" tick={{ fontSize: 12 }} />
                   <PolarRadiusAxis domain={[0, 100]} tick={{ fontSize: 10 }} />
-                  <Radar name="Moi" dataKey="moi" stroke={C.accent} fill={C.accent} fillOpacity={0.35} />
+                  <Radar name="Moi" dataKey="moi" stroke={C.primary} fill={C.primary} fillOpacity={0.35} />
                   <Tooltip formatter={(v) => v + " %"} />
                 </RadarChart>
               </ResponsiveContainer>
