@@ -53,15 +53,18 @@ Học sinh cấp 3 (15–18), sinh viên đại học, và người mới bắt 
 | `--mcf-surface2` | `#FAFAFC` | Bề mặt lùi (header bảng, vùng chìm). |
 | `--mcf-ink` | `#23232E` | Chữ chính. |
 | `--mcf-soft` | `#6E7280` | Chữ phụ, nhãn. |
-| `--mcf-line` | `#E4E4EA` | Viền, đường kẻ phân cách. |
-| `--mcf-primary` | `#5B4B9E` | **Mới.** Màu chính, tím. Thay `#3D5AF1`. |
+| `--mcf-line` | `#E4E4EA` | Đường kẻ phân cách thuần trang trí. Tương phản 1.27 — **không đủ** làm viền điều khiển. |
+| `--mcf-line-strong` | `#8E8E99` | **Mới.** Viền input, select, nút viền — mọi viền *mang thông tin*. Tương phản 3.24 trên `surface`. |
+| `--mcf-primary` | `#5B4B9E` | **Mới.** Màu chính, tím. Thay `#3D5AF1`. Tương phản 7.13. |
 | `--mcf-primarysoft` | `#EFECF9` | Nền nhạt của primary. |
-| `--mcf-ok` | `#2F7D5C` | **Mới.** Câu đúng, trạng thái hoàn thành. |
+| `--mcf-ok` | `#2F7D5C` | **Mới.** Câu đúng, trạng thái hoàn thành. Tương phản 4.99. |
 | `--mcf-oksoft` | `#E6F3EC` | |
-| `--mcf-warn` | `#B87514` | **Mới.** Sắp hết hạn, cảnh báo nhẹ. |
+| `--mcf-warn` | `#9A6111` | **Mới.** Sắp hết hạn, cảnh báo nhẹ. Tương phản 5.13. |
 | `--mcf-warnsoft` | `#FBF1E0` | |
-| `--mcf-danger` | `#D64545` | **Mới.** Lỗi, câu sai, lời chữa, nộp trễ. |
+| `--mcf-danger` | `#C43636` | **Mới.** Lỗi, câu sai, lời chữa, nộp trễ. Tương phản 5.35. |
 | `--mcf-dangersoft` | `#FBEAEA` | |
+
+Các giá trị `danger #D64545` và `warn #B87514` ở bản spec đầu **đã bị loại vì đo ra 4.38 và 3.75** — dưới ngưỡng 4.5:1. Mọi số tương phản trong bảng là số đo thật theo công thức WCAG 2.1 trên nền `--mcf-surface` (`#FFFFFF`).
 
 Biến `--mcf-accent` **bị loại**. Màu `#F26B4E` (accent cũ) không còn vai trò: mọi chỗ đang dùng nó phải chuyển sang `primary`, `warn`, hoặc `danger` tuỳ ngữ nghĩa thật của chỗ đó.
 
@@ -77,6 +80,7 @@ Không đảo màu máy móc. Bản tối được chọn riêng.
 | `--mcf-ink` | `#E6E6EC` |
 | `--mcf-soft` | `#9A9AA8` |
 | `--mcf-line` | `#33333F` |
+| `--mcf-line-strong` | `#6E6E82` |
 | `--mcf-primary` | `#9E8FD8` |
 | `--mcf-primarysoft` | `#2A2440` |
 | `--mcf-ok` | `#4FA07C` |
@@ -90,15 +94,17 @@ Không đảo màu máy móc. Bản tối được chọn riêng.
 
 `LEVEL_COLORS` và `LEVEL_PASTEL` (`App.jsx:31–32`) hiện là 7 màu pastel rời rạc, không mã hoá thứ tự. Thay bằng thang đơn sắc theo `primary`, đậm dần:
 
-| Cấp | Màu chữ/badge (sáng) | Nền nhạt (sáng) |
-|---|---|---|
-| A1 | `#7E74A8` | `#F2EFFA` |
-| A2 | `#6E61A3` | `#EDE9F7` |
-| B1 | `#5B4B9E` | `#E7E2F4` |
-| B2 | `#4A3B85` | `#E1DBF1` |
-| B2+ | `#382C68` | `#DAD3EC` |
+| Cấp | Màu chữ/badge (sáng) | Nền nhạt (sáng) | Tương phản (đo thật) |
+|---|---|---|---|
+| A1 | `#6A5F9C` | `#F2EFFA` | 4.96 / trên trắng 5.63 |
+| A2 | `#6E61A3` | `#EDE9F7` | 4.51 / 5.38 |
+| B1 | `#5B4B9E` | `#E7E2F4` | 5.63 / 7.13 |
+| B2 | `#4A3B85` | `#E1DBF1` | 6.92 / 9.31 |
+| B2+ | `#382C68` | `#DAD3EC` | 8.40 / 12.15 |
 
-**Yêu cầu bắt buộc:** mỗi màu chữ phải đạt tương phản ≥ 4.5:1 trên nền nhạt tương ứng *và* trên `--mcf-surface`. Giá trị trên là điểm xuất phát; phải đo thật khi thi công và chỉnh nếu chưa đạt. Bản tối cần một thang riêng đạt cùng ngưỡng.
+Giá trị A1 ban đầu `#7E74A8` **đã bị loại vì đo ra 3.74** trên nền nhạt của nó.
+
+**Yêu cầu bắt buộc:** mỗi màu chữ đạt ≥ 4.5:1 trên nền nhạt tương ứng *và* trên `--mcf-surface`. Bản tối cần một thang riêng đạt cùng ngưỡng, đo cùng cách.
 
 ### 3.4 Chữ
 
@@ -166,7 +172,16 @@ Lý do: app này về bản chất là vòng lặp *làm bài → nộp → ch�
 
 ### 4.2 Vỏ ứng dụng
 
-Một đường kẻ dọc `--mcf-line` là ranh giới thật giữa thanh điều hướng và vùng nội dung — cạnh cấu trúc, không phải viền trang trí. Dưới 768px, nav chuyển thành thanh ngang trên đầu và đường kẻ này biến mất.
+> **Sửa so với bản spec đầu.** Bản đầu mô tả "đường kẻ dọc ngăn thanh điều hướng với nội dung". Đọc code cho thấy **không có thanh nav dọc nào**: vỏ app chỉ gồm `header` + `main` rộng tối đa 1000px căn giữa (`App.jsx:454–489`), còn điều hướng là **tab ngang nằm bên trong** `Teacher` và `Student`. Ý tưởng đó không có cấu trúc để bám vào nên bị loại.
+
+Vỏ app gồm:
+
+- **Header dính (sticky)** nền `--mcf-surface`, phân cách với nội dung bằng **một đường kẻ ngang** `--mcf-line` ở đáy. Đây là cạnh cấu trúc duy nhất ở cấp vỏ.
+- Bên trái header: logo (32px) + tên thương hiệu. Bên phải: chọn ngôn ngữ, nút sáng/tối, chuông (học sinh), danh tính, đăng xuất.
+- **Cột nội dung** rộng tối đa 1000px căn giữa, padding ngang 16px (24px từ 768px trở lên).
+- Dưới 768px header xuống hai hàng: thương hiệu ở trên, nhóm điều khiển ở dưới.
+
+Component `Doodles` (`App.jsx:216–238` — sao ✳ vàng, chấm tròn xanh, nét lượn, chú thích "Bento / Creative EdTech") và ngôi sao `✳` vàng trong tiêu đề (`App.jsx:459`) **bị xoá**. Chúng là trang trí không phục vụ gì và mâu thuẫn trực tiếp với hướng thiết kế.
 
 ### 4.3 Landing / Login
 
@@ -226,7 +241,19 @@ const C = {
 };
 ```
 
-Sau bước này, đổi một dòng trong `tokens.css` là toàn bộ inline style cũ đổi theo, không cần sửa JSX. Khoá `accent` bị xoá khỏi `C`; mọi chỗ tham chiếu `C.accent` phải được xử lý từng chỗ theo ngữ nghĩa thật.
+Sau bước này, đổi một dòng trong `tokens.css` là toàn bộ inline style cũ đổi theo, không cần sửa JSX. Khoá `accent` bị xoá khỏi `C`; năm chỗ tham chiếu `C.accent` được xử lý từng chỗ theo ngữ nghĩa thật:
+
+| Vị trí | Ý nghĩa thật | Thay bằng |
+|---|---|---|
+| `App.jsx:547` | Số bài mới trên chuông | `--mcf-danger` (huy hiệu đếm) |
+| `App.jsx:968` | "✏️ N à corriger" | `--mcf-warn` (việc đang chờ) |
+| `App.jsx:1268` | Thẻ "Temps total" | `--mcf-primary` (số liệu trung tính) |
+| `App.jsx:1368` | Cột "Écart-type" | `--mcf-primary` |
+| `App.jsx:2598` | Radar "Moi" | `--mcf-primary` |
+
+**Đòn bẩy lớn hơn `C` là object `S`** (`App.jsx:198–213`) — bản spec đầu bỏ sót. `S` chứa preset style cấp component: `S.font`, `S.display`, `S.card`, `S.btn(primary, danger)`, `S.input`, `S.label`, `S.badge(lv)`, `S.chip(bg, col)`. Chúng được dùng khắp cả ba khu. Viết lại `S` là nơi **phần lớn thiết kế thực sự xảy ra**, và nó xảy ra ở một chỗ duy nhất.
+
+`S` phải bỏ hết giá trị hardcode hiện có: gradient `linear-gradient(135deg, ${C.primary}, #5B7CFA)`, bóng màu `rgba(61,90,241,0.28)`, `borderRadius: 32` và `999`, `boxShadow: "0 10px 30px rgba(17,24,39,0.06)"` — thay bằng token ở mục 3.5.
 
 ### 5.2 Cấu trúc file style mới
 
@@ -244,6 +271,10 @@ Nạp trong `src/main.jsx` theo thứ tự `tokens → base → components`. Kh�
 **Về thứ tự thắng thua:** inline style luôn thắng class. Trong lúc chuyển đổi, một component chỉ được ở một trong hai trạng thái — hoặc còn nguyên inline, hoặc đã chuyển hẳn sang class. **Không trộn hai cách trên cùng một phần tử.**
 
 ### 5.3 Tách file
+
+**Có import vòng, phải gỡ trước.** `App.jsx:7` import `PracticeHub`, còn `PracticeHub.jsx:7–10` import ngược 30 định danh từ `App.jsx` (`C`, `S`, `QTYPES`, `VF_OPTS`, `uid`, `fillOk`, `fillAccepted`, `vfOk`, `stripHtml`, `autoQ`, `tableauOk`, `tableauCells`, `TableauCompare`, `ordreOk`, `OrdreBlocks`, `RichTextEditor`, `Builder`, `ReadingPanel`, `load`, `save`, `exSkills`, `useT`, `getUnansweredQuestionsCount`, `ConfirmSubmitModal`). `App.jsx:3387` tồn tại chỉ để phục vụ vòng này.
+
+Vòng này hiện chạy được vì bundler chịu được, nhưng nó khiến mọi thao tác tách file có thể vỡ theo cách khó truy. **Nguyên tắc bắt buộc sau khi tách: không file nào được import từ `App.jsx`.** Mọi thứ dùng chung chuyển xuống `src/shared/`, `src/editor/`, `src/screens/`; `App.jsx` chỉ còn import, không còn export gì ngoài `default`. Dòng export ở `App.jsx:3387` bị xoá.
 
 `App.jsx` 3.441 dòng chứa 512 style object là không thể sửa đáng tin cậy trong một file. Tách theo đúng ranh giới component đã tồn tại, **thuần cơ học, không đổi logic**:
 
