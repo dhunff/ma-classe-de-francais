@@ -1080,7 +1080,7 @@ function Accounts({ accounts, setAccounts, classes, setClasses, exercises = [], 
 }
 
 /* ================= 📂 Dossier de l'élève (vue prof) ================= */
-const AVA_COLORS = ["#3D5AF1", "#1E9E6A", "#D6336C", "#7048E8", "#C98412", "#0CA678"];
+const AVA_COLORS = ["#5B4B9E", "#41608F", "#2C7573", "#327654", "#8F5E22", "#9B3D66"];
 const avaColor = (n) => AVA_COLORS[[...String(n)].reduce((a, c) => a + c.charCodeAt(0), 0) % AVA_COLORS.length];
 const fmtDateFR = (v) => { if (!v) return null; const d = new Date(v); return isNaN(d) ? null : d.toLocaleDateString("fr-FR"); };
 const fmtDuration = (ms) => {
@@ -3373,7 +3373,7 @@ class RootErrorBoundary extends React.Component {
             <div style={{ display: "flex", gap: 10, marginTop: 18, flexWrap: "wrap" }}>
               <button onClick={() => window.location.reload()}
                 style={{ padding: "11px 22px", borderRadius: 999, border: "none", cursor: "pointer",
-                  background: "#3D5AF1", color: "#fff", fontWeight: 700, fontFamily: "inherit", fontSize: 14 }}>
+                  background: C.primary, color: "#fff", fontWeight: 700, fontFamily: "inherit", fontSize: 14 }}>
                 ↻ Recharger la page
               </button>
               <button onClick={() => { try { localStorage.removeItem("mcf-session"); } catch {} window.location.reload(); }}

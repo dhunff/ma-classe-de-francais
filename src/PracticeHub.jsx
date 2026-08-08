@@ -18,12 +18,12 @@ import {
 ============================================================ */
 
 const CATS = [
-  { skill: "Écoute", label: "Compréhension Orale", vi: "Écoute", Icon: Headphones, color: "#3D5AF1", pastel: "#EDF1FE" },
-  { skill: "Lecture", label: "Compréhension Écrite", vi: "Lecture", Icon: BookOpen, color: "#1E9E6A", pastel: "#E7F7F0" },
-  { skill: "Production écrite", label: "Production Écrite", vi: "Écriture", Icon: PenLine, color: "#D6336C", pastel: "#FDEEF4" },
-  { skill: "Grammaire", label: "Grammaire", vi: "Règles et structure", Icon: Puzzle, color: "#7048E8", pastel: "#F1EDFD" },
-  { skill: "Vocabulaire", label: "Vocabulaire", vi: "Mots et expressions", Icon: BookA, color: "#C98412", pastel: "#FFF6E8" },
-  { skill: "__autres__", label: "Autres", vi: "Traduction, communication…", Icon: Sparkles, color: "#6E7691", pastel: "#F0F1F6" },
+  { skill: "Écoute", label: "Compréhension Orale", vi: "Écoute", Icon: Headphones, color: "#41608F", pastel: "#EAEFF7" },
+  { skill: "Lecture", label: "Compréhension Écrite", vi: "Lecture", Icon: BookOpen, color: "#327654", pastel: "#E7F3EC" },
+  { skill: "Production écrite", label: "Production Écrite", vi: "Écriture", Icon: PenLine, color: "#9B3D66", pastel: "#F8EAF0" },
+  { skill: "Grammaire", label: "Grammaire", vi: "Règles et structure", Icon: Puzzle, color: "#5B4B9E", pastel: "#EFECF9" },
+  { skill: "Vocabulaire", label: "Vocabulaire", vi: "Mots et expressions", Icon: BookA, color: "#8F5E22", pastel: "#F7EFE3" },
+  { skill: "__autres__", label: "Autres", vi: "Traduction, communication…", Icon: Sparkles, color: "#626A85", pastel: "#EFF0F3" },
 ];
 const MAIN_SKILLS = CATS.filter((c) => !c.skill.startsWith("__")).map((c) => c.skill);
 const inCat = (ex, sk) => sk === "__autres__"
@@ -406,7 +406,7 @@ function PracticeHubInner({ role = "eleve", name = "", accounts = [] }) {
               <button key={lv} onClick={() => setView({ ...view, niveau: lv })}
                 style={{ padding: "9px 20px", borderRadius: 999, fontWeight: 800, fontSize: 14, cursor: "pointer",
                   fontFamily: "inherit", border: active ? "none" : `1.5px solid ${C.line}`,
-                  background: active ? "linear-gradient(135deg, #1e3a8a, #3D5AF1)" : "var(--mcf-surface)",
+                  background: active ? "var(--mcf-primary)" : "var(--mcf-surface)",
                   color: active ? "#fff" : C.soft,
                   boxShadow: active ? "0 6px 16px rgba(30,58,138,.32)" : "none",
                   transition: "all .15s ease" }}>
@@ -620,7 +620,7 @@ function PracticeHubInner({ role = "eleve", name = "", accounts = [] }) {
 
   /* -------- 📊 Suivi des élèves (prof) -------- */
   const fmtAt = (t) => t ? new Date(t).toLocaleString("fr-FR", { dateStyle: "short", timeStyle: "short" }) : "—";
-  const AVATAR_COLORS = ["#3D5AF1", "#1E9E6A", "#D6336C", "#7048E8", "#C98412", "#0CA678"];
+  const AVATAR_COLORS = ["#5B4B9E", "#41608F", "#2C7573", "#327654", "#8F5E22", "#9B3D66"];
   const avatarColor = (n) => AVATAR_COLORS[[...n].reduce((a, c) => a + c.charCodeAt(0), 0) % AVATAR_COLORS.length];
 
   const renderSuivi = () => {
@@ -1048,7 +1048,7 @@ function PracticeWorkspace({ ex, back, onFinish }) {
       </div>
 
       {ex.consigne && (
-        <div className="mcf-card" style={{ ...S.card, marginBottom: 16, borderLeft: `4px solid #3D5AF1` }}>
+        <div className="mcf-card" style={{ ...S.card, marginBottom: 16, borderLeft: `4px solid var(--mcf-primary)` }}>
           <div style={S.label}>📋 Consigne</div>
           <div style={{ fontSize: 15.5, lineHeight: 1.75, marginTop: 6, fontWeight: 500 }} dangerouslySetInnerHTML={{ __html: ex.consigne }} />
         </div>
@@ -1146,7 +1146,7 @@ class HubErrorBoundary extends React.Component {
           </div>
           <button onClick={() => this.setState({ err: null })}
             style={{ marginTop: 14, padding: "10px 22px", borderRadius: 999, border: "none", cursor: "pointer",
-              background: "#3D5AF1", color: "#fff", fontWeight: 700, fontFamily: "inherit" }}>
+              background: "var(--mcf-primary)", color: "#fff", fontWeight: 700, fontFamily: "inherit" }}>
             ↻ Réessayer
           </button>
         </div>
