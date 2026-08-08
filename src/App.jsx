@@ -133,8 +133,15 @@ function AppInner() {
                 session ? (
                   <Navigate to={ROLE_HOME[session.role] || "/login"} replace />
                 ) : (
-                  <Login accounts={accounts} setAccounts={setAccounts}
-                    onLogin={(s) => { setSession(s); refresh(); }} />
+                  <Login
+                    accounts={accounts}
+                    onLogin={(s) => { setSession(s); refresh(); }}
+                    lang={lang}
+                    langs={LANGS}
+                    onLang={setLang}
+                    dark={dark}
+                    onToggleDark={toggleTheme}
+                  />
                 )
               }
             />

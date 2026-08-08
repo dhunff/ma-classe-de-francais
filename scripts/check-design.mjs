@@ -63,8 +63,8 @@ const varOf = (name, scope) => {
 };
 
 const suites = [
-  { scope: ":root", label: "light", min: 4.5, pairs: [["ink", "bg"], ["soft", "surface"], ["primary", "surface"], ["ok", "surface"], ["warn", "surface"], ["danger", "surface"]] },
-  { scope: "html.mcf-dark-root", label: "dark", min: 4.5, pairs: [["ink", "bg"], ["soft", "surface"], ["primary", "surface"], ["ok", "surface"], ["warn", "surface"], ["danger", "surface"]] },
+  { scope: ":root", label: "light", min: 4.5, pairs: [["ink", "bg"], ["soft", "surface"], ["primary", "surface"], ["ok", "surface"], ["warn", "surface"], ["danger", "surface"], ["on-primary", "primary"]] },
+  { scope: "html.mcf-dark-root", label: "dark", min: 4.5, pairs: [["ink", "bg"], ["soft", "surface"], ["primary", "surface"], ["ok", "surface"], ["warn", "surface"], ["danger", "surface"], ["on-primary", "primary"]] },
 ];
 for (const s of suites) {
   for (const [fg, bg] of s.pairs) {

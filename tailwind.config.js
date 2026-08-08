@@ -27,6 +27,7 @@ export default {
         line: token("line"),
         "line-strong": token("line-strong"),
         primary: { DEFAULT: token("primary"), soft: token("primarysoft") },
+        "on-primary": token("on-primary"),
         ok: { DEFAULT: token("ok"), soft: token("oksoft") },
         warn: { DEFAULT: token("warn"), soft: token("warnsoft") },
         danger: { DEFAULT: token("danger"), soft: token("dangersoft") },

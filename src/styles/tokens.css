@@ -16,6 +16,9 @@
      blue-500 #3B82F6 đã bị loại vì chỉ đạt 3.68:1. */
   --mcf-primary: #2563EB;        --mcf-primary-rgb: 37 99 235;
   --mcf-primarysoft: #EFF6FF;    --mcf-primarysoft-rgb: 239 246 255;
+  /* Màu chữ đặt TRÊN nền primary. Bắt buộc phải là token riêng: bản tối có
+     primary sáng màu, nên chữ trắng chỉ đạt 2.11:1. */
+  --mcf-on-primary: #FFFFFF;     --mcf-on-primary-rgb: 255 255 255;
   --mcf-ok: #2F7D5C;             --mcf-ok-rgb: 47 125 92;
   --mcf-oksoft: #E6F3EC;         --mcf-oksoft-rgb: 230 243 236;
   --mcf-warn: #9A6111;           --mcf-warn-rgb: 154 97 17;
@@ -53,6 +56,8 @@ html.mcf-dark-root body,
   /* Đo WCAG: 7.84:1 trên surface tối, 6.82:1 cho chữ primary trên primarysoft tối. */
   --mcf-primary: #8AB4F8;        --mcf-primary-rgb: 138 180 248;
   --mcf-primarysoft: #1B2A44;    --mcf-primarysoft-rgb: 27 42 68;
+  /* Chữ tối trên nền primary sáng: 8.55:1. */
+  --mcf-on-primary: #16161C;     --mcf-on-primary-rgb: 22 22 28;
   --mcf-ok: #4FA07C;             --mcf-ok-rgb: 79 160 124;
   --mcf-oksoft: #14301F;         --mcf-oksoft-rgb: 20 48 31;
   --mcf-warn: #D0982F;           --mcf-warn-rgb: 208 152 47;

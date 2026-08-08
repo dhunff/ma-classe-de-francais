@@ -3,7 +3,7 @@
 const C = {
   bg: "var(--mcf-bg)", card: "var(--mcf-card)", surface: "var(--mcf-surface)", surface2: "var(--mcf-surface2)",
   ink: "var(--mcf-ink)", soft: "var(--mcf-soft)", line: "var(--mcf-line)", lineStrong: "var(--mcf-line-strong)",
-  primary: "var(--mcf-primary)", primarySoft: "var(--mcf-primarysoft)",
+  primary: "var(--mcf-primary)", primarySoft: "var(--mcf-primarysoft)", onPrimary: "var(--mcf-on-primary)",
   ok: "var(--mcf-ok)", okSoft: "var(--mcf-oksoft)",
   warn: "var(--mcf-warn)", warnSoft: "var(--mcf-warnsoft)",
   danger: "var(--mcf-danger)", dangerSoft: "var(--mcf-dangersoft)",
@@ -28,7 +28,7 @@ const S = {
     padding: "10px 18px", borderRadius: "var(--r-md)", fontWeight: 600, fontSize: 14, cursor: "pointer", fontFamily: "inherit",
     border: primary ? "1px solid transparent" : `1px solid ${danger ? C.danger : C.lineStrong}`,
     background: primary ? C.primary : C.surface,
-    color: primary ? "#fff" : danger ? C.danger : C.ink,
+    color: primary ? C.onPrimary : danger ? C.danger : C.ink,
     boxShadow: "none",
   }),
   input: { width: "100%", padding: "10px 12px", border: `1px solid ${C.lineStrong}`, borderRadius: "var(--r-sm)", fontSize: 15, color: C.ink, background: C.surface, fontFamily: "inherit" },
