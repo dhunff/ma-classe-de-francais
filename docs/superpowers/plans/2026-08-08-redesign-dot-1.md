@@ -19,7 +19,8 @@
 - **Responsive xuống 360px.** Không có thanh cuộn ngang ở cấp trang.
 - **`prefers-reduced-motion: reduce`** phải tắt mọi transition và animation.
 - **Focus bàn phím thấy được** trên mọi phần tử tương tác, qua `:focus-visible`.
-- **Selector trong CSS chỉ một lớp** (`.mcf-btn`), không dùng selector phần tử (`button.mcf-btn`), không dùng `!important`.
+- **Selector CSS:** cấm selector kiểu phần-tử-gắn-class (`button.mcf-btn`, `div.mcf-card`) — đây là nguồn chiến tranh specificity. **Cho phép** phần tử con trong phạm vi một class gốc (`.mcf-table th`, `.mcf-float button`) vì chúng không cạnh tranh với class nào.
+- **`!important`:** cấm ở mọi nơi, **trừ đúng một ngoại lệ** — khối `@media (prefers-reduced-motion: reduce)` trong `base.css`. Khối đó phải đè được cả inline style, nên không có `!important` thì nó vô tác dụng và vi phạm ràng buộc reduced-motion ngay bên dưới. Không được viện ngoại lệ này cho bất kỳ khối nào khác.
 - **Một phần tử hoặc dùng inline hoặc dùng class, không trộn** — inline luôn thắng class.
 - **Không file nào được import từ `App.jsx`** sau Task 5.
 - Sau mỗi task: `npm run build` phải chạy được.
