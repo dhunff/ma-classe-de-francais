@@ -6,6 +6,9 @@ import { SortableContext, useSortable, rectSortingStrategy, arrayMove } from "@d
 import { CSS as DndCSS } from "@dnd-kit/utilities";
 import PracticeHub from './PracticeHub.jsx'
 import RootLayout from './layout/RootLayout.jsx'
+import StudentDashboard from './screens/dashboard/StudentDashboard.jsx'
+import TeacherDashboard from './screens/dashboard/TeacherDashboard.jsx'
+import { SKILLS, fmtDate, isLate, exSkills, assignedTo, totalScore } from './shared/exercises.js'
 import { BookOpen, GraduationCap, Wine, Croissant, Landmark, Stamp, Feather, Coffee, BookMarked, MoreVertical, Pencil, Copy, Trash2, RotateCcw, Image as ImageIcon, X, Phone, Calendar, Target, Briefcase, ChevronLeft, TrendingUp, Clock, CheckCircle } from 'lucide-react'
 import { BarChart, Bar, LineChart, Line, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from "recharts";
 
@@ -30,7 +33,7 @@ const C = {
 };
 const LEVEL_COLORS = { A1: "#1E9E6A", A2: "#2A9D8F", B1: "#3D5AF1", B2: "#7048E8", "B2+": "#D6336C" };
 const LEVEL_PASTEL = { A1: "#DDF6EB", A2: "#DDF2F0", B1: "#E6EBFE", B2: "#EFE9FC", "B2+": "#FBE3ED" };
-const SKILLS = ["Grammaire", "Vocabulaire", "Écoute", "Lecture", "Production écrite", "Traduction", "Communication"];
+/* SKILLS nay ở src/shared/exercises.js */
 /* ================= 👤 Profil élève =================
    Stockage : clé partagée "mcf-profiles" = { [nom]: {phone, dob, level, goal, school, updatedAt} }
    (le prof peut ainsi consulter les profils ; chaque élève n'écrit que sa propre entrée) */
@@ -89,6 +92,26 @@ const I18N = {
     incomplete_body: "Bạn vẫn còn {count} câu hỏi chưa hoàn thành. Bạn có chắc chắn muốn nộp bài ngay bây giờ không ? Điểm số sẽ được tính dựa trên những câu đã trả lời.",
     keep_working: "Tiếp tục làm bài", submit_anyway: "Vẫn nộp bài", lang_label: "Ngôn ngữ",
     loading: "Đang tải…",
+    dash: {
+      hello: "Xin chào", goal: "Mục tiêu", no_goal: "Bạn chưa đặt mục tiêu. Vào Cài đặt để chọn.",
+      no_exercise_yet: "Chưa có bài tập nào được giao cho bạn.",
+      completion: "Bài đã hoàn thành", submitted: "Đã nộp", of_assigned: "trên {n} bài được giao",
+      avg_score: "Điểm trung bình", avg_empty: "Chưa có bài nào được chốt điểm",
+      pending: "Đang chờ làm", overdue: "{n} bài đã quá hạn",
+      streak: "Chuỗi ngày học",
+      streak_empty: "Chưa tính được — hệ thống chưa ghi hoạt động theo ngày",
+      skills: "Mức độ đồng đều theo kỹ năng",
+      skills_note: "Tính từ các bài đã được chốt điểm.",
+      skills_empty_title: "Chưa đủ dữ liệu để vẽ",
+      skills_empty_body: "Cần bài đã chốt điểm ở ít nhất 3 kỹ năng khác nhau.",
+      continue: "Học tiếp",
+      continue_empty_title: "Không còn bài nào đang chờ",
+      continue_empty_body: "Bạn đã nộp hết bài được giao.",
+      questions: "{n} câu", due: "Hạn nộp", was_due: "Đã quá hạn",
+      to_grade: "Bài cần chấm", recent_submissions: "Bài nộp gần đây",
+      recent_empty_body: "Bài nộp của học sinh sẽ hiện ở đây.", awaiting: "Chờ chấm",
+      nothing_assigned_title: "Chưa được giao bài nào",
+    },
   },
   fr: {
     header: { title: "FRACILE", subtitle: "Parcours d'apprentissage · exercices & suivi des élèves",
@@ -107,6 +130,26 @@ const I18N = {
     incomplete_body: "Il vous reste {count} question(s) sans réponse. Voulez-vous vraiment rendre votre copie maintenant ? La note sera calculée uniquement sur les questions répondues.",
     keep_working: "Continuer l'exercice", submit_anyway: "Rendre quand même", lang_label: "Langue",
     loading: "Chargement…",
+    dash: {
+      hello: "Bonjour", goal: "Objectif", no_goal: "Aucun objectif défini. Choisissez-en un dans Paramètres.",
+      no_exercise_yet: "Aucun exercice ne vous a encore été attribué.",
+      completion: "Exercices terminés", submitted: "Rendus", of_assigned: "sur {n} attribués",
+      avg_score: "Note moyenne", avg_empty: "Aucune copie encore notée",
+      pending: "En attente", overdue: "{n} en retard",
+      streak: "Jours consécutifs",
+      streak_empty: "Non calculable — aucun journal d'activité quotidienne",
+      skills: "Équilibre des compétences",
+      skills_note: "Calculé sur les copies notées.",
+      skills_empty_title: "Pas assez de données",
+      skills_empty_body: "Il faut des copies notées dans au moins 3 compétences.",
+      continue: "Continuer",
+      continue_empty_title: "Rien en attente",
+      continue_empty_body: "Vous avez rendu tous vos exercices.",
+      questions: "{n} question(s)", due: "À rendre le", was_due: "En retard depuis le",
+      to_grade: "Copies à corriger", recent_submissions: "Copies récentes",
+      recent_empty_body: "Les copies rendues apparaîtront ici.", awaiting: "À corriger",
+      nothing_assigned_title: "Aucun exercice attribué",
+    },
   },
   en: {
     header: { title: "FRACILE", subtitle: "Learning path · exercises & student tracking",
@@ -125,6 +168,26 @@ const I18N = {
     incomplete_body: "You still have {count} unanswered question(s). Are you sure you want to submit now? Your score will be based only on the answered questions.",
     keep_working: "Keep working", submit_anyway: "Submit anyway", lang_label: "Language",
     loading: "Loading…",
+    dash: {
+      hello: "Hello", goal: "Goal", no_goal: "No goal set yet. Pick one in Settings.",
+      no_exercise_yet: "No exercises have been assigned to you yet.",
+      completion: "Exercises completed", submitted: "Submitted", of_assigned: "of {n} assigned",
+      avg_score: "Average score", avg_empty: "No submission graded yet",
+      pending: "Pending", overdue: "{n} overdue",
+      streak: "Day streak",
+      streak_empty: "Not available — no daily activity log is recorded",
+      skills: "Skill balance",
+      skills_note: "Based on graded submissions.",
+      skills_empty_title: "Not enough data",
+      skills_empty_body: "Needs graded work in at least 3 different skills.",
+      continue: "Continue learning",
+      continue_empty_title: "Nothing pending",
+      continue_empty_body: "You have submitted everything assigned.",
+      questions: "{n} questions", due: "Due", was_due: "Overdue since",
+      to_grade: "To grade", recent_submissions: "Recent submissions",
+      recent_empty_body: "Student submissions will appear here.", awaiting: "Awaiting",
+      nothing_assigned_title: "Nothing assigned yet",
+    },
   },
 };
 
@@ -271,10 +334,8 @@ async function save(key, value, shared = true) {
 async function del(key, shared = false) { try { await window.storage.delete(key, shared); } catch {} }
 
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
-const fmtDate = (d) => new Date(d).toLocaleString("fr-FR", { dateStyle: "short", timeStyle: "short" });
-const isLate = (ex) => ex.deadline && Date.now() > new Date(ex.deadline).getTime();
-const exSkills = (ex) => (ex.skills && ex.skills.length ? ex.skills : ex.skill ? [ex.skill] : []);
-const assignedTo = (ex, name) => !ex.assignedTo || ex.assignedTo.length === 0 || ex.assignedTo.includes(name);
+/* fmtDate / isLate / exSkills / assignedTo nay ở src/shared/exercises.js
+   (xem phần import đầu file) — App.jsx vẫn export lại để PracticeHub dùng. */
 const targetedAccounts = (ex, accounts) => (ex.assignedTo && ex.assignedTo.length ? accounts.filter((a) => ex.assignedTo.includes(a.name)) : accounts);
 const norm = (s) => (s || "").trim().toLowerCase()
   .normalize("NFD").replace(/[\u0300-\u036f]/g, "")   // bỏ toàn bộ dấu tiếng Pháp (é→e, à→a…)
@@ -314,12 +375,7 @@ const seedShuffle = (arr, seedStr) => {
 const tableauCells = (q) => (q.criteres || []).flatMap((cr) => (q.colonnes || []).map((co) => `${cr.id}_${co.id}`));
 const tableauOk = (q, ans) => { const cells = tableauCells(q); return cells.length > 0 && cells.every((k) => ans && ans[k] === q.answers?.[k]); };
 
-function totalScore(sub, ex) {
-  const opens = ex.questions.filter((q) => q.type === "open");
-  const manual = opens.reduce((n, q) => n + (sub.openMarks?.[q.id] ?? 0), 0);
-  const graded = sub.graded;
-  return { score: sub.autoScore + (graded ? manual : 0), max: sub.autoMax + (graded ? opens.length : 0), pending: !graded && opens.length > 0 };
-}
+/* totalScore nay ở src/shared/exercises.js */
 
 /* ================= Root ================= */
 const SESSION_KEY = "mcf-session";
@@ -388,6 +444,10 @@ function AppInner() {
     document.documentElement.classList.toggle("mcf-dark-root", !!dark);
   }, [dark]);
 
+  // Hồ sơ học sinh — Dashboard đọc mục tiêu DELF từ đây.
+  const [profiles, setProfiles] = useState({});
+  useEffect(() => { load("mcf-profiles", {}).then((p) => setProfiles(p || {})); }, []);
+
   if (!loading && !session) {
     return <Login accounts={accounts} setAccounts={setAccounts} onLogin={(s) => { setSession(s); refresh(); }} />;
   }
@@ -410,13 +470,31 @@ function AppInner() {
           section={section}
           onSection={setSection}
         >
-          {loading ? (
-            <p className="text-center text-soft">{t("loading")}</p>
-          ) : !session ? null : session.role === "prof" ? (
-            <Teacher {...{ exercises, setExercises, submissions, setSubmissions, accounts, setAccounts, classes, setClasses, refresh }} />
-          ) : (
-            <Student name={session.name} {...{ exercises, submissions, setSubmissions, accounts, setAccounts, refresh }} />
-          )}
+          {({ section: sec }) => {
+            if (loading) return <p className="text-center text-soft">{t("loading")}</p>;
+            if (!session) return null;
+
+            // Chỉ mục "dashboard" đã có màn hình riêng. Các mục khác vẫn render
+            // Teacher/Student nguyên trạng vì tab điều hướng còn nằm bên trong
+            // hai component đó — sẽ kéo ra ở bước tách file.
+            if (sec === "dashboard") {
+              return session.role === "prof" ? (
+                <TeacherDashboard {...{ exercises, submissions, accounts, t }} />
+              ) : (
+                <StudentDashboard
+                  name={session.name}
+                  profile={profiles[session.name]}
+                  {...{ exercises, submissions, t }}
+                />
+              );
+            }
+
+            return session.role === "prof" ? (
+              <Teacher {...{ exercises, setExercises, submissions, setSubmissions, accounts, setAccounts, classes, setClasses, refresh }} />
+            ) : (
+              <Student name={session.name} {...{ exercises, submissions, setSubmissions, accounts, setAccounts, refresh }} />
+            );
+          }}
         </RootLayout>
       </div>
     </LangCtx.Provider>
