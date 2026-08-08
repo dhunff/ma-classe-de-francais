@@ -5,6 +5,7 @@ import { DndContext, closestCenter, PointerSensor, TouchSensor, useSensor, useSe
 import { SortableContext, useSortable, rectSortingStrategy, arrayMove } from "@dnd-kit/sortable";
 import { CSS as DndCSS } from "@dnd-kit/utilities";
 import PracticeHub from './PracticeHub.jsx'
+import RootLayout from './layout/RootLayout.jsx'
 import { BookOpen, GraduationCap, Wine, Croissant, Landmark, Stamp, Feather, Coffee, BookMarked, MoreVertical, Pencil, Copy, Trash2, RotateCcw, Image as ImageIcon, X, Phone, Calendar, Target, Briefcase, ChevronLeft, TrendingUp, Clock, CheckCircle } from 'lucide-react'
 import { BarChart, Bar, LineChart, Line, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from "recharts";
 
@@ -72,10 +73,13 @@ const LANGS = [["vi", "🇻🇳", "Tiếng Việt"], ["fr", "🇫🇷", "França
 
 const I18N = {
   vi: {
-    header: { title: "Học tiếng Pháp cùng Đỗ Hùng", subtitle: "Lộ trình học tập · bài tập & theo dõi học sinh",
-      logout: "Đăng xuất", teacher: "Giáo viên" },
-    nav: { exercises: "Bài tập", students: "Học sinh", stats: "Thống kê",
-      todo: "Cần làm", done: "Đã nộp", practice: "Luyện tập", progress: "Tiến độ của tôi", account: "Tài khoản" },
+    header: { title: "FRACILE", subtitle: "Lộ trình học tập · bài tập & theo dõi học sinh",
+      logout: "Đăng xuất", teacher: "Giáo viên", student: "Học sinh",
+      search: "Tìm bài tập, học sinh…", dark_mode: "Chuyển sang nền tối", light_mode: "Chuyển sang nền sáng" },
+    nav: { exercises: "Thư viện bài tập", students: "Theo dõi học sinh", stats: "Thống kê",
+      todo: "Cần làm", done: "Đã nộp", practice: "Luyện tập", progress: "Tiến độ của tôi", account: "Tài khoản",
+      dashboard: "Tổng quan", settings: "Cài đặt",
+      primary: "Điều hướng chính", collapse: "Thu gọn thanh bên", expand: "Mở rộng thanh bên" },
     actions: { refresh: "Làm mới", new_exercise: "+ Bài tập mới", announce: "Thông báo" },
     empty: { no_submission: "Hiện tại chưa có bài nộp nào.", all_done: "🎉 Đã nộp hết bài! Không còn bài nào đang chờ.",
       no_exercise: "Chưa có bài tập nào. Hãy tạo bài đầu tiên với « + Bài tập mới »." },
@@ -84,12 +88,16 @@ const I18N = {
     incomplete_title: "Bài làm chưa hoàn tất",
     incomplete_body: "Bạn vẫn còn {count} câu hỏi chưa hoàn thành. Bạn có chắc chắn muốn nộp bài ngay bây giờ không ? Điểm số sẽ được tính dựa trên những câu đã trả lời.",
     keep_working: "Tiếp tục làm bài", submit_anyway: "Vẫn nộp bài", lang_label: "Ngôn ngữ",
+    loading: "Đang tải…",
   },
   fr: {
-    header: { title: "Apprendre le français avec Do Hung", subtitle: "Parcours d'apprentissage · exercices & suivi des élèves",
-      logout: "Se déconnecter", teacher: "Professeur" },
-    nav: { exercises: "Exercices", students: "Élèves", stats: "Statistiques",
-      todo: "À faire", done: "Rendus", practice: "Entraînement", progress: "Ma progression", account: "Mon compte" },
+    header: { title: "FRACILE", subtitle: "Parcours d'apprentissage · exercices & suivi des élèves",
+      logout: "Se déconnecter", teacher: "Professeur", student: "Élève",
+      search: "Rechercher un exercice, un élève…", dark_mode: "Passer en mode sombre", light_mode: "Passer en mode clair" },
+    nav: { exercises: "Bibliothèque d'exercices", students: "Suivi des élèves", stats: "Statistiques",
+      todo: "À faire", done: "Rendus", practice: "Entraînement", progress: "Ma progression", account: "Mon compte",
+      dashboard: "Tableau de bord", settings: "Paramètres",
+      primary: "Navigation principale", collapse: "Réduire le menu", expand: "Déployer le menu" },
     actions: { refresh: "Actualiser", new_exercise: "+ Nouvel exercice", announce: "Annonce" },
     empty: { no_submission: "Aucune copie rendue pour l'instant.", all_done: "🎉 Tout est rendu ! Aucun exercice en attente.",
       no_exercise: "Aucun exercice pour le moment. Créez le premier avec « + Nouvel exercice »." },
@@ -98,12 +106,16 @@ const I18N = {
     incomplete_title: "Copie incomplète",
     incomplete_body: "Il vous reste {count} question(s) sans réponse. Voulez-vous vraiment rendre votre copie maintenant ? La note sera calculée uniquement sur les questions répondues.",
     keep_working: "Continuer l'exercice", submit_anyway: "Rendre quand même", lang_label: "Langue",
+    loading: "Chargement…",
   },
   en: {
-    header: { title: "Learn French with Do Hung", subtitle: "Learning path · exercises & student tracking",
-      logout: "Log out", teacher: "Teacher" },
-    nav: { exercises: "Exercises", students: "Students", stats: "Statistics",
-      todo: "To do", done: "Submitted", practice: "Practice", progress: "My progress", account: "My account" },
+    header: { title: "FRACILE", subtitle: "Learning path · exercises & student tracking",
+      logout: "Log out", teacher: "Teacher", student: "Student",
+      search: "Search exercises, students…", dark_mode: "Switch to dark mode", light_mode: "Switch to light mode" },
+    nav: { exercises: "Exercise library", students: "Student tracking", stats: "Statistics",
+      todo: "To do", done: "Submitted", practice: "Practice", progress: "My progress", account: "My account",
+      dashboard: "Dashboard", settings: "Settings",
+      primary: "Main navigation", collapse: "Collapse sidebar", expand: "Expand sidebar" },
     actions: { refresh: "Refresh", new_exercise: "+ New exercise", announce: "Announcement" },
     empty: { no_submission: "No submissions yet.", all_done: "🎉 Everything submitted! Nothing pending.",
       no_exercise: "No exercises yet. Create the first one with « + New exercise »." },
@@ -112,6 +124,7 @@ const I18N = {
     incomplete_title: "Incomplete submission",
     incomplete_body: "You still have {count} unanswered question(s). Are you sure you want to submit now? Your score will be based only on the answered questions.",
     keep_working: "Keep working", submit_anyway: "Submit anyway", lang_label: "Language",
+    loading: "Loading…",
   },
 };
 
@@ -167,31 +180,6 @@ const S = {
   badge: (lv) => ({ fontSize: 11, fontWeight: 700, color: LEVEL_COLORS[lv] || C.primary, background: LEVEL_PASTEL[lv] || C.primarySoft, borderRadius: "var(--r-sm)", padding: "3px 8px", marginRight: 8, letterSpacing: "0.02em" }),
   chip: (bg, col) => ({ fontSize: 12, fontWeight: 600, background: bg, color: col, borderRadius: "var(--r-sm)", padding: "3px 10px" }),
 };
-
-/* ---------- Doodles trang trí nền (Bento / Creative EdTech) ---------- */
-function Doodles() {
-  const star = (x, y, size, color, rot = 0) => (
-    <div key={x + "-" + y} style={{ position: "absolute", left: x, top: y, fontSize: size, color, fontWeight: 900,
-      transform: `rotate(${rot}deg)`, lineHeight: 1, userSelect: "none" }}>✳</div>
-  );
-  return (
-    <div aria-hidden style={{ position: "fixed", inset: 0, pointerEvents: "none", zIndex: 0, overflow: "hidden" }}>
-      {star("6%", "18%", 26, "#FFD43B", 12)}
-      {star("92%", "12%", 20, "#74C0FC", -8)}
-      {star("88%", "72%", 30, "#FFD43B", 20)}
-      {star("4%", "78%", 18, "#B197FC", 0)}
-      <div style={{ position: "absolute", left: "12%", top: "60%", width: 14, height: 14, borderRadius: "50%", border: "3px solid #74C0FC" }} />
-      <div style={{ position: "absolute", left: "80%", top: "38%", width: 10, height: 10, borderRadius: "50%", background: "#FFD43B" }} />
-      <div style={{ position: "absolute", left: "45%", top: "8%", width: 12, height: 12, borderRadius: "50%", border: "3px solid #63E6BE" }} />
-      <svg style={{ position: "absolute", left: "-2%", top: "40%", opacity: 0.7 }} width="140" height="40" viewBox="0 0 140 40" fill="none">
-        <path d="M2 20 Q 20 2, 38 20 T 74 20 T 110 20 T 146 20" stroke="#FFD43B" strokeWidth="4" strokeLinecap="round" />
-      </svg>
-      <svg style={{ position: "absolute", right: "-2%", bottom: "12%", opacity: 0.6 }} width="140" height="40" viewBox="0 0 140 40" fill="none">
-        <path d="M2 20 Q 20 2, 38 20 T 74 20 T 110 20 T 146 20" stroke="#74C0FC" strokeWidth="4" strokeLinecap="round" />
-      </svg>
-    </div>
-  );
-}
 
 /* ---------- Dropdown menu (⋮) dùng chung ---------- */
 /* ============================================================
@@ -341,6 +329,8 @@ function AppInner() {
   const [dark, setDark] = useState(() => { try { return localStorage.getItem(THEME_KEY) === "dark"; } catch { return false; } });
   const toggleTheme = () => setDark((d) => { const n = !d; try { localStorage.setItem(THEME_KEY, n ? "dark" : "light"); } catch {} return n; });
   const [lang, setLang] = useState(getLang);
+  // Mục đang chọn trên sidebar. RootLayout tự đưa về mục đầu nếu vai trò đổi.
+  const [section, setSection] = useState("dashboard");
   const t = React.useCallback((key, vars) => {
     let str = digKey(I18N[lang], key);
     if (typeof str !== "string") str = digKey(I18N.vi, key);
@@ -404,45 +394,31 @@ function AppInner() {
 
   return (
     <LangCtx.Provider value={lang}>
-    <div className={"mcf-root" + (dark ? " mcf-dark" : "")} style={{ background: C.bg, ...S.font, minHeight: "100vh" }}>
-      <Doodles />
-      <header style={{ background: "transparent", padding: "26px 28px 8px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12, position: "relative", zIndex: 1 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-          <img src="/logo.png" alt="Logo" style={{ width: 52, height: 52, borderRadius: 16, objectFit: "contain", background: "#fff", boxShadow: "0 8px 20px rgba(30,58,138,.18)", padding: 4 }} />
-          <div>
-            <div style={{ fontWeight: 800, fontSize: 27, letterSpacing: "-0.8px", color: C.ink, lineHeight: 1.1 }}>
-              {t("header.title")}<span style={{ color: "#FFD43B" }}> ✳</span>
-            </div>
-            <div style={{ fontSize: 13, color: C.soft, fontWeight: 600 }}>{t("header.subtitle")}</div>
-          </div>
-        </div>
-        {session && (
-          <div style={{ fontSize: 13, display: "flex", gap: 10, alignItems: "center" }}>
-            <select value={lang} onChange={(e) => setLang(e.target.value)} title="Langue / Ngôn ngữ"
-              style={{ ...S.input, width: "auto", padding: "9px 10px", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
-              {LANGS.map(([code, flag, label]) => <option key={code} value={code}>{flag} {label}</option>)}
-            </select>
-            <button onClick={toggleTheme} title={dark ? "Mode clair" : "Mode sombre"}
-              style={{ width: 42, height: 42, borderRadius: 999, border: `1.5px solid ${C.line}`, background: "var(--mcf-surface)",
-                cursor: "pointer", fontSize: 17, boxShadow: "0 4px 12px rgba(17,24,39,.06)" }}>
-              {dark ? "☀️" : "🌙"}
-            </button>
-            {session.role === "eleve" && <Bell name={session.name} exercises={exercises} submissions={submissions} />}
-            <span style={{ color: C.primary, background: "var(--mcf-primarysoft)", border: `1.5px solid ${C.line}`, borderRadius: 999, padding: "8px 16px", fontWeight: 700, fontSize: 13 }}>
-              {session.role === "prof" ? `👨‍🏫 ${t("header.teacher")}` : `🎒 ${session.name}`}
-            </span>
-            <button style={S.btn(false)} onClick={() => setSession(null)}>{t("header.logout")}</button>
-          </div>
-        )}
-      </header>
-      <main style={{ maxWidth: 1000, margin: "0 auto", padding: "26px 16px 60px", position: "relative", zIndex: 1 }}>
-        {loading ? <p style={{ textAlign: "center", color: C.soft }}>Ouverture du cahier…</p>
-          : !session ? null
-          : session.role === "prof"
-            ? <Teacher {...{ exercises, setExercises, submissions, setSubmissions, accounts, setAccounts, classes, setClasses, refresh }} />
-            : <Student name={session.name} {...{ exercises, submissions, setSubmissions, accounts, setAccounts, refresh }} />}
-      </main>
-    </div>
+      <div className={"mcf-root" + (dark ? " mcf-dark" : "")}>
+        <RootLayout
+          session={session}
+          t={t}
+          lang={lang}
+          langs={LANGS}
+          onLang={setLang}
+          dark={dark}
+          onToggleDark={toggleTheme}
+          onLogout={() => setSession(null)}
+          bell={session?.role === "eleve"
+            ? <Bell name={session.name} exercises={exercises} submissions={submissions} />
+            : null}
+          section={section}
+          onSection={setSection}
+        >
+          {loading ? (
+            <p className="text-center text-soft">{t("loading")}</p>
+          ) : !session ? null : session.role === "prof" ? (
+            <Teacher {...{ exercises, setExercises, submissions, setSubmissions, accounts, setAccounts, classes, setClasses, refresh }} />
+          ) : (
+            <Student name={session.name} {...{ exercises, submissions, setSubmissions, accounts, setAccounts, refresh }} />
+          )}
+        </RootLayout>
+      </div>
     </LangCtx.Provider>
   );
 }

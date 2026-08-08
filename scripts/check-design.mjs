@@ -26,12 +26,15 @@ const jsHasImport = files.some((f) => read(f).includes("@import url('https://fon
 check("fonts:no-js-import", !jsHasImport);
 const html = read("index.html");
 check("fonts:link-in-html", html.includes("fonts.googleapis.com/css2"));
-for (const fam of ["Be+Vietnam+Pro", "Bricolage+Grotesque", "Newsreader"]) {
+for (const fam of ["Plus+Jakarta+Sans"]) {
   check(`fonts:${fam}`, html.includes(fam));
 }
 
 // --- 3. Không file nào import từ App.jsx ---
-const importers = files.filter((f) => f !== join("src", "App.jsx") && /from\s+["'][^"']*App\.jsx["']/.test(read(f)));
+// main.jsx là entry point — nó BẮT BUỘC phải import App.jsx. Chỉ các module
+// khác import ngược lên App.jsx mới là vấn đề (import vòng, xem Task 5).
+const ENTRY = [join("src", "App.jsx"), join("src", "main.jsx")];
+const importers = files.filter((f) => !ENTRY.includes(f) && /from\s+["'][^"']*App\.jsx["']/.test(read(f)));
 check("imports:no-app-jsx-importers", importers.length === 0, importers.join(", "));
 
 // --- 4. Tương phản màu theo WCAG 2.1 ---

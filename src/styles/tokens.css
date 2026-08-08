@@ -1,24 +1,32 @@
-:root {
-  --mcf-bg: #F5F5F7;
-  --mcf-surface: #FFFFFF;
-  --mcf-card: #FFFFFF;
-  --mcf-surface2: #FAFAFC;
-  --mcf-ink: #23232E;
-  --mcf-soft: #6E7280;
-  --mcf-line: #E4E4EA;
-  --mcf-line-strong: #8E8E99;
-  --mcf-primary: #5B4B9E;
-  --mcf-primarysoft: #EFECF9;
-  --mcf-ok: #2F7D5C;
-  --mcf-oksoft: #E6F3EC;
-  --mcf-warn: #9A6111;
-  --mcf-warnsoft: #FBF1E0;
-  --mcf-danger: #C43636;
-  --mcf-dangersoft: #FBEAEA;
+/* Nguồn sự thật duy nhất cho màu, chữ, nhịp.
+   Mỗi màu khai báo hai lần: dạng hex cho ~512 inline style của màn hình cũ,
+   và dạng bộ ba RGB cho Tailwind (để `bg-primary/10` chạy được). Hai dạng
+   phải luôn cùng một màu — sửa cái này thì sửa cái kia. */
 
-  --f-display: 'Bricolage Grotesque', 'Be Vietnam Pro', sans-serif;
-  --f-ui: 'Be Vietnam Pro', -apple-system, 'Segoe UI', sans-serif;
-  --f-read: 'Newsreader', Georgia, serif;
+:root {
+  --mcf-bg: #F5F5F7;             --mcf-bg-rgb: 245 245 247;
+  --mcf-surface: #FFFFFF;        --mcf-surface-rgb: 255 255 255;
+  --mcf-card: #FFFFFF;
+  --mcf-surface2: #FAFAFC;       --mcf-surface2-rgb: 250 250 252;
+  --mcf-ink: #23232E;            --mcf-ink-rgb: 35 35 46;
+  --mcf-soft: #6E7280;           --mcf-soft-rgb: 110 114 128;
+  --mcf-line: #E4E4EA;           --mcf-line-rgb: 228 228 234;
+  --mcf-line-strong: #8E8E99;    --mcf-line-strong-rgb: 142 142 153;
+  --mcf-primary: #5B4B9E;        --mcf-primary-rgb: 91 75 158;
+  --mcf-primarysoft: #EFECF9;    --mcf-primarysoft-rgb: 239 236 249;
+  --mcf-ok: #2F7D5C;             --mcf-ok-rgb: 47 125 92;
+  --mcf-oksoft: #E6F3EC;         --mcf-oksoft-rgb: 230 243 236;
+  --mcf-warn: #9A6111;           --mcf-warn-rgb: 154 97 17;
+  --mcf-warnsoft: #FBF1E0;       --mcf-warnsoft-rgb: 251 241 224;
+  --mcf-danger: #C43636;         --mcf-danger-rgb: 196 54 54;
+  --mcf-dangersoft: #FBEAEA;     --mcf-dangersoft-rgb: 251 234 234;
+
+  /* Vòng sáng của chỉ báo "đang online" (.mcf-pulse trong base.css). */
+  --mcf-ok-ring: rgba(47, 125, 92, .55);
+
+  --f-display: 'Plus Jakarta Sans', -apple-system, 'Segoe UI', sans-serif;
+  --f-ui: 'Plus Jakarta Sans', -apple-system, 'Segoe UI', sans-serif;
+  --f-read: 'Plus Jakarta Sans', -apple-system, 'Segoe UI', sans-serif;
 
   --sp-1: 4px;  --sp-2: 8px;  --sp-3: 12px; --sp-4: 16px; --sp-5: 24px;
   --sp-6: 32px; --sp-7: 40px; --sp-8: 48px; --sp-9: 64px; --sp-10: 80px;
@@ -32,22 +40,24 @@
 html.mcf-dark-root,
 html.mcf-dark-root body,
 .mcf-root.mcf-dark {
-  --mcf-bg: #16161C;
-  --mcf-surface: #1E1E27;
+  --mcf-bg: #16161C;             --mcf-bg-rgb: 22 22 28;
+  --mcf-surface: #1E1E27;        --mcf-surface-rgb: 30 30 39;
   --mcf-card: #1E1E27;
-  --mcf-surface2: #14141A;
-  --mcf-ink: #E6E6EC;
-  --mcf-soft: #9A9AA8;
-  --mcf-line: #33333F;
-  --mcf-line-strong: #6E6E82;
-  --mcf-primary: #9E8FD8;
-  --mcf-primarysoft: #2A2440;
-  --mcf-ok: #4FA07C;
-  --mcf-oksoft: #14301F;
-  --mcf-warn: #D0982F;
-  --mcf-warnsoft: #33280F;
-  --mcf-danger: #E07070;
-  --mcf-dangersoft: #331A1A;
+  --mcf-surface2: #14141A;       --mcf-surface2-rgb: 20 20 26;
+  --mcf-ink: #E6E6EC;            --mcf-ink-rgb: 230 230 236;
+  --mcf-soft: #9A9AA8;           --mcf-soft-rgb: 154 154 168;
+  --mcf-line: #33333F;           --mcf-line-rgb: 51 51 63;
+  --mcf-line-strong: #6E6E82;    --mcf-line-strong-rgb: 110 110 130;
+  --mcf-primary: #9E8FD8;        --mcf-primary-rgb: 158 143 216;
+  --mcf-primarysoft: #2A2440;    --mcf-primarysoft-rgb: 42 36 64;
+  --mcf-ok: #4FA07C;             --mcf-ok-rgb: 79 160 124;
+  --mcf-oksoft: #14301F;         --mcf-oksoft-rgb: 20 48 31;
+  --mcf-warn: #D0982F;           --mcf-warn-rgb: 208 152 47;
+  --mcf-warnsoft: #33280F;       --mcf-warnsoft-rgb: 51 40 15;
+  --mcf-danger: #E07070;         --mcf-danger-rgb: 224 112 112;
+  --mcf-dangersoft: #331A1A;     --mcf-dangersoft-rgb: 51 26 26;
+
+  --mcf-ok-ring: rgba(79, 160, 124, .55);
 
   --sh-1: 0 1px 2px rgba(0,0,0,.35), 0 1px 3px rgba(0,0,0,.25);
   --sh-2: 0 8px 24px rgba(0,0,0,.45);

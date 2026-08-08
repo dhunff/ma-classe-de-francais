@@ -39,6 +39,14 @@ body {
 @keyframes mcfSpin { to { transform: rotate(360deg); } }
 .mcf-spin { animation: mcfSpin .7s linear infinite; }
 
+/* Chỉ báo "học sinh đang online" — App.jsx gắn class này khi st.online.
+   Vòng sáng đổi theo bản sáng/tối qua --mcf-ok-ring. */
+@keyframes mcfPulse {
+  0%, 100% { box-shadow: 0 0 0 0 var(--mcf-ok-ring); }
+  50% { box-shadow: 0 0 0 6px transparent; }
+}
+.mcf-pulse { animation: mcfPulse 1.8s ease-out infinite; }
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     transition: none !important;

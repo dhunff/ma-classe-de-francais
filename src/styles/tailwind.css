@@ -1,0 +1,4 @@
+/* Chỉ nạp components + utilities. `base` (preflight) bị tắt trong
+   tailwind.config.js vì nó sẽ reset các màn hình cũ đang dùng inline style. */
+@tailwind components;
+@tailwind utilities;
