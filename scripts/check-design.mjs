@@ -42,10 +42,18 @@ const ratio = (a, b) => { const x = lum(a), y = lum(b); return (Math.max(x, y) +
 const safe = (label, fn) => { try { fn(); } catch (e) { check(label, false, e.message); } };
 
 let css = "";
-try { css = readFileSync("src/styles/tokens.css", "utf8"); }
-catch { check("tokens:file-exists", false, "chưa có src/styles/tokens.css"); }
+try {
+  css = readFileSync("src/styles/tokens.css", "utf8");
+  check("tokens:file-exists", true);
+} catch {
+  check("tokens:file-exists", false, "chưa có src/styles/tokens.css");
+}
 const varOf = (name, scope) => {
-  const block = css.slice(css.indexOf(scope));
+  const start = css.indexOf(scope);
+  if (start === -1) throw new Error(`không tìm thấy khối ${scope}`);
+  const open = css.indexOf("{", start);
+  const close = css.indexOf("}", open);
+  const block = css.slice(open, close === -1 ? css.length : close + 1);
   const m = block.match(new RegExp(`--mcf-${name}\\s*:\\s*(#[0-9A-Fa-f]{6})`));
   if (!m) throw new Error(`không tìm thấy --mcf-${name} trong ${scope}`);
   return m[1];
