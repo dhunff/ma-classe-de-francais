@@ -1,0 +1,54 @@
+:root {
+  --mcf-bg: #F5F5F7;
+  --mcf-surface: #FFFFFF;
+  --mcf-card: #FFFFFF;
+  --mcf-surface2: #FAFAFC;
+  --mcf-ink: #23232E;
+  --mcf-soft: #6E7280;
+  --mcf-line: #E4E4EA;
+  --mcf-line-strong: #8E8E99;
+  --mcf-primary: #5B4B9E;
+  --mcf-primarysoft: #EFECF9;
+  --mcf-ok: #2F7D5C;
+  --mcf-oksoft: #E6F3EC;
+  --mcf-warn: #9A6111;
+  --mcf-warnsoft: #FBF1E0;
+  --mcf-danger: #C43636;
+  --mcf-dangersoft: #FBEAEA;
+
+  --f-display: 'Bricolage Grotesque', 'Be Vietnam Pro', sans-serif;
+  --f-ui: 'Be Vietnam Pro', -apple-system, 'Segoe UI', sans-serif;
+  --f-read: 'Newsreader', Georgia, serif;
+
+  --sp-1: 4px;  --sp-2: 8px;  --sp-3: 12px; --sp-4: 16px; --sp-5: 24px;
+  --sp-6: 32px; --sp-7: 40px; --sp-8: 48px; --sp-9: 64px; --sp-10: 80px;
+
+  --r-sm: 8px; --r-md: 12px; --r-full: 999px;
+
+  --sh-1: 0 1px 2px rgba(35,35,46,.06), 0 1px 3px rgba(35,35,46,.04);
+  --sh-2: 0 8px 24px rgba(35,35,46,.10);
+}
+
+html.mcf-dark-root,
+html.mcf-dark-root body,
+.mcf-root.mcf-dark {
+  --mcf-bg: #16161C;
+  --mcf-surface: #1E1E27;
+  --mcf-card: #1E1E27;
+  --mcf-surface2: #14141A;
+  --mcf-ink: #E6E6EC;
+  --mcf-soft: #9A9AA8;
+  --mcf-line: #33333F;
+  --mcf-line-strong: #6E6E82;
+  --mcf-primary: #9E8FD8;
+  --mcf-primarysoft: #2A2440;
+  --mcf-ok: #4FA07C;
+  --mcf-oksoft: #14301F;
+  --mcf-warn: #D0982F;
+  --mcf-warnsoft: #33280F;
+  --mcf-danger: #E07070;
+  --mcf-dangersoft: #331A1A;
+
+  --sh-1: 0 1px 2px rgba(0,0,0,.35), 0 1px 3px rgba(0,0,0,.25);
+  --sh-2: 0 8px 24px rgba(0,0,0,.45);
+}

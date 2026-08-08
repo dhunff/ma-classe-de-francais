@@ -1,0 +1,48 @@
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--mcf-bg);
+  color: var(--mcf-ink);
+  font-family: var(--f-ui);
+  -webkit-font-smoothing: antialiased;
+}
+
+.mcf-float {
+  font-family: var(--f-ui);
+  color: var(--mcf-ink);
+}
+.mcf-float button,
+.mcf-float input,
+.mcf-float textarea,
+.mcf-float select { font-family: inherit; }
+
+.mcf-dark input,
+.mcf-dark textarea,
+.mcf-dark select { color: var(--mcf-ink); }
+
+:focus-visible {
+  outline: 2px solid var(--mcf-primary);
+  outline-offset: 2px;
+  border-radius: var(--r-sm);
+}
+
+.mcf-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
+.mcf-scroll::-webkit-scrollbar-track { background: transparent; }
+.mcf-scroll::-webkit-scrollbar-thumb { background: var(--mcf-line-strong); border-radius: var(--r-full); }
+.mcf-scroll { scrollbar-width: thin; scrollbar-color: var(--mcf-line-strong) transparent; }
+
+.mcf-wide { position: relative; left: 50%; transform: translateX(-50%); width: min(100vw - 24px, 1600px); }
+
+mark.mcf-hl { background: var(--mcf-warnsoft); color: var(--mcf-ink); border-radius: var(--r-sm); padding: 0 2px; }
+
+@keyframes mcfSpin { to { transform: rotate(360deg); } }
+.mcf-spin { animation: mcfSpin .7s linear infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    transition: none !important;
+    animation: none !important;
+    scroll-behavior: auto !important;
+  }
+}
