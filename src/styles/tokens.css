@@ -12,8 +12,10 @@
   --mcf-soft: #6E7280;           --mcf-soft-rgb: 110 114 128;
   --mcf-line: #E4E4EA;           --mcf-line-rgb: 228 228 234;
   --mcf-line-strong: #8E8E99;    --mcf-line-strong-rgb: 142 142 153;
-  --mcf-primary: #5B4B9E;        --mcf-primary-rgb: 91 75 158;
-  --mcf-primarysoft: #EFECF9;    --mcf-primarysoft-rgb: 239 236 249;
+  /* blue-600 / blue-50. Đo WCAG: 5.17:1 trên surface, 4.75:1 trên primarysoft.
+     blue-500 #3B82F6 đã bị loại vì chỉ đạt 3.68:1. */
+  --mcf-primary: #2563EB;        --mcf-primary-rgb: 37 99 235;
+  --mcf-primarysoft: #EFF6FF;    --mcf-primarysoft-rgb: 239 246 255;
   --mcf-ok: #2F7D5C;             --mcf-ok-rgb: 47 125 92;
   --mcf-oksoft: #E6F3EC;         --mcf-oksoft-rgb: 230 243 236;
   --mcf-warn: #9A6111;           --mcf-warn-rgb: 154 97 17;
@@ -48,8 +50,9 @@ html.mcf-dark-root body,
   --mcf-soft: #9A9AA8;           --mcf-soft-rgb: 154 154 168;
   --mcf-line: #33333F;           --mcf-line-rgb: 51 51 63;
   --mcf-line-strong: #6E6E82;    --mcf-line-strong-rgb: 110 110 130;
-  --mcf-primary: #9E8FD8;        --mcf-primary-rgb: 158 143 216;
-  --mcf-primarysoft: #2A2440;    --mcf-primarysoft-rgb: 42 36 64;
+  /* Đo WCAG: 7.84:1 trên surface tối, 6.82:1 cho chữ primary trên primarysoft tối. */
+  --mcf-primary: #8AB4F8;        --mcf-primary-rgb: 138 180 248;
+  --mcf-primarysoft: #1B2A44;    --mcf-primarysoft-rgb: 27 42 68;
   --mcf-ok: #4FA07C;             --mcf-ok-rgb: 79 160 124;
   --mcf-oksoft: #14301F;         --mcf-oksoft-rgb: 20 48 31;
   --mcf-warn: #D0982F;           --mcf-warn-rgb: 208 152 47;

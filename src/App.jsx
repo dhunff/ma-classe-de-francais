@@ -5,7 +5,10 @@ import { DndContext, closestCenter, PointerSensor, TouchSensor, useSensor, useSe
 import { SortableContext, useSortable, rectSortingStrategy, arrayMove } from "@dnd-kit/sortable";
 import { CSS as DndCSS } from "@dnd-kit/utilities";
 import PracticeHub from './PracticeHub.jsx'
-import RootLayout from './layout/RootLayout.jsx'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import AppLayout from './layout/AppLayout.jsx'
+import RequireRole from './routes/RequireRole.jsx'
+import { ROLE_HOME } from './layout/navItems.js'
 import StudentDashboard from './screens/dashboard/StudentDashboard.jsx'
 import TeacherDashboard from './screens/dashboard/TeacherDashboard.jsx'
 import { SKILLS, fmtDate, isLate, exSkills, assignedTo, totalScore } from './shared/exercises.js'
@@ -82,7 +85,8 @@ const I18N = {
     nav: { exercises: "Thư viện bài tập", students: "Theo dõi học sinh", stats: "Thống kê",
       todo: "Cần làm", done: "Đã nộp", practice: "Luyện tập", progress: "Tiến độ của tôi", account: "Tài khoản",
       dashboard: "Tổng quan", settings: "Cài đặt",
-      primary: "Điều hướng chính", collapse: "Thu gọn thanh bên", expand: "Mở rộng thanh bên" },
+      primary: "Điều hướng chính", collapse: "Thu gọn thanh bên", expand: "Mở rộng thanh bên",
+      open_menu: "Mở menu", close: "Đóng menu" },
     actions: { refresh: "Làm mới", new_exercise: "+ Bài tập mới", announce: "Thông báo" },
     empty: { no_submission: "Hiện tại chưa có bài nộp nào.", all_done: "🎉 Đã nộp hết bài! Không còn bài nào đang chờ.",
       no_exercise: "Chưa có bài tập nào. Hãy tạo bài đầu tiên với « + Bài tập mới »." },
@@ -120,7 +124,8 @@ const I18N = {
     nav: { exercises: "Bibliothèque d'exercices", students: "Suivi des élèves", stats: "Statistiques",
       todo: "À faire", done: "Rendus", practice: "Entraînement", progress: "Ma progression", account: "Mon compte",
       dashboard: "Tableau de bord", settings: "Paramètres",
-      primary: "Navigation principale", collapse: "Réduire le menu", expand: "Déployer le menu" },
+      primary: "Navigation principale", collapse: "Réduire le menu", expand: "Déployer le menu",
+      open_menu: "Ouvrir le menu", close: "Fermer le menu" },
     actions: { refresh: "Actualiser", new_exercise: "+ Nouvel exercice", announce: "Annonce" },
     empty: { no_submission: "Aucune copie rendue pour l'instant.", all_done: "🎉 Tout est rendu ! Aucun exercice en attente.",
       no_exercise: "Aucun exercice pour le moment. Créez le premier avec « + Nouvel exercice »." },
@@ -158,7 +163,8 @@ const I18N = {
     nav: { exercises: "Exercise library", students: "Student tracking", stats: "Statistics",
       todo: "To do", done: "Submitted", practice: "Practice", progress: "My progress", account: "My account",
       dashboard: "Dashboard", settings: "Settings",
-      primary: "Main navigation", collapse: "Collapse sidebar", expand: "Expand sidebar" },
+      primary: "Main navigation", collapse: "Collapse sidebar", expand: "Expand sidebar",
+      open_menu: "Open menu", close: "Close menu" },
     actions: { refresh: "Refresh", new_exercise: "+ New exercise", announce: "Announcement" },
     empty: { no_submission: "No submissions yet.", all_done: "🎉 Everything submitted! Nothing pending.",
       no_exercise: "No exercises yet. Create the first one with « + New exercise »." },
@@ -385,8 +391,6 @@ function AppInner() {
   const [dark, setDark] = useState(() => { try { return localStorage.getItem(THEME_KEY) === "dark"; } catch { return false; } });
   const toggleTheme = () => setDark((d) => { const n = !d; try { localStorage.setItem(THEME_KEY, n ? "dark" : "light"); } catch {} return n; });
   const [lang, setLang] = useState(getLang);
-  // Mục đang chọn trên sidebar. RootLayout tự đưa về mục đầu nếu vai trò đổi.
-  const [section, setSection] = useState("dashboard");
   const t = React.useCallback((key, vars) => {
     let str = digKey(I18N[lang], key);
     if (typeof str !== "string") str = digKey(I18N.vi, key);
@@ -448,54 +452,81 @@ function AppInner() {
   const [profiles, setProfiles] = useState({});
   useEffect(() => { load("mcf-profiles", {}).then((p) => setProfiles(p || {})); }, []);
 
-  if (!loading && !session) {
-    return <Login accounts={accounts} setAccounts={setAccounts} onLogin={(s) => { setSession(s); refresh(); }} />;
+  if (loading) {
+    return (
+      <div className={"mcf-root" + (dark ? " mcf-dark" : "")}>
+        <p className="p-8 text-center text-soft">{t("loading")}</p>
+      </div>
+    );
   }
+
+  const shell = (
+    <AppLayout
+      session={session}
+      t={t}
+      lang={lang}
+      langs={LANGS}
+      onLang={setLang}
+      dark={dark}
+      onToggleDark={toggleTheme}
+      onLogout={() => setSession(null)}
+      bell={session?.role === "eleve"
+        ? <Bell name={session.name} exercises={exercises} submissions={submissions} />
+        : null}
+    />
+  );
+
+  // Màn hình cũ: tab điều hướng còn nằm bên trong Teacher/Student, nên mọi
+  // route ngoài dashboard tạm render nguyên component đó. Kéo tab ra là việc
+  // của bước tách file.
+  const teacherScreens = (
+    <Teacher {...{ exercises, setExercises, submissions, setSubmissions, accounts, setAccounts, classes, setClasses, refresh }} />
+  );
+  const studentScreens = (
+    <Student name={session?.name} {...{ exercises, submissions, setSubmissions, accounts, setAccounts, refresh }} />
+  );
 
   return (
     <LangCtx.Provider value={lang}>
       <div className={"mcf-root" + (dark ? " mcf-dark" : "")}>
-        <RootLayout
-          session={session}
-          t={t}
-          lang={lang}
-          langs={LANGS}
-          onLang={setLang}
-          dark={dark}
-          onToggleDark={toggleTheme}
-          onLogout={() => setSession(null)}
-          bell={session?.role === "eleve"
-            ? <Bell name={session.name} exercises={exercises} submissions={submissions} />
-            : null}
-          section={section}
-          onSection={setSection}
-        >
-          {({ section: sec }) => {
-            if (loading) return <p className="text-center text-soft">{t("loading")}</p>;
-            if (!session) return null;
+        <BrowserRouter>
+          <Routes>
+            <Route
+              path="/login"
+              element={
+                session ? (
+                  <Navigate to={ROLE_HOME[session.role] || "/login"} replace />
+                ) : (
+                  <Login accounts={accounts} setAccounts={setAccounts}
+                    onLogin={(s) => { setSession(s); refresh(); }} />
+                )
+              }
+            />
 
-            // Chỉ mục "dashboard" đã có màn hình riêng. Các mục khác vẫn render
-            // Teacher/Student nguyên trạng vì tab điều hướng còn nằm bên trong
-            // hai component đó — sẽ kéo ra ở bước tách file.
-            if (sec === "dashboard") {
-              return session.role === "prof" ? (
-                <TeacherDashboard {...{ exercises, submissions, accounts, t }} />
-              ) : (
-                <StudentDashboard
-                  name={session.name}
-                  profile={profiles[session.name]}
-                  {...{ exercises, submissions, t }}
-                />
-              );
-            }
+            <Route element={<RequireRole session={session} role="prof">{shell}</RequireRole>}>
+              <Route path="/professeur/dashboard"
+                element={<TeacherDashboard {...{ exercises, submissions, accounts, t }} />} />
+              <Route path="/professeur/exercices" element={teacherScreens} />
+              <Route path="/professeur/eleves" element={teacherScreens} />
+              <Route path="/professeur/parametres" element={teacherScreens} />
+              <Route path="/professeur/*" element={<Navigate to="/professeur/dashboard" replace />} />
+            </Route>
 
-            return session.role === "prof" ? (
-              <Teacher {...{ exercises, setExercises, submissions, setSubmissions, accounts, setAccounts, classes, setClasses, refresh }} />
-            ) : (
-              <Student name={session.name} {...{ exercises, submissions, setSubmissions, accounts, setAccounts, refresh }} />
-            );
-          }}
-        </RootLayout>
+            <Route element={<RequireRole session={session} role="eleve">{shell}</RequireRole>}>
+              <Route path="/etudiant/dashboard"
+                element={<StudentDashboard name={session?.name} profile={profiles[session?.name]}
+                  {...{ exercises, submissions, t }} />} />
+              <Route path="/etudiant/bibliotheque" element={studentScreens} />
+              <Route path="/etudiant/progression" element={studentScreens} />
+              <Route path="/etudiant/parametres" element={studentScreens} />
+              <Route path="/etudiant/*" element={<Navigate to="/etudiant/dashboard" replace />} />
+            </Route>
+
+            <Route path="*" element={
+              <Navigate to={session ? (ROLE_HOME[session.role] || "/login") : "/login"} replace />
+            } />
+          </Routes>
+        </BrowserRouter>
       </div>
     </LangCtx.Provider>
   );

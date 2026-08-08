@@ -1,5 +1,29 @@
 * { box-sizing: border-box; }
 
+/* Giá trị mặc định cho các biến --tw-* của Tailwind.
+
+   Bình thường preflight khai báo chúng, nhưng preflight bị tắt (xem
+   tailwind.config.js) để không phá ~512 inline style của màn hình cũ.
+   Thiếu chúng thì các tiện ích ghép nhiều biến vào một khai báo sẽ hỏng:
+   `-translate-x-full` sinh ra
+   `transform: translate(var(--tw-translate-x), …) rotate(var(--tw-rotate)) …`
+   và chỉ cần một biến chưa định nghĩa là CSS bỏ nguyên khai báo, cho ra
+   `transform: none` — ngăn kéo mobile sẽ không trượt đi đâu cả.
+   Khối này chỉ khai báo biến, không reset gì về mặt hình ảnh. */
+*, ::before, ::after {
+  --tw-translate-x: 0; --tw-translate-y: 0;
+  --tw-rotate: 0; --tw-skew-x: 0; --tw-skew-y: 0;
+  --tw-scale-x: 1; --tw-scale-y: 1;
+
+  --tw-blur: ; --tw-brightness: ; --tw-contrast: ; --tw-grayscale: ;
+  --tw-hue-rotate: ; --tw-invert: ; --tw-saturate: ; --tw-sepia: ;
+  --tw-drop-shadow: ;
+
+  --tw-backdrop-blur: ; --tw-backdrop-brightness: ; --tw-backdrop-contrast: ;
+  --tw-backdrop-grayscale: ; --tw-backdrop-hue-rotate: ; --tw-backdrop-invert: ;
+  --tw-backdrop-opacity: ; --tw-backdrop-saturate: ; --tw-backdrop-sepia: ;
+}
+
 body {
   margin: 0;
   background: var(--mcf-bg);

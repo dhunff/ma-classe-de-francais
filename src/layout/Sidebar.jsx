@@ -1,149 +1,133 @@
-import React from "react";
-import { PanelLeftClose, PanelLeftOpen, LogOut } from "lucide-react";
+import React, { useEffect, useRef } from "react";
+import { NavLink } from "react-router-dom";
+import { LogOut, X } from "lucide-react";
 import { navFor } from "./navItems.js";
 
-/* Thanh điều hướng bên trái, thu gọn được.
-   Dưới 768px component này không hiện — RootLayout đổi sang MobileNav.
+/* Thanh điều hướng trái.
 
-   Trạng thái đang chọn được đánh dấu bằng ba tín hiệu chồng nhau, để không
-   phụ thuộc riêng vào màu: thanh dọc bên trái, nền primary nhạt, và chữ đậm
-   hơn. Người mù màu vẫn đọc được. */
+   Desktop (≥768px): cố định, rộng 16rem, cao hết màn hình.
+   Mobile: trượt vào từ trái (offcanvas) kèm lớp phủ; đóng bằng nút X,
+   bằng phím Esc, hoặc bấm ra ngoài.
 
-function NavButton({ item, active, collapsed, label, onSelect }) {
-  const { Icon } = item;
+   Trạng thái đang chọn dùng ba tín hiệu chồng nhau — nền, chữ đậm, và thanh
+   dọc bên trái — để không phụ thuộc riêng vào màu. */
+
+const itemClass = ({ isActive }) =>
+  [
+    "group relative flex items-center gap-3 rounded-md px-3 py-2.5 text-sm transition-colors",
+    isActive
+      ? "bg-primary-soft font-bold text-primary"
+      : "font-medium text-soft hover:bg-surface2 hover:text-ink",
+  ].join(" ");
+
+function NavList({ role, t, onNavigate }) {
   return (
-    <button
-      type="button"
-      onClick={() => onSelect(item.id)}
-      title={collapsed ? label : undefined}
-      aria-current={active ? "page" : undefined}
-      className={[
-        "group relative flex w-full items-center gap-3 rounded-md px-3 py-2.5",
-        "text-left text-sm transition-colors",
-        collapsed ? "justify-center px-0" : "",
-        active
-          ? "bg-primary-soft font-bold text-primary"
-          : "font-medium text-soft hover:bg-surface2 hover:text-ink",
-      ].join(" ")}
-    >
-      {active && (
-        <span
-          aria-hidden
-          className="absolute left-0 top-1/2 h-6 w-[3px] -translate-y-1/2 rounded-full bg-primary"
-        />
-      )}
-      <Icon size={19} strokeWidth={active ? 2.4 : 2} className="shrink-0" />
-      {!collapsed && <span className="truncate">{label}</span>}
-    </button>
+    <nav className="flex flex-1 flex-col gap-1 overflow-y-auto p-3" aria-label={t("nav.primary")}>
+      {navFor(role).map(({ to, labelKey, Icon }) => (
+        <NavLink key={to} to={to} className={itemClass} onClick={onNavigate}>
+          {({ isActive }) => (
+            <>
+              {isActive && (
+                <span
+                  aria-hidden
+                  className="absolute left-0 top-1/2 h-6 w-[3px] -translate-y-1/2 rounded-full bg-primary"
+                />
+              )}
+              <Icon size={19} strokeWidth={isActive ? 2.4 : 2} className="shrink-0" />
+              <span className="truncate">{t(labelKey)}</span>
+            </>
+          )}
+        </NavLink>
+      ))}
+    </nav>
   );
 }
 
-export default function Sidebar({ role, active, onSelect, collapsed, onToggle, onLogout, t }) {
-  const items = navFor(role);
+function Brand() {
+  return (
+    <span className="text-[19px] font-extrabold tracking-tight text-ink">
+      FRACILE<span className="text-primary">.</span>
+    </span>
+  );
+}
+
+function LogoutButton({ t, onLogout }) {
+  return (
+    <div className="border-0 border-t border-solid border-line p-3">
+      <button
+        type="button"
+        onClick={onLogout}
+        className="flex w-full items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium text-soft transition-colors hover:bg-danger-soft hover:text-danger"
+      >
+        <LogOut size={19} />
+        <span className="truncate">{t("header.logout")}</span>
+      </button>
+    </div>
+  );
+}
+
+export default function Sidebar({ role, t, onLogout, open, onClose }) {
+  const panelRef = useRef(null);
+
+  // Esc đóng ngăn kéo; khoá cuộn nền khi ngăn kéo đang mở.
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e) => { if (e.key === "Escape") onClose(); };
+    document.addEventListener("keydown", onKey);
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    panelRef.current?.focus();
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prev;
+    };
+  }, [open, onClose]);
 
   return (
-    <aside
-      className={[
-        "hidden md:flex md:flex-col md:shrink-0",
-        "sticky top-0 h-screen border-0 border-r border-solid border-line bg-surface",
-        "transition-[width] duration-200",
-        collapsed ? "md:w-sidebar-collapsed" : "md:w-sidebar",
-      ].join(" ")}
-    >
-      {/* Nhãn hiệu */}
+    <>
+      {/* Desktop: cố định bên trái */}
+      <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col border-0 border-r border-solid border-line bg-surface md:flex">
+        <div className="flex h-16 shrink-0 items-center border-0 border-b border-solid border-line px-5">
+          <Brand />
+        </div>
+        <NavList role={role} t={t} />
+        <LogoutButton t={t} onLogout={onLogout} />
+      </aside>
+
+      {/* Mobile: lớp phủ + ngăn kéo trượt từ trái */}
       <div
         className={[
-          "flex h-16 items-center border-0 border-b border-solid border-line",
-          collapsed ? "justify-center px-0" : "px-5",
+          "fixed inset-0 z-40 bg-ink/40 transition-opacity md:hidden",
+          open ? "opacity-100" : "pointer-events-none opacity-0",
+        ].join(" ")}
+        onClick={onClose}
+        aria-hidden
+      />
+      <aside
+        ref={panelRef}
+        tabIndex={-1}
+        aria-hidden={!open}
+        {...(open ? {} : { inert: "" })}
+        className={[
+          "fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-0 border-r border-solid border-line bg-surface",
+          "transition-transform duration-200 md:hidden",
+          open ? "translate-x-0" : "-translate-x-full",
         ].join(" ")}
       >
-        <span className="font-extrabold tracking-tight text-ink">
-          {collapsed ? (
-            <span className="text-xl">F</span>
-          ) : (
-            <span className="text-[19px]">
-              FRACILE<span className="text-primary">.</span>
-            </span>
-          )}
-        </span>
-      </div>
-
-      <nav className="flex flex-1 flex-col gap-1 overflow-y-auto p-3" aria-label={t("nav.primary")}>
-        {items.map((item) => (
-          <NavButton
-            key={item.id}
-            item={item}
-            label={t(item.labelKey)}
-            active={active === item.id}
-            collapsed={collapsed}
-            onSelect={onSelect}
-          />
-        ))}
-      </nav>
-
-      <div className="flex flex-col gap-1 border-0 border-t border-solid border-line p-3">
-        <button
-          type="button"
-          onClick={onLogout}
-          title={collapsed ? t("header.logout") : undefined}
-          className={[
-            "flex w-full items-center gap-3 rounded-md px-3 py-2.5",
-            "text-sm font-medium text-soft transition-colors",
-            "hover:bg-danger-soft hover:text-danger",
-            collapsed ? "justify-center px-0" : "",
-          ].join(" ")}
-        >
-          <LogOut size={19} />
-          {!collapsed && <span className="truncate">{t("header.logout")}</span>}
-        </button>
-
-        <button
-          type="button"
-          onClick={onToggle}
-          aria-expanded={!collapsed}
-          title={collapsed ? t("nav.expand") : t("nav.collapse")}
-          className={[
-            "flex w-full items-center gap-3 rounded-md px-3 py-2.5",
-            "text-sm font-medium text-soft transition-colors",
-            "hover:bg-surface2 hover:text-ink",
-            collapsed ? "justify-center px-0" : "",
-          ].join(" ")}
-        >
-          {collapsed ? <PanelLeftOpen size={19} /> : <PanelLeftClose size={19} />}
-          {!collapsed && <span className="truncate">{t("nav.collapse")}</span>}
-        </button>
-      </div>
-    </aside>
-  );
-}
-
-/* Thanh điều hướng dưới đáy cho màn hình hẹp. Cùng bộ item, cùng state. */
-export function MobileNav({ role, active, onSelect, t }) {
-  const items = navFor(role);
-  return (
-    <nav
-      aria-label={t("nav.primary")}
-      className="fixed inset-x-0 bottom-0 z-40 flex border-0 border-t border-solid border-line bg-surface md:hidden"
-      style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
-    >
-      {items.map(({ id, labelKey, Icon }) => {
-        const on = active === id;
-        return (
+        <div className="flex h-16 shrink-0 items-center justify-between border-0 border-b border-solid border-line pl-5 pr-3">
+          <Brand />
           <button
-            key={id}
             type="button"
-            onClick={() => onSelect(id)}
-            aria-current={on ? "page" : undefined}
-            className={[
-              "flex flex-1 flex-col items-center gap-1 py-2.5 text-[11px] transition-colors",
-              on ? "font-bold text-primary" : "font-medium text-soft",
-            ].join(" ")}
+            onClick={onClose}
+            aria-label={t("nav.close")}
+            className="grid h-9 w-9 place-items-center rounded-md text-soft transition-colors hover:bg-surface2 hover:text-ink"
           >
-            <Icon size={20} strokeWidth={on ? 2.4 : 2} />
-            <span className="truncate px-1">{t(labelKey)}</span>
+            <X size={19} />
           </button>
-        );
-      })}
-    </nav>
+        </div>
+        <NavList role={role} t={t} onNavigate={onClose} />
+        <LogoutButton t={t} onLogout={onLogout} />
+      </aside>
+    </>
   );
 }
