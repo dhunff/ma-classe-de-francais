@@ -61,14 +61,35 @@ Deno.serve(async (req) => {
     /* Chỉ gỡ được quyền do giáo viên cấp. Quyền đã thanh toán không xoá bằng
        đường này — tiền đã vào thì việc rút lại là quyết định cần dấu vết, không
        phải một cú bấm nút. */
-    const { error } = await supabase
+    const { data: removed, error } = await supabase
       .from("exercise_access")
       .delete()
       .eq("student", student)
       .eq("exercise_id", exerciseId)
-      .eq("status", "GRANTED_BY_TEACHER");
+      .eq("status", "GRANTED_BY_TEACHER")
+      .select("id");
     if (error) return json(500, { error: "delete_failed", detail: error.message });
-    return json(200, { ok: true, action, student, exercise_id: exerciseId });
+
+    /* Nói đúng chuyện đã xảy ra. Trả `ok: true` khi không xoá được gì sẽ khiến
+       giáo viên tưởng đã thu hồi trong khi học sinh vẫn mở được bài.
+       Bản ghi PURCHASED cố ý không gỡ bằng đường này: tiền đã vào thì việc rút
+       lại cần thao tác có chủ đích trong database, không phải một cú bấm. */
+    if (!removed || removed.length === 0) {
+      const { data: still } = await supabase
+        .from("exercise_access")
+        .select("status")
+        .eq("student", student)
+        .eq("exercise_id", exerciseId)
+        .maybeSingle();
+      return json(200, {
+        ok: false,
+        removed: 0,
+        reason: still?.status === "PURCHASED" ? "purchased_not_revocable" : "no_such_grant",
+        student,
+        exercise_id: exerciseId,
+      });
+    }
+    return json(200, { ok: true, action, removed: removed.length, student, exercise_id: exerciseId });
   }
 
   /* Cấp: không đè lên bản ghi đã thanh toán. */
