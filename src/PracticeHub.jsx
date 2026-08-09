@@ -339,6 +339,32 @@ function PracticeHubInner({ role = "eleve", name = "", accounts = [] }) {
         {Toast}
         <button style={{ ...S.btn(false), marginBottom: 16 }}
           onClick={() => setView(view.folder ? { page: "autres" } : { page: "home" })}><ChevronLeft size={16} /> Retour</button>
+
+        {/* Tabs kỹ năng: đổi kỹ năng ngay tại chỗ, không phải quay về trang
+            chủ rồi chọn lại. Cuộn ngang trên màn hình hẹp thay vì xuống dòng,
+            để dải tab luôn cao một hàng.
+            Trạng thái đang chọn dùng cả nền, chữ đậm và aria-selected — không
+            chỉ dựa vào màu. */}
+        <div role="tablist" aria-label="Compétences"
+          className="mcf-scroll -mx-1 mb-4 flex gap-1 overflow-x-auto px-1 pb-1">
+          {CATS.map((c) => {
+            const on = view.cat === c.skill && !view.folder;
+            return (
+              <button key={c.skill} role="tab" aria-selected={on}
+                onClick={() => setView(c.skill === "__autres__"
+                  ? { page: "autres" }
+                  : { page: "category", cat: c.skill, niveau: view.niveau })}
+                className={[
+                  "flex shrink-0 items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors",
+                  on ? "bg-primary-soft font-bold text-primary" : "font-medium text-soft hover:bg-surface2 hover:text-ink",
+                ].join(" ")}>
+                <c.Icon size={16} />
+                {c.label}
+              </button>
+            );
+          })}
+        </div>
+
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18, flexWrap: "wrap", gap: 10 }}>
           <h2 style={{ ...S.display, margin: 0, display: "flex", alignItems: "center", gap: 10 }}>
             <meta.Icon size={24} color={meta.color} /> {view.folder ? view.folder : meta.label}
@@ -500,46 +526,64 @@ function PracticeHubInner({ role = "eleve", name = "", accounts = [] }) {
             <div style={{ fontSize: 13.5, color: C.soft, marginTop: 6 }}>Essaie un autre niveau ou reviens bientôt !</div>
           </div>
         ) : (
-          <div style={{ display: "grid", gap: 12 }}>
+          /* Lưới thẻ: ảnh 16:9 trên cùng, nội dung giữa, hành động dưới đáy.
+             Mọi thẻ cao bằng nhau nhờ flex + mt-auto ở khối hành động, nên
+             hàng không bị so le khi tiêu đề dài ngắn khác nhau. */
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {list.map((ex) => {
               const h = hist[ex.id];
+              const types = [...new Set(ex.questions.map((q) => QTYPES[q.type]))].join(" + ");
               return (
-                <div key={ex.id} className="mcf-card" style={{ ...S.card, display: "flex", flexDirection: "column", gap: 0, width: "100%",
-                  position: "relative" }}>
-                  {/* Header : badges + titre + méta */}
-                  <div style={{ display: "flex", flexDirection: "column", gap: 4, marginBottom: ex.imageUrl ? 14 : 10 }}>
-                  <div>
-                    <span style={S.badge(ex.level)}>{ex.level}</span>
-                    {ex.folderId && folderName(ex.folderId) && (
-                      <span style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "var(--mcf-surface2)",
-                        border: `1px solid ${C.line}`, borderRadius: 999, padding: "3px 12px", fontSize: 11.5, fontWeight: 700, color: C.soft, marginRight: 8 }}>
-                        <Folder size={11} /> {folderName(ex.folderId)}
-                      </span>
-                    )}
-                    <strong>{ex.title}</strong>
-                    <div style={{ fontSize: 12.5, color: C.soft, marginTop: 4 }}>
-                      {ex.questions.length} question{ex.questions.length > 1 ? "s" : ""} · {[...new Set(ex.questions.map((q) => QTYPES[q.type]))].join(" + ")}
-                      {ex.audioUrl && " · 🎧"}{ex.readingText && " · 📖"}{ex.timeLimit && ` · ⏱ ${ex.timeLimit} min`}
-                      {h && <span style={{ color: h.max && h.best / h.max >= 0.8 ? C.ok : C.primary, fontWeight: 700 }}> · 🏆 Meilleur : {h.best}/{h.max} ({h.tries} essai{h.tries > 1 ? "s" : ""})</span>}
-                    </div>
-                  </div>
-                  </div>
-                  {/* Thumbnail lớn dưới header */}
-                  {ex.imageUrl && (
+                <div key={ex.id}
+                  className="flex flex-col overflow-hidden rounded-md border border-solid border-line bg-surface shadow-sm">
+                  {/* Ảnh minh hoạ do giáo viên đặt. Không có thì dùng khối
+                      trung tính — không dựng ảnh giả cho bài chưa có ảnh. */}
+                  {ex.imageUrl ? (
                     <img src={ex.imageUrl} alt="" loading="lazy"
-                      style={{ width: 240, maxWidth: "100%", aspectRatio: "16/9", objectFit: "cover", borderRadius: 12,
-                      border: `1px solid ${C.line}`, marginBottom: 14, alignSelf: "flex-start" }} />
+                      className="aspect-video w-full border-0 border-b border-solid border-line object-cover" />
+                  ) : (
+                    <div aria-hidden
+                      className="grid aspect-video w-full place-items-center border-0 border-b border-solid border-line bg-surface2 text-3xl text-soft">
+                      {ex.audioUrl ? "🎧" : ex.readingText ? "📖" : "✎"}
+                    </div>
                   )}
-                  {/* Actions dưới cùng, căn phải */}
-                  <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, alignItems: "center", marginTop: "auto" }}>
-                    <SplitTrain open={trainMenu === ex.id} setOpen={(v) => setTrainMenu(v ? ex.id : null)}
-                      onStart={() => setView({ page: "quiz", cat: view.cat, folder: view.folder, niveau, exId: ex.id })}
-                      onPick={(kind) => setMatModal({ exId: ex.id, kind })} />
-                    {teacher && <HubMenu
-                      onEdit={() => { const c = JSON.parse(JSON.stringify(ex)); if (!c.skills || !c.skills.length) c.skills = c.skill ? [c.skill] : []; if (c.consigne === undefined) c.consigne = ""; if (!c.usageType) c.usageType = "practice"; setDraft(c); setView({ page: "builder" }); }}
-                      onDup={() => duplicate(ex)}
-                      onMove={view.cat !== "__autres__" ? () => setMoveEx(ex) : null}
-                      onDel={() => persist(exercises.filter((e) => e.id !== ex.id))} />}
+
+                  <div className="flex flex-1 flex-col p-4">
+                    <div className="mb-2 flex flex-wrap items-center gap-2">
+                      <span style={S.badge(ex.level)}>{ex.level}</span>
+                      {ex.folderId && folderName(ex.folderId) && (
+                        <span className="inline-flex items-center gap-1.5 rounded-full border border-solid border-line bg-surface2 px-2.5 py-0.5 text-[11px] font-bold text-soft">
+                          <Folder size={11} /> {folderName(ex.folderId)}
+                        </span>
+                      )}
+                    </div>
+
+                    <strong className="mb-1 block text-[15px] leading-snug text-ink">{ex.title}</strong>
+
+                    <div className="text-xs leading-relaxed text-soft">
+                      {ex.questions.length} question{ex.questions.length > 1 ? "s" : ""}
+                      {types && ` · ${types}`}
+                      {ex.audioUrl && " · 🎧"}{ex.readingText && " · 📖"}{ex.timeLimit && ` · ⏱ ${ex.timeLimit} min`}
+                    </div>
+                    {h && (
+                      <div className="mt-1 text-xs font-bold"
+                        style={{ color: h.max && h.best / h.max >= 0.8 ? C.ok : C.primary }}>
+                        🏆 Meilleur : {h.best}/{h.max} ({h.tries} essai{h.tries > 1 ? "s" : ""})
+                      </div>
+                    )}
+
+                    {/* Hành động ở góc dưới. Menu ⋮ render qua Portal — quy tắc
+                        kiến trúc sẵn có, để dropdown không bị kẹt z-index. */}
+                    <div className="mt-auto flex items-center justify-end gap-2 pt-4">
+                      <SplitTrain open={trainMenu === ex.id} setOpen={(v) => setTrainMenu(v ? ex.id : null)}
+                        onStart={() => setView({ page: "quiz", cat: view.cat, folder: view.folder, niveau, exId: ex.id })}
+                        onPick={(kind) => setMatModal({ exId: ex.id, kind })} />
+                      {teacher && <HubMenu
+                        onEdit={() => { const c = JSON.parse(JSON.stringify(ex)); if (!c.skills || !c.skills.length) c.skills = c.skill ? [c.skill] : []; if (c.consigne === undefined) c.consigne = ""; if (!c.usageType) c.usageType = "practice"; setDraft(c); setView({ page: "builder" }); }}
+                        onDup={() => duplicate(ex)}
+                        onMove={view.cat !== "__autres__" ? () => setMoveEx(ex) : null}
+                        onDel={() => persist(exercises.filter((e) => e.id !== ex.id))} />}
+                    </div>
                   </div>
                 </div>
               );
