@@ -13,13 +13,17 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 /* Ngân hàng thường viết hoa và bỏ dấu nội dung chuyển khoản, nên phải chuẩn
    hoá cả hai phía trước khi so. "Đỗ Hùng" có thể về thành "DO HUNG". */
+/* PHẢI GIỐNG HỆT `memoSafe` trong src/shared/access.js.
+   Ngân hàng chỉ giữ chữ và số trong nội dung chuyển khoản — dấu gạch, dấu
+   chấm, dấu tiếng Việt đều bị nuốt. Bỏ hết ở cả hai đầu thì dù ngân hàng có
+   cắt gì cũng vẫn khớp. */
 const normalize = (s: string) =>
   String(s ?? "")
     .normalize("NFD")
     .replace(/[̀-ͯ]/g, "")
     .replace(/đ/gi, "d")
-    .replace(/\s+/g, "")
-    .toUpperCase();
+    .toUpperCase()
+    .replace(/[^A-Z0-9]/g, "");
 
 /* Memo do client sinh: `LMS <tên đã bỏ khoảng trắng, tối đa 12> <6 ký tự cuối id>` */
 const parseMemo = (content: string) => {
@@ -77,7 +81,9 @@ Deno.serve(async (req) => {
   for (const row of rows ?? []) {
     let list: any[] = [];
     try { list = JSON.parse(row.value); } catch { continue; }
-    const hit = list.find((e) => normalize(String(e?.id ?? "").slice(-6)) === parsed.exSuffix);
+    /* Chuẩn hoá TRƯỚC rồi mới cắt 6 ký tự cuối — ngược lại thì "prac-paid"
+       ra "C-PAID" trong khi ngân hàng gửi về "CPAID". */
+    const hit = list.find((e) => normalize(String(e?.id ?? "")).slice(-6) === parsed.exSuffix);
     if (hit) { exercise = hit; break; }
   }
   if (!exercise) return json(200, { ignored: "exercise_not_found", memo: parsed });

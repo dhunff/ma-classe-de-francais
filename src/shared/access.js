@@ -116,8 +116,25 @@ export const fmtPrice = (vnd) =>
 
 /* Nội dung chuyển khoản. Giáo viên đối chiếu chuỗi này với sao kê ngân hàng,
    nên nó phải ngắn, không dấu, và nhận ra được bằng mắt. */
+/* Chuẩn hoá cho nội dung chuyển khoản.
+   Ngân hàng chỉ nhận chữ và số — dấu gạch, dấu chấm, dấu tiếng Việt đều bị
+   nuốt hoặc từ chối. Nên bỏ hết trước khi dựng memo, thay vì để ngân hàng tự
+   cắt rồi hai đầu không khớp nhau nữa.
+
+   PHẢI GIỐNG HỆT hàm `normalize` trong supabase/functions/sepay-webhook.
+   Lệch nhau một ký tự là tiền vào mà quyền không được cấp. */
+export const memoSafe = (s) =>
+  String(s ?? "")
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/đ/gi, "d")
+    .replace(/[^A-Za-z0-9]/g, "")
+    .toUpperCase();
+
+/* Cắt 6 ký tự cuối SAU khi đã bỏ ký tự lạ. Làm ngược thứ tự thì
+   "prac-paid" ra "C-PAID", còn ngân hàng gửi về "CPAID" — không khớp. */
 export const paymentMemo = (student, exId) =>
-  `LMS ${String(student).replace(/\s+/g, "").slice(0, 12)} ${String(exId).slice(-6)}`;
+  `LMS ${memoSafe(student).slice(0, 12)} ${memoSafe(exId).slice(-6)}`;
 
 /* Ảnh QR VietQR — chỉ là một URL, không cần máy chủ nào của ta.
    Trả null khi giáo viên chưa cấu hình tài khoản, để nơi gọi hiện hướng dẫn
