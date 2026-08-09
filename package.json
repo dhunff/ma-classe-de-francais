@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "check:design": "node scripts/check-design.mjs"
+    "check:design": "node scripts/check-design.mjs",
+    "check:imports": "node scripts/check-imports.mjs"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

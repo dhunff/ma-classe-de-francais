@@ -4,6 +4,7 @@ import { SKILLS, exSkills } from "../../shared/exercises.js";
 import { uid, stripHtml, autoQ, tableauCells, fillAccepted } from "../../shared/questions.js";
 import { useT } from "../../shared/i18n.jsx";
 import RichTextEditor from "../../editor/RichTextEditor.jsx";
+import { Image as ImageIcon, X, Trash2 } from "lucide-react";
 
 function Builder({ draft, setDraft, publish, cancel, accounts, classes = [] }) {
   const dSkills = draft.skills && draft.skills.length ? draft.skills : draft.skill ? [draft.skill] : [];
