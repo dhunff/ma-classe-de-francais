@@ -22,6 +22,7 @@ const I18N = {
     incomplete_body: "Bạn vẫn còn {count} câu hỏi chưa hoàn thành. Bạn có chắc chắn muốn nộp bài ngay bây giờ không ? Điểm số sẽ được tính dựa trên những câu đã trả lời.",
     keep_working: "Tiếp tục làm bài", submit_anyway: "Vẫn nộp bài", lang_label: "Ngôn ngữ",
     loading: "Đang tải…",
+    taking: { answered: "Đã trả lời", hurry: "sắp hết giờ" },
     login: {
       tagline: "Nền tảng học tiếng Pháp",
       tab_student: "Học sinh", tab_teacher: "Giáo viên",
@@ -79,6 +80,7 @@ const I18N = {
     incomplete_body: "Il vous reste {count} question(s) sans réponse. Voulez-vous vraiment rendre votre copie maintenant ? La note sera calculée uniquement sur les questions répondues.",
     keep_working: "Continuer l'exercice", submit_anyway: "Rendre quand même", lang_label: "Langue",
     loading: "Chargement…",
+    taking: { answered: "Répondu", hurry: "bientôt fini" },
     login: {
       tagline: "La plateforme pour apprendre le français",
       tab_student: "Élève", tab_teacher: "Professeur",
@@ -136,6 +138,7 @@ const I18N = {
     incomplete_body: "You still have {count} unanswered question(s). Are you sure you want to submit now? Your score will be based only on the answered questions.",
     keep_working: "Keep working", submit_anyway: "Submit anyway", lang_label: "Language",
     loading: "Loading…",
+    taking: { answered: "Answered", hurry: "almost up" },
     login: {
       tagline: "The platform for learning French",
       tab_student: "Student", tab_teacher: "Teacher",

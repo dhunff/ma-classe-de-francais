@@ -102,6 +102,8 @@ function Taking({ ex, name, setSubmissions, done }) {
     : q.type === "open" ? stripHtml(answers[q.id]) !== ""
     : (answers[q.id] || "").trim() !== "");
 
+  const answeredCount = ex.questions.length - getUnansweredQuestionsCount(answers, ex.questions);
+
   const submit = async () => {
     setSaving(true); setErr("");
     const autos = ex.questions.filter(autoQ);
@@ -192,13 +194,52 @@ function Taking({ ex, name, setSubmissions, done }) {
         </button>
       )}
       <div style={zen ? { maxWidth: 920, margin: "0 auto" } : undefined}>
-      {/* ⏱ Đồng hồ đếm ngược trôi nổi */}
-      {remaining != null && (
-        <div style={{ position: "fixed", bottom: 20, right: 20, zIndex: 100,
-          display: "flex", alignItems: "center", gap: 8, padding: "10px 18px", borderRadius: 999,
-          background: remaining <= 300 ? C.danger : "#111827", color: "#fff", border: "1px solid var(--mcf-line)", fontWeight: 800, fontSize: 17,
-          boxShadow: "0 8px 22px rgba(27,37,89,.35)", fontVariantNumeric: "tabular-nums" }}>
-          ⏱ {fmtLeft(remaining)}
+      {/* Thanh trạng thái nổi: tiến độ trả lời · đồng hồ · nút nộp.
+
+          Gộp ba thứ vào một chỗ cố định đáy màn hình vì hết giờ là TỰ NỘP.
+          Học sinh phải luôn thấy còn bao lâu, còn bao nhiêu câu chưa làm, và
+          nộp được ngay — không phải cuộn xuống cuối trang mới tìm thấy nút. */}
+      {!locked && (
+        <div className="fixed inset-x-0 bottom-0 z-[100] border-0 border-t border-solid border-line bg-surface/95 backdrop-blur"
+          style={{ paddingBottom: "env(safe-area-inset-bottom)" }}>
+          <div className="mx-auto flex max-w-5xl flex-wrap items-center gap-3 px-4 py-3">
+            <div className="min-w-[150px] flex-1">
+              <div className="mb-1 flex items-baseline justify-between gap-2 text-xs font-semibold">
+                <span className="text-soft">{t("taking.answered")}</span>
+                <span className="text-ink">{answeredCount}/{ex.questions.length}</span>
+              </div>
+              <div role="progressbar" aria-valuenow={answeredCount} aria-valuemin={0}
+                aria-valuemax={ex.questions.length} aria-label={t("taking.answered")}
+                className="h-1.5 w-full overflow-hidden rounded-full bg-primary-soft">
+                <div className="h-full rounded-full bg-primary"
+                  style={{ width: ex.questions.length ? `${(answeredCount / ex.questions.length) * 100}%` : "0%" }} />
+              </div>
+            </div>
+
+            {remaining != null && (
+              /* Dưới 5 phút chuyển sang màu cảnh báo VÀ đổi chữ, để dấu hiệu
+                 không chỉ nằm ở màu sắc. */
+              <div className={[
+                "flex items-center gap-1.5 rounded-md px-3 py-1.5 text-base font-extrabold tabular-nums",
+                remaining <= 300 ? "bg-danger-soft text-danger" : "bg-surface2 text-ink",
+              ].join(" ")} aria-live={remaining <= 60 ? "polite" : "off"}>
+                <span aria-hidden>⏱</span>
+                <span>{fmtLeft(remaining)}</span>
+                {remaining <= 300 && <span className="text-xs font-bold">{t("taking.hurry")}</span>}
+              </div>
+            )}
+
+            <button
+              disabled={saving}
+              onClick={() => {
+                const n = getUnansweredQuestionsCount(answers, ex.questions);
+                if (n > 0) setConfirmCount(n); else submit();
+              }}
+              className="h-10 shrink-0 rounded-md border border-solid border-transparent bg-primary px-5 text-sm font-bold text-on-primary transition-opacity hover:opacity-90 disabled:opacity-60"
+            >
+              {saving ? t("sending") : t("submit_copy")}
+            </button>
+          </div>
         </div>
       )}
       {locked && (
@@ -276,14 +317,9 @@ function Taking({ ex, name, setSubmissions, done }) {
       )}
 
       {err && <p style={{ color: C.danger, fontSize: 13 }}>{err}</p>}
-      <div style={{ display: "flex", gap: 10, marginTop: 20 }}>
-        <button style={{ ...S.btn(true), opacity: !saving && !locked ? 1 : 0.4 }} disabled={saving || locked}
-          onClick={() => {
-            const n = getUnansweredQuestionsCount(answers, ex.questions);
-            if (n > 0) setConfirmCount(n); else submit();
-          }}>
-          {saving ? t("sending") : t("submit_copy")}
-        </button>
+      {/* Nút nộp nay nằm ở thanh trạng thái nổi; ở đây chỉ còn lối thoát.
+          pb-28 chừa chỗ để thanh đó không che mất câu hỏi cuối. */}
+      <div className="mt-5 pb-28">
         <button style={S.btn(false)} onClick={done}>{t("quit_draft")}</button>
       </div>
       {confirmCount != null && (
