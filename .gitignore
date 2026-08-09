@@ -8,3 +8,6 @@ dist/
 
 # Scratch của quy trình subagent-driven development
 .superpowers/
+
+# CLI link state
+supabase/.temp/
