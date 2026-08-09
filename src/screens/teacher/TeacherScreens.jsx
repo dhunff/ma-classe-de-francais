@@ -14,7 +14,7 @@ import { BookOpen, GraduationCap, MoreVertical, Pencil, Copy, Trash2, RotateCcw,
 import { BarChart, Bar, LineChart, Line, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from "recharts";
 import Builder from "./Builder.jsx";
 import PracticeHub from "../../PracticeHub.jsx";
-import { ACCESS_KEY, PAYMENT_KEY, STATUS, isPremium, hasAccess, accessRecord, grantAccess, revokeAccess, fmtPrice, loadAccess } from "../../shared/access.js";
+import { PAYMENT_KEY, STATUS, isPremium, accessRecord, fmtPrice, loadAccess, setAccessRemote, getTeacherToken, setTeacherToken } from "../../shared/access.js";
 
 
 /* ================= Teacher ================= */
@@ -403,6 +403,9 @@ function AccessManager({ accounts, exercises }) {
   const [access, setAccess] = useState([]);
   const [cfg, setCfg] = useState({ bank: "", account: "", accountName: "" });
   const [savedCfg, setSavedCfg] = useState(false);
+  const [token, setTok] = useState(getTeacherToken);
+  const [busy, setBusy] = useState(null);
+  const [err, setErr] = useState("");
 
   useEffect(() => {
     loadAccess().then(setAccess);
@@ -411,18 +414,17 @@ function AccessManager({ accounts, exercises }) {
 
   const premium = exercises.filter(isPremium);
 
-  /* Chỉ đụng tới các bản ghi do giáo viên cấp (nằm trong kv_store).
-     Bản ghi đã thanh toán nằm ở bảng exercise_access mà trình duyệt không ghi
-     được — bấm vào cũng vô hiệu, nên nút bị khoá thay vì giả vờ có tác dụng. */
+  /* Mọi thay đổi quyền đi qua Edge Function. Trình duyệt không ghi được vào
+     bảng quyền — đó là điều khiến bức tường trả phí có nghĩa. */
   const toggle = async (student, ex) => {
     const rec = accessRecord(access, student, ex.id);
-    if (rec?.trusted) return;
+    if (rec?.status === STATUS.PURCHASED) return;   // đã trả tiền: không gỡ bằng nút
 
-    const legacy = (await load(ACCESS_KEY, [])) || [];
-    const nextLegacy = rec
-      ? revokeAccess(legacy, student, ex.id)
-      : grantAccess(legacy, student, ex.id, STATUS.GRANTED_BY_TEACHER);
-    await save(ACCESS_KEY, nextLegacy);
+    setBusy(`${student}|${ex.id}`);
+    const res = await setAccessRemote(rec ? "revoke" : "grant", student, ex.id);
+    setBusy(null);
+    if (!res.ok) { setErr(res.reason === "no_token" ? t("pay.token_missing") : t("pay.call_failed")); return; }
+    setErr("");
     setAccess(await loadAccess());
   };
 
@@ -456,6 +458,24 @@ function AccessManager({ accounts, exercises }) {
         </div>
       </div>
 
+      {/* Khoá giáo viên. Lưu trong localStorage của máy này, không bao giờ ghi
+          vào kv_store — ở đó ai cũng đọc được, và khoá bị lộ thì lối vòng mở
+          lại y như cũ. */}
+      <div className="mb-6 rounded-md border border-solid border-line bg-surface2 p-4">
+        <div className="mb-1 text-sm font-bold text-ink">{t("pay.token_title")}</div>
+        <p className="mb-3 text-xs text-soft">{t("pay.token_hint")}</p>
+        <div className="flex flex-wrap items-end gap-2">
+          <input type="password" value={token} placeholder="••••••••"
+            onChange={(e) => { setTok(e.target.value); setTeacherToken(e.target.value); }}
+            className="h-9 w-56 rounded-md border border-solid border-line-strong bg-surface px-2 text-sm text-ink focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/40" />
+          <span className={`text-xs font-bold ${token ? "text-ok" : "text-warn"}`}>
+            {token ? t("pay.token_set") : t("pay.token_missing")}
+          </span>
+        </div>
+      </div>
+
+      {err && <p role="alert" className="mb-4 rounded-md bg-danger-soft px-3 py-2.5 text-sm text-danger">{err}</p>}
+
       {premium.length === 0 ? (
         <p className="text-sm text-soft">{t("pay.access_empty")}</p>
       ) : (
@@ -484,12 +504,12 @@ function AccessManager({ accounts, exercises }) {
                       <td key={ex.id} className="border-0 border-b border-solid border-line px-2 py-2">
                         <button type="button" onClick={() => toggle(a.name, ex)}
                           aria-pressed={!!rec}
-                          disabled={!!rec?.trusted}
-                          title={rec?.trusted ? t("pay.paid_locked") : undefined}
+                          disabled={rec?.status === STATUS.PURCHASED || busy === `${a.name}|${ex.id}`}
+                          title={rec?.status === STATUS.PURCHASED ? t("pay.paid_locked") : undefined}
                           className={[
                             "rounded-md px-3 py-1.5 text-xs font-bold transition-colors",
                             rec ? "bg-ok-soft text-ok" : "bg-surface2 text-soft hover:text-ink",
-                            rec?.trusted ? "cursor-not-allowed opacity-70" : "",
+                            rec?.status === STATUS.PURCHASED ? "cursor-not-allowed opacity-70" : "",
                           ].join(" ")}>
                           {rec ? `✓ ${t("pay.granted")}` : t("pay.grant")}
                         </button>

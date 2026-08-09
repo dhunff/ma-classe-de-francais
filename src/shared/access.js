@@ -26,42 +26,60 @@ export const STATUS = {
 
 export const isPremium = (ex) => !!ex?.isPremium && Number(ex?.price) > 0;
 
-/* Đọc quyền truy cập từ HAI nguồn, rồi gộp lại.
+/* Đọc quyền truy cập — CHỈ từ bảng `exercise_access`.
 
-   1. Bảng `exercise_access` — nguồn đáng tin. RLS chỉ cho đọc; chỉ Edge
-      Function giữ service_role mới ghi được. Đây là nơi webhook SePay ghi
-      khi tiền vào.
-   2. Khoá `mcf-access` trong kv_store — nơi nút « Cấp quyền » của giáo viên
-      còn đang ghi. Trình duyệt ghi được, nên nguồn này KHÔNG đáng tin: một
-      học sinh có thể tự tạo bản ghi cho mình. Nó tồn tại tạm cho tới khi có
-      Edge Function `grant-access`. Xoá nhánh này ngay khi làm xong hàm đó.
+   Trước đây hàm này còn gộp thêm khoá `mcf-access` trong kv_store, nơi nút
+   « Cấp quyền » của giáo viên ghi vào. Đó là lỗ hổng cuối: trình duyệt ghi
+   được kv_store, nên một học sinh tự tạo bản ghi "giáo viên cấp" cho mình là
+   mở khoá được bài trả phí mà không trả tiền.
 
-   Bảng có thể chưa tồn tại (chưa chạy migration 001). Khi đó chỉ dùng nguồn
-   2 và app vẫn chạy, thay vì hỏng trắng. */
+   Nay cả hai đường cấp quyền — mua và giáo viên cấp — đều đi qua Edge
+   Function giữ service_role. Trình duyệt không còn ghi được vào đâu cả, nên
+   không còn gì để giả mạo.
+
+   Hệ quả cần biết: các bản ghi cũ nằm trong kv_store KHÔNG còn hiệu lực.
+   Xem mục di trú trong supabase/README.md.
+
+   Bảng chưa tồn tại (chưa chạy migration) → trả về rỗng: mọi bài trả phí đều
+   khoá. Thà khoá nhầm còn hơn mở nhầm khi không biết chắc ai đã trả tiền. */
 export async function loadAccess() {
-  const merged = [];
-
   try {
     const { data, error } = await supabase
       .from(ACCESS_TABLE)
       .select("student, exercise_id, status");
     if (error) throw error;
-    for (const r of data ?? []) {
-      merged.push({ student: r.student, exerciseId: r.exercise_id, status: r.status, trusted: true });
-    }
+    return (data ?? []).map((r) => ({
+      student: r.student, exerciseId: r.exercise_id, status: r.status,
+    }));
   } catch {
-    // Chưa có bảng, hoặc mạng lỗi. Không chặn app; nguồn 2 vẫn dùng được.
+    return [];
   }
+}
 
+/* Gọi Edge Function để cấp / thu hồi. Token của giáo viên nằm trong
+   localStorage của chính máy họ — không bao giờ ghi vào kv_store. */
+export const TEACHER_TOKEN_KEY = "fracile-teacher-token";
+export const getTeacherToken = () => {
+  try { return localStorage.getItem(TEACHER_TOKEN_KEY) || ""; } catch { return ""; }
+};
+export const setTeacherToken = (v) => {
+  try { localStorage.setItem(TEACHER_TOKEN_KEY, v); } catch {}
+};
+
+export async function setAccessRemote(action, student, exerciseId) {
+  const token = getTeacherToken();
+  if (!token) return { ok: false, reason: "no_token" };
   try {
-    const legacy = await load(ACCESS_KEY, []);
-    for (const a of Array.isArray(legacy) ? legacy : []) {
-      const dup = merged.some((m) => m.student === a.student && m.exerciseId === a.exerciseId);
-      if (!dup) merged.push({ ...a, trusted: false });
-    }
-  } catch { /* bỏ qua */ }
-
-  return merged;
+    const { data, error } = await supabase.functions.invoke("grant-access", {
+      body: { action, student, exercise_id: exerciseId },
+      headers: { "x-teacher-token": token },
+    });
+    if (error) return { ok: false, reason: "call_failed", detail: String(error.message || error) };
+    if (data?.error) return { ok: false, reason: data.error };
+    return { ok: true, data };
+  } catch (e) {
+    return { ok: false, reason: "call_failed", detail: String(e?.message || e) };
+  }
 }
 
 export const hasAccess = (access, student, exerciseId) =>

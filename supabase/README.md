@@ -68,18 +68,40 @@ không cấp: sai memo, không tìm thấy bài, thiếu tiền, không có họ
 
 Giá **luôn đọc từ máy chủ**, không bao giờ lấy từ dữ liệu client gửi lên.
 
-## Việc còn lại để bịt kín
+### 5. Deploy hàm cấp quyền của giáo viên
 
-Sau khi làm xong hai bước trên, **đường mua bằng tiền đã an toàn**. Nhưng còn
-một lối vòng:
+```bash
+supabase secrets set TEACHER_TOKEN=<chuỗi bí mật khác, dài, tự đặt>
+supabase functions deploy grant-access --no-verify-jwt
+```
 
-Nút *Cấp quyền* của giáo viên hiện vẫn ghi vào `kv_store`, nơi trình duyệt ghi
-được. Một học sinh biết kỹ thuật vẫn có thể tự tạo một bản ghi "giáo viên cấp"
-cho mình và mở khoá mà không trả tiền.
+Rồi mở app với tư cách giáo viên → **Theo dõi học sinh** → nhập đúng chuỗi đó
+vào ô **Khoá giáo viên**. Khoá nằm trong `localStorage` của máy bạn và **không
+bao giờ** được ghi vào cơ sở dữ liệu — ở đó ai cũng đọc được.
 
-Bịt lối này cần thêm một Edge Function `grant-access` nhận một khoá bí mật của
-giáo viên, và ứng dụng gọi hàm đó thay vì ghi thẳng. Khoá đó **không được** lưu
-trong `kv_store` — vì ai cũng đọc được.
+Ai có khoá này thì cấp được quyền cho bất kỳ ai. Đừng dùng chung máy đã nhập
+khoá, và đừng đặt khoá trùng `SEPAY_TOKEN`.
 
-Chừng nào chưa làm, hãy hiểu đúng mức bảo vệ hiện có: **webhook chống được việc
-khai khống đã trả tiền, chưa chống được việc tự nhận đã được giáo viên cấp.**
+## Di trú: các quyền cũ không còn hiệu lực
+
+Trước bước này, quyền do giáo viên cấp nằm trong `kv_store`. Ứng dụng **không
+còn đọc nguồn đó nữa** — vì chính nó là lỗ hổng: trình duyệt ghi được, nên học
+sinh tự cấp quyền cho mình được.
+
+Nghĩa là sau khi triển khai, **mọi quyền đã cấp trước đây sẽ mất**. Số lượng
+thường rất ít; cách xử lý là mở bảng cấp quyền và bấm lại cho từng em. Xong thì
+xoá khoá cũ cho gọn:
+
+```sql
+delete from public.kv_store where key = 's:mcf-access';
+```
+
+## Mức bảo vệ sau khi làm đủ 5 bước
+
+Cả hai đường cấp quyền — **mua** và **giáo viên cấp** — đều đi qua Edge Function
+giữ `service_role`. Trình duyệt không ghi được vào bảng quyền, nên không còn gì
+để giả mạo.
+
+Cái còn lại **không** phải lỗ hổng của phần này, nhưng nên biết: `kv_store` vẫn
+cho `anon` toàn quyền đọc ghi. Học sinh vẫn sửa được điểm và bài nộp của người
+khác. Đó là việc riêng, cần Supabase Auth để có danh tính thật cho RLS bám vào.

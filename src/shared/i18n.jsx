@@ -51,6 +51,10 @@ const I18N = {
       save: "Lưu", saved: "Đã lưu",
       premium: "Bài trả phí", price: "Giá (₫)",
       paid_locked: "Đã thanh toán — không thu hồi được từ đây, vì bản ghi nằm ở bảng chỉ máy chủ ghi được.",
+      token_title: "Khoá giáo viên",
+      token_hint: "Cần để cấp hoặc thu hồi quyền. Lưu trên máy này, không gửi vào cơ sở dữ liệu. Đặt bằng lệnh: supabase secrets set TEACHER_TOKEN=…",
+      token_set: "Đã có khoá", token_missing: "Chưa nhập khoá giáo viên",
+      call_failed: "Không gọi được máy chủ. Kiểm tra khoá và xem hàm grant-access đã deploy chưa.",
     },
     login: {
       tagline: "Nền tảng học tiếng Pháp",
@@ -138,6 +142,10 @@ const I18N = {
       save: "Enregistrer", saved: "Enregistré",
       premium: "Exercice payant", price: "Prix (₫)",
       paid_locked: "Payé — non révocable ici : l'enregistrement est dans une table que seul le serveur peut écrire.",
+      token_title: "Clé professeur",
+      token_hint: "Nécessaire pour accorder ou retirer un accès. Conservée sur cet appareil, jamais envoyée en base. À définir avec : supabase secrets set TEACHER_TOKEN=…",
+      token_set: "Clé enregistrée", token_missing: "Clé professeur manquante",
+      call_failed: "Serveur injoignable. Vérifiez la clé et que grant-access est déployée.",
     },
     login: {
       tagline: "La plateforme pour apprendre le français",
@@ -225,6 +233,10 @@ const I18N = {
       save: "Save", saved: "Saved",
       premium: "Paid exercise", price: "Price (₫)",
       paid_locked: "Paid — not revocable here: the record lives in a table only the server can write.",
+      token_title: "Teacher key",
+      token_hint: "Needed to grant or revoke access. Kept on this device, never sent to the database. Set it with: supabase secrets set TEACHER_TOKEN=…",
+      token_set: "Key saved", token_missing: "No teacher key entered",
+      call_failed: "Could not reach the server. Check the key and that grant-access is deployed.",
     },
     login: {
       tagline: "The platform for learning French",
