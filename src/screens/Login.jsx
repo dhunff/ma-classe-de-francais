@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { BookOpen, GraduationCap, Moon, Sun, AlertCircle } from "lucide-react";
+import { BookOpen, GraduationCap, Moon, Sun, AlertCircle, Loader2 } from "lucide-react";
 import { load, save } from "../shared/storage.js";
 import { useT } from "../shared/i18n.jsx";
 
@@ -30,7 +30,7 @@ function Field({ id, label, hint, ...inputProps }) {
       <input
         id={id}
         {...inputProps}
-        className="h-11 w-full rounded-md border border-solid border-line-strong bg-surface px-3 text-[15px] text-ink transition-colors placeholder:text-soft focus:border-primary focus:outline-none"
+        className="h-11 w-full rounded-md border border-solid border-line-strong bg-surface px-3 text-[15px] text-ink transition-colors placeholder:text-soft focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/40"
       />
       {hint && <p className="mt-1.5 text-xs text-soft">{hint}</p>}
     </div>
@@ -45,6 +45,7 @@ export default function Login({ accounts, onLogin, lang, langs, onLang, dark, on
   const [pin, setPin] = useState("");
   const [msg, setMsg] = useState("");
   const [busy, setBusy] = useState(false);
+  const [showHelp, setShowHelp] = useState(false);
 
   // Một câu, chọn khi mở trang. Bản cũ đổi câu mỗi 7 giây — chuyển động nền
   // ngay cạnh ô đang gõ là thứ gây nhiễu, không phải thứ giúp đăng nhập.
@@ -57,6 +58,8 @@ export default function Login({ accounts, onLogin, lang, langs, onLang, dark, on
       const acc = accounts.find((a) => a.name.toLowerCase() === name.trim().toLowerCase());
       if (!acc) { setMsg(t("login.err_no_account", { name: name.trim() })); return; }
       if (acc.code !== code.trim()) { setMsg(t("login.err_wrong_password")); return; }
+      // App.jsx nạp lại bài tập và bài nộp ngay sau đây, nên chờ đợi là có thật.
+      setBusy(true);
       onLogin({ role: "eleve", name: acc.name });
       return;
     }
@@ -76,6 +79,11 @@ export default function Login({ accounts, onLogin, lang, langs, onLang, dark, on
       setBusy(false);
     }
   };
+
+  /* Điều hướng sau đăng nhập nằm ở App.jsx: onLogin đặt session, rồi
+     RequireRole đưa prof về /professeur/dashboard và eleve về
+     /etudiant/dashboard. Đặt ở đó thay vì ở đây để một người gõ thẳng URL
+     cũng đi qua đúng luật, chứ không chỉ người bấm nút này. */
 
   const isStudent = tab === "eleve";
 
@@ -110,10 +118,17 @@ export default function Login({ accounts, onLogin, lang, langs, onLang, dark, on
       <main className="flex flex-1 items-start justify-center px-4 pb-10 pt-4 sm:items-center sm:pt-0">
         <div className="w-full max-w-md">
           <div className="mb-7 text-center">
-            <div className="text-3xl font-extrabold tracking-tight text-ink">
+            <img
+              src="/logo.png"
+              alt=""
+              aria-hidden
+              className="mx-auto mb-3 h-12 w-12 rounded-md object-contain"
+            />
+            <div className="text-2xl font-extrabold tracking-tight text-ink">
               FRACILE<span className="text-primary">.</span>
             </div>
-            <p className="mt-1.5 text-sm text-soft">{t("login.tagline")}</p>
+            <h1 className="mt-3 text-xl font-bold tracking-tight text-ink">{t("login.welcome")}</h1>
+            <p className="mt-1 text-sm text-soft">{t("login.subtitle")}</p>
           </div>
 
           <div className="rounded-md border border-solid border-line bg-surface p-6 shadow-sm sm:p-7">
@@ -130,7 +145,7 @@ export default function Login({ accounts, onLogin, lang, langs, onLang, dark, on
                     type="button"
                     role="tab"
                     aria-selected={on}
-                    onClick={() => { setTab(k); setMsg(""); }}
+                    onClick={() => { setTab(k); setMsg(""); setShowHelp(false); }}
                     className={[
                       "flex flex-1 items-center justify-center gap-2 rounded-md px-3 py-2.5",
                       "text-sm transition-colors",
@@ -144,6 +159,18 @@ export default function Login({ accounts, onLogin, lang, langs, onLang, dark, on
             </div>
 
             <form onSubmit={submit} noValidate>
+              {/* Lỗi đặt TRÊN ô đầu tiên: người dùng đọc từ trên xuống, nên
+                  thông báo phải nằm trước thứ cần sửa, không phải sau nó. */}
+              {msg && (
+                <p
+                  role="alert"
+                  className="mb-4 flex items-start gap-2 rounded-md bg-danger-soft px-3 py-2.5 text-sm text-danger"
+                >
+                  <AlertCircle size={16} className="mt-0.5 shrink-0" />
+                  <span>{msg}</span>
+                </p>
+              )}
+
               {isStudent ? (
                 <>
                   <Field
@@ -178,23 +205,44 @@ export default function Login({ accounts, onLogin, lang, langs, onLang, dark, on
                 />
               )}
 
-              {msg && (
-                <p
-                  role="alert"
-                  className="mb-4 flex items-start gap-2 rounded-md bg-danger-soft px-3 py-2.5 text-sm text-danger"
-                >
-                  <AlertCircle size={16} className="mt-0.5 shrink-0" />
-                  <span>{msg}</span>
-                </p>
+              {/* Quên mật khẩu — nói đúng cách khôi phục có thật.
+                  Hệ thống không gửi email đặt lại (không có email), nhưng giáo
+                  viên có nút « Réinitialiser » trong danh sách học sinh. Một
+                  link dẫn tới trang trống còn tệ hơn là không có link. */}
+              {isStudent && (
+                <div className="mb-5 text-right">
+                  <button
+                    type="button"
+                    onClick={() => setShowHelp((v) => !v)}
+                    aria-expanded={showHelp}
+                    className="rounded-sm text-sm font-semibold text-primary hover:underline focus:outline-none focus:ring-2 focus:ring-primary/40"
+                  >
+                    {t("login.forgot")}
+                  </button>
+                  {showHelp && (
+                    <p className="mt-2 rounded-md bg-surface2 px-3 py-2.5 text-left text-sm leading-relaxed text-soft">
+                      {t("login.forgot_help")}
+                    </p>
+                  )}
+                </div>
               )}
 
               <button
                 type="submit"
                 disabled={busy}
-                className="flex h-11 w-full items-center justify-center gap-2 rounded-md border border-solid border-transparent bg-primary text-[15px] font-bold text-on-primary transition-opacity hover:opacity-90 disabled:opacity-60"
+                className="flex h-11 w-full items-center justify-center gap-2 rounded-md border border-solid border-transparent bg-primary text-[15px] font-bold text-on-primary transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
               >
-                {isStudent ? <BookOpen size={17} /> : <GraduationCap size={17} />}
-                {isStudent ? t("login.submit_student") : t("login.submit_teacher")}
+                {busy ? (
+                  <>
+                    <Loader2 size={17} className="mcf-spin" />
+                    {t("login.signing_in")}
+                  </>
+                ) : (
+                  <>
+                    {isStudent ? <BookOpen size={17} /> : <GraduationCap size={17} />}
+                    {isStudent ? t("login.submit_student") : t("login.submit_teacher")}
+                  </>
+                )}
               </button>
             </form>
           </div>

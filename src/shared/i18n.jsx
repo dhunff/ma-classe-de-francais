@@ -35,6 +35,10 @@ const I18N = {
       err_pin_short: "Mã PIN cần ít nhất 4 ký tự.",
       err_wrong_pin: "Mã PIN chưa đúng.",
       footnote: "Chỉ học sinh đã được giáo viên tạo tài khoản mới đăng nhập được.",
+      welcome: "Chào mừng quay lại", subtitle: "Đăng nhập để tiếp tục học",
+      forgot: "Quên mật khẩu?",
+      forgot_help: "Hệ thống không tự đặt lại mật khẩu được. Nhắn cho giáo viên — thầy cô có nút « Réinitialiser » trong danh sách học sinh và sẽ cấp cho bạn mật khẩu mới.",
+      signing_in: "Đang đăng nhập…",
     },
     dash: {
       hello: "Xin chào", goal: "Mục tiêu", no_goal: "Bạn chưa đặt mục tiêu. Vào Cài đặt để chọn.",
@@ -88,6 +92,10 @@ const I18N = {
       err_pin_short: "Le code PIN doit contenir au moins 4 caractères.",
       err_wrong_pin: "Code PIN incorrect.",
       footnote: "Seuls les élèves dont le compte a été créé par le professeur peuvent se connecter.",
+      welcome: "Bon retour", subtitle: "Connectez-vous pour continuer",
+      forgot: "Mot de passe oublié ?",
+      forgot_help: "La réinitialisation automatique n'existe pas ici. Demandez à votre professeur : il dispose du bouton « Réinitialiser » dans la liste des élèves et vous donnera un nouveau mot de passe.",
+      signing_in: "Connexion…",
     },
     dash: {
       hello: "Bonjour", goal: "Objectif", no_goal: "Aucun objectif défini. Choisissez-en un dans Paramètres.",
@@ -141,6 +149,10 @@ const I18N = {
       err_pin_short: "The PIN needs at least 4 characters.",
       err_wrong_pin: "That PIN is not right.",
       footnote: "Only students whose account the teacher has created can sign in.",
+      welcome: "Welcome back", subtitle: "Sign in to keep learning",
+      forgot: "Forgot your password?",
+      forgot_help: "There is no automatic reset here. Message your teacher — they have a « Réinitialiser » button in the student list and will give you a new password.",
+      signing_in: "Signing in…",
     },
     dash: {
       hello: "Hello", goal: "Goal", no_goal: "No goal set yet. Pick one in Settings.",
