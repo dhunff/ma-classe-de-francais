@@ -17,7 +17,7 @@ import Taking from "./Taking.jsx";
 
 
 /* ================= Student ================= */
-function Student({ name, exercises, submissions, setSubmissions, accounts, setAccounts, refresh }) {
+function Student({ name, exercises, submissions, setSubmissions, accounts, setAccounts, refresh, routeView }) {
   const [taking, setTaking] = useState(null);
 
   // 🟢 Presence heartbeat : cập nhật last_active_at (debounce 90s) khi có tương tác
@@ -37,7 +37,9 @@ function Student({ name, exercises, submissions, setSubmissions, accounts, setAc
     events.forEach((ev) => window.addEventListener(ev, onActivity, { passive: true }));
     return () => events.forEach((ev) => window.removeEventListener(ev, onActivity));
   }, [name]);
-  const [tab, setTab] = useState("todo");
+  /* `routeView` đến từ URL; xem chú thích tương ứng trong Teacher. */
+  const [tab, setTab] = useState(routeView || "todo");
+  useEffect(() => { if (routeView) setTab(routeView); }, [routeView]);
   const [showPw, setShowPw] = useState(false);
   const t = useT();
   const mine = (exId) => submissions.find((s) => s.exerciseId === exId && s.student === name);

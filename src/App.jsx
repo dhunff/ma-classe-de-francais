@@ -4,7 +4,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 
 import AppLayout from './layout/AppLayout.jsx'
 import RequireRole from './routes/RequireRole.jsx'
-import { ROLE_HOME } from './layout/navItems.js'
+import { ROLE_HOME, TEACHER_NAV, STUDENT_NAV } from './layout/navItems.js'
 
 import { C } from './shared/tokens.js'
 import { load } from './shared/storage.js'
@@ -64,7 +64,14 @@ function AppInner() {
   }, []);
   useEffect(() => { refresh(); }, [refresh]);
 
-  // Auto-login : khôi phục phiên từ localStorage khi app khởi chạy
+  /* Auto-login: khôi phục phiên từ localStorage khi app khởi chạy.
+
+     `authChecked` tồn tại để không render route nào trước khi biết chắc
+     người dùng đã đăng nhập hay chưa. Thiếu nó, có đúng một lần render với
+     loading=false và session=null: RequireRole đẩy về /login, phiên khôi
+     phục xong thì /login đẩy tiếp về trang chủ — và địa chỉ người dùng gõ
+     vào bị mất giữa hai lần chuyển hướng. Mọi deep-link đều rơi về dashboard. */
+  const [authChecked, setAuthChecked] = useState(false);
   useEffect(() => {
     if (loading) return;
     try {
@@ -74,7 +81,9 @@ function AppInner() {
       if (saved.role === "prof") setSessionRaw(saved);
       else if (saved.role === "eleve" && accounts.some((a) => a.name === saved.name)) setSessionRaw(saved);
       else localStorage.removeItem(SESSION_KEY);
-    } catch {}
+    } catch {} finally {
+      setAuthChecked(true);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loading]);
 
@@ -88,7 +97,7 @@ function AppInner() {
   const [profiles, setProfiles] = useState({});
   useEffect(() => { load("mcf-profiles", {}).then((p) => setProfiles(p || {})); }, []);
 
-  if (loading) {
+  if (loading || !authChecked) {
     return (
       <div className={"mcf-root" + (dark ? " mcf-dark" : "")}>
         <p className="p-8 text-center text-soft">{t("loading")}</p>
@@ -112,14 +121,14 @@ function AppInner() {
     />
   );
 
-  // Màn hình cũ: tab điều hướng còn nằm bên trong Teacher/Student, nên mọi
-  // route ngoài dashboard tạm render nguyên component đó. Kéo tab ra là việc
-  // của bước tách file.
-  const teacherScreens = (
-    <Teacher {...{ exercises, setExercises, submissions, setSubmissions, accounts, setAccounts, classes, setClasses, refresh }} />
+  /* Mỗi mục điều hướng có `view` sẽ thành một route render đúng tab đó.
+     Sinh từ chính bảng nav để hai bên không thể lệch nhau: thêm một mục vào
+     navItems.js là có route tương ứng, không phải nhớ sửa hai chỗ. */
+  const teacherRoute = (view) => (
+    <Teacher routeView={view} {...{ exercises, setExercises, submissions, setSubmissions, accounts, setAccounts, classes, setClasses, refresh }} />
   );
-  const studentScreens = (
-    <Student name={session?.name} {...{ exercises, submissions, setSubmissions, accounts, setAccounts, refresh }} />
+  const studentRoute = (view) => (
+    <Student routeView={view} name={session?.name} {...{ exercises, submissions, setSubmissions, accounts, setAccounts, refresh }} />
   );
 
   return (
@@ -149,9 +158,9 @@ function AppInner() {
             <Route element={<RequireRole session={session} role="prof">{shell}</RequireRole>}>
               <Route path="/professeur/dashboard"
                 element={<TeacherDashboard {...{ exercises, submissions, accounts, t }} />} />
-              <Route path="/professeur/exercices" element={teacherScreens} />
-              <Route path="/professeur/eleves" element={teacherScreens} />
-              <Route path="/professeur/parametres" element={teacherScreens} />
+              {TEACHER_NAV.filter((i) => i.view).map((i) => (
+                <Route key={i.to} path={i.to} element={teacherRoute(i.view)} />
+              ))}
               <Route path="/professeur/*" element={<Navigate to="/professeur/dashboard" replace />} />
             </Route>
 
@@ -159,9 +168,9 @@ function AppInner() {
               <Route path="/etudiant/dashboard"
                 element={<StudentDashboard name={session?.name} profile={profiles[session?.name]}
                   {...{ exercises, submissions, t }} />} />
-              <Route path="/etudiant/bibliotheque" element={studentScreens} />
-              <Route path="/etudiant/progression" element={studentScreens} />
-              <Route path="/etudiant/parametres" element={studentScreens} />
+              {STUDENT_NAV.filter((i) => i.view).map((i) => (
+                <Route key={i.to} path={i.to} element={studentRoute(i.view)} />
+              ))}
               <Route path="/etudiant/*" element={<Navigate to="/etudiant/dashboard" replace />} />
             </Route>
 

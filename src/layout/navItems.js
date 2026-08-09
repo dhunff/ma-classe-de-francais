@@ -1,34 +1,49 @@
-import { LayoutDashboard, Library, Users, TrendingUp, Settings, BookOpen } from "lucide-react";
+import {
+  LayoutDashboard, BookOpen, Users, BarChart3, Dumbbell,
+  ClipboardList, CheckSquare, TrendingUp, Settings,
+} from "lucide-react";
 
-/* Điều hướng của vỏ app, gắn với URL thật.
+/* Điều hướng của vỏ app.
 
-   Hai vai trò có hai cây route tách hẳn nhau — đó là điều kiện để chặn chéo:
-   học sinh gõ /professeur/... sẽ bị RequireRole đẩy về khu của mình.
-   `titleKey` dùng cho tiêu đề trang trên Topbar. */
+   Mỗi mục gắn với đúng MỘT màn hình bên trong qua trường `view`. Trước đây
+   bốn route của giáo viên đều render cùng một component với tab mặc định,
+   nên URL đổi mà nội dung không đổi — bấm « Theo dõi học sinh » vẫn ra thư
+   viện bài tập. `view` là thứ nối URL với tab, để địa chỉ luôn mô tả đúng
+   thứ đang hiển thị và bookmark / nút Back hoạt động.
+
+   Không có mục nào không có màn hình đứng sau. Giáo viên không có màn hình
+   cài đặt nên không có mục « Paramètres » — một mục dẫn tới trang trống còn
+   tệ hơn là không có mục đó. */
 
 export const ROLE_HOME = { prof: "/professeur/dashboard", eleve: "/etudiant/dashboard" };
 
 export const TEACHER_NAV = [
   { to: "/professeur/dashboard", labelKey: "nav.dashboard", Icon: LayoutDashboard },
-  { to: "/professeur/exercices", labelKey: "nav.exercises", Icon: BookOpen },
-  { to: "/professeur/eleves", labelKey: "nav.students", Icon: Users },
-  { to: "/professeur/parametres", labelKey: "nav.settings", Icon: Settings },
+  { to: "/professeur/exercices", labelKey: "nav.exercises", Icon: BookOpen, view: "list" },
+  { to: "/professeur/eleves", labelKey: "nav.students", Icon: Users, view: "students" },
+  { to: "/professeur/statistiques", labelKey: "nav.stats", Icon: BarChart3, view: "stats" },
+  { to: "/professeur/entrainement", labelKey: "nav.practice", Icon: Dumbbell, view: "practice" },
 ];
 
 export const STUDENT_NAV = [
   { to: "/etudiant/dashboard", labelKey: "nav.dashboard", Icon: LayoutDashboard },
-  { to: "/etudiant/bibliotheque", labelKey: "nav.practice", Icon: Library },
-  { to: "/etudiant/progression", labelKey: "nav.progress", Icon: TrendingUp },
-  { to: "/etudiant/parametres", labelKey: "nav.settings", Icon: Settings },
+  { to: "/etudiant/devoirs", labelKey: "nav.todo", Icon: ClipboardList, view: "todo" },
+  { to: "/etudiant/rendus", labelKey: "nav.done", Icon: CheckSquare, view: "done" },
+  { to: "/etudiant/entrainement", labelKey: "nav.practice", Icon: Dumbbell, view: "practice" },
+  { to: "/etudiant/progression", labelKey: "nav.progress", Icon: TrendingUp, view: "progress" },
+  { to: "/etudiant/compte", labelKey: "nav.account", Icon: Settings, view: "settings" },
 ];
 
 export const navFor = (role) => (role === "prof" ? TEACHER_NAV : STUDENT_NAV);
 
+const ALL = [...TEACHER_NAV, ...STUDENT_NAV];
+
+const matchFor = (pathname) =>
+  ALL.filter((i) => pathname === i.to || pathname.startsWith(i.to + "/"))
+    .sort((a, b) => b.to.length - a.to.length)[0];
+
 /* Tiêu đề trang hiện tại, khớp theo đường dẫn dài nhất trùng khớp. */
 export function titleKeyFor(pathname) {
-  const all = [...TEACHER_NAV, ...STUDENT_NAV];
-  const hit = all
-    .filter((i) => pathname === i.to || pathname.startsWith(i.to + "/"))
-    .sort((a, b) => b.to.length - a.to.length)[0];
+  const hit = matchFor(pathname);
   return hit ? hit.labelKey : null;
 }

@@ -17,8 +17,13 @@ import PracticeHub from "../../PracticeHub.jsx";
 
 
 /* ================= Teacher ================= */
-function Teacher({ exercises, setExercises, submissions, setSubmissions, accounts, setAccounts, classes, setClasses, refresh }) {
-  const [view, setView] = useState("list");
+function Teacher({ exercises, setExercises, submissions, setSubmissions, accounts, setAccounts, classes, setClasses, refresh, routeView }) {
+  /* `routeView` đến từ URL. State nội bộ vẫn giữ, vì hai màn hình không có
+     địa chỉ riêng — trình soạn bài ("new") và màn chấm bài ("progress:<id>")
+     mở chồng lên rồi đóng lại. URL đổi thì kéo state theo; các bước tạm thì
+     tự quản. */
+  const [view, setView] = useState(routeView || "list");
+  useEffect(() => { if (routeView) setView(routeView); }, [routeView]);
   // 📣 Annonces
   const [annModal, setAnnModal] = useState(false);
   const [annMsg, setAnnMsg] = useState("");
