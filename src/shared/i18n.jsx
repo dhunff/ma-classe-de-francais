@@ -50,6 +50,7 @@ const I18N = {
       config_hint: "Dùng để tạo mã QR. Mã ngân hàng theo chuẩn VietQR, ví dụ: VCB, TCB, MB, ACB.",
       save: "Lưu", saved: "Đã lưu",
       premium: "Bài trả phí", price: "Giá (₫)",
+      paid_locked: "Đã thanh toán — không thu hồi được từ đây, vì bản ghi nằm ở bảng chỉ máy chủ ghi được.",
     },
     login: {
       tagline: "Nền tảng học tiếng Pháp",
@@ -136,6 +137,7 @@ const I18N = {
       config_hint: "Sert à générer le QR. Code banque au format VietQR, par exemple : VCB, TCB, MB, ACB.",
       save: "Enregistrer", saved: "Enregistré",
       premium: "Exercice payant", price: "Prix (₫)",
+      paid_locked: "Payé — non révocable ici : l'enregistrement est dans une table que seul le serveur peut écrire.",
     },
     login: {
       tagline: "La plateforme pour apprendre le français",
@@ -222,6 +224,7 @@ const I18N = {
       config_hint: "Used to build the QR code. Bank code in VietQR format, e.g. VCB, TCB, MB, ACB.",
       save: "Save", saved: "Saved",
       premium: "Paid exercise", price: "Price (₫)",
+      paid_locked: "Paid — not revocable here: the record lives in a table only the server can write.",
     },
     login: {
       tagline: "The platform for learning French",

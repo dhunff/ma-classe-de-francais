@@ -4,6 +4,10 @@ const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 const supabase = createClient(supabaseUrl, supabaseKey)
 const TABLE = 'kv_store'
+
+/* Export để các bảng thật (ngoài kv_store) dùng chung một kết nối —
+   ví dụ exercise_access, nơi RLS chỉ cho đọc. */
+export { supabase }
 const fullKey = (key, shared) => (shared ? 's:' : 'p:') + key
 
 window.storage = {

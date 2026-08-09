@@ -14,7 +14,7 @@ import RichTextEditor from "./editor/RichTextEditor.jsx";
 import ReadingPanel from "./editor/ReadingPanel.jsx";
 import Builder from "./screens/teacher/Builder.jsx";
 import PaymentModal from "./screens/student/PaymentModal.jsx";
-import { ACCESS_KEY, PAYMENT_KEY, isPremium, hasAccess, fmtPrice } from "./shared/access.js";
+import { PAYMENT_KEY, isPremium, hasAccess, fmtPrice, loadAccess } from "./shared/access.js";
 import { Lock } from "lucide-react";
 
 /* ============================================================
@@ -65,7 +65,7 @@ function PracticeHubInner({ role = "eleve", name = "", accounts = [] }) {
   const [payCfg, setPayCfg] = useState(null);
   const [payFor, setPayFor] = useState(null);
   useEffect(() => {
-    load(ACCESS_KEY, []).then((a) => setAccess(Array.isArray(a) ? a : []));
+    loadAccess().then(setAccess);
     load(PAYMENT_KEY, null).then(setPayCfg);
   }, []);
   const [loaded, setLoaded] = useState(false);

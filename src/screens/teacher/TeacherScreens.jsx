@@ -14,7 +14,7 @@ import { BookOpen, GraduationCap, MoreVertical, Pencil, Copy, Trash2, RotateCcw,
 import { BarChart, Bar, LineChart, Line, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from "recharts";
 import Builder from "./Builder.jsx";
 import PracticeHub from "../../PracticeHub.jsx";
-import { ACCESS_KEY, PAYMENT_KEY, STATUS, isPremium, hasAccess, accessRecord, grantAccess, revokeAccess, fmtPrice } from "../../shared/access.js";
+import { ACCESS_KEY, PAYMENT_KEY, STATUS, isPremium, hasAccess, accessRecord, grantAccess, revokeAccess, fmtPrice, loadAccess } from "../../shared/access.js";
 
 
 /* ================= Teacher ================= */
@@ -405,18 +405,25 @@ function AccessManager({ accounts, exercises }) {
   const [savedCfg, setSavedCfg] = useState(false);
 
   useEffect(() => {
-    load(ACCESS_KEY, []).then((a) => setAccess(Array.isArray(a) ? a : []));
+    loadAccess().then(setAccess);
     load(PAYMENT_KEY, null).then((c) => c && setCfg({ bank: "", account: "", accountName: "", ...c }));
   }, []);
 
   const premium = exercises.filter(isPremium);
 
+  /* Chỉ đụng tới các bản ghi do giáo viên cấp (nằm trong kv_store).
+     Bản ghi đã thanh toán nằm ở bảng exercise_access mà trình duyệt không ghi
+     được — bấm vào cũng vô hiệu, nên nút bị khoá thay vì giả vờ có tác dụng. */
   const toggle = async (student, ex) => {
-    const next = hasAccess(access, student, ex.id)
-      ? revokeAccess(access, student, ex.id)
-      : grantAccess(access, student, ex.id, STATUS.GRANTED_BY_TEACHER);
-    setAccess(next);
-    await save(ACCESS_KEY, next);
+    const rec = accessRecord(access, student, ex.id);
+    if (rec?.trusted) return;
+
+    const legacy = (await load(ACCESS_KEY, [])) || [];
+    const nextLegacy = rec
+      ? revokeAccess(legacy, student, ex.id)
+      : grantAccess(legacy, student, ex.id, STATUS.GRANTED_BY_TEACHER);
+    await save(ACCESS_KEY, nextLegacy);
+    setAccess(await loadAccess());
   };
 
   const saveCfg = async () => {
@@ -477,9 +484,12 @@ function AccessManager({ accounts, exercises }) {
                       <td key={ex.id} className="border-0 border-b border-solid border-line px-2 py-2">
                         <button type="button" onClick={() => toggle(a.name, ex)}
                           aria-pressed={!!rec}
+                          disabled={!!rec?.trusted}
+                          title={rec?.trusted ? t("pay.paid_locked") : undefined}
                           className={[
                             "rounded-md px-3 py-1.5 text-xs font-bold transition-colors",
                             rec ? "bg-ok-soft text-ok" : "bg-surface2 text-soft hover:text-ink",
+                            rec?.trusted ? "cursor-not-allowed opacity-70" : "",
                           ].join(" ")}>
                           {rec ? `✓ ${t("pay.granted")}` : t("pay.grant")}
                         </button>
