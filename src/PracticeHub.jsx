@@ -40,6 +40,7 @@ const inCat = (ex, sk) => sk === "__autres__"
 const catOf = (ex) => MAIN_SKILLS.find((sk) => exSkills(ex).includes(sk)) || "__autres__";
 
 function PracticeHubInner({ role = "eleve", name = "", accounts = [] }) {
+  const t = useT();
   const [topTab, setTopTab] = useState("bib");      // "bib" | "suivi" (prof)
   const [suivi, setSuivi] = useState(null);          // null = en cours de chargement
   const [suiviOpen, setSuiviOpen] = useState(null);  // ligne dépliée

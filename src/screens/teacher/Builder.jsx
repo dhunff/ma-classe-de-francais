@@ -193,12 +193,25 @@ function Builder({ draft, setDraft, publish, cancel, accounts, classes = [] }) {
     setDraft({ ...draft, questions: qs });
   };
 
-  const ready = draft.title.trim() && draft.questions.length > 0 &&
-    dSkills.length > 0 &&
-    (!draft.targeted || mergedTargets.size > 0) &&
-    draft.questions.every((q) => q.prompt.trim() &&
-      (q.type === "qcm" ? q.options.length >= 2 && q.options.every((o) => o.trim()) : true) &&
-      ((q.type === "fill" || q.type === "conj") ? String(fillAccepted(q)).trim() : true));
+  /* Điều kiện xuất bản, kèm lý do.
+
+     Trước đây nút chỉ bị làm mờ và vô hiệu hoá, không nói thiếu gì — người
+     dùng bấm mãi mà không có phản hồi nào. Giữ nguyên các điều kiện, nhưng
+     liệt kê ra thành câu đọc được. */
+  const missing = [];
+  if (!draft.title.trim()) missing.push(t("builder.need_title"));
+  if (draft.questions.length === 0) missing.push(t("builder.need_question"));
+  if (dSkills.length === 0) missing.push(t("builder.need_skill"));
+  if (draft.targeted && mergedTargets.size === 0) missing.push(t("builder.need_target"));
+  draft.questions.forEach((q, i) => {
+    const n = i + 1;
+    if (!q.prompt.trim()) missing.push(t("builder.need_prompt", { n }));
+    if (q.type === "qcm" && !(q.options.length >= 2 && q.options.every((o) => o.trim())))
+      missing.push(t("builder.need_options", { n }));
+    if ((q.type === "fill" || q.type === "conj") && !String(fillAccepted(q)).trim())
+      missing.push(t("builder.need_answer", { n }));
+  });
+  const ready = missing.length === 0;
 
   const hint = {
     fill: "Écrivez la phrase avec ______ pour le trou. Réponses acceptées séparées par | (ex. « vais|me rends »).",
@@ -695,7 +708,15 @@ function Builder({ draft, setDraft, publish, cancel, accounts, classes = [] }) {
       )}
 
       <div style={{ display: "flex", gap: 10 }}>
-        <button style={{ ...S.btn(true), opacity: ready ? 1 : 0.4 }} disabled={!ready} onClick={publish}>Publier l'exercice</button>
+        <button style={{ ...S.btn(true), opacity: ready ? 1 : 0.4 }} disabled={!ready}
+          aria-describedby={ready ? undefined : "builder-missing"} onClick={publish}>Publier l'exercice</button>
+        {!ready && (
+          <p id="builder-missing" role="status"
+            className="mt-2 rounded-md bg-warn-soft px-3 py-2.5 text-sm leading-relaxed text-warn">
+            <span className="font-bold">{t("builder.missing")}</span>{" "}
+            {missing.join(" · ")}
+          </p>
+        )}
         <button style={S.btn(false)} onClick={cancel}>Annuler</button>
       </div>
     </div>
