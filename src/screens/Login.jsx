@@ -37,7 +37,7 @@ function Field({ id, label, hint, ...inputProps }) {
   );
 }
 
-export default function Login({ accounts, onLogin, lang, langs, onLang, dark, onToggleDark }) {
+export default function Login({ accounts, onLogin, lang, langs, onLang, dark, onToggleDark, embedded = false }) {
   const t = useT();
   const [name, setName] = useState("");
   const [code, setCode] = useState("");
@@ -101,6 +101,91 @@ export default function Login({ accounts, onLogin, lang, langs, onLang, dark, on
      cũng đi qua đúng luật, chứ không chỉ người bấm nút này. */
 
 
+  const formBody = (
+              <form onSubmit={submit} noValidate>
+                {/* Lỗi đặt TRÊN ô đầu tiên: người dùng đọc từ trên xuống, nên
+                    thông báo phải nằm trước thứ cần sửa, không phải sau nó. */}
+                {msg && (
+                  <p
+                    role="alert"
+                    className="mb-4 flex items-start gap-2 rounded-md bg-danger-soft px-3 py-2.5 text-sm text-danger"
+                  >
+                    <AlertCircle size={16} className="mt-0.5 shrink-0" />
+                    <span>{msg}</span>
+                  </p>
+                )}
+
+                <Field
+                  id="login-name"
+                  label={t("login.identifier")}
+                  placeholder={t("login.identifier_ph")}
+                  value={name}
+                  autoComplete="username"
+                  onChange={(e) => setName(e.target.value)}
+                />
+                <Field
+                  id="login-password"
+                  label={t("login.password_label")}
+                  placeholder={t("login.password_placeholder")}
+                  type="password"
+                  value={code}
+                  autoComplete="current-password"
+                  onChange={(e) => setCode(e.target.value)}
+                />
+
+                {/* Quên mật khẩu — nói đúng cách khôi phục có thật.
+                    Hệ thống không gửi email đặt lại (không có email), nhưng giáo
+                    viên có nút « Réinitialiser » trong danh sách học sinh. Một
+                    link dẫn tới trang trống còn tệ hơn là không có link. */}
+                {(
+                  <div className="mb-5 text-right">
+                    <button
+                      type="button"
+                      onClick={() => setShowHelp((v) => !v)}
+                      aria-expanded={showHelp}
+                      className="rounded-sm text-sm font-semibold text-primary hover:underline focus:outline-none focus:ring-2 focus:ring-primary/40"
+                    >
+                      {t("login.forgot")}
+                    </button>
+                    {showHelp && (
+                      <p className="mt-2 rounded-md bg-surface2 px-3 py-2.5 text-left text-sm leading-relaxed text-soft">
+                        {t("login.forgot_help")}
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={busy}
+                  className="flex h-11 w-full items-center justify-center gap-2 rounded-md border border-solid border-transparent bg-primary text-[15px] font-bold text-on-primary transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {busy ? (
+                    <>
+                      <Loader2 size={17} className="mcf-spin" />
+                      {t("login.signing_in")}
+                    </>
+                  ) : (
+                    <>
+                      <BookOpen size={17} />
+                      {t("login.submit_student")}
+                    </>
+                  )}
+                </button>
+              </form>
+  );
+
+  /* Trong modal, bỏ vỏ trang: không nền toàn màn hình, không nhãn hiệu,
+     không thanh ngôn ngữ — hộp bao ngoài đã có tiêu đề riêng. Cùng một form,
+     cùng một logic đăng nhập, chỉ khác phần bao quanh. */
+  if (embedded) {
+    return (
+      <div className="p-5">
+        {formBody}
+      </div>
+    );
+  }
+
   return (
     <div className="flex min-h-screen flex-col bg-bg font-sans text-ink">
       {/* Ngôn ngữ + sáng/tối: đặt ở đây vì người chưa đăng nhập cũng cần đọc
@@ -146,77 +231,7 @@ export default function Login({ accounts, onLogin, lang, langs, onLang, dark, on
           </div>
 
           <div className="rounded-md border border-solid border-line bg-surface p-6 shadow-sm sm:p-7">
-            <form onSubmit={submit} noValidate>
-              {/* Lỗi đặt TRÊN ô đầu tiên: người dùng đọc từ trên xuống, nên
-                  thông báo phải nằm trước thứ cần sửa, không phải sau nó. */}
-              {msg && (
-                <p
-                  role="alert"
-                  className="mb-4 flex items-start gap-2 rounded-md bg-danger-soft px-3 py-2.5 text-sm text-danger"
-                >
-                  <AlertCircle size={16} className="mt-0.5 shrink-0" />
-                  <span>{msg}</span>
-                </p>
-              )}
-
-              <Field
-                id="login-name"
-                label={t("login.identifier")}
-                placeholder={t("login.identifier_ph")}
-                value={name}
-                autoComplete="username"
-                onChange={(e) => setName(e.target.value)}
-              />
-              <Field
-                id="login-password"
-                label={t("login.password_label")}
-                placeholder={t("login.password_placeholder")}
-                type="password"
-                value={code}
-                autoComplete="current-password"
-                onChange={(e) => setCode(e.target.value)}
-              />
-
-              {/* Quên mật khẩu — nói đúng cách khôi phục có thật.
-                  Hệ thống không gửi email đặt lại (không có email), nhưng giáo
-                  viên có nút « Réinitialiser » trong danh sách học sinh. Một
-                  link dẫn tới trang trống còn tệ hơn là không có link. */}
-              {(
-                <div className="mb-5 text-right">
-                  <button
-                    type="button"
-                    onClick={() => setShowHelp((v) => !v)}
-                    aria-expanded={showHelp}
-                    className="rounded-sm text-sm font-semibold text-primary hover:underline focus:outline-none focus:ring-2 focus:ring-primary/40"
-                  >
-                    {t("login.forgot")}
-                  </button>
-                  {showHelp && (
-                    <p className="mt-2 rounded-md bg-surface2 px-3 py-2.5 text-left text-sm leading-relaxed text-soft">
-                      {t("login.forgot_help")}
-                    </p>
-                  )}
-                </div>
-              )}
-
-              <button
-                type="submit"
-                disabled={busy}
-                className="flex h-11 w-full items-center justify-center gap-2 rounded-md border border-solid border-transparent bg-primary text-[15px] font-bold text-on-primary transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                {busy ? (
-                  <>
-                    <Loader2 size={17} className="mcf-spin" />
-                    {t("login.signing_in")}
-                  </>
-                ) : (
-                  <>
-                    <BookOpen size={17} />
-                    {t("login.submit_student")}
-                  </>
-                )}
-              </button>
-            </form>
+            {formBody}
           </div>
 
           <p className="mt-4 text-center text-xs leading-relaxed text-soft">

@@ -39,7 +39,12 @@ const inCat = (ex, sk) => sk === "__autres__"
   : exSkills(ex).includes(sk);
 const catOf = (ex) => MAIN_SKILLS.find((sk) => exSkills(ex).includes(sk)) || "__autres__";
 
-function PracticeHubInner({ role = "eleve", name = "", accounts = [] }) {
+function PracticeHubInner({ role = "eleve", name = "", accounts = [], onRequireLogin }) {
+  /* Khách xem được thư viện nhưng không làm được bài. Chặn đặt ở HÀNH ĐỘNG
+     chứ không ở đường vào: người vãng lai thấy có gì rồi mới quyết định lập
+     tài khoản, thay vì bị đá về trang đăng nhập ngay từ đầu. */
+  const isGuest = role === "guest";
+  const requireLogin = () => { onRequireLogin?.(); };
   const t = useT();
   const [topTab, setTopTab] = useState("bib");      // "bib" | "suivi" (prof)
   const [suivi, setSuivi] = useState(null);          // null = en cours de chargement
@@ -281,7 +286,7 @@ function PracticeHubInner({ role = "eleve", name = "", accounts = [] }) {
                     )}
                     <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 8, marginTop: "auto" }}>
                       <SplitTrain open={trainMenu === ex.id} setOpen={(v) => setTrainMenu(v ? ex.id : null)}
-                        onStart={() => setView({ page: "quiz", cat: "__autres__", exId: ex.id })}
+                        onStart={() => { if (isGuest) return requireLogin(); setView({ page: "quiz", cat: "__autres__", exId: ex.id }); }}
                         onPick={(kind) => setMatModal({ exId: ex.id, kind })} />
                       {teacher && <HubMenu
                         onEdit={() => { const c = JSON.parse(JSON.stringify(ex)); if (!c.skills || !c.skills.length) c.skills = c.skill ? [c.skill] : []; if (c.consigne === undefined) c.consigne = ""; if (!c.usageType) c.usageType = "practice"; setDraft(c); setView({ page: "builder" }); }}
@@ -610,7 +615,7 @@ function PracticeHubInner({ role = "eleve", name = "", accounts = [] }) {
                         </button>
                       ) : (
                         <SplitTrain open={trainMenu === ex.id} setOpen={(v) => setTrainMenu(v ? ex.id : null)}
-                          onStart={() => setView({ page: "quiz", cat: view.cat, folder: view.folder, niveau, exId: ex.id })}
+                          onStart={() => { if (isGuest) return requireLogin(); setView({ page: "quiz", cat: view.cat, folder: view.folder, niveau, exId: ex.id }); }}
                           onPick={(kind) => setMatModal({ exId: ex.id, kind })} />
                       )}
                       {teacher && <HubMenu

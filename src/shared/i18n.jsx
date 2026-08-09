@@ -73,6 +73,7 @@ const I18N = {
       welcome: "Chào mừng quay lại", subtitle: "Đăng nhập để tiếp tục học",
       forgot: "Quên mật khẩu?",
       forgot_help: "Hệ thống không tự đặt lại mật khẩu được. Nhắn cho giáo viên — thầy cô có nút « Réinitialiser » trong danh sách học sinh và sẽ cấp cho bạn mật khẩu mới.",
+      gate_title: "Đăng nhập để tiếp tục", gate_body: "Bạn cần đăng nhập để làm bài này.", guest: "Xem thử", signin: "Đăng nhập",
       signing_in: "Đang đăng nhập…",
     },
     dash: {
@@ -165,6 +166,7 @@ const I18N = {
       welcome: "Bon retour", subtitle: "Connectez-vous pour continuer",
       forgot: "Mot de passe oublié ?",
       forgot_help: "La réinitialisation automatique n'existe pas ici. Demandez à votre professeur : il dispose du bouton « Réinitialiser » dans la liste des élèves et vous donnera un nouveau mot de passe.",
+      gate_title: "Connectez-vous pour continuer", gate_body: "Vous devez vous connecter pour faire cet exercice.", guest: "Aperçu", signin: "Se connecter",
       signing_in: "Connexion…",
     },
     dash: {
@@ -257,6 +259,7 @@ const I18N = {
       welcome: "Welcome back", subtitle: "Sign in to keep learning",
       forgot: "Forgot your password?",
       forgot_help: "There is no automatic reset here. Message your teacher — they have a « Réinitialiser » button in the student list and will give you a new password.",
+      gate_title: "Sign in to continue", gate_body: "You need to sign in to do this exercise.", guest: "Preview", signin: "Sign in",
       signing_in: "Signing in…",
     },
     dash: {

@@ -4,12 +4,14 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 
 import AppLayout from './layout/AppLayout.jsx'
 import RequireRole from './routes/RequireRole.jsx'
+import LoginGate from './screens/LoginGate.jsx'
 import { ROLE_HOME, TEACHER_NAV, STUDENT_NAV } from './layout/navItems.js'
 
 import { C } from './shared/tokens.js'
 import { load } from './shared/storage.js'
 import { LANG_KEY, LANGS, I18N, getLang, LangCtx, digKey } from './shared/i18n.jsx'
 
+import PracticeHub from './PracticeHub.jsx'
 import Login from './screens/Login.jsx'
 import Bell from './screens/student/Bell.jsx'
 import Student from './screens/student/Student.jsx'
@@ -94,6 +96,8 @@ function AppInner() {
   }, [dark]);
 
   // Hồ sơ học sinh — Dashboard đọc mục tiêu DELF từ đây.
+  // Cửa đăng nhập bật lên khi khách bấm vào việc cần tài khoản.
+  const [gate, setGate] = useState(null);
   const [profiles, setProfiles] = useState({});
   useEffect(() => { load("mcf-profiles", {}).then((p) => setProfiles(p || {})); }, []);
 
@@ -174,10 +178,32 @@ function AppInner() {
               <Route path="/etudiant/*" element={<Navigate to="/etudiant/dashboard" replace />} />
             </Route>
 
+            {/* Chế độ khách: thư viện luyện tập mở cho người chưa đăng nhập.
+                Không đẩy về /login nữa — khách xem được có gì trước khi quyết
+                định lập tài khoản. Chặn nằm ở hành động (bấm vào làm bài),
+                không nằm ở đường vào. */}
+            <Route path="/decouvrir" element={
+              <AppLayout
+                session={null} t={t} lang={lang} langs={LANGS} onLang={setLang}
+                dark={dark} onToggleDark={toggleTheme} onLogout={() => {}} bell={null}
+              />
+            }>
+              <Route index element={<PracticeHub role="guest" name="" onRequireLogin={() => setGate({})} />} />
+            </Route>
+
             <Route path="*" element={
-              <Navigate to={session ? (ROLE_HOME[session.role] || "/login") : "/login"} replace />
+              <Navigate to={session ? (ROLE_HOME[session.role] || "/login") : "/decouvrir"} replace />
             } />
           </Routes>
+          {gate && (
+            <LoginGate
+              accounts={accounts}
+              onLogin={(sess) => { setSession(sess); setGate(null); refresh(); }}
+              onClose={() => setGate(null)}
+              lang={lang} langs={LANGS} onLang={setLang}
+              dark={dark} onToggleDark={toggleTheme}
+            />
+          )}
         </BrowserRouter>
       </div>
     </LangCtx.Provider>
