@@ -5,7 +5,7 @@ import { useT } from "../../shared/i18n.jsx";
 import { SKILLS, fmtDate, isLate, exSkills, assignedTo, totalScore } from "../../shared/exercises.js";
 import { uid, norm, stripHtml, wordCount, vfOk, fillAccepted, fillOk, autoQ, ordreOk, tableauCells, tableauOk, isQuestionAnswered, getUnansweredQuestionsCount } from "../../shared/questions.js";
 import { AVA_COLORS, avaColor, fmtDateFR, fmtDuration, targetedAccounts, fileNameFromUrl, formatLastSeen } from "../../shared/display.js";
-import { FloatingLayer, KebabMenu } from "../../shared/ui.jsx";
+import { FloatingLayer, KebabMenu, UnderlineTabs } from "../../shared/ui.jsx";
 import { PROFILE_FIELDS, LEVELS_PROFILE, GOALS_PROFILE, emptyProfile, calculateProfileCompletion, validateProfile } from "../../shared/profile.js";
 import { OrdreChip, OrdreBlocks, TableauCompare, ConfirmSubmitModal } from "./answers.jsx";
 import ReadingPanel from "../../editor/ReadingPanel.jsx";
@@ -224,10 +224,18 @@ function Student({ name, exercises, submissions, setSubmissions, accounts, setAc
 
   return (
     <div>
-      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 20 }}>
-        {tabs.map(([k, l]) => <button key={k} onClick={() => setTab(k)} style={{ ...S.btn(tab === k), padding: "8px 14px" }}>{l}</button>)}
-        <button style={{ ...S.btn(false), marginLeft: "auto" }} onClick={refresh}>↻ {t("actions.refresh")}</button>
-      </div>
+      <UnderlineTabs
+        items={tabs}
+        active={tab}
+        onSelect={setTab}
+        ariaLabel={t("nav.primary")}
+        trailing={
+          <button type="button" onClick={refresh}
+            className="rounded-md px-3 py-1.5 text-sm font-medium text-soft transition-colors hover:bg-surface2 hover:text-ink">
+            ↻ {t("actions.refresh")}
+          </button>
+        }
+      />
 
       {tab === "todo" && (
         todo.length === 0

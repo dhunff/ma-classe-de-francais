@@ -5,7 +5,7 @@ import { useT } from "../../shared/i18n.jsx";
 import { SKILLS, fmtDate, isLate, exSkills, assignedTo, totalScore } from "../../shared/exercises.js";
 import { uid, norm, stripHtml, wordCount, vfOk, fillAccepted, fillOk, autoQ, ordreOk, tableauCells, tableauOk, isQuestionAnswered, getUnansweredQuestionsCount } from "../../shared/questions.js";
 import { AVA_COLORS, avaColor, fmtDateFR, fmtDuration, targetedAccounts, fileNameFromUrl, formatLastSeen } from "../../shared/display.js";
-import { FloatingLayer, KebabMenu } from "../../shared/ui.jsx";
+import { FloatingLayer, KebabMenu, UnderlineTabs } from "../../shared/ui.jsx";
 import { PROFILE_FIELDS, LEVELS_PROFILE, GOALS_PROFILE, emptyProfile, calculateProfileCompletion, validateProfile } from "../../shared/profile.js";
 import { OrdreChip, OrdreBlocks, TableauCompare, ConfirmSubmitModal } from "../student/answers.jsx";
 import ReadingPanel from "../../editor/ReadingPanel.jsx";
@@ -118,15 +118,24 @@ function Teacher({ exercises, setExercises, submissions, setSubmissions, account
 
   return (
     <div>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20, flexWrap: "wrap", gap: 10 }}>
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-          {tabs.map(([k, l]) => <button key={k} onClick={() => setView(k)} style={{ ...S.btn(view === k), padding: "8px 14px" }}>{l}</button>)}
-        </div>
-        <div style={{ display: "flex", gap: 10 }}>
-          <button style={S.btn(false)} onClick={refresh}>↻ {t("actions.refresh")}</button>
-          {view === "list" && <button style={S.btn(false)} onClick={() => { setAnnModal(true); setAnnMsg(""); setAnnAll(true); setAnnClasses([]); setAnnStudents([]); setAnnSearch(""); }}>📣 {t("actions.announce")}</button>}
-          {view === "list" && <button style={S.btn(true)} onClick={() => { setDraft(blank()); setView("new"); }}>{t("actions.new_exercise")}</button>}
-        </div>
+      <UnderlineTabs items={tabs} active={view} onSelect={setView} ariaLabel={t("nav.primary")} />
+      <div className="mb-5 flex flex-wrap items-center gap-2">
+        <button type="button" onClick={refresh}
+          className="rounded-md px-3 py-1.5 text-sm font-medium text-soft transition-colors hover:bg-surface2 hover:text-ink">
+          ↻ {t("actions.refresh")}
+        </button>
+        {view === "list" && (
+          <button type="button" onClick={() => { setAnnModal(true); setAnnMsg(""); setAnnAll(true); setAnnClasses([]); setAnnStudents([]); setAnnSearch(""); }}
+            className="rounded-md px-3 py-1.5 text-sm font-medium text-soft transition-colors hover:bg-surface2 hover:text-ink">
+            📣 {t("actions.announce")}
+          </button>
+        )}
+        {view === "list" && (
+          <button type="button" onClick={() => { setDraft(blank()); setView("new"); }}
+            className="ml-auto rounded-md border border-solid border-transparent bg-primary px-4 py-2 text-sm font-bold text-on-primary transition-opacity hover:opacity-90">
+            {t("actions.new_exercise")}
+          </button>
+        )}
       </div>
 
       {annModal && (

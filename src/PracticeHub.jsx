@@ -368,8 +368,10 @@ function PracticeHubInner({ role = "eleve", name = "", accounts = [] }) {
                   ? { page: "autres" }
                   : { page: "category", cat: c.skill, niveau: view.niveau })}
                 className={[
-                  "flex shrink-0 items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors",
-                  on ? "bg-primary-soft font-bold text-primary" : "font-medium text-soft hover:bg-surface2 hover:text-ink",
+                  "flex shrink-0 items-center gap-2 rounded-full border-0 px-3.5 py-2 text-sm transition-colors",
+                  on
+                    ? "bg-primary-soft font-bold text-primary"
+                    : "bg-surface2 font-medium text-soft hover:text-ink",
                 ].join(" ")}>
                 <c.Icon size={16} />
                 {c.label}

@@ -73,4 +73,43 @@ function KebabMenu({ items }) {
   );
 }
 
-export { FloatingLayer, KebabMenu };
+/* Tab gạch chân dùng chung cho các hàng điều hướng chính.
+
+   Thay cho hàng nút viền xám cũ: bỏ hẳn viền và nền, chỉ còn chữ và một
+   đường gạch chân dưới mục đang chọn. Ít đường kẻ hơn thì mắt bám vào chữ,
+   là thứ mang thông tin.
+
+   Trạng thái đang chọn được đánh dấu bằng ba tín hiệu: gạch chân, chữ đậm,
+   và `aria-selected` — không phụ thuộc riêng vào màu.
+
+   Hàng cuộn ngang trên màn hình hẹp thay vì xuống dòng, để chiều cao không
+   nhảy khi số tab thay đổi. */
+function UnderlineTabs({ items, active, onSelect, ariaLabel, trailing }) {
+  return (
+    <div className="mb-4 flex items-end gap-1 border-0 border-b border-solid border-line">
+      <div role="tablist" aria-label={ariaLabel}
+        className="mcf-scroll -mb-px flex flex-1 gap-1 overflow-x-auto">
+        {items.map(([key, label]) => {
+          const on = active === key;
+          return (
+            <button key={key} type="button" role="tab" aria-selected={on}
+              onClick={() => onSelect(key)}
+              className={[
+                "shrink-0 whitespace-nowrap px-3 py-2.5 text-sm transition-colors",
+                "border-0 border-b-2 border-solid bg-transparent",
+                on
+                  ? "border-primary font-bold text-primary"
+                  : "border-transparent font-medium text-soft hover:text-ink",
+              ].join(" ")}
+            >
+              {label}
+            </button>
+          );
+        })}
+      </div>
+      {trailing && <div className="shrink-0 pb-1.5">{trailing}</div>}
+    </div>
+  );
+}
+
+export { FloatingLayer, KebabMenu, UnderlineTabs };

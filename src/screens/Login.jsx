@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { BookOpen, GraduationCap, Moon, Sun, AlertCircle, Loader2 } from "lucide-react";
+import { BookOpen, Moon, Sun, AlertCircle, Loader2 } from "lucide-react";
 import { load, save } from "../shared/storage.js";
 import { useT } from "../shared/i18n.jsx";
 
@@ -39,10 +39,8 @@ function Field({ id, label, hint, ...inputProps }) {
 
 export default function Login({ accounts, onLogin, lang, langs, onLang, dark, onToggleDark }) {
   const t = useT();
-  const [tab, setTab] = useState("eleve");
   const [name, setName] = useState("");
   const [code, setCode] = useState("");
-  const [pin, setPin] = useState("");
   const [msg, setMsg] = useState("");
   const [busy, setBusy] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
@@ -51,30 +49,47 @@ export default function Login({ accounts, onLogin, lang, langs, onLang, dark, on
   // ngay cạnh ô đang gõ là thứ gây nhiễu, không phải thứ giúp đăng nhập.
   const [quote] = useState(() => QUOTES[Math.floor(Math.random() * QUOTES.length)]);
 
+  /* Một form cho cả hai vai trò: người dùng không phải tự khai mình là ai.
+
+     Thứ tự tra: học sinh trước, rồi mới tới giáo viên. Giáo viên không có tên
+     tài khoản — hệ thống chỉ có một mã PIN dùng chung — nên khi định danh
+     không khớp học sinh nào, ô mật khẩu được thử như mã PIN. Gõ gì vào ô định
+     danh cũng được.
+
+     Nói rõ: gộp form là cải thiện trải nghiệm, KHÔNG phải cải thiện bảo mật.
+     Điểm yếu thật vẫn là PIN dùng chung và mật khẩu lưu thô — cả hai không
+     thay đổi ở đây. */
   const submit = async (e) => {
     e.preventDefault();
     setMsg("");
-    if (tab === "eleve") {
-      const acc = accounts.find((a) => a.name.toLowerCase() === name.trim().toLowerCase());
-      if (!acc) { setMsg(t("login.err_no_account", { name: name.trim() })); return; }
-      if (acc.code !== code.trim()) { setMsg(t("login.err_wrong_password")); return; }
-      // App.jsx nạp lại bài tập và bài nộp ngay sau đây, nên chờ đợi là có thật.
-      setBusy(true);
-      onLogin({ role: "eleve", name: acc.name });
-      return;
-    }
+    const id = name.trim();
+    const pw = code.trim();
+    if (!id || !pw) { setMsg(t("login.err_generic")); return; }
+
     setBusy(true);
     try {
+      const acc = accounts.find((a) => a.name.toLowerCase() === id.toLowerCase());
+      if (acc) {
+        if (acc.code !== pw) { setMsg(t("login.err_generic")); return; }
+        onLogin({ role: "eleve", name: acc.name });
+        return;
+      }
+
       const stored = await load("mcf-teacher-pin", null);
       if (!stored) {
-        if (pin.length < 4) { setMsg(t("login.err_pin_short")); return; }
-        await save("mcf-teacher-pin", pin);
+        if (pw.length < 4) { setMsg(t("login.err_pin_short")); return; }
+        await save("mcf-teacher-pin", pw);
         onLogin({ role: "prof" });
-      } else if (stored === pin) {
-        onLogin({ role: "prof" });
-      } else {
-        setMsg(t("login.err_wrong_pin"));
+        return;
       }
+      if (stored === pw) { onLogin({ role: "prof" }); return; }
+
+      /* Một thông báo duy nhất cho mọi kiểu sai. Trước đây form nói rõ
+         "không tìm thấy tài khoản tên X", tiện cho học sinh gõ nhầm nhưng
+         cũng cho người lạ biết tên nào có thật. Với form gộp thì hệ thống
+         cũng không biết người dùng định đăng nhập kiểu nào, nên nói chung
+         là câu trả lời trung thực nhất. */
+      setMsg(t("login.err_generic"));
     } finally {
       setBusy(false);
     }
@@ -85,7 +100,6 @@ export default function Login({ accounts, onLogin, lang, langs, onLang, dark, on
      /etudiant/dashboard. Đặt ở đó thay vì ở đây để một người gõ thẳng URL
      cũng đi qua đúng luật, chứ không chỉ người bấm nút này. */
 
-  const isStudent = tab === "eleve";
 
   return (
     <div className="flex min-h-screen flex-col bg-bg font-sans text-ink">
@@ -132,32 +146,6 @@ export default function Login({ accounts, onLogin, lang, langs, onLang, dark, on
           </div>
 
           <div className="rounded-md border border-solid border-line bg-surface p-6 shadow-sm sm:p-7">
-            {/* Chọn vai trò */}
-            <div role="tablist" className="mb-6 flex gap-1 rounded-md bg-surface2 p-1">
-              {[
-                ["eleve", t("login.tab_student"), BookOpen],
-                ["prof", t("login.tab_teacher"), GraduationCap],
-              ].map(([k, label, Icon]) => {
-                const on = tab === k;
-                return (
-                  <button
-                    key={k}
-                    type="button"
-                    role="tab"
-                    aria-selected={on}
-                    onClick={() => { setTab(k); setMsg(""); setShowHelp(false); }}
-                    className={[
-                      "flex flex-1 items-center justify-center gap-2 rounded-md px-3 py-2.5",
-                      "text-sm transition-colors",
-                      on ? "bg-surface font-bold text-primary shadow-sm" : "font-medium text-soft hover:text-ink",
-                    ].join(" ")}
-                  >
-                    <Icon size={16} /> {label}
-                  </button>
-                );
-              })}
-            </div>
-
             <form onSubmit={submit} noValidate>
               {/* Lỗi đặt TRÊN ô đầu tiên: người dùng đọc từ trên xuống, nên
                   thông báo phải nằm trước thứ cần sửa, không phải sau nó. */}
@@ -171,45 +159,29 @@ export default function Login({ accounts, onLogin, lang, langs, onLang, dark, on
                 </p>
               )}
 
-              {isStudent ? (
-                <>
-                  <Field
-                    id="login-name"
-                    label={t("login.name_label")}
-                    placeholder={t("login.name_placeholder")}
-                    value={name}
-                    autoComplete="username"
-                    autoCapitalize="words"
-                    onChange={(e) => setName(e.target.value)}
-                  />
-                  <Field
-                    id="login-password"
-                    label={t("login.password_label")}
-                    placeholder={t("login.password_placeholder")}
-                    type="password"
-                    value={code}
-                    autoComplete="current-password"
-                    onChange={(e) => setCode(e.target.value)}
-                  />
-                </>
-              ) : (
-                <Field
-                  id="login-pin"
-                  label={t("login.pin_label")}
-                  placeholder={t("login.pin_placeholder")}
-                  hint={t("login.pin_hint")}
-                  type="password"
-                  value={pin}
-                  autoComplete="current-password"
-                  onChange={(e) => setPin(e.target.value)}
-                />
-              )}
+              <Field
+                id="login-name"
+                label={t("login.identifier")}
+                placeholder={t("login.identifier_ph")}
+                value={name}
+                autoComplete="username"
+                onChange={(e) => setName(e.target.value)}
+              />
+              <Field
+                id="login-password"
+                label={t("login.password_label")}
+                placeholder={t("login.password_placeholder")}
+                type="password"
+                value={code}
+                autoComplete="current-password"
+                onChange={(e) => setCode(e.target.value)}
+              />
 
               {/* Quên mật khẩu — nói đúng cách khôi phục có thật.
                   Hệ thống không gửi email đặt lại (không có email), nhưng giáo
                   viên có nút « Réinitialiser » trong danh sách học sinh. Một
                   link dẫn tới trang trống còn tệ hơn là không có link. */}
-              {isStudent && (
+              {(
                 <div className="mb-5 text-right">
                   <button
                     type="button"
@@ -239,8 +211,8 @@ export default function Login({ accounts, onLogin, lang, langs, onLang, dark, on
                   </>
                 ) : (
                   <>
-                    {isStudent ? <BookOpen size={17} /> : <GraduationCap size={17} />}
-                    {isStudent ? t("login.submit_student") : t("login.submit_teacher")}
+                    <BookOpen size={17} />
+                    {t("login.submit_student")}
                   </>
                 )}
               </button>
