@@ -14,6 +14,7 @@ import { BookOpen, GraduationCap, MoreVertical, Pencil, Copy, Trash2, RotateCcw,
 import { BarChart, Bar, LineChart, Line, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from "recharts";
 import Builder from "./Builder.jsx";
 import PracticeHub from "../../PracticeHub.jsx";
+import { ACCESS_KEY, PAYMENT_KEY, STATUS, isPremium, hasAccess, accessRecord, grantAccess, revokeAccess, fmtPrice } from "../../shared/access.js";
 
 
 /* ================= Teacher ================= */
@@ -382,6 +383,120 @@ function Accounts({ accounts, setAccounts, classes, setClasses, exercises = [], 
         ))}
         {accounts.length === 0 && <p style={{ color: C.soft }}>Aucun compte. Les élèves ne peuvent pas encore se connecter.</p>}
       </div>
+
+      <AccessManager accounts={accounts} exercises={exercises} />
+    </div>
+  );
+}
+
+/* Cấp và thu hồi quyền cho bài trả phí, cùng cấu hình tài khoản nhận tiền.
+
+   Đặt ở đây thay vì trong hồ sơ từng học sinh vì thao tác thật của giáo viên
+   là: nhìn sao kê thấy một khoản tiền, rồi tìm đúng học sinh + đúng bài để mở
+   khoá. Bảng chung làm được việc đó trong một màn hình; trang riêng từng em
+   thì phải mở ra đóng vào nhiều lần.
+
+   Không có gì tự động ở đây: mở khoá là hành động của giáo viên sau khi đã
+   tự xác nhận tiền vào. Xem chú thích đầu src/shared/access.js. */
+function AccessManager({ accounts, exercises }) {
+  const t = useT();
+  const [access, setAccess] = useState([]);
+  const [cfg, setCfg] = useState({ bank: "", account: "", accountName: "" });
+  const [savedCfg, setSavedCfg] = useState(false);
+
+  useEffect(() => {
+    load(ACCESS_KEY, []).then((a) => setAccess(Array.isArray(a) ? a : []));
+    load(PAYMENT_KEY, null).then((c) => c && setCfg({ bank: "", account: "", accountName: "", ...c }));
+  }, []);
+
+  const premium = exercises.filter(isPremium);
+
+  const toggle = async (student, ex) => {
+    const next = hasAccess(access, student, ex.id)
+      ? revokeAccess(access, student, ex.id)
+      : grantAccess(access, student, ex.id, STATUS.GRANTED_BY_TEACHER);
+    setAccess(next);
+    await save(ACCESS_KEY, next);
+  };
+
+  const saveCfg = async () => {
+    await save(PAYMENT_KEY, cfg);
+    setSavedCfg(true);
+    setTimeout(() => setSavedCfg(false), 2000);
+  };
+
+  return (
+    <div className="mt-6 rounded-md border border-solid border-line bg-surface p-5 shadow-sm">
+      <h3 className="mb-4 text-sm font-bold uppercase tracking-wider text-soft">{t("pay.access")}</h3>
+
+      {/* Tài khoản nhận tiền — dùng để dựng mã QR cho học sinh. */}
+      <div className="mb-6 rounded-md border border-solid border-line bg-surface2 p-4">
+        <div className="mb-1 text-sm font-bold text-ink">{t("pay.config_title")}</div>
+        <p className="mb-3 text-xs text-soft">{t("pay.config_hint")}</p>
+        <div className="flex flex-wrap items-end gap-2">
+          {[["bank", t("pay.bank"), "VCB"], ["account", t("pay.account"), "0123456789"], ["accountName", t("pay.holder"), "DO QUOC HUNG"]].map(([k, label, ph]) => (
+            <label key={k} className="flex flex-col gap-1">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-soft">{label}</span>
+              <input value={cfg[k]} placeholder={ph}
+                onChange={(e) => setCfg({ ...cfg, [k]: e.target.value })}
+                className="h-9 w-40 rounded-md border border-solid border-line-strong bg-surface px-2 text-sm text-ink focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/40" />
+            </label>
+          ))}
+          <button type="button" onClick={saveCfg}
+            className="h-9 rounded-md border border-solid border-transparent bg-primary px-4 text-sm font-bold text-on-primary transition-opacity hover:opacity-90">
+            {savedCfg ? t("pay.saved") : t("pay.save")}
+          </button>
+        </div>
+      </div>
+
+      {premium.length === 0 ? (
+        <p className="text-sm text-soft">{t("pay.access_empty")}</p>
+      ) : (
+        <div className="mcf-scroll overflow-x-auto">
+          <table className="mcf-table w-full min-w-[520px] border-collapse text-sm">
+            <thead>
+              <tr>
+                <th className="border-0 border-b border-solid border-line px-2 py-2 text-left text-xs font-bold uppercase tracking-wider text-soft">
+                  {t("nav.students")}
+                </th>
+                {premium.map((ex) => (
+                  <th key={ex.id} className="border-0 border-b border-solid border-line px-2 py-2 text-left text-xs font-bold text-ink">
+                    {ex.title}
+                    <div className="font-normal text-soft">{fmtPrice(ex.price)}</div>
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {accounts.map((a) => (
+                <tr key={a.name}>
+                  <td className="border-0 border-b border-solid border-line px-2 py-2 font-bold text-ink">{a.name}</td>
+                  {premium.map((ex) => {
+                    const rec = accessRecord(access, a.name, ex.id);
+                    return (
+                      <td key={ex.id} className="border-0 border-b border-solid border-line px-2 py-2">
+                        <button type="button" onClick={() => toggle(a.name, ex)}
+                          aria-pressed={!!rec}
+                          className={[
+                            "rounded-md px-3 py-1.5 text-xs font-bold transition-colors",
+                            rec ? "bg-ok-soft text-ok" : "bg-surface2 text-soft hover:text-ink",
+                          ].join(" ")}>
+                          {rec ? `✓ ${t("pay.granted")}` : t("pay.grant")}
+                        </button>
+                        {rec && (
+                          <div className="mt-0.5 text-[11px] text-soft">
+                            {rec.status === STATUS.PURCHASED ? t("pay.by_purchase") : t("pay.by_teacher")}
+                          </div>
+                        )}
+                      </td>
+                    );
+                  })}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }

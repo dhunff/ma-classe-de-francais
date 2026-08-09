@@ -13,6 +13,9 @@ import { TableauCompare, OrdreBlocks, ConfirmSubmitModal } from "./screens/stude
 import RichTextEditor from "./editor/RichTextEditor.jsx";
 import ReadingPanel from "./editor/ReadingPanel.jsx";
 import Builder from "./screens/teacher/Builder.jsx";
+import PaymentModal from "./screens/student/PaymentModal.jsx";
+import { ACCESS_KEY, PAYMENT_KEY, isPremium, hasAccess, fmtPrice } from "./shared/access.js";
+import { Lock } from "lucide-react";
 
 /* ============================================================
    PRACTICE HUB v3 — Tự luyện tập
@@ -56,6 +59,14 @@ function PracticeHubInner({ role = "eleve", name = "", accounts = [] }) {
   const [catPopup, setCatPopup] = useState(false);
   const [newCat, setNewCat] = useState("");
   const [hist, setHist] = useState({});
+  // Quyền truy cập bài trả phí + tài khoản nhận tiền của giáo viên.
+  const [access, setAccess] = useState([]);
+  const [payCfg, setPayCfg] = useState(null);
+  const [payFor, setPayFor] = useState(null);
+  useEffect(() => {
+    load(ACCESS_KEY, []).then((a) => setAccess(Array.isArray(a) ? a : []));
+    load(PAYMENT_KEY, null).then(setPayCfg);
+  }, []);
   const [loaded, setLoaded] = useState(false);
   const [view, setView] = useState({ page: "home" });
   const [draft, setDraft] = useState(null);
@@ -337,6 +348,7 @@ function PracticeHubInner({ role = "eleve", name = "", accounts = [] }) {
       <div>
         {MatModal()}
         {Toast}
+        {payFor && <PaymentModal ex={payFor} student={name} config={payCfg} onClose={() => setPayFor(null)} />}
         <button style={{ ...S.btn(false), marginBottom: 16 }}
           onClick={() => setView(view.folder ? { page: "autres" } : { page: "home" })}><ChevronLeft size={16} /> Retour</button>
 
@@ -533,6 +545,8 @@ function PracticeHubInner({ role = "eleve", name = "", accounts = [] }) {
             {list.map((ex) => {
               const h = hist[ex.id];
               const types = [...new Set(ex.questions.map((q) => QTYPES[q.type]))].join(" + ");
+              /* Giáo viên luôn xem được bài của chính mình; chỉ học sinh mới bị khoá. */
+              const locked = !teacher && isPremium(ex) && !hasAccess(access, name, ex.id);
               return (
                 <div key={ex.id}
                   className="flex flex-col overflow-hidden rounded-md border border-solid border-line bg-surface shadow-sm">
@@ -551,6 +565,17 @@ function PracticeHubInner({ role = "eleve", name = "", accounts = [] }) {
                   <div className="flex flex-1 flex-col p-4">
                     <div className="mb-2 flex flex-wrap items-center gap-2">
                       <span style={S.badge(ex.level)}>{ex.level}</span>
+                      {/* Trạng thái thu phí. Bài đã mở khoá không hiện gì thêm —
+                          nhắc lại "đã mua" trên mọi thẻ chỉ làm nhiễu. */}
+                      {!isPremium(ex) ? (
+                        <span className="rounded-full bg-ok-soft px-2.5 py-0.5 text-[11px] font-bold text-ok">
+                          {t("pay.free")}
+                        </span>
+                      ) : !locked ? null : (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-warn-soft px-2.5 py-0.5 text-[11px] font-bold text-warn">
+                          <Lock size={11} /> {fmtPrice(ex.price)}
+                        </span>
+                      )}
                       {ex.folderId && folderName(ex.folderId) && (
                         <span className="inline-flex items-center gap-1.5 rounded-full border border-solid border-line bg-surface2 px-2.5 py-0.5 text-[11px] font-bold text-soft">
                           <Folder size={11} /> {folderName(ex.folderId)}
@@ -575,9 +600,16 @@ function PracticeHubInner({ role = "eleve", name = "", accounts = [] }) {
                     {/* Hành động ở góc dưới. Menu ⋮ render qua Portal — quy tắc
                         kiến trúc sẵn có, để dropdown không bị kẹt z-index. */}
                     <div className="mt-auto flex items-center justify-end gap-2 pt-4">
-                      <SplitTrain open={trainMenu === ex.id} setOpen={(v) => setTrainMenu(v ? ex.id : null)}
-                        onStart={() => setView({ page: "quiz", cat: view.cat, folder: view.folder, niveau, exId: ex.id })}
-                        onPick={(kind) => setMatModal({ exId: ex.id, kind })} />
+                      {locked ? (
+                        <button type="button" onClick={() => setPayFor(ex)}
+                          className="inline-flex items-center gap-1.5 rounded-md border border-solid border-transparent bg-primary px-4 py-2 text-sm font-bold text-on-primary transition-opacity hover:opacity-90">
+                          <Lock size={15} /> {t("pay.buy")}
+                        </button>
+                      ) : (
+                        <SplitTrain open={trainMenu === ex.id} setOpen={(v) => setTrainMenu(v ? ex.id : null)}
+                          onStart={() => setView({ page: "quiz", cat: view.cat, folder: view.folder, niveau, exId: ex.id })}
+                          onPick={(kind) => setMatModal({ exId: ex.id, kind })} />
+                      )}
                       {teacher && <HubMenu
                         onEdit={() => { const c = JSON.parse(JSON.stringify(ex)); if (!c.skills || !c.skills.length) c.skills = c.skill ? [c.skill] : []; if (c.consigne === undefined) c.consigne = ""; if (!c.usageType) c.usageType = "practice"; setDraft(c); setView({ page: "builder" }); }}
                         onDup={() => duplicate(ex)}

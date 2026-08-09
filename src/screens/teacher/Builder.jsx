@@ -300,6 +300,21 @@ function Builder({ draft, setDraft, publish, cancel, accounts, classes = [] }) {
             <input type="number" min="1" style={{ ...S.input, marginTop: 6, width: 110 }} value={draft.timeLimit || ""}
               placeholder="∞" onChange={(e) => setDraft({ ...draft, timeLimit: e.target.value })} />
           </div>
+
+          {/* Bài trả phí. Giá chỉ hiện khi đã bật, để không ai vô tình đặt giá
+              cho một bài đang miễn phí. */}
+          <div>
+            <label className="flex cursor-pointer items-center gap-2 text-sm font-semibold text-ink">
+              <input type="checkbox" checked={!!draft.isPremium}
+                onChange={(e) => setDraft({ ...draft, isPremium: e.target.checked, price: e.target.checked ? draft.price : "" })} />
+              {t("pay.premium")}
+            </label>
+            {draft.isPremium && (
+              <input type="number" min="0" step="1000" style={{ ...S.input, marginTop: 6, width: 150 }}
+                value={draft.price || ""} placeholder={t("pay.price")}
+                onChange={(e) => setDraft({ ...draft, price: e.target.value })} />
+            )}
+          </div>
         </div>
         {/* 🖼 Image d'illustration (optionnel) — URL hoặc kéo thả file */}
         <div style={{ marginTop: 14 }}>
