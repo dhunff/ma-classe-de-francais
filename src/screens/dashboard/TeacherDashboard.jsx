@@ -60,7 +60,7 @@ export default function TeacherDashboard({ exercises, submissions, accounts, t, 
                   <button
                     type="button"
                     onClick={() => onOpen?.(ex)}
-                    className="flex w-full items-center gap-3 py-3 text-left transition-colors hover:bg-surface2"
+                    className="flex w-full cursor-pointer items-center gap-3 border-0 bg-transparent py-3 text-left transition-colors hover:bg-surface2"
                   >
                     <span className="min-w-0 flex-1">
                       <span className="block truncate text-sm font-bold text-ink">{s.student}</span>

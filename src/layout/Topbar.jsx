@@ -32,7 +32,7 @@ export default function Topbar({
           type="button"
           onClick={onOpenMenu}
           aria-label={t("nav.open_menu")}
-          className="grid h-10 w-10 shrink-0 place-items-center rounded-md text-soft transition-colors hover:bg-surface2 hover:text-ink md:hidden"
+          className="grid h-10 w-10 shrink-0 cursor-pointer place-items-center rounded-md border-0 bg-transparent text-soft transition-colors hover:bg-surface2 hover:text-ink md:hidden"
         >
           <Menu size={20} />
         </button>

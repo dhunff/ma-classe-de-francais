@@ -57,7 +57,7 @@ function LogoutButton({ t, onLogout }) {
       <button
         type="button"
         onClick={onLogout}
-        className="flex w-full items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium text-soft transition-colors hover:bg-danger-soft hover:text-danger"
+        className="flex w-full cursor-pointer items-center gap-3 rounded-md border-0 bg-transparent px-3 py-2.5 text-left text-sm font-medium text-soft transition-colors hover:bg-danger-soft hover:text-danger"
       >
         <LogOut size={19} />
         <span className="truncate">{t("header.logout")}</span>
@@ -120,7 +120,7 @@ export default function Sidebar({ role, t, onLogout, open, onClose }) {
             type="button"
             onClick={onClose}
             aria-label={t("nav.close")}
-            className="grid h-9 w-9 place-items-center rounded-md text-soft transition-colors hover:bg-surface2 hover:text-ink"
+            className="grid h-9 w-9 cursor-pointer place-items-center rounded-md border-0 bg-transparent text-soft transition-colors hover:bg-surface2 hover:text-ink"
           >
             <X size={19} />
           </button>

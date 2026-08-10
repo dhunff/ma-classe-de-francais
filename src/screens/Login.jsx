@@ -143,7 +143,10 @@ export default function Login({ accounts, onLogin, lang, langs, onLang, dark, on
                       type="button"
                       onClick={() => setShowHelp((v) => !v)}
                       aria-expanded={showHelp}
-                      className="rounded-sm text-sm font-semibold text-primary hover:underline focus:outline-none focus:ring-2 focus:ring-primary/40"
+                      /* border-0 bg-transparent là bắt buộc, không phải trang trí:
+                         preflight bị tắt (tailwind.config.js) nên <button> giữ
+                         nguyên viền vát 2px outset và nền xám của trình duyệt. */
+                      className="cursor-pointer border-0 bg-transparent p-0 rounded-sm text-sm font-semibold text-primary hover:underline focus:outline-none focus:ring-2 focus:ring-primary/40"
                     >
                       {t("login.forgot")}
                     </button>
