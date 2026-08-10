@@ -1,5 +1,8 @@
 import React, { useState } from "react";
-import { Eye, EyeOff, Asterisk } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Eye, EyeOff, Asterisk, AlertCircle, Loader2, KeyRound } from "lucide-react";
+import { supabase } from "../storageShim.js";
+import { useT } from "../shared/i18n.jsx";
 
 /* Màn hình đăng nhập hai khoang — bản thiết kế riêng, chưa nối vào luồng xác
    thực thật. Login.jsx mới là cổng đăng nhập đang chạy (PIN + i18n + storage);
@@ -108,14 +111,48 @@ function Field({ id, label, type = "text", value, onChange, placeholder, autoCom
   );
 }
 
-export default function LoginSplit({ onSubmit }) {
+export default function LoginSplit({ accounts = [], onLogin }) {
+  const t = useT();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [visible, setVisible] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState("");
 
-  const submit = (e) => {
+  /* Vai trò lấy theo thứ tự: user_metadata.role do người tạo tài khoản đặt →
+     đối chiếu email trong bảng tài khoản → mặc định học sinh.
+
+     Mặc định phải là "eleve", không phải "prof": đoán nhầm thành học sinh chỉ
+     làm người ta thấy thiếu menu, đoán nhầm thành giáo viên là trao quyền
+     xem bài và điểm của cả lớp. */
+  const resolveRole = (user) => {
+    const meta = user?.user_metadata || {};
+    if (meta.role === "prof" || meta.role === "eleve") {
+      return { role: meta.role, name: meta.name || user.email };
+    }
+    const acc = accounts.find((a) => a.email && a.email.toLowerCase() === String(user?.email).toLowerCase());
+    if (acc) return { role: "eleve", name: acc.name };
+    return { role: "eleve", name: meta.name || String(user?.email || "").split("@")[0] };
+  };
+
+  const submit = async (e) => {
     e.preventDefault();
-    if (onSubmit) onSubmit({ email, password });
+    setMsg("");
+    const id = email.trim();
+    if (!id || !password) { setMsg(t("login.err_generic")); return; }
+
+    setBusy(true);
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({ email: id, password });
+      /* Một thông báo duy nhất cho mọi kiểu sai — nói rõ "email này không tồn
+         tại" là cho người lạ biết địa chỉ nào có thật trong hệ thống. */
+      if (error || !data?.user) { setMsg(t("login.err_generic")); return; }
+      onLogin(resolveRole(data.user));
+    } catch {
+      setMsg(t("login.err_network"));
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
@@ -163,13 +200,30 @@ export default function LoginSplit({ onSubmit }) {
               </button>
             </Field>
 
+            {msg && (
+              <p role="alert" className="m-0 flex items-start gap-2 rounded-xl bg-rose-50 px-3.5 py-2.5 text-sm font-medium text-rose-700">
+                <AlertCircle size={16} className="mt-0.5 shrink-0" /> {msg}
+              </p>
+            )}
+
             <button
               type="submit"
-              className={`${RESET_BTN} mt-1 rounded-xl bg-blue-600 px-5 py-3.5 text-sm font-bold text-white shadow-lg shadow-blue-500/40 transition hover:bg-blue-700`}
+              disabled={busy}
+              className={`${RESET_BTN} mt-1 flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-3.5 text-sm font-bold text-white shadow-lg shadow-blue-500/40 transition hover:bg-blue-700 disabled:opacity-60`}
             >
+              {busy && <Loader2 size={16} className="mcf-spin" />}
               Se connecter
             </button>
           </form>
+
+          {/* Đường PIN vẫn còn cho tới khi mọi tài khoản được di trú sang
+              Supabase Auth. Gỡ nó đi trước lúc đó là khoá cả lớp ra ngoài. */}
+          <Link
+            to="/login-pin"
+            className="mt-4 flex items-center justify-center gap-2 text-xs font-semibold text-slate-500 no-underline hover:text-blue-600"
+          >
+            <KeyRound size={14} /> {t("login.use_pin")}
+          </Link>
 
           {/* Đường kẻ chạy suốt hai bên nhờ flex-1, nên không phải đo tay. */}
           <div className="my-7 flex items-center gap-4">

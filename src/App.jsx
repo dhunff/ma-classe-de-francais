@@ -145,10 +145,29 @@ function AppInner() {
             {/* Bản thiết kế Soft UI — màn hình độc lập, tự dựng sidebar và
                 chiếm trọn màn hình nên KHÔNG lồng vào shell của AppLayout. */}
             <Route path="/soft" element={<SoftDashboard />} />
-            <Route path="/soft-login" element={<LoginSplit />} />
 
+            {/* Đăng nhập chính: email + mật khẩu qua Supabase Auth.
+
+                /login-pin giữ nguyên đường cũ (tên + mã PIN) và còn sống cho
+                tới khi mọi tài khoản được di trú sang Supabase Auth. Gỡ nó
+                trước lúc đó là khoá cả lớp lẫn giáo viên ra ngoài, vì hiện
+                chưa có user auth nào tồn tại. */}
             <Route
               path="/login"
+              element={
+                session ? (
+                  <Navigate to={ROLE_HOME[session.role] || "/login"} replace />
+                ) : (
+                  <LoginSplit
+                    accounts={accounts}
+                    onLogin={(s) => { setSession(s); refresh(); }}
+                  />
+                )
+              }
+            />
+
+            <Route
+              path="/login-pin"
               element={
                 session ? (
                   <Navigate to={ROLE_HOME[session.role] || "/login"} replace />
