@@ -18,6 +18,7 @@ import Student from './screens/student/Student.jsx'
 import { Teacher } from './screens/teacher/TeacherScreens.jsx'
 import StudentDashboard from './screens/dashboard/StudentDashboard.jsx'
 import TeacherDashboard from './screens/dashboard/TeacherDashboard.jsx'
+import SoftDashboard from './screens/dashboard/SoftDashboard.jsx'
 
 /* App.jsx chỉ còn ba việc: giữ state phiên + dữ liệu, định tuyến, và bắt lỗi.
    Mọi màn hình nằm ở src/screens/, mọi thứ dùng chung ở src/shared/. */
@@ -140,6 +141,10 @@ function AppInner() {
       <div className={"mcf-root" + (dark ? " mcf-dark" : "")}>
         <BrowserRouter>
           <Routes>
+            {/* Bản thiết kế Soft UI — màn hình độc lập, tự dựng sidebar và
+                chiếm trọn màn hình nên KHÔNG lồng vào shell của AppLayout. */}
+            <Route path="/soft" element={<SoftDashboard />} />
+
             <Route
               path="/login"
               element={
