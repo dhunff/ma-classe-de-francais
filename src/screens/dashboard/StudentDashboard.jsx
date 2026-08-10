@@ -2,11 +2,13 @@ import React, { useEffect, useState } from "react";
 import {
   RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer,
 } from "recharts";
-import { CheckCircle, Target, Clock, Flame, Radar as RadarIcon, PartyPopper, AlertTriangle, Inbox } from "lucide-react";
+import { Link } from "react-router-dom";
+import { CheckCircle, Target, Clock, Flame, Radar as RadarIcon, PartyPopper, AlertTriangle, Inbox, UserCircle, ChevronRight } from "lucide-react";
 import { Card, StatTile, EmptyState, ProgressBar } from "./parts.jsx";
 import {
   studentWorkload, averageScore, skillBreakdown, nextUp, isLate, exSkills, fmtDate,
 } from "../../shared/exercises.js";
+import { calculateProfileCompletion } from "../../shared/profile.js";
 
 /* Trang chủ học sinh.
 
@@ -23,6 +25,7 @@ export default function StudentDashboard({ name, exercises, submissions, profile
   const upcoming = nextUp(exercises, submissions, name, 3);
   const overdue = todo.filter((ex) => isLate(ex)).length;
   const goal = profile?.goal || "";
+  const profilePct = calculateProfileCompletion(profile);
 
   return (
     <div className="mx-auto flex max-w-6xl flex-col gap-4">
@@ -51,6 +54,34 @@ export default function StudentDashboard({ name, exercises, submissions, profile
           )}
         </div>
       </section>
+
+      {/* Hoàn thiện hồ sơ.
+
+          Hồ sơ đầy đủ thì không hiện gì cả. Một thanh đứng mãi ở 100% không
+          còn nói điều gì, mà vẫn chiếm chỗ ngay dưới phần chào — chỗ đắt nhất
+          của trang. Thẻ này chỉ tồn tại khi còn việc để làm. */}
+      {profilePct < 100 && (
+        <Link
+          to="/etudiant/compte"
+          className="group flex items-center gap-4 rounded-md bg-surface p-5 no-underline shadow-sm transition-shadow hover:shadow-md"
+        >
+          <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-primary-soft text-primary">
+            <UserCircle size={22} />
+          </span>
+
+          <div className="min-w-0 flex-1">
+            <p className="m-0 text-sm font-bold text-ink">
+              {t("dash.profile_completion", { pct: profilePct })}
+            </p>
+            <p className="m-0 mt-0.5 text-xs text-soft">{t("dash.profile_hint")}</p>
+            <div className="mt-2.5 h-1.5 w-full overflow-hidden rounded-full bg-surface2">
+              <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${profilePct}%` }} />
+            </div>
+          </div>
+
+          <ChevronRight size={18} className="shrink-0 text-soft transition-colors group-hover:text-primary" />
+        </Link>
+      )}
 
       {/* Số liệu */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

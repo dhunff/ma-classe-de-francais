@@ -25,6 +25,8 @@ const VI = {
     hello: "Xin chào", goal: "Mục tiêu", no_goal: "Bạn chưa đặt mục tiêu. Vào Cài đặt để chọn.",
     no_exercise_yet: "Chưa có bài tập nào được giao cho bạn.",
     completion: "Bài đã hoàn thành", submitted: "Đã nộp", of_assigned: "trên {n} bài được giao",
+    profile_completion: "Hồ sơ hoàn thiện {pct}%",
+    profile_hint: "Điền nốt để giáo viên hiểu rõ trình độ và mục tiêu của bạn.",
     avg_score: "Điểm trung bình", avg_empty: "Chưa có bài nào được chốt điểm",
     pending: "Đang chờ làm", overdue: "{n} bài đã quá hạn",
     streak: "Chuỗi ngày học",
