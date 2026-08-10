@@ -11,7 +11,7 @@ import { exSkills } from "./shared/exercises.js";
 import { useT } from "./shared/i18n.jsx";
 import { TableauCompare, OrdreBlocks, ConfirmSubmitModal } from "./screens/student/answers.jsx";
 import RichTextEditor from "./editor/RichTextEditor.jsx";
-import ReadingPanel from "./editor/ReadingPanel.jsx";
+import SplitPane from "./screens/practice/SplitPane.jsx";
 import Builder from "./screens/teacher/Builder.jsx";
 import PaymentModal from "./screens/student/PaymentModal.jsx";
 import { PAYMENT_KEY, isPremium, hasAccess, fmtPrice, loadAccess } from "./shared/access.js";
@@ -1123,25 +1123,9 @@ function PracticeWorkspace({ ex, back, onFinish }) {
         </div>
       )}
 
-      {ex.audioUrl && (
-        <div className="mcf-card" style={{ ...S.card, marginBottom: 16, position: "sticky", top: 8, zIndex: 30, boxShadow: "0 6px 18px rgba(27,37,89,.12)" }}>
-          <div style={{ ...S.label, marginBottom: 8 }}>🎧 Écoute le document audio</div>
-          <audio controls controlsList="nodownload noplaybackrate" onContextMenu={(e) => e.preventDefault()}
-            style={{ width: "100%" }} src={ex.audioUrl} />
-        </div>
-      )}
-
-      {ex.readingText ? (
-        <div className="mcf-wide" style={{ display: "flex", gap: 20, alignItems: "flex-start", flexWrap: "wrap" }}>
-          <ReadingPanel text={ex.readingText} stickyTop={ex.audioUrl ? 110 : 8} />
-          <div className="mcf-scroll" style={{ flex: "5 1 340px", minWidth: 0, display: "grid", gap: 16,
-            maxHeight: "76vh", overflowY: "auto", position: "sticky", top: ex.audioUrl ? 110 : 8, paddingRight: 4 }}>
-            {questionCards}
-          </div>
-        </div>
-      ) : (
-        <div style={{ display: "grid", gap: 16, maxWidth: 780, margin: "0 auto" }}>{questionCards}</div>
-      )}
+      <SplitPane audioUrl={ex.audioUrl} readingText={ex.readingText}>
+        {questionCards}
+      </SplitPane>
 
       {!graded ? (
         <>

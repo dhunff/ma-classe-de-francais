@@ -1,7 +1,11 @@
 import React, { useState, useRef, useEffect } from "react";
 import { C, S } from "../shared/tokens.js";
 
-function ReadingPanel({ text, stickyTop = 8 }) {
+/* `embedded` = panel nằm trong một cột do SplitPane dựng sẵn. Khi đó nó phải
+   bỏ flex-basis, sticky và maxHeight của chính mình: cột cha đã giữ vị trí và
+   chiều cao rồi, panel chỉ việc ăn hết phần còn lại và tự cuộn. Để nguyên thì
+   thành sticky lồng trong sticky, và khối audio phía trên bị đẩy khỏi khung. */
+function ReadingPanel({ text, stickyTop = 8, embedded = false }) {
   const boxRef = React.useRef(null);
   const [btn, setBtn] = useState(null); // {x, y}
   const [fontSize, setFontSize] = useState(16); // 14 → 24 px
@@ -44,8 +48,10 @@ function ReadingPanel({ text, stickyTop = 8 }) {
         onCopy={(e) => e.preventDefault()}
         onCut={(e) => e.preventDefault()}
         onDragStart={(e) => e.preventDefault()}
-        style={{ ...S.card, flex: "6 1 380px", minWidth: 0, maxHeight: "76vh", overflowY: "auto",
-          position: "sticky", top: stickyTop }}>
+        style={embedded
+          ? { ...S.card, minWidth: 0, flex: "1 1 auto", minHeight: 0, overflowY: "auto" }
+          : { ...S.card, flex: "6 1 380px", minWidth: 0, maxHeight: "76vh", overflowY: "auto",
+              position: "sticky", top: stickyTop }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, marginBottom: 10, flexWrap: "wrap" }}>
           <div style={S.label}>📖 Texte à lire <span style={{ fontWeight: 400, textTransform: "none", letterSpacing: 0 }}>· surlignez une phrase pour la marquer 🖍</span></div>
           {/* A- / A+ : chỉnh cỡ chữ 14-24px */}

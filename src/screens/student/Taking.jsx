@@ -8,7 +8,7 @@ import { AVA_COLORS, avaColor, fmtDateFR, fmtDuration, targetedAccounts, fileNam
 import { FloatingLayer, KebabMenu } from "../../shared/ui.jsx";
 import { PROFILE_FIELDS, LEVELS_PROFILE, GOALS_PROFILE, emptyProfile, calculateProfileCompletion, validateProfile } from "../../shared/profile.js";
 import { OrdreChip, OrdreBlocks, TableauCompare, ConfirmSubmitModal } from "./answers.jsx";
-import ReadingPanel from "../../editor/ReadingPanel.jsx";
+import SplitPane from "../practice/SplitPane.jsx";
 import RichTextEditor from "../../editor/RichTextEditor.jsx";
 import { BookOpen, GraduationCap, MoreVertical, Pencil, Copy, Trash2, RotateCcw, Image as ImageIcon, X, Phone, Calendar, Target, Briefcase, ChevronLeft, TrendingUp, Clock, CheckCircle } from "lucide-react";
 import { BarChart, Bar, LineChart, Line, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from "recharts";
@@ -295,26 +295,9 @@ function Taking({ ex, name, setSubmissions, done }) {
         </div>
       )}
 
-      {ex.audioUrl && (
-        <div className="mcf-card" style={{ ...S.card, marginBottom: 16, position: "sticky", top: 8, zIndex: 30, boxShadow: "0 6px 18px rgba(27,37,89,.12)" }}>
-          <div style={{ ...S.label, marginBottom: 8 }}>🎧 Écoute le document audio (le lecteur reste visible pendant que tu réponds)</div>
-          <audio controls controlsList="nodownload noplaybackrate" onContextMenu={(e) => e.preventDefault()}
-            style={{ width: "100%" }} src={ex.audioUrl} />
-        </div>
-      )}
-
-      {/* 📖 Bố cục 2 cột nếu có bài đọc */}
-      {ex.readingText ? (
-        <div className="mcf-wide" style={{ display: "flex", gap: 20, alignItems: "flex-start", flexWrap: "wrap" }}>
-          <ReadingPanel text={ex.readingText} stickyTop={ex.audioUrl ? 110 : 8} />
-          <div className="mcf-scroll" style={{ flex: "5 1 340px", minWidth: 0, display: "grid", gap: 16,
-            maxHeight: "76vh", overflowY: "auto", position: "sticky", top: ex.audioUrl ? 110 : 8, paddingRight: 4 }}>
-            {questionCards}
-          </div>
-        </div>
-      ) : (
-        <div style={{ display: "grid", gap: 16, maxWidth: 780, margin: "0 auto" }}>{questionCards}</div>
-      )}
+      <SplitPane audioUrl={ex.audioUrl} readingText={ex.readingText}>
+        {questionCards}
+      </SplitPane>
 
       {err && <p style={{ color: C.danger, fontSize: 13 }}>{err}</p>}
       {/* Nút nộp nay nằm ở thanh trạng thái nổi; ở đây chỉ còn lối thoát.
