@@ -159,7 +159,11 @@ function ActivityChart() {
         <span className="text-xs font-medium text-slate-400">Cette semaine</span>
       </div>
 
-      <div className="mt-6 flex h-40 items-end gap-3">
+      {/* items-stretch chứ không phải items-end: mỗi cột ngày phải cao bằng
+          h-40 thì `flex-1` bên trong mới có chiều cao xác định, và `height: X%`
+          của thanh mới tính ra được. Với items-end cột co lại bằng nhãn chữ,
+          vùng chứa thanh cao 0px và biểu đồ trống trơn. */}
+      <div className="mt-6 flex h-40 items-stretch gap-3">
         {WEEK.map(({ day, value }) => {
           const isActive = day === ACTIVE_DAY;
           return (

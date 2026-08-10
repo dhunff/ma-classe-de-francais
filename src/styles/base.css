@@ -23,6 +23,14 @@
   --tw-backdrop-grayscale: ; --tw-backdrop-hue-rotate: ; --tw-backdrop-invert: ;
   --tw-backdrop-opacity: ; --tw-backdrop-saturate: ; --tw-backdrop-sepia: ;
 
+  /* bg-gradient-to-r dựng background-image từ --tw-gradient-stops, mà các tiện ích
+     điểm dừng màu lại nhét var(--tw-gradient-from-position) vào giá trị của mình.
+     Thiếu ba biến này thì chính khai báo --tw-gradient-from hỏng, kéo theo stops
+     rỗng và background-image ra `none` — gradient biến mất sạch, không báo lỗi. */
+  --tw-gradient-from-position: ;
+  --tw-gradient-via-position: ;
+  --tw-gradient-to-position: ;
+
   /* ring-* ghép ba biến vào một box-shadow — thiếu một cái là mất cả vòng focus,
      tức là mất luôn dấu hiệu điều hướng bàn phím. */
   --tw-ring-inset: ;
