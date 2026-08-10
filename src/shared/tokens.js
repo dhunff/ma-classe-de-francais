@@ -23,15 +23,20 @@ const VF_OPTS = ["Vrai", "Faux", "On ne sait pas"];
 const S = {
   font: { fontFamily: "var(--f-ui)", color: C.ink },
   display: { fontFamily: "var(--f-display)", fontWeight: 700, letterSpacing: "-0.02em", fontSize: 26, color: C.ink },
+  /* Soft UI: thẻ tách khỏi nền bằng bóng toả, không bằng viền. Viền 1px vẫn
+     còn nhưng dùng --mcf-line rất nhạt, chỉ để giữ mép ở bản tối nơi bóng
+     gần như vô hình trên nền đen. */
   card: { background: C.card, border: `1px solid ${C.line}`, borderRadius: "var(--r-md)", boxShadow: "var(--sh-1)", padding: "var(--sp-5)" },
   btn: (primary, danger) => ({
-    padding: "10px 18px", borderRadius: "var(--r-md)", fontWeight: 600, fontSize: 14, cursor: "pointer", fontFamily: "inherit",
-    border: primary ? "1px solid transparent" : `1px solid ${danger ? C.danger : C.lineStrong}`,
+    padding: "11px 20px", borderRadius: "var(--r-full)", fontWeight: 700, fontSize: 14, cursor: "pointer", fontFamily: "inherit",
+    border: primary ? "1px solid transparent" : `1px solid ${danger ? C.danger : C.line}`,
     background: primary ? C.primary : C.surface,
     color: primary ? C.onPrimary : danger ? C.danger : C.ink,
-    boxShadow: "none",
+    /* Quầng sáng cùng màu nút — thứ làm nút "nổi" trong Soft UI. Chỉ nút chính
+       mới có; nút phụ mà cũng phát sáng thì mất hẳn thứ bậc. */
+    boxShadow: primary ? "0 8px 20px rgb(var(--mcf-primary-rgb) / .28)" : "var(--sh-1)",
   }),
-  input: { width: "100%", padding: "10px 12px", border: `1px solid ${C.lineStrong}`, borderRadius: "var(--r-sm)", fontSize: 15, color: C.ink, background: C.surface, fontFamily: "inherit" },
+  input: { width: "100%", padding: "11px 14px", border: `1px solid ${C.lineStrong}`, borderRadius: "var(--r-sm)", fontSize: 15, color: C.ink, background: C.surface, fontFamily: "inherit" },
   label: { fontSize: 11, letterSpacing: "0.12em", textTransform: "uppercase", color: C.soft, fontWeight: 600 },
   badge: (lv) => ({ fontSize: 11, fontWeight: 700, color: LEVEL_COLORS[lv] || C.primary, background: LEVEL_PASTEL[lv] || C.primarySoft, borderRadius: "var(--r-sm)", padding: "3px 8px", marginRight: 8, letterSpacing: "0.02em" }),
   chip: (bg, col) => ({ fontSize: 12, fontWeight: 600, background: bg, color: col, borderRadius: "var(--r-sm)", padding: "3px 10px" }),

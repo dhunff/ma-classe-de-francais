@@ -4,13 +4,15 @@
    phải luôn cùng một màu — sửa cái này thì sửa cái kia. */
 
 :root {
-  --mcf-bg: #F5F5F7;             --mcf-bg-rgb: 245 245 247;
+  /* Nền xanh-xám rất nhạt thay cho xám trung tính: thẻ trắng nổi lên khỏi nó
+     mà không cần viền, đó là điều kiện để Soft UI hoạt động. */
+  --mcf-bg: #F1F5F9;             --mcf-bg-rgb: 241 245 249;
   --mcf-surface: #FFFFFF;        --mcf-surface-rgb: 255 255 255;
   --mcf-card: #FFFFFF;
   --mcf-surface2: #FAFAFC;       --mcf-surface2-rgb: 250 250 252;
   --mcf-ink: #23232E;            --mcf-ink-rgb: 35 35 46;
   --mcf-soft: #6E7280;           --mcf-soft-rgb: 110 114 128;
-  --mcf-line: #E4E4EA;           --mcf-line-rgb: 228 228 234;
+  --mcf-line: #EDF0F5;           --mcf-line-rgb: 237 240 245;
   --mcf-line-strong: #8E8E99;    --mcf-line-strong-rgb: 142 142 153;
   /* blue-600 / blue-50. Đo WCAG: 5.17:1 trên surface, 4.75:1 trên primarysoft.
      blue-500 #3B82F6 đã bị loại vì chỉ đạt 3.68:1. */
@@ -36,10 +38,17 @@
   --sp-1: 4px;  --sp-2: 8px;  --sp-3: 12px; --sp-4: 16px; --sp-5: 24px;
   --sp-6: 32px; --sp-7: 40px; --sp-8: 48px; --sp-9: 64px; --sp-10: 80px;
 
-  --r-sm: 8px; --r-md: 12px; --r-full: 999px;
+  /* Soft UI: bo lớn và bóng toả rộng thay cho viền.
 
-  --sh-1: 0 1px 2px rgba(35,35,46,.06), 0 1px 3px rgba(35,35,46,.04);
-  --sh-2: 0 8px 24px rgba(35,35,46,.10);
+     Hai giá trị này quyết định hình khối của toàn app — ~512 inline style của
+     các màn hình cũ đều đọc var(--r-md) và var(--sh-1) qua S.card / S.btn
+     trong shared/tokens.js. Sửa ở đây là sửa tất cả, không phải đi từng màn. */
+  --r-sm: 14px; --r-md: 22px; --r-full: 999px;
+
+  /* Bóng mềm, khuếch tán, gần như không có viền tối — đây là thứ tách thẻ
+     khỏi nền trong Soft UI, thay cho đường kẻ 1px. */
+  --sh-1: 0 2px 8px rgba(35,35,46,.04), 0 8px 24px rgba(35,35,46,.05);
+  --sh-2: 0 12px 40px rgba(35,35,46,.10), 0 2px 8px rgba(35,35,46,.04);
 }
 
 html.mcf-dark-root,

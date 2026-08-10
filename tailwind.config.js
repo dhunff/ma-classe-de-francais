@@ -35,7 +35,10 @@ export default {
       fontFamily: {
         sans: ["Plus Jakarta Sans", "-apple-system", "Segoe UI", "sans-serif"],
       },
-      borderRadius: { sm: "8px", md: "12px", full: "999px" },
+      /* Phải khớp --r-sm / --r-md trong tokens.css: nửa app dùng lớp Tailwind
+         (rounded-md), nửa còn lại dùng inline style đọc var(--r-md). Lệch nhau
+         là hai nửa giao diện bo góc khác nhau. */
+      borderRadius: { sm: "14px", md: "22px", full: "999px" },
       boxShadow: { sm: "var(--sh-1)", md: "var(--sh-2)" },
       spacing: { sidebar: "260px", "sidebar-collapsed": "72px" },
       transitionDuration: { DEFAULT: "150ms" },
