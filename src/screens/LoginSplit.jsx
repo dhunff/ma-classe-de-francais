@@ -63,9 +63,12 @@ const SOCIALS = [
 function VisualPanel() {
   return (
     <div className="relative hidden overflow-hidden rounded-[1.7rem] bg-gradient-to-br from-blue-700 via-purple-600 to-fuchsia-300 md:block">
-      <span aria-hidden className="absolute -left-16 top-8 h-64 w-64 rounded-full bg-fuchsia-400/40 blur-3xl" />
-      <span aria-hidden className="absolute -bottom-20 -right-10 h-72 w-72 rounded-full bg-blue-400/40 blur-3xl" />
-      <span aria-hidden className="absolute right-10 top-1/3 h-40 w-40 rounded-full bg-white/20 blur-2xl" />
+      {/* Quầng fuchsia phải tránh góc trên trái: đó là chỗ duy nhất xanh lam
+          của gradient lộ ra, chồng lên là cả khoang chỉ còn tím với hồng. */}
+      <span aria-hidden className="absolute -left-20 bottom-10 h-64 w-64 rounded-full bg-fuchsia-400/50 blur-3xl" />
+      <span aria-hidden className="absolute -bottom-24 -right-16 h-72 w-72 rounded-full bg-pink-300/40 blur-3xl" />
+      <span aria-hidden className="absolute -right-6 top-6 h-52 w-52 rounded-full bg-blue-500/50 blur-3xl" />
+      <span aria-hidden className="absolute left-1/3 top-1/2 h-40 w-40 rounded-full bg-white/15 blur-2xl" />
 
       <div className="relative flex h-full flex-col justify-between p-10">
         <Asterisk size={40} strokeWidth={2.6} className="text-white" />
