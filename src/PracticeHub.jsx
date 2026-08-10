@@ -15,6 +15,7 @@ import ReadingPanel from "./editor/ReadingPanel.jsx";
 import Builder from "./screens/teacher/Builder.jsx";
 import PaymentModal from "./screens/student/PaymentModal.jsx";
 import { PAYMENT_KEY, isPremium, hasAccess, fmtPrice, loadAccess } from "./shared/access.js";
+import ExerciseCard from "./screens/practice/ExerciseCard.jsx";
 import { Lock } from "lucide-react";
 
 /* ============================================================
@@ -546,86 +547,40 @@ function PracticeHubInner({ role = "eleve", name = "", accounts = [], onRequireL
             <div style={{ fontSize: 13.5, color: C.soft, marginTop: 6 }}>Essaie un autre niveau ou reviens bientôt !</div>
           </div>
         ) : (
-          /* Lưới thẻ: ảnh 16:9 trên cùng, nội dung giữa, hành động dưới đáy.
-             Mọi thẻ cao bằng nhau nhờ flex + mt-auto ở khối hành động, nên
-             hàng không bị so le khi tiêu đề dài ngắn khác nhau. */
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          /* Lưới thẻ ngang: ảnh 16:9 bên trái, nội dung bên phải.
+
+             Một cột cho tới 1536px. Thẻ ngang cần bề ngang: chia đôi ở 1280px
+             thì ảnh 16rem đã nuốt gần nửa thẻ, tiêu đề rớt xuống ba dòng còn
+             hàng nút thì dính vào chữ.
+
+             Toàn bộ thân thẻ nằm trong ExerciseCard; ở đây chỉ còn việc dẫn
+             dữ liệu và hành động vào. */
+          <div className="grid gap-4 2xl:grid-cols-2">
             {list.map((ex) => {
               const h = hist[ex.id];
               const types = [...new Set(ex.questions.map((q) => QTYPES[q.type]))].join(" + ");
               /* Giáo viên luôn xem được bài của chính mình; chỉ học sinh mới bị khoá. */
               const locked = !teacher && isPremium(ex) && !hasAccess(access, name, ex.id);
               return (
-                <div key={ex.id}
-                  className="flex flex-col overflow-hidden rounded-md border border-solid border-line bg-surface shadow-sm">
-                  {/* Ảnh minh hoạ do giáo viên đặt. Không có thì dùng khối
-                      trung tính — không dựng ảnh giả cho bài chưa có ảnh. */}
-                  {ex.imageUrl ? (
-                    <img src={ex.imageUrl} alt="" loading="lazy"
-                      className="aspect-video w-full border-0 border-b border-solid border-line object-cover" />
-                  ) : (
-                    <div aria-hidden
-                      className="grid aspect-video w-full place-items-center border-0 border-b border-solid border-line bg-surface2 text-3xl text-soft">
-                      {ex.audioUrl ? "🎧" : ex.readingText ? "📖" : "✎"}
-                    </div>
-                  )}
-
-                  <div className="flex flex-1 flex-col p-4">
-                    <div className="mb-2 flex flex-wrap items-center gap-2">
-                      <span style={S.badge(ex.level)}>{ex.level}</span>
-                      {/* Trạng thái thu phí. Bài đã mở khoá không hiện gì thêm —
-                          nhắc lại "đã mua" trên mọi thẻ chỉ làm nhiễu. */}
-                      {!isPremium(ex) ? (
-                        <span className="rounded-full bg-ok-soft px-2.5 py-0.5 text-[11px] font-bold text-ok">
-                          {t("pay.free")}
-                        </span>
-                      ) : !locked ? null : (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-warn-soft px-2.5 py-0.5 text-[11px] font-bold text-warn">
-                          <Lock size={11} /> {fmtPrice(ex.price)}
-                        </span>
-                      )}
-                      {ex.folderId && folderName(ex.folderId) && (
-                        <span className="inline-flex items-center gap-1.5 rounded-full border border-solid border-line bg-surface2 px-2.5 py-0.5 text-[11px] font-bold text-soft">
-                          <Folder size={11} /> {folderName(ex.folderId)}
-                        </span>
-                      )}
-                    </div>
-
-                    <strong className="mb-1 block text-[15px] leading-snug text-ink">{ex.title}</strong>
-
-                    <div className="text-xs leading-relaxed text-soft">
-                      {ex.questions.length} question{ex.questions.length > 1 ? "s" : ""}
-                      {types && ` · ${types}`}
-                      {ex.audioUrl && " · 🎧"}{ex.readingText && " · 📖"}{ex.timeLimit && ` · ⏱ ${ex.timeLimit} min`}
-                    </div>
-                    {h && (
-                      <div className="mt-1 text-xs font-bold"
-                        style={{ color: h.max && h.best / h.max >= 0.8 ? C.ok : C.primary }}>
-                        🏆 Meilleur : {h.best}/{h.max} ({h.tries} essai{h.tries > 1 ? "s" : ""})
-                      </div>
-                    )}
-
-                    {/* Hành động ở góc dưới. Menu ⋮ render qua Portal — quy tắc
-                        kiến trúc sẵn có, để dropdown không bị kẹt z-index. */}
-                    <div className="mt-auto flex items-center justify-end gap-2 pt-4">
-                      {locked ? (
-                        <button type="button" onClick={() => setPayFor(ex)}
-                          className="inline-flex items-center gap-1.5 rounded-md border border-solid border-transparent bg-primary px-4 py-2 text-sm font-bold text-on-primary transition-opacity hover:opacity-90">
-                          <Lock size={15} /> {t("pay.buy")}
-                        </button>
-                      ) : (
-                        <SplitTrain open={trainMenu === ex.id} setOpen={(v) => setTrainMenu(v ? ex.id : null)}
-                          onStart={() => { if (isGuest) return requireLogin(); setView({ page: "quiz", cat: view.cat, folder: view.folder, niveau, exId: ex.id }); }}
-                          onPick={(kind) => setMatModal({ exId: ex.id, kind })} />
-                      )}
-                      {teacher && <HubMenu
-                        onEdit={() => { const c = JSON.parse(JSON.stringify(ex)); if (!c.skills || !c.skills.length) c.skills = c.skill ? [c.skill] : []; if (c.consigne === undefined) c.consigne = ""; if (!c.usageType) c.usageType = "practice"; setDraft(c); setView({ page: "builder" }); }}
-                        onDup={() => duplicate(ex)}
-                        onMove={view.cat !== "__autres__" ? () => setMoveEx(ex) : null}
-                        onDel={() => persist(exercises.filter((e) => e.id !== ex.id))} />}
-                    </div>
-                  </div>
-                </div>
+                <ExerciseCard
+                  key={ex.id}
+                  ex={ex}
+                  premium={isPremium(ex)}
+                  locked={locked}
+                  best={h}
+                  typesLabel={types}
+                  folderLabel={ex.folderId ? folderName(ex.folderId) : null}
+                  t={t}
+                  onStart={() => { if (isGuest) return requireLogin(); setView({ page: "quiz", cat: view.cat, folder: view.folder, niveau, exId: ex.id }); }}
+                  onPickMaterial={(kind) => setMatModal({ exId: ex.id, kind })}
+                  onBuy={() => setPayFor(ex)}
+                  teacherActions={!teacher ? null : [
+                    { label: "Modifier", icon: <Pencil size={16} />, onClick: () => { const c = JSON.parse(JSON.stringify(ex)); if (!c.skills || !c.skills.length) c.skills = c.skill ? [c.skill] : []; if (c.consigne === undefined) c.consigne = ""; if (!c.usageType) c.usageType = "practice"; setDraft(c); setView({ page: "builder" }); } },
+                    { label: "Dupliquer", icon: <Copy size={16} />, onClick: () => duplicate(ex) },
+                    ...(view.cat !== "__autres__" ? [{ label: "Déplacer vers…", icon: <Folder size={16} />, onClick: () => setMoveEx(ex) }] : []),
+                    { label: "Supprimer", icon: <Trash2 size={16} />, danger: true, onClick: () => persist(exercises.filter((e) => e.id !== ex.id)) },
+                  ]}
+                />
               );
             })}
           </div>
