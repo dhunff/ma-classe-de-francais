@@ -12,7 +12,6 @@ import { load } from './shared/storage.js'
 import { LANG_KEY, LANGS, I18N, getLang, LangCtx, digKey } from './shared/i18n.jsx'
 
 import PracticeHub from './PracticeHub.jsx'
-import Login from './screens/Login.jsx'
 import Bell from './screens/student/Bell.jsx'
 import Student from './screens/student/Student.jsx'
 import { Teacher } from './screens/teacher/TeacherScreens.jsx'
@@ -146,12 +145,9 @@ function AppInner() {
                 chiếm trọn màn hình nên KHÔNG lồng vào shell của AppLayout. */}
             <Route path="/soft" element={<SoftDashboard />} />
 
-            {/* Đăng nhập chính: email + mật khẩu qua Supabase Auth.
-
-                /login-pin giữ nguyên đường cũ (tên + mã PIN) và còn sống cho
-                tới khi mọi tài khoản được di trú sang Supabase Auth. Gỡ nó
-                trước lúc đó là khoá cả lớp lẫn giáo viên ra ngoài, vì hiện
-                chưa có user auth nào tồn tại. */}
+            {/* Đăng nhập: email + mật khẩu qua Supabase Auth. Đường PIN cũ
+                (tên + mã giáo viên cấp) đã gỡ sau khi tài khoản di trú xong —
+                xem lịch sử git nếu cần dựng lại. */}
             <Route
               path="/login"
               element={
@@ -161,25 +157,6 @@ function AppInner() {
                   <LoginSplit
                     accounts={accounts}
                     onLogin={(s) => { setSession(s); refresh(); }}
-                  />
-                )
-              }
-            />
-
-            <Route
-              path="/login-pin"
-              element={
-                session ? (
-                  <Navigate to={ROLE_HOME[session.role] || "/login"} replace />
-                ) : (
-                  <Login
-                    accounts={accounts}
-                    onLogin={(s) => { setSession(s); refresh(); }}
-                    lang={lang}
-                    langs={LANGS}
-                    onLang={setLang}
-                    dark={dark}
-                    onToggleDark={toggleTheme}
                   />
                 )
               }
@@ -226,8 +203,6 @@ function AppInner() {
               accounts={accounts}
               onLogin={(sess) => { setSession(sess); setGate(null); refresh(); }}
               onClose={() => setGate(null)}
-              lang={lang} langs={LANGS} onLang={setLang}
-              dark={dark} onToggleDark={toggleTheme}
             />
           )}
         </BrowserRouter>

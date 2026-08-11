@@ -2,7 +2,7 @@ import React from "react";
 import { createPortal } from "react-dom";
 import { X, LogIn } from "lucide-react";
 import { useT } from "../shared/i18n.jsx";
-import Login from "./Login.jsx";
+import EmailPasswordForm from "./auth/EmailPasswordForm.jsx";
 
 /* Cửa đăng nhập bật lên khi khách bấm vào việc cần tài khoản.
 
@@ -12,7 +12,7 @@ import Login from "./Login.jsx";
 
    Đăng nhập xong, `onLogin` chuyển tiếp lên trên để nơi gọi mở đúng bài mà
    khách vừa bấm, chứ không bắt họ đi tìm lại từ đầu. */
-export default function LoginGate({ accounts, onLogin, onClose, lang, langs, onLang, dark, onToggleDark }) {
+export default function LoginGate({ accounts, onLogin, onClose }) {
   const t = useT();
 
   return createPortal(
@@ -30,23 +30,14 @@ export default function LoginGate({ accounts, onLogin, onClose, lang, langs, onL
               <p className="mt-1 text-sm text-soft">{t("login.gate_body")}</p>
             </div>
             <button type="button" onClick={onClose} aria-label={t("pay.close")}
-              className="grid h-9 w-9 shrink-0 place-items-center rounded-md text-soft transition-colors hover:bg-surface2 hover:text-ink focus:outline-none focus:ring-2 focus:ring-primary/40">
+              className="grid h-9 w-9 shrink-0 cursor-pointer place-items-center rounded-md border-0 bg-transparent text-soft transition-colors hover:bg-surface2 hover:text-ink focus:outline-none focus:ring-2 focus:ring-primary/40">
               <X size={18} />
             </button>
           </div>
 
-          {/* `embedded` bỏ phần vỏ trang của Login: không nền toàn màn hình,
-              không nhãn hiệu lặp lại, vì hộp này đã có tiêu đề riêng. */}
-          <Login
-            embedded
-            accounts={accounts}
-            onLogin={onLogin}
-            lang={lang}
-            langs={langs}
-            onLang={onLang}
-            dark={dark}
-            onToggleDark={onToggleDark}
-          />
+          <div className="p-5">
+            <EmailPasswordForm accounts={accounts} onLogin={onLogin} autoFocus />
+          </div>
         </div>
       </div>
     </div>,

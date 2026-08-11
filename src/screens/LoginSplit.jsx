@@ -1,27 +1,20 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
-import { Eye, EyeOff, Asterisk, AlertCircle, Loader2, KeyRound } from "lucide-react";
-import { supabase } from "../storageShim.js";
-import { useT } from "../shared/i18n.jsx";
+import React from "react";
+import { Asterisk } from "lucide-react";
+import EmailPasswordForm from "./auth/EmailPasswordForm.jsx";
 
-/* Màn hình đăng nhập hai khoang — bản thiết kế riêng, chưa nối vào luồng xác
-   thực thật. Login.jsx mới là cổng đăng nhập đang chạy (PIN + i18n + storage);
-   file này cố tình đứng tách để thử hình thức mà không đụng vào nó.
+/* Trang đăng nhập — vỏ hai khoang. Bản thân form nằm ở EmailPasswordForm,
+   dùng chung với cửa bật lên cho khách trong LoginGate; ở đây chỉ còn phần
+   trang trí và bố cục.
 
-   Như SoftDashboard, màn hình này dùng thẳng bảng slate/blue của Tailwind chứ
-   không dùng token trong tokens.css, nên chỉ có bản sáng.
+   Khoang trái dùng thẳng bảng slate/blue của Tailwind chứ không dùng token
+   trong tokens.css, nên nó chỉ có bản sáng — đó là chủ ý, mesh gradient này
+   không có bản tối tương ứng.
 
-   Preflight bị TẮT (tailwind.config.js), nên <input> và <button> vẫn giữ viền
-   với nền mặc định của trình duyệt, còn h1/h2/p vẫn còn margin. Mọi tiêu đề
-   dưới đây đều có `m-0`, mọi nút đi qua RESET_BTN, mọi ô nhập đi qua INPUT —
-   bỏ đi là giao diện vỡ. */
+   Preflight bị TẮT (tailwind.config.js), nên <button> vẫn giữ viền và nền
+   mặc định của trình duyệt, còn h1/h2/p vẫn còn margin. Mọi tiêu đề dưới đây
+   đều có `m-0`, mọi nút đi qua RESET_BTN — bỏ đi là giao diện vỡ. */
 
 const RESET_BTN = "cursor-pointer border-0 font-[inherit] appearance-none";
-
-const INPUT =
-  "w-full rounded-xl border border-solid border-gray-200 bg-white px-4 py-3 text-sm " +
-  "font-medium text-slate-800 outline-none transition placeholder:text-slate-400 " +
-  "focus:border-blue-500 focus:ring-2 focus:ring-blue-500";
 
 /* ──────────────────────────  Biểu tượng mạng xã hội  ────────────────────── */
 /* Lucide không có logo thương hiệu, nên ba cái này vẽ tay bằng SVG. */
@@ -89,72 +82,7 @@ function VisualPanel() {
 
 /* ────────────────────────────  Khoang phải  ─────────────────────────────── */
 
-function Field({ id, label, type = "text", value, onChange, placeholder, autoComplete, children }) {
-  return (
-    <div>
-      <label htmlFor={id} className="block text-sm font-medium text-slate-700">
-        {label}
-      </label>
-      <div className="relative mt-2">
-        <input
-          id={id}
-          type={type}
-          value={value}
-          onChange={onChange}
-          placeholder={placeholder}
-          autoComplete={autoComplete}
-          className={INPUT + (children ? " pr-11" : "")}
-        />
-        {children}
-      </div>
-    </div>
-  );
-}
-
 export default function LoginSplit({ accounts = [], onLogin }) {
-  const t = useT();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [visible, setVisible] = useState(false);
-  const [busy, setBusy] = useState(false);
-  const [msg, setMsg] = useState("");
-
-  /* Vai trò lấy theo thứ tự: user_metadata.role do người tạo tài khoản đặt →
-     đối chiếu email trong bảng tài khoản → mặc định học sinh.
-
-     Mặc định phải là "eleve", không phải "prof": đoán nhầm thành học sinh chỉ
-     làm người ta thấy thiếu menu, đoán nhầm thành giáo viên là trao quyền
-     xem bài và điểm của cả lớp. */
-  const resolveRole = (user) => {
-    const meta = user?.user_metadata || {};
-    if (meta.role === "prof" || meta.role === "eleve") {
-      return { role: meta.role, name: meta.name || user.email };
-    }
-    const acc = accounts.find((a) => a.email && a.email.toLowerCase() === String(user?.email).toLowerCase());
-    if (acc) return { role: "eleve", name: acc.name };
-    return { role: "eleve", name: meta.name || String(user?.email || "").split("@")[0] };
-  };
-
-  const submit = async (e) => {
-    e.preventDefault();
-    setMsg("");
-    const id = email.trim();
-    if (!id || !password) { setMsg(t("login.err_generic")); return; }
-
-    setBusy(true);
-    try {
-      const { data, error } = await supabase.auth.signInWithPassword({ email: id, password });
-      /* Một thông báo duy nhất cho mọi kiểu sai — nói rõ "email này không tồn
-         tại" là cho người lạ biết địa chỉ nào có thật trong hệ thống. */
-      if (error || !data?.user) { setMsg(t("login.err_generic")); return; }
-      onLogin(resolveRole(data.user));
-    } catch {
-      setMsg(t("login.err_network"));
-    } finally {
-      setBusy(false);
-    }
-  };
-
   return (
     <div className="flex min-h-screen items-center justify-center bg-[#f4f7fa] p-4 font-sans">
       <div className="grid w-full max-w-5xl gap-0 rounded-[2rem] bg-white p-2.5 shadow-xl shadow-slate-200/50 md:grid-cols-2">
@@ -170,60 +98,9 @@ export default function LoginSplit({ accounts = [], onLogin }) {
             Accédez à vos cours et continuez votre apprentissage du français.
           </p>
 
-          <form onSubmit={submit} className="mt-8 flex flex-col gap-5">
-            <Field
-              id="ls-email"
-              label="Votre email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="vous@exemple.com"
-              autoComplete="email"
-            />
-
-            <Field
-              id="ls-password"
-              label="Mot de passe"
-              type={visible ? "text" : "password"}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              autoComplete="current-password"
-            >
-              <button
-                type="button"
-                onClick={() => setVisible((v) => !v)}
-                aria-label={visible ? "Masquer le mot de passe" : "Afficher le mot de passe"}
-                className={`${RESET_BTN} absolute right-3 top-1/2 -translate-y-1/2 bg-transparent p-1 text-slate-400 transition-colors hover:text-slate-600`}
-              >
-                {visible ? <EyeOff size={18} /> : <Eye size={18} />}
-              </button>
-            </Field>
-
-            {msg && (
-              <p role="alert" className="m-0 flex items-start gap-2 rounded-xl bg-rose-50 px-3.5 py-2.5 text-sm font-medium text-rose-700">
-                <AlertCircle size={16} className="mt-0.5 shrink-0" /> {msg}
-              </p>
-            )}
-
-            <button
-              type="submit"
-              disabled={busy}
-              className={`${RESET_BTN} mt-1 flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-3.5 text-sm font-bold text-white shadow-lg shadow-blue-500/40 transition hover:bg-blue-700 disabled:opacity-60`}
-            >
-              {busy && <Loader2 size={16} className="mcf-spin" />}
-              Se connecter
-            </button>
-          </form>
-
-          {/* Đường PIN vẫn còn cho tới khi mọi tài khoản được di trú sang
-              Supabase Auth. Gỡ nó đi trước lúc đó là khoá cả lớp ra ngoài. */}
-          <Link
-            to="/login-pin"
-            className="mt-4 flex items-center justify-center gap-2 text-xs font-semibold text-slate-500 no-underline hover:text-blue-600"
-          >
-            <KeyRound size={14} /> {t("login.use_pin")}
-          </Link>
+          <div className="mt-8">
+            <EmailPasswordForm accounts={accounts} onLogin={onLogin} autoFocus />
+          </div>
 
           {/* Đường kẻ chạy suốt hai bên nhờ flex-1, nên không phải đo tay. */}
           <div className="my-7 flex items-center gap-4">
