@@ -42,27 +42,48 @@
 --   set raw_app_meta_data = raw_app_meta_data || '{"role":"prof"}'
 --   where email = '…';
 
+-- Đọc claim thẳng từ request thay vì qua auth.jwt(). auth.jwt() chỉ là lớp bọc
+-- mỏng quanh đúng current_setting này; gọi trực tiếp thì hàm không phụ thuộc
+-- vào schema auth có sẵn và gọi được hay không.
+--
+-- Tham số `true` ở current_setting nghĩa là "thiếu thì trả NULL, đừng ném lỗi"
+-- — cần thiết vì lệnh chạy từ SQL Editor hay từ service role không mang JWT
+-- nào cả.
 create or replace function public.is_teacher()
 returns boolean
 language sql
 stable
 as $$
-  select coalesce(auth.jwt() -> 'app_metadata' ->> 'role', '') = 'prof';
+  select coalesce(
+    nullif(current_setting('request.jwt.claims', true), '')::jsonb
+      -> 'app_metadata' ->> 'role',
+    ''
+  ) = 'prof';
 $$;
 
 -- ───────────────────────────── Bật RLS ─────────────────────────────
 
 alter table public.kv_store enable row level security;
 
--- Dọn policy cũ nếu chạy lại migration này.
-drop policy if exists kv_anon_read_catalogue on public.kv_store;
-drop policy if exists kv_auth_read           on public.kv_store;
-drop policy if exists kv_teacher_insert      on public.kv_store;
-drop policy if exists kv_teacher_update      on public.kv_store;
-drop policy if exists kv_teacher_delete      on public.kv_store;
-drop policy if exists kv_student_insert      on public.kv_store;
-drop policy if exists kv_student_update      on public.kv_store;
-drop policy if exists kv_student_delete      on public.kv_store;
+-- Xoá SẠCH mọi policy đang có trên bảng, kể cả những cái không do file này đặt.
+--
+-- Bắt buộc phải quét hết chứ không chỉ drop theo tên mình đặt. Policy kiểu
+-- permissive trong PostgreSQL cộng dồn bằng OR chứ không phải AND: chỉ cần
+-- một policy cũ kiểu "cho anon toàn quyền" còn sót lại là nó vẫn cấp quyền,
+-- và mọi policy chặt chẽ bên dưới thành vô nghĩa.
+--
+-- Bảng này vốn có sẵn 4 policy mở toang từ trước — đó chính là thứ khiến anon
+-- đọc ghi được mọi thứ.
+do $$
+declare p record;
+begin
+  for p in
+    select policyname from pg_policies
+    where schemaname = 'public' and tablename = 'kv_store'
+  loop
+    execute format('drop policy %I on public.kv_store', p.policyname);
+  end loop;
+end $$;
 
 -- ──────────────────────────── ĐỌC ────────────────────────────
 
