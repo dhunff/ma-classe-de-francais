@@ -9,6 +9,8 @@ import { ROLE_HOME, TEACHER_NAV, STUDENT_NAV } from './layout/navItems.js'
 
 import { C } from './shared/tokens.js'
 import { load } from './shared/storage.js'
+import { supabase } from './storageShim.js'
+import { resolveRole } from './shared/authRole.js'
 import { LANG_KEY, LANGS, I18N, getLang, LangCtx, digKey } from './shared/i18n.jsx'
 
 import PracticeHub from './PracticeHub.jsx'
@@ -19,6 +21,7 @@ import StudentDashboard from './screens/dashboard/StudentDashboard.jsx'
 import TeacherDashboard from './screens/dashboard/TeacherDashboard.jsx'
 import SoftDashboard from './screens/dashboard/SoftDashboard.jsx'
 import LoginSplit from './screens/LoginSplit.jsx'
+import SetNewPassword from './screens/auth/SetNewPassword.jsx'
 
 /* App.jsx chỉ còn ba việc: giữ state phiên + dữ liệu, định tuyến, và bắt lỗi.
    Mọi màn hình nằm ở src/screens/, mọi thứ dùng chung ở src/shared/. */
@@ -75,18 +78,45 @@ function AppInner() {
      phục xong thì /login đẩy tiếp về trang chủ — và địa chỉ người dùng gõ
      vào bị mất giữa hai lần chuyển hướng. Mọi deep-link đều rơi về dashboard. */
   const [authChecked, setAuthChecked] = useState(false);
+  const [recovery, setRecovery] = useState(false);
   useEffect(() => {
     if (loading) return;
-    try {
-      const raw = localStorage.getItem(SESSION_KEY);
-      if (!raw) return;
-      const saved = JSON.parse(raw);
-      if (saved.role === "prof") setSessionRaw(saved);
-      else if (saved.role === "eleve" && accounts.some((a) => a.name === saved.name)) setSessionRaw(saved);
-      else localStorage.removeItem(SESSION_KEY);
-    } catch {} finally {
-      setAuthChecked(true);
-    }
+    let cancelled = false;
+
+    /* Phiên của Supabase là nguồn tin cậy chính. Nó phải được hỏi TRƯỚC
+       localStorage, vì đây là đường duy nhất mà Google OAuth và link đặt lại
+       mật khẩu quay về: cả hai đều rơi xuống trang với token trên URL, được
+       supabase-js nuốt vào rồi dựng thành phiên. Chỉ đọc localStorage thì
+       người đăng nhập bằng Google quay lại và thấy màn đăng nhập trắng. */
+    (async () => {
+      try {
+        const { data } = await supabase.auth.getSession();
+        if (cancelled) return;
+        if (data?.session?.user) {
+          setSession(resolveRole(data.session.user, accounts));
+          return;
+        }
+        const raw = localStorage.getItem(SESSION_KEY);
+        if (!raw) return;
+        const saved = JSON.parse(raw);
+        if (saved.role === "prof") setSessionRaw(saved);
+        else if (saved.role === "eleve" && accounts.some((a) => a.name === saved.name)) setSessionRaw(saved);
+        else localStorage.removeItem(SESSION_KEY);
+      } catch {} finally {
+        if (!cancelled) setAuthChecked(true);
+      }
+    })();
+
+    const { data: sub } = supabase.auth.onAuthStateChange((event, sess) => {
+      /* Người dùng vừa bấm link trong email đặt lại mật khẩu. Supabase đã cấp
+         một phiên tạm chỉ đủ để đổi mật khẩu — phải đưa họ tới form đổi mật
+         khẩu chứ không thả vào app như một lần đăng nhập bình thường. */
+      if (event === "PASSWORD_RECOVERY") { setRecovery(true); return; }
+      if (event === "SIGNED_OUT") { setSession(null); return; }
+      if (sess?.user) setSession(resolveRole(sess.user, accounts));
+    });
+
+    return () => { cancelled = true; sub?.subscription?.unsubscribe(); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loading]);
 
@@ -110,6 +140,19 @@ function AppInner() {
     );
   }
 
+  /* Đặt TRƯỚC router: người vừa bấm link đặt lại mật khẩu phải thấy đúng form
+     đổi mật khẩu, bất kể URL họ rơi vào là gì. Để sau router thì một route
+     bình thường sẽ giành mất và họ lọt vào app với phiên khôi phục. */
+  if (recovery) {
+    return (
+      <LangCtx.Provider value={lang}>
+        <div className={"mcf-root" + (dark ? " mcf-dark" : "")}>
+          <SetNewPassword onDone={() => { setRecovery(false); setSession(null); window.location.replace("/login"); }} />
+        </div>
+      </LangCtx.Provider>
+    );
+  }
+
   const shell = (
     <AppLayout
       session={session}
@@ -119,7 +162,10 @@ function AppInner() {
       onLang={setLang}
       dark={dark}
       onToggleDark={toggleTheme}
-      onLogout={() => setSession(null)}
+      /* Phải huỷ cả phiên Supabase, không chỉ phiên cục bộ. Bỏ signOut thì
+         getSession ở lần tải trang sau vẫn thấy phiên cũ và đăng nhập lại
+         ngay — nút "Đăng xuất" trông như hỏng. */
+      onLogout={async () => { try { await supabase.auth.signOut(); } catch {} setSession(null); }}
       bell={session?.role === "eleve"
         ? <Bell name={session.name} exercises={exercises} submissions={submissions} />
         : null}

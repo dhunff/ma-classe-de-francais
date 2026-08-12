@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Eye, EyeOff, AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
 import { supabase } from "../../storageShim.js";
 import { useT } from "../../shared/i18n.jsx";
+import { resolveRole } from "../../shared/authRole.js";
 
 /* Form xác thực — ba chế độ dùng chung một khung: đăng nhập, đăng ký, quên
    mật khẩu.
@@ -73,22 +74,6 @@ export default function EmailPasswordForm({ accounts = [], onLogin, mode = "logi
   const isRegister = mode === "register";
   const isReset = mode === "reset";
 
-  /* Vai trò lấy theo thứ tự: user_metadata.role do người tạo tài khoản đặt →
-     đối chiếu email trong bảng tài khoản → mặc định học sinh.
-
-     Mặc định phải là "eleve", không phải "prof": đoán nhầm thành học sinh chỉ
-     làm người ta thấy thiếu menu, đoán nhầm thành giáo viên là trao quyền xem
-     bài và điểm của cả lớp. */
-  const resolveRole = (user) => {
-    const meta = user?.user_metadata || {};
-    if (meta.role === "prof" || meta.role === "eleve") {
-      return { role: meta.role, name: meta.name || user.email };
-    }
-    const acc = accounts.find((a) => a.email && a.email.toLowerCase() === String(user?.email).toLowerCase());
-    if (acc) return { role: "eleve", name: acc.name };
-    return { role: "eleve", name: meta.name || String(user?.email || "").split("@")[0] };
-  };
-
   /* Kiểm tra tại chỗ trước khi gọi mạng. Không thay cho kiểm tra phía server —
      Supabase vẫn từ chối mật khẩu yếu — nhưng nó trả lời ngay thay vì bắt
      người dùng chờ một vòng đi về rồi mới biết hai ô mật khẩu lệch nhau. */
@@ -119,13 +104,43 @@ export default function EmailPasswordForm({ accounts = [], onLogin, mode = "logi
         /* Một thông báo duy nhất cho mọi kiểu sai — nói rõ "email này không
            tồn tại" là cho người lạ biết địa chỉ nào có thật trong hệ thống. */
         if (err || !data?.user) { setError(t("login.err_generic")); return; }
-        onLogin(resolveRole(data.user));
+        onLogin(resolveRole(data.user, accounts));
         return;
       }
 
-      /* TODO(bước 2): signUp và resetPasswordForEmail. Chờ xác nhận trước khi
-         nối phần backend, theo đúng điểm dừng đã thống nhất. */
-      setNotice(t("login.backend_pending"));
+      if (isRegister) {
+        const { data, error: err } = await supabase.auth.signUp({
+          email: email.trim(),
+          password,
+          options: {
+            /* Vai trò KHÔNG đặt ở đây. user_metadata do chính người dùng ghi
+               được, nên ai cũng có thể tự phong mình làm giáo viên. Để trống
+               thì resolveRole rơi về "eleve"; giáo viên phải được cấp quyền
+               từ Dashboard bằng service role. */
+            data: { name: name.trim() },
+            emailRedirectTo: `${window.location.origin}/login`,
+          },
+        });
+        if (err) { setError(err.message || t("login.err_generic")); return; }
+
+        /* Email đã tồn tại: Supabase cố tình trả về thành công với identities
+           rỗng thay vì báo lỗi, để không tiết lộ địa chỉ nào đã đăng ký. Ta
+           hiển thị đúng một thông điệp cho cả hai trường hợp. */
+        if (data?.session) { onLogin(resolveRole(data.user, accounts)); return; }
+        setNotice(t("login.check_inbox", { email: email.trim() }));
+        return;
+      }
+
+      /* Đặt lại mật khẩu. Luôn báo "đã gửi" kể cả khi email không tồn tại —
+         phản hồi khác nhau sẽ biến form này thành công cụ dò tài khoản. */
+      const { error: err } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+        redirectTo: `${window.location.origin}/login`,
+      });
+      if (err && !/not found|invalid/i.test(err.message || "")) {
+        setError(err.message || t("login.err_network"));
+        return;
+      }
+      setNotice(t("login.reset_sent", { email: email.trim() }));
     } catch {
       setError(t("login.err_network"));
     } finally {

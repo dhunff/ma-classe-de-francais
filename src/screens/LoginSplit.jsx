@@ -1,7 +1,8 @@
-import React, { useState } from "react";
-import { Asterisk } from "lucide-react";
+﻿import React, { useState } from "react";
+import { Asterisk, Loader2, AlertCircle } from "lucide-react";
 import EmailPasswordForm from "./auth/EmailPasswordForm.jsx";
 import { useT } from "../shared/i18n.jsx";
+import { supabase } from "../storageShim.js";
 
 /* Trang đăng nhập — vỏ hai khoang. Bản thân form nằm ở EmailPasswordForm,
    dùng chung với cửa bật lên cho khách trong LoginGate; ở đây chỉ còn phần
@@ -72,6 +73,48 @@ export default function LoginSplit({ accounts = [], onLogin }) {
      vì tiêu đề, nút Google và dòng chân trang đều đổi theo nó. Khoang trái
      không phụ thuộc gì — mesh gradient đứng yên suốt cả ba chế độ. */
   const [mode, setMode] = useState("login");
+  const [oauthBusy, setOauthBusy] = useState(false);
+  const [oauthError, setOauthError] = useState("");
+
+  /* Lỗi OAuth phải chết khi đổi chế độ. Nó sống ở đây chứ không trong form,
+     nên không tự biến mất như lỗi của form — để nguyên thì thông báo "Google
+     chưa bật" còn treo trên màn đăng ký, nơi nó chẳng liên quan gì. */
+  const changeMode = (next) => { setOauthError(""); setMode(next); };
+
+  /* Google chuyển hướng rời khỏi trang, nên không có nhánh "thành công" ở đây
+     — nếu đi trót lọt thì trình duyệt đã rời trang. Phiên quay về được App.jsx
+     bắt lại qua onAuthStateChange.
+
+     Phải hỏi /auth/v1/settings TRƯỚC khi chuyển hướng. signInWithOAuth không
+     kiểm tra gì cả: provider tắt thì nó vẫn đẩy người dùng sang Supabase, và
+     Supabase đáp lại bằng JSON thô giữa màn hình —
+     {"code":400,...,"msg":"Unsupported provider: provider is not enabled"}.
+     Nhánh `error` phía client không bao giờ chạy vì trang đã đi mất rồi. */
+  const signInWithGoogle = async () => {
+    setOauthError("");
+    setOauthBusy(true);
+    try {
+      const base = import.meta.env.VITE_SUPABASE_URL;
+      const key = import.meta.env.VITE_SUPABASE_ANON_KEY;
+      const res = await fetch(`${base}/auth/v1/settings`, { headers: { apikey: key } });
+      const settings = await res.json();
+
+      if (!settings?.external?.google) {
+        setOauthError(t("login.err_google_disabled"));
+        setOauthBusy(false);
+        return;
+      }
+
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: { redirectTo: `${window.location.origin}/login` },
+      });
+      if (error) { setOauthError(error.message); setOauthBusy(false); }
+    } catch {
+      setOauthError(t("login.err_network"));
+      setOauthBusy(false);
+    }
+  };
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-[#f4f7fa] p-4 font-sans">
@@ -94,7 +137,7 @@ export default function LoginSplit({ accounts = [], onLogin }) {
               accounts={accounts}
               onLogin={onLogin}
               mode={mode}
-              onModeChange={setMode}
+              onModeChange={changeMode}
               autoFocus
             />
           </div>
@@ -112,10 +155,19 @@ export default function LoginSplit({ accounts = [], onLogin }) {
 
               <button
                 type="button"
-                className={`${RESET_BTN} flex w-full items-center justify-center gap-2.5 rounded-full bg-gray-100 py-3.5 text-sm font-bold text-slate-700 transition-colors hover:bg-gray-200`}
+                onClick={signInWithGoogle}
+                disabled={oauthBusy}
+                className={`${RESET_BTN} flex w-full items-center justify-center gap-2.5 rounded-full bg-gray-100 py-3.5 text-sm font-bold text-slate-700 transition-colors hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-60`}
               >
-                <GoogleMark /> {t("login.with_google")}
+                {oauthBusy ? <Loader2 size={18} className="mcf-spin" /> : <GoogleMark />}
+                {oauthBusy ? t("login.pending") : t("login.with_google")}
               </button>
+
+              {oauthError && (
+                <p role="alert" className="m-0 mt-3 flex items-start gap-2 rounded-xl bg-rose-50 px-3.5 py-2.5 text-sm font-medium text-rose-700">
+                  <AlertCircle size={16} className="mt-0.5 shrink-0" /> {oauthError}
+                </p>
+              )}
             </>
           )}
 
@@ -124,7 +176,7 @@ export default function LoginSplit({ accounts = [], onLogin }) {
               {mode === "login" ? t("login.no_account") : t("login.have_account")}{" "}
               <button
                 type="button"
-                onClick={() => setMode(mode === "login" ? "register" : "login")}
+                onClick={() => changeMode(mode === "login" ? "register" : "login")}
                 className={`${RESET_BTN} bg-transparent p-0 text-sm font-bold text-blue-600 hover:underline`}
               >
                 {mode === "login" ? t("login.go_register") : t("login.go_login")}
