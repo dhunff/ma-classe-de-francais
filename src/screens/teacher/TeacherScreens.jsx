@@ -15,6 +15,7 @@ import { BarChart, Bar, LineChart, Line, RadarChart, Radar, PolarGrid, PolarAngl
 import Builder from "./Builder.jsx";
 import PracticeHub from "../../PracticeHub.jsx";
 import { PAYMENT_KEY, STATUS, isPremium, accessRecord, fmtPrice, loadAccess, setAccessRemote, getTeacherToken, setTeacherToken } from "../../shared/access.js";
+import { supabase } from "../../storageShim.js";
 
 
 /* ================= Teacher ================= */
@@ -280,9 +281,8 @@ function Accounts({ accounts, setAccounts, classes, setClasses, exercises = [], 
     setAccounts(next); await save("mcf-accounts", next);
   };
   const [name, setName] = useState("");
-  const [code, setCode] = useState("");
+  const [email, setEmail] = useState("");
   const [msg, setMsg] = useState("");
-  const [show, setShow] = useState(false);
   const [presence, setPresence] = useState({});
   const [, forceTick] = useState(0);
 
@@ -294,23 +294,40 @@ function Accounts({ accounts, setAccounts, classes, setClasses, exercises = [], 
     return () => clearInterval(t);
   }, []);
 
+  /* Danh sách lớp giờ chỉ còn là DANH BẠ, không phải nơi giữ mật khẩu.
+
+     Mật khẩu đã chuyển hẳn sang Supabase Auth. Trường `code` cũ chứa mã dạng
+     thô trong kv_store — bảng đọc được bằng anon key từ trình duyệt, tức ai
+     cũng xem được mật khẩu của cả lớp. Nó cũng không còn xác thực gì kể từ khi
+     màn đăng nhập PIN bị gỡ: giáo viên vẫn phát mật khẩu, học sinh vẫn đổi
+     mật khẩu, mà không cái nào có tác dụng.
+
+     Thay vào đó giáo viên ghi email. Học sinh tự đăng ký bằng chính email đó,
+     rồi resolveRole khớp lại để giữ đúng tên hiển thị giáo viên đã đặt. */
   const add = async () => {
-    const n = name.trim(), c = code.trim();
-    if (!n || c.length < 4) { setMsg("Prénom requis et mot de passe d'au moins 4 caractères."); return; }
+    const n = name.trim(), e = email.trim().toLowerCase();
+    if (!n) { setMsg("Prénom requis."); return; }
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e)) { setMsg("Email invalide."); return; }
     if (accounts.some((a) => a.name.toLowerCase() === n.toLowerCase())) { setMsg("Ce prénom existe déjà."); return; }
-    const next = [...accounts, { name: n, code: c }];
+    if (accounts.some((a) => (a.email || "").toLowerCase() === e)) { setMsg("Cet email est déjà utilisé."); return; }
+    const next = [...accounts, { name: n, email: e }];
     setAccounts(next); await save("mcf-accounts", next);
-    setName(""); setCode(""); setMsg("");
+    setName(""); setEmail(""); setMsg("");
   };
   const delAcc = async (n) => {
     const next = accounts.filter((a) => a.name !== n);
     setAccounts(next); await save("mcf-accounts", next);
   };
+
+  /* Giáo viên không đặt mật khẩu hộ nữa — chỉ kích hoạt email đặt lại của
+     Supabase. Mật khẩu chỉ đi qua tay chính học sinh, không qua lời nhắn. */
   const reset = async (n) => {
-    const c = prompt(`Nouveau mot de passe pour ${n} :`);
-    if (!c || c.trim().length < 4) return;
-    const next = accounts.map((a) => (a.name === n ? { ...a, code: c.trim() } : a));
-    setAccounts(next); await save("mcf-accounts", next);
+    const acc = accounts.find((a) => a.name === n);
+    if (!acc?.email) { setMsg(`${n} n'a pas encore d'email. Ajoutez-le d'abord.`); return; }
+    const { error } = await supabase.auth.resetPasswordForEmail(acc.email, {
+      redirectTo: `${window.location.origin}/login`,
+    });
+    setMsg(error ? `Échec de l'envoi : ${error.message}` : `Lien de réinitialisation envoyé à ${acc.email}.`);
   };
 
   if (openStudent) {
@@ -347,16 +364,15 @@ function Accounts({ accounts, setAccounts, classes, setClasses, exercises = [], 
         <div style={S.label}>Créer un compte élève (l'élève pourra changer son mot de passe)</div>
         <div style={{ display: "flex", gap: 10, marginTop: 8, flexWrap: "wrap" }}>
           <input style={{ ...S.input, flex: "1 1 160px" }} value={name} placeholder="Prénom de l'élève" onChange={(e) => setName(e.target.value)} />
-          <input style={{ ...S.input, flex: "1 1 160px" }} value={code} placeholder="Mot de passe initial (min. 4)" onChange={(e) => setCode(e.target.value)} />
+          <input style={{ ...S.input, flex: "1 1 200px" }} type="email" value={email} placeholder="Email de l'élève" onChange={(e) => setEmail(e.target.value)} />
           <button style={S.btn(true)} onClick={add}>Créer le compte</button>
         </div>
         {msg && <p style={{ color: C.danger, fontSize: 13, marginTop: 10, marginBottom: 0 }}>{msg}</p>}
       </div>
+      {/* Nút « Afficher les mots de passe » đã bỏ cùng với trường code — không
+          còn mật khẩu nào ở đây để hiện. */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
         <span style={{ fontSize: 13, color: C.soft }}>{accounts.length} compte(s)</span>
-        <button style={{ ...S.btn(false), fontSize: 12, padding: "5px 10px" }} onClick={() => setShow(!show)}>
-          {show ? "Masquer les mots de passe" : "Afficher les mots de passe"}
-        </button>
       </div>
       <div style={{ display: "grid", gap: 10 }}>
         {accounts.map((a) => (
@@ -377,7 +393,9 @@ function Accounts({ accounts, setAccounts, classes, setClasses, exercises = [], 
                   </span>
                 );
               })()}
-              <span style={{ fontSize: 13, color: C.soft }}>mot de passe : {show ? a.code : "••••"}</span>
+              <span style={{ fontSize: 13, color: a.email ? C.soft : C.warn }}>
+                {a.email || "sans email — l'élève ne peut pas se connecter"}
+              </span>
               <select value={a.classId || ""} onChange={(e) => setStudentClass(a.name, e.target.value)}
                 style={{ ...S.input, width: "auto", padding: "5px 10px", fontSize: 12.5 }}>
                 <option value="">— Sans classe —</option>
@@ -385,7 +403,8 @@ function Accounts({ accounts, setAccounts, classes, setClasses, exercises = [], 
               </select>
             </span>
             <div style={{ display: "flex", gap: 8 }}>
-              <button style={{ ...S.btn(false), padding: "5px 12px", fontSize: 12 }} onClick={() => reset(a.name)}>Réinitialiser</button>
+              <button style={{ ...S.btn(false), padding: "5px 12px", fontSize: 12 }} onClick={() => reset(a.name)}
+                title="Envoie un lien de réinitialisation à l'élève">Envoyer un lien</button>
               <button style={{ ...S.btn(false, true), padding: "5px 12px", fontSize: 12 }} onClick={() => delAcc(a.name)}>Supprimer</button>
             </div>
           </div>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { C, S, LEVEL_COLORS, LEVEL_PASTEL, QTYPES, VF_OPTS } from "../../shared/tokens.js";
 import { load, save, del } from "../../shared/storage.js";
+import { supabase } from "../../storageShim.js";
 import { useT } from "../../shared/i18n.jsx";
 import { SKILLS, fmtDate, isLate, exSkills, assignedTo, totalScore } from "../../shared/exercises.js";
 import { uid, norm, stripHtml, wordCount, vfOk, fillAccepted, fillOk, autoQ, ordreOk, tableauCells, tableauOk, isQuestionAnswered, getUnansweredQuestionsCount } from "../../shared/questions.js";
@@ -81,14 +82,28 @@ function Student({ name, exercises, submissions, setSubmissions, accounts, setAc
   const tabs = [["todo", `📝 ${t("nav.todo")} (${todo.length})`], ["done", `📤 ${t("nav.done")} (${doneList.length})`],
     ["practice", `🏋️ ${t("nav.practice")}`], ["progress", `📈 ${t("nav.progress")}`], ["settings", `⚙️ ${t("nav.account")}`]];
 
+  /* Đổi mật khẩu qua Supabase Auth.
+
+     Trước đây hàm này so sánh với `acc.code` rồi ghi mật khẩu mới dạng thô vào
+     kv_store — bảng mà trình duyệt đọc được bằng anon key. Từ khi đăng nhập
+     chuyển sang Supabase, nó còn ghi vào chỗ chẳng ai đọc: học sinh đổi mật
+     khẩu, thấy báo thành công, rồi lần sau vẫn phải đăng nhập bằng mật khẩu cũ.
+
+     Mật khẩu cũ được kiểm bằng một lần signInWithPassword. updateUser không
+     đòi điều đó — có phiên là đổi được — nhưng nếu ai đó ngồi vào máy đang mở
+     sẵn, chỉ mỗi bước này chặn họ chiếm tài khoản. */
   const changePw = async (oldPw, newPw, setMsg) => {
-    const acc = accounts.find((a) => a.name === name);
-    if (acc.code !== oldPw) { setMsg("Ancien mot de passe incorrect."); return; }
-    if (newPw.trim().length < 4) { setMsg("Le nouveau mot de passe doit faire au moins 4 caractères."); return; }
-    const latest = await load("mcf-accounts", []);
-    const next = latest.map((a) => (a.name === name ? { ...a, code: newPw.trim() } : a));
-    await save("mcf-accounts", next); setAccounts(next);
-    setMsg("✅ Mot de passe modifié !");
+    if (newPw.trim().length < 8) { setMsg("Le nouveau mot de passe doit faire au moins 8 caractères."); return; }
+
+    const { data: sess } = await supabase.auth.getUser();
+    const emailOf = sess?.user?.email;
+    if (!emailOf) { setMsg("Session expirée. Reconnectez-vous."); return; }
+
+    const { error: badOld } = await supabase.auth.signInWithPassword({ email: emailOf, password: oldPw });
+    if (badOld) { setMsg("Ancien mot de passe incorrect."); return; }
+
+    const { error } = await supabase.auth.updateUser({ password: newPw.trim() });
+    setMsg(error ? `Échec : ${error.message}` : "✅ Mot de passe modifié !");
   };
 
   const Card = ({ ex }) => {
