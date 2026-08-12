@@ -7,6 +7,11 @@ import RichTextEditor from "../../editor/RichTextEditor.jsx";
 import { Image as ImageIcon, X, Trash2 } from "lucide-react";
 
 function Builder({ draft, setDraft, publish, cancel, accounts, classes = [] }) {
+  /* useT() đã được import từ lâu nhưng chưa bao giờ được gọi, trong khi t()
+     được dùng ở 11 chỗ — nên mở trình soạn bài tập là ném ReferenceError ngay
+     lúc render. check:imports không bắt được: nó kiểm định danh có được import
+     hay không, mà useT thì có; thiếu là lời gọi. */
+  const t = useT();
   const dSkills = draft.skills && draft.skills.length ? draft.skills : draft.skill ? [draft.skill] : [];
   const toggleSkill = (sk) => {
     const next = dSkills.includes(sk) ? dSkills.filter((x) => x !== sk) : [...dSkills, sk];
