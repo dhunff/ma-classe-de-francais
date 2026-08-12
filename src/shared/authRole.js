@@ -8,11 +8,26 @@ const ROLES = ["prof", "eleve"];
 
 export function resolveRole(user, accounts = []) {
   const meta = user?.user_metadata || {};
+  const appMeta = user?.app_metadata || {};
   const email = String(user?.email || "");
 
-  /* Nguồn tin cậy nhất: vai trò do người tạo tài khoản ghi vào user_metadata. */
-  if (ROLES.includes(meta.role)) {
-    return { role: meta.role, name: meta.name || email };
+  /* Vai trò CHỈ được đọc từ app_metadata.
+
+     user_metadata thì chính người dùng ghi được — một dòng
+     supabase.auth.updateUser({ data: { role: 'prof' } }) gõ trong console
+     trình duyệt là xong. Đọc vai trò từ đó nghĩa là bất kỳ học sinh nào cũng
+     tự phong mình làm giáo viên và xem được bài với điểm của cả lớp.
+
+     app_metadata chỉ service role hoặc SQL Editor ghi được, client không đụng
+     tới. Cấp quyền giáo viên bằng:
+       update auth.users
+       set raw_app_meta_data = raw_app_meta_data || '{"role":"prof"}'
+       where email = '…';
+
+     Tên hiển thị thì vẫn lấy từ user_metadata được — người dùng tự sửa tên
+     mình là chuyện bình thường, không phải nâng quyền. */
+  if (ROLES.includes(appMeta.role)) {
+    return { role: appMeta.role, name: meta.name || meta.full_name || email };
   }
 
   /* Kế tiếp: đối chiếu email với bảng tài khoản của lớp, để giữ đúng tên hiển
