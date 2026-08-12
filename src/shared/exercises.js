@@ -20,8 +20,15 @@ export const assignedTo = (ex, name) =>
 
 /* Điểm của một bài nộp.
    `pending` = còn câu tự luận mà giáo viên chưa chấm, nên điểm chưa chốt. */
+/* Chịu được `ex` không còn. Bài nộp trỏ tới bài tập theo id, mà bài tập xoá
+   được trong khi bài nộp vẫn nằm lại — hiện có 9 bài nộp như vậy.
+
+   Mọi nơi gọi hàm này đều đang duyệt từ danh sách exercises hoặc tự chặn
+   `if (!ex)`, nên chưa có đường nào ném lỗi. Đây là rào phòng xa cho hàm dùng
+   chung, không phải sửa lỗi đang xảy ra. Không có đề thì coi như không có câu
+   tự luận: điểm tự động vẫn đúng, phần chấm tay bằng 0. */
 export function totalScore(sub, ex) {
-  const opens = ex.questions.filter((q) => q.type === "open");
+  const opens = (ex?.questions || []).filter((q) => q.type === "open");
   const manual = opens.reduce((n, q) => n + (sub.openMarks?.[q.id] ?? 0), 0);
   const graded = sub.graded;
   return {
