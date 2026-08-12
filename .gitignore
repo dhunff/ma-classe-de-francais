@@ -11,3 +11,8 @@ dist/
 
 # CLI link state
 supabase/.temp/
+
+# Bản sao lưu do scripts/strip-account-passwords.mjs tạo ra. Nó chứa mật khẩu
+# học sinh dạng thô — đúng thứ script đó sinh ra để xoá khỏi database, nên
+# tuyệt đối không được đẩy lên remote.
+*.backup.json
