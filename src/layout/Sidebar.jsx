@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from "react";
-import { NavLink } from "react-router-dom";
-import { LogOut, X } from "lucide-react";
+import { NavLink, Link } from "react-router-dom";
+import { LogOut, LogIn, X } from "lucide-react";
 import { navFor } from "./navItems.js";
 
 /* Thanh điều hướng trái.
@@ -51,22 +51,37 @@ function Brand() {
   );
 }
 
-function LogoutButton({ t, onLogout }) {
+/* Khách chưa đăng nhập thì đây là lối VÀO, không phải lối ra.
+
+   Chế độ khách dựng AppLayout với session={null} và onLogout rỗng, nên trước
+   đây thanh bên hiện "Đăng xuất" cho người chưa hề đăng nhập, và bấm vào không
+   xảy ra gì cả. */
+function AuthButton({ t, onLogout, signedIn, onNavigate }) {
+  const base =
+    "flex w-full cursor-pointer items-center gap-3 rounded-md border-0 bg-transparent px-3 py-2.5 text-left text-sm font-medium no-underline transition-colors";
+
   return (
     <div className="border-0 border-t border-solid border-line p-3">
-      <button
-        type="button"
-        onClick={onLogout}
-        className="flex w-full cursor-pointer items-center gap-3 rounded-md border-0 bg-transparent px-3 py-2.5 text-left text-sm font-medium text-soft transition-colors hover:bg-danger-soft hover:text-danger"
-      >
-        <LogOut size={19} />
-        <span className="truncate">{t("header.logout")}</span>
-      </button>
+      {signedIn ? (
+        <button
+          type="button"
+          onClick={onLogout}
+          className={`${base} text-soft hover:bg-danger-soft hover:text-danger`}
+        >
+          <LogOut size={19} />
+          <span className="truncate">{t("header.logout")}</span>
+        </button>
+      ) : (
+        <Link to="/login" onClick={onNavigate} className={`${base} text-primary hover:bg-primary-soft`}>
+          <LogIn size={19} />
+          <span className="truncate">{t("login.signin")}</span>
+        </Link>
+      )}
     </div>
   );
 }
 
-export default function Sidebar({ role, t, onLogout, open, onClose }) {
+export default function Sidebar({ role, t, onLogout, open, onClose, signedIn = false }) {
   const panelRef = useRef(null);
 
   // Esc đóng ngăn kéo; khoá cuộn nền khi ngăn kéo đang mở.
@@ -91,7 +106,7 @@ export default function Sidebar({ role, t, onLogout, open, onClose }) {
           <Brand />
         </div>
         <NavList role={role} t={t} />
-        <LogoutButton t={t} onLogout={onLogout} />
+        <AuthButton t={t} onLogout={onLogout} signedIn={signedIn} />
       </aside>
 
       {/* Mobile: lớp phủ + ngăn kéo trượt từ trái */}
@@ -126,7 +141,7 @@ export default function Sidebar({ role, t, onLogout, open, onClose }) {
           </button>
         </div>
         <NavList role={role} t={t} onNavigate={onClose} />
-        <LogoutButton t={t} onLogout={onLogout} />
+        <AuthButton t={t} onLogout={onLogout} signedIn={signedIn} onNavigate={onClose} />
       </aside>
     </>
   );

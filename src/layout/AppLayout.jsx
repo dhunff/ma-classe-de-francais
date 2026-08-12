@@ -28,6 +28,7 @@ export default function AppLayout({
     <div className="min-h-screen bg-bg font-sans text-ink">
       <Sidebar
         role={session?.role}
+        signedIn={!!session}
         t={t}
         onLogout={onLogout}
         open={menuOpen}

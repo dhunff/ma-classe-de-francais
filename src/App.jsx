@@ -231,13 +231,24 @@ function AppInner() {
                 Không đẩy về /login nữa — khách xem được có gì trước khi quyết
                 định lập tài khoản. Chặn nằm ở hành động (bấm vào làm bài),
                 không nằm ở đường vào. */}
+            {/* Truyền phiên THẬT chứ không ép null. Trang này mở cho cả khách
+                lẫn người đã đăng nhập, nên ép null làm thanh bên hiện "Đăng
+                nhập" cho người đang đăng nhập, và bấm vào thì bị đá ngược về
+                trang chủ của họ. */}
             <Route path="/decouvrir" element={
               <AppLayout
-                session={null} t={t} lang={lang} langs={LANGS} onLang={setLang}
-                dark={dark} onToggleDark={toggleTheme} onLogout={() => {}} bell={null}
+                session={session} t={t} lang={lang} langs={LANGS} onLang={setLang}
+                dark={dark} onToggleDark={toggleTheme} bell={null}
+                onLogout={async () => { try { await supabase.auth.signOut(); } catch {} setSession(null); }}
               />
             }>
-              <Route index element={<PracticeHub role="guest" name="" onRequireLogin={() => setGate({})} />} />
+              <Route index element={
+                <PracticeHub
+                  role={session?.role === "prof" ? "prof" : session ? "eleve" : "guest"}
+                  name={session?.name || ""}
+                  onRequireLogin={() => setGate({})}
+                />
+              } />
             </Route>
 
             <Route path="*" element={
