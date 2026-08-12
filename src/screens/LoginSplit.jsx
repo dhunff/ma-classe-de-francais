@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useState } from "react";
 import { Asterisk } from "lucide-react";
 import EmailPasswordForm from "./auth/EmailPasswordForm.jsx";
+import { useT } from "../shared/i18n.jsx";
 
 /* Trang đăng nhập — vỏ hai khoang. Bản thân form nằm ở EmailPasswordForm,
    dùng chung với cửa bật lên cho khách trong LoginGate; ở đây chỉ còn phần
@@ -17,7 +18,12 @@ import EmailPasswordForm from "./auth/EmailPasswordForm.jsx";
 const RESET_BTN = "cursor-pointer border-0 font-[inherit] appearance-none";
 
 /* ──────────────────────────  Biểu tượng mạng xã hội  ────────────────────── */
-/* Lucide không có logo thương hiệu, nên ba cái này vẽ tay bằng SVG. */
+/* Lucide không có logo thương hiệu nên vẽ tay bằng SVG.
+
+   Chỉ còn Google. Facebook và Apple đã bỏ: Supabase báo `google_enabled:
+   false, phone_enabled: false` — cả ba nút trước đây đều không nối vào đâu,
+   mà nút chết trên màn đăng nhập là thứ người dùng thử trước tiên. Giữ đúng
+   một lối, và lối đó sẽ được nối thật ở bước 2. */
 
 function GoogleMark() {
   return (
@@ -29,28 +35,6 @@ function GoogleMark() {
     </svg>
   );
 }
-
-function FacebookMark() {
-  return (
-    <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden focusable="false">
-      <path fill="#1877F2" d="M24 12a12 12 0 1 0-13.88 11.85v-8.38H7.08V12h3.04V9.36c0-3 1.79-4.67 4.53-4.67 1.31 0 2.68.24 2.68.24v2.95h-1.51c-1.49 0-1.96.93-1.96 1.87V12h3.33l-.53 3.47h-2.8v8.38A12 12 0 0 0 24 12z" />
-    </svg>
-  );
-}
-
-function AppleMark() {
-  return (
-    <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden focusable="false">
-      <path fill="#111827" d="M17.05 12.54c-.02-2.2 1.8-3.26 1.88-3.31-1.02-1.5-2.62-1.7-3.18-1.72-1.35-.14-2.64.8-3.33.8-.69 0-1.75-.78-2.87-.76-1.48.02-2.84.86-3.6 2.18-1.53 2.66-.39 6.6 1.1 8.76.73 1.06 1.6 2.25 2.74 2.2 1.1-.04 1.51-.71 2.84-.71 1.32 0 1.7.71 2.86.69 1.18-.02 1.93-1.08 2.65-2.14.84-1.23 1.18-2.42 1.2-2.48-.03-.01-2.3-.88-2.32-3.5zM14.9 5.9c.6-.73 1.01-1.75.9-2.76-.87.03-1.92.58-2.55 1.31-.56.64-1.05 1.68-.92 2.67.97.08 1.96-.49 2.57-1.22z" />
-    </svg>
-  );
-}
-
-const SOCIALS = [
-  { key: "google", label: "Google", Mark: GoogleMark },
-  { key: "facebook", label: "Facebook", Mark: FacebookMark },
-  { key: "apple", label: "Apple", Mark: AppleMark },
-];
 
 /* ────────────────────────────  Khoang trái  ─────────────────────────────── */
 
@@ -83,6 +67,12 @@ function VisualPanel() {
 /* ────────────────────────────  Khoang phải  ─────────────────────────────── */
 
 export default function LoginSplit({ accounts = [], onLogin }) {
+  const t = useT();
+  /* "login" | "register" | "reset". Chế độ nằm ở đây chứ không nằm trong form,
+     vì tiêu đề, nút Google và dòng chân trang đều đổi theo nó. Khoang trái
+     không phụ thuộc gì — mesh gradient đứng yên suốt cả ba chế độ. */
+  const [mode, setMode] = useState("login");
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-[#f4f7fa] p-4 font-sans">
       <div className="grid w-full max-w-5xl gap-0 rounded-[2rem] bg-white p-2.5 shadow-xl shadow-slate-200/50 md:grid-cols-2">
@@ -92,42 +82,55 @@ export default function LoginSplit({ accounts = [], onLogin }) {
           <Asterisk size={30} strokeWidth={2.6} className="text-blue-600" />
 
           <h1 className="m-0 mt-6 text-2xl font-extrabold tracking-tight text-slate-800">
-            Se connecter à FRACILE
+            {t(`login.title_${mode}`)}
           </h1>
           <p className="m-0 mt-2 text-sm font-medium leading-relaxed text-gray-500">
-            Accédez à vos cours et continuez votre apprentissage du français.
+            {t(`login.subtitle_${mode}`)}
           </p>
 
           <div className="mt-8">
-            <EmailPasswordForm accounts={accounts} onLogin={onLogin} autoFocus />
+            <EmailPasswordForm
+              key={mode}
+              accounts={accounts}
+              onLogin={onLogin}
+              mode={mode}
+              onModeChange={setMode}
+              autoFocus
+            />
           </div>
 
-          {/* Đường kẻ chạy suốt hai bên nhờ flex-1, nên không phải đo tay. */}
-          <div className="my-7 flex items-center gap-4">
-            <span className="h-px flex-1 bg-gray-200" />
-            <span className="text-xs font-medium text-slate-400">or continue with</span>
-            <span className="h-px flex-1 bg-gray-200" />
-          </div>
+          {/* Google ẩn ở chế độ đặt lại mật khẩu: người tới đó là để lấy lại
+              tài khoản email, chào mời một lối đăng nhập khác chỉ gây phân tâm. */}
+          {mode !== "reset" && (
+            <>
+              {/* Đường kẻ chạy suốt hai bên nhờ flex-1, nên không phải đo tay. */}
+              <div className="my-7 flex items-center gap-4">
+                <span className="h-px flex-1 bg-gray-200" />
+                <span className="text-xs font-medium text-slate-400">{t("login.or_continue")}</span>
+                <span className="h-px flex-1 bg-gray-200" />
+              </div>
 
-          <div className="flex gap-3">
-            {SOCIALS.map(({ key, label, Mark }) => (
               <button
-                key={key}
                 type="button"
-                aria-label={`Continuer avec ${label}`}
-                className={`${RESET_BTN} flex flex-1 items-center justify-center rounded-full bg-gray-100 py-3 transition-colors hover:bg-gray-200`}
+                className={`${RESET_BTN} flex w-full items-center justify-center gap-2.5 rounded-full bg-gray-100 py-3.5 text-sm font-bold text-slate-700 transition-colors hover:bg-gray-200`}
               >
-                <Mark />
+                <GoogleMark /> {t("login.with_google")}
               </button>
-            ))}
-          </div>
+            </>
+          )}
 
-          <p className="m-0 mt-8 text-center text-sm font-medium text-slate-500">
-            Vous n'avez pas de compte&nbsp;?{" "}
-            <a href="#inscription" className="font-bold text-blue-600 no-underline hover:underline">
-              S'inscrire
-            </a>
-          </p>
+          {mode !== "reset" && (
+            <p className="m-0 mt-8 text-center text-sm font-medium text-slate-500">
+              {mode === "login" ? t("login.no_account") : t("login.have_account")}{" "}
+              <button
+                type="button"
+                onClick={() => setMode(mode === "login" ? "register" : "login")}
+                className={`${RESET_BTN} bg-transparent p-0 text-sm font-bold text-blue-600 hover:underline`}
+              >
+                {mode === "login" ? t("login.go_register") : t("login.go_login")}
+              </button>
+            </p>
+          )}
         </div>
       </div>
     </div>
