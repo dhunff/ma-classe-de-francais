@@ -16,6 +16,7 @@ import Builder from "./Builder.jsx";
 import PracticeHub from "../../PracticeHub.jsx";
 import { PAYMENT_KEY, STATUS, isPremium, accessRecord, fmtPrice, loadAccess, setAccessRemote, getTeacherToken, setTeacherToken } from "../../shared/access.js";
 import { supabase } from "../../storageShim.js";
+import { setClassFor } from "../../shared/roster.js";
 
 
 /* ================= Teacher ================= */
@@ -278,10 +279,15 @@ function Accounts({ accounts, setAccounts, classes, setClasses, exercises = [], 
     const next = classes.filter((c) => c.id !== id);
     setClasses(next); await save("mcf-classes", next);
   };
-  const setStudentClass = async (name, classId) => {
+  /* Gán lớp phải ghi vào đúng nơi giữ người đó: hồ sơ trong bảng profiles nếu
+     họ đã đăng ký, danh bạ kv_store nếu mới chỉ được mời. Ghi nhầm chỗ thì
+     lựa chọn biến mất ở lần tải trang sau mà không báo gì. */
+  const setStudentClass = async (student, classId) => {
     const latest = await load("mcf-accounts", []);
-    const next = latest.map((a) => (a.name === name ? { ...a, classId: classId || undefined } : a));
-    setAccounts(next); await save("mcf-accounts", next);
+    const ok = await setClassFor(student, classId, Array.isArray(latest) ? latest : [],
+      (next) => save("mcf-accounts", next));
+    if (!ok) { setMsg("Không lưu được lớp cho học sinh này."); return; }
+    await refresh();
   };
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -313,13 +319,31 @@ function Accounts({ accounts, setAccounts, classes, setClasses, exercises = [], 
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e)) { setMsg("Email invalide."); return; }
     if (accounts.some((a) => a.name.toLowerCase() === n.toLowerCase())) { setMsg("Ce prénom existe déjà."); return; }
     if (accounts.some((a) => (a.email || "").toLowerCase() === e)) { setMsg("Cet email est déjà utilisé."); return; }
-    const next = [...accounts, { name: n, email: e }];
-    setAccounts(next); await save("mcf-accounts", next);
+    /* Ghi vào danh bạ mời, không phải profiles: client không tạo được tài
+       khoản đăng nhập — việc đó cần service_role key. Học sinh vẫn phải tự
+       đăng ký bằng chính email này, rồi loadRoster khớp hai bên lại.
+
+       refresh() ngay sau đó để dòng mới hiện ra không cần tải lại trang. */
+    const latest = await load("mcf-accounts", []);
+    const next = [...(Array.isArray(latest) ? latest : []), { name: n, email: e }];
+    await save("mcf-accounts", next);
+    await refresh();
     setName(""); setEmail(""); setMsg("");
   };
-  const delAcc = async (n) => {
-    const next = accounts.filter((a) => a.name !== n);
-    setAccounts(next); await save("mcf-accounts", next);
+  /* `accounts` giờ là danh sách GỘP (profiles + danh bạ mời). Lọc nó rồi ghi
+     thẳng vào mcf-accounts sẽ đổ toàn bộ học sinh đã đăng ký vào danh bạ mời
+     — mỗi lần xoá một người là nhân bản tất cả những người còn lại thành bản
+     ghi ma. Phải xoá ở đúng kho đang giữ người đó. */
+  const delAcc = async (student) => {
+    if (student.status === "registered") {
+      const { error } = await supabase.from("profiles").delete().eq("id", student.id);
+      if (error) { setMsg("Không xoá được hồ sơ này."); return; }
+    } else {
+      const latest = await load("mcf-accounts", []);
+      const next = (Array.isArray(latest) ? latest : []).filter((a) => a.name !== student.name);
+      await save("mcf-accounts", next);
+    }
+    await refresh();
   };
 
   /* Giáo viên không đặt mật khẩu hộ nữa — chỉ kích hoạt email đặt lại của
@@ -375,17 +399,46 @@ function Accounts({ accounts, setAccounts, classes, setClasses, exercises = [], 
       {/* Nút « Afficher les mots de passe » đã bỏ cùng với trường code — không
           còn mật khẩu nào ở đây để hiện. */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-        <span style={{ fontSize: 13, color: C.soft }}>{accounts.length} compte(s)</span>
+        <span style={{ fontSize: 13, color: C.soft }}>
+          {accounts.length} compte(s)
+          {accounts.some((a) => a.status === "invited") &&
+            ` · ${accounts.filter((a) => a.status === "invited").length} en attente d'inscription`}
+        </span>
       </div>
+
+      {/* Danh sách rỗng nói rõ vì sao rỗng. Câu cũ — "Aucun compte. Les élèves
+          ne peuvent pas encore se connecter" — sai kể từ khi có tự đăng ký:
+          học sinh vào được mà không cần giáo viên tạo trước. */}
+      {accounts.length === 0 && (
+        <div className="mcf-card" style={{ ...S.card, textAlign: "center", color: C.soft }}>
+          <div style={{ fontWeight: 700, color: C.ink, marginBottom: 6 }}>Aucun élève inscrit pour le moment.</div>
+          <div style={{ fontSize: 13.5 }}>
+            Les élèves apparaissent ici dès qu'ils créent leur compte. Vous pouvez aussi les
+            pré-inscrire avec le formulaire ci-dessus.
+          </div>
+        </div>
+      )}
+
       <div style={{ display: "grid", gap: 10 }}>
         {accounts.map((a) => (
-          <div key={a.name} className="mcf-card" style={{ ...S.card, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
+          <div key={a.id || a.name} className="mcf-card" style={{ ...S.card, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
             <span style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
               <button onClick={() => setOpenStudent(a.name)} title="Voir le dossier de l'élève"
                 style={{ border: "none", background: "transparent", cursor: "pointer", fontFamily: "inherit",
                   fontWeight: 800, fontSize: 15, color: C.primary, padding: 0, textDecoration: "underline", textUnderlineOffset: 3 }}>
                 {a.name}
               </button>
+
+              {/* Đã đăng ký hay mới được mời — hai trạng thái rất khác nhau:
+                  người "mời" chưa có tài khoản nào để đăng nhập. */}
+              {a.status === "invited" ? (
+                <span style={{ fontSize: 11.5, fontWeight: 700, color: C.warn, background: C.warnSoft,
+                  borderRadius: 999, padding: "2px 9px" }}>En attente</span>
+              ) : (
+                <span style={{ fontSize: 11.5, fontWeight: 700, color: C.ok, background: C.okSoft,
+                  borderRadius: 999, padding: "2px 9px" }}>Inscrit</span>
+              )}
+
               {(() => {
                 const st = formatLastSeen(presence[a.name]);
                 return (
@@ -396,10 +449,18 @@ function Accounts({ accounts, setAccounts, classes, setClasses, exercises = [], 
                   </span>
                 );
               })()}
+
               <span style={{ fontSize: 13, color: a.email ? C.soft : C.warn }}>
                 {a.email || "sans email — l'élève ne peut pas se connecter"}
               </span>
-              <select value={a.classId || ""} onChange={(e) => setStudentClass(a.name, e.target.value)}
+
+              {a.createdAt && (
+                <span style={{ fontSize: 12.5, color: C.soft }}>
+                  Inscrit le {fmtDateFR(a.createdAt)}
+                </span>
+              )}
+
+              <select value={a.classId || ""} onChange={(e) => setStudentClass(a, e.target.value)}
                 style={{ ...S.input, width: "auto", padding: "5px 10px", fontSize: 12.5 }}>
                 <option value="">— Sans classe —</option>
                 {classes.map((cl) => <option key={cl.id} value={cl.id}>{cl.name}</option>)}
@@ -408,7 +469,7 @@ function Accounts({ accounts, setAccounts, classes, setClasses, exercises = [], 
             <div style={{ display: "flex", gap: 8 }}>
               <button style={{ ...S.btn(false), padding: "5px 12px", fontSize: 12 }} onClick={() => reset(a.name)}
                 title="Envoie un lien de réinitialisation à l'élève">Envoyer un lien</button>
-              <button style={{ ...S.btn(false, true), padding: "5px 12px", fontSize: 12 }} onClick={() => delAcc(a.name)}>Supprimer</button>
+              <button style={{ ...S.btn(false, true), padding: "5px 12px", fontSize: 12 }} onClick={() => delAcc(a)}>Supprimer</button>
             </div>
           </div>
         ))}

@@ -11,6 +11,7 @@ import { C } from './shared/tokens.js'
 import { load } from './shared/storage.js'
 import { supabase } from './storageShim.js'
 import { resolveRole } from './shared/authRole.js'
+import { loadRoster } from './shared/roster.js'
 import { LANG_KEY, LANGS, I18N, getLang, LangCtx, digKey } from './shared/i18n.jsx'
 
 import PracticeHub from './PracticeHub.jsx'
@@ -57,8 +58,12 @@ function AppInner() {
 
   const [classes, setClasses] = useState([]);
   const refresh = useCallback(async () => {
+    /* Danh sách lớp đi qua loadRoster chứ không đọc thẳng mcf-accounts: học
+       sinh tự đăng ký nằm ở bảng profiles, còn mcf-accounts chỉ là danh sách
+       mời do giáo viên gõ tay. Gộp ở đây nên mọi nơi tiêu thụ `accounts`
+       không phải sửa gì. */
     const [ex, sub, ac, cl] = await Promise.all([
-      load("mcf-exercises", []), load("mcf-submissions", []), load("mcf-accounts", []), load("mcf-classes", []),
+      load("mcf-exercises", []), load("mcf-submissions", []), loadRoster(), load("mcf-classes", []),
     ]);
     const cleanEx = (Array.isArray(ex) ? ex : []).map((e) => ({
       ...e,
