@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from "react";
-import {
-  RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer,
-} from "recharts";
+import React from "react";
 import { Link } from "react-router-dom";
-import { CheckCircle, Target, Clock, Flame, Radar as RadarIcon, PartyPopper, AlertTriangle, Inbox, UserCircle, ChevronRight } from "lucide-react";
-import { Card, StatTile, EmptyState, ProgressBar } from "./parts.jsx";
+import {
+  CheckCircle, Target, Clock, Flame, PartyPopper, AlertTriangle, Inbox,
+  UserCircle, ChevronRight, Sparkles,
+} from "lucide-react";
+import { Card, StatTile, EmptyState, ProgressBar, Rise, Ring, CountUp } from "./parts.jsx";
 import {
   studentWorkload, averageScore, skillBreakdown, nextUp, isLate, exSkills, fmtDate,
 } from "../../shared/exercises.js";
@@ -12,212 +12,206 @@ import { calculateProfileCompletion } from "../../shared/profile.js";
 
 /* Trang chủ học sinh.
 
-   Nguyên tắc: mỗi con số ở đây phải tính được từ dữ liệu thật (exercises,
-   submissions, profiles). Thứ nào chưa có nguồn dữ liệu thì hiện trạng thái
-   rỗng nói rõ lý do — tuyệt đối không dựng số minh hoạ, vì học sinh sẽ tin
-   vào nó. Hiện "chuỗi ngày học" thuộc diện này: hệ thống chưa ghi nhật ký
-   hoạt động theo ngày nên không thể tính. */
+   Nguyên tắc không đổi: mỗi con số ở đây phải tính được từ dữ liệu thật.
+   Thứ nào chưa có nguồn thì hiện trạng thái rỗng nói rõ lý do — tuyệt đối
+   không dựng số minh hoạ, vì học sinh sẽ tin vào nó. "Chuỗi ngày học" vẫn
+   thuộc diện đó: hệ thống chưa ghi nhật ký hoạt động theo ngày.
+
+   Bố cục hai cột, không phải ba: cột điều hướng bên trái đã do AppLayout cấp.
+   Dựng thêm một sidebar nữa trong đây là lặp lại đúng thứ vừa được gỡ bỏ.
+
+   Hoạt ảnh xuất hiện xếp so le qua <Rise delay>. Mọi hoạt ảnh đều tự tắt khi
+   người dùng bật giảm chuyển động — xem base.css. */
 
 export default function StudentDashboard({ name, exercises, submissions, profile, t, onOpen }) {
-  const { assigned, done, todo, subOf } = studentWorkload(exercises, submissions, name);
+  const { assigned, done, todo } = studentWorkload(exercises, submissions, name);
   const avg = averageScore(exercises, submissions, name);
   const skills = skillBreakdown(exercises, submissions, name);
-  const upcoming = nextUp(exercises, submissions, name, 3);
+  const upcoming = nextUp(exercises, submissions, name, 4);
   const overdue = todo.filter((ex) => isLate(ex)).length;
   const goal = profile?.goal || "";
   const profilePct = calculateProfileCompletion(profile);
+  const donePct = assigned.length ? Math.round((done.length / assigned.length) * 100) : 0;
 
   return (
-    <div className="mx-auto flex max-w-6xl flex-col gap-4">
-      {/* Chào mừng + tiến độ tổng quan */}
-      <section className="rounded-md border border-solid border-line bg-surface p-6 shadow-sm">
-        <p className="text-sm font-semibold text-soft">{t("dash.hello")}</p>
-        <h1 className="mt-1 text-3xl font-extrabold tracking-tight text-ink">{name}</h1>
+    /* Nền chuyển sắc rất nhạt để thẻ nền mờ có thứ để mờ lên trên. Bản tối
+       dùng token nên ăn theo nền chung của app, không phải đen thuần. */
+    <div className="-mx-4 -mt-6 min-h-full bg-gradient-to-br from-[#eef2f6] to-[#f4f7fa] px-4 pt-6 md:-mx-6 md:px-6 dark:from-bg dark:to-surface2">
+      <div className="mx-auto grid max-w-6xl gap-4 xl:grid-cols-[1fr_340px]">
 
-        <div className="mt-5 max-w-xl">
-          <p className="mb-3 text-sm text-soft">
-            {goal ? (
-              <>
-                {t("dash.goal")}: <span className="font-bold text-ink">{goal}</span>
-              </>
-            ) : (
-              t("dash.no_goal")
-            )}
-          </p>
-          {/* Chưa có bài nào được giao thì không vẽ thanh tiến độ: 0/0 là
-              phép chia vô nghĩa và 0% trông như thất bại chứ không như "chưa
-              bắt đầu". */}
-          {assigned.length > 0 ? (
-            <ProgressBar value={done.length} max={assigned.length} label={t("dash.completion")} />
-          ) : (
-            <p className="text-sm text-soft">{t("dash.no_exercise_yet")}</p>
-          )}
-        </div>
-      </section>
+        {/* ─────────────── Cột chính ─────────────── */}
+        <div className="flex flex-col gap-4">
 
-      {/* Hoàn thiện hồ sơ.
+          <Rise delay={0}>
+            <section className="rounded-3xl bg-surface/80 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] backdrop-blur-md">
+              <p className="m-0 text-sm font-semibold text-soft">{t("dash.hello")}</p>
+              <h1 className="m-0 mt-1 text-3xl font-extrabold tracking-tight text-ink">{name}</h1>
 
-          Hồ sơ đầy đủ thì không hiện gì cả. Một thanh đứng mãi ở 100% không
-          còn nói điều gì, mà vẫn chiếm chỗ ngay dưới phần chào — chỗ đắt nhất
-          của trang. Thẻ này chỉ tồn tại khi còn việc để làm. */}
-      {profilePct < 100 && (
-        <Link
-          to="/etudiant/compte"
-          className="group flex items-center gap-4 rounded-md bg-surface p-5 no-underline shadow-sm transition-shadow hover:shadow-md"
-        >
-          <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-primary-soft text-primary">
-            <UserCircle size={22} />
-          </span>
-
-          <div className="min-w-0 flex-1">
-            <p className="m-0 text-sm font-bold text-ink">
-              {t("dash.profile_completion", { pct: profilePct })}
-            </p>
-            <p className="m-0 mt-0.5 text-xs text-soft">{t("dash.profile_hint")}</p>
-            <div className="mt-2.5 h-1.5 w-full overflow-hidden rounded-full bg-surface2">
-              <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${profilePct}%` }} />
-            </div>
-          </div>
-
-          <ChevronRight size={18} className="shrink-0 text-soft transition-colors group-hover:text-primary" />
-        </Link>
-      )}
-
-      {/* Số liệu */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatTile
-          Icon={CheckCircle}
-          label={t("dash.submitted")}
-          value={done.length}
-          hint={t("dash.of_assigned", { n: assigned.length })}
-          tone="ok"
-        />
-        <StatTile
-          Icon={Target}
-          label={t("dash.avg_score")}
-          value={avg}
-          unit={avg === null ? "" : "%"}
-          hint={avg === null ? t("dash.avg_empty") : undefined}
-          tone="primary"
-        />
-        <StatTile
-          Icon={Clock}
-          label={t("dash.pending")}
-          value={todo.length}
-          hint={overdue > 0 ? t("dash.overdue", { n: overdue }) : undefined}
-          tone={overdue > 0 ? "danger" : "ink"}
-        />
-        {/* Chuỗi ngày học: chưa có nguồn dữ liệu. Hiện gạch ngang kèm lý do. */}
-        <StatTile
-          Icon={Flame}
-          label={t("dash.streak")}
-          value={null}
-          hint={t("dash.streak_empty")}
-        />
-      </div>
-
-      <div className="grid gap-4 lg:grid-cols-5">
-        {/* Biểu đồ mạng nhện theo kỹ năng */}
-        <Card title={t("dash.skills")} className="lg:col-span-3">
-          {skills.length >= 3 ? (
-            <>
-              <div className="h-72">
-                <ResponsiveContainer width="100%" height="100%">
-                  <RadarChart data={skills} outerRadius="72%">
-                    <PolarGrid stroke="var(--mcf-line)" />
-                    <PolarAngleAxis
-                      dataKey="skill"
-                      tick={{ fill: "var(--mcf-soft)", fontSize: 12 }}
-                    />
-                    <PolarRadiusAxis
-                      domain={[0, 100]}
-                      tick={{ fill: "var(--mcf-soft)", fontSize: 10 }}
-                      axisLine={false}
-                    />
-                    <Radar
-                      name={t("dash.avg_score")}
-                      dataKey="value"
-                      stroke="var(--mcf-primary)"
-                      fill="var(--mcf-primary)"
-                      fillOpacity={0.3}
-                    />
-                  </RadarChart>
-                </ResponsiveContainer>
+              <div className="mt-5 flex flex-wrap items-end gap-x-8 gap-y-4">
+                <div>
+                  <div className="text-4xl font-extrabold tracking-tight text-primary">
+                    <CountUp to={done.length} />
+                    <span className="text-xl text-soft">/{assigned.length}</span>
+                  </div>
+                  <p className="m-0 mt-0.5 text-xs font-semibold uppercase tracking-wider text-soft">
+                    {t("dash.completion")}
+                  </p>
+                </div>
+                {avg !== null && (
+                  <div>
+                    <div className="text-4xl font-extrabold tracking-tight text-ok">
+                      <CountUp to={avg} /><span className="text-xl">%</span>
+                    </div>
+                    <p className="m-0 mt-0.5 text-xs font-semibold uppercase tracking-wider text-soft">
+                      {t("dash.avg_score")}
+                    </p>
+                  </div>
+                )}
               </div>
-              <p className="mt-2 text-xs text-soft">{t("dash.skills_note")}</p>
-            </>
-          ) : (
-            <EmptyState
-              Icon={RadarIcon}
-              title={t("dash.skills_empty_title")}
-              body={t("dash.skills_empty_body")}
-            />
-          )}
-        </Card>
 
-        {/* Học tiếp */}
-        <Card title={t("dash.continue")} className="lg:col-span-2">
-          {upcoming.length === 0 ? (
-            /* Hai lý do rỗng rất khác nhau: đã nộp hết, và chưa ai giao bài.
-               Nói nhầm cái thứ hai thành cái thứ nhất là khen sai người học. */
-            assigned.length === 0 ? (
-              <EmptyState
-                Icon={Inbox}
-                title={t("dash.nothing_assigned_title")}
-                body={t("dash.no_exercise_yet")}
-              />
-            ) : (
-              <EmptyState
-                Icon={PartyPopper}
-                title={t("dash.continue_empty_title")}
-                body={t("dash.continue_empty_body")}
-              />
-            )
-          ) : (
-            <ul className="flex flex-col gap-2">
-              {upcoming.map((ex) => {
-                const late = isLate(ex);
-                return (
-                  <li key={ex.id}>
-                    <button
-                      type="button"
-                      onClick={() => onOpen?.(ex)}
-                      className={[
-                        "w-full rounded-md border border-solid border-line bg-surface2 p-3 text-left",
-                        "transition-colors hover:border-line-strong",
-                      ].join(" ")}
-                    >
-                      <div className="flex items-start justify-between gap-2">
-                        <span className="min-w-0 flex-1 truncate text-sm font-bold text-ink">
-                          {ex.title}
-                        </span>
-                        <span className="shrink-0 rounded-full bg-primary-soft px-2 py-0.5 text-xs font-bold text-primary">
-                          {ex.level}
-                        </span>
-                      </div>
-                      <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-soft">
-                        <span>{t("dash.questions", { n: (ex.questions || []).length })}</span>
-                        {exSkills(ex).slice(0, 2).map((s) => (
-                          <span key={s} className="rounded-sm bg-surface px-1.5 py-0.5">{s}</span>
-                        ))}
-                      </div>
-                      {ex.deadline && (
-                        <div
-                          className={`mt-1.5 flex items-center gap-1 text-xs font-semibold ${
-                            late ? "text-danger" : "text-soft"
-                          }`}
-                        >
-                          {late && <AlertTriangle size={13} />}
-                          {late ? t("dash.was_due") : t("dash.due")} {fmtDate(ex.deadline)}
-                        </div>
-                      )}
-                    </button>
-                  </li>
-                );
-              })}
-            </ul>
+              <p className="m-0 mt-5 text-sm text-soft">
+                {goal ? <>{t("dash.goal")}: <span className="font-bold text-ink">{goal}</span></> : t("dash.no_goal")}
+              </p>
+            </section>
+          </Rise>
+
+          {/* Hồ sơ chưa đầy thì mời điền. Đầy rồi thì biến mất — một thanh
+              đứng mãi ở 100% không còn nói điều gì. */}
+          {profilePct < 100 && (
+            <Rise delay={80}>
+              <Link to="/etudiant/compte"
+                className="group flex items-center gap-4 rounded-3xl bg-surface/80 p-5 no-underline shadow-[0_8px_30px_rgb(0,0,0,0.04)] backdrop-blur-md transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-lg">
+                <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-primary-soft text-primary">
+                  <UserCircle size={22} />
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="m-0 text-sm font-bold text-ink">{t("dash.profile_completion", { pct: profilePct })}</p>
+                  <p className="m-0 mt-0.5 text-xs text-soft">{t("dash.profile_hint")}</p>
+                  <div className="mt-2.5 h-1.5 w-full overflow-hidden rounded-full bg-surface2">
+                    <div className="h-full rounded-full bg-primary transition-[width] duration-1000 ease-out"
+                      style={{ width: `${profilePct}%` }} />
+                  </div>
+                </div>
+                <ChevronRight size={18} className="shrink-0 text-soft transition-transform duration-300 group-hover:translate-x-1 group-hover:text-primary" />
+              </Link>
+            </Rise>
           )}
-        </Card>
+
+          <Rise delay={160} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <StatTile Icon={CheckCircle} label={t("dash.submitted")} value={done.length}
+              hint={t("dash.of_assigned", { n: assigned.length })} tone="ok" />
+            <StatTile Icon={Target} label={t("dash.avg_score")} value={avg} unit="%"
+              hint={avg === null ? t("dash.avg_empty") : undefined} tone="primary" />
+            <StatTile Icon={Clock} label={t("dash.pending")} value={todo.length}
+              hint={overdue ? t("dash.overdue", { n: overdue }) : undefined}
+              tone={overdue ? "danger" : "ink"} />
+            <StatTile Icon={Flame} label={t("dash.streak")} value={null}
+              hint={t("dash.streak_empty")} />
+          </Rise>
+
+          {/* Biểu đồ cột thuần CSS. Không phải "hoạt động theo ngày" như bản
+              thiết kế gợi ý — hệ thống chưa ghi nhật ký theo ngày, nên vẽ nó
+              là bịa. Đây là điểm theo kỹ năng, tính từ bài đã chốt điểm. */}
+          <Rise delay={240}>
+            <Card title={t("dash.skills")}>
+              {skills.length ? (
+                <>
+                  <div className="flex h-48 items-end justify-around gap-3 pt-2">
+                    {skills.map(({ skill, value }) => {
+                      const best = value === Math.max(...skills.map((s) => s.value));
+                      return (
+                        <div key={skill} className="group flex h-full min-w-0 flex-1 flex-col items-center justify-end gap-2">
+                          <span className="text-xs font-bold text-ink opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+                            {value}%
+                          </span>
+                          <div
+                            className={[
+                              "w-full max-w-[42px] rounded-full transition-all duration-500 ease-out",
+                              "group-hover:brightness-110",
+                              best ? "bg-primary shadow-[0_6px_20px_rgb(var(--mcf-primary-rgb)/0.45)]" : "bg-primary-soft",
+                            ].join(" ")}
+                            style={{ height: `${Math.max(value, 4)}%` }}
+                          />
+                          <span className="w-full truncate text-center text-[11px] font-semibold text-soft">
+                            {skill}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <p className="m-0 mt-3 text-xs text-soft">{t("dash.skills_note")}</p>
+                </>
+              ) : (
+                <EmptyState Icon={Sparkles} title={t("dash.skills_empty_title")} body={t("dash.skills_empty_body")} />
+              )}
+            </Card>
+          </Rise>
+        </div>
+
+        {/* ─────────────── Cột phải ─────────────── */}
+        <div className="flex flex-col gap-4">
+
+          <Rise delay={120}>
+            <Card>
+              <div className="flex flex-col items-center gap-3 py-2">
+                <Ring pct={donePct} label={t("dash.completion")} />
+                <p className="m-0 text-center text-sm font-bold text-ink">{t("dash.completion")}</p>
+                <p className="m-0 text-center text-xs text-soft">
+                  {assigned.length
+                    ? t("dash.of_assigned", { n: assigned.length })
+                    : t("dash.no_exercise_yet")}
+                </p>
+              </div>
+            </Card>
+          </Rise>
+
+          <Rise delay={200}>
+            <Card title={t("dash.continue")}>
+              {upcoming.length === 0 ? (
+                assigned.length === 0 ? (
+                  <EmptyState Icon={Inbox} title={t("dash.no_exercise_yet")} />
+                ) : (
+                  <EmptyState Icon={PartyPopper} title={t("dash.continue_empty_title")} body={t("dash.continue_empty_body")} />
+                )
+              ) : (
+                <ul className="m-0 flex list-none flex-col gap-2 p-0">
+                  {upcoming.map((ex) => {
+                    const late = isLate(ex);
+                    return (
+                      <li key={ex.id}>
+                        <button type="button" onClick={() => onOpen?.(ex)}
+                          className="group flex w-full cursor-pointer items-center gap-3 rounded-2xl border-0 bg-surface2/70 p-3 text-left font-[inherit] transition-all duration-300 ease-out hover:-translate-y-0.5 hover:shadow-md">
+                          <span className="min-w-0 flex-1">
+                            <span className="mb-1 flex items-center justify-between gap-2">
+                              <span className="min-w-0 truncate text-sm font-bold text-ink">{ex.title}</span>
+                              <span className="shrink-0 rounded-full bg-primary-soft px-2 py-0.5 text-xs font-bold text-primary">
+                                {ex.level}
+                              </span>
+                            </span>
+                            <span className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-soft">
+                              <span>{t("dash.questions", { n: (ex.questions || []).length })}</span>
+                              {exSkills(ex).slice(0, 2).map((s) => (
+                                <span key={s} className="rounded-sm bg-surface px-1.5 py-0.5">{s}</span>
+                              ))}
+                              {ex.deadline && (
+                                <span className={late ? "font-bold text-danger" : ""}>
+                                  {late ? t("dash.was_due") : t("dash.due")} {fmtDate(ex.deadline)}
+                                </span>
+                              )}
+                            </span>
+                          </span>
+                          {late
+                            ? <AlertTriangle size={16} className="shrink-0 text-danger" />
+                            : <ChevronRight size={16} className="shrink-0 text-soft transition-transform duration-300 group-hover:translate-x-1 group-hover:text-primary" />}
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </Card>
+          </Rise>
+        </div>
       </div>
     </div>
   );

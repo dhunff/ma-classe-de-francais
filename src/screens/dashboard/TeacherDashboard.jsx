@@ -1,6 +1,6 @@
 import React from "react";
 import { ClipboardCheck, Users, BookOpen, Inbox } from "lucide-react";
-import { Card, StatTile, EmptyState } from "./parts.jsx";
+import { Card, StatTile, EmptyState, Rise } from "./parts.jsx";
 import { totalScore, fmtDate } from "../../shared/exercises.js";
 
 /* Trang chủ giáo viên.
@@ -24,15 +24,20 @@ export default function TeacherDashboard({ exercises, submissions, accounts, t, 
     .slice(0, 6);
 
   return (
-    <div className="mx-auto flex max-w-6xl flex-col gap-4">
-      <section className="rounded-md border border-solid border-line bg-surface p-6 shadow-sm">
-        <p className="text-sm font-semibold text-soft">{t("dash.hello")}</p>
-        <h1 className="mt-1 text-3xl font-extrabold tracking-tight text-ink">
-          {t("header.teacher")}
-        </h1>
-      </section>
+    /* Cùng vỏ nền với trang chủ học sinh: nền chuyển sắc rất nhạt để thẻ nền
+       mờ có thứ để nổi lên trên. Bản tối ăn theo token nên không đen thuần. */
+    <div className="-mx-4 -mt-6 min-h-full bg-gradient-to-br from-[#eef2f6] to-[#f4f7fa] px-4 pt-6 md:-mx-6 md:px-6 dark:from-bg dark:to-surface2">
+      <div className="mx-auto flex max-w-6xl flex-col gap-4">
+        <Rise delay={0}>
+          <section className="rounded-3xl bg-surface/80 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] backdrop-blur-md">
+            <p className="m-0 text-sm font-semibold text-soft">{t("dash.hello")}</p>
+            <h1 className="m-0 mt-1 text-3xl font-extrabold tracking-tight text-ink">
+              {t("header.teacher")}
+            </h1>
+          </section>
+        </Rise>
 
-      <div className="grid gap-4 sm:grid-cols-3">
+        <Rise delay={80} className="grid gap-4 sm:grid-cols-3">
         <StatTile
           Icon={ClipboardCheck}
           label={t("dash.to_grade")}
@@ -40,10 +45,11 @@ export default function TeacherDashboard({ exercises, submissions, accounts, t, 
           tone={toGrade.length > 0 ? "warn" : "ok"}
         />
         <StatTile Icon={Users} label={t("nav.students")} value={accounts.length} />
-        <StatTile Icon={BookOpen} label={t("nav.exercises")} value={exercises.length} />
-      </div>
+          <StatTile Icon={BookOpen} label={t("nav.exercises")} value={exercises.length} />
+        </Rise>
 
-      <Card title={t("dash.recent_submissions")}>
+        <Rise delay={160}>
+        <Card title={t("dash.recent_submissions")}>
         {recent.length === 0 ? (
           <EmptyState
             Icon={Inbox}
@@ -51,7 +57,9 @@ export default function TeacherDashboard({ exercises, submissions, accounts, t, 
             body={t("dash.recent_empty_body")}
           />
         ) : (
-          <ul className="flex flex-col divide-y divide-solid divide-line">
+          /* list-none và p-0 là bắt buộc: preflight bị tắt nên <ul> giữ nguyên
+             chấm đầu dòng và thụt lề mặc định của trình duyệt. */
+          <ul className="m-0 flex list-none flex-col divide-y divide-solid divide-line p-0">
             {recent.map((s) => {
               const ex = exById.get(s.exerciseId);
               const { score, max, pending } = totalScore(s, ex);
@@ -81,7 +89,9 @@ export default function TeacherDashboard({ exercises, submissions, accounts, t, 
             })}
           </ul>
         )}
-      </Card>
+        </Card>
+        </Rise>
+      </div>
     </div>
   );
 }
