@@ -1,7 +1,8 @@
-import React, { useState, useEffect, useMemo, useRef, useCallback } from "react";
+﻿import React, { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { C, S, LEVEL_COLORS, LEVEL_PASTEL, QTYPES, VF_OPTS } from "../../shared/tokens.js";
 import { load, save, del } from "../../shared/storage.js";
 import { supabase } from "../../storageShim.js";
+import AccountPage from "../account/AccountPage.jsx";
 import { useT } from "../../shared/i18n.jsx";
 import { SKILLS, fmtDate, isLate, exSkills, assignedTo, totalScore } from "../../shared/exercises.js";
 import { uid, norm, stripHtml, wordCount, vfOk, fillAccepted, fillOk, autoQ, ordreOk, tableauCells, tableauOk, isQuestionAnswered, getUnansweredQuestionsCount } from "../../shared/questions.js";
@@ -89,6 +90,25 @@ function Student({ name, exercises, submissions, setSubmissions, accounts, setAc
      Mật khẩu cũ được kiểm bằng một lần signInWithPassword. updateUser không
      đòi điều đó — có phiên là đổi được — nhưng nếu ai đó ngồi vào máy đang mở
      sẵn, chỉ mỗi bước này chặn họ chiếm tài khoản. */
+  /* Email và trạng thái xác minh lấy từ chính phiên Supabase, không phải từ
+     hồ sơ — hồ sơ do người dùng ghi, còn đây là dữ kiện của tài khoản. */
+  const [authEmail, setAuthEmail] = useState("");
+  const [emailVerified, setEmailVerified] = useState(false);
+  useEffect(() => {
+    let off = false;
+    supabase.auth.getUser().then(({ data }) => {
+      if (off || !data?.user) return;
+      setAuthEmail(data.user.email || "");
+      setEmailVerified(!!data.user.email_confirmed_at);
+    }).catch(() => {});
+    return () => { off = true; };
+  }, []);
+
+  const onLogout = async () => {
+    try { await supabase.auth.signOut(); } catch {}
+    window.location.replace("/login");
+  };
+
   const changePw = async (oldPw, newPw, setMsg) => {
     if (newPw.trim().length < 8) { setMsg("Le nouveau mot de passe doit faire au moins 8 caractères."); return; }
 
@@ -314,11 +334,17 @@ function Student({ name, exercises, submissions, setSubmissions, accounts, setAc
       )}
 
       {tab === "practice" && <PracticeHub role="eleve" name={name} />}
+      {/* Trang Mon Compte thay cho hai khối rời trước đây. ProfileForm và
+          PasswordForm cũ giờ nằm bên trong nó, dưới hai tab. */}
       {tab === "settings" && (
-        <div style={{ display: "grid", gap: 18 }}>
-          <ProfileForm name={name} />
-          <PasswordForm changePw={changePw} showPw={showPw} setShowPw={setShowPw} />
-        </div>
+        <AccountPage
+          name={name}
+          role="eleve"
+          email={authEmail}
+          emailVerified={emailVerified}
+          onLogout={onLogout}
+          changePw={changePw}
+        />
       )}
     </div>
   );

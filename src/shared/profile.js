@@ -1,11 +1,20 @@
 /* Hồ sơ học sinh: trường, danh mục, validate. */
 
-const PROFILE_FIELDS = ["phone", "dob", "level", "goal", "school"];
+/* Thêm bốn trường nhận dạng cho trang Mon Compte. Chúng phải nằm ở đây, không
+   chỉ trong biểu mẫu: `calculateProfileCompletion` đếm đúng danh sách này, nên
+   trường có trong form mà thiếu ở đây thì điền xong phần trăm vẫn đứng yên.
+
+   Hệ quả: hồ sơ cũ tụt phần trăm — 1/5 thành 1/9. Đó là số đúng, vì giờ thật
+   sự có nhiều thứ để điền hơn. */
+const PROFILE_FIELDS = ["genre", "prenom", "nom", "adresse", "phone", "dob", "level", "goal", "school"];
 const LEVELS_PROFILE = ["Débutant", "A1", "A2", "B1", "B2", "C1", "C2"];
 const GOALS_PROFILE = ["DELF A1", "DELF A2", "DELF B1", "DELF B2", "DALF C1", "DALF C2",
   "Étudier en France", "Travailler en français", "Communication quotidienne", "Voyage", "Plaisir personnel"];
 
-const emptyProfile = () => ({ phone: "", dob: "", level: "", goal: "", school: "" });
+const emptyProfile = () => ({
+  genre: "", prenom: "", nom: "", adresse: "",
+  phone: "", dob: "", level: "", goal: "", school: "",
+});
 
 // % de complétion du profil (gamification)
 const calculateProfileCompletion = (p) => {
