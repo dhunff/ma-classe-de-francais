@@ -77,6 +77,28 @@ export default function EmailPasswordForm({ accounts = [], onLogin, mode = "logi
   /* Kiểm tra tại chỗ trước khi gọi mạng. Không thay cho kiểm tra phía server —
      Supabase vẫn từ chối mật khẩu yếu — nhưng nó trả lời ngay thay vì bắt
      người dùng chờ một vòng đi về rồi mới biết hai ô mật khẩu lệch nhau. */
+  /* Không bao giờ đưa thẳng thông điệp của máy chủ ra màn hình.
+
+     Supabase trả lỗi 500 dưới dạng {"code":500,"msg":"Error sending
+     confirmation email"}, mà supabase-js không map được `msg` thành `message`
+     — kết quả là người dùng nhìn thấy đúng hai dấu ngoặc `{}`. Ngay cả khi
+     có chữ, đó là tiếng Anh dành cho lập trình viên, không phải cho học sinh.
+
+     Riêng lỗi gửi thư được tách ra: nó không phải lỗi của người đăng ký, và
+     bảo họ "thử lại" là sai — thử bao nhiêu lần cũng hỏng cho tới khi người
+     quản trị sửa cấu hình thư. */
+  const humanError = (err) => {
+    const raw = String(err?.message ?? err?.msg ?? "").trim();
+    if (/sending|smtp|mail/i.test(raw)) return t("login.err_mail_down");
+    if (/already registered|already exists/i.test(raw)) return t("login.err_email_taken");
+    if (/password/i.test(raw) && /weak|short|least/i.test(raw)) {
+      return t("login.err_password_short", { n: MIN_PASSWORD });
+    }
+    if (/invalid|not valid/i.test(raw) && /email/i.test(raw)) return t("login.err_email_invalid");
+    /* Không nhận ra thì dùng câu chung — thà mơ hồ còn hơn hiện `{}`. */
+    return t("login.err_generic");
+  };
+
   const localError = () => {
     if (!email.trim()) return t("login.err_generic");
     if (isReset) return "";
@@ -121,7 +143,7 @@ export default function EmailPasswordForm({ accounts = [], onLogin, mode = "logi
             emailRedirectTo: `${window.location.origin}/login`,
           },
         });
-        if (err) { setError(err.message || t("login.err_generic")); return; }
+        if (err) { setError(humanError(err)); return; }
 
         /* Email đã tồn tại: Supabase cố tình trả về thành công với identities
            rỗng thay vì báo lỗi, để không tiết lộ địa chỉ nào đã đăng ký. Ta
@@ -137,7 +159,7 @@ export default function EmailPasswordForm({ accounts = [], onLogin, mode = "logi
         redirectTo: `${window.location.origin}/login`,
       });
       if (err && !/not found|invalid/i.test(err.message || "")) {
-        setError(err.message || t("login.err_network"));
+        setError(humanError(err));
         return;
       }
       setNotice(t("login.reset_sent", { email: email.trim() }));
