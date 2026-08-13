@@ -1,4 +1,4 @@
-# Triển khai phần thanh toán tự động
+﻿# Triển khai phần thanh toán tự động
 
 Hai việc: tạo bảng quyền truy cập, và deploy hai Edge Function.
 
@@ -42,7 +42,7 @@ Xong bước này thì nhắn tôi.
 ## Bước 3 — Deploy (tôi chạy)
 
 ```bash
-npx supabase link --project-ref psnrkpccevwetznreuqz
+npx supabase link --project-ref cdszvnuaibnnkrvynyck
 npx supabase secrets set --env-file .env.secrets.local
 npx supabase functions deploy sepay-webhook --no-verify-jwt
 npx supabase functions deploy grant-access
@@ -58,7 +58,7 @@ token đó. `grant-access` giữ nguyên xác thực mặc định.
 
 Trong bảng điều khiển SePay, thêm webhook:
 
-- **URL**: `https://psnrkpccevwetznreuqz.supabase.co/functions/v1/sepay-webhook`
+- **URL**: `https://cdszvnuaibnnkrvynyck.supabase.co/functions/v1/sepay-webhook`
 - **Kiểu xác thực**: API Key / Bearer token
 - **Giá trị**: chuỗi `SEPAY_TOKEN` trong `.env.secrets.local`
 

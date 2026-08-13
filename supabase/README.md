@@ -1,4 +1,4 @@
-# Thu phí tự động — hướng dẫn triển khai
+﻿# Thu phí tự động — hướng dẫn triển khai
 
 Hai tệp trong thư mục này chuyển việc cấp quyền từ **giáo viên bấm tay** sang
 **máy chủ tự ghi nhận khi tiền vào**.
@@ -25,7 +25,7 @@ trình duyệt. Đó là chủ đích — đừng thêm policy insert.
 
 ```bash
 supabase login
-supabase link --project-ref psnrkpccevwetznreuqz
+supabase link --project-ref cdszvnuaibnnkrvynyck
 supabase secrets set SEPAY_TOKEN=<chuỗi bí mật bạn tự đặt>
 supabase functions deploy sepay-webhook --no-verify-jwt
 ```
@@ -34,7 +34,7 @@ supabase functions deploy sepay-webhook --no-verify-jwt
 xác thực do `SEPAY_TOKEN` đảm nhiệm, kiểm ngay ở đầu hàm.
 
 URL nhận được có dạng:
-`https://psnrkpccevwetznreuqz.supabase.co/functions/v1/sepay-webhook`
+`https://cdszvnuaibnnkrvynyck.supabase.co/functions/v1/sepay-webhook`
 
 ### 3. Khai báo ở SePay
 
@@ -47,7 +47,7 @@ Trong bảng điều khiển SePay, thêm webhook:
 ### 4. Thử trước khi dùng thật
 
 ```bash
-curl -X POST "https://psnrkpccevwetznreuqz.supabase.co/functions/v1/sepay-webhook" \
+curl -X POST "https://cdszvnuaibnnkrvynyck.supabase.co/functions/v1/sepay-webhook" \
   -H "Authorization: Apikey <SEPAY_TOKEN>" \
   -H "Content-Type: application/json" \
   -d '{"id":"test-1","transferType":"in","transferAmount":30000,"content":"LMS TestLinh CPAID"}'

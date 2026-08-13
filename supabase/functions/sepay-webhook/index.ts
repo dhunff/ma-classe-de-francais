@@ -93,14 +93,28 @@ Deno.serve(async (req) => {
   if (!exercise.isPremium || price <= 0) return json(200, { ignored: "exercise_not_paid" });
   if (amount < price) return json(200, { ignored: "amount_too_low", amount, price });
 
-  // 4. Khớp tên học sinh với tài khoản có thật, để không cấp cho tên bịa.
-  const { data: accRows } = await supabase
-    .from("kv_store").select("value").eq("key", "s:mcf-accounts").maybeSingle();
+  /* 4. Khớp tên học sinh với người có thật, để không cấp cho tên bịa.
+
+     Tìm ở CẢ HAI nơi. `profiles` là những người đã tự đăng ký — kể từ khi có
+     đăng ký tự phục vụ thì phần lớn học sinh chỉ nằm ở đó. `s:mcf-accounts`
+     là danh bạ giáo viên gõ tay, vẫn còn dùng cho người được ghi danh trước.
+     Chỉ tra một nơi thì người ở nơi kia trả tiền xong vẫn bị khoá ngoài. */
   let student: string | null = null;
-  try {
-    const accounts = JSON.parse(accRows?.value ?? "[]");
-    student = accounts.find((a: any) => normalize(a.name).slice(0, 12) === parsed.student)?.name ?? null;
-  } catch { /* danh sách hỏng — coi như không khớp */ }
+
+  const { data: profiles } = await supabase
+    .from("profiles").select("name").eq("role", "eleve");
+  student = (profiles ?? [])
+    .find((p: any) => normalize(String(p.name ?? "")).slice(0, 12) === parsed.student)?.name ?? null;
+
+  if (!student) {
+    const { data: accRows } = await supabase
+      .from("kv_store").select("value").eq("key", "s:mcf-accounts").maybeSingle();
+    try {
+      const accounts = JSON.parse(accRows?.value ?? "[]");
+      student = accounts.find((a: any) => normalize(a.name).slice(0, 12) === parsed.student)?.name ?? null;
+    } catch { /* danh sách hỏng — coi như không khớp */ }
+  }
+
   if (!student) return json(200, { ignored: "student_not_found", memo: parsed });
 
   // 5. Ghi quyền. `ref` là unique nên SePay gửi lại cùng giao dịch cũng không
