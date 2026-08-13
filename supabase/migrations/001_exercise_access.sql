@@ -26,13 +26,20 @@ create index if not exists exercise_access_student_idx
 
 alter table public.exercise_access enable row level security;
 
--- Đọc: mở cho anon. Danh sách "ai được mở bài nào" không phải thông tin nhạy cảm,
--- và giao diện cần nó để biết hiện ổ khoá hay nút luyện tập.
+-- Đọc: mở cho cả khách lẫn người đã đăng nhập. Danh sách "ai được mở bài nào"
+-- không phải thông tin nhạy cảm, và giao diện cần nó để biết hiện ổ khoá hay
+-- nút luyện tập.
+--
+-- PHẢI ghi cả hai vai. Policy trong PostgreSQL chỉ áp cho đúng vai được liệt
+-- kê — `authenticated` không kế thừa từ `anon`. Bản đầu của file này chỉ ghi
+-- `to anon`, nên học sinh sau khi đăng nhập thấy 0 dòng và bài đã mua vẫn
+-- hiện khoá. Xem 006 để biết chi tiết.
 drop policy if exists "anon can read access" on public.exercise_access;
-create policy "anon can read access"
+drop policy if exists "read access"          on public.exercise_access;
+create policy "read access"
   on public.exercise_access
   for select
-  to anon
+  to anon, authenticated
   using (true);
 
 -- KHÔNG có policy insert/update/delete cho anon.
