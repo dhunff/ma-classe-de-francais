@@ -1,17 +1,50 @@
 ﻿# Triển khai phần thanh toán tự động
 
-Hai việc: tạo bảng quyền truy cập, và deploy hai Edge Function.
+Hai việc: chạy các migration, và deploy hai Edge Function.
 
-Bạn làm **bước 1 và 2**. Phần còn lại tôi chạy được.
+Bạn làm **bước 0, 1 và 2**. Phần còn lại tôi chạy được.
+
+> **Dự án hiện tại là `cdszvnuaibnnkrvynyck`.**
+> Tài liệu này từng ghi `psnrkpccevwetznreuqz` — một dự án khác. Hậu quả thật:
+> migration `001` được chạy ở đó, còn app chạy ở đây, nên bảng `exercise_access`
+> không tồn tại. Hàm webhook vẫn deploy trót lọt và chỉ vỡ khi có người trả tiền
+> thật, trả về `write_failed: Could not find the table`.
+>
+> Trước khi chạy bất cứ lệnh nào bên dưới, đối chiếu `VITE_SUPABASE_URL` trong
+> `.env` với project-ref bạn đang thao tác. Hai thứ đó phải khớp.
 
 ---
 
-## Bước 1 — Tạo bảng (bạn làm, 1 lần)
+## Bước 0 — Kiểm xem migration nào đã chạy (làm trước tiên)
 
-Mở **SQL Editor** trong Supabase project, dán toàn bộ nội dung file
-`supabase/migrations/001_exercise_access.sql` rồi Run.
+Dán vào **SQL Editor**. Một lệnh, cho biết cả bốn:
 
-Cách này tránh phải chia sẻ mật khẩu database. Sau khi chạy, kiểm nhanh:
+```sql
+select
+  to_regclass('public.exercise_access') is not null as "001_exercise_access",
+  (select count(*) from pg_policies where tablename = 'kv_store') > 1 as "002_kv_store_rls",
+  to_regclass('public.profiles') is not null as "003_profiles",
+  exists (
+    select 1 from information_schema.columns
+    where table_name = 'profiles' and column_name = 'has_premium_access'
+  ) as "004_full_access";
+```
+
+Cột nào ra `false` thì chạy file tương ứng trong `supabase/migrations/`.
+
+Chạy **theo đúng thứ tự số**: `002` tạo hàm `public.is_teacher()` mà `003` và
+`004` dùng lại, còn `004` thêm cột vào bảng do `003` tạo. Chạy ngược là lỗi
+"function does not exist" hoặc "relation does not exist".
+
+---
+
+## Bước 1 — Chạy các migration còn thiếu (bạn làm, 1 lần)
+
+Mở **SQL Editor**, dán toàn bộ nội dung từng file rồi Run, theo thứ tự.
+
+Cách này tránh phải chia sẻ mật khẩu database.
+
+Riêng `001`, kiểm lại sau khi chạy:
 
 ```sql
 select tablename, rowsecurity from pg_tables where tablename = 'exercise_access';
@@ -20,6 +53,25 @@ select policyname, cmd from pg_policies where tablename = 'exercise_access';
 
 Kết quả đúng: `rowsecurity = true`, và **chỉ có một policy duy nhất, cmd = SELECT**.
 Nếu thấy policy INSERT/UPDATE/DELETE nào cho `anon` thì lỗ hổng vẫn còn — xoá đi.
+Bảng này cố tình chỉ cho đọc: client ghi được nghĩa là học sinh tự mở khoá bài
+trả phí mà không trả tiền.
+
+Trước khi chạy `002`, phải có ít nhất một tài khoản mang `role: 'prof'`:
+
+```sql
+select email, raw_app_meta_data ->> 'role' as role from auth.users;
+```
+
+Không có ai là `prof` thì sau khi bật RLS **không ai ghi được gì nữa, kể cả bạn**.
+Cấp quyền bằng:
+
+```sql
+update auth.users
+set raw_app_meta_data = raw_app_meta_data || '{"role":"prof"}'
+where email = '…';
+```
+
+Rồi đăng xuất và đăng nhập lại — vai trò nằm trong token, cần token mới.
 
 ---
 

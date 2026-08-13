@@ -14,11 +14,17 @@ RLS. Đó là lý do nó ghi được vào bảng mà trình duyệt bị chặn
 
 ## Thứ tự triển khai
 
-### 1. Tạo bảng và bật RLS
+### 1. Chạy các migration
 
-Mở **SQL Editor** của project, chạy `migrations/001_exercise_access.sql`.
+Mở **SQL Editor** của project, chạy các file trong `migrations/` **theo đúng
+thứ tự số**: `001` → `002` → `003` → `004`. `002` tạo hàm `is_teacher()` mà
+`003` và `004` dùng lại; `004` thêm cột vào bảng do `003` tạo. Chạy ngược là
+lỗi "function does not exist".
 
-Sau bước này: ai cũng **đọc** được `exercise_access`, **không ai ghi** được từ
+RUNBOOK.md có một câu truy vấn cho biết file nào đã chạy, và giải thích vì sao
+phải có sẵn một tài khoản `role: 'prof'` **trước khi** chạy `002`.
+
+Sau `001`: ai cũng **đọc** được `exercise_access`, **không ai ghi** được từ
 trình duyệt. Đó là chủ đích — đừng thêm policy insert.
 
 ### 2. Deploy Edge Function
