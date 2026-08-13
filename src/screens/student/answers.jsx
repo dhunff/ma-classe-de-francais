@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from "react";
-import { DndContext, closestCenter, PointerSensor, TouchSensor, useSensor, useSensors } from "@dnd-kit/core";
+import { DndContext, closestCenter, PointerSensor, TouchSensor, useSensor, useSensors, useDroppable } from "@dnd-kit/core";
 import { SortableContext, useSortable, rectSortingStrategy, arrayMove } from "@dnd-kit/sortable";
 import { CSS as DndCSS } from "@dnd-kit/utilities";
 import { C, S, VF_OPTS } from "../../shared/tokens.js";
@@ -18,9 +18,29 @@ function OrdreChip({ id, texte, onClick, tone, disabled }) {
         background: colors.bg, color: colors.tx, cursor: disabled ? "default" : "grab", userSelect: "none", touchAction: "none",
         borderStyle: "solid", borderColor: colors.bd, borderWidth: "1.5px 1.5px 4px 1.5px",
         opacity: isDragging ? 0.4 : 1,
-        boxShadow: isDragging ? "0 6px 16px rgba(61,90,241,.3)" : "none" }}>
+        /* Bóng lúc nhấc lấy màu chủ đạo qua biến CSS, không phải mã màu cứng:
+           bản tối dùng primary sáng hơn, nên rgba(61,90,241) cũ vừa lệch tông
+           vừa gần như vô hình trên nền đen. */
+        boxShadow: isDragging ? "0 8px 20px rgb(var(--mcf-primary-rgb) / .35)" : "none" }}>
       {texte}
     </span>
+  );
+}
+
+/* Vùng thả. Tách thành component riêng vì useDroppable phải chạy BÊN TRONG
+   <DndContext> mới đăng ký được với nó.
+
+   Trước đây hook gọi ngay trong OrdreBlocks — cùng component render ra
+   DndContext, tức nằm ngoài provider. Thiếu import thì crash; thêm import
+   xong sẽ hết crash nhưng vùng thả im lặng không hoạt động: `isOver` không
+   bao giờ đúng, và thả vào ô trống không ăn vì droppable chưa từng được ghi
+   danh. Lỗi thứ hai khó thấy hơn lỗi đầu nhiều. */
+function DropZone({ id, style, overStyle, idleStyle, children }) {
+  const { setNodeRef, isOver } = useDroppable({ id });
+  return (
+    <div ref={setNodeRef} style={{ ...style, ...(isOver ? overStyle : idleStyle) }}>
+      {children}
+    </div>
   );
 }
 
@@ -34,8 +54,6 @@ function OrdreBlocks({ q, value, onChange, readOnly, correction }) {
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
     useSensor(TouchSensor, { activationConstraint: { delay: 120, tolerance: 6 } })
   );
-  const zone1 = useDroppable({ id: "zone1-" + q.id });
-  const zoneBank = useDroppable({ id: "bank-" + q.id });
 
   const onDragEnd = ({ active, over }) => {
     if (readOnly || !over) return;
@@ -56,11 +74,12 @@ function OrdreBlocks({ q, value, onChange, readOnly, correction }) {
   return (
     <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
       {/* Zone 1 — zone de réponse */}
-      <div ref={zone1.setNodeRef}
+      <DropZone id={"zone1-" + q.id}
         style={{ display: "flex", flexWrap: "wrap", gap: 8, alignItems: "flex-start",
           minHeight: 62, padding: 12, borderRadius: 16, marginBottom: correction ? 8 : 14,
-          border: `2px dashed ${zone1.isOver ? C.primary : "var(--mcf-line)"}`,
-          background: "var(--mcf-surface2)", transition: "border-color .15s ease" }}>
+          background: "var(--mcf-surface2)", transition: "border-color .15s ease" }}
+        overStyle={{ border: `2px dashed ${C.primary}` }}
+        idleStyle={{ border: "2px dashed var(--mcf-line)" }}>
         <SortableContext items={chosen} strategy={rectSortingStrategy}>
           {chosen.length === 0 && (
             <span style={{ color: C.soft, fontSize: 13, padding: "8px 4px" }}>
@@ -72,10 +91,10 @@ function OrdreBlocks({ q, value, onChange, readOnly, correction }) {
               onClick={() => !readOnly && onChange(chosen.filter((x) => x !== id))} />
           ))}
         </SortableContext>
-      </div>
+      </DropZone>
       {/* Zone 2 — banque de mots */}
       {!correction && bank.length > 0 && (
-        <div ref={zoneBank.setNodeRef}
+        <DropZone id={"bank-" + q.id}
           style={{ display: "flex", flexWrap: "wrap", gap: 8, padding: "4px 2px", minHeight: 50 }}>
           <SortableContext items={bank} strategy={rectSortingStrategy}>
             {bank.map((id) => (
@@ -83,7 +102,7 @@ function OrdreBlocks({ q, value, onChange, readOnly, correction }) {
                 onClick={() => !readOnly && onChange([...chosen, id])} />
             ))}
           </SortableContext>
-        </div>
+        </DropZone>
       )}
       {correction && !ordreOk(q, chosen) && (
         <div style={{ marginTop: 6, background: C.okSoft, border: `1.5px solid ${C.ok}55`, borderRadius: 12, padding: "10px 14px", fontSize: 14 }}>
