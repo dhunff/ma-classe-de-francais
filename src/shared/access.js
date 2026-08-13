@@ -42,6 +42,17 @@ export const isPremium = (ex) => !!ex?.isPremium && Number(ex?.price) > 0;
 
    Bảng chưa tồn tại (chưa chạy migration) → trả về rỗng: mọi bài trả phí đều
    khoá. Thà khoá nhầm còn hơn mở nhầm khi không biết chắc ai đã trả tiền. */
+/* Trả mảng rỗng khi hỏng, NHƯNG kêu lên trước.
+
+   Bảng exercise_access từng không tồn tại trên dự án này suốt một thời gian —
+   migration 001 chạy nhầm sang dự án cũ. Hàm này nuốt lỗi im lặng, nên giao
+   diện hiện "mọi bài đều khoá" thay vì "không đọc được danh sách quyền", và
+   trông y như đang hoạt động bình thường. Chuyện đó chỉ lộ ra khi có người
+   trả tiền thật và webhook vỡ.
+
+   Rỗng vẫn là giá trị trả về đúng — khoá bài lại an toàn hơn mở nhầm — nhưng
+   một dòng trong console là khác biệt giữa "chưa ai mua" và "đang mất kết nối
+   tới bảng quyền". */
 export async function loadAccess() {
   try {
     const { data, error } = await supabase
@@ -51,7 +62,11 @@ export async function loadAccess() {
     return (data ?? []).map((r) => ({
       student: r.student, exerciseId: r.exercise_id, status: r.status,
     }));
-  } catch {
+  } catch (err) {
+    console.error(
+      `[access] Không đọc được bảng ${ACCESS_TABLE}. Mọi bài trả phí sẽ hiện như bị khoá.`,
+      err?.message ?? err,
+    );
     return [];
   }
 }
