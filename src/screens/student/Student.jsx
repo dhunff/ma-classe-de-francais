@@ -6,7 +6,7 @@ import { useT } from "../../shared/i18n.jsx";
 import { SKILLS, fmtDate, isLate, exSkills, assignedTo, totalScore } from "../../shared/exercises.js";
 import { uid, norm, stripHtml, wordCount, vfOk, fillAccepted, fillOk, autoQ, ordreOk, tableauCells, tableauOk, isQuestionAnswered, getUnansweredQuestionsCount } from "../../shared/questions.js";
 import { AVA_COLORS, avaColor, fmtDateFR, fmtDuration, targetedAccounts, fileNameFromUrl, formatLastSeen } from "../../shared/display.js";
-import { FloatingLayer, KebabMenu, UnderlineTabs } from "../../shared/ui.jsx";
+import { FloatingLayer, KebabMenu } from "../../shared/ui.jsx";
 import { PROFILE_FIELDS, LEVELS_PROFILE, GOALS_PROFILE, emptyProfile, calculateProfileCompletion, validateProfile } from "../../shared/profile.js";
 import { OrdreChip, OrdreBlocks, TableauCompare, ConfirmSubmitModal } from "./answers.jsx";
 import ReadingPanel from "../../editor/ReadingPanel.jsx";
@@ -78,9 +78,6 @@ function Student({ name, exercises, submissions, setSubmissions, accounts, setAc
     { need: 5, icon: "🖼️", label: "Le Louvre" }, { need: 8, icon: "🗼", label: "Tour Eiffel" },
     { need: 12, icon: "✈️", label: "Départ pour Paris !" },
   ];
-
-  const tabs = [["todo", `📝 ${t("nav.todo")} (${todo.length})`], ["done", `📤 ${t("nav.done")} (${doneList.length})`],
-    ["practice", `🏋️ ${t("nav.practice")}`], ["progress", `📈 ${t("nav.progress")}`], ["settings", `⚙️ ${t("nav.account")}`]];
 
   /* Đổi mật khẩu qua Supabase Auth.
 
@@ -239,18 +236,15 @@ function Student({ name, exercises, submissions, setSubmissions, accounts, setAc
 
   return (
     <div>
-      <UnderlineTabs
-        items={tabs}
-        active={tab}
-        onSelect={setTab}
-        ariaLabel={t("nav.primary")}
-        trailing={
-          <button type="button" onClick={refresh}
-            className="rounded-md px-3 py-1.5 text-sm font-medium text-soft transition-colors hover:bg-surface2 hover:text-ink">
-            ↻ {t("actions.refresh")}
-          </button>
-        }
-      />
+      {/* Hàng tab ngang đã bỏ: nhãn của nó trùng khít với thanh bên, và mỗi
+          tab đều đã có route riêng nên không mất lối vào nào. Nút làm mới vốn
+          nằm trong prop `trailing` của cụm tab đó, nên được tách ra đây. */}
+      <div className="mb-5 flex flex-wrap items-center gap-2">
+        <button type="button" onClick={refresh}
+          className="cursor-pointer rounded-md border-0 bg-transparent px-3 py-1.5 font-[inherit] text-sm font-medium text-soft transition-colors hover:bg-surface2 hover:text-ink">
+          ↻ {t("actions.refresh")}
+        </button>
+      </div>
 
       {tab === "todo" && (
         todo.length === 0

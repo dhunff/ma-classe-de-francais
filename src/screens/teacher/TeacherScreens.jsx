@@ -5,7 +5,7 @@ import { useT } from "../../shared/i18n.jsx";
 import { SKILLS, fmtDate, isLate, exSkills, assignedTo, totalScore } from "../../shared/exercises.js";
 import { uid, norm, stripHtml, wordCount, vfOk, fillAccepted, fillOk, autoQ, ordreOk, tableauCells, tableauOk, isQuestionAnswered, getUnansweredQuestionsCount } from "../../shared/questions.js";
 import { AVA_COLORS, avaColor, fmtDateFR, fmtDuration, targetedAccounts, fileNameFromUrl, formatLastSeen } from "../../shared/display.js";
-import { FloatingLayer, KebabMenu, UnderlineTabs } from "../../shared/ui.jsx";
+import { FloatingLayer, KebabMenu } from "../../shared/ui.jsx";
 import { PROFILE_FIELDS, LEVELS_PROFILE, GOALS_PROFILE, emptyProfile, calculateProfileCompletion, validateProfile } from "../../shared/profile.js";
 import { OrdreChip, OrdreBlocks, TableauCompare, ConfirmSubmitModal } from "../student/answers.jsx";
 import ReadingPanel from "../../editor/ReadingPanel.jsx";
@@ -55,7 +55,6 @@ function Teacher({ exercises, setExercises, submissions, setSubmissions, account
   const [draft, setDraft] = useState(null);
 
   const t = useT();
-  const tabs = [["list", `📚 ${t("nav.exercises")}`], ["students", `👥 ${t("nav.students")}`], ["stats", `📊 ${t("nav.stats")}`], ["practice", `🏋️ ${t("nav.practice")}`]];
   const blank = () => ({ id: uid(), title: "", level: "B1", skill: "Grammaire", skills: ["Grammaire"], consigne: "", usageType: "assignment", deadline: "", audioUrl: "", readingText: "", imageUrl: "", timeLimit: "", targeted: false, assignedClasses: [], assignedExtra: [], assignedTo: null, createdAt: Date.now(), questions: [] });
 
   // Gom danh sách học sinh được giao : lớp đã tick ∪ học sinh chọn lẻ → mảng unique
@@ -119,7 +118,11 @@ function Teacher({ exercises, setExercises, submissions, setSubmissions, account
 
   return (
     <div>
-      <UnderlineTabs items={tabs} active={view} onSelect={setView} ariaLabel={t("nav.primary")} />
+      {/* Hàng tab ngang đã bỏ: bốn nhãn của nó (Bibliothèque d'exercices,
+          Suivi des élèves, Statistiques, Entraînement) trùng khít với thanh
+          bên, và mỗi tab đều có route riêng trong TEACHER_NAV nên không mất
+          lối vào nào. `view` vẫn giữ vì nó còn điều khiển hai màn con không
+          có URL riêng: soạn bài mới và chấm bài. */}
       <div className="mb-5 flex flex-wrap items-center gap-2">
         <button type="button" onClick={refresh}
           className="rounded-md px-3 py-1.5 text-sm font-medium text-soft transition-colors hover:bg-surface2 hover:text-ink">
