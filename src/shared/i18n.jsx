@@ -1,4 +1,4 @@
-import React from "react";
+﻿import React from "react";
 
 const LANG_KEY = "mcf-lang";
 const LANGS = [["vi", "🇻🇳", "Tiếng Việt"], ["fr", "🇫🇷", "Français"], ["en", "🇬🇧", "English"]];
@@ -11,7 +11,7 @@ const I18N = {
     nav: { exercises: "Thư viện bài tập", students: "Theo dõi học sinh", stats: "Thống kê",
       todo: "Cần làm", done: "Đã nộp", practice: "Luyện tập", progress: "Tiến độ của tôi", account: "Tài khoản",
       dashboard: "Tổng quan", settings: "Cài đặt",
-      primary: "Điều hướng chính", collapse: "Thu gọn thanh bên", expand: "Mở rộng thanh bên",
+      primary: "Điều hướng chính", collapse: "Thu gọn thanh bên", expand: "Mở rộng thanh bên", menu: "Menu", people: "Lớp của bạn",
       open_menu: "Mở menu", close: "Đóng menu" },
     actions: { refresh: "Làm mới", new_exercise: "+ Bài tập mới", announce: "Thông báo" },
     empty: { no_submission: "Hiện tại chưa có bài nộp nào.", all_done: "🎉 Đã nộp hết bài! Không còn bài nào đang chờ.",
@@ -126,7 +126,7 @@ const I18N = {
     nav: { exercises: "Bibliothèque d'exercices", students: "Suivi des élèves", stats: "Statistiques",
       todo: "À faire", done: "Rendus", practice: "Entraînement", progress: "Ma progression", account: "Mon compte",
       dashboard: "Tableau de bord", settings: "Paramètres",
-      primary: "Navigation principale", collapse: "Réduire le menu", expand: "Déployer le menu",
+      primary: "Navigation principale", collapse: "Réduire le menu", expand: "Déployer le menu", menu: "Menu", people: "Votre classe",
       open_menu: "Ouvrir le menu", close: "Fermer le menu" },
     actions: { refresh: "Actualiser", new_exercise: "+ Nouvel exercice", announce: "Annonce" },
     empty: { no_submission: "Aucune copie rendue pour l'instant.", all_done: "🎉 Tout est rendu ! Aucun exercice en attente.",
@@ -242,6 +242,7 @@ const I18N = {
       todo: "To do", done: "Submitted", practice: "Practice", progress: "My progress", account: "My account",
       dashboard: "Dashboard", settings: "Settings",
       primary: "Main navigation", collapse: "Collapse sidebar", expand: "Expand sidebar",
+      menu: "Menu", people: "Your class",
       open_menu: "Open menu", close: "Close menu" },
     actions: { refresh: "Refresh", new_exercise: "+ New exercise", announce: "Announcement" },
     empty: { no_submission: "No submissions yet.", all_done: "🎉 Everything submitted! Nothing pending.",

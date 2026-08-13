@@ -169,6 +169,17 @@ function AppInner() {
       bell={session?.role === "eleve"
         ? <Bell name={session.name} exercises={exercises} submissions={submissions} />
         : null}
+      /* Thẻ danh sách trong thanh bên. Giáo viên thấy học sinh của mình kèm
+         số bài đang chờ chấm; học sinh thấy bạn cùng lớp. Chỉ dữ liệu thật —
+         danh sách rỗng thì thẻ tự ẩn, không dựng avatar giả cho đủ chỗ. */
+      people={
+        session?.role === "prof"
+          ? accounts.map((a) => ({
+              name: a.name,
+              badge: submissions.filter((s) => s.student === a.name && !s.graded).length,
+            }))
+          : accounts.filter((a) => a.name !== session?.name).map((a) => ({ name: a.name, badge: 0 }))
+      }
     />
   );
 
