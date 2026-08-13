@@ -16,6 +16,7 @@ import Builder from "./screens/teacher/Builder.jsx";
 import PaymentModal from "./screens/student/PaymentModal.jsx";
 import { PAYMENT_KEY, isPremium, hasAccess, fmtPrice, loadAccess } from "./shared/access.js";
 import ExerciseCard from "./screens/practice/ExerciseCard.jsx";
+import { supabase } from "./storageShim.js";
 import { Lock } from "lucide-react";
 
 /* ============================================================
@@ -70,6 +71,20 @@ function PracticeHubInner({ role = "eleve", name = "", accounts = [], onRequireL
   const [access, setAccess] = useState([]);
   const [payCfg, setPayCfg] = useState(null);
   const [payFor, setPayFor] = useState(null);
+  /* Cờ "mở toàn quyền" của chính học sinh đang đăng nhập. RLS trong 003 cho
+     mỗi người đọc đúng dòng hồ sơ của mình, nên client hỏi được mà không thấy
+     hồ sơ người khác — và không tự bật lên được, vì chỉ giáo viên có quyền
+     ghi. Bảng chưa tồn tại thì lỗi bị nuốt và cờ ở lại false, tức khoá vẫn
+     hoạt động như cũ. */
+  const [fullAccess, setFullAccess] = useState(false);
+  useEffect(() => {
+    let off = false;
+    supabase.from("profiles").select("has_premium_access").limit(1).maybeSingle()
+      .then(({ data }) => { if (!off) setFullAccess(!!data?.has_premium_access); })
+      .catch(() => {});
+    return () => { off = true; };
+  }, [name]);
+
   useEffect(() => {
     loadAccess().then(setAccess);
     load(PAYMENT_KEY, null).then(setPayCfg);
@@ -355,7 +370,12 @@ function PracticeHubInner({ role = "eleve", name = "", accounts = [], onRequireL
       <div>
         {MatModal()}
         {Toast}
-        {payFor && <PaymentModal ex={payFor} student={name} config={payCfg} onClose={() => setPayFor(null)} />}
+        {/* onUnlocked: webhook SePay vừa ghi quyền, nạp lại bảng access để ổ
+            khoá trên thẻ biến mất ngay — không bắt học sinh tải lại trang sau
+            khi vừa trả tiền. */}
+        {payFor && <PaymentModal ex={payFor} student={name} config={payCfg}
+          onClose={() => setPayFor(null)}
+          onUnlocked={() => loadAccess().then(setAccess)} />}
         <button style={{ ...S.btn(false), marginBottom: 16 }}
           onClick={() => setView(view.folder ? { page: "autres" } : { page: "home" })}><ChevronLeft size={16} /> Retour</button>
 
@@ -560,7 +580,7 @@ function PracticeHubInner({ role = "eleve", name = "", accounts = [], onRequireL
               const h = hist[ex.id];
               const types = [...new Set(ex.questions.map((q) => QTYPES[q.type]))].join(" + ");
               /* Giáo viên luôn xem được bài của chính mình; chỉ học sinh mới bị khoá. */
-              const locked = !teacher && isPremium(ex) && !hasAccess(access, name, ex.id);
+              const locked = !teacher && !fullAccess && isPremium(ex) && !hasAccess(access, name, ex.id);
               return (
                 <ExerciseCard
                   key={ex.id}

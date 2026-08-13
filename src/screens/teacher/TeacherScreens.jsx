@@ -17,6 +17,7 @@ import PracticeHub from "../../PracticeHub.jsx";
 import { PAYMENT_KEY, STATUS, isPremium, accessRecord, fmtPrice, loadAccess, setAccessRemote, getTeacherToken, setTeacherToken } from "../../shared/access.js";
 import { supabase } from "../../storageShim.js";
 import { setClassFor } from "../../shared/roster.js";
+import AccessPanel from "./AccessPanel.jsx";
 
 
 /* ================= Teacher ================= */
@@ -747,6 +748,8 @@ function StudentDossier({ acc, classes, exercises, submissions, presence, back }
                 {notesSaved && <span style={{ fontSize: 13, color: C.ok, fontWeight: 700 }}>✅ Notes enregistrées</span>}
               </div>
             </div>
+
+            <AccessPanel student={acc} exercises={exercises} />
           </div>
 
           {/* Aperçu des performances */}

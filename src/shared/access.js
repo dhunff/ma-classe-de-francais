@@ -92,9 +92,14 @@ export const accessRecord = (access, student, exerciseId) =>
     (a) => a.student === student && a.exerciseId === exerciseId,
   ) || null;
 
-/* Học sinh mở được bài khi bài miễn phí, hoặc đã có bản ghi quyền. */
-export const canOpen = (ex, access, student) =>
-  !isPremium(ex) || hasAccess(access, student, ex?.id);
+/* Học sinh mở được bài khi: bài miễn phí, HOẶC em đó được mở toàn quyền,
+   HOẶC đã có bản ghi quyền cho đúng bài này.
+
+   `fullAccess` đến từ profiles.has_premium_access — cờ giáo viên bật cho học
+   sinh đóng trọn gói. Nó phải được kiểm TRƯỚC danh sách từng bài, vì mục đích
+   của nó chính là mở cả những bài chưa tồn tại lúc bật. */
+export const canOpen = (ex, access, student, fullAccess = false) =>
+  !isPremium(ex) || fullAccess || hasAccess(access, student, ex?.id);
 
 export function grantAccess(access, student, exId, status = STATUS.GRANTED_BY_TEACHER) {
   const rest = (Array.isArray(access) ? access : []).filter(
