@@ -54,9 +54,16 @@ function Tip({ show, children }) {
   );
 }
 
+/* KHÔNG đặt overflow-y-auto ở <nav>. Theo chuẩn CSS, khi một trục là `visible`
+   còn trục kia không phải, trình duyệt ép trục `visible` thành `auto` — sinh ra
+   thanh cuộn ngang ngay dưới danh sách menu ở trạng thái thu gọn. Mà
+   `overflow-x` phải để `visible` thì chú giải mới trôi ra ngoài được.
+
+   Danh sách chỉ 5–6 mục nên không cần tự cuộn; dài hơn thì cả thanh bên cuộn,
+   không phải riêng khối này. */
 function NavList({ role, t, expanded, onNavigate }) {
   return (
-    <nav className="flex flex-1 flex-col gap-1 overflow-y-auto overflow-x-visible px-3" aria-label={t("nav.primary")}>
+    <nav className="flex flex-1 flex-col gap-1 px-3" aria-label={t("nav.primary")}>
       <Label expanded={expanded} className="mb-1 block px-2 text-[10px] font-bold uppercase tracking-[0.14em] text-soft">
         {t("nav.menu")}
       </Label>
@@ -93,29 +100,24 @@ function NavList({ role, t, expanded, onNavigate }) {
   );
 }
 
+/* Chỉ còn chữ, bỏ ô vuông "F" và ba chấm kiểu macOS.
+
+   Ba chấm đó vốn thuần trang trí — không đóng, không thu nhỏ, không làm gì.
+   Bỏ đi thì thanh bên hết giả vờ là cửa sổ hệ điều hành.
+
+   Thu gọn thì hiện "F" — chữ đầu của tên, không phải biểu tượng riêng — để
+   khoảng trống trên cùng không rỗng hoác. */
 function Brand({ expanded }) {
   return (
-    <div className={`flex items-center ${expanded ? "px-5" : "justify-center px-0"}`}>
-      <span aria-hidden className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-primary text-base font-extrabold text-on-primary">
-        F
-      </span>
-      <Label expanded={expanded} className="text-[19px] font-extrabold tracking-tight text-ink">
-        FRACILE<span className="text-primary">.</span>
-      </Label>
+    <div className={`flex items-center overflow-hidden ${expanded ? "px-5" : "justify-center px-0"}`}>
+      {expanded ? (
+        <span className="whitespace-nowrap text-[19px] font-extrabold tracking-tight text-ink">
+          FRACILE<span className="text-primary">.</span>
+        </span>
+      ) : (
+        <span className="text-[19px] font-extrabold tracking-tight text-ink">F</span>
+      )}
     </div>
-  );
-}
-
-/* Ba chấm kiểu cửa sổ macOS. Thuần trang trí — chúng không đóng, không thu
-   nhỏ, không làm gì cả. `aria-hidden` để trình đọc màn hình không đọc chúng
-   như thể là nút bấm. */
-function WindowDots() {
-  return (
-    <span aria-hidden className="flex items-center gap-1.5">
-      <span className="h-2.5 w-2.5 rounded-full bg-[#FF5F57]" />
-      <span className="h-2.5 w-2.5 rounded-full bg-[#FEBC2E]" />
-      <span className="h-2.5 w-2.5 rounded-full bg-[#28C840]" />
-    </span>
   );
 }
 
@@ -163,19 +165,24 @@ function Footer({ t, session, signedIn, onLogout, expanded, onNavigate }) {
   return (
     <div className="mt-auto border-0 border-t border-solid border-line/60 p-3">
       {signedIn && (
-        <div className={`mb-2 flex items-center ${expanded ? "px-2" : "justify-center px-0"}`}>
+        <div className={`mb-2 flex items-center overflow-hidden ${expanded ? "px-2" : "justify-center px-0"}`}>
           <span
             aria-hidden
             className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-primary text-sm font-bold text-on-primary"
           >
             {(session?.name || "?").trim().charAt(0).toUpperCase()}
           </span>
-          <Label expanded={expanded} className="min-w-0">
-            <span className="block truncate text-sm font-bold text-ink">{session?.name}</span>
-            <span className="block truncate text-xs text-soft">
-              {session?.role === "prof" ? t("header.teacher") : t("header.student")}
+          {/* Bỏ hẳn khỏi cây DOM khi thu gọn, không chỉ co bề rộng về 0. Tên
+              và vai trò là chuỗi dài nhất trong thanh bên; chỉ cần một cái
+              không co kịp là khung bị kéo giãn và sinh tràn ngang. */}
+          {expanded && (
+            <span className="ml-3 min-w-0 flex-1">
+              <span className="block truncate text-sm font-bold text-ink">{session?.name}</span>
+              <span className="block truncate text-xs text-soft">
+                {session?.role === "prof" ? t("header.teacher") : t("header.student")}
+              </span>
             </span>
-          </Label>
+          )}
         </div>
       )}
 
@@ -226,8 +233,9 @@ export default function Sidebar({
 
   const inner = (isExpanded, onNavigate) => (
     <>
-      <div className={`flex shrink-0 items-center justify-between px-4 pt-4 ${isExpanded ? "" : "flex-col gap-3"}`}>
-        <WindowDots />
+      {/* Chỉ còn nút thu gọn, nên đẩy hẳn sang phải khi mở và canh giữa khi
+          thu — không còn ba chấm để cân đối hai đầu. */}
+      <div className={`flex shrink-0 items-center px-4 pt-4 ${isExpanded ? "justify-end" : "justify-center"}`}>
         {onToggle && (
           <button
             type="button"
@@ -291,8 +299,7 @@ export default function Sidebar({
           open ? "translate-x-0" : "-translate-x-full",
         ].join(" ")}
       >
-        <div className="flex shrink-0 items-center justify-between px-4 pt-4">
-          <WindowDots />
+        <div className="flex shrink-0 items-center justify-end px-4 pt-4">
           <button
             type="button"
             onClick={onClose}

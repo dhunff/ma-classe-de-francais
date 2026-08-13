@@ -10,20 +10,13 @@ import { Search, Moon, Sun, Menu } from "lucide-react";
    đăng nhập dưới tư cách nào — nhất là khi giáo viên và học sinh dùng chung
    một máy. */
 
-const AVATAR_BG = ["#2563EB", "#41608F", "#2C7573", "#327654", "#8F5E22", "#9B3D66"];
-const avatarColor = (name) => {
-  let h = 0;
-  for (const ch of String(name || "?")) h = (h * 31 + ch.charCodeAt(0)) % 997;
-  return AVATAR_BG[h % AVATAR_BG.length];
-};
+/* AVATAR_BG và avatarColor đã bỏ cùng khối hồ sơ — thanh bên tự dựng ảnh đại
+   diện từ màu chủ đạo, không cần bảng màu theo tên ở đây nữa. */
 
 export default function Topbar({
-  session, title, t, lang, langs, onLang, dark, onToggleDark, bell,
+  title, t, lang, langs, onLang, dark, onToggleDark, bell,
   query, onQuery, onOpenMenu,
 }) {
-  const isProf = session?.role === "prof";
-  const name = isProf ? t("header.teacher") : session?.name || "";
-  const roleLabel = isProf ? t("header.teacher") : t("header.student");
 
   return (
     <header className="sticky top-0 z-20 border-0 border-b border-solid border-line bg-surface/95 backdrop-blur">
@@ -79,21 +72,10 @@ export default function Topbar({
             {dark ? <Sun size={18} /> : <Moon size={18} />}
           </button>
 
+          {/* Khối hồ sơ đã bỏ: tên, ảnh và vai trò đều đã nằm ở chân thanh
+              bên, hiện cùng lúc trên cùng màn hình. Nhắc lại hai lần không
+              thêm thông tin, chỉ lấy mất chỗ của ô tìm kiếm. */}
           {bell}
-
-          <div className="flex items-center gap-2 pl-1">
-            <span
-              aria-hidden
-              className="grid h-9 w-9 shrink-0 place-items-center rounded-full text-sm font-bold text-white"
-              style={{ background: avatarColor(name) }}
-            >
-              {String(name).trim().charAt(0).toUpperCase() || "?"}
-            </span>
-            <span className="hidden min-w-0 flex-col leading-tight sm:flex">
-              <span className="truncate text-sm font-bold text-ink">{name}</span>
-              <span className="truncate text-xs text-soft">{roleLabel}</span>
-            </span>
-          </div>
         </div>
       </div>
     </header>
