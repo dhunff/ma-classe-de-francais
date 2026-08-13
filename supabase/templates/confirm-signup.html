@@ -1,0 +1,86 @@
+<!-- Thư xác minh tài khoản.
+     Dán vào: Supabase Dashboard → Authentication → Emails → Confirm signup.
+
+     Vì sao viết kiểu cũ kỹ thế này — table, style nội tuyến, không flexbox:
+     ứng dụng thư điện tử không phải trình duyệt. Outlook dựng bằng engine của
+     Word; Gmail cắt bỏ thẻ <style> ở đầu trang. Bố cục bằng bảng và style dán
+     thẳng vào từng thẻ là thứ duy nhất chạy được ở mọi nơi.
+
+     Song ngữ là chủ ý: người nhận là học sinh Việt mới học tiếng Pháp. Thư
+     toàn tiếng Pháp thì họ không hiểu phải bấm gì, và không bấm nghĩa là tài
+     khoản không bao giờ được kích hoạt.
+
+     Biến của Supabase: {{ .ConfirmationURL }} {{ .Email }} {{ .SiteURL }} -->
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+       style="background-color:#f1f5f9;margin:0;padding:32px 12px;">
+  <tr>
+    <td align="center">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+             style="max-width:520px;background-color:#ffffff;border-radius:20px;overflow:hidden;">
+
+        <tr>
+          <td style="padding:32px 32px 8px 32px;">
+            <div style="font-family:'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:20px;font-weight:800;color:#111827;letter-spacing:-0.02em;">
+              FRACILE<span style="color:#2563eb;">.</span>
+            </div>
+          </td>
+        </tr>
+
+        <tr>
+          <td style="padding:8px 32px 0 32px;">
+            <h1 style="margin:0;font-family:'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:22px;line-height:1.35;font-weight:800;color:#111827;">
+              Bienvenue sur FRACILE&nbsp;!
+            </h1>
+            <p style="margin:14px 0 0 0;font-family:'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:15px;line-height:1.7;color:#4b5563;">
+              Confirmez votre adresse pour activer votre compte et commencer à apprendre le français.
+            </p>
+            <p style="margin:10px 0 0 0;font-family:'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:14px;line-height:1.7;color:#6b7280;">
+              Xác nhận địa chỉ email để kích hoạt tài khoản và bắt đầu học tiếng Pháp.
+            </p>
+          </td>
+        </tr>
+
+        <!-- Nút bọc trong bảng riêng: Outlook không tôn trọng padding trên
+             thẻ <a>, nên chiều cao nút phải do ô bảng quyết định. -->
+        <tr>
+          <td style="padding:26px 32px 0 32px;">
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+              <tr>
+                <td style="background-color:#2563eb;border-radius:999px;">
+                  <a href="{{ .ConfirmationURL }}"
+                     style="display:inline-block;padding:14px 28px;font-family:'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:15px;font-weight:700;color:#ffffff;text-decoration:none;">
+                    Activer mon compte · Kích hoạt tài khoản
+                  </a>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <!-- Địa chỉ dạng chữ: nhiều ứng dụng thư chặn hoặc viết lại liên kết,
+             và người dùng cẩn thận thường muốn nhìn thấy nó trỏ đi đâu. -->
+        <tr>
+          <td style="padding:22px 32px 0 32px;">
+            <p style="margin:0;font-family:'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:12.5px;line-height:1.6;color:#9ca3af;">
+              Si le bouton ne fonctionne pas, copiez ce lien&nbsp;·&nbsp;Nếu nút không bấm được, chép liên kết này:
+            </p>
+            <p style="margin:6px 0 0 0;font-family:'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:12.5px;line-height:1.6;word-break:break-all;">
+              <a href="{{ .ConfirmationURL }}" style="color:#2563eb;">{{ .ConfirmationURL }}</a>
+            </p>
+          </td>
+        </tr>
+
+        <tr>
+          <td style="padding:24px 32px 32px 32px;">
+            <div style="height:1px;background-color:#eef0f5;line-height:1px;font-size:0;">&nbsp;</div>
+            <p style="margin:18px 0 0 0;font-family:'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:12.5px;line-height:1.7;color:#9ca3af;">
+              Vous n'avez pas créé de compte&nbsp;? Ignorez ce message, rien ne sera activé.<br>
+              Bạn không tạo tài khoản? Bỏ qua thư này, sẽ không có gì được kích hoạt.
+            </p>
+          </td>
+        </tr>
+
+      </table>
+    </td>
+  </tr>
+</table>
