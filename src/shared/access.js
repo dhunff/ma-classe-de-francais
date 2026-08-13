@@ -26,6 +26,29 @@ export const STATUS = {
 
 export const isPremium = (ex) => !!ex?.isPremium && Number(ex?.price) > 0;
 
+/* Bài trả phí nằm ở HAI kho: `mcf-exercises` (bài được giao) và `mcf-practice`
+   (thư viện luyện tập). Giao diện quản lý quyền trước đây chỉ lọc kho thứ
+   nhất, nên bài trả phí tạo trong thư viện luyện tập không bao giờ hiện ra —
+   giáo viên thấy "chưa có bài trả phí nào" trong khi học sinh đang bị chặn
+   bởi đúng bài đó.
+
+   Truyền `assigned` vào để tránh đọc lại thứ nơi gọi đã có sẵn. */
+export async function loadPremiumExercises(assigned = []) {
+  let practice = [];
+  try {
+    const { load } = await import("./storage.js");
+    practice = await load("mcf-practice", []);
+  } catch { /* đọc hỏng thì vẫn còn kho được giao */ }
+
+  const seen = new Set();
+  return [...(Array.isArray(assigned) ? assigned : []), ...(Array.isArray(practice) ? practice : [])]
+    .filter((ex) => {
+      if (!isPremium(ex) || seen.has(ex.id)) return false;
+      seen.add(ex.id);
+      return true;
+    });
+}
+
 /* Đọc quyền truy cập — CHỈ từ bảng `exercise_access`.
 
    Trước đây hàm này còn gộp thêm khoá `mcf-access` trong kv_store, nơi nút

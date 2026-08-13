@@ -14,7 +14,7 @@ import { BookOpen, GraduationCap, MoreVertical, Pencil, Copy, Trash2, RotateCcw,
 import { BarChart, Bar, LineChart, Line, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from "recharts";
 import Builder from "./Builder.jsx";
 import PracticeHub from "../../PracticeHub.jsx";
-import { PAYMENT_KEY, STATUS, isPremium, accessRecord, fmtPrice, loadAccess, setAccessRemote, getTeacherToken, setTeacherToken } from "../../shared/access.js";
+import { PAYMENT_KEY, STATUS, accessRecord, fmtPrice, loadAccess, setAccessRemote, getTeacherToken, setTeacherToken, loadPremiumExercises } from "../../shared/access.js";
 import { supabase } from "../../storageShim.js";
 import { setClassFor } from "../../shared/roster.js";
 import AccessPanel from "./AccessPanel.jsx";
@@ -505,7 +505,16 @@ function AccessManager({ accounts, exercises }) {
     load(PAYMENT_KEY, null).then((c) => c && setCfg({ bank: "", account: "", accountName: "", ...c }));
   }, []);
 
-  const premium = exercises.filter(isPremium);
+  /* Gom bài trả phí từ CẢ HAI kho. Lọc riêng `exercises` (bài được giao) là
+     bỏ sót thư viện luyện tập — nơi phần lớn bài trả phí thực sự nằm — nên
+     bảng này hiện "chưa có bài trả phí nào" trong khi học sinh đang bị chặn
+     bởi đúng những bài đó. */
+  const [premium, setPremium] = useState([]);
+  useEffect(() => {
+    let off = false;
+    loadPremiumExercises(exercises).then((p) => { if (!off) setPremium(p); });
+    return () => { off = true; };
+  }, [exercises]);
 
   /* Mọi thay đổi quyền đi qua Edge Function. Trình duyệt không ghi được vào
      bảng quyền — đó là điều khiến bức tường trả phí có nghĩa. */

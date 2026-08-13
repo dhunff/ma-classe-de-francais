@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Loader2, Check, Crown } from "lucide-react";
 import { C, S } from "../../shared/tokens.js";
 import { supabase } from "../../storageShim.js";
-import { isPremium, fmtPrice, loadAccess, accessRecord, setAccessRemote, STATUS } from "../../shared/access.js";
+import { fmtPrice, loadAccess, accessRecord, setAccessRemote, STATUS, loadPremiumExercises } from "../../shared/access.js";
 
 /* Quản lý quyền truy cập của MỘT học sinh.
 
@@ -50,21 +50,26 @@ export default function AccessPanel({ student, exercises }) {
   const [busy, setBusy] = useState(null);   // null | 'full' | exerciseId
   const [msg, setMsg] = useState("");
 
-  const premium = exercises.filter(isPremium);
+  /* Bài trả phí gom từ cả hai kho — xem loadPremiumExercises. Lọc riêng
+     `exercises` là bỏ sót toàn bộ thư viện luyện tập, nơi phần lớn bài trả
+     phí thực sự nằm. */
+  const [premium, setPremium] = useState([]);
 
   useEffect(() => {
     let off = false;
     (async () => {
-      const [{ data }, acc] = await Promise.all([
+      const [{ data }, acc, prem] = await Promise.all([
         supabase.from("profiles").select("has_premium_access").eq("email", student.email).maybeSingle(),
         loadAccess(),
+        loadPremiumExercises(exercises),
       ]);
       if (off) return;
       setFull(!!data?.has_premium_access);
       setAccess(acc);
+      setPremium(prem);
     })();
     return () => { off = true; };
-  }, [student.email]);
+  }, [student.email, exercises]);
 
   const toggleFull = async (next) => {
     if (!student.email) { setMsg("Học sinh này chưa có email nên chưa có hồ sơ."); return; }
