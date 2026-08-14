@@ -101,7 +101,14 @@ const t = (key, vars) => {
   if (vars) for (const [k, v] of Object.entries(vars)) s = s.split(`{${k}}`).join(String(v));
   return s;
 };
-const LANGS = [["vi", "🇻🇳", "Tiếng Việt"], ["fr", "🇫🇷", "Français"], ["en", "🇬🇧", "English"]];
+/* Phải khớp hình dạng của LANGS trong shared/i18n.jsx, kể cả phần tử thứ tư
+   (mã ngắn). Thiếu nó thì nút chọn ngôn ngữ ở đây hiện mỗi lá cờ, và trang
+   xem thử báo sai về diện mạo thật. */
+const LANGS = [
+  ["vi", "🇻🇳", "Tiếng Việt", "VN"],
+  ["fr", "🇫🇷", "Français", "FR"],
+  ["en", "🇬🇧", "English", "EN"],
+];
 
 const day = (n) => new Date(Date.now() + n * 86400000).toISOString();
 const qs = (n) => Array.from({ length: n }, (_, i) => ({ id: "q" + i, type: "qcm" }));

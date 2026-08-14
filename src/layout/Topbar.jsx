@@ -1,5 +1,6 @@
 import React from "react";
 import { Search, Moon, Sun, Menu } from "lucide-react";
+import LangMenu from "./LangMenu.jsx";
 
 /* Topbar tối giản.
 
@@ -54,18 +55,7 @@ export default function Topbar({
             />
           </label>
 
-          <label className="relative">
-            <span className="sr-only">{t("lang_label")}</span>
-            <select
-              value={lang}
-              onChange={(e) => onLang(e.target.value)}
-              className="h-10 cursor-pointer rounded-md border border-solid border-line bg-surface2 px-2 text-sm font-semibold text-ink transition-colors focus:border-primary focus:outline-none"
-            >
-              {langs.map(([code, flag, label]) => (
-                <option key={code} value={code}>{flag} {label}</option>
-              ))}
-            </select>
-          </label>
+          <LangMenu lang={lang} langs={langs} onLang={onLang} t={t} />
 
           <button
             type="button"

@@ -1,7 +1,14 @@
 import React from "react";
 
 const LANG_KEY = "mcf-lang";
-const LANGS = [["vi", "🇻🇳", "Tiếng Việt"], ["fr", "🇫🇷", "Français"], ["en", "🇬🇧", "English"]];
+/* [mã, cờ, tên đầy đủ, mã ngắn]. Mã ngắn viết riêng chứ không suy từ `code`:
+   tiếng Việt là "vi" theo ISO nhưng người Việt đọc "VN"; tự động hoá bằng
+   toUpperCase() sẽ ra "VI", không ai nhận ra. */
+const LANGS = [
+  ["vi", "🇻🇳", "Tiếng Việt", "VN"],
+  ["fr", "🇫🇷", "Français", "FR"],
+  ["en", "🇬🇧", "English", "EN"],
+];
 
 const I18N = {
   vi: {
@@ -112,6 +119,32 @@ const I18N = {
        toLocaleDateString: giao diện đã có công tắc ngôn ngữ riêng, mà API
        ngày tháng của trình duyệt lại theo ngôn ngữ hệ điều hành — chọn
        Tiếng Việt trên máy cài tiếng Anh sẽ ra lịch nửa Việt nửa Anh. */
+    /* Ngoài danh sách khoá được đặt hàng, khối này còn "non_verified",
+       "loading", "parcours", "level", "goal", "school", "current_pw",
+       "new_pw", "saved", "logout", "completed", "avatar_soon". Thiếu chúng
+       thì trang tài khoản chạy nửa Việt nửa Pháp — dịch một phần còn khó đọc
+       hơn là để nguyên tiếng Pháp. */
+    account: {
+      title: "Thông tin cá nhân",
+      nav_info: "Thông tin cá nhân", nav_security: "Bảo mật & Mật khẩu",
+      gender: "Giới tính", male: "Nam", female: "Nữ", other: "Khác",
+      first_name: "Tên", last_name: "Họ",
+      email: "Email", verified: "Đã xác minh", non_verified: "Chưa xác minh",
+      address: "Địa chỉ", phone: "Số điện thoại", dob: "Ngày sinh",
+      cancel: "Hủy thay đổi", save: "Lưu thay đổi",
+      loading: "Đang tải…", saved: "Đã lưu.", logout: "Đăng xuất",
+      parcours: "Lộ trình học", level: "Trình độ", goal: "Mục tiêu",
+      school: "Trường / cơ sở",
+      security_title: "Bảo mật & Mật khẩu",
+      current_pw: "Mật khẩu hiện tại", new_pw: "Mật khẩu mới",
+      completed: "Hồ sơ hoàn thiện {pct}%",
+      avatar_soon: "Chưa hỗ trợ ảnh đại diện",
+    },
+    auth: {
+      or: "Hoặc",
+      continue_with_google: "Tiếp tục với Google",
+      google_failed: "Không mở được cửa đăng nhập Google. Thử lại sau nhé.",
+    },
     cal: {
       title: "Lịch", week_of: "Tuần của {date}", today: "Hôm nay",
       prev_week: "Tuần trước", next_week: "Tuần sau",
@@ -283,6 +316,27 @@ const I18N = {
     practice: {
       library_title: "Bibliothèque d'entraînement", completed: "Complétés",
       exercises_count: "{n} exercices", back: "Retour",
+    },
+    account: {
+      title: "Informations personnelles",
+      nav_info: "Informations personnelles", nav_security: "Sécurité & Mot de passe",
+      gender: "Genre", male: "Homme", female: "Femme", other: "Autre",
+      first_name: "Prénom", last_name: "Nom",
+      email: "Email", verified: "Vérifié", non_verified: "Non vérifié",
+      address: "Adresse", phone: "Numéro de téléphone", dob: "Date de naissance",
+      cancel: "Annuler les modifications", save: "Enregistrer",
+      loading: "Chargement…", saved: "Enregistré.", logout: "Se déconnecter",
+      parcours: "Parcours", level: "Niveau", goal: "Objectif",
+      school: "École / établissement",
+      security_title: "Sécurité & mot de passe",
+      current_pw: "Mot de passe actuel", new_pw: "Nouveau mot de passe",
+      completed: "Profil complété à {pct}%",
+      avatar_soon: "Photo de profil pas encore disponible",
+    },
+    auth: {
+      or: "Ou",
+      continue_with_google: "Continuer avec Google",
+      google_failed: "Impossible d'ouvrir la connexion Google. Réessayez plus tard.",
     },
     cal: {
       title: "Calendrier", week_of: "Semaine du {date}", today: "Aujourd'hui",
@@ -456,6 +510,27 @@ const I18N = {
     practice: {
       library_title: "Practice Library", completed: "Completed",
       exercises_count: "{n} exercises", back: "Back",
+    },
+    account: {
+      title: "Personal Information",
+      nav_info: "Personal Info", nav_security: "Security & Password",
+      gender: "Gender", male: "Male", female: "Female", other: "Other",
+      first_name: "First Name", last_name: "Last Name",
+      email: "Email", verified: "Verified", non_verified: "Not verified",
+      address: "Address", phone: "Phone Number", dob: "Date of Birth",
+      cancel: "Discard Changes", save: "Save Changes",
+      loading: "Loading…", saved: "Saved.", logout: "Sign out",
+      parcours: "Learning path", level: "Level", goal: "Goal",
+      school: "School",
+      security_title: "Security & Password",
+      current_pw: "Current password", new_pw: "New password",
+      completed: "Profile {pct}% complete",
+      avatar_soon: "Profile photos aren't supported yet",
+    },
+    auth: {
+      or: "Or",
+      continue_with_google: "Continue with Google",
+      google_failed: "Couldn't open Google sign-in. Try again later.",
     },
     cal: {
       title: "Calendar", week_of: "Week of {date}", today: "Today",
