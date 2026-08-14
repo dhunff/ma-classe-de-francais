@@ -1,10 +1,11 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   CheckCircle, Target, Clock, Flame, PartyPopper, AlertTriangle, Inbox,
   UserCircle, ChevronRight, Sparkles,
 } from "lucide-react";
 import { Card, StatTile, EmptyState, ProgressBar, Rise, Ring, CountUp } from "./parts.jsx";
+import { NewestPracticeRail } from "./PracticeRail.jsx";
 import {
   studentWorkload, averageScore, skillBreakdown, nextUp, isLate, exSkills, fmtDate,
 } from "../../shared/exercises.js";
@@ -23,7 +24,10 @@ import { calculateProfileCompletion } from "../../shared/profile.js";
    Hoạt ảnh xuất hiện xếp so le qua <Rise delay>. Mọi hoạt ảnh đều tự tắt khi
    người dùng bật giảm chuyển động — xem base.css. */
 
-export default function StudentDashboard({ name, exercises, submissions, profile, t, onOpen }) {
+/* `practice` chỉ để preview.jsx bơm fixture vào; lúc chạy thật bỏ trống và
+   khối tự nạp từ kho. */
+export default function StudentDashboard({ name, exercises, submissions, profile, t, onOpen, practice }) {
+  const navigate = useNavigate();
   const { assigned, done, todo } = studentWorkload(exercises, submissions, name);
   const avg = averageScore(exercises, submissions, name);
   const skills = skillBreakdown(exercises, submissions, name);
@@ -39,8 +43,11 @@ export default function StudentDashboard({ name, exercises, submissions, profile
     <div className="-mx-4 -mt-6 min-h-full bg-gradient-to-br from-[#eef2f6] to-[#f4f7fa] px-4 pt-6 md:-mx-6 md:px-6 dark:from-bg dark:to-surface2">
       <div className="mx-auto grid max-w-6xl gap-4 xl:grid-cols-[1fr_340px]">
 
-        {/* ─────────────── Cột chính ─────────────── */}
-        <div className="flex flex-col gap-4">
+        {/* ─────────────── Cột chính ───────────────
+            `min-w-0` là bắt buộc từ khi có băng chuyền: flex/grid item mặc
+            định `min-width: auto`, nên cột sẽ nong ra bằng tổng bề rộng thẻ
+            thay vì để khung con tự cuộn — kéo tràn ngang cả trang. */}
+        <div className="flex min-w-0 flex-col gap-4">
 
           <Rise delay={0}>
             <section className="rounded-3xl bg-surface/80 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] backdrop-blur-md">
@@ -145,6 +152,14 @@ export default function StudentDashboard({ name, exercises, submissions, profile
                 <EmptyState Icon={Sparkles} title={t("dash.skills_empty_title")} body={t("dash.skills_empty_body")} />
               )}
             </Card>
+          </Rise>
+
+          {/* Kho luyện tập, mới nhất trước — cùng khối với trang chủ chung.
+              Không có nó thì hôm nào giáo viên chưa giao bài, trang này trắng
+              trơn trong khi thư viện vẫn đầy bài học sinh tự làm được. */}
+          <Rise delay={320}>
+            <NewestPracticeRail t={t} practice={practice}
+              onOpen={() => navigate("/decouvrir/entrainement")} />
           </Rise>
         </div>
 

@@ -231,6 +231,7 @@ function Preview() {
 
           <Route path="/etudiant/dashboard" element={
             <><Controls /><StudentDashboard name="Linh" exercises={exercises} submissions={submissions}
+              practice={empty ? [] : mockRecentExercises}
               profile={{ goal: "DELF B1" }} t={t} /></>
           } />
           <Route path="/etudiant/bibliotheque" element={<Stub label={t("nav.practice")} />} />
