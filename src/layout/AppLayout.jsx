@@ -23,7 +23,8 @@ import { titleKeyFor } from "./navItems.js";
 const RAIL_KEY = "mcf-rail-expanded";
 
 export default function AppLayout({
-  session, t, lang, langs, onLang, dark, onToggleDark, bell, onLogout, people = [],
+  session, t, lang, langs, onLang, dark, onToggleDark, bell, onLogout,
+  people = [], conversations = [],
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -78,7 +79,9 @@ export default function AppLayout({
           onLang={onLang}
           dark={dark}
           onToggleDark={onToggleDark}
+          onLogout={onLogout}
           bell={bell}
+          conversations={conversations}
           query={query}
           onQuery={setQuery}
           onOpenMenu={() => setMenuOpen(true)}

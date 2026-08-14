@@ -23,10 +23,17 @@ const VI = {
     practice: "Luyện tập", calendar: "Lịch", settings: "Cài đặt",
     todo: "Cần làm", done: "Đã nộp", account: "Tài khoản", stats: "Thống kê",
     primary: "Điều hướng chính", collapse: "Thu gọn thanh bên", expand: "Mở rộng thanh bên",
-    menu: "Menu", people: "Lớp của bạn", close: "Đóng menu" },
+    menu: "Menu", people: "Lớp của bạn", close: "Đóng menu", open_menu: "Mở menu" },
   header: { teacher: "Giáo viên", student: "Học sinh", logout: "Đăng xuất",
-    search: "Tìm bài tập, học sinh…", dark_mode: "Chuyển sang nền tối", light_mode: "Chuyển sang nền sáng" },
+    search: "Tìm bài tập, học sinh…", dark_mode: "Chuyển sang nền tối", light_mode: "Chuyển sang nền sáng",
+    dark_mode_label: "Nền tối", settings: "Cài đặt" },
   empty: { no_submission: "Hiện tại chưa có bài nộp nào." },
+  msg: {
+    title: "Tin nhắn", title_unread: "Tin nhắn, {n} chưa đọc", new: "Soạn tin mới",
+    soon: "Nhắn tin chưa mở",
+    empty_title: "Chưa có tin nhắn nào",
+    empty_body: "Phần nhắn tin với giáo viên đang được làm. Sẽ mở ở đây.",
+  },
   cal: {
     title: "Lịch", week_of: "Tuần của {date}", today: "Hôm nay",
     prev_week: "Tuần trước", next_week: "Tuần sau",
@@ -201,6 +208,17 @@ const mockCalendarEvents = [
   { id: "c6", title: "Podcast en français", at: atWeek(4, 22), kind: "custom" },
 ];
 
+/* Hội thoại giả — CHỈ sống trong trang xem thử. Đường chạy thật không truyền
+   `conversations`, nên bảng tin nhắn hiện trạng thái rỗng nói rõ tính năng
+   chưa nối. Nhét mấy cuộc này vào component là để học sinh mở ra, thấy tên
+   giáo viên, bấm vào rồi không có gì xảy ra. */
+const mockConversations = [
+  { id: "m1", name: "Prof. Hùng", preview: "Em nộp bài trễ hai hôm rồi nhé.", at: "09:12", unread: true },
+  { id: "m2", name: "Trang", preview: "Câu 4 bài Le passé composé làm sao ạ?", at: "Hôm qua", unread: true },
+  { id: "m3", name: "Prof. Camille", preview: "Bien joué pour la dictée !", at: "T3", unread: false },
+  { id: "m4", name: "Minh", preview: "Mai mình ôn cùng nhau không?", at: "12/08", unread: false },
+];
+
 const mockPendingTasks = [
   { id: "t1", title: "Le passé composé", level: "B1", skills: ["Grammaire"],
     questions: qs(14), deadline: day(-2), createdAt: hoursAgo(120) },
@@ -265,6 +283,7 @@ function Preview() {
       session={home && guest ? null : session}
       t={t} lang={lang} langs={LANGS} onLang={setLang}
       dark={dark} onToggleDark={toggleDark} onLogout={() => {}} bell={null}
+      conversations={empty ? [] : mockConversations}
     />
   );
 

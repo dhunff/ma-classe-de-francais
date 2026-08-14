@@ -1,6 +1,6 @@
 ﻿import React, { useEffect, useRef } from "react";
 import { NavLink, Link } from "react-router-dom";
-import { LogOut, LogIn, X, ChevronLeft, ChevronRight } from "lucide-react";
+import { LogIn, X, ChevronLeft, ChevronRight } from "lucide-react";
 import { navFor } from "./navItems.js";
 
 /* Thanh điều hướng trái — nằm thẳng trên nền xanh của khung, không có nền
@@ -176,57 +176,29 @@ function PeopleCard({ people, t, expanded, onBlue = true }) {
   );
 }
 
-function Footer({ t, session, signedIn, onLogout, expanded, onNavigate, onBlue = true }) {
+/* Chân thanh bên. Khối hồ sơ (ảnh, tên, vai trò) và nút đăng xuất đã CHUYỂN
+   lên menu ảnh đại diện ở topbar — nhắc cùng một thông tin ở hai chỗ trên
+   cùng một màn hình không thêm gì, mà lại đẻ ra hai nút đăng xuất.
+
+   Còn lại đúng một việc: lối đăng nhập cho khách. Người chưa đăng nhập không
+   có ảnh đại diện để bấm, nên bỏ nốt chỗ này là họ mất hẳn đường vào. */
+function Footer({ t, signedIn, expanded, onNavigate, onBlue = true }) {
+  if (signedIn) return null;
+
   const base =
     "flex w-full cursor-pointer items-center rounded-2xl border-0 bg-transparent py-2.5 text-left text-sm font-medium no-underline transition-colors";
 
   return (
     <div className={`mt-auto border-0 border-t border-solid p-3 ${onBlue ? "border-white/20" : "border-line"}`}>
-      {signedIn && (
-        <div className={`mb-2 flex items-center overflow-hidden ${expanded ? "px-2" : "justify-center px-0"}`}>
-          <span
-            aria-hidden
-            className={`grid h-9 w-9 shrink-0 place-items-center rounded-full text-sm font-bold ${onBlue ? "bg-white/25 text-white" : "bg-primary text-white"}`}
-          >
-            {(session?.name || "?").trim().charAt(0).toUpperCase()}
-          </span>
-          {/* Bỏ hẳn khỏi cây DOM khi thu gọn, không chỉ co bề rộng về 0. Tên
-              và vai trò là chuỗi dài nhất trong thanh bên; chỉ cần một cái
-              không co kịp là khung bị kéo giãn và sinh tràn ngang. */}
-          {expanded && (
-            <span className="ml-3 min-w-0 flex-1">
-              <span className={`block truncate text-sm font-bold ${onBlue ? "text-white" : "text-ink"}`}>
-                {session?.name}
-              </span>
-              <span className={`block truncate text-xs ${onBlue ? "text-white/70" : "text-soft"}`}>
-                {session?.role === "prof" ? t("header.teacher") : t("header.student")}
-              </span>
-            </span>
-          )}
-        </div>
-      )}
-
-      {signedIn ? (
-        <button
-          type="button"
-          onClick={onLogout}
-          className={`${base} group ${expanded ? "px-3" : "justify-center px-0"} ${onBlue ? "text-white/70 hover:bg-white/15 hover:text-white" : "text-soft hover:bg-danger-soft hover:text-danger"}`}
-        >
-          <LogOut size={19} className="shrink-0" />
-          <Label expanded={expanded} className="truncate">{t("header.logout")}</Label>
-          <Tip show={!expanded}>{t("header.logout")}</Tip>
-        </button>
-      ) : (
-        <Link
-          to="/login"
-          onClick={onNavigate}
-          className={`${base} group ${expanded ? "px-3" : "justify-center px-0"} ${onBlue ? "text-white/70 hover:bg-white/15 hover:text-white" : "text-primary hover:bg-primary-soft"}`}
-        >
-          <LogIn size={19} className="shrink-0" />
-          <Label expanded={expanded} className="truncate">{t("login.signin")}</Label>
-          <Tip show={!expanded}>{t("login.signin")}</Tip>
-        </Link>
-      )}
+      <Link
+        to="/login"
+        onClick={onNavigate}
+        className={`${base} group ${expanded ? "px-3" : "justify-center px-0"} ${onBlue ? "text-white/70 hover:bg-white/15 hover:text-white" : "text-primary hover:bg-primary-soft"}`}
+      >
+        <LogIn size={19} className="shrink-0" />
+        <Label expanded={expanded} className="truncate">{t("login.signin")}</Label>
+        <Tip show={!expanded}>{t("login.signin")}</Tip>
+      </Link>
     </div>
   );
 }
@@ -286,7 +258,7 @@ export default function Sidebar({
           <PeopleCard people={people} t={t} expanded={expanded} />
         </div>
 
-        <Footer t={t} session={session} signedIn={signedIn} onLogout={onLogout} expanded={expanded} />
+        <Footer t={t} signedIn={signedIn} expanded={expanded} />
       </aside>
 
       {/* Mobile: lớp phủ + ngăn kéo trượt từ trái */}
@@ -333,8 +305,7 @@ export default function Sidebar({
           <PeopleCard people={people} t={t} expanded onBlue={false} />
         </div>
 
-        <Footer t={t} session={session} signedIn={signedIn} onLogout={onLogout}
-          expanded onNavigate={onClose} onBlue={false} />
+        <Footer t={t} signedIn={signedIn} expanded onNavigate={onClose} onBlue={false} />
       </aside>
     </>
   );

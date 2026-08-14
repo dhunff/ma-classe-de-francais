@@ -1,23 +1,27 @@
 import React from "react";
-import { Search, Moon, Sun, Menu } from "lucide-react";
+import { Search, Menu, Moon, Sun } from "lucide-react";
 import LangMenu from "./LangMenu.jsx";
+import MessagesMenu from "./MessagesMenu.jsx";
+import AvatarMenu from "./AvatarMenu.jsx";
 
 /* Topbar tối giản.
 
    Trái: nút hamburger (chỉ trên mobile) + tiêu đề trang hiện tại.
-   Phải: tìm kiếm, ngôn ngữ, sáng/tối, chuông, hồ sơ.
+   Phải: tìm kiếm, ngôn ngữ, tin nhắn, chuông, | , ảnh đại diện.
 
-   Khối hồ sơ hiện cả tên lẫn vai trò, để người dùng luôn biết mình đang
-   đăng nhập dưới tư cách nào — nhất là khi giáo viên và học sinh dùng chung
-   một máy. */
+   Nút sáng/tối RIÊNG đã bỏ — nó chuyển vào menu ảnh đại diện. Cùng lý do,
+   khối hồ sơ ở chân thanh bên cũng đi: mọi thao tác về tài khoản nay gom về
+   một cửa duy nhất, thay vì rải ba chỗ.
 
-/* AVATAR_BG và avatarColor đã bỏ cùng khối hồ sơ — thanh bên tự dựng ảnh đại
-   diện từ màu chủ đạo, không cần bảng màu theo tên ở đây nữa. */
+   Khách chưa đăng nhập không có ảnh đại diện để bấm, nên với họ menu đó không
+   dựng ra — lối đăng nhập vẫn nằm ở chân thanh bên. Vì vậy nút sáng/tối phải
+   có đường thay thế cho khách; xem `onToggleDark` bên dưới. */
 
 export default function Topbar({
-  title, t, lang, langs, onLang, dark, onToggleDark, bell,
-  query, onQuery, onOpenMenu,
+  session, title, t, lang, langs, onLang, dark, onToggleDark, onLogout, bell,
+  conversations = [], query, onQuery, onOpenMenu,
 }) {
+  const signedIn = !!session;
 
   return (
     /* Khối thứ hai của nhịp vào trang: thanh bên (0ms) → topbar (60ms) →
@@ -59,20 +63,37 @@ export default function Topbar({
 
           <LangMenu lang={lang} langs={langs} onLang={onLang} t={t} />
 
-          <button
-            type="button"
-            onClick={onToggleDark}
-            title={dark ? t("header.light_mode") : t("header.dark_mode")}
-            aria-pressed={dark}
-            className="grid h-10 w-10 place-items-center rounded-md border border-solid border-line bg-surface2 text-soft transition-colors hover:text-ink"
-          >
-            {dark ? <Sun size={18} /> : <Moon size={18} />}
-          </button>
+          <MessagesMenu t={t} conversations={conversations} />
 
-          {/* Khối hồ sơ đã bỏ: tên, ảnh và vai trò đều đã nằm ở chân thanh
-              bên, hiện cùng lúc trên cùng màn hình. Nhắc lại hai lần không
-              thêm thông tin, chỉ lấy mất chỗ của ô tìm kiếm. */}
           {bell}
+
+          {signedIn ? (
+            <>
+              {/* Vạch ngăn: tách nhóm "thông báo" khỏi "tài khoản". Thuần
+                  trang trí nên ẩn với trình đọc màn hình. */}
+              <span aria-hidden className="mx-1 h-6 w-px shrink-0 bg-line" />
+              <AvatarMenu
+                session={session}
+                t={t}
+                dark={dark}
+                onToggleDark={onToggleDark}
+                onLogout={onLogout}
+              />
+            </>
+          ) : (
+            /* Khách không có menu ảnh đại diện, mà nút sáng/tối vừa dọn vào
+               trong đó. Giữ lại nút riêng cho họ, nếu không người chưa đăng
+               nhập mất hẳn đường đổi nền. */
+            <button
+              type="button"
+              onClick={onToggleDark}
+              title={dark ? t("header.light_mode") : t("header.dark_mode")}
+              aria-pressed={dark}
+              className="grid h-10 w-10 shrink-0 cursor-pointer place-items-center rounded-full border-0 bg-transparent text-soft transition-all duration-200 hover:scale-110 hover:bg-surface2 hover:text-ink"
+            >
+              {dark ? <Sun size={18} /> : <Moon size={18} />}
+            </button>
+          )}
         </div>
       </div>
     </header>

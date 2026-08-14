@@ -14,7 +14,17 @@ const I18N = {
   vi: {
     header: { title: "FRACILE", subtitle: "Lộ trình học tập · bài tập & theo dõi học sinh",
       logout: "Đăng xuất", teacher: "Giáo viên", student: "Học sinh",
-      search: "Tìm bài tập, học sinh…", dark_mode: "Chuyển sang nền tối", light_mode: "Chuyển sang nền sáng" },
+      search: "Tìm bài tập, học sinh…", dark_mode: "Chuyển sang nền tối", light_mode: "Chuyển sang nền sáng",
+      /* Khác `dark_mode`: khoá kia là câu lệnh trên tooltip của nút bật/tắt
+         ("Chuyển sang…"), khoá này là TÊN mục trong menu, luôn đứng yên dù
+         đang ở bản nào. */
+      dark_mode_label: "Nền tối", settings: "Cài đặt" },
+    msg: {
+      title: "Tin nhắn", title_unread: "Tin nhắn, {n} chưa đọc", new: "Soạn tin mới",
+      soon: "Nhắn tin chưa mở",
+      empty_title: "Chưa có tin nhắn nào",
+      empty_body: "Phần nhắn tin với giáo viên đang được làm. Sẽ mở ở đây.",
+    },
     nav: { exercises: "Thư viện bài tập", students: "Theo dõi học sinh", stats: "Thống kê",
       todo: "Cần làm", done: "Đã nộp", practice: "Luyện tập", calendar: "Lịch", account: "Tài khoản",
       dashboard: "Trang chủ", settings: "Cài đặt",
@@ -214,7 +224,14 @@ const I18N = {
   fr: {
     header: { title: "FRACILE", subtitle: "Parcours d'apprentissage · exercices & suivi des élèves",
       logout: "Se déconnecter", teacher: "Professeur", student: "Élève",
-      search: "Rechercher un exercice, un élève…", dark_mode: "Passer en mode sombre", light_mode: "Passer en mode clair" },
+      search: "Rechercher un exercice, un élève…", dark_mode: "Passer en mode sombre", light_mode: "Passer en mode clair",
+      dark_mode_label: "Mode sombre", settings: "Paramètres" },
+    msg: {
+      title: "Messages", title_unread: "Messages, {n} non lus", new: "Nouveau message",
+      soon: "La messagerie n'est pas encore ouverte",
+      empty_title: "Aucun message",
+      empty_body: "La messagerie avec votre professeur est en cours de préparation.",
+    },
     nav: { exercises: "Bibliothèque d'exercices", students: "Suivi des élèves", stats: "Statistiques",
       todo: "À faire", done: "Rendus", practice: "Entraînement", calendar: "Calendrier", account: "Mon compte",
       dashboard: "Accueil", settings: "Paramètres",
@@ -407,7 +424,14 @@ const I18N = {
   en: {
     header: { title: "FRACILE", subtitle: "Learning path · exercises & student tracking",
       logout: "Log out", teacher: "Teacher", student: "Student",
-      search: "Search exercises, students…", dark_mode: "Switch to dark mode", light_mode: "Switch to light mode" },
+      search: "Search exercises, students…", dark_mode: "Switch to dark mode", light_mode: "Switch to light mode",
+      dark_mode_label: "Dark mode", settings: "Settings" },
+    msg: {
+      title: "Messages", title_unread: "Messages, {n} unread", new: "New message",
+      soon: "Messaging isn't open yet",
+      empty_title: "No messages",
+      empty_body: "Messaging with your teacher is being built. It'll show up here.",
+    },
     nav: { exercises: "Exercise library", students: "Student tracking", stats: "Statistics",
       todo: "To do", done: "Submitted", practice: "Practice", calendar: "Calendar", account: "My account",
       dashboard: "Home", settings: "Settings",
