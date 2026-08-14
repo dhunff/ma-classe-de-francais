@@ -49,7 +49,8 @@ export default function StudentDashboard({
   return (
     /* Nền chuyển sắc rất nhạt để thẻ nền mờ có thứ để mờ lên trên. Bản tối
        dùng token nên ăn theo nền chung của app, không phải đen thuần. */
-    <div className="-mx-4 -mt-6 min-h-full bg-gradient-to-br from-[#eef2f6] to-[#f4f7fa] px-4 pt-6 md:-mx-6 md:px-6 dark:from-bg dark:to-surface2">
+    /* Nền tràn viền đã bỏ — tấm thẻ nội dung của AppLayout cấp nền rồi. */
+    <div className="pt-2">
       <div className="mx-auto grid max-w-6xl gap-4 xl:grid-cols-[1fr_340px]">
 
         {/* ─────────────── Cột chính ───────────────
@@ -94,14 +95,17 @@ export default function StudentDashboard({
           )}
 
           <Rise delay={160} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <StatTile Icon={CheckCircle} label={t("dash.submitted")} value={done.length}
-              hint={t("dash.of_assigned", { n: assigned.length })} tone="ok" />
-            <StatTile Icon={Target} label={t("dash.avg_score")} value={avg} unit="%"
-              hint={avg === null ? t("dash.avg_empty") : undefined} tone="primary" />
-            <StatTile Icon={Clock} label={t("dash.pending")} value={todo.length}
-              hint={overdue ? t("dash.overdue", { n: overdue }) : undefined}
-              tone={overdue ? "danger" : "ink"} />
-            <StatTile Icon={Flame} label={t("dash.streak")} value={null}
+            {/* Bốn mảng màu, mỗi ô một sắc. `tone` không còn tác dụng ở bản
+                gradient — chữ luôn trắng — nhưng giữ lại cho ô "đang chờ làm"
+                thì thừa, nên bỏ hẳn khỏi bốn ô này. Cảnh báo quá hạn vẫn nằm
+                nguyên trong dòng phụ, chỉ là không còn tô đỏ con số. */}
+            <StatTile gradient="indigo" Icon={CheckCircle} label={t("dash.submitted")} value={done.length}
+              hint={t("dash.of_assigned", { n: assigned.length })} />
+            <StatTile gradient="blue" Icon={Target} label={t("dash.avg_score")} value={avg} unit="%"
+              hint={avg === null ? t("dash.avg_empty") : undefined} />
+            <StatTile gradient="fuchsia" Icon={Clock} label={t("dash.pending")} value={todo.length}
+              hint={overdue ? t("dash.overdue", { n: overdue }) : undefined} />
+            <StatTile gradient="pink" Icon={Flame} label={t("dash.streak")} value={null}
               hint={t("dash.streak_empty")} />
           </Rise>
 

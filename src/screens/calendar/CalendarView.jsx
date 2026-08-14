@@ -317,7 +317,8 @@ export default function CalendarView({
   const navBtn = "grid h-8 w-8 cursor-pointer place-items-center rounded-full border-0 bg-surface2 text-soft shadow-sm transition-all duration-200 hover:scale-105 hover:text-primary";
 
   return (
-    <div className="-mx-4 -mt-6 min-h-full bg-gradient-to-br from-[#eef2f6] to-[#f4f7fa] px-4 pt-6 md:-mx-6 md:px-6 dark:from-bg dark:to-surface2">
+    /* Nền tràn viền đã bỏ — tấm thẻ nội dung của AppLayout cấp nền rồi. */
+    <div className="pt-2">
       <Rise delay={0} className="mx-auto max-w-6xl">
         <div className="flex flex-col overflow-hidden rounded-[2rem] bg-surface shadow-[0_10px_40px_rgb(0,0,0,0.07)] xl:flex-row">
 

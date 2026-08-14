@@ -177,9 +177,28 @@ export function Card({ title, action, children, className = "", hover = false })
   );
 }
 
+/* Bốn nền chuyển sắc cho hàng ô số liệu của học sinh.
+
+   Đây là chỗ DUY NHẤT trong dự án dùng bảng màu Tailwind thay vì token, và là
+   cố ý: chúng là bốn mảng màu trang trí, không mang nghĩa trạng thái. Chữ
+   luôn trắng trên nền bão hoà nên tương phản không phụ thuộc bản sáng/tối —
+   thẻ giữ nguyên độ rực ở cả hai bản, đúng như thiết kế muốn.
+
+   Không dùng cho ô của giáo viên: bảng này gồm đúng bốn màu cho bốn ô. */
+export const STAT_GRADIENTS = {
+  indigo: "bg-gradient-to-br from-indigo-500 to-purple-600 shadow-lg shadow-indigo-500/30 hover:shadow-indigo-500/50",
+  blue: "bg-gradient-to-br from-blue-400 to-blue-600 shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50",
+  fuchsia: "bg-gradient-to-br from-fuchsia-500 to-purple-500 shadow-lg shadow-fuchsia-500/30 hover:shadow-fuchsia-500/50",
+  pink: "bg-gradient-to-br from-pink-400 to-rose-500 shadow-lg shadow-pink-500/30 hover:shadow-pink-500/50",
+};
+
 /* Ô số liệu. `value` là null nghĩa là chưa đo được — hiện dấu gạch, không
-   hiện 0, vì 0 là một con số có nghĩa còn "chưa có dữ liệu" thì không. */
-export function StatTile({ Icon, label, value, unit, hint, tone = "ink", animate = true }) {
+   hiện 0, vì 0 là một con số có nghĩa còn "chưa có dữ liệu" thì không.
+
+   Hai diện mạo: nền trắng mặc định, và bản `gradient` nhiều màu. Bản màu xếp
+   dọc — biểu tượng trong vòng tròn mờ ở góc trên, rồi con số, rồi nhãn — nên
+   mắt đi từ trên xuống thay vì phải quét ngang. */
+export function StatTile({ Icon, label, value, unit, hint, tone = "ink", animate = true, gradient }) {
   const toneClass = {
     ink: "text-ink",
     primary: "text-primary",
@@ -189,6 +208,38 @@ export function StatTile({ Icon, label, value, unit, hint, tone = "ink", animate
   }[tone];
 
   const empty = value === null || value === undefined;
+  const number = empty
+    ? <span aria-label={hint}>—</span>
+    : (
+      <>
+        {animate && typeof value === "number" ? <CountUp to={value} /> : value}
+        {unit && <span className="ml-0.5 text-xl font-bold">{unit}</span>}
+      </>
+    );
+
+  if (gradient) {
+    return (
+      <div
+        className={[
+          "rounded-3xl p-5 text-white",
+          STAT_GRADIENTS[gradient] || STAT_GRADIENTS.indigo,
+          "transition-all duration-300 ease-[cubic-bezier(.25,.8,.25,1)] hover:-translate-y-1",
+        ].join(" ")}
+      >
+        {Icon && (
+          <span className="grid h-10 w-10 place-items-center rounded-full bg-white/20">
+            <Icon size={18} strokeWidth={2.2} />
+          </span>
+        )}
+        <p className="m-0 mt-4 text-3xl font-bold tracking-tight text-white">{number}</p>
+        <p className="m-0 mt-1 text-sm font-semibold tracking-wide text-white/90">{label}</p>
+        {/* line-clamp-2: vài dòng phụ khá dài ("Chưa tính được — hệ thống chưa
+            ghi hoạt động theo ngày"), để tự do thì bốn ô cao lệch nhau. Vẫn
+            giữ nguyên chữ, chỉ cắt phần hiển thị. */}
+        {hint && <p className="m-0 mt-1 line-clamp-2 text-xs text-white/70">{hint}</p>}
+      </div>
+    );
+  }
 
   return (
     <div className={`rounded-3xl bg-surface/80 p-4 backdrop-blur-md ${SOFT_SHADOW} ${LIFT}`}>
@@ -197,14 +248,7 @@ export function StatTile({ Icon, label, value, unit, hint, tone = "ink", animate
         <span className="text-xs font-bold uppercase tracking-wider">{label}</span>
       </div>
       <div className={`mt-2 text-2xl font-extrabold tracking-tight ${toneClass}`}>
-        {empty ? (
-          <span className="text-soft" aria-label={hint}>—</span>
-        ) : (
-          <>
-            {animate && typeof value === "number" ? <CountUp to={value} /> : value}
-            {unit && <span className="ml-0.5 text-base font-bold">{unit}</span>}
-          </>
-        )}
+        {empty ? <span className="text-soft" aria-label={hint}>—</span> : number}
       </div>
       {hint && <div className="mt-1 text-xs text-soft">{hint}</div>}
     </div>

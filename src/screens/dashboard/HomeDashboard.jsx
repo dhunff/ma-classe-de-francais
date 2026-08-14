@@ -113,7 +113,9 @@ export default function HomeDashboard({
   }, [signedIn, done]);
 
   return (
-    <div className="-mx-4 -mt-6 min-h-full bg-gradient-to-br from-[#eef2f6] to-[#f4f7fa] px-4 pt-6 md:-mx-6 md:px-6 dark:from-bg dark:to-surface2">
+    /* Không còn tự vẽ nền tràn viền: AppLayout đã bọc mọi trang trong tấm thẻ
+       nội dung, nên một lớp nền nữa ở đây thành thẻ lồng trong thẻ. */
+    <div className="pt-2">
       <div className="mx-auto grid max-w-6xl gap-4 xl:grid-cols-[1fr_340px]">
 
         {/* ─────────────── Cột chính ─────────────── */}

@@ -21,12 +21,14 @@ export default function Topbar({
 
   return (
     /* Khối thứ hai của nhịp vào trang: thanh bên (0ms) → topbar (60ms) →
-       nội dung (RISE_BASE=140ms trở đi, xem screens/dashboard/parts.jsx). */
-    <header
-      className="mcf-rise sticky top-0 z-20 border-0 border-b border-solid border-line bg-surface/95 backdrop-blur"
-      style={{ "--mcf-delay": "60ms" }}
-    >
-      <div className="flex h-16 items-center gap-2 px-4 md:gap-3 md:px-6">
+       nội dung (RISE_BASE=140ms trở đi, xem screens/dashboard/parts.jsx).
+
+       Trong suốt, không viền, không `sticky`: nó nằm SẴN trong tấm thẻ nội
+       dung và chỉ <main> mới cuộn (xem AppLayout), nên topbar đứng yên mà
+       không cần neo. Thêm nền hay viền ở đây là vẽ một đường chia cắt ngang
+       tấm thẻ vốn phải liền mạch. */
+    <header className="mcf-rise shrink-0 bg-transparent" style={{ "--mcf-delay": "60ms" }}>
+      <div className="flex h-20 items-center gap-2 px-4 md:gap-3 md:px-8">
         <button
           type="button"
           onClick={onOpenMenu}
