@@ -1,4 +1,4 @@
-﻿import React from "react";
+import React from "react";
 
 const LANG_KEY = "mcf-lang";
 const LANGS = [["vi", "🇻🇳", "Tiếng Việt"], ["fr", "🇫🇷", "Français"], ["en", "🇬🇧", "English"]];
@@ -95,6 +95,18 @@ const I18N = {
       forgot: "Quên mật khẩu?",
       gate_title: "Đăng nhập để tiếp tục", gate_body: "Bạn cần đăng nhập để làm bài này.", guest: "Xem thử", signin: "Đăng nhập",
       signing_in: "Đang đăng nhập…",
+    },
+    skill: {
+      listening: "Nghe hiểu", listening_sub: "Nghe",
+      reading: "Đọc hiểu", reading_sub: "Đọc",
+      writing: "Viết", writing_sub: "Viết",
+      grammar: "Ngữ pháp", grammar_sub: "Quy tắc và cấu trúc",
+      vocab: "Từ vựng", vocab_sub: "Từ và mẫu câu",
+      others: "Khác", others_sub: "Dịch, giao tiếp…",
+    },
+    practice: {
+      library_title: "Thư viện luyện tập", completed: "Hoàn thành",
+      exercises_count: "{n} bài tập", back: "Quay lại",
     },
     dash: {
       hello: "Xin chào", goal: "Mục tiêu", no_goal: "Bạn chưa đặt mục tiêu. Vào Cài đặt để chọn.",
@@ -213,6 +225,18 @@ const I18N = {
       gate_title: "Connectez-vous pour continuer", gate_body: "Vous devez vous connecter pour faire cet exercice.", guest: "Aperçu", signin: "Se connecter",
       signing_in: "Connexion…",
     },
+    skill: {
+      listening: "Compréhension Orale", listening_sub: "Écoute",
+      reading: "Compréhension Écrite", reading_sub: "Lecture",
+      writing: "Production Écrite", writing_sub: "Écriture",
+      grammar: "Grammaire", grammar_sub: "Règles et structure",
+      vocab: "Vocabulaire", vocab_sub: "Mots et expressions",
+      others: "Autres", others_sub: "Traduction, communication…",
+    },
+    practice: {
+      library_title: "Bibliothèque d'entraînement", completed: "Complétés",
+      exercises_count: "{n} exercices", back: "Retour",
+    },
     dash: {
       hello: "Bonjour", goal: "Objectif", no_goal: "Aucun objectif défini. Choisissez-en un dans Paramètres.",
       no_exercise_yet: "Aucun exercice ne vous a encore été attribué.",
@@ -330,6 +354,18 @@ const I18N = {
       forgot: "Forgot your password?",
       gate_title: "Sign in to continue", gate_body: "You need to sign in to do this exercise.", guest: "Preview", signin: "Sign in",
       signing_in: "Signing in…",
+    },
+    skill: {
+      listening: "Listening Comprehension", listening_sub: "Listening",
+      reading: "Reading Comprehension", reading_sub: "Reading",
+      writing: "Writing Expression", writing_sub: "Writing",
+      grammar: "Grammar", grammar_sub: "Rules and structure",
+      vocab: "Vocabulary", vocab_sub: "Words and expressions",
+      others: "Others", others_sub: "Translation, communication…",
+    },
+    practice: {
+      library_title: "Practice Library", completed: "Completed",
+      exercises_count: "{n} exercises", back: "Back",
     },
     dash: {
       hello: "Hello", goal: "Goal", no_goal: "No goal set yet. Pick one in Settings.",

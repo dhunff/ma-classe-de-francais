@@ -27,13 +27,21 @@ import { Lock } from "lucide-react";
    Shared key: "mcf-practice" · Lịch sử cá nhân: "mcf-ph-<name>"
 ============================================================ */
 
+/* `skill` là GIÁ TRỊ LƯU trong database — ex.skill và ex.skills mang đúng
+   chuỗi này, và mọi phép lọc, khớp danh mục, chọn kỹ năng trong Builder đều so
+   sánh với nó. Tuyệt đối không dịch: đổi nó là mọi bài tập hiện có mất phân
+   loại, và bài tạo trên máy tiếng Việt không khớp bài tạo trên máy tiếng Pháp.
+
+   `key` chỉ dùng để tra nhãn hiển thị: t(`skill.${key}`) cho tiêu đề thẻ và
+   t(`skill.${key}_sub`) cho phụ đề. Trường `vi` cũ đặt tên sai — nó chứa phụ
+   đề tiếng Pháp chứ không phải bản dịch — nên đã bỏ. */
 const CATS = [
-  { skill: "Écoute", label: "Compréhension Orale", vi: "Écoute", Icon: Headphones, color: "#41608F", pastel: "#EAEFF7" },
-  { skill: "Lecture", label: "Compréhension Écrite", vi: "Lecture", Icon: BookOpen, color: "#327654", pastel: "#E7F3EC" },
-  { skill: "Production écrite", label: "Production Écrite", vi: "Écriture", Icon: PenLine, color: "#9B3D66", pastel: "#F8EAF0" },
-  { skill: "Grammaire", label: "Grammaire", vi: "Règles et structure", Icon: Puzzle, color: "#5B4B9E", pastel: "#EFECF9" },
-  { skill: "Vocabulaire", label: "Vocabulaire", vi: "Mots et expressions", Icon: BookA, color: "#8F5E22", pastel: "#F7EFE3" },
-  { skill: "__autres__", label: "Autres", vi: "Traduction, communication…", Icon: Sparkles, color: "#626A85", pastel: "#EFF0F3" },
+  { skill: "Écoute", key: "listening", Icon: Headphones, color: "#41608F", pastel: "#EAEFF7" },
+  { skill: "Lecture", key: "reading", Icon: BookOpen, color: "#327654", pastel: "#E7F3EC" },
+  { skill: "Production écrite", key: "writing", Icon: PenLine, color: "#9B3D66", pastel: "#F8EAF0" },
+  { skill: "Grammaire", key: "grammar", Icon: Puzzle, color: "#5B4B9E", pastel: "#EFECF9" },
+  { skill: "Vocabulaire", key: "vocab", Icon: BookA, color: "#8F5E22", pastel: "#F7EFE3" },
+  { skill: "__autres__", key: "others", Icon: Sparkles, color: "#626A85", pastel: "#EFF0F3" },
 ];
 const MAIN_SKILLS = CATS.filter((c) => !c.skill.startsWith("__")).map((c) => c.skill);
 const inCat = (ex, sk) => sk === "__autres__"
@@ -236,7 +244,7 @@ function PracticeHubInner({ role = "eleve", name = "", accounts = [], onRequireL
     return (
       <div>
         {MatModal()}
-        <button style={{ ...S.btn(false), marginBottom: 16 }} onClick={() => setView({ page: "home" })}><ChevronLeft size={16} /> Retour</button>
+        <button style={{ ...S.btn(false), marginBottom: 16 }} onClick={() => setView({ page: "home" })}><ChevronLeft size={16} /> {t("practice.back")}</button>
         <h2 style={{ ...S.display, margin: "0 0 18px", display: "flex", alignItems: "center", gap: 10 }}>
           <Sparkles size={24} color="#6E7691" /> Autres — Catégories
         </h2>
@@ -377,7 +385,7 @@ function PracticeHubInner({ role = "eleve", name = "", accounts = [], onRequireL
           onClose={() => setPayFor(null)}
           onUnlocked={() => loadAccess().then(setAccess)} />}
         <button style={{ ...S.btn(false), marginBottom: 16 }}
-          onClick={() => setView(view.folder ? { page: "autres" } : { page: "home" })}><ChevronLeft size={16} /> Retour</button>
+          onClick={() => setView(view.folder ? { page: "autres" } : { page: "home" })}><ChevronLeft size={16} /> {t("practice.back")}</button>
 
         {/* Tabs kỹ năng: đổi kỹ năng ngay tại chỗ, không phải quay về trang
             chủ rồi chọn lại. Cuộn ngang trên màn hình hẹp thay vì xuống dòng,
@@ -400,7 +408,7 @@ function PracticeHubInner({ role = "eleve", name = "", accounts = [], onRequireL
                     : "bg-surface2 font-medium text-soft hover:text-ink",
                 ].join(" ")}>
                 <c.Icon size={16} />
-                {c.label}
+                {t(`skill.${c.key}`)}
               </button>
             );
           })}
@@ -408,7 +416,7 @@ function PracticeHubInner({ role = "eleve", name = "", accounts = [], onRequireL
 
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18, flexWrap: "wrap", gap: 10 }}>
           <h2 style={{ ...S.display, margin: 0, display: "flex", alignItems: "center", gap: 10 }}>
-            <meta.Icon size={24} color={meta.color} /> {view.folder ? view.folder : meta.label}
+            <meta.Icon size={24} color={meta.color} /> {view.folder ? view.folder : t(`skill.${meta.key}`)}
           </h2>
           {teacher && <button style={S.btn(true)} onClick={() => {
             const sk = view.cat === "__autres__" ? "Traduction" : view.cat;
@@ -524,7 +532,7 @@ function PracticeHubInner({ role = "eleve", name = "", accounts = [], onRequireL
           <div style={{ position: "fixed", inset: 0, background: "rgba(17,24,39,.45)", display: "grid", placeItems: "center", padding: 16, zIndex: 200 }}
             onClick={() => setFolderPopup(false)}>
             <div className="mcf-card" style={{ ...S.card, width: "100%", maxWidth: 400 }} onClick={(e) => e.stopPropagation()}>
-              <h3 style={{ ...S.display, fontSize: 19, marginTop: 0 }}>📂 Nouveau dossier — {meta.label}</h3>
+              <h3 style={{ ...S.display, fontSize: 19, marginTop: 0 }}>📂 Nouveau dossier — {t(`skill.${meta.key}`)}</h3>
               <input style={{ ...S.input }} value={newFolder} autoFocus
                 placeholder="ex. Passé composé, DELF B1…"
                 onChange={(e) => setNewFolder(e.target.value)}
@@ -545,7 +553,7 @@ function PracticeHubInner({ role = "eleve", name = "", accounts = [], onRequireL
               <div style={{ display: "grid", gap: 8, marginTop: 4 }}>
                 <button onClick={() => moveTo(moveEx.id, null)}
                   style={{ ...S.btn(false), justifyContent: "flex-start", textAlign: "left", opacity: !moveEx.folderId ? 0.5 : 1 }}>
-                  🏠 Racine ({meta.label})
+                  🏠 Racine ({t(`skill.${meta.key}`)})
                 </button>
                 {catFolders.map((f) => (
                   <button key={f.id} onClick={() => moveTo(moveEx.id, f.id)}
@@ -758,7 +766,7 @@ function PracticeHubInner({ role = "eleve", name = "", accounts = [], onRequireL
     <div>
       {MatModal()}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20, flexWrap: "wrap", gap: 10 }}>
-        <h2 style={{ ...S.display, margin: 0 }}>🏋️ Bibliothèque d'entraînement</h2>
+        <h2 style={{ ...S.display, margin: 0 }}>🏋️ {t("practice.library_title")}</h2>
         {teacher && topTab === "bib" && <button style={S.btn(true)} onClick={() => { setDraft(blank()); setView({ page: "builder" }); }}><Plus size={16} /> Nouvel exercice</button>}
       </div>
       {teacher && (
@@ -783,12 +791,12 @@ function PracticeHubInner({ role = "eleve", name = "", accounts = [], onRequireL
               <div style={{ width: 52, height: 52, borderRadius: 14, background: cat.pastel, display: "grid", placeItems: "center", marginBottom: 14 }}>
                 <cat.Icon size={26} color={cat.color} />
               </div>
-              <div style={{ fontWeight: 800, fontSize: 16 }}>{cat.label}</div>
-              <div style={{ fontSize: 13, color: C.soft, margin: "3px 0 14px" }}>{cat.vi} · {list.length} exercice{list.length > 1 ? "s" : ""}</div>
+              <div style={{ fontWeight: 800, fontSize: 16 }}>{t(`skill.${cat.key}`)}</div>
+              <div style={{ fontSize: 13, color: C.soft, margin: "3px 0 14px" }}>{t(`skill.${cat.key}_sub`)} · {t("practice.exercises_count", { n: list.length })}</div>
               {!teacher && (
                 <>
                   <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, fontWeight: 700, color: C.soft, marginBottom: 5 }}>
-                    <span>Complétés</span><span style={{ color: cat.color }}>{doneCount}/{list.length || 0}</span>
+                    <span>{t("practice.completed")}</span><span style={{ color: cat.color }}>{doneCount}/{list.length || 0}</span>
                   </div>
                   <div style={{ height: 8, borderRadius: 99, background: C.line }}>
                     <div style={{ height: "100%", width: `${pct}%`, borderRadius: 99, background: `linear-gradient(90deg,${cat.color},${cat.color}AA)`, transition: "width .4s" }} />
@@ -1101,7 +1109,7 @@ function PracticeWorkspace({ ex, back, onFinish }) {
         </div>
       )}
 
-      <button style={{ ...S.btn(false), marginBottom: 16 }} onClick={back}><ChevronLeft size={16} /> Retour</button>
+      <button style={{ ...S.btn(false), marginBottom: 16 }} onClick={back}><ChevronLeft size={16} /> {t("practice.back")}</button>
       <h2 style={{ ...S.display, marginTop: 0 }}>{ex.title} <span style={{ fontSize: 13, color: C.soft, fontFamily: "'Be Vietnam Pro',sans-serif" }}>({ex.level} · {exSkills(ex).join(" + ")})</span></h2>
       <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap", marginBottom: 8 }}>
         {!zen && (
