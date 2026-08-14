@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   House, LayoutGrid, Flame, CalendarDays, BookOpen, ChartColumn,
   LogOut, Search, Bell, MessageCircle, ChevronRight, Plus,
@@ -19,6 +19,41 @@ import {
 
 const RESET_BTN = "cursor-pointer border-0 font-[inherit] appearance-none";
 const CARD = "rounded-3xl bg-white/80 backdrop-blur-md shadow-[0_8px_30px_rgba(15,23,42,0.05)]";
+
+/* Nhấc nhẹ khi rê chuột — bóng mượn màu indigo của bảng màu màn hình này chứ
+   không phải xám, để lúc nổi lên thẻ vẫn nằm trong cùng một tông. */
+const LIFT =
+  "transition-all duration-300 ease-[cubic-bezier(.25,.8,.25,1)] " +
+  "hover:-translate-y-1 hover:shadow-[0_18px_40px_rgba(79,70,229,0.14)]";
+
+/* Xuất hiện so le. Dùng lại keyframes mcfRise trong styles/base.css — nó đã
+   xử lý sẵn `backwards` (không nhấp nháy lúc chờ) và prefers-reduced-motion.
+   Delay đi qua biến CSS vì Tailwind không sinh được class dựng động. */
+function Rise({ delay = 0, className = "", children, as: Tag = "div", ...rest }) {
+  return (
+    <Tag className={`mcf-rise ${className}`} style={{ "--mcf-delay": `${delay}ms` }} {...rest}>
+      {children}
+    </Tag>
+  );
+}
+
+/* Người dùng đã bật giảm chuyển động thì mọi hoạt ảnh "vẽ dần" phải nhảy
+   thẳng tới trạng thái cuối, không phải đứng im ở 0. */
+const prefersReducedMotion = () =>
+  typeof window !== "undefined"
+  && !!window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+
+/* Bật cờ sau đúng một khung hình. Vẽ trạng thái 0 trước rồi mới đổi sang giá
+   trị thật, nếu không transition không có điểm xuất phát để chạy. */
+function useAfterPaint() {
+  const [ready, setReady] = useState(false);
+  useEffect(() => {
+    if (prefersReducedMotion()) { setReady(true); return; }
+    const id = requestAnimationFrame(() => setReady(true));
+    return () => cancelAnimationFrame(id);
+  }, []);
+  return ready;
+}
 
 /* ─────────────────────────  Nguyên liệu dùng chung  ───────────────────────── */
 
@@ -65,7 +100,7 @@ const NAV = [
 
 function Sidebar({ active, onSelect }) {
   return (
-    <aside className="flex w-[250px] shrink-0 flex-col px-5 py-7">
+    <Rise as="aside" delay={0} className="flex w-[250px] shrink-0 flex-col px-5 py-7">
       <div className="flex items-center gap-2.5 px-3">
         <span className="flex h-9 w-9 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-blue-500 shadow-[0_6px_16px_rgba(79,70,229,0.35)]">
           <Sparkles size={18} className="text-white" strokeWidth={2.5} />
@@ -86,7 +121,8 @@ function Sidebar({ active, onSelect }) {
               aria-current={isActive ? "page" : undefined}
               className={[
                 RESET_BTN,
-                "flex items-center gap-3 rounded-full px-4 py-3 text-left text-sm transition-all duration-200",
+                "flex items-center gap-3 rounded-full px-4 py-3 text-left text-sm",
+                "transition-all duration-200 ease-out hover:scale-[1.02]",
                 isActive
                   ? "bg-white font-bold text-slate-800 shadow-[0_6px_18px_rgba(15,23,42,0.07)]"
                   : "bg-transparent font-medium text-slate-500 hover:bg-white/60 hover:text-slate-700",
@@ -116,7 +152,7 @@ function Sidebar({ active, onSelect }) {
           Se déconnecter
         </button>
       </div>
-    </aside>
+    </Rise>
   );
 }
 
@@ -124,7 +160,7 @@ function Sidebar({ active, onSelect }) {
 
 function BalancePill({ Icon, label, value, tone }) {
   return (
-    <div className={`${CARD} flex items-center gap-3 px-4 py-3`}>
+    <div className={`${CARD} ${LIFT} flex items-center gap-3 px-4 py-3`}>
       <span className={`flex h-10 w-10 items-center justify-center rounded-2xl ${tone}`}>
         <Icon size={18} strokeWidth={2.2} />
       </span>
@@ -149,11 +185,77 @@ const WEEK = [
 ];
 const ACTIVE_DAY = "Jeu";
 
-function ActivityChart() {
-  const max = Math.max(...WEEK.map((d) => d.value));
+/* Chú giải bám con trỏ. Vị trí thật ghi vào ref rồi mới đẩy ra DOM trong vòng
+   lặp rAF, và mỗi khung chỉ đi 18% quãng đường còn lại — nên nhãn trôi theo
+   tay chứ không dán cứng vào con trỏ.
+
+   Ghi thẳng vào style qua ref chứ không qua state: mousemove bắn vài chục lần
+   mỗi giây, đi qua setState là React render lại cả biểu đồ từng lần một. */
+function CursorTooltip({ hit, boxRef }) {
+  const tipRef = useRef(null);
+  const target = useRef({ x: 0, y: 0 });
+  const at = useRef(null);
+
+  useEffect(() => {
+    if (!hit) { at.current = null; return; }
+
+    const draw = () => {
+      const el = tipRef.current;
+      if (!el || !at.current) return;
+      el.style.transform =
+        `translate(${at.current.x}px, ${at.current.y}px) translate(-50%, -140%)`;
+    };
+
+    let raf = 0;
+    const step = () => {
+      if (at.current) {
+        at.current.x += (target.current.x - at.current.x) * 0.18;
+        at.current.y += (target.current.y - at.current.y) * 0.18;
+        draw();
+      }
+      raf = requestAnimationFrame(step);
+    };
+    raf = requestAnimationFrame(step);
+
+    const onMove = (e) => {
+      const box = boxRef.current?.getBoundingClientRect();
+      if (!box) return;
+      target.current = { x: e.clientX - box.left, y: e.clientY - box.top };
+
+      /* Vị trí đầu tiên đặt thẳng, không đi qua vòng lặp: nhãn phải hiện ngay
+         dưới con trỏ. Nếu chờ rAF nội suy từ (0,0) thì nó bay từ góc trái trên
+         vào — và ở tab nền, nơi rAF không chạy, nhãn sẽ nằm im ở góc đó. */
+      if (!at.current) { at.current = { ...target.current }; draw(); }
+    };
+    const node = boxRef.current;
+    node?.addEventListener("mousemove", onMove);
+    return () => {
+      cancelAnimationFrame(raf);
+      node?.removeEventListener("mousemove", onMove);
+    };
+  }, [hit, boxRef]);
+
+  if (!hit) return null;
 
   return (
-    <div className={`${CARD} flex-1 p-6`}>
+    <span
+      ref={tipRef}
+      role="tooltip"
+      className="pointer-events-none absolute left-0 top-0 z-20 whitespace-nowrap rounded-full bg-slate-800 px-3 py-1.5 text-xs font-bold text-white shadow-lg"
+    >
+      {hit.day} · {hit.value} min
+    </span>
+  );
+}
+
+function ActivityChart() {
+  const max = Math.max(...WEEK.map((d) => d.value));
+  const drawn = useAfterPaint();
+  const [hit, setHit] = useState(null);
+  const boxRef = useRef(null);
+
+  return (
+    <div className={`${CARD} ${LIFT} flex-1 p-6`}>
       <div className="flex items-baseline justify-between">
         <h2 className="m-0 text-base font-bold text-slate-800">Mon activité</h2>
         <span className="text-xs font-medium text-slate-400">Cette semaine</span>
@@ -163,19 +265,34 @@ function ActivityChart() {
           h-40 thì `flex-1` bên trong mới có chiều cao xác định, và `height: X%`
           của thanh mới tính ra được. Với items-end cột co lại bằng nhãn chữ,
           vùng chứa thanh cao 0px và biểu đồ trống trơn. */}
-      <div className="mt-6 flex h-40 items-stretch gap-3">
-        {WEEK.map(({ day, value }) => {
+      <div ref={boxRef} className="relative mt-6 flex h-40 items-stretch gap-3">
+        <CursorTooltip hit={hit} boxRef={boxRef} />
+
+        {WEEK.map(({ day, value }, i) => {
           const isActive = day === ACTIVE_DAY;
           return (
-            <div key={day} className="flex flex-1 flex-col items-center gap-3">
+            <div
+              key={day}
+              className="flex flex-1 flex-col items-center gap-3"
+              onMouseEnter={() => setHit({ day, value })}
+              onMouseLeave={() => setHit(null)}
+            >
               <div className="flex w-full flex-1 items-end justify-center">
+                {/* Mọc lên từ đáy: chiều cao chạy 0 → tỷ lệ thật, mỗi cột chậm
+                    hơn cột trước 70ms nên biểu đồ được "vẽ" từ trái sang phải.
+                    Chỉ đổi `height`, không đổi transform — cột đã neo ở đáy nhờ
+                    items-end nên không cần origin-bottom. */}
                 <div
                   className={[
-                    "w-2.5 rounded-full transition-all duration-300",
+                    "w-2.5 rounded-full",
+                    "transition-[height,background-color] duration-700 ease-[cubic-bezier(.16,1,.3,1)]",
                     isActive ? "bg-indigo-500 shadow-[0_6px_16px_rgba(99,102,241,0.4)]" : "bg-slate-200",
                   ].join(" ")}
-                  style={{ height: `${(value / max) * 100}%` }}
-                  title={`${day} · ${value} min`}
+                  style={{
+                    height: drawn ? `${(value / max) * 100}%` : "0%",
+                    transitionDelay: `${i * 70}ms`,
+                  }}
+                  aria-label={`${day} · ${value} min`}
                 />
               </div>
               <span
@@ -203,7 +320,7 @@ function UpcomingCards() {
   return (
     <div className="flex w-[220px] shrink-0 flex-col gap-4">
       {NEXT_UP.map(({ time, title, tone }) => (
-        <div key={time} className={`${CARD} flex flex-1 flex-col justify-center gap-3 p-5`}>
+        <div key={time} className={`${CARD} ${LIFT} flex flex-1 flex-col justify-center gap-3 p-5`}>
           <span className={`flex h-9 w-9 items-center justify-center rounded-2xl ${tone}`}>
             <Clock size={17} strokeWidth={2.2} />
           </span>
@@ -277,7 +394,7 @@ function PopularCourses() {
           <button
             key={title}
             type="button"
-            className={`${RESET_BTN} ${bg} w-[190px] shrink-0 rounded-3xl p-5 text-left transition-transform duration-200 hover:-translate-y-1`}
+            className={`${RESET_BTN} ${bg} ${LIFT} w-[190px] shrink-0 rounded-3xl p-5 text-left`}
           >
             <span className={`flex h-12 w-12 items-center justify-center rounded-2xl ${ring} text-2xl`}>
               {emoji}
@@ -357,6 +474,7 @@ function PromoCard() {
 function ProgressRing({ value, size = 92 }) {
   const r = 40;
   const circumference = 2 * Math.PI * r;
+  const drawn = useAfterPaint();
 
   return (
     <span className="relative inline-flex shrink-0" style={{ width: size, height: size }}>
@@ -370,7 +488,12 @@ function ProgressRing({ value, size = 92 }) {
           stroke="rgb(99 102 241)"
           strokeWidth="9"
           strokeLinecap="round"
-          strokeDasharray={`${(value / 100) * circumference} ${circumference}`}
+          /* Vẽ nguyên vòng rồi che bằng dashoffset và hạ dần offset — chỉ một
+             thuộc tính động, và cung luôn liền mạch. Đổi dasharray thay vì
+             offset thì đầu bo tròn giật nảy ở những khung đầu. */
+          strokeDasharray={circumference}
+          strokeDashoffset={circumference - (drawn ? value / 100 : 0) * circumference}
+          style={{ transition: "stroke-dashoffset 1.2s cubic-bezier(.16,1,.3,1)" }}
         />
       </svg>
       <span className="absolute inset-0 flex items-center justify-center text-sm font-extrabold text-slate-800">
@@ -382,7 +505,7 @@ function ProgressRing({ value, size = 92 }) {
 
 function ActiveCourse() {
   return (
-    <div className={`${CARD} p-5`}>
+    <div className={`${CARD} ${LIFT} p-5`}>
       <p className="m-0 text-[11px] font-semibold uppercase tracking-wide text-slate-400">Cours en cours</p>
       <div className="mt-3 flex items-center gap-4">
         <div className="min-w-0 flex-1">
@@ -445,7 +568,10 @@ export default function SoftDashboard() {
       <Sidebar active={active} onSelect={setActive} />
 
       <main className="min-w-0 flex-1 px-8 py-7">
-        <header className="flex flex-wrap items-center justify-between gap-4">
+        {/* Nhịp vào trang: thanh bên 0 → tiêu đề 80 → hàng chỉ số/biểu đồ 160
+            → giáo viên 240 → thẻ dưới 320. Mỗi bước 80ms: đủ để mắt bắt được
+            thứ tự, chưa đủ để thành ra chờ đợi. */}
+        <Rise as="header" delay={80} className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <h1 className="m-0 text-2xl font-extrabold tracking-tight text-slate-800">Accueil</h1>
             <p className="m-0 mt-1 text-sm font-medium text-slate-400">Bon retour&nbsp;!</p>
@@ -454,22 +580,22 @@ export default function SoftDashboard() {
             <BalancePill Icon={Wallet} label="Solde" value="$323" tone="bg-emerald-100 text-emerald-600" />
             <BalancePill Icon={BookOpen} label="Dépôt" value="5 leçons" tone="bg-indigo-100 text-indigo-600" />
           </div>
-        </header>
+        </Rise>
 
-        <div className="mt-7 flex gap-5">
+        <Rise delay={160} className="mt-7 flex gap-5">
           <ActivityChart />
           <UpcomingCards />
-        </div>
+        </Rise>
 
-        <Teachers />
-        <PopularCourses />
+        <Rise delay={240}><Teachers /></Rise>
+        <Rise delay={320}><PopularCourses /></Rise>
       </main>
 
       <aside className="flex w-[320px] shrink-0 flex-col gap-5 px-6 py-7">
-        <TopBar />
-        <PromoCard />
-        <ActiveCourse />
-        <MyCourses />
+        <Rise delay={80}><TopBar /></Rise>
+        <Rise delay={200}><PromoCard /></Rise>
+        <Rise delay={280}><ActiveCourse /></Rise>
+        <Rise delay={360}><MyCourses /></Rise>
       </aside>
     </div>
   );

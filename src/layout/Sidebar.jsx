@@ -76,11 +76,13 @@ function NavList({ role, t, expanded, onNavigate }) {
           className={({ isActive }) =>
             [
               "group relative flex items-center rounded-2xl py-2.5 text-sm no-underline",
-              "transition-all duration-200 ease-out",
+              /* Nền và chữ đổi trong 200ms; phóng 2% là đủ để tay thấy phản
+                 hồi mà chữ chưa kịp nhoè. */
+              "transition-all duration-200 ease-out hover:scale-[1.02]",
               expanded ? "px-3" : "justify-center px-0",
               isActive
                 ? "bg-surface font-bold text-primary shadow-sm"
-                : "font-medium text-soft hover:scale-[1.02] hover:bg-surface2/70 hover:text-ink",
+                : "font-medium text-soft hover:bg-surface2/70 hover:text-ink",
             ].join(" ")
           }
         >
@@ -271,6 +273,11 @@ export default function Sidebar({
         className={[
           "fixed inset-y-0 left-0 z-30 m-4 hidden h-[calc(100vh-2rem)] flex-col rounded-[2rem] md:flex",
           "transition-all duration-300 ease-in-out",
+          /* Khối đầu tiên của nhịp vào trang (delay 0). Đặt class ngay trên
+             <aside> chứ KHÔNG bọc thêm một <div> bên ngoài: phần tử đang chạy
+             transform sẽ thành khối chứa cho con `fixed`, và thanh bên sẽ neo
+             vào cái vỏ đó thay vì vào khung nhìn. */
+          "mcf-rise",
           GLASS,
           expanded ? "w-72" : "w-24",
         ].join(" ")}

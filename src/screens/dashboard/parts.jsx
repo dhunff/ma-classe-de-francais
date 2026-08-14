@@ -13,14 +13,30 @@ import React, { useEffect, useRef, useState } from "react";
    Preflight bị tắt nên mọi <button> ở đây đều có border-0 và bg rõ ràng. */
 
 const SOFT_SHADOW = "shadow-[0_8px_30px_rgb(0,0,0,0.04)]";
-const LIFT = "transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-lg";
+/* Nhấc nhẹ khi rê chuột. Đường cong (.25,.8,.25,1) bật nhanh rồi hãm dài —
+   thẻ nổi lên dứt khoát mà không nảy. Bóng đổ mượn màu chủ đạo ở độ mờ rất
+   thấp: giữ đúng tông Soft UI, và tự đổi theo bản sáng/tối vì primary là
+   token chứ không phải mã màu cứng. */
+const LIFT =
+  "transition-all duration-300 ease-[cubic-bezier(.25,.8,.25,1)] " +
+  "hover:-translate-y-1 hover:shadow-[0_18px_40px_rgb(0,0,0,0.10)]";
+
+/* Vỏ ứng dụng vào trước nội dung: thanh bên 0ms, topbar 60ms. Mọi khối nội
+   dung cộng thêm RISE_BASE để không chạy song song với vỏ — thứ tự đọc là
+   Sidebar → Header → nội dung, đúng như mắt người quét trang.
+
+   Sửa một chỗ này là dời cả nhịp; đừng cộng tay vào từng `delay`. */
+export const RISE_BASE = 140;
 
 /* Bọc để xuất hiện so le. Delay đi qua biến CSS chứ không phải class Tailwind
    động — Tailwind quét class theo chuỗi tĩnh nên `delay-[${n}ms]` sẽ không
    được sinh ra. */
-export function Rise({ delay = 0, className = "", children, as: Tag = "div" }) {
+export function Rise({ delay = 0, className = "", children, as: Tag = "div", style }) {
   return (
-    <Tag className={`mcf-rise ${className}`} style={{ "--mcf-delay": `${delay}ms` }}>
+    <Tag
+      className={`mcf-rise ${className}`}
+      style={{ ...style, "--mcf-delay": `${RISE_BASE + delay}ms` }}
+    >
       {children}
     </Tag>
   );
