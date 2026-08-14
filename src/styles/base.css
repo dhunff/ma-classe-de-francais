@@ -75,6 +75,12 @@ body {
 .mcf-scroll::-webkit-scrollbar-thumb { background: var(--mcf-line-strong); border-radius: var(--r-full); }
 .mcf-scroll { scrollbar-width: thin; scrollbar-color: var(--mcf-line-strong) transparent; }
 
+/* Băng chuyền ngang: giấu thanh cuộn nhưng GIỮ nguyên khả năng cuộn — vuốt
+   trên cảm ứng, lăn chuột ngang, và Tab tới thẻ khuất vẫn kéo khung theo.
+   Đây là lý do dùng cách này chứ không phải overflow:hidden. */
+.no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+
 .mcf-wide { position: relative; left: 50%; transform: translateX(-50%); width: min(100vw - 24px, 1600px); }
 
 .mcf-hl { background: var(--mcf-warnsoft); color: var(--mcf-ink); border-radius: var(--r-sm); padding: 0 2px; }

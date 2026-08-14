@@ -21,6 +21,7 @@ import { Teacher } from './screens/teacher/TeacherScreens.jsx'
 import StudentDashboard from './screens/dashboard/StudentDashboard.jsx'
 import TeacherDashboard from './screens/dashboard/TeacherDashboard.jsx'
 import SoftDashboard from './screens/dashboard/SoftDashboard.jsx'
+import HomeDashboard from './screens/dashboard/HomeDashboard.jsx'
 import LoginSplit from './screens/LoginSplit.jsx'
 import SetNewPassword from './screens/auth/SetNewPassword.jsx'
 
@@ -258,7 +259,20 @@ function AppInner() {
                 onLogout={async () => { try { await supabase.auth.signOut(); } catch {} setSession(null); }}
               />
             }>
+              {/* Trang chủ chung. Khách vào đây trước, thấy banner + kho
+                  luyện tập mới nhất; người đã đăng nhập thấy thêm "À faire".
+                  Thư viện đầy đủ lùi xuống /decouvrir/entrainement, là đích
+                  của "Voir tout" và của nút trên banner. */}
               <Route index element={
+                <HomeDashboard
+                  session={session}
+                  exercises={exercises}
+                  submissions={submissions}
+                  t={t}
+                  onRequireLogin={() => setGate({})}
+                />
+              } />
+              <Route path="entrainement" element={
                 <PracticeHub
                   role={session?.role === "prof" ? "prof" : session ? "eleve" : "guest"}
                   name={session?.name || ""}
