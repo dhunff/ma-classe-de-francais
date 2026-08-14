@@ -5,7 +5,7 @@ import {
   UserCircle, ChevronRight, Sparkles,
 } from "lucide-react";
 import { Card, StatTile, EmptyState, HeroBanner, Rise, Ring } from "./parts.jsx";
-import { NewestPracticeRail } from "./PracticeRail.jsx";
+import { NewestPracticeRail, usePracticeStore, usePracticeHistory } from "./PracticeRail.jsx";
 import {
   studentWorkload, averageScore, skillBreakdown, nextUp, isLate, exSkills, fmtDate,
 } from "../../shared/exercises.js";
@@ -24,13 +24,22 @@ import { calculateProfileCompletion } from "../../shared/profile.js";
    Hoạt ảnh xuất hiện xếp so le qua <Rise delay>. Mọi hoạt ảnh đều tự tắt khi
    người dùng bật giảm chuyển động — xem base.css. */
 
-/* `practice` chỉ để preview.jsx bơm fixture vào; lúc chạy thật bỏ trống và
-   khối tự nạp từ kho. */
-export default function StudentDashboard({ name, exercises, submissions, profile, t, onOpen, practice }) {
+/* `practice` và `practiceHistory` chỉ để preview.jsx bơm fixture vào; lúc
+   chạy thật bỏ trống và các khối tự nạp từ kho. */
+export default function StudentDashboard({
+  name, exercises, submissions, profile, t, onOpen, practice, practiceHistory,
+}) {
   const navigate = useNavigate();
   const { assigned, done, todo } = studentWorkload(exercises, submissions, name);
   const avg = averageScore(exercises, submissions, name);
-  const skills = skillBreakdown(exercises, submissions, name);
+  /* Biểu đồ kỹ năng đọc cả kho luyện tập: bài được giao thường rất ít, mà
+     học sinh lại làm nhiều bài tự luyện — chỉ đếm bài được giao thì biểu đồ
+     trống trơn trong khi người đó đã làm cả chục bài. */
+  const practiceStore = usePracticeStore(practice);
+  const practiceHist = usePracticeHistory(name, practiceHistory);
+  const skills = skillBreakdown(
+    exercises, submissions, name, practiceStore || [], practiceHist || {},
+  );
   const upcoming = nextUp(exercises, submissions, name, 4);
   const overdue = todo.filter((ex) => isLate(ex)).length;
   const goal = profile?.goal || "";
@@ -98,7 +107,12 @@ export default function StudentDashboard({ name, exercises, submissions, profile
 
           {/* Biểu đồ cột thuần CSS. Không phải "hoạt động theo ngày" như bản
               thiết kế gợi ý — hệ thống chưa ghi nhật ký theo ngày, nên vẽ nó
-              là bịa. Đây là điểm theo kỹ năng, tính từ bài đã chốt điểm. */}
+              là bịa. Đây là điểm theo kỹ năng, từ bài được giao đã chốt điểm
+              và điểm tốt nhất ở phần luyện tập.
+
+              Dòng chú thích đổi theo nguồn thật sự có dữ liệu: "tốt nhất sau
+              nhiều lần thử" và "làm một lần duy nhất" không cùng thang, nên
+              người đọc phải biết cột đang dựng từ cái nào. */}
           <Rise delay={240}>
             <Card title={t("dash.skills")}>
               {skills.length ? (
@@ -126,7 +140,13 @@ export default function StudentDashboard({ name, exercises, submissions, profile
                       );
                     })}
                   </div>
-                  <p className="m-0 mt-3 text-xs text-soft">{t("dash.skills_note")}</p>
+                  <p className="m-0 mt-3 text-xs text-soft">
+                    {skills.sources.assigned && skills.sources.practice
+                      ? t("dash.skills_note_both")
+                      : skills.sources.practice
+                        ? t("dash.skills_note_practice")
+                        : t("dash.skills_note")}
+                  </p>
                 </>
               ) : (
                 <EmptyState Icon={Sparkles} title={t("dash.skills_empty_title")} body={t("dash.skills_empty_body")} />

@@ -64,28 +64,60 @@ export function averageScore(exercises, submissions, name) {
   return Math.round(pcts.reduce((a, b) => a + b, 0) / pcts.length);
 }
 
-/* Điểm trung bình theo từng kỹ năng, chỉ gồm kỹ năng thực sự có bài đã chốt.
-   Một bài gắn nhiều kỹ năng thì tính cho tất cả các kỹ năng đó. */
-export function skillBreakdown(exercises, submissions, name) {
-  const { done, subOf } = studentWorkload(exercises, submissions, name);
+/* Điểm trung bình theo từng kỹ năng, chỉ gồm kỹ năng thực sự có dữ liệu.
+   Một bài gắn nhiều kỹ năng thì tính cho tất cả các kỹ năng đó.
+
+   Hai nguồn, cố ý gộp:
+   · bài giáo viên giao đã chốt điểm — một lần làm, điểm cuối cùng;
+   · bài luyện tập trong Entraînement — ĐIỂM TỐT NHẤT sau nhiều lần thử.
+
+   Gộp vì phần lớn học sinh có rất ít bài được giao mà lại luyện tập nhiều;
+   chỉ đếm bài được giao thì biểu đồ trống trơn trong khi người đó đã làm cả
+   chục bài. Nhưng hai nguồn KHÔNG cùng thang: "tốt nhất sau 5 lần" bao giờ
+   cũng đẹp hơn "làm một lần duy nhất". Vì vậy `sources` trả kèm để nơi gọi
+   nói rõ biểu đồ được dựng từ đâu — người đọc phải biết mình đang nhìn gì.
+
+   `practice` và `hist` bỏ trống thì hàm chạy đúng như trước. */
+export function skillBreakdown(exercises, submissions, name, practice = [], hist = {}) {
   const acc = new Map();
+  const push = (skills, pct) => {
+    for (const sk of skills) {
+      if (!acc.has(sk)) acc.set(sk, []);
+      acc.get(sk).push(pct);
+    }
+  };
+
+  const { done, subOf } = studentWorkload(exercises, submissions, name);
+  let fromAssigned = 0;
   for (const ex of done) {
     const sub = subOf(ex);
     const { score, max, pending } = totalScore(sub, ex);
     if (pending || !max) continue;
-    const pct = (score / max) * 100;
-    for (const sk of exSkills(ex)) {
-      if (!acc.has(sk)) acc.set(sk, []);
-      acc.get(sk).push(pct);
-    }
+    push(exSkills(ex), (score / max) * 100);
+    fromAssigned += 1;
   }
-  return [...acc.entries()]
+
+  /* `best` khởi tạo bằng -1 trong PracticeHub để lần đầu Math.max luôn ăn
+     điểm thật, kể cả khi điểm đó là 0. Nên phải loại `best < 0` ở đây —
+     đó là bản ghi chưa có điểm, không phải điểm 0. */
+  let fromPractice = 0;
+  for (const ex of practice || []) {
+    const h = hist?.[ex?.id];
+    if (!h || !h.max || typeof h.best !== "number" || h.best < 0) continue;
+    push(exSkills(ex), (h.best / h.max) * 100);
+    fromPractice += 1;
+  }
+
+  const skills = [...acc.entries()]
     .map(([skill, list]) => ({
       skill,
       value: Math.round(list.reduce((a, b) => a + b, 0) / list.length),
       count: list.length,
     }))
     .sort((a, b) => SKILLS.indexOf(a.skill) - SKILLS.indexOf(b.skill));
+
+  skills.sources = { assigned: fromAssigned, practice: fromPractice };
+  return skills;
 }
 
 /* Bài nên làm tiếp: chưa nộp, ưu tiên hạn gần nhất còn hiệu lực;

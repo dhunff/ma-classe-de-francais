@@ -209,7 +209,7 @@ export function PracticeCard({ ex, t, onOpen }) {
    Trả `null` khi chưa nạp xong để phía gọi phân biệt được "đang chờ" với
    "kho rỗng" — hai trạng thái phải hiện khác nhau, gộp lại thì lúc mạng chậm
    người dùng đọc được câu "chưa có bài nào" trong khi thật ra là có. */
-export function usePractice(preset) {
+export function usePracticeStore(preset) {
   const [loaded, setLoaded] = useState(null);
 
   useEffect(() => {
@@ -221,7 +221,32 @@ export function usePractice(preset) {
     return () => { off = true; };
   }, [preset]);
 
-  const list = preset ?? loaded;
+  return preset ?? loaded;
+}
+
+/* Lịch sử luyện tập của CHÍNH học sinh đang đăng nhập: `shared = false`, nên
+   mỗi người chỉ đọc được kho của mình. Dạng { [exId]: {best, max, tries, at} }.
+
+   Không có `name` thì không có kho nào để đọc — trả {} chứ đừng hỏi, vì khoá
+   `mcf-ph-undefined` là một kho có thật và sẽ lẫn dữ liệu giữa các phiên. */
+export function usePracticeHistory(name, preset) {
+  const [hist, setHist] = useState(null);
+
+  useEffect(() => {
+    if (preset) return;
+    if (!name) { setHist({}); return; }
+    let off = false;
+    load(`mcf-ph-${name}`, {}, false).then((raw) => {
+      if (!off) setHist(raw && typeof raw === "object" ? raw : {});
+    }).catch(() => { if (!off) setHist({}); });
+    return () => { off = true; };
+  }, [name, preset]);
+
+  return preset ?? hist;
+}
+
+export function usePractice(preset) {
+  const list = usePracticeStore(preset);
 
   /* `createdAt` là Date.now() lúc tạo (xem PracticeHub); bài cũ chưa có
      trường này thì rơi về 0 và xuống cuối, chứ không đẩy NaN vào phép so

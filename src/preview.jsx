@@ -40,9 +40,12 @@ const VI = {
     pending: "Đang chờ làm", overdue: "{n} bài đã quá hạn",
     streak: "Chuỗi ngày học",
     streak_empty: "Chưa tính được — hệ thống chưa ghi hoạt động theo ngày",
-    skills: "Mức độ đồng đều theo kỹ năng", skills_note: "Tính từ các bài đã được chốt điểm.",
+    skills: "Mức độ đồng đều theo kỹ năng",
+    skills_note: "Tính từ các bài được giao đã chốt điểm.",
+    skills_note_practice: "Tính từ điểm tốt nhất của bạn ở phần luyện tập.",
+    skills_note_both: "Tính từ bài được giao đã chốt điểm và điểm tốt nhất ở phần luyện tập. Điểm luyện tập là lần làm tốt nhất, nên thường cao hơn.",
     skills_empty_title: "Chưa đủ dữ liệu để vẽ",
-    skills_empty_body: "Cần bài đã chốt điểm ở ít nhất 3 kỹ năng khác nhau.",
+    skills_empty_body: "Hãy làm một bài trong phần Luyện tập, hoặc chờ giáo viên chốt điểm một bài được giao.",
     continue: "Học tiếp", continue_empty_title: "Không còn bài nào đang chờ",
     continue_empty_body: "Bạn đã nộp hết bài được giao.",
     questions: "{n} câu", due: "Hạn nộp", was_due: "Đã quá hạn",
@@ -135,6 +138,19 @@ const mockRecentExercises = [
 /* Bài "Cần làm" đi qua nextUp(), vốn lọc theo người được giao và bỏ bài đã
    nộp — nên fixture phải là bài CHƯA có trong SUBMISSIONS của Linh, nếu
    không khối này sẽ rỗng và trông như hỏng. */
+/* Lịch sử luyện tập của "Linh", đúng dạng PracticeHub ghi ra:
+   { [exId]: { best, max, tries, at } }.
+
+   p6 để `best: -1` có chủ ý — đó là dạng bản ghi PracticeHub tạo trước khi có
+   điểm thật, và nó PHẢI bị loại khỏi biểu đồ chứ không được tính thành 0%. */
+const mockPracticeHistory = {
+  p1: { best: 12, max: 15, tries: 3, at: hoursAgo(1) },
+  p2: { best: 6, max: 10, tries: 1, at: hoursAgo(20) },
+  p5: { best: 7, max: 8, tries: 2, at: hoursAgo(40) },
+  p7: { best: 3, max: 6, tries: 4, at: hoursAgo(60) },
+  p6: { best: -1, max: 9, tries: 0, at: hoursAgo(70) },
+};
+
 const mockPendingTasks = [
   { id: "t1", title: "Le passé composé", level: "B1", skills: ["Grammaire"],
     questions: qs(14), deadline: day(-2), createdAt: hoursAgo(120) },
@@ -232,6 +248,7 @@ function Preview() {
           <Route path="/etudiant/dashboard" element={
             <><Controls /><StudentDashboard name="Linh" exercises={exercises} submissions={submissions}
               practice={empty ? [] : mockRecentExercises}
+              practiceHistory={empty ? {} : mockPracticeHistory}
               profile={{ goal: "DELF B1" }} t={t} /></>
           } />
           <Route path="/etudiant/bibliotheque" element={<Stub label={t("nav.practice")} />} />
