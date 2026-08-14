@@ -515,6 +515,25 @@ function Builder({ draft, setDraft, publish, cancel, accounts, classes = [] }) {
                 onChange={(e) => setQ(q.id, { accepted: e.target.value })} />
             </div>
           )}
+          {/* Giải thích RIÊNG cho câu này, hiện ra khi học sinh trả lời sai.
+              Không có ô này thì trường `explanation` mà bộ chấm đọc không có
+              đường nào để nhập, và hộp giải thích không bao giờ hiện — đúng
+              tình trạng của cả 415 câu trong thư viện hiện nay.
+
+              Khác ô « Explications / Tips » ở đầu bài: ô kia nói về cả bài và
+              hiện cho mọi người; ô này chỉ bật lên cho người vừa làm sai đúng
+              câu đó. */}
+          {autoQ(q) && (
+            <div style={{ marginTop: 10 }}>
+              <div style={S.label}>Explication si la réponse est fausse (optionnel)</div>
+              <textarea
+                style={{ ...S.input, marginTop: 6, minHeight: 60, resize: "vertical", fontFamily: "inherit" }}
+                value={q.explanation || ""}
+                placeholder="ex. Après « bien que », il faut le subjonctif."
+                onChange={(e) => setQ(q.id, { explanation: e.target.value })}
+              />
+            </div>
+          )}
           {q.type === "ordre" && (
             <div style={{ marginTop: 10, display: "grid", gap: 10 }}>
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>

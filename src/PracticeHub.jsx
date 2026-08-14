@@ -8,6 +8,7 @@ import { C, S, QTYPES, VF_OPTS } from "./shared/tokens.js";
 import { uid, fillOk, fillAccepted, vfOk, stripHtml, autoQ, tableauOk, tableauCells, ordreOk, getUnansweredQuestionsCount } from "./shared/questions.js";
 import { load, save } from "./shared/storage.js";
 import { exSkills } from "./shared/exercises.js";
+import { WrongExplanation } from "./shared/ui.jsx";
 import { useT } from "./shared/i18n.jsx";
 import { TableauCompare, OrdreBlocks, ConfirmSubmitModal } from "./screens/student/answers.jsx";
 import RichTextEditor from "./editor/RichTextEditor.jsx";
@@ -1083,6 +1084,8 @@ function PracticeWorkspace({ ex, back, onFinish }) {
                 💡 <strong style={{ color: C.ok }}>Réponse attendue :</strong> {String(fillAccepted(q)).split("|").join(" / ")}
               </div>
             )}
+            {/* Lời giải thích chỉ hiện khi sai — đó là lúc nó có việc để làm. */}
+            <WrongExplanation show={graded && good === false} explanation={q.explanation || q.explication || ex.explications} />
           </div>
         )}
       </div>

@@ -112,4 +112,34 @@ function UnderlineTabs({ items, active, onSelect, ariaLabel, trailing }) {
   );
 }
 
-export { FloatingLayer, KebabMenu, UnderlineTabs };
+/* Hộp giải thích khi trả lời sai.
+
+   Chỉ hiện khi SAI, và chỉ khi câu hỏi có lời giải thích. Hiện cả khi đúng thì
+   nó thành chú thích nền — người làm đúng không cần đọc lại lý do, và một hộp
+   đỏ dưới câu trả lời đúng gây hoang mang.
+
+   Màu qua token `danger`/`dangerSoft` chứ không phải red-50/red-700 viết cứng:
+   token tự đảo ở bản tối, còn nền đỏ nhạt cố định trên nền tối thì chói và
+   chữ đỏ đậm trên đó gần như không đọc được.
+
+   Dùng ở hai màn hình chấm (Student.jsx và PracticeHub.jsx) nên đặt chung —
+   chép hai bản là bảo đảm hai nơi lệch nhau. */
+function WrongExplanation({ explanation, show = true }) {
+  const text = String(explanation || "").trim();
+  if (!show || !text) return null;
+
+  return (
+    <div
+      role="note"
+      style={{
+        marginTop: 8, background: C.dangerSoft, border: `1.5px solid ${C.danger}55`,
+        borderRadius: 12, padding: "9px 13px", fontSize: 13.5, lineHeight: 1.6,
+        color: C.ink,
+      }}
+    >
+      <strong style={{ color: C.danger }}>Attention :</strong> {text}
+    </div>
+  );
+}
+
+export { FloatingLayer, KebabMenu, UnderlineTabs, WrongExplanation };

@@ -7,7 +7,7 @@ import { useT } from "../../shared/i18n.jsx";
 import { SKILLS, fmtDate, isLate, exSkills, assignedTo, totalScore } from "../../shared/exercises.js";
 import { uid, norm, stripHtml, wordCount, vfOk, fillAccepted, fillOk, autoQ, ordreOk, tableauCells, tableauOk, isQuestionAnswered, getUnansweredQuestionsCount } from "../../shared/questions.js";
 import { AVA_COLORS, avaColor, fmtDateFR, fmtDuration, targetedAccounts, fileNameFromUrl, formatLastSeen } from "../../shared/display.js";
-import { FloatingLayer, KebabMenu } from "../../shared/ui.jsx";
+import { FloatingLayer, KebabMenu, WrongExplanation } from "../../shared/ui.jsx";
 import { PROFILE_FIELDS, LEVELS_PROFILE, GOALS_PROFILE, emptyProfile, calculateProfileCompletion, validateProfile } from "../../shared/profile.js";
 import { OrdreChip, OrdreBlocks, TableauCompare, ConfirmSubmitModal } from "./answers.jsx";
 import ReadingPanel from "../../editor/ReadingPanel.jsx";
@@ -224,6 +224,9 @@ function Student({ name, exercises, submissions, setSubmissions, accounts, setAc
                       <div style={{ marginTop: 6, background: C.okSoft, border: `1.5px solid ${C.ok}55`, borderRadius: 12, padding: "8px 12px", fontSize: 13.5 }}>
                         💡 <strong style={{ color: C.ok }}>Réponse attendue :</strong> {String(fillAccepted(q)).split("|").join(" / ")}
                       </div>
+                      {/* Lời giải thích chỉ hiện khi sai — đó là lúc nó có việc
+                          để làm. Người trả lời đúng không cần đọc lại lý do. */}
+                      <WrongExplanation show={!good} explanation={q.explanation || q.explication || ex?.explications} />
                     </div>
                   );
                 }

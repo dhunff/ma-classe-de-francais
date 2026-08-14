@@ -68,5 +68,20 @@ t("nháy cong của điện thoại",
 t("null không nổ", evaluateAnswer(null, ["a"]).correct, false);
 t("undefined đáp án không nổ", evaluateAnswer("a", undefined).correct, false);
 
+/* --- chỗ nối: fillOk, hàm mà Taking/PracticeHub/Student/TeacherScreens gọi ---
+   Kiểm ở đây chứ không chỉ kiểm engine: nếu fillOk lỡ ngừng gọi engine thì
+   engine vẫn xanh mà điểm học sinh thì sai. */
+const { fillOk, fillAccepted } = await import("../src/shared/questions.js");
+
+t("fillOk: chuỗi | cũ vẫn chấm được", fillOk({ accepted: "suis allé|suis allée" }, "suis allée"), true);
+t("fillOk: mảng mới", fillOk({ correctAnswers: ["le chat"] }, "Le Chat"), true);
+t("fillOk: dấu bị tính (đổi hành vi)", fillOk({ accepted: "où" }, "ou"), false);
+t("fillOk: đúng dấu thì đúng", fillOk({ accepted: "où" }, "où"), true);
+t("fillOk: élision", fillOk({ accepted: "l'eau" }, "l' eau"), true);
+t("fillOk: cờ lỏng trên bài tập",
+  fillOk({ accepted: "où" }, "ou", { strictAccents: false }), true);
+t("fillOk: rỗng luôn sai", fillOk({ accepted: "où" }, ""), false);
+t("fillAccepted giữ nguyên chữ ký", fillAccepted({ accepted: "a|b" }), "a|b");
+
 console.log(`\n${pass} đạt, ${fail} hỏng`);
 process.exit(fail ? 1 : 0);
