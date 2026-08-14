@@ -22,6 +22,7 @@ import StudentDashboard from './screens/dashboard/StudentDashboard.jsx'
 import TeacherDashboard from './screens/dashboard/TeacherDashboard.jsx'
 import SoftDashboard from './screens/dashboard/SoftDashboard.jsx'
 import HomeDashboard from './screens/dashboard/HomeDashboard.jsx'
+import CalendarView from './screens/calendar/CalendarView.jsx'
 import LoginSplit from './screens/LoginSplit.jsx'
 import SetNewPassword from './screens/auth/SetNewPassword.jsx'
 
@@ -241,6 +242,17 @@ function AppInner() {
               {STUDENT_NAV.filter((i) => i.view).map((i) => (
                 <Route key={i.to} path={i.to} element={studentRoute(i.view)} />
               ))}
+
+              <Route path="/etudiant/calendrier"
+                element={<CalendarView name={session?.name} exercises={exercises} t={t} />} />
+
+              {/* « Ma progression » không còn trong thanh bên nhưng route vẫn
+                  ở đây: màn hình đó có hành trình tới Paris và biểu đồ điểm
+                  theo thời gian, gỡ luôn là mất thật. Trước kia route này do
+                  STUDENT_NAV sinh ra tự động, nên phải khai báo tay sau khi
+                  mục menu bị bỏ. */}
+              <Route path="/etudiant/progression" element={studentRoute("progress")} />
+
               <Route path="/etudiant/*" element={<Navigate to="/etudiant/dashboard" replace />} />
             </Route>
 

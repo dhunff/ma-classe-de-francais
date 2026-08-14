@@ -13,19 +13,35 @@ import { ROLE_HOME } from "./layout/navItems.js";
 import StudentDashboard from "./screens/dashboard/StudentDashboard.jsx";
 import TeacherDashboard from "./screens/dashboard/TeacherDashboard.jsx";
 import HomeDashboard from "./screens/dashboard/HomeDashboard.jsx";
+import CalendarView from "./screens/calendar/CalendarView.jsx";
 
 const VI = {
   /* Phải khớp đủ các khoá mà navItems.js dùng. Thiếu khoá nào thì t() trả về
      chính tên khoá, và thanh bên hiện "nav.todo" thay vì "Cần làm" — trang
      xem thử khi đó nói dối về diện mạo thật. */
   nav: { dashboard: "Trang chủ", exercises: "Thư viện bài tập", students: "Theo dõi học sinh",
-    practice: "Luyện tập", progress: "Tiến độ của tôi", settings: "Cài đặt",
+    practice: "Luyện tập", calendar: "Lịch", settings: "Cài đặt",
     todo: "Cần làm", done: "Đã nộp", account: "Tài khoản", stats: "Thống kê",
     primary: "Điều hướng chính", collapse: "Thu gọn thanh bên", expand: "Mở rộng thanh bên",
     close: "Đóng menu" },
   header: { teacher: "Giáo viên", student: "Học sinh", logout: "Đăng xuất",
     search: "Tìm bài tập, học sinh…", dark_mode: "Chuyển sang nền tối", light_mode: "Chuyển sang nền sáng" },
   empty: { no_submission: "Hiện tại chưa có bài nộp nào." },
+  cal: {
+    title: "Lịch", week_of: "Tuần của {date}", today: "Hôm nay",
+    prev_week: "Tuần trước", next_week: "Tuần sau",
+    d1: "Thứ 2", d2: "Thứ 3", d3: "Thứ 4", d4: "Thứ 5", d5: "Thứ 6", d6: "Thứ 7", d0: "CN",
+    s1: "T2", s2: "T3", s3: "T4", s4: "T5", s5: "T6", s6: "T7", s0: "CN",
+    m1: "Tháng 1", m2: "Tháng 2", m3: "Tháng 3", m4: "Tháng 4", m5: "Tháng 5", m6: "Tháng 6",
+    m7: "Tháng 7", m8: "Tháng 8", m9: "Tháng 9", m10: "Tháng 10", m11: "Tháng 11", m12: "Tháng 12",
+    new_event: "Sự kiện mới", f_title: "Tiêu đề", f_date: "Ngày", f_time: "Giờ",
+    f_title_ph: "Ví dụ: Ôn thi DELF", add: "Thêm vào lịch",
+    kind_devoir: "Bài phải nộp", kind_custom: "Cá nhân",
+    empty_week: "Tuần này chưa có gì.",
+    empty_week_body: "Hạn nộp bài sẽ tự hiện ở đây. Bạn cũng có thể tự thêm sự kiện.",
+    deadline_at: "Hạn nộp {time}", saved: "Đã thêm vào lịch.",
+    need_title: "Hãy nhập tiêu đề.", delete: "Xoá sự kiện",
+  },
   /* Chân thanh bên đổi sang lối "Đăng nhập" khi session là null — trạng thái
      chỉ xuất hiện từ khi có chế độ khách, nên khoá này trước đây chưa cần. */
   login: { signin: "Đăng nhập" },
@@ -151,6 +167,33 @@ const mockPracticeHistory = {
   p6: { best: -1, max: 9, tries: 0, at: hoursAgo(70) },
 };
 
+/* Sự kiện lịch tự thêm, neo vào TUẦN HIỆN TẠI chứ không phải một ngày cố
+   định — fixture ghim ngày cứng thì tuần sau mở trang xem thử sẽ trống trơn
+   và trông như hỏng. */
+const thisMonday = (() => {
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  d.setDate(d.getDate() - ((d.getDay() + 6) % 7));
+  return d;
+})();
+const atWeek = (dayOffset, h, m = 0) => {
+  const d = new Date(thisMonday);
+  d.setDate(d.getDate() + dayOffset);
+  d.setHours(h, m, 0, 0);
+  return d.toISOString();
+};
+
+const mockCalendarEvents = [
+  { id: "c1", title: "Cours de Grammaire", at: atWeek(0, 9), kind: "custom" },
+  { id: "c2", title: "Atelier phonétique", at: atWeek(1, 14, 30), kind: "custom" },
+  { id: "c3", title: "Réviser le subjonctif", at: atWeek(2, 11), kind: "custom" },
+  { id: "c4", title: "Conversation avec Camille", at: atWeek(3, 16), kind: "custom" },
+  { id: "c5", title: "Examen blanc DELF B1", at: atWeek(4, 8, 30), kind: "custom" },
+  /* Cố ý đặt ngoài khung 08:00–19:00 để kiểm việc kẹp vị trí: sự kiện lúc
+     22:00 phải dồn xuống đáy cột, không được biến mất. */
+  { id: "c6", title: "Podcast en français", at: atWeek(4, 22), kind: "custom" },
+];
+
 const mockPendingTasks = [
   { id: "t1", title: "Le passé composé", level: "B1", skills: ["Grammaire"],
     questions: qs(14), deadline: day(-2), createdAt: hoursAgo(120) },
@@ -250,6 +293,15 @@ function Preview() {
               practice={empty ? [] : mockRecentExercises}
               practiceHistory={empty ? {} : mockPracticeHistory}
               profile={{ goal: "DELF B1" }} t={t} /></>
+          } />
+          {/* Lịch: hạn nộp lấy từ EXERCISES nên có sẵn nội dung; `events`
+              truyền vào để không đụng kho thật khi chỉ xem bố cục. */}
+          <Route path="/etudiant/calendrier" element={
+            <><Controls />
+              <CalendarView name="Linh" t={t}
+                exercises={empty ? [] : EXERCISES}
+                events={empty ? [] : mockCalendarEvents} />
+            </>
           } />
           <Route path="/etudiant/bibliotheque" element={<Stub label={t("nav.practice")} />} />
           <Route path="/etudiant/progression" element={<Stub label={t("nav.progress")} />} />

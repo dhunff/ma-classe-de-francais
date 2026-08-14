@@ -1,6 +1,6 @@
 import {
   LayoutDashboard, BookOpen, Users, BarChart3, Dumbbell,
-  ClipboardList, CheckSquare, TrendingUp, Settings,
+  ClipboardList, CheckSquare, CalendarDays, Settings,
 } from "lucide-react";
 
 /* Điều hướng của vỏ app.
@@ -30,7 +30,11 @@ export const STUDENT_NAV = [
   { to: "/etudiant/devoirs", labelKey: "nav.todo", Icon: ClipboardList, view: "todo" },
   { to: "/etudiant/rendus", labelKey: "nav.done", Icon: CheckSquare, view: "done" },
   { to: "/etudiant/entrainement", labelKey: "nav.practice", Icon: Dumbbell, view: "practice" },
-  { to: "/etudiant/progression", labelKey: "nav.progress", Icon: TrendingUp, view: "progress" },
+  /* « Ma progression » đã rời khỏi menu theo yêu cầu. Route
+     /etudiant/progression VẪN sống trong App.jsx nên hành trình tới Paris và
+     biểu đồ điểm không mất — chỉ là hiện không còn lối vào từ thanh bên.
+     Muốn dựng lại thì thêm một dòng ở đây, không phải viết lại màn hình. */
+  { to: "/etudiant/calendrier", labelKey: "nav.calendar", Icon: CalendarDays },
   { to: "/etudiant/compte", labelKey: "nav.account", Icon: Settings, view: "settings" },
 ];
 
