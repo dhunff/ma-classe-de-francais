@@ -23,7 +23,7 @@ export default function LangMenu({ lang, langs, onLang, t }) {
   const listRef = useRef(null);
 
   const current = langs.find(([code]) => code === lang) || langs[0];
-  const [, flag, , short] = current;
+  const [, flag, currentLabel] = current;
 
   /* Bấm ra ngoài hoặc nhấn Escape thì đóng. `mousedown` chứ không phải
      `click`: nút mở menu cũng nghe click, nghe cùng sự kiện sẽ thành đóng rồi
@@ -71,11 +71,18 @@ export default function LangMenu({ lang, langs, onLang, t }) {
         onClick={() => setOpen((v) => !v)}
         aria-haspopup="listbox"
         aria-expanded={open}
-        aria-label={t("lang_label")}
+        /* Kèm tên ngôn ngữ đang chọn: nút giờ chỉ còn lá cờ, mà trình đọc màn
+           hình không đọc emoji cờ — thiếu dòng này thì người dùng nghe được
+           "Ngôn ngữ, nút" và không biết đang ở thứ tiếng nào. */
+        aria-label={`${t("lang_label")}: ${currentLabel}`}
         className="flex h-10 cursor-pointer items-center gap-1.5 rounded-full border-0 bg-transparent px-3 font-[inherit] text-sm font-bold text-ink transition-colors hover:bg-surface2 focus:outline-none focus:ring-2 focus:ring-primary/40"
       >
+        {/* Chỉ còn lá cờ, bỏ mã ngắn. Windows không có glyph cờ nên vẽ 🇻🇳
+            thành hai chữ cái chỉ vùng "VN" — đứng cạnh mã ngắn "VN" thì nút
+            đọc ra "VN VN". Trên macOS/Android cờ hiện đúng, và một mình nó đã
+            đủ nhận ra ngôn ngữ. `aria-label` vẫn mang tên đầy đủ cho trình
+            đọc màn hình, vốn không đọc được emoji cờ. */}
         <span aria-hidden className="text-base leading-none">{flag}</span>
-        <span>{short}</span>
         <ChevronDown size={14} aria-hidden
           className={`text-soft transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
       </button>
