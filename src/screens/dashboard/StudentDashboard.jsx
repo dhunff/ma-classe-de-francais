@@ -4,7 +4,7 @@ import {
   CheckCircle, Target, Clock, Flame, PartyPopper, AlertTriangle, Inbox,
   UserCircle, ChevronRight, Sparkles,
 } from "lucide-react";
-import { Card, StatTile, EmptyState, ProgressBar, Rise, Ring, CountUp } from "./parts.jsx";
+import { Card, StatTile, EmptyState, HeroBanner, Rise, Ring } from "./parts.jsx";
 import { NewestPracticeRail } from "./PracticeRail.jsx";
 import {
   studentWorkload, averageScore, skillBreakdown, nextUp, isLate, exSkills, fmtDate,
@@ -49,37 +49,17 @@ export default function StudentDashboard({ name, exercises, submissions, profile
             thay vì để khung con tự cuộn — kéo tràn ngang cả trang. */}
         <div className="flex min-w-0 flex-col gap-4">
 
+          {/* Cùng banner với trang chủ chung — đăng nhập rồi đi qua hai màn
+              hình phải thấy một sản phẩm, không phải hai.
+
+              Khối chào cũ đã bỏ: hai con số của nó (đã nộp / điểm trung bình)
+              lặp y nguyên ở hàng ô số liệu ngay bên dưới, chỉ riêng "Mục tiêu"
+              là không lặp nên được mang vào banner. */}
           <Rise delay={0}>
-            <section className="rounded-3xl bg-surface/80 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] backdrop-blur-md">
-              <p className="m-0 text-sm font-semibold text-soft">{t("dash.hello")}</p>
-              <h1 className="m-0 mt-1 text-3xl font-extrabold tracking-tight text-ink">{name}</h1>
-
-              <div className="mt-5 flex flex-wrap items-end gap-x-8 gap-y-4">
-                <div>
-                  <div className="text-4xl font-extrabold tracking-tight text-primary">
-                    <CountUp to={done.length} />
-                    <span className="text-xl text-soft">/{assigned.length}</span>
-                  </div>
-                  <p className="m-0 mt-0.5 text-xs font-semibold uppercase tracking-wider text-soft">
-                    {t("dash.completion")}
-                  </p>
-                </div>
-                {avg !== null && (
-                  <div>
-                    <div className="text-4xl font-extrabold tracking-tight text-ok">
-                      <CountUp to={avg} /><span className="text-xl">%</span>
-                    </div>
-                    <p className="m-0 mt-0.5 text-xs font-semibold uppercase tracking-wider text-soft">
-                      {t("dash.avg_score")}
-                    </p>
-                  </div>
-                )}
-              </div>
-
-              <p className="m-0 mt-5 text-sm text-soft">
-                {goal ? <>{t("dash.goal")}: <span className="font-bold text-ink">{goal}</span></> : t("dash.no_goal")}
-              </p>
-            </section>
+            <HeroBanner t={t} signedIn name={name} as="h2"
+              note={goal
+                ? <>{t("dash.goal")}: <span className="font-extrabold">{goal}</span></>
+                : t("dash.no_goal")} />
           </Rise>
 
           {/* Hồ sơ chưa đầy thì mời điền. Đầy rồi thì biến mất — một thanh

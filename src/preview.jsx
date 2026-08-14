@@ -18,7 +18,7 @@ const VI = {
   /* Phải khớp đủ các khoá mà navItems.js dùng. Thiếu khoá nào thì t() trả về
      chính tên khoá, và thanh bên hiện "nav.todo" thay vì "Cần làm" — trang
      xem thử khi đó nói dối về diện mạo thật. */
-  nav: { dashboard: "Tổng quan", exercises: "Thư viện bài tập", students: "Theo dõi học sinh",
+  nav: { dashboard: "Trang chủ", exercises: "Thư viện bài tập", students: "Theo dõi học sinh",
     practice: "Luyện tập", progress: "Tiến độ của tôi", settings: "Cài đặt",
     todo: "Cần làm", done: "Đã nộp", account: "Tài khoản", stats: "Thống kê",
     primary: "Điều hướng chính", collapse: "Thu gọn thanh bên", expand: "Mở rộng thanh bên",

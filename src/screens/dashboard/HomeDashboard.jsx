@@ -1,9 +1,9 @@
 import React, { useMemo } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import {
-  Sparkles, ArrowRight, Clock, AlertTriangle, UserPlus, Inbox, CheckCircle,
+  ArrowRight, Clock, AlertTriangle, UserPlus, Inbox, CheckCircle,
 } from "lucide-react";
-import { Card, EmptyState, Rise, Ring } from "./parts.jsx";
+import { Card, EmptyState, HeroBanner, Rise, Ring } from "./parts.jsx";
 import {
   Carousel, CARD_SHELL, LevelBadge, NewestPracticeRail, iconFor,
 } from "./PracticeRail.jsx";
@@ -119,32 +119,8 @@ export default function HomeDashboard({
         {/* ─────────────── Cột chính ─────────────── */}
         <div className="flex min-w-0 flex-col gap-6">
 
-          {/* Banner. Chuyển sắc + hai vòng tròn mờ tạo chiều sâu; trang trí
-              thuần tuý nên ẩn với trình đọc màn hình. */}
           <Rise delay={0}>
-            <section className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-primary to-[#6d5ce7] p-6 text-on-primary shadow-[0_14px_34px_rgb(0,0,0,0.14)] sm:p-8">
-              <span aria-hidden className="absolute -right-10 -top-12 h-36 w-36 rounded-full bg-white/15" />
-              <span aria-hidden className="absolute -bottom-16 right-10 h-28 w-28 rounded-full bg-white/10" />
-
-              <div className="relative max-w-lg">
-                <span className="grid h-11 w-11 place-items-center rounded-2xl bg-white/20">
-                  <Sparkles size={21} strokeWidth={2.3} />
-                </span>
-                <h1 className="m-0 mt-4 text-2xl font-extrabold leading-tight tracking-tight sm:text-3xl">
-                  {signedIn ? t("home.welcome_back", { name }) : t("home.welcome_guest")}
-                </h1>
-                <p className="m-0 mt-2 text-sm font-medium opacity-90">
-                  {signedIn ? t("home.hero_sub_user") : t("home.hero_sub_guest")}
-                </p>
-                <Link
-                  to="/decouvrir/entrainement"
-                  className="mt-6 inline-flex items-center gap-2 rounded-full bg-surface px-5 py-2.5 text-sm font-bold text-primary no-underline shadow-[0_6px_16px_rgb(0,0,0,0.15)] transition-transform duration-200 hover:scale-[1.03]"
-                >
-                  {t("home.discover")}
-                  <ArrowRight size={16} />
-                </Link>
-              </div>
-            </section>
+            <HeroBanner t={t} signedIn={signedIn} name={name} />
           </Rise>
 
           {/* "Cần làm" — chỉ tồn tại trong DOM khi đã đăng nhập VÀ còn bài.
