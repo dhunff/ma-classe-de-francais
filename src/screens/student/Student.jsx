@@ -44,9 +44,30 @@ function Student({ name, exercises, submissions, setSubmissions, accounts, setAc
   useEffect(() => { if (routeView) setTab(routeView); }, [routeView]);
   const [showPw, setShowPw] = useState(false);
   const t = useT();
+
+  /* Email và trạng thái xác minh lấy từ chính phiên Supabase, không phải từ
+     hồ sơ — hồ sơ do người dùng ghi, còn đây là dữ kiện của tài khoản.
+
+     PHẢI đứng TRƯỚC `if (taking) return …` bên dưới. Ba hook này từng nằm sau
+     nó: mở một bài để làm khiến component thoát sớm và bỏ qua chúng, React
+     đếm được ít hook hơn lần render trước và ném lỗi #300 — cả trang bị error
+     boundary nuốt mất. Mọi hook của component này phải nằm trên mốc đó. */
+  const [authEmail, setAuthEmail] = useState("");
+  const [emailVerified, setEmailVerified] = useState(false);
+  useEffect(() => {
+    let off = false;
+    supabase.auth.getUser().then(({ data }) => {
+      if (off || !data?.user) return;
+      setAuthEmail(data.user.email || "");
+      setEmailVerified(!!data.user.email_confirmed_at);
+    }).catch(() => {});
+    return () => { off = true; };
+  }, []);
+
   const mine = (exId) => submissions.find((s) => s.exerciseId === exId && s.student === name);
   const mineDone = (exId) => { const s0 = mine(exId); return s0 && !s0.redo ? s0 : null; };
 
+  /* ⚠️ MỐC HOOK — không thêm hook nào bên dưới dòng này. */
   if (taking) return <Taking ex={taking} name={name} setSubmissions={setSubmissions} done={() => { setTaking(null); refresh(); }} />;
 
   const visible = exercises.filter((ex) => assignedTo(ex, name));
@@ -90,20 +111,6 @@ function Student({ name, exercises, submissions, setSubmissions, accounts, setAc
      Mật khẩu cũ được kiểm bằng một lần signInWithPassword. updateUser không
      đòi điều đó — có phiên là đổi được — nhưng nếu ai đó ngồi vào máy đang mở
      sẵn, chỉ mỗi bước này chặn họ chiếm tài khoản. */
-  /* Email và trạng thái xác minh lấy từ chính phiên Supabase, không phải từ
-     hồ sơ — hồ sơ do người dùng ghi, còn đây là dữ kiện của tài khoản. */
-  const [authEmail, setAuthEmail] = useState("");
-  const [emailVerified, setEmailVerified] = useState(false);
-  useEffect(() => {
-    let off = false;
-    supabase.auth.getUser().then(({ data }) => {
-      if (off || !data?.user) return;
-      setAuthEmail(data.user.email || "");
-      setEmailVerified(!!data.user.email_confirmed_at);
-    }).catch(() => {});
-    return () => { off = true; };
-  }, []);
-
   const onLogout = async () => {
     try { await supabase.auth.signOut(); } catch {}
     window.location.replace("/login");

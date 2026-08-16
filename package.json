@@ -9,7 +9,8 @@
     "preview": "vite preview",
     "check:design": "node scripts/check-design.mjs",
     "check:imports": "node scripts/check-imports.mjs",
-    "check:grading": "node scripts/check-grading.mjs"
+    "check:grading": "node scripts/check-grading.mjs",
+    "check:hooks": "node scripts/check-hooks.mjs"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
