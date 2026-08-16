@@ -45,11 +45,20 @@ function Builder({ draft, setDraft, publish, cancel, accounts, classes = [] }) {
         if (t.startsWith("f")) return 1;
         return 2; // ONSP / "on ne sait pas" / "?"
       };
+      /* Lời giải thích khi sai. Gắn SAU switch cho mọi dạng câu, thay vì nhắc
+         lại trong từng nhánh — thêm dạng câu mới mà quên một nhánh thì giải
+         thích im lặng biến mất, đúng kiểu lỗi không ai phát hiện. */
+      const withExplanation = (q, it) => q && {
+        ...q,
+        explanation: String(it.explication ?? it.explanation ?? it.justification_pedagogique ?? "").trim(),
+      };
+
       const qs = (Array.isArray(data.questions) ? data.questions : []).map((it) => {
         try {
         const prompt = String(it.question ?? it.prompt ?? it.enonce ?? "").trim();
         if (!prompt) return null;
         const type = String(it.type || "").toUpperCase();
+        return withExplanation((() => {
         switch (type) {
           case "QCM": case "MCQ": {
             const rawOpts = it.options || it.choix || [];
@@ -127,6 +136,7 @@ function Builder({ draft, setDraft, publish, cancel, accounts, classes = [] }) {
             return null;
           }
         }
+        })(), it);
         } catch (qe) { return null; } // 1 câu lỗi không làm hỏng cả import
       }).filter(Boolean);
 

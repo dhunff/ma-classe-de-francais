@@ -1,0 +1,191 @@
+{
+  "titre": "L'expression de la cause — parce que, car, comme, puisque, à cause de, grâce à",
+  "niveau": "A2",
+  "competences": ["Grammaire"],
+  "consigne_generale": "Cet exercice porte sur les différents moyens d'exprimer la cause en français. Observez attentivement ce qui suit le connecteur : certaines constructions exigent une proposition complète avec un verbe conjugué, d'autres un simple groupe nominal ou un pronom tonique. Faites également attention à la valeur positive ou négative de la cause, ainsi qu'aux contractions de l'article défini.",
+  "questions": [
+    {
+      "type": "QCM",
+      "question": "La direction a préféré reporter la conférence de presse ______ la salle réservée s'était révélée trop exiguë pour accueillir l'ensemble des journalistes accrédités.",
+      "options": [
+        { "texte": "parce que", "isCorrect": true },
+        { "texte": "à cause de" },
+        { "texte": "grâce à" },
+        { "texte": "en raison de" }
+      ],
+      "explication": "Ce qui suit le blanc est une proposition complète avec un verbe conjugué (« s'était révélée »). Seul « parce que », conjonction, peut l'introduire. « À cause de », « grâce à » et « en raison de » sont des locutions prépositives : elles se construisent avec un nom ou un pronom tonique, jamais avec un verbe conjugué."
+    },
+    {
+      "type": "QCM",
+      "question": "Le musée municipal demeurera exceptionnellement fermé au public durant tout le mois de janvier, ______ d'importants travaux de rénovation ont été programmés dans l'aile ouest du bâtiment.",
+      "options": [
+        { "texte": "car", "isCorrect": true },
+        { "texte": "comme" },
+        { "texte": "à cause de" },
+        { "texte": "grâce à" }
+      ],
+      "explication": "« Car » est une conjonction de coordination : elle relie deux propositions et se place toujours à l'intérieur de la phrase, après une virgule. « Comme » exprime aussi la cause mais se place obligatoirement en début de phrase. Les deux dernières réponses appellent un nom, pas une proposition."
+    },
+    {
+      "type": "QCM",
+      "question": "______ les conditions de circulation se dégradaient d'heure en heure sur l'ensemble du réseau autoroutier, la préfecture a fini par recommander de différer tout déplacement non indispensable.",
+      "options": [
+        { "texte": "Comme", "isCorrect": true },
+        { "texte": "Car" },
+        { "texte": "À cause de" },
+        { "texte": "Grâce à" }
+      ],
+      "explication": "« Comme » se place toujours en tête de phrase et annonce la cause avant la conséquence. « Car » ne peut jamais ouvrir une phrase. « À cause de » et « grâce à » exigent un groupe nominal, alors que le blanc est suivi d'un verbe conjugué (« se dégradaient »)."
+    },
+    {
+      "type": "QCM",
+      "question": "Notre équipe est parvenue à livrer le projet dans les délais impartis ______ la rigueur méthodologique dont a fait preuve notre coordinatrice tout au long du semestre.",
+      "options": [
+        { "texte": "grâce à", "isCorrect": true },
+        { "texte": "à cause de" },
+        { "texte": "parce que" },
+        { "texte": "puisque" }
+      ],
+      "explication": "Le résultat évoqué est favorable : la livraison a réussi. On emploie donc « grâce à », qui introduit une cause positive. « À cause de » aurait présenté cette rigueur comme un obstacle, ce qui est contradictoire. « Parce que » et « puisque » demandent un verbe conjugué."
+    },
+    {
+      "type": "QCM",
+      "question": "L'itinéraire habituel de la ligne 12 a dû être intégralement modifié ______ travaux de voirie qui paralysent le centre-ville depuis le début de la semaine.",
+      "options": [
+        { "texte": "à cause des", "isCorrect": true },
+        { "texte": "à cause de les" },
+        { "texte": "à cause du" },
+        { "texte": "grâce aux" }
+      ],
+      "explication": "« De » et « les » se contractent obligatoirement en « des » : la forme « à cause de les » n'existe pas en français. « Travaux » est un pluriel, ce qui exclut « du ». Enfin, la modification d'un itinéraire est ici subie : la cause est négative, donc « à cause de », non « grâce à »."
+    },
+    {
+      "type": "QCM",
+      "question": "Si ce dossier particulièrement épineux a malgré tout abouti, c'est ______ : sans son intervention auprès du ministère, la procédure serait encore au point mort.",
+      "options": [
+        { "texte": "grâce à lui", "isCorrect": true },
+        { "texte": "grâce à il" },
+        { "texte": "grâce lui" },
+        { "texte": "à cause de lui" }
+      ],
+      "explication": "Après « grâce à », on emploie un pronom tonique : moi, toi, lui, elle, nous, vous, eux, elles. « Il » est un pronom sujet et ne peut pas suivre une préposition. La préposition « à » ne peut pas non plus être supprimée. Le résultat étant positif, « à cause de » est exclu."
+    },
+    {
+      "type": "QCM",
+      "question": "______ vous avez déjà pris connaissance de l'intégralité du rapport, je vous propose de présenter vous-même la synthèse devant le conseil d'administration.",
+      "options": [
+        { "texte": "Puisque", "isCorrect": true },
+        { "texte": "Car" },
+        { "texte": "À cause de" },
+        { "texte": "Grâce à" }
+      ],
+      "explication": "« Puisque » introduit une cause déjà connue de l'interlocuteur, présentée comme évidente et admise par les deux parties — ce qui correspond exactement à « vous avez déjà pris connaissance ». « Car » ne peut pas ouvrir une phrase, et les deux locutions prépositives exigent un nom."
+    },
+    {
+      "type": "QCM",
+      "question": "L'ensemble des vols au départ du terminal 2 a été suspendu jusqu'à nouvel ordre ______ conditions météorologiques particulièrement défavorables signalées sur toute la façade atlantique.",
+      "options": [
+        { "texte": "en raison des", "isCorrect": true },
+        { "texte": "en raison de" },
+        { "texte": "en raison de les" },
+        { "texte": "grâce aux" }
+      ],
+      "explication": "« En raison de » appartient au registre soutenu, courant dans les communiqués officiels. Devant un nom pluriel précédé de l'article défini, « de + les » se contracte en « des ». « En raison de les » est agrammatical, et « grâce aux » donnerait à une suspension de vols une valeur positive absurde."
+    },
+
+    {
+      "type": "TEXTE_A_TROUS",
+      "question": "L'accès au parking souterrain de la résidence restera condamné pendant une quinzaine de jours ______ travaux d'étanchéité entrepris par le syndic.",
+      "reponse": "à cause des",
+      "explication": "Cause négative (un accès condamné, que l'on subit) suivie d'un nom pluriel avec article défini. « De + les » se contracte en « des » : à cause des travaux."
+    },
+    {
+      "type": "TEXTE_A_TROUS",
+      "question": "Nous sommes parvenus à boucler l'inventaire annuel avant la fermeture ______ l'aide précieuse que nous ont spontanément apportée nos collègues du service voisin.",
+      "reponse": "grâce à",
+      "explication": "Le résultat est favorable et la cause est un groupe nominal (« l'aide précieuse ») : c'est le domaine de « grâce à ». « À cause de » ferait de cette aide un obstacle."
+    },
+    {
+      "type": "TEXTE_A_TROUS",
+      "question": "Elle n'a pas pu assister à la soutenance de sa camarade ______ un empêchement professionnel de dernière minute l'a retenue à l'étranger.",
+      "reponse": "parce que|car",
+      "explication": "Le blanc est suivi d'une proposition complète avec un verbe conjugué, et il se situe au milieu de la phrase : « parce que » et « car » conviennent tous deux ici. « Comme » est exclu, car il exigerait la tête de phrase."
+    },
+    {
+      "type": "TEXTE_A_TROUS",
+      "question": "Le conférencier a écourté son intervention ______ une partie de l'auditoire avait déjà quitté la salle.",
+      "reponse": "parce qu'|car",
+      "explication": "Devant une voyelle ou un h muet, « parce que » s'élide en « parce qu' » : parce qu'une partie. L'élision est obligatoire à l'écrit comme à l'oral."
+    },
+    {
+      "type": "TEXTE_A_TROUS",
+      "question": "Les randonneurs égarés ont fini par retrouver le sentier balisé ______ indications très précises que leur avait fournies un habitant du hameau.",
+      "reponse": "grâce aux",
+      "explication": "Cause positive suivie d'un nom féminin pluriel avec article défini. Après « grâce à », « à + les » se contracte en « aux » : grâce aux indications."
+    },
+    {
+      "type": "TEXTE_A_TROUS",
+      "question": "Comme la séance plénière ______ (se prolonger) bien au-delà de vingt heures, plusieurs participants ont dû regagner leur hôtel avant le vote final.",
+      "reponse": "se prolongeait",
+      "explication": "« Comme » introduit ici une circonstance qui dure et sert de cadre à l'événement principal : l'imparfait s'impose. Le passé composé présenterait l'action comme achevée et ponctuelle, ce qui contredit « bien au-delà de vingt heures »."
+    },
+    {
+      "type": "TEXTE_A_TROUS",
+      "question": "Le rapporteur s'est vu contraint de reprendre l'intégralité de la démonstration : c'est ______ que la commission a perdu près de deux heures.",
+      "reponse": "à cause de lui",
+      "explication": "Cause négative (une perte de temps) et pronom tonique après la préposition : à cause de lui. « À cause de il » n'existe pas, « il » étant un pronom sujet."
+    },
+    {
+      "type": "TEXTE_A_TROUS",
+      "question": "La cérémonie d'ouverture a été avancée d'une heure ______ retard annoncé sur l'acheminement du matériel de sonorisation.",
+      "reponse": "en raison du|à cause du",
+      "explication": "Registre soutenu ou courant, au choix ici. Dans les deux cas, « de + le » se contracte en « du » devant le nom masculin singulier « retard »."
+    },
+
+    {
+      "type": "ORDONNANCEMENT",
+      "question": "Remettez les éléments dans l'ordre afin de reconstituer une phrase où la cause précède la conséquence.",
+      "elements_corrects": [
+        { "texte": "Comme" }, { "texte": "il" }, { "texte": "fait" }, { "texte": "beau" },
+        { "texte": "aujourd'hui," }, { "texte": "nous" }, { "texte": "irons" },
+        { "texte": "pique-niquer" }, { "texte": "au" }, { "texte": "bord" },
+        { "texte": "de" }, { "texte": "la" }, { "texte": "rivière." }
+      ],
+      "explication": "« Comme » ouvre obligatoirement la phrase et annonce la cause ; la conséquence vient ensuite, après la virgule. L'ordre inverse serait impossible avec ce connecteur."
+    },
+    {
+      "type": "ORDONNANCEMENT",
+      "question": "Remettez les éléments dans l'ordre afin de reconstituer une phrase exprimant une cause négative introduite par une locution prépositive.",
+      "elements_corrects": [
+        { "texte": "Le" }, { "texte": "train" }, { "texte": "de" }, { "texte": "nuit" },
+        { "texte": "a" }, { "texte": "été" }, { "texte": "considérablement" },
+        { "texte": "retardé" }, { "texte": "à" }, { "texte": "cause" },
+        { "texte": "des" }, { "texte": "chutes" }, { "texte": "de" }, { "texte": "neige." }
+      ],
+      "explication": "« À cause de » se place après la proposition principale et introduit un groupe nominal. Devant « les chutes », la contraction « de + les » donne « des »."
+    },
+    {
+      "type": "ORDONNANCEMENT",
+      "question": "Remettez les éléments dans l'ordre afin de reconstituer une phrase exprimant une cause positive.",
+      "elements_corrects": [
+        { "texte": "Nous" }, { "texte": "avons" }, { "texte": "réussi" },
+        { "texte": "cette" }, { "texte": "épreuve" }, { "texte": "grâce" },
+        { "texte": "aux" }, { "texte": "conseils" }, { "texte": "avisés" },
+        { "texte": "de" }, { "texte": "notre" }, { "texte": "professeure." }
+      ],
+      "explication": "Le résultat étant favorable, on emploie « grâce à ». Devant le nom pluriel « conseils », « à + les » se contracte en « aux »."
+    },
+    {
+      "type": "ORDONNANCEMENT",
+      "question": "Remettez les éléments dans l'ordre afin de reconstituer une phrase où la cause est introduite au milieu de l'énoncé par une conjonction.",
+      "elements_corrects": [
+        { "texte": "Il" }, { "texte": "est" }, { "texte": "profondément" },
+        { "texte": "vexé" }, { "texte": "parce" }, { "texte": "que" },
+        { "texte": "tu" }, { "texte": "ne" }, { "texte": "l'as" },
+        { "texte": "pas" }, { "texte": "invité" }, { "texte": "à" },
+        { "texte": "ton" }, { "texte": "anniversaire." }
+      ],
+      "explication": "« Parce que » introduit une proposition complète et se place ici après la principale. Notez la négation encadrante « ne… pas » autour de l'auxiliaire, et l'élision de « le » en « l' » devant « as »."
+    }
+  ]
+}
