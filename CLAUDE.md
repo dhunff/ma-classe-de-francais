@@ -25,10 +25,11 @@ npm run check:imports      # định danh dùng trong JSX mà chưa import
 npm run check:grading      # chấm bài tiếng Pháp (46 ca)
 npm run check:hooks        # hook đặt sau `return` sớm
 npm run check:submissions  # ánh xạ bài nộp ↔ bảng (50 ca)
+npm run check:exercises    # ánh xạ bài tập ↔ hai bảng (53 ca)
 ```
 
 Mỗi bộ sinh ra từ một lỗi thật đã lọt lên production. **Build xanh không có
-nghĩa là đúng** — cả năm loại lỗi này đều để build đi qua.
+nghĩa là đúng** — cả sáu loại lỗi này đều để build đi qua.
 
 Viết bộ kiểm mới thì phải **chứng minh nó bắt được lỗi**: tạm hoàn tác bản sửa,
 chạy lại, thấy nó FAIL. Bộ kiểm chỉ biết xanh là đồ trang trí.
@@ -104,7 +105,7 @@ Panel phụ (sổ tay) là con `absolute` của tấm thẻ, không phải `fixe
 
 | Đã là bảng thật | Còn là blob `kv_store` |
 |---|---|
-| `profiles`, `exercise_access`, `submissions`, `tips` | `mcf-exercises`, `mcf-practice` (144 KB), `mcf-profiles`, `mcf-accounts`… |
+| `profiles`, `exercise_access`, `submissions`, `tips`, `exercises`, `questions` | `mcf-exercises`, `mcf-practice` (144 KB), `mcf-profiles`, `mcf-accounts`… |
 
 Blob có ba vấn đề: đọc-sửa-ghi làm mất dữ liệu khi hai người sửa cùng lúc, chi
 phí đọc tăng tuyến tính, không truy vấn được. **Đừng thêm blob mới.**
@@ -159,9 +160,10 @@ Xem `docs/roadmap-delf.md` — có nhật ký quyết định ở §5.
 
 - **Chấm ở client hay server?** Đáp án đang nằm trong bundle. Chấp nhận được cho
   tự luyện, **không** cho thi thử. Phải quyết trước khi làm Mode Examen.
-- **Gắn nhãn `competence` + `point_gram` cho 415 câu** — việc tay, mở khoá toàn
-  bộ phần phân tích theo kỹ năng.
-- **0/415 câu có `explanation`** — hộp giải thích khi sai đã dựng xong nhưng
+- ~~Gắn nhãn phân loại~~ — xong 2026-08-20 (migration 011): 215 câu có
+  `point_gram`, 54 câu có `competence`. Số sau thấp vì thư viện chỉ có 54 câu
+  đọc/nghe hiểu thật; xem docs/roadmap-delf.md §1.2.
+- **0/416 câu có `explanation`** — hộp giải thích khi sai đã dựng xong nhưng
   chưa có nội dung.
 - **Nối ứng dụng vào bảng `exercises`/`questions`** — bảng đã tạo và chép đủ
   (migration 010, đối chiếu 39/39 bài · 416/416 câu), lớp truy cập

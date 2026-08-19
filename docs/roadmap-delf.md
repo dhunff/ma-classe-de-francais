@@ -293,9 +293,16 @@ Danh sách đóng — thêm giá trị mới thì thêm vào đây trước, đ�
 nhập, nếu không sáu tháng nữa sẽ có `subjonctif`, `Subjonctif` và `le subjonctif`
 nằm cạnh nhau và không nhóm được.
 
+> `temps_present` và `formation_mots` được thêm ngày 2026-08-20, lúc gắn nhãn
+> thật (migration 011): thư viện có **ba bài luyện thì hiện** (60 câu) và **hai
+> bài về họ từ** (24 câu) mà bảng ban đầu không có chỗ chứa. Bảng này được viết
+> trước khi nhìn dữ liệu — đó là cái giá của việc thiết kế phân loại từ lý
+> thuyết.
+
 | Nhóm | Mã | Bao gồm |
 |---|---|---|
-| Động từ | `temps_passe` | passé composé, imparfait, plus-que-parfait |
+| Động từ | `temps_present` | présent de l'indicatif, ba nhóm động từ |
+| | `temps_passe` | passé composé, imparfait, plus-que-parfait |
 | | `temps_futur` | futur simple, futur proche, futur antérieur |
 | | `subjonctif` | présent + passé, các mệnh đề đòi subjonctif |
 | | `conditionnel` | ba loại câu điều kiện |
@@ -311,7 +318,23 @@ nằm cạnh nhau và không nhóm được.
 | | `temps_connecteurs` | *depuis, pendant, il y a, dès que* |
 | | `discours_rapporte` | tường thuật, chuyển thì |
 | Từ vựng | `lexique_thematique` | theo chủ đề của kỳ thi |
+| | `formation_mots` | cấu tạo từ, họ từ, tiền tố/hậu tố |
 | | `registre` | trang trọng / thân mật |
+
+### Đã gắn xong — 2026-08-20 (migration 011)
+
+| | `point_gram` | `competence` |
+|---|---|---|
+| Có nhãn | 215 / 416 | **54 / 416** |
+| Để trống | 201 | 362 |
+
+Con số `competence` thấp là **đúng**, không phải làm dở. Bảng đó thiết kế cho
+câu hỏi đọc/nghe hiểu, mà thư viện chỉ có 54 câu như vậy; 362 câu còn lại là
+bài luyện rời — ngữ pháp, dịch, viết. Gắn `inference` cho một bài chia động từ
+là bịa ra một phép đo không tồn tại.
+
+Hệ quả cho phần phân tích: **thống kê theo `competence` chỉ có ý nghĩa khi thư
+viện có thêm bài CE/CO.** Với thư viện hiện tại, trục dùng được là `point_gram`.
 
 `competence` gắn cho **mọi** câu. `point_gram` chỉ gắn khi câu thật sự kiểm một
 điểm ngữ pháp cụ thể — bài đọc hiểu hỏi ý chính thì để trống, đừng cố nhét.
