@@ -24,6 +24,7 @@ import TeacherDashboard from './screens/dashboard/TeacherDashboard.jsx'
 import SoftDashboard from './screens/dashboard/SoftDashboard.jsx'
 import HomeDashboard from './screens/dashboard/HomeDashboard.jsx'
 import CalendarView from './screens/calendar/CalendarView.jsx'
+import TipsEditor from './screens/teacher/TipsEditor.jsx'
 import LoginSplit from './screens/LoginSplit.jsx'
 import SetNewPassword from './screens/auth/SetNewPassword.jsx'
 
@@ -236,6 +237,13 @@ function AppInner() {
               {TEACHER_NAV.filter((i) => i.view).map((i) => (
                 <Route key={i.to} path={i.to} element={teacherRoute(i.view)} />
               ))}
+
+              {/* Sổ tay lớp: màn hình riêng, không phải một tab của Teacher.jsx
+                  nên không sinh ra từ vòng lặp trên. RLS mới là hàng rào thật
+                  (policy tips_write dùng is_teacher); RequireRole ở đây chỉ để
+                  học sinh khỏi lạc vào một trang mà mọi nút đều báo lỗi. */}
+              <Route path="/professeur/carnet" element={<TipsEditor t={t} />} />
+
               <Route path="/professeur/*" element={<Navigate to="/professeur/dashboard" replace />} />
             </Route>
 

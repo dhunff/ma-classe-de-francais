@@ -14,6 +14,7 @@ import StudentDashboard from "./screens/dashboard/StudentDashboard.jsx";
 import TeacherDashboard from "./screens/dashboard/TeacherDashboard.jsx";
 import HomeDashboard from "./screens/dashboard/HomeDashboard.jsx";
 import CalendarView from "./screens/calendar/CalendarView.jsx";
+import TipsEditor from "./screens/teacher/TipsEditor.jsx";
 
 const VI = {
   /* Phải khớp đủ các khoá mà navItems.js dùng. Thiếu khoá nào thì t() trả về
@@ -23,11 +24,23 @@ const VI = {
     practice: "Luyện tập", calendar: "Lịch", settings: "Cài đặt",
     todo: "Cần làm", done: "Đã nộp", account: "Tài khoản", stats: "Thống kê",
     primary: "Điều hướng chính", collapse: "Thu gọn thanh bên", expand: "Mở rộng thanh bên",
-    menu: "Menu", people: "Lớp của bạn", close: "Đóng menu", open_menu: "Mở menu" },
+    menu: "Menu", people: "Lớp của bạn", close: "Đóng menu", open_menu: "Mở menu", tips: "Sổ tay lớp" },
   header: { teacher: "Giáo viên", student: "Học sinh", logout: "Đăng xuất",
     search: "Tìm bài tập, học sinh…", dark_mode: "Chuyển sang nền tối", light_mode: "Chuyển sang nền sáng",
     dark_mode_label: "Nền tối", settings: "Cài đặt" },
   empty: { no_submission: "Hiện tại chưa có bài nộp nào." },
+  tips: {
+    title: 'Sổ tay lớp', subtitle: 'Mẹo hiện trong sổ tay của học sinh',
+    add: 'Thêm mẹo', edit: 'Sửa', delete: 'Xoá', cancel: 'Huỷ', save: 'Lưu',
+    confirm_delete: 'Xoá hẳn mẹo này?',
+    move_up: 'Đưa lên trên', move_down: 'Đưa xuống dưới',
+    f_title: 'Tiêu đề', f_title_ph: 'Ví dụ: à cause de / grâce à',
+    f_body: 'Nội dung', f_body_ph: 'Viết ngắn gọn. Mỗi dòng ở đây là một dòng trong sổ tay.',
+    need_title: 'Hãy nhập tiêu đề.',
+    err_save: 'Không lưu được. Kiểm tra mạng rồi thử lại.',
+    empty_title: 'Chưa có mẹo nào',
+    empty_body: 'Thêm mẹo đầu tiên — nó sẽ hiện trong sổ tay của mọi học sinh.',
+  },
   carnet: {
     title: 'Sổ tay của tôi', subtitle: 'Mẹo và cấu trúc hay quên',
     open: 'Mở sổ tay', close: 'Đóng sổ tay',
@@ -340,6 +353,9 @@ function Preview() {
           } />
           <Route path="/professeur/exercices" element={<Stub label={t("nav.exercises")} />} />
           <Route path="/professeur/eleves" element={<Stub label={t("nav.students")} />} />
+          <Route path="/professeur/carnet" element={
+            <><Controls /><TipsEditor t={t} initialTips={empty ? [] : mockTips.map((x,i)=>({...x, ord:(i+1)*10}))} /></>
+          } />
           <Route path="/professeur/parametres" element={<Stub label={t("nav.settings")} />} />
 
           <Route path="/etudiant/dashboard" element={

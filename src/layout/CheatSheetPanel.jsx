@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Search, Lightbulb, Inbox, SearchX } from "lucide-react";
-import { load } from "../shared/storage.js";
+import { loadTips } from "../shared/tips.js";
 
 /* Sổ tay — tấm trượt ra từ mép phải, chứa mẹo và cấu trúc hay quên.
  *
@@ -11,15 +11,13 @@ import { load } from "../shared/storage.js";
  * lên phần trắng, không bao giờ liếm sang thanh bên xanh. Dùng `fixed` là mất
  * đúng hiệu ứng "lồng trong thẻ" mà cả bố cục đang dựa vào.
  *
- * DỮ LIỆU THẬT. Mẹo đọc từ kho `mcf-tips`; chưa có thì hiện trạng thái rỗng
- * nói rõ lý do. Không nhét vài mẹo mẫu vào mã — học sinh sẽ tưởng giáo viên
- * viết, mà giáo viên lại không sửa được. Fixture để xem bố cục nằm ở
- * preview.jsx.
+ * DỮ LIỆU THẬT, từ bảng `public.tips` (migration 009). Giáo viên soạn ở
+ * /professeur/carnet. Chưa có mẹo nào thì hiện trạng thái rỗng nói rõ lý do —
+ * không nhét mẹo mẫu vào mã, vì học sinh sẽ tưởng giáo viên viết mà giáo viên
+ * lại không sửa được. Fixture để xem bố cục nằm ở preview.jsx.
  *
  * Preflight bị tắt nên mọi <button>/<input> đều tự khai border và nền.
  */
-
-const TIPS_KEY = "mcf-tips";
 
 /* Màu viền theo nhóm mẹo. Đi qua token để đảo đúng ở bản tối. */
 const TAG_TONE = {
@@ -81,9 +79,8 @@ export default function CheatSheetPanel({ open, onClose, t, tips: tipsProp }) {
   useEffect(() => {
     if (tipsProp || !open || loaded !== null) return;
     let off = false;
-    load(TIPS_KEY, []).then((raw) => {
-      if (!off) setLoaded(Array.isArray(raw) ? raw : []);
-    }).catch(() => { if (!off) setLoaded([]); });
+    loadTips().then((rows) => { if (!off) setLoaded(rows); })
+      .catch(() => { if (!off) setLoaded([]); });
     return () => { off = true; };
   }, [open, tipsProp, loaded]);
 

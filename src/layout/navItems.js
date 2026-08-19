@@ -1,6 +1,6 @@
 import {
   LayoutDashboard, BookOpen, Users, BarChart3, Dumbbell,
-  ClipboardList, CheckSquare, CalendarDays, Settings,
+  ClipboardList, CheckSquare, CalendarDays, Settings, Lightbulb,
 } from "lucide-react";
 
 /* Điều hướng của vỏ app.
@@ -23,6 +23,9 @@ export const TEACHER_NAV = [
   { to: "/professeur/eleves", labelKey: "nav.students", Icon: Users, view: "students" },
   { to: "/professeur/statistiques", labelKey: "nav.stats", Icon: BarChart3, view: "stats" },
   { to: "/professeur/entrainement", labelKey: "nav.practice", Icon: Dumbbell, view: "practice" },
+  /* Không có `view`: màn hình này không nằm trong Teacher.jsx mà là route
+     riêng, nên App.jsx khai báo tay. */
+  { to: "/professeur/carnet", labelKey: "nav.tips", Icon: Lightbulb },
 ];
 
 export const STUDENT_NAV = [
