@@ -163,8 +163,13 @@ Xem `docs/roadmap-delf.md` — có nhật ký quyết định ở §5.
 - ~~Gắn nhãn phân loại~~ — xong 2026-08-20 (migration 011): 215 câu có
   `point_gram`, 54 câu có `competence`. Số sau thấp vì thư viện chỉ có 54 câu
   đọc/nghe hiểu thật; xem docs/roadmap-delf.md §1.2.
-- **0/416 câu có `explanation`** — hộp giải thích khi sai đã dựng xong nhưng
-  chưa có nội dung.
+- **46/416 câu có `explanation`** — nhóm `cause_consequence` xong (migration
+  012). Còn `temps_present` (60), `temps_futur` (20), `temps_passe` (20),
+  `formation_mots` (24), `lexique_thematique` (30).
+
+  Lưu ý: **"câu hay sai" vẫn chưa đo được** — `submissions` chỉ 3 dòng và lịch
+  sử luyện tập ghi điểm theo cả bài. Cần bảng `answers` mới xếp được thứ tự ưu
+  tiên bằng dữ liệu thay vì bằng phán đoán.
 - **Nối ứng dụng vào bảng `exercises`/`questions`** — bảng đã tạo và chép đủ
   (migration 010, đối chiếu 39/39 bài · 416/416 câu), lớp truy cập
   `shared/exerciseStore.js` + `exerciseMap.js` đã xong và có 53 ca kiểm. Còn
