@@ -1,5 +1,4 @@
 import { supabase } from "../storageShim.js";
-import { load } from "./storage.js";
 import { fromRow, toRow, mergeByPair } from "./submissionMap.js";
 
 /* Lớp truy cập bài nộp — bảng `public.submissions`, mỗi bài một dòng.
@@ -15,10 +14,12 @@ import { fromRow, toRow, mergeByPair } from "./submissionMap.js";
  * đã đăng nhập đọc `s:%`, nên bất kỳ học sinh nào cũng đọc được bài nộp của
  * cả lớp. Bảng có RLS theo dòng nên chấm dứt luôn chuyện đó.
  *
- * GIAI ĐOẠN CHUYỂN TIẾP: đọc GỘP bảng + blob, GHI chỉ vào bảng.
- *   · Ghi chỉ vào bảng → lỗ bảo mật đóng ngay từ bản deploy này.
- *   · Đọc gộp → bài nộp cũ chưa kịp chép sang vẫn hiện, không ai mất gì.
- * Chạy migration 007 xong và số liệu khớp thì bỏ nhánh đọc blob bên dưới.
+ * ĐÃ CHUYỂN XONG. Migration 007 đối chiếu ra 12 = 12 — bảng chứa đủ mọi thứ
+ * blob có — nên nhánh đọc blob đã bỏ. Giữ lại nó bây giờ còn có hại: nó sẽ
+ * dựng lại chính những bản ghi mồ côi mà 008 vừa xoá.
+ *
+ * `s:mcf-submissions` VẪN CÒN trong kv_store, không đụng tới, làm bản sao lưu
+ * đầy đủ. Muốn khôi phục thì chạy lại phần chèn của migration 007.
  *
  * Phần ánh xạ dữ liệu nằm ở submissionMap.js — thuần, không I/O, có bộ kiểm
  * riêng (`npm run check:submissions`).
@@ -34,20 +35,13 @@ async function currentUserId() {
 /* Đọc bài nộp. RLS lo phần phạm vi: học sinh chỉ nhận dòng của mình, giáo viên
    nhận tất. Không lọc thêm ở đây — lọc phía client là hàng rào giả.
 
-   Bảng hỏng thì vẫn trả về phần blob, không ném lỗi: mất mạng giữa chừng mà
-   trang trắng thì tệ hơn là hiện dữ liệu cũ. */
+   Vẫn gộp qua mergeByPair dù chỉ còn một nguồn: bảng không có ràng buộc duy
+   nhất trên (exercise_id, student), nên nếu một lần ghi nào đó lỡ để lại hai
+   dòng cho cùng cặp thì giao diện phải hiện một, không phải hai. */
 export async function loadSubmissions() {
-  const [tableRes, blob] = await Promise.all([
-    supabase.from("submissions").select("*"),
-    load("mcf-submissions", []),
-  ]);
-
-  const fromTable = (tableRes?.data || []).map(fromRow);
-  const fromBlob = Array.isArray(blob) ? blob : [];
-
-  /* Thứ tự truyền vào có ý nghĩa: blob trước, bảng sau, để khi `at` bằng nhau
-     thì bản trong bảng thắng — nó là bản đã qua RLS. */
-  return mergeByPair([...fromBlob, ...fromTable]);
+  const { data, error } = await supabase.from("submissions").select("*");
+  if (error) return [];
+  return mergeByPair((data || []).map(fromRow));
 }
 
 /* Ghi một bài nộp MỚI. Thay bản cũ của cùng cặp (bài tập, học sinh), đúng
