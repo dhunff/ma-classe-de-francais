@@ -97,6 +97,50 @@ create index on answers (question_id, correct);
 create index on attempts (user_id, finished_at desc);
 ```
 
+### RLS — hệ quả của quyết định "đề dùng chung"
+
+Chốt ngày 2026-08-19: **một ngân hàng đề chung cho toàn hệ thống**, không chia
+theo giáo viên. Điều đó làm phần phân quyền đơn giản hẳn, nhưng phải viết đúng
+ngay từ đầu — bật RLS sau khi đã có dữ liệu thật là lúc dễ hở nhất.
+
+```sql
+alter table exercises enable row level security;
+alter table questions enable row level security;
+alter table attempts  enable row level security;
+alter table answers   enable row level security;
+
+-- Đề: ai đăng nhập cũng ĐỌC được bài đã xuất bản; chỉ giáo viên GHI.
+create policy "doc de da xuat ban" on exercises for select
+  using (published or auth.uid() = created_by);
+
+create policy "chi giao vien sua de" on exercises for all
+  using (exists (select 1 from profiles
+                 where id = auth.uid() and role = 'prof'));
+
+-- Bài làm: mỗi người chỉ thấy của mình. KHÔNG có ngoại lệ cho giáo viên ở đây;
+-- muốn giáo viên xem bài học sinh thì mở bằng policy riêng, có điều kiện lớp,
+-- chứ đừng nới policy này thành "prof đọc tất".
+create policy "chi doc bai lam cua minh" on attempts for all
+  using (auth.uid() = user_id);
+
+create policy "chi doc cau tra loi cua minh" on answers for all
+  using (exists (select 1 from attempts
+                 where id = answers.attempt_id and user_id = auth.uid()));
+```
+
+Điểm dễ sai nhất: `questions` chứa **đáp án**. Nếu policy của nó chỉ là "ai đăng
+nhập cũng đọc" thì học sinh mở DevTools là thấy đáp án trước khi làm. Hai cách
+xử lý:
+
+- Tách cột đáp án sang bảng `question_keys` riêng, chỉ đọc được sau khi có
+  `attempts.finished_at`; hoặc
+- Chấm ở phía server bằng Edge Function, client không bao giờ nhận đáp án.
+
+Cách thứ hai sạch hơn nhưng phải chuyển `gradingEngine.js` lên server. Hiện tại
+bài luyện tập chấm ở client và đáp án nằm sẵn trong bundle — chấp nhận được cho
+tự luyện, **không** chấp nhận được cho thi thử. Quyết định này gắn liền với việc
+làm Mode Examen ở Giai đoạn 2.
+
 `ms_spent` trông nhỏ nhặt nhưng nó là dữ liệu quý nhất: một câu **trả lời đúng
 nhưng mất 90 giây** ở kỳ thi tính giờ vẫn là điểm yếu, và không có trường này
 thì không phát hiện được.
@@ -175,6 +219,39 @@ nói được câu "bạn yếu ở dạng suy luận".
 
 Gắn nhãn này cho **mọi** câu hỏi. Với 415 câu hiện có, đây là việc tay — nhưng
 làm một lần và mở khoá vĩnh viễn phần phân tích.
+
+### 1.2b Trục thứ hai: `point_gram`
+
+Chốt ngày 2026-08-19: dùng **hai trục**. `competence` trả lời *"em yếu kỹ năng
+thi nào"*, `point_gram` trả lời *"em cần ôn lại bài gì"*. Hai câu hỏi khác nhau,
+hai danh sách khác nhau.
+
+Danh sách đóng — thêm giá trị mới thì thêm vào đây trước, đừng gõ tự do vào ô
+nhập, nếu không sáu tháng nữa sẽ có `subjonctif`, `Subjonctif` và `le subjonctif`
+nằm cạnh nhau và không nhóm được.
+
+| Nhóm | Mã | Bao gồm |
+|---|---|---|
+| Động từ | `temps_passe` | passé composé, imparfait, plus-que-parfait |
+| | `temps_futur` | futur simple, futur proche, futur antérieur |
+| | `subjonctif` | présent + passé, các mệnh đề đòi subjonctif |
+| | `conditionnel` | ba loại câu điều kiện |
+| | `voix_passive` | bị động, *se faire + inf.* |
+| Cấu trúc câu | `pronoms` | COD/COI, *y*, *en*, đại từ quan hệ |
+| | `articles_determinants` | mạo từ, sở hữu, chỉ định, số lượng |
+| | `negation` | *ne… que*, *ne… plus*, phủ định kép |
+| | `interrogation` | ba dạng câu hỏi, *quel/lequel* |
+| | `accord` | hợp giống số, hợp phân từ quá khứ |
+| Liên kết ý | `cause_consequence` | *parce que, car, grâce à, à cause de, donc* |
+| | `opposition_concession` | *mais, néanmoins, bien que, malgré* |
+| | `but_hypothese` | *pour que, afin de, au cas où* |
+| | `temps_connecteurs` | *depuis, pendant, il y a, dès que* |
+| | `discours_rapporte` | tường thuật, chuyển thì |
+| Từ vựng | `lexique_thematique` | theo chủ đề của kỳ thi |
+| | `registre` | trang trọng / thân mật |
+
+`competence` gắn cho **mọi** câu. `point_gram` chỉ gắn khi câu thật sự kiểm một
+điểm ngữ pháp cụ thể — bài đọc hiểu hỏi ý chính thì để trống, đừng cố nhét.
 
 ### 1.3 Vi học tập & tích luỹ
 
@@ -455,14 +532,17 @@ lại nó ở giai đoạn 2.
 **Thi thử tách hẳn khỏi thống kê luyện tập.**
 Ranh giới là `attempts.mode`. Chi tiết và hệ quả kỹ thuật ở §3.0.
 
+**Hai trục phân loại: `competence` + `point_gram`.**
+Danh sách giá trị đóng của cả hai ở §1.2 và §1.2b. `competence` gắn cho mọi câu,
+`point_gram` chỉ gắn khi câu thật sự kiểm một điểm ngữ pháp.
+
+**Một ngân hàng đề dùng chung toàn hệ thống.**
+Không chia kho theo giáo viên. Policy RLS tương ứng ở §0 — viết ngay lúc tạo
+bảng, đừng để sau.
+
 ### ⏳ Còn treo
 
-**Một trục hay hai trục phân loại?**
-Khuyến nghị hai: `competence` (kỹ năng thi) và `point_gram` (điểm ngữ pháp).
-Gộp làm một sẽ phải chọn giữa "phân tích được" và "ôn tập được". Chốt trước khi
-bắt đầu gắn nhãn 415 câu — làm lại là gắn lại từ đầu.
-
-**Đề dùng chung hay mỗi giáo viên một kho?**
-Hiện tại dùng chung toàn hệ thống. Với sản phẩm tự học thì đúng. Nhưng nếu định
-mở cho giáo viên khác, phải quyết **trước khi** ngân hàng đề lớn — về sau tách
-ra là một cuộc di trú đau đớn.
+**Chấm ở client hay ở server?**
+Hiện chấm ở client, đáp án nằm trong bundle. Chấp nhận được cho tự luyện, không
+chấp nhận được cho thi thử. Phải quyết trước khi làm Mode Examen (Giai đoạn 2) —
+xem cuối §0.
