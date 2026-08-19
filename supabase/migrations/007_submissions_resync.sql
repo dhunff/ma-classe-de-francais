@@ -41,6 +41,22 @@ exception when others then
 end;
 $$;
 
+-- ───────────── Số liệu TRƯỚC khi chạy ─────────────
+-- In ra để đối chiếu. Migration tự kiểm được thì không phải nhớ chạy tay một
+-- bộ câu lệnh riêng sau đó — mà bước hay bị quên nhất chính là bước kiểm.
+do $$
+declare n_bang int; n_blob int; n_null_at int; n_null_user int;
+begin
+  select count(*) into n_bang from public.submissions;
+  select count(*) into n_blob from public.kv_store k,
+    lateral jsonb_array_elements(k.value::jsonb)
+    where k.key = 's:mcf-submissions' and jsonb_typeof(k.value::jsonb) = 'array';
+  select count(*) into n_null_at   from public.submissions where at is null;
+  select count(*) into n_null_user from public.submissions where user_id is null;
+  raise notice 'TRUOC: bang=% blob=% thieu_moc_tg=% chua_gan_tai_khoan=%',
+    n_bang, n_blob, n_null_at, n_null_user;
+end $$;
+
 -- ───────────── 1. Chép nốt bài nộp còn thiếu ─────────────
 insert into public.submissions (id, exercise_id, student, user_id, graded, at, payload)
 select
@@ -77,6 +93,28 @@ set user_id = p.id
 from public.profiles p
 where t.user_id is null
   and lower(p.name) = lower(t.student);
+
+-- ───────────── Số liệu SAU khi chạy ─────────────
+do $$
+declare n_bang int; n_blob int; n_null_at int; n_null_user int;
+begin
+  select count(*) into n_bang from public.submissions;
+  select count(*) into n_blob from public.kv_store k,
+    lateral jsonb_array_elements(k.value::jsonb)
+    where k.key = 's:mcf-submissions' and jsonb_typeof(k.value::jsonb) = 'array';
+  select count(*) into n_null_at   from public.submissions where at is null;
+  select count(*) into n_null_user from public.submissions where user_id is null;
+
+  raise notice 'SAU  : bang=% blob=% thieu_moc_tg=% chua_gan_tai_khoan=%',
+    n_bang, n_blob, n_null_at, n_null_user;
+
+  -- Bảng phải chứa ít nhất mọi thứ blob có. Ít hơn nghĩa là bước chép hụt,
+  -- và lúc đó KHÔNG được xoá blob.
+  if n_bang < n_blob then
+    raise warning 'BANG IT HON BLOB (% < %) — buoc chep bi hut, dung xoa blob',
+      n_bang, n_blob;
+  end if;
+end $$;
 
 -- ──────────────────────── Kiểm tra sau khi chạy ────────────────────────
 --
