@@ -1,7 +1,11 @@
-# FRACILE — Lộ trình sản phẩm & Khung phương pháp luyện thi DELF/DALF
+# FRACILE — Lộ trình sản phẩm & Khung phương pháp luyện thi DELF
 
 > Viết ngày 2026-08-19. Phần "hiện trạng" dựa trên mã và dữ liệu thật đo được
 > tại thời điểm đó, không phải trên giả định.
+
+**Phạm vi đã chốt:** DELF **B1 và B2**. Không làm DALF C1 — quyết định ngày
+2026-08-19. Mọi chỗ trong tài liệu này đã bỏ C1; nếu sau này mở lại thì cần
+thêm bậc vào `LEVEL_COLORS` và chạy `npm run check:design` để kiểm tương phản.
 
 ---
 
@@ -42,7 +46,7 @@ mới, giữ blob làm bản dự phòng, rồi mới cắt.
 create table exercises (
   id            uuid primary key default gen_random_uuid(),
   title         text not null,
-  level         text not null,              -- A1 A2 B1 B2 B2+ C1
+  level         text not null,              -- A1 A2 B1 B2 B2+  (không có C1)
   usage_type    text not null default 'practice',
   time_limit    int,                        -- phút, null = không giới hạn
   reading_text  text,
@@ -97,17 +101,17 @@ create index on attempts (user_id, finished_at desc);
 nhưng mất 90 giây** ở kỳ thi tính giờ vẫn là điểm yếu, và không có trường này
 thì không phát hiện được.
 
-### Ba thứ đang thiếu, phát hiện khi đọc mã
+### Hai lỗ hổng còn lại, phát hiện khi đọc mã
 
-1. **Không có bậc C1.** `LEVEL_COLORS` trong `shared/tokens.js` dừng ở `B2+`.
-   Muốn nhắm DALF C1 phải thêm bậc — nhớ chạy `npm run check:design`, nó đo
-   tương phản từng cặp màu bậc.
-2. **Hệ kỹ năng lệch trục với DELF.** `SKILLS` hiện là `Grammaire, Vocabulaire,
+1. **Hệ kỹ năng lệch trục với DELF.** `SKILLS` hiện là `Grammaire, Vocabulaire,
    Écoute, Lecture…` — phân loại theo *nội dung ngữ pháp*. DELF chấm theo
    *kỹ năng thi*: CO, CE, PE, PO. Cần **cả hai trục**, đó là lý do lược đồ trên
    có `competence` lẫn `point_gram`.
-3. **Không có Production Orale.** Không có ghi âm, không có gì. Đây là lỗ hổng
+2. **Không có Production Orale.** Không có ghi âm, không có gì. Đây là lỗ hổng
    lớn nhất của một sản phẩm luyện DELF — PO chiếm 25/100 điểm.
+
+> Bậc C1 từng nằm ở đây như một lỗ hổng thứ ba. Đã bỏ khỏi phạm vi — xem đầu
+> tài liệu. `LEVEL_COLORS` giữ nguyên tới `B2+`, không cần đụng.
 
 ---
 
@@ -231,12 +235,12 @@ trống thành thứ kéo người dùng quay lại.
 
 ### 2.1 Cấu trúc thật của kỳ thi
 
-| | DELF B1 | DELF B2 | DALF C1 |
-|---|---|---|---|
-| CO | 25 phút · 25đ | 30 phút · 25đ | ~40 phút · 25đ |
-| CE | 45 phút · 25đ | 60 phút · 25đ | 50 phút · 25đ |
-| PE | 45 phút · 25đ | 60 phút · 25đ | 2h30 · 25đ |
-| PO | 15' chuẩn bị + 15' | 30' chuẩn bị + 20' | 60' chuẩn bị + 30' |
+| | DELF B1 | DELF B2 |
+|---|---|---|
+| CO | 25 phút · 25đ | 30 phút · 25đ |
+| CE | 45 phút · 25đ | 60 phút · 25đ |
+| PE | 45 phút · 25đ | 60 phút · 25đ |
+| PO | 15' chuẩn bị + 15' | 30' chuẩn bị + 20' |
 
 Đạt: **50/100 toàn bài VÀ ≥ 5/25 mỗi phần**. Ngưỡng thứ hai quan trọng hơn —
 học sinh trượt vì một kỹ năng chết chứ hiếm khi vì tổng điểm. Giao diện kết quả
@@ -282,6 +286,37 @@ lặng.
 
 ## 3. Phân tích & chữa bài
 
+### 3.0 Hai thang điểm, tách hẳn nhau
+
+**Đã chốt ngày 2026-08-19: điểm thi thử KHÔNG trộn vào thống kê luyện tập.**
+
+Lý do là hai thang đo hai thứ khác nhau:
+
+| | Luyện tập | Thi thử |
+|---|---|---|
+| Cách tính | **Điểm tốt nhất** sau nhiều lần thử | **Một lần duy nhất**, không làm lại |
+| Ý nghĩa | Đã học được chưa | Hôm nay thi thì được bao nhiêu |
+| Áp lực thời gian | Không | Có |
+
+Trộn vào nhau thì hỏng cả hai: điểm luyện tập kéo dự đoán thi lên quá lạc quan,
+còn một lần thi thử tệ lại làm biểu đồ tiến bộ trông như đi lùi trong khi người
+học chẳng quên gì.
+
+**Hệ quả kỹ thuật, phải nhớ khi code:**
+
+1. `attempts.mode` (`practice` | `exam`) là ranh giới. **Mọi** truy vấn thống kê
+   phải lọc theo nó — bỏ sót một chỗ là số liệu lẫn ngay.
+2. `skillBreakdown()` trong `shared/exercises.js` hiện gộp *bài được giao* +
+   *điểm tốt nhất khi luyện*. Khi có thi thử, nó vẫn chỉ được đọc hai nguồn đó.
+   Hàm này đã trả kèm `sources` để phần chú thích nói rõ dữ liệu từ đâu — giữ
+   nếp đó, thêm nguồn thứ ba thì thêm khoá vào `sources`.
+3. Giao diện tách làm **hai khối riêng**, không phải hai đường trên cùng biểu đồ:
+   - *Tiến độ luyện tập* — như hiện nay
+   - *Kết quả thi thử* — danh sách theo thời gian, mỗi lần một dòng, kèm điểm
+     từng phần CO/CE/PE và cảnh báo phần nào dưới 5/25
+4. Chuỗi ngày học và thẻ ghi nhớ tính **cả hai** — chúng đo thói quen, không đo
+   trình độ, nên ranh giới trên không áp dụng.
+
 ### 3.1 Điểm theo kỹ năng, không phải "7/10"
 
 Có trường `competence` rồi thì đây chỉ là một truy vấn:
@@ -292,7 +327,11 @@ select q.competence,
        count(*)                          as tong,
        round(avg(a.ms_spent))            as ms_tb
 from answers a join questions q on q.id = a.question_id
-where a.attempt_id in (select id from attempts where user_id = $1)
+where a.attempt_id in (
+  select id from attempts
+  where user_id = $1
+    and mode = 'practice'      -- BẮT BUỘC: xem §3.0, không trộn thi thử vào
+)
 group by q.competence;
 ```
 
@@ -376,7 +415,6 @@ Phần lớn là việc không hào nhoáng. Cố ý.
 | Chuyển `exercises` / `questions` sang bảng thật, ghi song song | Chặn mọi thứ phía sau |
 | Thêm `attempts` + `answers` | Không có nó thì không có phân tích |
 | Gắn nhãn `competence` cho 415 câu hiện có | Việc tay, làm một lần |
-| Thêm bậc **C1** vào `LEVEL_COLORS` | Một dòng, nhưng thiếu là không nhắm được DALF |
 | Viết `explanation` cho các câu hay sai | Hiện **0/415 câu** có |
 | Neo `evidence` cho bài CE | Tính năng khác biệt lớn nhất |
 
@@ -406,18 +444,25 @@ lại nó ở giai đoạn 2.
 
 ---
 
-## 5. Ba quyết định nên chốt sớm
+## 5. Nhật ký quyết định
 
-**1. Một trục hay hai trục phân loại?**
+### ✅ Đã chốt — 2026-08-19
+
+**Phạm vi dừng ở B2, không làm DALF C1.**
+`LEVEL_COLORS` giữ nguyên tới `B2+`. Mở lại sau này thì thêm một bậc và chạy
+`npm run check:design`.
+
+**Thi thử tách hẳn khỏi thống kê luyện tập.**
+Ranh giới là `attempts.mode`. Chi tiết và hệ quả kỹ thuật ở §3.0.
+
+### ⏳ Còn treo
+
+**Một trục hay hai trục phân loại?**
 Khuyến nghị hai: `competence` (kỹ năng thi) và `point_gram` (điểm ngữ pháp).
-Gộp làm một sẽ phải chọn giữa "phân tích được" và "ôn tập được".
+Gộp làm một sẽ phải chọn giữa "phân tích được" và "ôn tập được". Chốt trước khi
+bắt đầu gắn nhãn 415 câu — làm lại là gắn lại từ đầu.
 
-**2. Thi thử có tính vào thống kê chung không?**
-Khuyến nghị **tách riêng**. Điểm luyện tập là điểm-tốt-nhất-sau-nhiều-lần; điểm
-thi thử là một lần duy nhất. Trộn hai thang là làm hỏng cả hai. Trường
-`attempts.mode` đã dự trù chuyện này.
-
-**3. Đề dùng chung hay mỗi giáo viên một kho?**
+**Đề dùng chung hay mỗi giáo viên một kho?**
 Hiện tại dùng chung toàn hệ thống. Với sản phẩm tự học thì đúng. Nhưng nếu định
-mở cho giáo viên khác, phải quyết trước khi ngân hàng đề lớn — về sau tách ra
-là một cuộc di trú đau đớn.
+mở cho giáo viên khác, phải quyết **trước khi** ngân hàng đề lớn — về sau tách
+ra là một cuộc di trú đau đớn.
