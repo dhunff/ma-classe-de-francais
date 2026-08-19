@@ -9,6 +9,7 @@ import { ROLE_HOME, TEACHER_NAV, STUDENT_NAV } from './layout/navItems.js'
 
 import { C } from './shared/tokens.js'
 import { load } from './shared/storage.js'
+import { loadSubmissions } from './shared/submissions.js'
 import { supabase } from './storageShim.js'
 import { resolveRole } from './shared/authRole.js'
 import { loadRoster } from './shared/roster.js'
@@ -64,8 +65,11 @@ function AppInner() {
        sinh tự đăng ký nằm ở bảng profiles, còn mcf-accounts chỉ là danh sách
        mời do giáo viên gõ tay. Gộp ở đây nên mọi nơi tiêu thụ `accounts`
        không phải sửa gì. */
+    /* Bài nộp đọc qua loadSubmissions(): nó gộp bảng `submissions` với blob cũ
+       trong giai đoạn chuyển tiếp, và RLS lo phần phạm vi — học sinh chỉ nhận
+       dòng của mình, giáo viên nhận tất. Xem shared/submissions.js. */
     const [ex, sub, ac, cl] = await Promise.all([
-      load("mcf-exercises", []), load("mcf-submissions", []), loadRoster(), load("mcf-classes", []),
+      load("mcf-exercises", []), loadSubmissions(), loadRoster(), load("mcf-classes", []),
     ]);
     const cleanEx = (Array.isArray(ex) ? ex : []).map((e) => ({
       ...e,

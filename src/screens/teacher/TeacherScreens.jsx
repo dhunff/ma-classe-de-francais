@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { C, S, LEVEL_COLORS, LEVEL_PASTEL, QTYPES, VF_OPTS } from "../../shared/tokens.js";
 import { load, save, del } from "../../shared/storage.js";
+import { loadSubmissions, patchSubmission } from "../../shared/submissions.js";
 import { useT } from "../../shared/i18n.jsx";
 import { SKILLS, fmtDate, isLate, exSkills, assignedTo, totalScore } from "../../shared/exercises.js";
 import { uid, norm, stripHtml, wordCount, vfOk, fillAccepted, fillOk, autoQ, ordreOk, tableauCells, tableauOk, isQuestionAnswered, getUnansweredQuestionsCount } from "../../shared/questions.js";
@@ -960,31 +961,28 @@ function Progress({ ex, submissions, setSubmissions, accounts, back }) {
 
   // 🔁 Yêu cầu làm lại : reset điểm, đổi trạng thái sang redo + lưu lý do
   const requestRedo = async (student) => {
-    const latest = await load("mcf-submissions", []);
-    const next = latest.map((s) => {
-      if (!(s.exerciseId === ex.id && s.student === student)) return s;
-      return { ...s, redo: true, redoNote: redoNote.trim(), graded: false, openMarks: {}, autoScore: 0 };
+    const sub = byName[student];
+    if (!sub) return;
+    await patchSubmission({
+      ...sub, redo: true, redoNote: redoNote.trim(),
+      graded: false, openMarks: {}, autoScore: 0,
     });
-    await save("mcf-submissions", next);
-    setSubmissions(next); setRedoFor(null); setRedoNote("");
+    setSubmissions(await loadSubmissions());
+    setRedoFor(null); setRedoNote("");
   };
 
   const saveGrading = async (student) => {
     const sub = byName[student];
-    const latest = await load("mcf-submissions", []);
-    const next = latest.map((s) => {
-      if (!(s.exerciseId === ex.id && s.student === student)) return s;
-      return {
-        ...s,
-        comment: (drafts[student] ?? s.comment ?? ""),
-        feedbackUrl: (attachDrafts[student] ?? s.feedbackUrl ?? "").trim(),
-        qComments: { ...(s.qComments || {}), ...(qDrafts[student] || {}) },
-        openMarks: { ...(s.openMarks || {}), ...(marks[student] || {}) },
-        graded: true,
-      };
+    if (!sub) return;
+    await patchSubmission({
+      ...sub,
+      comment: (drafts[student] ?? sub.comment ?? ""),
+      feedbackUrl: (attachDrafts[student] ?? sub.feedbackUrl ?? "").trim(),
+      qComments: { ...(sub.qComments || {}), ...(qDrafts[student] || {}) },
+      openMarks: { ...(sub.openMarks || {}), ...(marks[student] || {}) },
+      graded: true,
     });
-    await save("mcf-submissions", next);
-    setSubmissions(next);
+    setSubmissions(await loadSubmissions());
   };
 
   return (

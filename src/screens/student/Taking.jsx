@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { C, S, LEVEL_COLORS, LEVEL_PASTEL, QTYPES, VF_OPTS } from "../../shared/tokens.js";
 import { load, save, del } from "../../shared/storage.js";
+import { loadSubmissions, saveSubmission } from "../../shared/submissions.js";
 import { useT } from "../../shared/i18n.jsx";
 import { SKILLS, fmtDate, isLate, exSkills, assignedTo, totalScore } from "../../shared/exercises.js";
 import { uid, norm, stripHtml, wordCount, vfOk, fillAccepted, fillOk, autoQ, ordreOk, tableauCells, tableauOk, isQuestionAnswered, getUnansweredQuestionsCount } from "../../shared/questions.js";
@@ -77,10 +78,12 @@ function Taking({ ex, name, setSubmissions, done }) {
       late: isLate(ex), at: Date.now(), comment: "", graded: false, timedOut: true,
       durationMs: Date.now() - startedAtRef.current,
     };
-    const latest = await load("mcf-submissions", []);
-    const next = [...latest.filter((s) => !(s.exerciseId === ex.id && s.student === name)), sub];
-    await save("mcf-submissions", next);
-    setSubmissions(next); await del(draftKey); await del(startKey);
+    /* Ghi vào bảng `submissions`, không còn ghi đè blob của cả lớp.
+       Hết giờ thì vẫn nộp kể cả khi ghi hỏng — mất bài vì lỗi mạng còn tệ hơn
+       là lưu được một bản chưa hoàn hảo, nên ở nhánh này không chặn lại. */
+    await saveSubmission(sub);
+    setSubmissions(await loadSubmissions());
+    await del(draftKey); await del(startKey);
     setTimeout(done, 1800); // cho học sinh thấy thông báo hết giờ rồi thoát
   };
 
@@ -119,11 +122,17 @@ function Taking({ ex, name, setSubmissions, done }) {
       autoScore, autoMax: autos.length, openMarks: {}, qComments: {},
       late: isLate(ex), at: Date.now(), comment: "", graded: false,
     };
-    const latest = await load("mcf-submissions", []);
-    const next = [...latest.filter((s) => !(s.exerciseId === ex.id && s.student === name)), sub];
-    const ok = await save("mcf-submissions", next);
-    if (ok) { setSubmissions(next); await del(draftKey); await del(startKey); done(); }
-    else { setErr("Impossible d'enregistrer la copie. Réessaie."); setSaving(false); }
+    const { ok } = await saveSubmission(sub);
+    if (ok) {
+      setSubmissions(await loadSubmissions());
+      await del(draftKey); await del(startKey);
+      done();
+    } else {
+      /* Giữ nguyên bản nháp khi ghi hỏng: học sinh bấm lại là nộp được, không
+         phải làm lại từ đầu. */
+      setErr("Impossible d'enregistrer la copie. Réessaie.");
+      setSaving(false);
+    }
   };
 
   const questionCards = ex.questions.map((q, i) => (
