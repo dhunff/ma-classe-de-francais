@@ -1,0 +1,62 @@
+[
+  {
+    "id": "t-connecteurs",
+    "tag": "Méthode",
+    "title": "Connecteurs : dừng lại ở từ đảo chiều",
+    "body": "néanmoins · cependant · toutefois · en revanche · or\nQuan điểm thật của tác giả thường nằm NGAY SAU những từ này. Đề Compréhension écrite hay đặt quan điểm đối lập ở phía trước để bẫy người đọc từng từ."
+  },
+  {
+    "id": "t-connecteurs-2",
+    "tag": "Méthode",
+    "title": "Bốn nhóm connecteurs cần nhận ra ngay",
+    "body": "Bổ sung — de plus, en outre, par ailleurs → đọc lướt, cùng luận điểm.\nĐảo chiều — néanmoins, cependant, or → DỪNG.\nNhân quả — car, puisque, étant donné que → đang giải thích.\nKết luận — ainsi, donc, en somme → câu trả lời 'ý chính' hay ở đây."
+  },
+  {
+    "id": "t-cause-polarite",
+    "tag": "Piège",
+    "title": "à cause de / grâce à",
+    "body": "grâce à = nguyên nhân TỐT.\nà cause de = nguyên nhân XẤU.\nCả hai đi với DANH TỪ hoặc đại từ nhấn (lui, elle, eux), không đi với mệnh đề có động từ chia."
+  },
+  {
+    "id": "t-contraction",
+    "tag": "Grammaire",
+    "title": "Co từ bắt buộc",
+    "body": "de + le → du · de + les → des\nà + le → au · à + les → aux\n« à cause de les » không tồn tại. Đây là lỗi bị bắt nhiều nhất trong phần QCM."
+  },
+  {
+    "id": "t-elision",
+    "tag": "Grammaire",
+    "title": "parce que → parce qu’",
+    "body": "Élision trước nguyên âm hoặc h câm: parce qu’il, parce qu’une, parce qu’elle.\nBắt buộc cả khi viết lẫn khi nói."
+  },
+  {
+    "id": "t-comme-car",
+    "tag": "Grammaire",
+    "title": "Comme mở đầu, car không bao giờ",
+    "body": "Comme il pleut, je reste. ✓\nJe reste comme il pleut. ✗\nCar thì ngược lại hoàn toàn: luôn nằm giữa câu, sau dấu phẩy."
+  },
+  {
+    "id": "t-pronom-tonique",
+    "tag": "Grammaire",
+    "title": "Sau giới từ dùng đại từ nhấn",
+    "body": "moi · toi · lui · elle · nous · vous · eux · elles\ngrâce à lui ✓ — grâce à il ✗\nĐại từ chủ ngữ (je, tu, il…) không bao giờ đứng sau giới từ."
+  },
+  {
+    "id": "t-devine",
+    "tag": "Vocabulaire",
+    "title": "Đoán nghĩa, đừng tra từ",
+    "body": "Trong phòng thi không có từ điển. Tập đoán từ tiền tố, hậu tố và ngữ cảnh câu — nhanh hơn, và đó chính là kỹ năng đề thi đang đo."
+  },
+  {
+    "id": "t-co-annonce",
+    "tag": "Méthode",
+    "title": "Nghe phần « annonce », đừng nghe từng từ",
+    "body": "Audio DELF gần như luôn tự công bố cấu trúc ở 15 giây đầu: « Trois points aujourd’hui… », « Nous verrons d’abord… ».\nLượt nghe 1: lấy bộ khung. Lượt nghe 2: lấy chi tiết. Khớp đúng giới hạn 2 lần của kỳ thi."
+  },
+  {
+    "id": "t-seuil",
+    "tag": "Méthode",
+    "title": "Ngưỡng đỗ: 50/100 VÀ ≥ 5/25 mỗi phần",
+    "body": "Ngưỡng thứ hai mới là thứ đánh trượt người ta. Một kỹ năng chết dưới 5 điểm là trượt cả kỳ thi dù tổng điểm cao.\nĐừng dồn hết thời gian ôn phần mình vốn đã giỏi."
+  }
+]

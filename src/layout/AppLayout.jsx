@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import Sidebar from "./Sidebar.jsx";
 import Topbar from "./Topbar.jsx";
+import CheatSheetPanel from "./CheatSheetPanel.jsx";
 import { titleKeyFor } from "./navItems.js";
 
 /* Vỏ ứng dụng — kiểu "thẻ lồng": nền xanh đặc làm khung, nội dung là một tấm
@@ -24,9 +25,10 @@ const RAIL_KEY = "mcf-rail-expanded";
 
 export default function AppLayout({
   session, t, lang, langs, onLang, dark, onToggleDark, bell, onLogout,
-  people = [], conversations = [],
+  people = [], conversations = [], tips,
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [carnetOpen, setCarnetOpen] = useState(false);
   const [query, setQuery] = useState("");
   const location = useLocation();
 
@@ -42,7 +44,7 @@ export default function AppLayout({
   });
 
   // Đổi trang thì đóng ngăn kéo — nếu không nó che mất trang vừa mở.
-  useEffect(() => { setMenuOpen(false); }, [location.pathname]);
+  useEffect(() => { setMenuOpen(false); setCarnetOpen(false); }, [location.pathname]);
 
   const titleKey = titleKeyFor(location.pathname);
 
@@ -68,8 +70,13 @@ export default function AppLayout({
 
       {/* Tấm thẻ nội dung. `min-w-0` là bắt buộc: phần tử flex mặc định
           `min-width: auto`, nên một bảng rộng bên trong sẽ nong cả thẻ ra thay
-          vì để chính nó cuộn ngang. */}
-      <div className="flex min-w-0 flex-1 flex-col overflow-hidden bg-bg shadow-2xl md:rounded-l-[2.5rem]">
+          vì để chính nó cuộn ngang.
+
+          `relative` để sổ tay neo được vào đây. Nó là con `absolute` của thẻ
+          này chứ không phải `fixed` toàn màn hình — nhờ vậy `overflow-hidden`
+          cắt nó theo đúng khung bo góc, và nó trượt đè lên phần trắng mà
+          không bao giờ liếm sang thanh bên xanh. */}
+      <div className="relative flex min-w-0 flex-1 flex-col overflow-hidden bg-bg shadow-2xl md:rounded-l-[2.5rem]">
         <Topbar
           session={session}
           title={titleKey ? t(titleKey) : null}
@@ -85,11 +92,15 @@ export default function AppLayout({
           query={query}
           onQuery={setQuery}
           onOpenMenu={() => setMenuOpen(true)}
+          onOpenCarnet={() => setCarnetOpen((v) => !v)}
+          carnetOpen={carnetOpen}
         />
 
         <main className="min-w-0 flex-1 overflow-y-auto px-4 pb-8 md:px-8">
           <Outlet context={{ query }} />
         </main>
+
+        <CheatSheetPanel open={carnetOpen} onClose={() => setCarnetOpen(false)} t={t} tips={tips} />
       </div>
     </div>
   );

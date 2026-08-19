@@ -1,5 +1,5 @@
 import React from "react";
-import { Search, Menu, Moon, Sun } from "lucide-react";
+import { Search, Menu, Moon, Sun, Lightbulb } from "lucide-react";
 import LangMenu from "./LangMenu.jsx";
 import MessagesMenu from "./MessagesMenu.jsx";
 import AvatarMenu from "./AvatarMenu.jsx";
@@ -19,7 +19,7 @@ import AvatarMenu from "./AvatarMenu.jsx";
 
 export default function Topbar({
   session, title, t, lang, langs, onLang, dark, onToggleDark, onLogout, bell,
-  conversations = [], query, onQuery, onOpenMenu,
+  conversations = [], query, onQuery, onOpenMenu, onOpenCarnet, carnetOpen,
 }) {
   const signedIn = !!session;
 
@@ -66,6 +66,26 @@ export default function Topbar({
           <MessagesMenu t={t} conversations={conversations} />
 
           {bell}
+
+          {/* Sổ tay: ngăn kéo tra cứu nhanh, đặt cạnh chuông vì cùng nhóm
+              "liếc một cái rồi quay lại việc đang làm". Đang mở thì nút đổi
+              nền để người dùng biết cái gì đang che nội dung. */}
+          <button
+            type="button"
+            onClick={onOpenCarnet}
+            aria-expanded={!!carnetOpen}
+            aria-label={t("carnet.open")}
+            title={t("carnet.title")}
+            className={[
+              "grid h-10 w-10 shrink-0 cursor-pointer place-items-center rounded-full border-0 p-0",
+              "transition-all duration-200 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-primary/40",
+              carnetOpen
+                ? "bg-primary-soft text-primary"
+                : "bg-transparent text-soft hover:bg-surface2 hover:text-ink",
+            ].join(" ")}
+          >
+            <Lightbulb size={19} />
+          </button>
 
           {signedIn ? (
             <>

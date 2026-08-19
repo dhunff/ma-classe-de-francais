@@ -28,6 +28,16 @@ const VI = {
     search: "Tìm bài tập, học sinh…", dark_mode: "Chuyển sang nền tối", light_mode: "Chuyển sang nền sáng",
     dark_mode_label: "Nền tối", settings: "Cài đặt" },
   empty: { no_submission: "Hiện tại chưa có bài nộp nào." },
+  carnet: {
+    title: 'Sổ tay của tôi', subtitle: 'Mẹo và cấu trúc hay quên',
+    open: 'Mở sổ tay', close: 'Đóng sổ tay',
+    search: 'Tìm trong sổ tay…',
+    empty_title: 'Sổ tay còn trống',
+    empty_body: 'Giáo viên chưa thêm mẹo nào. Chúng sẽ hiện ở đây.',
+    no_result_title: 'Không tìm thấy gì',
+    no_result_body: 'Thử một từ khoá khác, hoặc xoá ô tìm kiếm.',
+    count: '{n} mẹo',
+  },
   msg: {
     title: "Tin nhắn", title_unread: "Tin nhắn, {n} chưa đọc", new: "Soạn tin mới",
     soon: "Nhắn tin chưa mở",
@@ -219,6 +229,23 @@ const mockConversations = [
   { id: "m4", name: "Minh", preview: "Mai mình ôn cùng nhau không?", at: "12/08", unread: false },
 ];
 
+/* Mẹo cho sổ tay — CHỈ trong trang xem thử. Đường chạy thật đọc kho
+   `mcf-tips`; chưa có mẹo nào thì hiện trạng thái rỗng. */
+const mockTips = [
+  { id: "t1", tag: "Méthode", title: "Connecteurs: dừng lại ở từ đảo chiều",
+    body: "néanmoins · cependant · toutefois · en revanche · or\nQuan điểm thật của tác giả thường nằm NGAY SAU những từ này. Đề CE hay đặt quan điểm đối lập ở phía trước để bẫy." },
+  { id: "t2", tag: "Piège", title: "à cause de / grâce à",
+    body: "grâce à = nguyên nhân TỐT. à cause de = nguyên nhân XẤU.\nCả hai đi với DANH TỪ hoặc đại từ nhấn, không đi với mệnh đề." },
+  { id: "t3", tag: "Grammaire", title: "Co từ bắt buộc",
+    body: "de + le → du · de + les → des\nà + le → au · à + les → aux\n« à cause de les » không tồn tại." },
+  { id: "t4", tag: "Grammaire", title: "parce que → parce qu’",
+    body: "Élision trước nguyên âm hoặc h câm: parce qu’il, parce qu’une." },
+  { id: "t5", tag: "Méthode", title: "Comme luôn mở đầu câu",
+    body: "Comme il pleut, je reste. ✓\nJe reste comme il pleut. ✗\nCar thì ngược lại: không bao giờ mở đầu câu." },
+  { id: "t6", tag: "Vocabulaire", title: "Đoán nghĩa, đừng tra từ",
+    body: "Trong phòng thi không có từ điển. Tập đoán từ tiền tố, hậu tố và ngữ cảnh — nhanh hơn, và đó chính là kỹ năng đề thi đo." },
+];
+
 const mockPendingTasks = [
   { id: "t1", title: "Le passé composé", level: "B1", skills: ["Grammaire"],
     questions: qs(14), deadline: day(-2), createdAt: hoursAgo(120) },
@@ -284,6 +311,7 @@ function Preview() {
       t={t} lang={lang} langs={LANGS} onLang={setLang}
       dark={dark} onToggleDark={toggleDark} onLogout={() => {}} bell={null}
       conversations={empty ? [] : mockConversations}
+      tips={empty ? [] : mockTips}
     />
   );
 
