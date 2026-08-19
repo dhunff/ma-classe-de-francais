@@ -17,14 +17,46 @@ không truy vấn được.
 
 ### Hiện trạng đo được
 
-| | |
-|---|---|
-| Bảng Postgres thật | `profiles`, `exercise_access` — hết |
-| Mọi thứ còn lại | blob JSON trong `kv_store` |
-| `mcf-practice` | **144 KB** cho 39 bài / 415 câu |
-| `mcf-submissions` | một blob chứa bài nộp của **toàn bộ** học sinh |
+Nền tảng máy chủ đã khá hơn nhiều so với những gì nhìn từ `src/`. Có **6
+migration**, **4 bảng thật**, RLS đầy đủ, và **2 Edge Function** đang chạy.
 
-### Vì sao đây là chặn đường
+| Bảng | Trạng thái |
+|---|---|
+| `profiles` | Xong. Trigger tự điền từ `auth.users`, RLS theo vai |
+| `exercise_access` | Xong. Client chỉ đọc; ghi qua Edge Function giữ `service_role` |
+| `submissions` | **Tạo rồi nhưng ứng dụng chưa dùng** — xem cảnh báo dưới |
+| `kv_store` | Còn là kho chính. RLS đã siết ở migration 002 |
+
+| Blob còn lại trong `kv_store` | Kích thước |
+|---|---|
+| `s:mcf-practice` | **144 KB** — 39 bài / 415 câu |
+| `s:mcf-exercises` | 9 KB |
+| `s:mcf-submissions` | bài nộp của **toàn bộ** học sinh trong một dòng |
+
+Hàm `public.is_teacher()` (migration 002) đọc vai từ `app_metadata` chứ không
+phải `user_metadata` — đúng, vì `user_metadata` do chính người dùng ghi được.
+Mọi policy mới đều nên dùng lại hàm này.
+
+### ⚠️ Việc dở dang cần đóng trước tiên
+
+Migration 005 tạo bảng `submissions`, chép dữ liệu sang, viết đủ RLS theo dòng.
+**Nhưng `src/` chưa hề đụng tới bảng đó** — `Taking.jsx` và `App.jsx` vẫn
+`load`/`save` blob `s:mcf-submissions`.
+
+Hai hệ quả, cái sau nặng hơn cái trước:
+
+1. **Bảng đang trôi khỏi thực tế.** Mọi bài nộp kể từ lúc chạy 005 chỉ vào
+   blob. Bước kiểm trong chính file đó — *"hai số phải bằng nhau"* — bây giờ
+   chắc chắn lệch.
+2. **Lỗ hổng mà 005 sinh ra để vá vẫn đang mở.** Migration 002 nói thẳng: RLS
+   phân quyền theo dòng, mà cả lớp chung một dòng, nên *"một học sinh ĐÃ ĐĂNG
+   NHẬP vẫn có thể xoá sạch bài nộp của cả lớp nếu cố tình"*. Bảng mới đóng
+   được lỗ đó, nhưng chỉ khi ứng dụng thật sự chuyển sang dùng.
+
+Chuyển `Taking.jsx` sang ghi vào bảng là việc nhỏ hơn nhiều so với phần còn lại
+của Giai đoạn 1, và nó vá một lỗ bảo mật đang mở. Làm trước.
+
+### Vì sao phần blob còn lại vẫn là chặn đường
 
 **Ghi đè mất dữ liệu.** Mọi thao tác lưu đều là đọc-sửa-ghi cả blob. Hai giáo
 viên sửa bài cùng lúc thì một người mất trắng. `AccountPage.jsx` đã có chú thích
@@ -37,10 +69,18 @@ bài sẽ là ~750 KB, ở 500 bài là ~1,8 MB — mỗi lần mở trang, cho 
 **Không thể hỏi câu hỏi nào có ích.** "Học sinh này yếu ở dạng câu suy luận"
 là một câu `GROUP BY`. Trên blob JSON thì không có `GROUP BY`.
 
-### Đề xuất: chuyển sang bảng thật, làm dần
+### Đề xuất: chuyển sang bảng thật, theo đúng khuôn 005
 
-Không đập đi làm lại. Ghi song song (dual-write) trong 2–4 tuần, đọc từ bảng
-mới, giữ blob làm bản dự phòng, rồi mới cắt.
+Không cần phát minh quy trình — migration 005 đã là bản mẫu chạy được:
+
+1. Tạo bảng mới, bật RLS, viết policy dùng `is_teacher()`
+2. Chép dữ liệu từ blob sang bằng `jsonb_array_elements`
+3. **Giữ nguyên blob làm bản sao lưu**, không xoá
+4. Kèm sẵn câu SQL đối chiếu số lượng ở cuối file
+5. Chỉ chuyển ứng dụng sang bảng mới **sau khi** hai số khớp
+6. Xoá blob sau cùng, khi đã chạy ổn một thời gian
+
+Bước 5 chính là bước `submissions` đang mắc kẹt. Đừng lặp lại với `exercises`.
 
 ```sql
 create table exercises (
@@ -100,8 +140,10 @@ create index on attempts (user_id, finished_at desc);
 ### RLS — hệ quả của quyết định "đề dùng chung"
 
 Chốt ngày 2026-08-19: **một ngân hàng đề chung cho toàn hệ thống**, không chia
-theo giáo viên. Điều đó làm phần phân quyền đơn giản hẳn, nhưng phải viết đúng
-ngay từ đầu — bật RLS sau khi đã có dữ liệu thật là lúc dễ hở nhất.
+theo giáo viên. Điều đó làm phần phân quyền đơn giản hẳn.
+
+Dùng lại `public.is_teacher()` đã có từ migration 002 — đừng viết hàm kiểm vai
+thứ hai. Nó đọc `app_metadata`, là chỗ duy nhất người dùng không tự sửa được.
 
 ```sql
 alter table exercises enable row level security;
@@ -110,23 +152,28 @@ alter table attempts  enable row level security;
 alter table answers   enable row level security;
 
 -- Đề: ai đăng nhập cũng ĐỌC được bài đã xuất bản; chỉ giáo viên GHI.
-create policy "doc de da xuat ban" on exercises for select
-  using (published or auth.uid() = created_by);
+create policy exercises_read on exercises for select to authenticated
+  using (published or public.is_teacher());
 
-create policy "chi giao vien sua de" on exercises for all
-  using (exists (select 1 from profiles
-                 where id = auth.uid() and role = 'prof'));
+create policy exercises_write_teacher on exercises for all to authenticated
+  using (public.is_teacher()) with check (public.is_teacher());
 
--- Bài làm: mỗi người chỉ thấy của mình. KHÔNG có ngoại lệ cho giáo viên ở đây;
--- muốn giáo viên xem bài học sinh thì mở bằng policy riêng, có điều kiện lớp,
--- chứ đừng nới policy này thành "prof đọc tất".
-create policy "chi doc bai lam cua minh" on attempts for all
-  using (auth.uid() = user_id);
+-- Bài làm: mỗi người chỉ thấy của mình.
+-- Giáo viên cần xem bài học sinh thì thêm policy RIÊNG cho vai prof, giống
+-- cách 005 làm với submissions — đừng nới policy này thành "prof đọc tất".
+create policy attempts_own on attempts for all to authenticated
+  using (user_id = (select auth.uid()))
+  with check (user_id = (select auth.uid()));
 
-create policy "chi doc cau tra loi cua minh" on answers for all
+create policy answers_own on answers for all to authenticated
   using (exists (select 1 from attempts
-                 where id = answers.attempt_id and user_id = auth.uid()));
+                 where id = answers.attempt_id
+                   and user_id = (select auth.uid())));
 ```
+
+`(select auth.uid())` chứ không phải `auth.uid()` trần: bọc trong subquery thì
+PostgreSQL tính một lần cho cả câu thay vì tính lại trên từng dòng. Migration
+003 và 005 đã viết theo lối này — giữ nhất quán.
 
 Điểm dễ sai nhất: `questions` chứa **đáp án**. Nếu policy của nó chỉ là "ai đăng
 nhập cũng đọc" thì học sinh mở DevTools là thấy đáp án trước khi làm. Hai cách
@@ -144,6 +191,22 @@ làm Mode Examen ở Giai đoạn 2.
 `ms_spent` trông nhỏ nhặt nhưng nó là dữ liệu quý nhất: một câu **trả lời đúng
 nhưng mất 90 giây** ở kỳ thi tính giờ vẫn là điểm yếu, và không có trường này
 thì không phát hiện được.
+
+### Đã có sẵn, dùng lại đừng viết lại
+
+Thư mục `supabase/` chứa nhiều thứ có thể sao chép thẳng cho các bảng mới:
+
+| Có sẵn | Dùng lại vào việc gì |
+|---|---|
+| `public.is_teacher()` — migration 002 | Mọi policy phân vai. Đọc `app_metadata`, an toàn |
+| Khuôn migration 005 | Bản mẫu đầy đủ cho việc blob → bảng, kèm bước đối chiếu |
+| `functions/sepay-webhook/` | Bản mẫu Edge Function có bí mật + `service_role` |
+| `functions/grant-access/` | Bản mẫu Edge Function được client gọi |
+| Trigger `handle_new_user` — 003 | Nếp tự điền bảng phụ từ `auth.users` |
+| `RUNBOOK.md`, `README.md` | Quy trình vận hành đã viết sẵn |
+
+Nghĩa là Giai đoạn 1 **không phải dựng móng** — móng có rồi. Chỉ là xây tiếp
+theo đúng nếp đã có.
 
 ### Hai lỗ hổng còn lại, phát hiện khi đọc mã
 
@@ -489,11 +552,15 @@ Phần lớn là việc không hào nhoáng. Cố ý.
 
 | Việc | Vì sao trước |
 |---|---|
-| Chuyển `exercises` / `questions` sang bảng thật, ghi song song | Chặn mọi thứ phía sau |
+| **Chuyển `Taking.jsx` sang bảng `submissions`** | Bảng đã sẵn từ migration 005; lỗ bảo mật ở 002 vẫn đang mở tới khi làm xong |
+| Chuyển `exercises` / `questions` sang bảng thật, theo khuôn 005 | Chặn mọi thứ phía sau |
 | Thêm `attempts` + `answers` | Không có nó thì không có phân tích |
-| Gắn nhãn `competence` cho 415 câu hiện có | Việc tay, làm một lần |
+| Gắn nhãn `competence` + `point_gram` cho 415 câu | Việc tay, làm một lần |
 | Viết `explanation` cho các câu hay sai | Hiện **0/415 câu** có |
 | Neo `evidence` cho bài CE | Tính năng khác biệt lớn nhất |
+
+Việc đầu tiên nhỏ và nên làm ngay: bảng, dữ liệu và policy đều đã có, chỉ thiếu
+phía ứng dụng đọc ghi vào đó.
 
 Cuối giai đoạn 1, sản phẩm chưa có tính năng mới nào long lanh — nhưng mỗi bài
 tập đã dạy được điều gì đó, và dữ liệu đã sẵn cho phân tích.
