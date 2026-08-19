@@ -163,6 +163,18 @@ Xem `docs/roadmap-delf.md` — có nhật ký quyết định ở §5.
   bộ phần phân tích theo kỹ năng.
 - **0/415 câu có `explanation`** — hộp giải thích khi sai đã dựng xong nhưng
   chưa có nội dung.
-- **Chuyển `exercises`/`questions` sang bảng** — `mcf-practice` đã 144 KB.
+- **Nối ứng dụng vào bảng `exercises`/`questions`** — bảng đã tạo và chép đủ
+  (migration 010, đối chiếu 39/39 bài · 416/416 câu), lớp truy cập
+  `shared/exerciseStore.js` + `exerciseMap.js` đã xong và có 53 ca kiểm. Còn
+  thiếu: sửa **20 chỗ gọi** `load/save("mcf-practice"|"mcf-exercises")` trong
+  `App.jsx`, `PracticeHub.jsx`, `TeacherScreens.jsx`, `shared/access.js`.
+
+  **Đọc và ghi phải chuyển CÙNG LÚC.** Đọc từ bảng mà còn ghi vào blob thì bảng
+  thành cũ ngay sau lần giáo viên sửa bài đầu tiên.
+
+  Vướng mắc thật: `persist()` trong PracticeHub ghi cả mảng, nên chuyển thẳng
+  thành 37 lần upsert mỗi lần lưu. Cần đổi sang lưu theo TỪNG bài
+  (`saveExercise`) trước, rồi mới cắt blob. Và phải có phiên giáo viên để kiểm
+  chứng — trình soạn bài không mở được nếu chưa đăng nhập.
 - **Không có Production Orale** — 25/100 điểm của kỳ thi, chưa có gì.
 - `s:mcf-submissions` vẫn giữ làm sao lưu, chưa xoá.
