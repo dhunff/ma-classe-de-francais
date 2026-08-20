@@ -26,6 +26,7 @@ npm run check:grading      # chấm bài tiếng Pháp (46 ca)
 npm run check:hooks        # hook đặt sau `return` sớm
 npm run check:submissions  # ánh xạ bài nộp ↔ bảng (50 ca)
 npm run check:exercises    # ánh xạ bài tập ↔ hai bảng (53 ca)
+npm run check:store        # kho đề có chỗ nào còn gọi blob không (8 ca)
 ```
 
 Mỗi bộ sinh ra từ một lỗi thật đã lọt lên production. **Build xanh không có
@@ -105,7 +106,12 @@ Panel phụ (sổ tay) là con `absolute` của tấm thẻ, không phải `fixe
 
 | Đã là bảng thật | Còn là blob `kv_store` |
 |---|---|
-| `profiles`, `exercise_access`, `submissions`, `tips`, `exercises`, `questions` | `mcf-exercises`, `mcf-practice` (144 KB), `mcf-profiles`, `mcf-accounts`… |
+| `profiles`, `exercise_access`, `submissions`, `tips`, `exercises`, `questions` | `mcf-profiles`, `mcf-accounts`, `mcf-classes`, `mcf-folders`, `mcf-custom-cats`, `mcf-ph-<tên>`… |
+
+Kho đề đi qua `shared/exerciseStore.js`, KHÔNG gọi `load("mcf-practice")` nữa —
+`check:store` canh chỗ này. Hai kho phân biệt bằng cột `store`
+('practice' | 'assignment'), nên chuyển bài giữa hai bên giờ là một lệnh ghi
+chứ không phải ghi hai blob rồi cầu cho đừng hỏng giữa chừng.
 
 Blob có ba vấn đề: đọc-sửa-ghi làm mất dữ liệu khi hai người sửa cùng lúc, chi
 phí đọc tăng tuyến tính, không truy vấn được. **Đừng thêm blob mới.**
@@ -188,18 +194,18 @@ Xem `docs/roadmap-delf.md` — có nhật ký quyết định ở §5.
   Lưu ý: **"câu hay sai" vẫn chưa đo được** — `submissions` chỉ 3 dòng và lịch
   sử luyện tập ghi điểm theo cả bài. Cần bảng `answers` mới xếp được thứ tự ưu
   tiên bằng dữ liệu thay vì bằng phán đoán.
-- **Nối ứng dụng vào bảng `exercises`/`questions`** — bảng đã tạo và chép đủ
-  (migration 010, đối chiếu 39/39 bài · 416/416 câu), lớp truy cập
-  `shared/exerciseStore.js` + `exerciseMap.js` đã xong và có 53 ca kiểm. Còn
-  thiếu: sửa **20 chỗ gọi** `load/save("mcf-practice"|"mcf-exercises")` trong
-  `App.jsx`, `PracticeHub.jsx`, `TeacherScreens.jsx`, `shared/access.js`.
+- ~~Nối ứng dụng vào bảng `exercises`/`questions`~~ — xong 2026-08-20. Cả 20
+  chỗ gọi đã chuyển, `check:store` (8 ca) canh không cho quay lại blob.
 
-  **Đọc và ghi phải chuyển CÙNG LÚC.** Đọc từ bảng mà còn ghi vào blob thì bảng
-  thành cũ ngay sau lần giáo viên sửa bài đầu tiên.
+  **Đường ĐỌC đã kiểm chứng trên trình duyệt**: `/decouvrir` không đăng nhập,
+  không còn lời gọi `kv_store` nào cho kho đề, sáu nhóm đếm ra đủ 37 bài, số
+  câu mỗi bài hiện đúng.
 
-  Vướng mắc thật: `persist()` trong PracticeHub ghi cả mảng, nên chuyển thẳng
-  thành 37 lần upsert mỗi lần lưu. Cần đổi sang lưu theo TỪNG bài
-  (`saveExercise`) trước, rồi mới cắt blob. Và phải có phiên giáo viên để kiểm
-  chứng — trình soạn bài không mở được nếu chưa đăng nhập.
+  **Đường GHI CHƯA kiểm chứng được** — RLS đòi `is_teacher()`, mà không mở được
+  phiên giáo viên. Cần thử tay: soạn bài mới, sửa bài cũ, xoá bài, đổi thư mục,
+  và chuyển bài giữa Entraînement ↔ Devoir.
+
+  Blob `s:mcf-practice` / `s:mcf-exercises` VẪN GIỮ làm sao lưu, cộng bản
+  `__backup_016`. Chưa xoá, và đừng xoá cho tới khi đường ghi được thử tay.
 - **Không có Production Orale** — 25/100 điểm của kỳ thi, chưa có gì.
 - `s:mcf-submissions` vẫn giữ làm sao lưu, chưa xoá.

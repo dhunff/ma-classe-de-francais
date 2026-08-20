@@ -7,6 +7,7 @@ import {
 import { C, S, QTYPES, VF_OPTS } from "./shared/tokens.js";
 import { uid, fillOk, fillAccepted, vfOk, stripHtml, autoQ, tableauOk, tableauCells, ordreOk, getUnansweredQuestionsCount } from "./shared/questions.js";
 import { load, save } from "./shared/storage.js";
+import { loadPractice, saveExercise, deleteExercise, patchExerciseMeta, clearFolder } from "./shared/exerciseStore.js";
 import { exSkills } from "./shared/exercises.js";
 import { WrongExplanation } from "./shared/ui.jsx";
 import { useT } from "./shared/i18n.jsx";
@@ -25,7 +26,8 @@ import { Lock } from "lucide-react";
    Dùng CHUNG Builder với phần Giao bài : trộn QCM / điền từ /
    chia động từ / tự luận, audio sticky, bài đọc split-screen,
    Import DOCX, giới hạn thời gian. Chấm ngay + lưu lịch sử.
-   Shared key: "mcf-practice" · Lịch sử cá nhân: "mcf-ph-<name>"
+   Kho đề: bảng `exercises` + `questions`, store='practice'
+   Lịch sử cá nhân: vẫn là blob "mcf-ph-<name>"
 ============================================================ */
 
 /* `skill` là GIÁ TRỊ LƯU trong database — ex.skill và ex.skills mang đúng
@@ -104,14 +106,10 @@ function PracticeHubInner({ role = "eleve", name = "", accounts = [], onRequireL
 
   useEffect(() => {
     (async () => {
-      const rawEx = await load("mcf-practice", []);
-      // Chuẩn hoá : bài hỏng (thiếu questions/level/title) không thể làm sập trang
-      setExercises((Array.isArray(rawEx) ? rawEx : []).map((e) => ({
-        ...e,
-        questions: Array.isArray(e.questions) ? e.questions : [],
-        level: e.level || "B1",
-        title: e.title || "(Sans titre)",
-      })));
+      /* Không còn bước chuẩn hoá thủ công: `exerciseFromRow` đã bảo đảm
+         questions luôn là mảng, còn title/level có DEFAULT NOT NULL trong
+         lược đồ (migration 010). Bài hỏng không lọt tới đây được nữa. */
+      setExercises(await loadPractice());
       const rawCats = await load("mcf-custom-cats", []);
       setCats(Array.isArray(rawCats) ? rawCats.filter((c) => typeof c === "string" && c.trim()) : []);
       const rawFolders = await load("mcf-folders", []);
@@ -142,7 +140,14 @@ function PracticeHubInner({ role = "eleve", name = "", accounts = [], onRequireL
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [topTab]);
 
-  const persist = async (next) => { setExercises(next); await save("mcf-practice", next); };
+  /* Trước đây là `persist(mảng-mới)`: ghi lại cả 37 bài chỉ để xoá một bài.
+     Giờ xoá đúng một dòng, và lỗi được BÁO ra thay vì im lặng — trước kia
+     `save` trả false thì giao diện vẫn hiện như đã xoá xong. */
+  const removeEx = async (id) => {
+    const r = await deleteExercise(id);
+    if (!r.ok) { alert("❌ Échec de la suppression."); return; }
+    setExercises((prev) => prev.filter((e) => e.id !== id));
+  };
   // 📋 Dupliquer : deep copy + regenerate toàn bộ ID (bài + câu hỏi)
   const duplicate = async (ex) => {
     const copy = typeof structuredClone === "function" ? structuredClone(ex) : JSON.parse(JSON.stringify(ex));
@@ -151,10 +156,12 @@ function PracticeHubInner({ role = "eleve", name = "", accounts = [], onRequireL
     copy.title = (ex.title || "Exercice") + " (Copie)";
     copy.assignedTo = null; copy.deadline = "";
     copy.questions = (copy.questions || []).map((q) => ({ ...q, id: uid() }));
-    const latest = await load("mcf-practice", []);
-    const next = [...latest, copy];
-    setExercises(next);
-    await save("mcf-practice", next);
+    /* Không cần đọc lại cả kho trước khi thêm: chèn một dòng không đụng gì tới
+       các bài khác. Bước `load` cũ tồn tại chỉ để khỏi đè mất bài người khác
+       vừa tạo — với bảng thì chuyện đó không xảy ra được. */
+    const r = await saveExercise(copy, "practice");
+    if (!r.ok) { alert("❌ Échec de la duplication."); return; }
+    setExercises((prev) => [...prev, copy]);
   };
   const saveHist = async (exId, score, max) => {
     const prev = hist[exId] || { best: -1, tries: 0 };
@@ -179,18 +186,19 @@ function PracticeHubInner({ role = "eleve", name = "", accounts = [], onRequireL
   /* Suppression SÛRE : 1) libérer les exercices (folderId -> null)  2) supprimer le dossier */
   const doDeleteFolder = async () => {
     const id = deleteFolder.id;
-    const latest = await load("mcf-practice", []);
-    const freed = latest.map((e) => (e.folderId === id ? { ...e, folderId: undefined } : e));
-    setExercises(freed); await save("mcf-practice", freed);
+    const r = await clearFolder(id);
+    if (!r.ok) { alert("❌ Échec — les exercices n'ont pas pu être libérés."); return; }
+    setExercises((prev) => prev.map((e) => (e.folderId === id ? { ...e, folderId: undefined } : e)));
     const next = folders.filter((f) => f.id !== id);
     setFolders(next); await save("mcf-folders", next);
     setDeleteFolder(null); showToast("✅ Dossier supprimé — les exercices ont été conservés.");
   };
 
   const moveTo = async (exId, folderId) => {
-    const latest = await load("mcf-practice", []);
-    const next = latest.map((e) => (e.id === exId ? { ...e, folderId: folderId || undefined } : e));
-    setExercises(next); await save("mcf-practice", next);
+    /* Chỉ sửa `meta`, không chạm tới câu hỏi — xem patchExerciseMeta. */
+    const r = await patchExerciseMeta(exId, { folderId: folderId || undefined });
+    if (!r.ok) { alert("❌ Échec du déplacement."); return; }
+    setExercises((prev) => prev.map((e) => (e.id === exId ? { ...e, folderId: folderId || undefined } : e)));
     setMoveEx(null);
   };
 
@@ -210,20 +218,19 @@ function PracticeHubInner({ role = "eleve", name = "", accounts = [], onRequireL
     return <Builder draft={draft} setDraft={setDraft} accounts={[]}
       publish={async () => {
         if ((draft.usageType || "practice") === "assignment") {
-          // → Chuyển sang danh sách Devoir (À faire)
-          const exs = await load("mcf-exercises", []);
-          const ne = [...exs.filter((e) => e.id !== draft.id), { ...draft, folderId: undefined }].sort((a, b) => a.createdAt - b.createdAt);
-          const okE = await save("mcf-exercises", ne);
-          if (!okE) { alert("❌ Échec de l'enregistrement."); return; }
-          const next = exercises.filter((e) => e.id !== draft.id);
-          setExercises(next); await save("mcf-practice", next);
+          /* Chuyển sang danh sách Devoir. Trước đây phải GHI HAI KHO — thêm vào
+             blob này, gỡ khỏi blob kia — và hỏng giữa chừng thì bài nằm ở cả
+             hai nơi hoặc biến mất khỏi cả hai. Giờ chỉ là cột `store` đổi giá
+             trị trong đúng một dòng: một lệnh ghi, không có trạng thái lửng. */
+          const r = await saveExercise({ ...draft, folderId: undefined }, "assignment");
+          if (!r.ok) { alert("❌ Échec de l'enregistrement."); return; }
+          setExercises((prev) => prev.filter((e) => e.id !== draft.id));
           setView({ page: "home" }); return;
         }
+        const r = await saveExercise(draft, "practice");
+        if (!r.ok) { alert("❌ Échec de l'enregistrement."); return; }
         const others = exercises.filter((e) => e.id !== draft.id);
-        const next = [...others, draft].sort((a, b) => a.createdAt - b.createdAt);
-        const ok = await save("mcf-practice", next);
-        if (!ok) { alert("❌ Échec de l'enregistrement — données trop volumineuses (image base64). Utilisez plutôt une URL publique."); return; }
-        setExercises(next);
+        setExercises([...others, draft].sort((a, b) => a.createdAt - b.createdAt));
         setView(draft.customCat ? { page: "category", cat: "__autres__", folder: draft.customCat } : { page: "category", cat: catOf(draft) });
       }}
       cancel={() => setView({ page: "home" })} />;
@@ -317,7 +324,7 @@ function PracticeHubInner({ role = "eleve", name = "", accounts = [], onRequireL
                         onEdit={() => { const c = JSON.parse(JSON.stringify(ex)); if (!c.skills || !c.skills.length) c.skills = c.skill ? [c.skill] : []; if (c.consigne === undefined) c.consigne = ""; if (!c.usageType) c.usageType = "practice"; setDraft(c); setView({ page: "builder" }); }}
                         onDup={() => duplicate(ex)}
                         onMove={null}
-                        onDel={() => persist(exercises.filter((e) => e.id !== ex.id))} />}
+                        onDel={() => removeEx(ex.id)} />}
                     </div>
                   </div>
                 );
@@ -607,7 +614,7 @@ function PracticeHubInner({ role = "eleve", name = "", accounts = [], onRequireL
                     { label: "Modifier", icon: <Pencil size={16} />, onClick: () => { const c = JSON.parse(JSON.stringify(ex)); if (!c.skills || !c.skills.length) c.skills = c.skill ? [c.skill] : []; if (c.consigne === undefined) c.consigne = ""; if (!c.usageType) c.usageType = "practice"; setDraft(c); setView({ page: "builder" }); } },
                     { label: "Dupliquer", icon: <Copy size={16} />, onClick: () => duplicate(ex) },
                     ...(view.cat !== "__autres__" ? [{ label: "Déplacer vers…", icon: <Folder size={16} />, onClick: () => setMoveEx(ex) }] : []),
-                    { label: "Supprimer", icon: <Trash2 size={16} />, danger: true, onClick: () => persist(exercises.filter((e) => e.id !== ex.id)) },
+                    { label: "Supprimer", icon: <Trash2 size={16} />, danger: true, onClick: () => removeEx(ex.id) },
                   ]}
                 />
               );

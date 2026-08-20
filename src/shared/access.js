@@ -36,8 +36,8 @@ export const isPremium = (ex) => !!ex?.isPremium && Number(ex?.price) > 0;
 export async function loadPremiumExercises(assigned = []) {
   let practice = [];
   try {
-    const { load } = await import("./storage.js");
-    practice = await load("mcf-practice", []);
+    const { loadPractice } = await import("./exerciseStore.js");
+    practice = await loadPractice();
   } catch { /* đọc hỏng thì vẫn còn kho được giao */ }
 
   const seen = new Set();

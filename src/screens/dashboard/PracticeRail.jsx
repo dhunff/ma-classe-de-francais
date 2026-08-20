@@ -8,6 +8,7 @@ import { Card, EmptyState } from "./parts.jsx";
 import { LEVEL_COLORS, LEVEL_PASTEL } from "../../shared/tokens.js";
 import { exSkills } from "../../shared/exercises.js";
 import { load } from "../../shared/storage.js";
+import { loadPractice } from "../../shared/exerciseStore.js";
 
 /* Băng chuyền "Mới ra · Luyện tập" — dùng chung cho trang chủ chung và cho
    trang tổng quan của học sinh.
@@ -17,9 +18,8 @@ import { load } from "../../shared/storage.js";
    trang chủ của họ trống trơn trong khi kho vẫn đầy bài. Chép sang màn hình
    thứ hai thì hai bản sẽ lệch nhau ngay lần sửa sau. */
 
-/* Bài luyện tập nằm ở kho riêng "mcf-practice" — khác "mcf-exercises" vốn là
-   bài giáo viên giao. */
-const PRACTICE_KEY = "mcf-practice";
+/* Bài luyện tập nằm ở kho `store = 'practice'` — khác `'assignment'` vốn là
+   bài giáo viên giao. Ranh giới đó nay là một cột, không còn là hai khoá blob. */
 
 /* Biểu tượng theo kỹ năng. Khoá là chuỗi trong SKILLS (shared/exercises.js).
    Kỹ năng lạ rơi về Puzzle thay vì vỡ — danh sách kỹ năng do giáo viên nhập
@@ -215,7 +215,7 @@ export function usePracticeStore(preset) {
   useEffect(() => {
     if (preset) return;
     let off = false;
-    load(PRACTICE_KEY, []).then((raw) => {
+    loadPractice().then((raw) => {
       if (!off) setLoaded(Array.isArray(raw) ? raw : []);
     }).catch(() => { if (!off) setLoaded([]); });
     return () => { off = true; };

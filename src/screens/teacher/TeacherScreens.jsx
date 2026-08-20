@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { C, S, LEVEL_COLORS, LEVEL_PASTEL, QTYPES, VF_OPTS } from "../../shared/tokens.js";
 import { load, save, del } from "../../shared/storage.js";
+import { loadPractice, saveExercise, deleteExercise } from "../../shared/exerciseStore.js";
 import { loadSubmissions, patchSubmission } from "../../shared/submissions.js";
 import { useT } from "../../shared/i18n.jsx";
 import { SKILLS, fmtDate, isLate, exSkills, assignedTo, totalScore } from "../../shared/exercises.js";
@@ -87,30 +88,28 @@ function Teacher({ exercises, setExercises, submissions, setSubmissions, account
     const final = finalizeTargets(draft);
     final.usageType = final.usageType || "assignment";
 
+    /* Cả hai nhánh chỉ còn MỘT lệnh ghi. Cột `store` quyết định bài nằm ở kho
+       nào, nên "đẩy sang Entraînement" và "gỡ khỏi devoir" là cùng một việc —
+       trước đây là hai lần ghi hai blob, hỏng giữa chừng thì bài nhân đôi
+       hoặc mất hẳn. */
     if (final.usageType === "practice") {
-      // → Đẩy sang kho Entraînement, gỡ khỏi danh sách devoir
-      const prac = await load("mcf-practice", []);
-      const np = [...prac.filter((e) => e.id !== final.id),
-        { ...final, assignedTo: null, targeted: false, deadline: "" }].sort((a, b) => a.createdAt - b.createdAt);
-      const okP = await save("mcf-practice", np);
-      if (!okP) { alert("❌ Échec de l'enregistrement — données trop volumineuses. Utilisez une URL publique pour l'image."); return; }
-      const next = exercises.filter((e) => e.id !== final.id);
-      setExercises(next); await save("mcf-exercises", next);
+      const r = await saveExercise(
+        { ...final, assignedTo: null, targeted: false, deadline: "" }, "practice");
+      if (!r.ok) { alert("❌ Échec de l'enregistrement."); return; }
+      setExercises(exercises.filter((e) => e.id !== final.id));
       setView("list"); return;
     }
 
+    const r = await saveExercise(final, "assignment");
+    if (!r.ok) { alert("❌ Échec de l'enregistrement."); return; }
     const others = exercises.filter((e) => e.id !== final.id);
-    const next = [...others, final].sort((a, b) => a.createdAt - b.createdAt);
-    const ok = await save("mcf-exercises", next);
-    if (!ok) { alert("❌ Échec de l'enregistrement — données trop volumineuses (image base64). Utilisez plutôt une URL publique."); return; }
-    // Nếu bài này từng nằm bên Entraînement → gỡ khỏi đó (chuyển trạng thái)
-    const prac = await load("mcf-practice", []);
-    if (prac.some((e) => e.id === final.id)) await save("mcf-practice", prac.filter((e) => e.id !== final.id));
-    setExercises(next); setView("list");
+    setExercises([...others, final].sort((a, b) => a.createdAt - b.createdAt));
+    setView("list");
   };
   const remove = async (id) => {
-    const next = exercises.filter((e) => e.id !== id);
-    setExercises(next); await save("mcf-exercises", next);
+    const r = await deleteExercise(id);
+    if (!r.ok) { alert("❌ Échec de la suppression."); return; }
+    setExercises(exercises.filter((e) => e.id !== id));
   };
 
   if (view === "new") return <Builder draft={draft} setDraft={setDraft} publish={publish} cancel={() => setView("list")} accounts={accounts} classes={classes} />;
@@ -647,7 +646,7 @@ function StudentDossier({ acc, classes, exercises, submissions, presence, back }
     (async () => {
       const [profs, notesAll, ph, prac] = await Promise.all([
         load("mcf-profiles", {}), load("mcf-teacher-notes", {}),
-        load(`mcf-ph-${name}`, {}, false), load("mcf-practice", []),
+        load(`mcf-ph-${name}`, {}, false), loadPractice(),
       ]);
       setProfile((profs && profs[name]) || {});
       setNotes((notesAll && notesAll[name]) || "");
