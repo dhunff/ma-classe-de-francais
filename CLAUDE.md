@@ -163,12 +163,23 @@ Xem `docs/roadmap-delf.md` — có nhật ký quyết định ở §5.
 - ~~Gắn nhãn phân loại~~ — xong 2026-08-20 (migration 011): 215 câu có
   `point_gram`, 54 câu có `competence`. Số sau thấp vì thư viện chỉ có 54 câu
   đọc/nghe hiểu thật; xem docs/roadmap-delf.md §1.2.
-- **121/416 câu có `explanation`** — xong `cause_consequence` (012),
-  `temps_present` (013), `lexique_thematique` (014). Còn `formation_mots` (24),
-  `temps_futur` (20), `temps_passe` (20), `but_hypothese` (15).
+- ~~Viết `explanation` cho các nhóm đã gắn nhãn~~ — xong 2026-08-20.
+  **190/416 câu**, hết cả bảy nhóm (012–015), và migration 016 chép ngược vào
+  hai blob nên học sinh THẬT SỰ thấy được.
 
-  Và **201 câu chưa gắn nhãn `point_gram`** — chủ yếu bài đọc/nghe, dịch, viết.
-  Không xếp nhóm được thì cũng không viết theo lô được.
+  Câu `vf` không có `explanation` (25 câu): chúng đã có `justification` sẵn
+  trong payload và giao diện hiện nó ngay dưới đáp án — thêm nữa là hai khối
+  chữ nói cùng một điều.
+
+  Còn **201 câu chưa gắn nhãn `point_gram`** — bài đọc/nghe, dịch, viết. Không
+  xếp nhóm được thì cũng không viết theo lô được.
+
+  **Bẫy đã trả giá:** viết vào bảng `questions` là viết vào chỗ ứng dụng CHƯA
+  đọc. Ba migration đầu (012–014) nằm im, học sinh không thấy chữ nào, cho tới
+  khi 016 chép sang blob. Chừng nào chưa nối xong (mục dưới), mọi thay đổi nội
+  dung đều phải chạm vào **cả hai blob** — `mcf-practice` (37 bài) VÀ
+  `mcf-exercises` (2 bài). Bản đầu của 016 quên blob thứ hai và bộ đối chiếu
+  bắt được: 170 thay vì 190.
 
   Câu `vf` đã có sẵn `justification` trong payload và giao diện hiện nó ngay
   dưới đáp án, nên **không viết `explanation` cho chúng** — sẽ thành hai khối
