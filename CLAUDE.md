@@ -161,9 +161,9 @@ mọi bài đều vào bằng đường đó, quên là trường mới lặng l
 **Một câu `fill`/`conj` = MỘT ô trống.** Giao diện chỉ dựng một ô nhập, và
 `|` trong `accepted` nghĩa là CÁC CÁCH VIẾT được chấp nhận cho cùng một đáp án.
 Viết đề hai ô rồi ghi `"arrive|allume"` thì học sinh gõ một vế là được điểm
-trọn — 11 câu từng như vậy, đã tách đôi ở migration 017. Còn **6 câu dùng `/`**
-(nhóm passé composé) hỏng ngược lại: gõ đúng cả hai vẫn sai, vì `/` không phải
-dấu phân tách nào cả.
+trọn. Ghi `"a/b"` thì hỏng ngược lại — `/` không phải dấu phân tách nào cả, nên
+gõ đúng cả hai vế vẫn sai. Cả 17 câu mắc lỗi này đã tách đôi (migration 017 và
+018); **thư viện hiện không còn câu nào ≥2 ô trống**. Đừng tạo câu mới như vậy.
 
 **Đếm ô trống thì đếm SỐ DÃY gạch dưới.** Regex `_{3,}.*_{3,}` khớp được với
 một dãy bảy gạch (ba cho vế trước, bốn cho vế sau) và báo động giả. Dùng
