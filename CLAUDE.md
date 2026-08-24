@@ -158,6 +158,17 @@ kiểm chứng bằng công cụ. Không phải lỗi mã; chụp màn hình đ�
 **Trình nhập JSON của Builder** phải được cập nhật khi thêm trường vào câu hỏi —
 mọi bài đều vào bằng đường đó, quên là trường mới lặng lẽ bị bỏ.
 
+**Một câu `fill`/`conj` = MỘT ô trống.** Giao diện chỉ dựng một ô nhập, và
+`|` trong `accepted` nghĩa là CÁC CÁCH VIẾT được chấp nhận cho cùng một đáp án.
+Viết đề hai ô rồi ghi `"arrive|allume"` thì học sinh gõ một vế là được điểm
+trọn — 11 câu từng như vậy, đã tách đôi ở migration 017. Còn **6 câu dùng `/`**
+(nhóm passé composé) hỏng ngược lại: gõ đúng cả hai vẫn sai, vì `/` không phải
+dấu phân tách nào cả.
+
+**Đếm ô trống thì đếm SỐ DÃY gạch dưới.** Regex `_{3,}.*_{3,}` khớp được với
+một dãy bảy gạch (ba cho vế trước, bốn cho vế sau) và báo động giả. Dùng
+`array_length(regexp_split_to_array(prompt, '_{3,}'), 1) - 1`.
+
 ---
 
 ## Việc còn treo
