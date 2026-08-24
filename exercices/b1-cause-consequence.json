@@ -1,0 +1,188 @@
+{
+  "titre": "L'expression de la cause et de la conséquence — registre soutenu",
+  "niveau": "B1",
+  "competences": ["Grammaire"],
+  "consigne_generale": "Cet exercice porte sur l'articulation logique entre une cause et sa conséquence. Trois réflexes sont mis à l'épreuve. Premièrement, observez ce qui SUIT le connecteur : une proposition avec verbe conjugué, un groupe nominal, ou un infinitif — chaque connecteur n'en accepte qu'un. Deuxièmement, vérifiez le MODE : certains connecteurs de conséquence commandent l'indicatif, tandis que les tournures de but exigent le subjonctif, et une même locution peut basculer de l'un à l'autre. Troisièmement, distinguez la cause réelle de la cause alléguée, ainsi que la cause favorable de la cause subie.",
+  "questions": [
+    {
+      "type": "QCM",
+      "question": "La municipalité a multiplié les zones piétonnes dans le centre historique au cours des deux dernières années, ______ la fréquentation des commerces de proximité a progressé de près d'un tiers sur la même période.",
+      "options": [
+        { "texte": "si bien que", "isCorrect": true },
+        { "texte": "pour que" },
+        { "texte": "de sorte qu'elle ait progressé" },
+        { "texte": "afin que" }
+      ],
+      "explication": "« Si bien que » suivi de l'indicatif introduit une conséquence CONSTATÉE, ce que confirme le passé composé « a progressé ». « Pour que » et « afin que » exprimeraient au contraire une intention, c'est-à-dire un but visé, et commanderaient le subjonctif : la phrase dirait alors que la municipalité a agi DANS L'ESPOIR que la fréquentation augmente, sans qu'on sache si elle a augmenté. « De sorte que » au subjonctif bascule de la même façon du côté du but."
+    },
+    {
+      "type": "QCM",
+      "question": "Le conférencier avait accumulé ______ documents contradictoires qu'il lui devenait matériellement impossible d'en présenter une synthèse cohérente dans le temps de parole qui lui était imparti.",
+      "options": [
+        { "texte": "tellement de", "isCorrect": true },
+        { "texte": "tellement" },
+        { "texte": "si" },
+        { "texte": "tant qu'" }
+      ],
+      "explication": "Le mot qui suit le blanc est un NOM au pluriel (« documents »). Devant un nom, l'intensité s'exprime par « tellement de » ou « tant de », avec la préposition « de » obligatoire. « Si » et « tellement » employés seuls ne modifient qu'un adjectif ou un adverbe — on dirait « si nombreux », mais jamais « si documents ». La corrélation se referme ensuite sur « que », déjà présent dans la phrase."
+    },
+    {
+      "type": "QCM",
+      "question": "Le refus opposé par la commission a désarçonné l'ensemble des candidats, ______ le dossier avait recueilli, en première instance, un avis unanimement favorable de la part des experts consultés.",
+      "options": [
+        { "texte": "d'autant plus que", "isCorrect": true },
+        { "texte": "d'autant plus" },
+        { "texte": "au point que" },
+        { "texte": "si bien que" }
+      ],
+      "explication": "« D'autant plus que » ajoute une cause qui RENFORCE un fait déjà énoncé : la surprise est d'autant plus vive que l'avis était favorable. « Au point que » et « si bien que » introduiraient une conséquence, or ce qui suit n'est pas le résultat du refus mais son arrière-plan explicatif. Quant à « d'autant plus » sans « que », il ne peut pas introduire une proposition conjuguée."
+    },
+    {
+      "type": "QCM",
+      "question": "______ crédits suffisants pour couvrir les frais de terrain, le laboratoire a dû renoncer à la seconde phase de l'expérimentation, pourtant jugée déterminante par le comité scientifique.",
+      "options": [
+        { "texte": "Faute de", "isCorrect": true },
+        { "texte": "À force de" },
+        { "texte": "Grâce à" },
+        { "texte": "Étant donné les" }
+      ],
+      "explication": "« Faute de » signifie « par manque de », ce que confirme la suite : le laboratoire renonce. « À force de » dirait exactement l'inverse, une cause par accumulation ou par répétition. « Grâce à » inverserait la polarité en faisant des crédits un avantage, alors qu'ils font défaut. Notez enfin que « faute de » se construit SANS article — « faute de crédits », jamais « faute des crédits »."
+    },
+    {
+      "type": "QCM",
+      "question": "Il a décliné l'invitation ______ son emploi du temps ne le lui permettait pas, mais chacun savait dans l'entourage qu'il redoutait avant tout d'avoir à croiser son ancien associé.",
+      "options": [
+        { "texte": "sous prétexte que", "isCorrect": true },
+        { "texte": "étant donné que" },
+        { "texte": "du fait que" },
+        { "texte": "vu que" }
+      ],
+      "explication": "La proposition « mais chacun savait… » révèle que la raison avancée n'est pas la véritable. C'est exactement la valeur de « sous prétexte que » : le locuteur rapporte une cause tout en s'en distanciant. Les trois autres locutions présentent au contraire la cause comme un fait établi et partagé, ce qui contredit la seconde moitié de la phrase."
+    },
+    {
+      "type": "QCM",
+      "question": "Les relevés pluviométriques de l'automne dernier se sont révélés très inférieurs à la moyenne décennale, ______ des restrictions d'usage de l'eau dans quatorze communes du département dès le début du mois de mars.",
+      "options": [
+        { "texte": "d'où", "isCorrect": true },
+        { "texte": "par conséquent" },
+        { "texte": "c'est pourquoi" },
+        { "texte": "si bien que" }
+      ],
+      "explication": "Ce qui suit le blanc est un GROUPE NOMINAL — « des restrictions » — sans aucun verbe conjugué. « D'où » est le seul de la liste à introduire directement un nom, et il est fréquent dans le style écrit et journalistique. Les trois autres articulent deux propositions et exigeraient donc un verbe : « c'est pourquoi des restrictions ONT ÉTÉ décidées »."
+    },
+    {
+      "type": "QCM",
+      "question": "Les négociations s'enlisaient depuis plusieurs semaines sans qu'aucune des deux délégations consente à revoir ses positions ; ______ le médiateur a-t-il fini par proposer de suspendre les séances jusqu'à la rentrée.",
+      "options": [
+        { "texte": "aussi", "isCorrect": true },
+        { "texte": "ainsi que" },
+        { "texte": "car" },
+        { "texte": "puisque" }
+      ],
+      "explication": "Placé en tête de proposition au sens de « c'est pourquoi », « aussi » entraîne l'INVERSION du sujet — ce que trahit ici « a-t-il ». C'est cette inversion qui doit vous guider, car aucune des trois autres réponses ne la déclenche. Attention à ne pas confondre cet emploi avec « aussi » signifiant « également », qui ne se place jamais en tête. « Ainsi que » marque la comparaison ou l'addition, non la conséquence."
+    },
+    {
+      "type": "QCM",
+      "question": "______ la totalité des places avaient été réservées plus de six mois à l'avance, la direction du festival a pris la décision d'ouvrir une seconde salle de projection et d'y retransmettre la séance d'ouverture.",
+      "options": [
+        { "texte": "Étant donné que", "isCorrect": true },
+        { "texte": "Étant donné" },
+        { "texte": "En raison de" },
+        { "texte": "À cause de" }
+      ],
+      "explication": "Le blanc est suivi d'une proposition complète, avec le verbe conjugué « avaient été réservées » : le « que » est donc indispensable. Sans lui, « étant donné » se construit avec un nom, comme « en raison de » et « à cause de ». Notez par ailleurs que « à cause de » serait mal venu ici : l'affluence n'est pas présentée comme un désagrément mais comme un fait neutre."
+    },
+    {
+      "type": "TEXTE_A_TROUS",
+      "question": "L'argumentation développée par le rapporteur était ______ technique que la moitié de l'assistance a rapidement renoncé à en suivre le détail.",
+      "reponse": "si|tellement",
+      "explication": "Le mot qui suit est un ADJECTIF (« technique »). Devant un adjectif ou un adverbe, l'intensité s'exprime par « si » ou par « tellement », les deux étant également corrects ici. « Tant » est en revanche impossible : il ne se place que devant un verbe ou devant « de » suivi d'un nom."
+    },
+    {
+      "type": "TEXTE_A_TROUS",
+      "question": "______ répéter les mêmes arguments sans jamais prendre la peine de les étayer, le porte-parole a fini par lasser jusqu'à ses propres soutiens.",
+      "reponse": "À force de|à force de",
+      "explication": "« À force de » exprime une cause par RÉPÉTITION ou par insistance : c'est le fait de recommencer qui produit l'effet, ce que souligne « a fini par ». La locution se construit ici avec un INFINITIF, et non avec un nom ni avec une proposition conjuguée."
+    },
+    {
+      "type": "TEXTE_A_TROUS",
+      "question": "Le glissement de terrain a emporté l'unique route d'accès à la vallée, si bien que le hameau ______ (rester) complètement isolé pendant près de trois semaines.",
+      "reponse": "est resté",
+      "explication": "« Si bien que » introduit une conséquence réellement survenue et commande donc l'INDICATIF — jamais le subjonctif, contrairement aux tournures de but. Le passé composé s'impose parce qu'il s'agit d'un fait achevé, et « rester » se conjugue avec l'auxiliaire être, d'où l'accord « est resté » avec « le hameau »."
+    },
+    {
+      "type": "TEXTE_A_TROUS",
+      "question": "Le professeur a reformulé entièrement la consigne, de sorte que chacun ______ (pouvoir) se mettre au travail sans la moindre hésitation.",
+      "reponse": "puisse",
+      "explication": "« De sorte que » a deux valeurs, et c'est le MODE qui les sépare. Suivi de l'indicatif, la locution énonce une conséquence constatée ; suivie du subjonctif, elle exprime le but recherché. Ici, la reformulation est faite dans une intention, d'où « puisse ». Comparez avec la phrase sur le hameau isolé, où « si bien que » imposait au contraire l'indicatif."
+    },
+    {
+      "type": "TEXTE_A_TROUS",
+      "question": "Les livraisons vers les stations de haute altitude ont été suspendues pour quarante-huit heures ______ l'intensité tout à fait exceptionnelle des chutes de neige sur l'ensemble du massif.",
+      "reponse": "en raison de|du fait de|à cause de",
+      "explication": "Ce qui suit est un groupe nominal, ce qui exclut d'emblée toute conjonction en « que ». Les trois réponses acceptées conviennent, avec une nuance de registre : « en raison de » et « du fait de » appartiennent à la langue administrative et journalistique, « à cause de » à la langue courante. Notez que « de » ne s'élide pas devant « l'intensité », l'article portant déjà l'élision."
+    },
+    {
+      "type": "TEXTE_A_TROUS",
+      "question": "Le dossier soulevait ______ de questions juridiques inédites que le tribunal a préféré ordonner une expertise complémentaire avant de se prononcer sur le fond.",
+      "reponse": "tant|tellement",
+      "explication": "La présence de « de » juste après le blanc, devant le nom « questions », impose « tant » ou « tellement » — les deux formes de la corrélation d'intensité devant un nom. « Si » est impossible dans cette construction, puisqu'il ne modifie qu'un adjectif ou un adverbe."
+    },
+    {
+      "type": "TEXTE_A_TROUS",
+      "question": "Comme les délais imposés par le diffuseur ______ (être) manifestement intenables pour l'équipe de traduction, l'éditeur a repoussé la parution au trimestre suivant.",
+      "reponse": "étaient",
+      "explication": "« Comme » exprimant la cause se place en tête de phrase et se construit avec l'INDICATIF. L'imparfait s'impose parce qu'il décrit un état qui durait au moment où la décision a été prise, par opposition au passé composé « a repoussé », qui rapporte l'événement ponctuel."
+    },
+    {
+      "type": "TEXTE_A_TROUS",
+      "question": "______ soutien financier renouvelé des collectivités locales, l'association est parvenue à maintenir la gratuité de l'ensemble de ses ateliers du samedi matin.",
+      "reponse": "Grâce au|grâce au",
+      "explication": "Le résultat est favorable — la gratuité est maintenue — ce qui appelle « grâce à » et non « à cause de ». Attention à la contraction obligatoire : « grâce à » suivi de « le soutien » donne « grâce AU soutien », jamais « grâce à le soutien »."
+    },
+    {
+      "type": "ORDONNANCEMENT",
+      "question": "Reconstituez cette phrase, qui place la cause AVANT la conséquence et commence par une conjonction.",
+      "elements_corrects": [
+        { "texte": "Comme la salle de conférence" },
+        { "texte": "était déjà comble bien avant l'heure annoncée," },
+        { "texte": "les organisateurs ont fait installer" },
+        { "texte": "un second écran dans le hall d'accueil." }
+      ],
+      "explication": "« Comme » exprimant la cause occupe obligatoirement la tête de phrase et annonce la cause avant la conséquence — c'est ce qui le distingue de « car », qui ne peut jamais ouvrir une phrase. La virgule marque la frontière entre les deux propositions."
+    },
+    {
+      "type": "ORDONNANCEMENT",
+      "question": "Reconstituez cette phrase construite sur une corrélation d'intensité du type « si… que ».",
+      "elements_corrects": [
+        { "texte": "Le rapport remis à la commission" },
+        { "texte": "est si volumineux" },
+        { "texte": "qu'il faudra plusieurs semaines" },
+        { "texte": "pour en examiner toutes les annexes." }
+      ],
+      "explication": "La corrélation « si… que » se déploie en deux temps : « si » se place devant l'adjectif, et « que » introduit ensuite la conséquence. Les deux éléments ne peuvent pas être séparés du groupe qu'ils encadrent, ce qui fixe entièrement l'ordre de la phrase."
+    },
+    {
+      "type": "ORDONNANCEMENT",
+      "question": "Reconstituez cette phrase, qui ouvre sur une cause négative exprimée par un groupe nominal sans article.",
+      "elements_corrects": [
+        { "texte": "Faute de preuves matérielles" },
+        { "texte": "suffisamment probantes," },
+        { "texte": "l'enquête préliminaire a finalement été" },
+        { "texte": "classée sans suite par le parquet." }
+      ],
+      "explication": "« Faute de » se construit avec un nom sans article et se place volontiers en tête de phrase, où le groupe détaché est refermé par une virgule. Le sens est celui d'un manque : c'est l'absence de preuves qui entraîne le classement."
+    },
+    {
+      "type": "ORDONNANCEMENT",
+      "question": "Reconstituez cette phrase, dans laquelle la conséquence est introduite par une locution du registre soutenu placée après un point-virgule.",
+      "elements_corrects": [
+        { "texte": "La demande intérieure s'est effondrée" },
+        { "texte": "au cours du dernier trimestre ;" },
+        { "texte": "par conséquent, plusieurs usines du bassin" },
+        { "texte": "ont réduit leur production de moitié." }
+      ],
+      "explication": "« Par conséquent » articule deux propositions indépendantes et se place en tête de la seconde, immédiatement après le point-virgule, suivi d'une virgule. Contrairement à « d'où », il exige un verbe conjugué — d'où la présence de « ont réduit »."
+    }
+  ]
+}
