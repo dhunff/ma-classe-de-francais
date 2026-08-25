@@ -19,10 +19,19 @@ import { supabase } from "../storageShim.js";
  * loạt, không có gì để so sánh, và không ai biết. Làm tuần tự thì giai đoạn
  * giữa vẫn đúng dù (1) hỏng.
  */
-export async function gradeRemote(exerciseId, answers) {
+export async function gradeRemote(exerciseId, answers, opts = {}) {
   try {
+    /* `mode` quyết định lần làm này vào thang LUYỆN TẬP hay thang THI THỬ —
+       ranh giới đã chốt ở roadmap §3.0. Mặc định 'practice' để mọi nơi gọi cũ
+       không vô tình ghi vào thang thi. */
     const { data, error } = await supabase.functions.invoke("grade", {
-      body: { exerciseId, answers },
+      body: {
+        exerciseId,
+        answers,
+        mode: opts.mode === "exam" ? "exam" : "practice",
+        blurCount: opts.blurCount ?? 0,
+        msSpent: opts.msSpent ?? {},
+      },
     });
     if (error || !data || data.error) {
       console.warn("[grade] chấm ở máy chủ hỏng, tạm chấm ở trình duyệt.",

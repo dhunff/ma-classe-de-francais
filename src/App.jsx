@@ -6,6 +6,7 @@ import AppLayout from './layout/AppLayout.jsx'
 import RequireRole from './routes/RequireRole.jsx'
 import LoginGate from './screens/LoginGate.jsx'
 import { ROLE_HOME, TEACHER_NAV, STUDENT_NAV } from './layout/navItems.js'
+import ExamMode from './screens/exam/ExamMode.jsx'
 
 import { C } from './shared/tokens.js'
 import { load } from './shared/storage.js'
@@ -265,6 +266,10 @@ function AppInner() {
                   STUDENT_NAV sinh ra tự động, nên phải khai báo tay sau khi
                   mục menu bị bỏ. */}
               <Route path="/etudiant/progression" element={studentRoute("progress")} />
+
+              {/* Thi thử. Không sinh từ STUDENT_NAV vì nó không phải một mục
+                  menu thường: vào là bắt đầu tính giờ. */}
+              <Route path="/etudiant/examen" element={<ExamMode />} />
 
               <Route path="/etudiant/*" element={<Navigate to="/etudiant/dashboard" replace />} />
             </Route>
