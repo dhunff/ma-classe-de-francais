@@ -8,6 +8,7 @@ import LoginGate from './screens/LoginGate.jsx'
 import { ROLE_HOME, TEACHER_NAV, STUDENT_NAV } from './layout/navItems.js'
 import ExamMode from './screens/exam/ExamMode.jsx'
 import ExamComposer from './screens/teacher/ExamComposer.jsx'
+import PEGrading from './screens/teacher/PEGrading.jsx'
 
 import { C } from './shared/tokens.js'
 import { load } from './shared/storage.js'
@@ -247,6 +248,7 @@ function AppInner() {
                   học sinh khỏi lạc vào một trang mà mọi nút đều báo lỗi. */}
               <Route path="/professeur/carnet" element={<TipsEditor t={t} />} />
               <Route path="/professeur/examens" element={<ExamComposer t={t} />} />
+              <Route path="/professeur/copies" element={<PEGrading />} />
 
               <Route path="/professeur/*" element={<Navigate to="/professeur/dashboard" replace />} />
             </Route>

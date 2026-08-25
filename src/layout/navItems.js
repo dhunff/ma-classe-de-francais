@@ -1,6 +1,6 @@
 import {
   LayoutDashboard, BookOpen, Users, BarChart3, Dumbbell,
-  ClipboardList, CheckSquare, CalendarDays, Settings, Lightbulb, Timer,
+  ClipboardList, CheckSquare, CalendarDays, Settings, Lightbulb, Timer, PenLine,
 } from "lucide-react";
 
 /* Điều hướng của vỏ app.
@@ -28,6 +28,7 @@ export const TEACHER_NAV = [
   { to: "/professeur/carnet", labelKey: "nav.tips", Icon: Lightbulb },
   /* Soạn đề thi thử — cũng là route riêng, không có `view`. */
   { to: "/professeur/examens", labelKey: "nav.exams", Icon: Timer },
+  { to: "/professeur/copies", labelKey: "nav.grading", Icon: PenLine },
 ];
 
 export const STUDENT_NAV = [
