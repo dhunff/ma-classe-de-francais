@@ -6,6 +6,17 @@ dist/
 .env.local
 .env.*.local
 
+# Secret của Edge Function (ANTHROPIC_API_KEY…). KHÔNG bao giờ commit.
+#
+# `.env` ở gốc thì ĐANG được theo dõi, và đúng như vậy: nó chỉ chứa
+# VITE_SUPABASE_URL và VITE_SUPABASE_ANON_KEY — hai thứ vốn nằm sẵn trong
+# bundle gửi xuống trình duyệt, không phải bí mật.
+#
+# supabase/.env thì khác hẳn: nó chứa khoá thật, loại tiêu được tiền. Che ở
+# đây TRƯỚC khi có ai tạo file đó, vì thêm dòng này sau khi lỡ commit thì đã
+# muộn — khoá nằm trong lịch sử git và phải thu hồi bên Anthropic.
+supabase/.env
+
 # Scratch của quy trình subagent-driven development
 .superpowers/
 
