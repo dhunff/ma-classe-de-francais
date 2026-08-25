@@ -72,5 +72,17 @@ for (const fn of ["loadPractice", "loadAssignments", "saveExercise",
 if (/store\s*===?\s*["'`]assignment["'`]|loadExercises\(["'`]assignment["'`]\)/.test(store)) pass++;
 else { fail++; console.log("  ✗ không thấy kho 'assignment' được phân biệt"); }
 
+
+/* Từ migration 022, cột `answer_key` không cấp SELECT cho anon/authenticated.
+   PostgREST khai triển `select("*")` thành MỌI cột, kể cả cột bị khoá, nên cả
+   câu truy vấn trả 401 — không phải trả về ít cột hơn. Một dấu sao là cả thư
+   viện bài tập trắng xoá. Đã xảy ra thật, ngay sau khi chạy 022. */
+const saoTrenQuestions = /from\(\s*["'`]questions["'`]\s*\)[\s\S]{0,40}?\.select\(\s*["'`]\*/;
+if (saoTrenQuestions.test(store)) {
+  fail++;
+  console.log("  ✗ exerciseStore.js dùng select(\"*\") trên questions — sẽ 401 vì answer_key bị khoá");
+} else {
+  pass++;
+}
 console.log(fail ? `\n${pass} đạt, ${fail} hỏng` : `\n${pass} đạt, 0 hỏng`);
 process.exit(fail ? 1 : 0);

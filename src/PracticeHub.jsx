@@ -1017,6 +1017,24 @@ function PracticeWorkspace({ ex, back, onFinish }) {
     setGraded(timedOut ? "timeout" : true);
 
     const res = await gradeRemote(ex.id, answersRef.current);
+
+    /* Máy chủ không trả lời VÀ đáp án cũng không còn ở client → không ai chấm
+       được. Từ migration 022, `payload` không còn `answer`/`accepted`, nên bộ
+       chấm cũ sẽ thấy mọi câu đều sai và hiện 0 điểm.
+
+       Một con số 0 bịa ra tệ hơn hẳn một lời báo lỗi: học sinh tưởng mình làm
+       sai hết, và bài đã làm thì mất. Nên thà nói thẳng là chưa chấm được và
+       giữ nguyên bài cho họ nộp lại. */
+    const conDapAnCucBo = autos.some((q) =>
+      q.answer !== undefined || q.accepted !== undefined || q.answers !== undefined);
+    if (!res && !conDapAnCucBo) {
+      gradedRef.current = false;
+      setGraded(false);
+      alert("⚠️ Chưa chấm được bài lúc này — máy chủ chấm không phản hồi.\n"
+          + "Bài của bạn vẫn còn nguyên, hãy thử nộp lại sau ít phút.");
+      return;
+    }
+
     if (res) setRemote(res.results);
 
     /* Điểm lấy từ máy chủ khi có. Tự cộng lại ở đây là mở đường cho hai con số

@@ -40,7 +40,18 @@ export async function loadExercises(store) {
   const [exRes, qRes] = await Promise.all([
     layHet(() => supabase.from("exercises").select("*").eq("store", store)
       .order("created_at", { ascending: true })),
-    layHet(() => supabase.from("questions").select("*").order("ord", { ascending: true })),
+    /* LIỆT KÊ CỘT, KHÔNG DÙNG `*`.
+     *
+     * Từ migration 022, `answer_key` không cấp SELECT cho anon/authenticated.
+     * PostgREST khai triển `*` thành TẤT CẢ các cột, kể cả cột không có quyền,
+     * nên cả câu truy vấn bị từ chối — 401 permission denied, không phải "trả
+     * về ít cột hơn". Toàn bộ thư viện bài tập trắng xoá.
+     *
+     * Đã dính đúng một lần, ngay sau khi chạy 022. Bài học: khi khoá quyền ở
+     * mức CỘT thì mọi `select("*")` trên bảng đó thành quả bom hẹn giờ. */
+    layHet(() => supabase.from("questions")
+      .select("id, exercise_id, ord, type, prompt, payload, explanation, competence, point_gram")
+      .order("ord", { ascending: true })),
   ]);
   if (exRes.error) return [];
   return fromRows(exRes.rows, qRes.rows);

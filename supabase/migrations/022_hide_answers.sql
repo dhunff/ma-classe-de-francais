@@ -1,43 +1,10 @@
--- 021 — gỡ đáp án khỏi những gì trình duyệt đọc được
+-- 022 — gỡ đáp án khỏi những gì trình duyệt đọc được
 --
--- ⚠️ CHƯA CHẠY. Đuôi `.PENDING` để `supabase db push` bỏ qua.
---    Đổi tên thành `021_hide_answers.sql` rồi push khi đã xong bước xác nhận
---    ở cuối file này.
---
--- ══ VÌ SAO KHÔNG CHẠY LUÔN ══
---
--- Migration này cắt đường lui. Sau nó, `payload` mà client đọc được không còn
--- đáp án, nên bộ chấm ở trình duyệt không còn gì để so — mọi câu sẽ bị chấm
--- sai nếu Edge Function `grade` có vấn đề.
---
--- Hàm `grade` đã kiểm được ba hướng bằng curl:
---     nộp đúng   → 6/22, lộ 0 đáp án
---     nộp sai    → 0/22, lộ 6 (đúng số câu đã làm)
---     nộp trống  → 0/22, lộ 0        ← đường moi đáp án, đã bịt
---
--- Nhưng CHƯA ai bấm "Nộp bài" thật trong giao diện học sinh. Tôi không mở được
--- phiên đăng nhập để làm việc đó. Chừng nào chưa có người xác nhận, chạy
--- migration này là đánh cược cả trải nghiệm làm bài vào một đường mã chưa
--- từng chạy thật.
---
--- Thứ tự đúng: (1) chấm ở máy chủ chạy được → (2) mới gỡ đáp án.
--- Làm ngược lại thì lỗi ở (1) trở nên vô hình và không thể so sánh.
---
--- ══ BƯỚC XÁC NHẬN TRƯỚC KHI CHẠY ══
---
--- 1. Đăng nhập bằng tài khoản học sinh, vào Luyện tập, làm một bài bất kỳ.
--- 2. Cố ý làm sai vài câu, đúng vài câu, bỏ trống vài câu. Bấm Nộp bài.
--- 3. Mở Console (F12). KHÔNG được thấy dòng
---       [grade] chấm ở máy chủ hỏng, tạm chấm ở trình duyệt.
---    Thấy dòng đó nghĩa là đang chạy bằng đường lui — sửa xong hãy quay lại.
--- 4. Đối chiếu: điểm hiện ra có khớp số câu bạn làm đúng không.
--- 5. Xong cả bốn bước thì đổi tên file và push.
-
--- ─────────────────── Tách đáp án sang cột riêng ───────────────────
---
--- Vì sao thêm cột chứ không xoá thẳng: đáp án vẫn phải sống ở đâu đó để hàm
--- `grade` đọc. `answer_key` giữ nguyên phần bí mật, `payload` giữ phần cần cho
--- việc DỰNG câu hỏi (options, elements, colonnes…).
+-- Bước hai của hai (xem 021). Người dùng đã xác nhận: đăng nhập bằng tài khoản
+-- học sinh, làm một bài có câu đúng / câu sai / câu bỏ trống, nộp, và điểm ra
+-- đúng — tức Edge Function `grade` đã thật sự chấm, không phải đường lui ở
+-- trình duyệt. Chỉ sau xác nhận đó migration này mới an toàn, vì nó cắt đường
+-- lui: sau đây `payload` không còn đáp án để bộ chấm cũ so.
 --
 -- Chia theo từng loại câu, vì mỗi loại giấu một trường khác nhau:
 --     qcm      answer                (chỉ số phương án đúng)
@@ -47,8 +14,6 @@
 --     tableau  answers
 --     ordre    THỨ TỰ của elements   ← xem ghi chú dưới
 --     open     model                 (bài mẫu)
-alter table public.questions
-  add column if not exists answer_key jsonb not null default '{}'::jsonb;
 
 update public.questions
    set answer_key = jsonb_strip_nulls(jsonb_build_object(
@@ -64,11 +29,9 @@ update public.questions
 -- ─────────────────── Câu sắp xếp: trường hợp riêng ───────────────────
 --
 -- Với `ordre`, THỨ TỰ của mảng elements chính là đáp án — không có trường nào
--- để giấu. Client vẫn cần nội dung các mảnh để hiển thị, nên ta giữ elements
--- trong payload nhưng XÁO trước khi lưu. Bản đúng thứ tự nằm ở answer_key.
---
--- Xáo bằng `order by random()` một lần lúc migration là đủ: học sinh không có
--- bản gốc để so, nên thứ tự lưu trong payload không nói lên điều gì.
+-- để giấu. Client vẫn cần nội dung các mảnh để hiển thị, nên giữ elements
+-- trong payload nhưng XÁO trước khi lưu. Bản đúng thứ tự nằm ở answer_key,
+-- và hàm `grade` ưu tiên answer_key nên nó chấm theo bản đúng.
 update public.questions q
    set payload = jsonb_set(q.payload, '{elements}', x.xao)
   from (
@@ -98,7 +61,7 @@ grant select (id, exercise_id, ord, type, prompt, payload, explanation,
 
 -- ─────────────────── Tự đối chiếu ───────────────────
 do $$
-declare con_lo int; mat_dap_an int;
+declare con_lo int; mat_dap_an int; con_grant int;
 begin
   select count(*) into con_lo from public.questions
    where payload ?| array['answer','accepted','justification','answers','model'];
@@ -108,7 +71,22 @@ begin
    where type in ('qcm','fill','conj','vf','tableau','ordre')
      and answer_key = '{}'::jsonb;
 
-  raise notice 'payload còn lộ: % · câu mất đáp án: %', con_lo, mat_dap_an;
+  /* Và cột mới phải thật sự bị khoá — kiểm bằng catalog, không bằng niềm tin.
+   *
+   * PHẢI lọc `privilege_type = 'SELECT'`. Bản đầu không lọc và báo động giả:
+   * `column_privileges` liệt kê cả INSERT / UPDATE / REFERENCES theo từng cột,
+   * nên nó đếm ra 6 = 2 vai trò × 3 loại quyền GHI. Quyền ghi ở đây vô hại —
+   * policy `questions_write` đòi `is_teacher()`, nên học sinh không sửa được
+   * đáp án dù có tên trong bảng cấp quyền. Thứ cần chặn là ĐỌC. */
+  select count(*) into con_grant
+    from information_schema.column_privileges
+   where table_schema = 'public' and table_name = 'questions'
+     and column_name = 'answer_key'
+     and privilege_type = 'SELECT'
+     and grantee in ('anon', 'authenticated');
+
+  raise notice 'payload còn lộ: % · câu mất đáp án: % · quyền đọc answer_key còn: %',
+    con_lo, mat_dap_an, con_grant;
 
   if con_lo <> 0 then
     raise exception 'payload VẪN còn đáp án ở % câu', con_lo;
@@ -116,7 +94,7 @@ begin
   if mat_dap_an <> 0 then
     raise exception 'MẤT đáp án ở % câu — dừng lại, đừng commit', mat_dap_an;
   end if;
+  if con_grant <> 0 then
+    raise exception 'answer_key VẪN đọc được bởi % vai trò công khai', con_grant;
+  end if;
 end $$;
-
--- Sau khi chạy, đổi `grade/index.ts` để đọc `answer_key` thay vì `payload`,
--- rồi deploy lại. Hai việc này phải đi cùng nhau.

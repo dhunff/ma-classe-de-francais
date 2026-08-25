@@ -176,11 +176,13 @@ một dãy bảy gạch (ba cho vế trước, bốn cho vế sau) và báo đ�
 
 Xem `docs/roadmap-delf.md` — có nhật ký quyết định ở §5.
 
-- **Chấm ở server** — Edge Function `grade` đã chạy và kiểm bằng curl. Còn
-  bước cuối: `supabase/migrations/021_hide_answers.sql.PENDING` gỡ đáp án khỏi
-  `payload`. CHƯA chạy vì chưa ai bấm "Nộp bài" thật trong giao diện học sinh —
-  các bước xác nhận ghi ở đầu file đó. Chạy trước khi xác nhận là đánh cược
-  toàn bộ việc chấm vào một đường mã chưa từng chạy thật.
+- ~~Chấm ở server~~ — xong 2026-08-25. Edge Function `grade` chấm, đáp án nằm
+  ở cột `answer_key` KHÔNG cấp SELECT cho anon/authenticated (migration 022).
+  `payload` chỉ còn phần để dựng câu hỏi.
+
+  **Khoá quyền ở mức CỘT nghĩa là `select("*")` trên bảng đó trả 401**, không
+  phải trả về ít cột hơn. Dính đúng một lần ngay sau 022 — cả thư viện trắng
+  xoá. `check:store` canh chỗ này.
 - ~~Gắn nhãn phân loại~~ — xong 2026-08-20 (migration 011): 215 câu có
   `point_gram`, 54 câu có `competence`. Số sau thấp vì thư viện chỉ có 54 câu
   đọc/nghe hiểu thật; xem docs/roadmap-delf.md §1.2.

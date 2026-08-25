@@ -96,7 +96,7 @@ Deno.serve(async (req) => {
 
   const [{ data: exRow }, { data: qRows, error: qErr }] = await Promise.all([
     admin.from("exercises").select("id, meta").eq("id", exerciseId).maybeSingle(),
-    admin.from("questions").select("id, type, prompt, payload, explanation")
+    admin.from("questions").select("id, type, prompt, payload, answer_key, explanation")
          .eq("exercise_id", exerciseId).order("ord", { ascending: true }),
   ]);
   if (qErr) return json(500, { error: "load_failed", detail: qErr.message });
@@ -109,7 +109,20 @@ Deno.serve(async (req) => {
   let dung = 0, tong = 0;
 
   for (const row of qRows) {
-    const q: any = { ...(row.payload ?? {}), id: row.id, type: row.type, prompt: row.prompt };
+    /* Đáp án lấy từ `answer_key` khi có, ngược lại từ `payload`.
+     *
+     * Chấp nhận CẢ HAI vì migration 021 và lần deploy này không thể xảy ra
+     * cùng một khoảnh khắc. Nếu hàm chỉ đọc `answer_key`, thì từ lúc deploy
+     * tới lúc chạy migration, mọi học sinh nộp bài đều bị chấm 0 — đáp án
+     * chưa kịp chuyển sang cột mới. Đọc cả hai thì không có khe hở nào.
+     *
+     * `answer_key` đặt SAU nên nó thắng: với câu `ordre`, `payload.elements`
+     * đã bị xáo, còn thứ tự đúng nằm ở `answer_key.elements`. */
+    const q: any = {
+      ...(row.payload ?? {}),
+      ...(row.answer_key ?? {}),
+      id: row.id, type: row.type, prompt: row.prompt,
+    };
     const ok = chamMotCau(q, answers[row.id], exercise);
 
     if (ok === null) {
