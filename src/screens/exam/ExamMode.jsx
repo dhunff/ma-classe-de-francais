@@ -570,6 +570,27 @@ export default function ExamMode() {
       score: res && res.max > 0 ? sectionScore(res.score, res.max, s.points) : null,
     }]);
 
+    /* Bài viết: nhờ AI chấm ngay sau khi nộp.
+     *
+     * Chạy NGẦM, không chặn màn hình kết quả. Gọi model mất vài giây tới vài
+     * chục giây; bắt học sinh ngồi đợi trước một màn hình trắng là đổi một
+     * tính năng lấy một trải nghiệm tệ. Hỏng thì phần đó ở nguyên trạng thái
+     * "chờ chấm" và giáo viên chấm tay như cũ — không mất gì.
+     *
+     * Id câu trả lời lấy từ database chứ không từ state: hàm chấm vừa ghi
+     * chúng, và chỉ nó mới biết id thật. */
+    if (res?.attemptId) {
+      supabase.from("answers")
+        .select("id, questions!inner (type)")
+        .eq("attempt_id", res.attemptId).eq("questions.type", "open")
+        .then(({ data }) => {
+          for (const a of data ?? []) {
+            supabase.functions.invoke("grade-pe-ai", { body: { answerId: a.id } })
+              .catch((e) => console.warn("[pe-ai] không chấm được:", e?.message ?? e));
+          }
+        });
+    }
+
     if (conNua) { setIdx(idx + 1); setAnswers({}); }
     else setBuoc("xong");
   };

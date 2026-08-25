@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { ShieldCheck, Clock, AlertTriangle, MessageSquare } from "lucide-react";
+import { ShieldCheck, Clock, MessageSquare, Bot } from "lucide-react";
 import { loadMyExamResults } from "../../shared/examResults.js";
 import { NGUONG_PHAN, NGUONG_TONG } from "../exam/examPaper.js";
 
@@ -48,13 +48,51 @@ function Phan({ s }) {
         </p>
       )}
 
-      {/* Nhận xét của giáo viên. Đây là lý do màn hình này tồn tại — con số một
-          mình không dạy được gì, câu nhận xét mới dạy. */}
-      {s.pe.map((p, i) => p.feedback && (
-        <p key={i} className="m-0 mt-2 flex items-start gap-2 rounded-lg bg-surface p-2.5 text-xs leading-relaxed text-ink">
-          <MessageSquare size={13} className="mt-0.5 shrink-0 text-primary" />
-          <span><strong className="text-soft">Nhận xét:</strong> {p.feedback}</span>
-        </p>
+      {/* Nhận xét và điểm từng tiêu chí. Đây là lý do màn hình này tồn tại —
+          con số một mình không dạy được gì, "Cohérence 1/3" mới chỉ đúng chỗ
+          cần sửa. */}
+      {s.pe.map((p, i) => (
+        <div key={i} className="mt-2 space-y-2">
+          {/* Nguồn gốc điểm. Học sinh có quyền biết con số này do máy đặt và
+              chưa ai đọc lại — giấu đi là để các em tin vào một thứ chưa được
+              người xác nhận. */}
+          {p.fromAI && (
+            <p className="m-0 flex items-start gap-2 rounded-lg bg-surface p-2.5 text-xs text-soft">
+              <Bot size={13} className="mt-0.5 shrink-0 text-warn" />
+              <span>
+                Điểm phần này do <strong className="text-ink">máy chấm tự động</strong> theo
+                grille DELF, giáo viên chưa xem lại. Nếu bạn thấy chưa hợp lý, hãy báo thầy cô.
+              </span>
+            </p>
+          )}
+
+          {p.feedback && (
+            <p className="m-0 flex items-start gap-2 rounded-lg bg-surface p-2.5 text-xs leading-relaxed text-ink">
+              <MessageSquare size={13} className="mt-0.5 shrink-0 text-primary" />
+              <span><strong className="text-soft">Nhận xét:</strong> {p.feedback}</span>
+            </p>
+          )}
+
+          {p.breakdown && typeof p.breakdown === "object" && (
+            <ul className="m-0 list-none space-y-1 p-0">
+              {Object.entries(p.breakdown)
+                .filter(([, v]) => v && typeof v === "object" && "note" in v)
+                .map(([k, v]) => (
+                  <li key={k} className="flex items-baseline justify-between gap-3 rounded-lg bg-surface px-2.5 py-1.5 text-xs">
+                    <span className="min-w-0 text-ink">
+                      {v.label ?? k}
+                      {v.justification && (
+                        <span className="block text-soft">{v.justification}</span>
+                      )}
+                    </span>
+                    <span className="shrink-0 font-bold tabular-nums text-ink">
+                      {v.note}<span className="text-soft">/{v.max}</span>
+                    </span>
+                  </li>
+                ))}
+            </ul>
+          )}
+        </div>
       ))}
     </li>
   );

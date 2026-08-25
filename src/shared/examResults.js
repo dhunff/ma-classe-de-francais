@@ -50,7 +50,7 @@ export async function loadMyExamResults() {
     /* Chỉ lấy câu ĐÃ được chấm tay — phần PE. Câu trắc nghiệm đã nằm trong
        `attempts.score`, kéo về nữa là đếm hai lần. */
     supabase.from("answers")
-      .select("attempt_id, score, max_score, feedback, graded_at, questions!inner (type, prompt)")
+      .select("attempt_id, score, max_score, feedback, graded_at, score_from_ai, ai_breakdown, questions!inner (type, prompt)")
       .in("attempt_id", attemptIds)
       .eq("questions.type", "open"),
   ]);
@@ -102,6 +102,10 @@ export async function loadMyExamResults() {
         pe: peList.map((a) => ({
           score: Number(a.score), max: Number(a.max_score) || points,
           feedback: a.feedback, gradedAt: a.graded_at, prompt: a.questions?.prompt,
+          /* Nguồn gốc con số. Học sinh có quyền biết điểm nào do máy chấm mà
+             chưa ai đọc lại — giấu đi là để các em tin vào một thứ chưa được
+             người xác nhận. */
+          fromAI: !!a.score_from_ai, breakdown: a.ai_breakdown ?? null,
         })),
         /* Bài viết đã nộp nhưng CHƯA chấm — phân biệt với "phần này không có
            bài viết nào". Hai thứ trông giống nhau khi score = null. */
