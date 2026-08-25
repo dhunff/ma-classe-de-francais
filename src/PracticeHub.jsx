@@ -17,6 +17,7 @@ import SplitPane from "./screens/practice/SplitPane.jsx";
 import Builder from "./screens/teacher/Builder.jsx";
 import PaymentModal from "./screens/student/PaymentModal.jsx";
 import PremiumLockCard from "./screens/student/PremiumLockCard.jsx";
+import { gradeRemote } from "./shared/gradeRemote.js";
 import { PAYMENT_KEY, isPremium, hasAccess, fmtPrice, loadAccess } from "./shared/access.js";
 import ExerciseCard from "./screens/practice/ExerciseCard.jsx";
 import { supabase } from "./storageShim.js";
@@ -969,6 +970,7 @@ function PracticeWorkspace({ ex, back, onFinish }) {
   const [confirmCount, setConfirmCount] = useState(null);   // ⚠️ copie incomplète
   const t = useT();
   const [graded, setGraded] = useState(false);
+  const [remote, setRemote] = useState(null);   // kết quả chấm từ máy chủ
   const [remaining, setRemaining] = useState(null);
   const [zen, setZen] = useState(false); // 🧘 chế độ tập trung
   const [imgZoom, setImgZoom] = useState(false); // 🔍 lightbox ảnh đề bài
@@ -991,19 +993,40 @@ function PracticeWorkspace({ ex, back, onFinish }) {
   if (!ex) return null;
   const autos = ex.questions.filter(autoQ);
   const opens = ex.questions.filter((q) => q.type === "open");
-  const isGood = (q) => q.type === "qcm" ? answersRef.current[q.id] === q.answer
-    : q.type === "vf" ? vfOk(q, answersRef.current[q.id])
-    : q.type === "tableau" ? tableauOk(q, answersRef.current[q.id])
-    : q.type === "ordre" ? ordreOk(q, answersRef.current[q.id])
-    : fillOk(q, answersRef.current[q.id]);
+  /* Máy chủ nói trước, trình duyệt chỉ nói khi máy chủ im.
+   *
+   * `remote` là kết quả từ Edge Function `grade`. Có nó thì dùng nó — đó là
+   * bên duy nhất còn thấy đáp án sau migration 021. Chưa có (đang gọi, hoặc
+   * gọi hỏng) thì tạm chấm tại chỗ như trước.
+   *
+   * Giữ nguyên tên `isGood` và chữ ký: nó được gọi ở hơn chục chỗ trong phần
+   * dựng giao diện, và đổi tên ở đây nghĩa là sửa hết chừng ấy chỗ cho một
+   * thay đổi vốn không cần ai bên ngoài biết. */
+  const isGood = (q) => {
+    const r = remote?.[q.id];
+    if (r && typeof r.correct === "boolean") return r.correct;
+    return q.type === "qcm" ? answersRef.current[q.id] === q.answer
+      : q.type === "vf" ? vfOk(q, answersRef.current[q.id])
+      : q.type === "tableau" ? tableauOk(q, answersRef.current[q.id])
+      : q.type === "ordre" ? ordreOk(q, answersRef.current[q.id])
+      : fillOk(q, answersRef.current[q.id]);
+  };
 
-  const grade = (timedOut = false) => {
+  const grade = async (timedOut = false) => {
     gradedRef.current = true;
     setGraded(timedOut ? "timeout" : true);
-    const score = autos.reduce((n, q) => n + (isGood(q) ? 1 : 0), 0);
-    onFinish(score, autos.length || 0);
+
+    const res = await gradeRemote(ex.id, answersRef.current);
+    if (res) setRemote(res.results);
+
+    /* Điểm lấy từ máy chủ khi có. Tự cộng lại ở đây là mở đường cho hai con số
+       lệch nhau — màn hình hiện một đằng, lịch sử lưu một nẻo. */
+    const score = res ? res.score : autos.reduce((n, q) => n + (isGood(q) ? 1 : 0), 0);
+    onFinish(score, res ? res.max : (autos.length || 0));
   };
-  const retry = () => { gradedRef.current = false; setGraded(false); setAnswers({}); };
+  const retry = () => {
+    gradedRef.current = false; setGraded(false); setAnswers({}); setRemote(null);
+  };
 
   const score = graded ? autos.reduce((n, q) => n + (isGood(q) ? 1 : 0), 0) : 0;
   const perfect = graded && autos.length > 0 && score === autos.length;

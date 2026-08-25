@@ -13,7 +13,8 @@
     "check:hooks": "node scripts/check-hooks.mjs",
     "check:submissions": "node scripts/check-submissions.mjs",
     "check:exercises": "node scripts/check-exercises.mjs",
-    "check:store": "node scripts/check-store-split.mjs"
+    "check:store": "node scripts/check-store-split.mjs",
+    "check:parity": "node scripts/check-parity.mjs"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

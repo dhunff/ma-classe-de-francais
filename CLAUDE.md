@@ -27,6 +27,7 @@ npm run check:hooks        # hook đặt sau `return` sớm
 npm run check:submissions  # ánh xạ bài nộp ↔ bảng (50 ca)
 npm run check:exercises    # ánh xạ bài tập ↔ hai bảng (53 ca)
 npm run check:store        # kho đề có chỗ nào còn gọi blob không (8 ca)
+npm run check:parity       # bộ chấm server vs client có trôi khỏi nhau không
 ```
 
 Mỗi bộ sinh ra từ một lỗi thật đã lọt lên production. **Build xanh không có
@@ -175,8 +176,11 @@ một dãy bảy gạch (ba cho vế trước, bốn cho vế sau) và báo đ�
 
 Xem `docs/roadmap-delf.md` — có nhật ký quyết định ở §5.
 
-- **Chấm ở client hay server?** Đáp án đang nằm trong bundle. Chấp nhận được cho
-  tự luyện, **không** cho thi thử. Phải quyết trước khi làm Mode Examen.
+- **Chấm ở server** — Edge Function `grade` đã chạy và kiểm bằng curl. Còn
+  bước cuối: `supabase/migrations/021_hide_answers.sql.PENDING` gỡ đáp án khỏi
+  `payload`. CHƯA chạy vì chưa ai bấm "Nộp bài" thật trong giao diện học sinh —
+  các bước xác nhận ghi ở đầu file đó. Chạy trước khi xác nhận là đánh cược
+  toàn bộ việc chấm vào một đường mã chưa từng chạy thật.
 - ~~Gắn nhãn phân loại~~ — xong 2026-08-20 (migration 011): 215 câu có
   `point_gram`, 54 câu có `competence`. Số sau thấp vì thư viện chỉ có 54 câu
   đọc/nghe hiểu thật; xem docs/roadmap-delf.md §1.2.
