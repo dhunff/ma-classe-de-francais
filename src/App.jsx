@@ -7,6 +7,7 @@ import RequireRole from './routes/RequireRole.jsx'
 import LoginGate from './screens/LoginGate.jsx'
 import { ROLE_HOME, TEACHER_NAV, STUDENT_NAV } from './layout/navItems.js'
 import ExamMode from './screens/exam/ExamMode.jsx'
+import ExamComposer from './screens/teacher/ExamComposer.jsx'
 
 import { C } from './shared/tokens.js'
 import { load } from './shared/storage.js'
@@ -245,9 +246,20 @@ function AppInner() {
                   (policy tips_write dùng is_teacher); RequireRole ở đây chỉ để
                   học sinh khỏi lạc vào một trang mà mọi nút đều báo lỗi. */}
               <Route path="/professeur/carnet" element={<TipsEditor t={t} />} />
+              <Route path="/professeur/examens" element={<ExamComposer t={t} />} />
 
               <Route path="/professeur/*" element={<Navigate to="/professeur/dashboard" replace />} />
             </Route>
+
+            {/* THI THỬ — cố ý NẰM NGOÀI `shell`, tức không có thanh bên.
+                Phòng thi không có menu để bấm sang chỗ khác. Thanh bên ở đây
+                vừa mời người ta rời bài giữa chừng, vừa lấy mất chiều ngang
+                của bài đọc dài. Lối ra nằm trong chính màn hình thi.
+
+                Vẫn qua RequireRole: ẩn giao diện cho gọn. Hàng rào thật là RLS
+                và Edge Function `grade`, không phải route. */}
+            <Route path="/etudiant/examen"
+              element={<RequireRole session={session} role="eleve"><ExamMode /></RequireRole>} />
 
             <Route element={<RequireRole session={session} role="eleve">{shell}</RequireRole>}>
               <Route path="/etudiant/dashboard"
@@ -267,9 +279,7 @@ function AppInner() {
                   mục menu bị bỏ. */}
               <Route path="/etudiant/progression" element={studentRoute("progress")} />
 
-              {/* Thi thử. Không sinh từ STUDENT_NAV vì nó không phải một mục
-                  menu thường: vào là bắt đầu tính giờ. */}
-              <Route path="/etudiant/examen" element={<ExamMode />} />
+
 
               <Route path="/etudiant/*" element={<Navigate to="/etudiant/dashboard" replace />} />
             </Route>

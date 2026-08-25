@@ -6,7 +6,7 @@
  * hai thì hệ thống báo "đạt" cho một người sẽ trượt thật.
  */
 
-import { EXAM_STRUCTURE, assemblePaper, sectionScore, verdict, NGUONG_PHAN }
+import { EXAM_STRUCTURE, sectionScore, verdict, NGUONG_PHAN }
   from "../src/screens/exam/examPaper.js";
 
 let pass = 0, fail = 0;
@@ -53,46 +53,7 @@ t("chắc chắn trượt dù chưa chấm hết: tối đa vẫn không đủ 5
 t("còn cứu được thì vẫn để ngỏ",
   verdict([s(13), s(13), { score: null, points: 25 }]).passed, null);
 
-/* ── lắp đề ── */
-const kho = [
-  { id: "co1", level: "B1", skills: ["Écoute"],            questions: [1, 2] },
-  { id: "ce1", level: "B1", skills: ["Lecture"],           questions: [1] },
-  { id: "pe1", level: "B1", skills: ["Production écrite"], questions: [1] },
-  { id: "co2", level: "B2", skills: ["Écoute"],            questions: [1] },
-  { id: "rong", level: "B1", skills: ["Lecture"],          questions: [] },
-];
-const de = assemblePaper(kho, "B1", () => 0);
-t("đủ ba phần", de.sections.map((x) => x.code), ["CO", "CE", "PE"]);
-t("không thiếu phần nào", de.missing.length, 0);
-t("chỉ lấy bài đúng trình độ",
-  de.sections.every((x) => x.exercise.level === "B1"), true);
-t("thời lượng lấy từ cấu trúc thật",
-  de.sections.map((x) => x.minutes), [25, 45, 45]);
-
-/* Bài KHÔNG có câu hỏi nào phải bị loại — với RLS bài trả phí chưa mua trả về
-   `questions: []`, và đưa nó vào đề thi nghĩa là một phần thi trống trơn. */
-t("bỏ qua bài rỗng", de.sections.find((x) => x.code === "CE").exercise.id, "ce1");
-
-/* Một phần thi 45 phút không được rơi vào bài có đúng một câu khi có bài dày
-   hơn — cả 25 điểm dồn vào một câu thì kết quả không đo được gì. Đã suýt xảy
-   ra với đề B1 thật: phần CE bốc trúng « Activité 2 », 1 câu. */
-const khoLech = [
-  { id: "ce_mong", level: "B1", skills: ["Lecture"], questions: [1] },
-  { id: "ce_day",  level: "B1", skills: ["Lecture"], questions: [1, 2, 3, 4, 5, 6, 7] },
-];
-t("chọn bài nhiều câu nhất, không bốc bừa",
-  assemblePaper(khoLech, "B1", () => 0).sections.find((x) => x.code === "CE").exercise.id,
-  "ce_day");
-t("chỉ có bài mỏng thì vẫn dùng, còn hơn thiếu phần",
-  assemblePaper([khoLech[0]], "B1", () => 0).sections.length, 1);
-
-const thieu = assemblePaper(kho, "B2", () => 0);
-t("thiếu phần thì nói rõ thiếu phần nào",
-  thieu.missing.map((x) => x.code), ["CE", "PE"]);
-t("phần có thì vẫn lắp", thieu.sections.map((x) => x.code), ["CO"]);
-
-t("trình độ không có cấu trúc → không dựng bừa",
-  assemblePaper(kho, "A1", () => 0).unsupported, true);
+/* Các ca kiểm `assemblePaper` từng ở đây, gỡ cùng hàm đó — xem examPaper.js. */
 
 /* PO cố ý không có: 25/100 của kỳ thi thật, hệ thống chưa tổ chức được. */
 t("không bịa ra phần thi nói",

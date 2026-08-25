@@ -27,45 +27,10 @@ export const EXAM_STRUCTURE = {
 export const NGUONG_TONG = 50;      // /100 toàn bài
 export const NGUONG_PHAN = 5;       // /25 mỗi phần — điều kiện dễ trượt hơn
 
-const coSkill = (ex, skill) =>
-  Array.isArray(ex?.skills) ? ex.skills.includes(skill) : ex?.skill === skill;
-
-/* Chọn một bài cho mỗi phần.
- *
- * `rnd` truyền vào được để bộ kiểm chạy tất định. Mặc định là Math.random —
- * mỗi lần thi lấy một đề khác, đó là điểm khác biệt so với luyện tập.
- *
- * Trả về `missing` thay vì ném lỗi: thư viện thiếu bài cho một kỹ năng là
- * chuyện bình thường lúc mới xây, và giao diện cần nói rõ THIẾU PHẦN NÀO chứ
- * không phải hiện một lỗi chung chung. */
-export function assemblePaper(exercises, level, rnd = Math.random) {
-  const cauTruc = EXAM_STRUCTURE[level];
-  if (!cauTruc) return { level, sections: [], missing: [], unsupported: true };
-
-  const sections = [];
-  const missing = [];
-
-  for (const phan of cauTruc) {
-    const ungVien = (exercises || []).filter(
-      (ex) => ex.level === level && coSkill(ex, phan.skill) && (ex.questions?.length ?? 0) > 0,
-    );
-    if (!ungVien.length) { missing.push(phan); continue; }
-
-    /* Chọn trong nhóm NHIỀU CÂU NHẤT, rồi mới bốc ngẫu nhiên trong nhóm đó.
-     *
-     * Bốc ngẫu nhiên trong tất cả ứng viên nghe công bằng hơn, nhưng thư viện
-     * hiện có cả bài Lecture chỉ MỘT câu. Rơi vào bài đó thì cả phần thi 45
-     * phút và 25 điểm dồn vào một câu duy nhất: được ăn cả, ngã về không, và
-     * con số cuối cùng không nói lên trình độ gì cả.
-     *
-     * Vẫn còn ngẫu nhiên khi có nhiều bài cùng độ dày — đó là thứ làm mỗi lần
-     * thi ra một đề khác. */
-    const nhieuNhat = Math.max(...ungVien.map((e) => e.questions.length));
-    const tot = ungVien.filter((e) => e.questions.length === nhieuNhat);
-    sections.push({ ...phan, exercise: tot[Math.floor(rnd() * tot.length)] });
-  }
-  return { level, sections, missing };
-}
+/* `assemblePaper` từng ở đây: bốc ngẫu nhiên một bài mỗi kỹ năng để dựng đề.
+   Gỡ ngày 2026-08-25 — đề thi nay do GIÁO VIÊN soạn (bảng `exams`, migration
+   026), nên hàm đó không còn ai gọi. Giữ lại mã chết chỉ để nó phân kỳ dần với
+   phần đang chạy, rồi một ngày có người sửa nhầm vào đó. Lịch sử nằm trong git. */
 
 /* Quy đổi về thang 25.
  *

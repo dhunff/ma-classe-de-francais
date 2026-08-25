@@ -26,6 +26,8 @@ export const TEACHER_NAV = [
   /* Không có `view`: màn hình này không nằm trong Teacher.jsx mà là route
      riêng, nên App.jsx khai báo tay. */
   { to: "/professeur/carnet", labelKey: "nav.tips", Icon: Lightbulb },
+  /* Soạn đề thi thử — cũng là route riêng, không có `view`. */
+  { to: "/professeur/examens", labelKey: "nav.exams", Icon: Timer },
 ];
 
 export const STUDENT_NAV = [

@@ -28,7 +28,8 @@ npm run check:submissions  # ánh xạ bài nộp ↔ bảng (50 ca)
 npm run check:exercises    # ánh xạ bài tập ↔ hai bảng (53 ca)
 npm run check:store        # kho đề có chỗ nào còn gọi blob không (8 ca)
 npm run check:parity       # bộ chấm server vs client có trôi khỏi nhau không
-npm run check:exam         # quy đổi điểm + luật đạt/trượt thi thử (29 ca)
+npm run check:exam         # quy đổi điểm + luật đạt/trượt thi thử (19 ca)
+npm run check:nav          # mục menu ↔ route ↔ nhãn i18n, cả hai chiều
 ```
 
 Mỗi bộ sinh ra từ một lỗi thật đã lọt lên production. **Build xanh không có
@@ -183,6 +184,11 @@ một dãy bảy gạch (ba cho vế trước, bốn cho vế sau) và báo đ�
 
 Xem `docs/roadmap-delf.md` — có nhật ký quyết định ở §5.
 
+- **Đề thi thử do GIÁO VIÊN soạn** (bảng exams + exam_sections, migration 026).
+  Đề chỉ THAM CHIẾU bài trong thư viện, không chứa câu hỏi — chép câu hỏi sang
+  chỗ khác là tách đôi cả ba thứ: đáp án bị khoá ở answer_key, đường chấm của
+  Edge Function, và trình soạn Builder. Màn thi nằm NGOÀI vỏ app (không thanh
+  bên); soạn đề ở /professeur/examens.
 - ~~Chấm ở server~~ — xong 2026-08-25. Edge Function `grade` chấm, đáp án nằm
   ở cột `answer_key` KHÔNG cấp SELECT cho anon/authenticated (migration 022).
   `payload` chỉ còn phần để dựng câu hỏi.

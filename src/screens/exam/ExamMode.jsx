@@ -1,9 +1,10 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { Timer, ShieldCheck, AlertTriangle, Clock, Volume2 } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Timer, ShieldCheck, AlertTriangle, Clock, Volume2, ArrowLeft } from "lucide-react";
 import { supabase } from "../../storageShim.js";
-import { loadPractice } from "../../shared/exerciseStore.js";
+import { loadExams, loadExam } from "../../shared/examStore.js";
 import { gradeRemote } from "../../shared/gradeRemote.js";
-import { EXAM_STRUCTURE, assemblePaper, sectionScore, verdict, NGUONG_PHAN, NGUONG_TONG }
+import { EXAM_STRUCTURE, sectionScore, verdict, NGUONG_PHAN, NGUONG_TONG }
   from "./examPaper.js";
 
 /* Mode Examen — thi thử có tính giờ.
@@ -31,24 +32,57 @@ const dongHo = (giay) => `${hai(Math.floor(giay / 60))}:${hai(Math.max(0, giay %
 
 /* ─────────────────────────── Màn chờ ─────────────────────────── */
 
-function ManCho({ level, setLevel, paper, onStart, dangTai }) {
+function ManCho({ dsDe, chon, paper, onStart, dangTai }) {
+  const level = paper?.level ?? "B1";
   const cauTruc = EXAM_STRUCTURE[level] ?? [];
   const tongPhut = cauTruc.reduce((n, p) => n + p.minutes, 0);
   const [sanSang, setSanSang] = useState(false);
 
+  /* Chưa có đề nào thì nói rõ NGUYÊN NHÂN, đừng hiện một màn hình trống.
+     Trạng thái này có thật và hay gặp lúc mới dựng lớp: giáo viên đã soạn bài
+     nhưng chưa ghép thành đề, hoặc đã ghép mà chưa bấm phát hành. */
+  if (!dangTai && dsDe.length === 0) {
+    return (
+      <div className="mx-auto max-w-2xl py-10">
+        <h1 className="m-0 text-2xl font-extrabold text-ink">Thi thử DELF</h1>
+        <div className="mt-6 rounded-3xl border border-line bg-surface p-8 text-center">
+          <p className="m-0 font-bold text-ink">Chưa có đề thi nào</p>
+          <p className="m-0 mt-2 text-sm text-soft">
+            Đề thi thử do giáo viên soạn và phát hành. Khi có đề, nó sẽ hiện ở đây.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="mx-auto max-w-2xl py-8">
-      <h1 className="m-0 text-2xl font-extrabold text-ink">Thi thử DELF</h1>
+      {/* Lối ra. Màn hình thi nằm ngoài vỏ app nên KHÔNG có thanh bên — cố ý,
+          phòng thi không có menu. Nhưng "không có menu" khác "không có lối ra":
+          thiếu link này thì cách duy nhất rời trang là bấm Back của trình
+          duyệt, và người dùng sẽ nghĩ mình bị nhốt. */}
+      <Link to="/etudiant/dashboard"
+        className="inline-flex items-center gap-1.5 text-sm font-semibold text-soft no-underline hover:text-ink">
+        <ArrowLeft size={15} /> Về trang chủ
+      </Link>
+
+      <h1 className="m-0 mt-4 text-2xl font-extrabold text-ink">Thi thử DELF</h1>
       <p className="m-0 mt-2 text-sm text-soft">
         Một lần duy nhất, có tính giờ, không xem đáp án giữa chừng.
       </p>
 
-      <div className="mt-6 flex gap-2">
-        {Object.keys(EXAM_STRUCTURE).map((lv) => (
-          <button key={lv} type="button" onClick={() => setLevel(lv)}
-            className={`rounded-full border-0 px-5 py-2 text-sm font-bold transition ${
-              lv === level ? "bg-primary text-white" : "bg-surface2 text-soft hover:text-ink"}`}>
-            {lv}
+      {/* Chọn ĐỀ, không chọn trình độ. Trước đây học sinh chọn B1/B2 rồi máy
+          bốc ngẫu nhiên ba bài — chạy được, nhưng không phải một đề thi. Giờ
+          mỗi dòng ở đây là một vật phẩm giáo viên đã cân nhắc và phát hành. */}
+      <div className="mt-6 space-y-2">
+        {dsDe.map((e) => (
+          <button key={e.id} type="button" onClick={() => chon(e.id)}
+            className={`block w-full rounded-2xl border-0 px-5 py-3 text-left transition ${
+              paper?.id === e.id ? "bg-primary text-white" : "bg-surface2 text-ink hover:brightness-95"}`}>
+            <span className="text-sm font-bold">{e.title}</span>
+            <span className={`ml-2 text-xs ${paper?.id === e.id ? "text-white/75" : "text-soft"}`}>
+              {e.level} · {e.sections.length} phần · {e.duration_min ?? 0}′
+            </span>
           </button>
         ))}
       </div>
@@ -97,10 +131,15 @@ function ManCho({ level, setLevel, paper, onStart, dangTai }) {
       {paper?.missing?.length > 0 && (
         <p className="m-0 mt-3 flex items-start gap-2 rounded-xl bg-dangerSoft p-3 text-xs text-ink">
           <AlertTriangle size={14} className="mt-0.5 shrink-0 text-danger" />
+          {/* `missing` ở đây KHÔNG phải "giáo viên quên chọn bài" — đề đã lưu
+              thì phần nào cũng có exercise_id. Nó nghĩa là bài được trỏ tới
+              hiện KHÔNG ĐỌC ĐƯỢC: bài trả phí mà em chưa mua (RLS 019 giấu
+              câu hỏi), hoặc bài vừa bị xoá. Nói đúng nguyên nhân, vì hai
+              trường hợp đó cần hai hành động khác nhau. */}
           <span>
-            Thư viện chưa có bài {level} cho{" "}
-            <strong>{paper.missing.map((m) => m.label).join(", ")}</strong>. Đề thi sẽ thiếu
-            phần đó, nên tổng điểm không so được với thang /100.
+            Không mở được phần <strong>{paper.missing.map((m) => m.code).join(", ")}</strong> của đề
+            này — bài tương ứng có thể là bài trả phí bạn chưa có quyền, hoặc đã bị gỡ.
+            Báo giáo viên; điểm phần đó sẽ không tính được.
           </span>
         </p>
       )}
@@ -440,10 +479,16 @@ function KetQua({ sections, blurCount, onLai }) {
         </p>
       )}
 
-      <button type="button" onClick={onLai}
-        className="mt-7 rounded-full border-0 bg-primary px-6 py-3 text-sm font-bold text-white shadow-lg">
-        Thi đề khác
-      </button>
+      <div className="mt-7 flex flex-wrap gap-3">
+        <button type="button" onClick={onLai}
+          className="rounded-full border-0 bg-primary px-6 py-3 text-sm font-bold text-white shadow-lg">
+          Thi đề khác
+        </button>
+        <Link to="/etudiant/dashboard"
+          className="rounded-full px-5 py-3 text-sm font-semibold text-soft no-underline hover:text-ink">
+          Về trang chủ
+        </Link>
+      </div>
     </div>
   );
 }
@@ -451,8 +496,8 @@ function KetQua({ sections, blurCount, onLai }) {
 /* ─────────────────────────── Vỏ ─────────────────────────── */
 
 export default function ExamMode() {
-  const [level, setLevel] = useState("B1");
-  const [kho, setKho] = useState(null);
+  const [dsDe, setDsDe] = useState([]);
+  const [dangTai, setDangTai] = useState(true);
   const [paper, setPaper] = useState(null);
   const [buoc, setBuoc] = useState("cho");         // cho | thi | cham | xong
   const [idx, setIdx] = useState(0);
@@ -461,8 +506,24 @@ export default function ExamMode() {
   const [blurCount, setBlurCount] = useState(0);
   const [attemptId, setAttemptId] = useState(null);
 
-  useEffect(() => { loadPractice().then(setKho).catch(() => setKho([])); }, []);
-  useEffect(() => { if (kho) setPaper(assemblePaper(kho, level)); }, [kho, level]);
+  /* Đề đến từ bảng `exams` — do giáo viên soạn và phát hành (migration 026).
+     RLS lo phần lọc: học sinh chỉ nhận đề đã phát hành. Không lọc lại ở đây,
+     vì lọc ở client là thứ xoá được trong DevTools. */
+  useEffect(() => {
+    loadExams()
+      .then((ds) => { setDsDe(ds); if (ds.length === 1) chonDe(ds[0].id); })
+      .catch(() => setDsDe([]))
+      .finally(() => setDangTai(false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const chonDe = async (id) => {
+    setDangTai(true);
+    const de = await loadExam(id);
+    setDangTai(false);
+    if (!de) { alert("Không mở được đề này."); return; }
+    setPaper(de);
+  };
 
   const batDau = () => { setAnswers({}); setKetQua([]); setBlurCount(0); setIdx(0); setBuoc("thi"); };
 
@@ -509,8 +570,8 @@ export default function ExamMode() {
   };
 
   if (buoc === "cho") {
-    return <ManCho level={level} setLevel={setLevel} paper={paper}
-      dangTai={!kho} onStart={batDau} />;
+    return <ManCho dsDe={dsDe} chon={chonDe} paper={paper}
+      dangTai={dangTai} onStart={batDau} />;
   }
   if (buoc === "thi") {
     return <PhanThi key={paper.sections[idx].code} section={paper.sections[idx]}
@@ -519,5 +580,5 @@ export default function ExamMode() {
       onBlur={() => setBlurCount((n) => n + 1)} />;
   }
   return <KetQua sections={ketQua} blurCount={blurCount}
-    onLai={() => { setPaper(assemblePaper(kho, level)); setBuoc("cho"); }} />;
+    onLai={() => { setPaper(null); setBuoc("cho"); }} />;
 }
