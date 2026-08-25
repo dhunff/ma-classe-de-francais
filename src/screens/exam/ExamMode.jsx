@@ -540,7 +540,12 @@ export default function ExamMode() {
     let huy = false;
     setAttemptId(null);
     supabase.rpc("exam_start", {
-      p_exercise_id: paper.sections[idx].exercise.id, p_mode: "exam",
+      p_exercise_id: paper.sections[idx].exercise.id,
+      /* Gắn lượt làm vào ĐỀ. Thiếu tham số này thì ba phần CO/CE/PE của cùng
+         một buổi thi trông như ba lần luyện tập rời rạc, và màn hình kết quả
+         không gom lại được — đúng lỗi migration 028 sửa. */
+      p_exam_id: paper.id,
+      p_mode: "exam",
     }).then(({ data, error }) => {
       if (huy) return;
       if (error) console.warn("[exam] không mở được attempt:", error.message);

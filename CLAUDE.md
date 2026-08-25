@@ -29,7 +29,7 @@ npm run check:exercises    # ánh xạ bài tập ↔ hai bảng (53 ca)
 npm run check:store        # kho đề có chỗ nào còn gọi blob không (8 ca)
 npm run check:parity       # bộ chấm server vs client có trôi khỏi nhau không
 npm run check:exam         # quy đổi điểm + luật đạt/trượt thi thử (19 ca)
-npm run check:nav          # mục menu ↔ route ↔ nhãn i18n, cả hai chiều
+npm run check:nav          # mục menu ↔ route ↔ nhãn i18n, cả hai chiều (74 ca)
 ```
 
 Mỗi bộ sinh ra từ một lỗi thật đã lọt lên production. **Build xanh không có
@@ -173,6 +173,11 @@ Supabase cấp thẳng cho hai vai đó (default privileges), nên phải thu đ
 Đã dính hai lần: quyền CỘT ở 022, quyền HÀM ở 024 — lần sau suýt cho học sinh
 gọi `_exam_play` với `p_max: 999` và nghe không giới hạn. Kiểm bằng
 `has_function_privilege`, đừng tin câu REVOKE vừa viết.
+
+**Thêm cột rồi quên ghi vào nó.** 026 thêm `attempts.exam_id`, 028 mới điền —
+suốt quãng giữa mọi lượt thi để NULL, và ba phần CO/CE/PE của cùng buổi thi
+trông như ba lần luyện tập rời rạc. Một cột không ai ghi vào thì im lặng y như
+cột không tồn tại, chỉ khác là nó khiến người đọc lược đồ tưởng đã có.
 
 **Đếm ô trống thì đếm SỐ DÃY gạch dưới.** Regex `_{3,}.*_{3,}` khớp được với
 một dãy bảy gạch (ba cho vế trước, bốn cho vế sau) và báo động giả. Dùng

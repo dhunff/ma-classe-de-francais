@@ -83,12 +83,12 @@ function TheBaiViet({ row, ten, onXong }) {
         </label>
 
         <label className="block min-w-0 flex-1">
-          {/* KHÔNG ghi "học sinh sẽ đọc" — chưa đúng. Nhận xét được lưu vào
-              `answers.feedback` và học sinh có quyền đọc dòng của mình, nhưng
-              CHƯA có màn hình nào hiện nó cho các em. Viết lời hứa đó lên giao
-              diện là để giáo viên ngồi soạn nhận xét cho một cái hộp rỗng. */}
+          {/* Nhãn này từng ghi "màn hình cho học sinh xem chưa làm" — đúng vào
+              lúc đó. Màn hình ấy nay đã có (`/etudiant/resultats`), nên câu chữ
+              phải đổi theo. Để nguyên cảnh báo cũ thì giáo viên tưởng nhận xét
+              rơi vào hư không và thôi không viết nữa. */}
           <span className="text-xs font-bold uppercase tracking-wide text-soft">
-            Nhận xét <span className="font-normal normal-case text-warn">(đã lưu — màn hình cho học sinh xem chưa làm)</span>
+            Nhận xét <span className="font-normal normal-case">(học sinh đọc được ở mục « Kết quả thi »)</span>
           </span>
           <input value={nhanXet} onChange={(e) => setNhanXet(e.target.value)}
             placeholder="Điều làm được, và một điều nên sửa lần sau."

@@ -9,6 +9,7 @@ import { ROLE_HOME, TEACHER_NAV, STUDENT_NAV } from './layout/navItems.js'
 import ExamMode from './screens/exam/ExamMode.jsx'
 import ExamComposer from './screens/teacher/ExamComposer.jsx'
 import PEGrading from './screens/teacher/PEGrading.jsx'
+import ExamResults from './screens/student/ExamResults.jsx'
 
 import { C } from './shared/tokens.js'
 import { load } from './shared/storage.js'
@@ -280,6 +281,7 @@ function AppInner() {
                   STUDENT_NAV sinh ra tự động, nên phải khai báo tay sau khi
                   mục menu bị bỏ. */}
               <Route path="/etudiant/progression" element={studentRoute("progress")} />
+              <Route path="/etudiant/resultats" element={<ExamResults />} />
 
 
 

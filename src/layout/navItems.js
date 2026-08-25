@@ -1,6 +1,6 @@
 import {
   LayoutDashboard, BookOpen, Users, BarChart3, Dumbbell,
-  ClipboardList, CheckSquare, CalendarDays, Settings, Lightbulb, Timer, PenLine,
+  ClipboardList, CheckSquare, CalendarDays, Settings, Lightbulb, Timer, PenLine, Trophy,
 } from "lucide-react";
 
 /* Điều hướng của vỏ app.
@@ -42,6 +42,7 @@ export const STUDENT_NAV = [
      là chưa làm xong. Chỗ cảnh báo trước khi tính giờ nằm ở màn chờ của chính
      ExamMode, không phải ở việc giấu lối vào. */
   { to: "/etudiant/examen", labelKey: "nav.exam", Icon: Timer },
+  { to: "/etudiant/resultats", labelKey: "nav.results", Icon: Trophy },
   /* « Ma progression » đã rời khỏi menu theo yêu cầu. Route
      /etudiant/progression VẪN sống trong App.jsx nên hành trình tới Paris và
      biểu đồ điểm không mất — chỉ là hiện không còn lối vào từ thanh bên.
