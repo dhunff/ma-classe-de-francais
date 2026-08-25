@@ -124,5 +124,16 @@ t("meta null đọc được", exerciseFromRow({ id: "a", title: "T", level: "B1
 t("thiếu tiêu đề → mặc định", toRows({ id: "x", questions: [] }, "practice").exRow.title, "(Sans titre)");
 t("timeLimit rỗng → null", toRows({ id: "x", title: "T", timeLimit: "", questions: [] }, "practice").exRow.time_limit, null);
 
+/* ── tường phí ──
+   Cờ trả phí đi qua `meta`, không phải cột riêng. Nó từng RƠI KHỎI EX_META:
+   giáo viên bật khoá, lưu, bài quay về miễn phí, không lỗi nào hiện ra. */
+const paid = toRows({ id: "x", title: "T", isPremium: true, price: 50000, questions: [] }, "practice");
+t("isPremium sống sót qua toRows", paid.exRow.meta.isPremium, true);
+t("price sống sót qua toRows", paid.exRow.meta.price, 50000);
+t("đọc lại vẫn còn isPremium", exerciseFromRow(paid.exRow).isPremium, true);
+t("đọc lại vẫn còn price", exerciseFromRow(paid.exRow).price, 50000);
+t("bài thường KHÔNG tự mọc cờ trả phí",
+  "isPremium" in toRows({ id: "y", title: "T", questions: [] }, "practice").exRow.meta, false);
+
 console.log(fail ? `\n${pass} đạt, ${fail} hỏng` : `\n${pass} đạt, 0 hỏng`);
 process.exit(fail ? 1 : 0);

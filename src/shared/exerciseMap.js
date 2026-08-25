@@ -20,6 +20,15 @@ export const EX_COLUMNS = [
 export const EX_META = [
   "targeted", "assignedTo", "assignedClasses", "assignedExtra",
   "folderId", "customCat",
+  /* isPremium + price: Builder.jsx:336 ghi hai trường này khi giáo viên bật
+     "bài trả phí". Thiếu chúng ở đây thì `toRows` lặng lẽ vứt đi — giáo viên
+     bật khoá, bấm lưu, bài quay về miễn phí, và KHÔNG có gì báo. Cả tường phí
+     sập mà build vẫn xanh.
+
+     Chưa gây hậu quả vì hiện chưa có bài trả phí nào (0/40), nhưng nó sẽ nổ
+     đúng vào lần đầu tiên có người dùng tính năng này. `check:exercises` nay
+     có ca kiểm cho đúng chỗ đó. */
+  "isPremium", "price",
 ];
 export const Q_COLUMNS = ["id", "type", "prompt", "explanation"];
 

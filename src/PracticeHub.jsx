@@ -16,6 +16,7 @@ import RichTextEditor from "./editor/RichTextEditor.jsx";
 import SplitPane from "./screens/practice/SplitPane.jsx";
 import Builder from "./screens/teacher/Builder.jsx";
 import PaymentModal from "./screens/student/PaymentModal.jsx";
+import PremiumLockCard from "./screens/student/PremiumLockCard.jsx";
 import { PAYMENT_KEY, isPremium, hasAccess, fmtPrice, loadAccess } from "./shared/access.js";
 import ExerciseCard from "./screens/practice/ExerciseCard.jsx";
 import { supabase } from "./storageShim.js";
@@ -238,7 +239,27 @@ function PracticeHubInner({ role = "eleve", name = "", accounts = [], onRequireL
 
   if (view.page === "quiz") {
     const ex = exercises.find((e) => e.id === view.exId);
-    return <PracticeWorkspace ex={ex} back={() => setView({ page: "category", cat: view.cat, folder: view.folder, niveau: view.niveau })}
+    const back = () => setView({ page: "category", cat: view.cat, folder: view.folder, niveau: view.niveau });
+
+    /* Tường phí, phía giao diện.
+     *
+     * Điều kiện KHÔNG phải `canOpen(...)`. Nó là "bài trả phí mà server không
+     * gửi câu hỏi nào về" — tức chính RLS ở migration 019 đã chặn.
+     *
+     * Vì sao hỏi dữ liệu thay vì hỏi biến JS: server là bên duy nhất có thẩm
+     * quyền. Nếu client tự tính ra "được mở" mà RLS nghĩ khác, học sinh sẽ thấy
+     * một bài trống trơn không lời giải thích — đúng cái lỗi "trang trắng".
+     * Đọc theo dữ liệu thật thì hai bên không thể nói khác nhau.
+     *
+     * Giáo viên và học sinh có quyền vẫn nhận đủ câu hỏi, nên không rơi vào
+     * nhánh này. */
+    const bịKhoá = ex && isPremium(ex) && (ex.questions?.length ?? 0) === 0;
+    if (bịKhoá) {
+      return <PremiumLockCard ex={ex} onBack={back} onBuy={() => setPayFor(ex)}
+        price={ex.price ? fmtPrice(ex.price) : ""} />;
+    }
+
+    return <PracticeWorkspace ex={ex} back={back}
       onFinish={(score, max) => saveHist(ex.id, score, max)} />;
   }
 
