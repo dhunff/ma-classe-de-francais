@@ -50,7 +50,7 @@ export async function loadMyExamResults() {
     /* Chỉ lấy câu ĐÃ được chấm tay — phần PE. Câu trắc nghiệm đã nằm trong
        `attempts.score`, kéo về nữa là đếm hai lần. */
     supabase.from("answers")
-      .select("attempt_id, score, max_score, feedback, graded_at, score_from_ai, ai_breakdown, questions!inner (type, prompt)")
+      .select("id, attempt_id, raw, score, max_score, feedback, graded_at, self_score, self_breakdown, questions!inner (id, type, prompt)")
       .in("attempt_id", attemptIds)
       .eq("questions.type", "open"),
   ]);
@@ -77,7 +77,10 @@ export async function loadMyExamResults() {
     const sections = list.map((r) => {
       const sec = phanCuaDe.find((s) => s.exercise_id === r.exercise_id);
       const points = sec?.points ?? 25;
-      const peList = (ansTheoAttempt[r.id] ?? []).filter((a) => a.score != null);
+      /* KHÔNG lọc theo `score` nữa: câu CHƯA ai chấm mới đúng là câu cần tự
+         chấm, lọc bỏ chúng thì màn tự chấm không bao giờ có gì để hiện. */
+      const peAll = (ansTheoAttempt[r.id] ?? []);
+      const peList = peAll.filter((a) => a.score != null);
 
       /* Ba trạng thái, và phải phân biệt đủ ba:
          · máy đã chấm (max > 0)            → quy đổi về thang 25
@@ -99,17 +102,18 @@ export async function loadMyExamResults() {
         score,
         exerciseId: r.exercise_id,
         finishedAt: r.finished_at,
-        pe: peList.map((a) => ({
-          score: Number(a.score), max: Number(a.max_score) || points,
+        pe: peAll.map((a) => ({
+          answerId: a.id, questionId: a.questions?.id, raw: a.raw ?? "",
+          selfScore: a.self_score == null ? null : Number(a.self_score),
+          selfBreakdown: a.self_breakdown ?? null,
+          score: a.score == null ? null : Number(a.score), max: Number(a.max_score) || points,
           feedback: a.feedback, gradedAt: a.graded_at, prompt: a.questions?.prompt,
-          /* Nguồn gốc con số. Học sinh có quyền biết điểm nào do máy chấm mà
-             chưa ai đọc lại — giấu đi là để các em tin vào một thứ chưa được
-             người xác nhận. */
-          fromAI: !!a.score_from_ai, breakdown: a.ai_breakdown ?? null,
         })),
         /* Bài viết đã nộp nhưng CHƯA chấm — phân biệt với "phần này không có
            bài viết nào". Hai thứ trông giống nhau khi score = null. */
         choCham: r.max === 0 && !peList.length,
+        /* Trình độ của đề — màn tự chấm cần nó để chọn đúng grille. */
+        level: thongTinDe?.level ?? "B1",
       };
     }).sort((a, b) => a.ord - b.ord);
 

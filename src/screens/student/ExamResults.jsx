@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { ShieldCheck, Clock, MessageSquare, Bot } from "lucide-react";
+import { ShieldCheck, Clock, MessageSquare, ClipboardCheck } from "lucide-react";
+import SelfAssess from "./SelfAssess.jsx";
 import { loadMyExamResults } from "../../shared/examResults.js";
 import { NGUONG_PHAN, NGUONG_TONG } from "../exam/examPaper.js";
 
@@ -53,17 +54,26 @@ function Phan({ s }) {
           cần sửa. */}
       {s.pe.map((p, i) => (
         <div key={i} className="mt-2 space-y-2">
-          {/* Nguồn gốc điểm. Học sinh có quyền biết con số này do máy đặt và
-              chưa ai đọc lại — giấu đi là để các em tin vào một thứ chưa được
-              người xác nhận. */}
-          {p.fromAI && (
+          {/* Bản tự chấm — hiện RIÊNG, không cộng vào điểm phần thi.
+              Tự chấm không phải điểm: gộp chung thì một em rộng tay với chính
+              mình sẽ thấy "Đạt" trên màn hình và tin vào đó. */}
+          {p.selfScore != null && (
             <p className="m-0 flex items-start gap-2 rounded-lg bg-surface p-2.5 text-xs text-soft">
-              <Bot size={13} className="mt-0.5 shrink-0 text-warn" />
+              <ClipboardCheck size={13} className="mt-0.5 shrink-0 text-primary" />
               <span>
-                Điểm phần này do <strong className="text-ink">máy chấm tự động</strong> theo
-                grille DELF, giáo viên chưa xem lại. Nếu bạn thấy chưa hợp lý, hãy báo thầy cô.
+                Bạn tự chấm: <strong className="text-ink">{p.selfScore}/{p.max}</strong>.
+                {p.score == null && " Đây là ước lượng của chính bạn, chưa phải điểm chính thức."}
               </span>
             </p>
+          )}
+
+          {/* Chưa tự chấm và cũng chưa ai chấm → mở luôn bảng tự chấm. */}
+          {p.answerId && p.score == null && (
+            <SelfAssess
+              answerId={p.answerId} questionId={p.questionId}
+              level={s.level} baiLam={p.raw} deBai={p.prompt}
+              daCo={p.selfBreakdown}
+              onXong={() => window.location.reload()} />
           )}
 
           {p.feedback && (
@@ -73,9 +83,9 @@ function Phan({ s }) {
             </p>
           )}
 
-          {p.breakdown && typeof p.breakdown === "object" && (
+          {p.selfBreakdown && typeof p.selfBreakdown === "object" && (
             <ul className="m-0 list-none space-y-1 p-0">
-              {Object.entries(p.breakdown)
+              {Object.entries(p.selfBreakdown)
                 .filter(([, v]) => v && typeof v === "object" && "note" in v)
                 .map(([k, v]) => (
                   <li key={k} className="flex items-baseline justify-between gap-3 rounded-lg bg-surface px-2.5 py-1.5 text-xs">

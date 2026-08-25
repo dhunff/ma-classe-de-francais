@@ -30,7 +30,7 @@ npm run check:store        # kho đề có chỗ nào còn gọi blob không (8 
 npm run check:parity       # bộ chấm server vs client có trôi khỏi nhau không
 npm run check:exam         # quy đổi điểm + luật đạt/trượt thi thử (19 ca)
 npm run check:nav          # mục menu ↔ route ↔ nhãn i18n, cả hai chiều (74 ca)
-npm run check:grille       # grille DELF cộng đúng 25, đủ mô tả tiêu chí (29 ca)
+npm run check:grille       # grille DELF A1–B2 cộng đúng 25, đủ mô tả (59 ca)
 ```
 
 Mỗi bộ sinh ra từ một lỗi thật đã lọt lên production. **Build xanh không có

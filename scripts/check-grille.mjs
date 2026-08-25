@@ -4,7 +4,7 @@
  * có gì đỏ, chỉ có điểm sai gửi tới học sinh. Cộng lại là việc máy làm được,
  * nên để máy làm.
  */
-import { GRILLE, tongDiem } from "../supabase/functions/_shared/delfGrille.js";
+import { GRILLE, tongDiem } from "../src/screens/exam/delfGrille.js";
 
 let pass = 0, fail = 0;
 const no = (m) => { fail++; console.log("  ✗ " + m); };
@@ -26,6 +26,21 @@ for (const [lv, g] of Object.entries(GRILLE)) {
   }
 
   if (!(g.minWords > 0)) no(`${lv}: thiếu minWords`); else pass++;
+}
+
+/* Bốn trình độ, không thiếu cái nào — thiếu một cái là học sinh trình độ đó
+   mở màn tự chấm ra màn hình trống. */
+for (const lv of ["A1","A2","B1","B2"]) {
+  if (!GRILLE[lv]) no("thiếu grille " + lv); else pass++;
+}
+
+/* A1/A2 là bản phỏng theo — cờ đó phải CÓ, vì giao diện dựa vào nó để nói rõ
+   với người học rằng thang này không sao y bản chính thức. */
+for (const lv of ["A1","A2"]) {
+  if (GRILLE[lv] && GRILLE[lv].adapted !== true) no(lv + ": thiếu cờ adapted"); else pass++;
+}
+for (const lv of ["B1","B2"]) {
+  if (GRILLE[lv] && GRILLE[lv].adapted) no(lv + ": KHÔNG được gắn cờ adapted — bám grille chính thức"); else pass++;
 }
 
 /* Hai trình độ phải khác nhau thật — B2 đòi lập luận, B1 thì không. */
