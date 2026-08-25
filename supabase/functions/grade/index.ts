@@ -159,7 +159,57 @@ Deno.serve(async (req) => {
     };
   }
 
-  return json(200, { exerciseId, score: dung, max: tong, results: ketQua });
+  /* ── Ghi lại lần làm bài ──
+   *
+   * Ghi Ở ĐÂY chứ không để client tự ghi, vì hai lý do:
+   *
+   * 1. KHÔNG GIẢ MẠO ĐƯỢC. `user_id` lấy từ JWT đã ký, không bao giờ từ body.
+   *    Tin vào `body.userId` là cho phép bất kỳ ai viết vào lịch sử của bất kỳ
+   *    ai — kể cả bịa một chuỗi điểm 100% cho mình.
+   * 2. ĐÚNG THEO ĐỊNH NGHĨA. Hàm này vừa tự chấm xong, nên `correct` nó ghi
+   *    chính là `correct` nó trả về. Client ghi thì hai con số có thể lệch.
+   *
+   * Ghi hỏng KHÔNG làm hỏng việc chấm: học sinh vẫn phải nhận được điểm dù
+   * thống kê có trục trặc. Nên nhánh này chỉ log, không ném lỗi.
+   */
+  const { data: userData } = await asCaller.auth.getUser();
+  const userId = userData?.user?.id ?? null;
+  let attemptId: string | null = null;
+
+  if (userId) {
+    const mode = body?.mode === "exam" ? "exam" : "practice";
+    const { data: att, error: attErr } = await admin.from("attempts").insert({
+      user_id: userId,               // ← từ JWT, không từ body
+      exercise_id: exerciseId,
+      mode,
+      finished_at: new Date().toISOString(),
+      score: dung,
+      max: tong,
+      blur_count: Number(body?.blurCount) || 0,
+    }).select("id").maybeSingle();
+
+    if (attErr) {
+      console.error("[grade] không ghi được attempt:", attErr.message);
+    } else if (att?.id) {
+      attemptId = att.id;
+      const msSpent = body?.msSpent && typeof body.msSpent === "object" ? body.msSpent : {};
+      const rows = qRows
+        .filter((r: any) => ketQua[r.id])
+        .map((r: any) => ({
+          attempt_id: att.id,
+          question_id: r.id,
+          raw: answers[r.id] ?? null,
+          correct: (ketQua[r.id] as any).correct,
+          ms_spent: Number(msSpent[r.id]) || null,
+        }));
+      if (rows.length) {
+        const { error: ansErr } = await admin.from("answers").insert(rows);
+        if (ansErr) console.error("[grade] không ghi được answers:", ansErr.message);
+      }
+    }
+  }
+
+  return json(200, { exerciseId, score: dung, max: tong, attemptId, results: ketQua });
 });
 
 /* Dạng đáp án đúng để hiện cho người học SAU khi đã sai.
