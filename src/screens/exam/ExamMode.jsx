@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { Timer, ShieldCheck, AlertTriangle, CheckCircle2, Clock, FileText } from "lucide-react";
+import { Timer, ShieldCheck, AlertTriangle, Clock, Volume2 } from "lucide-react";
+import { supabase } from "../../storageShim.js";
 import { loadPractice } from "../../shared/exerciseStore.js";
 import { gradeRemote } from "../../shared/gradeRemote.js";
 import { EXAM_STRUCTURE, assemblePaper, sectionScore, verdict, NGUONG_PHAN, NGUONG_TONG }
@@ -122,9 +123,95 @@ function ManCho({ level, setLevel, paper, onStart, dangTai }) {
   );
 }
 
+/* ───────────────────── Audio giới hạn 2 lượt ───────────────────── */
+
+/* Bộ đếm nằm ở MÁY CHỦ (`attempts.audio_plays`), không ở đây.
+ *
+ * Giữ trong state React thì học sinh chỉ cần F5 là nghe lại từ đầu — và đó
+ * chính là thứ họ sẽ thử. Migration 024 còn bịt thêm hai đường vòng nữa: trình
+ * duyệt không còn quyền UPDATE thẳng vào `attempts`, và `exam_start` DÙNG LẠI
+ * lần làm chưa kết thúc nên tải lại trang cũng không đẻ ra bộ đếm mới.
+ *
+ * Ở đây chỉ còn một việc: hỏi máy chủ trước khi phát, và nếu bị từ chối thì
+ * NÓI RÕ VÌ SAO. Nút chết lặng không giải thích là thứ khiến người dùng tưởng
+ * trang hỏng. */
+function AudioGioiHan({ src, attemptId, questionId }) {
+  const [conLai, setConLai] = useState(null);   // null = chưa hỏi lần nào
+  const [dangXin, setDangXin] = useState(false);
+  const [loi, setLoi] = useState("");
+  const ref = useRef(null);
+
+  const het = conLai !== null && conLai <= 0;
+  const chuaSanSang = !attemptId;
+
+  /* Đọc bộ đếm THẬT khi vào, đừng mặc định "còn 2 lượt".
+   *
+   * Sau khi tải lại trang, `exam_start` trả về đúng lần làm cũ, nên máy chủ vẫn
+   * nhớ đã nghe mấy lượt. Nhưng giao diện thì mới tinh — hiện "2 lượt" rồi bấm
+   * vào bị từ chối là kiểu sai lệch khiến người dùng nghĩ hệ thống hỏng, chứ
+   * không nghĩ mình đã hết lượt. */
+  useEffect(() => {
+    if (!attemptId) return;
+    let huy = false;
+    supabase.from("attempts").select("audio_plays").eq("id", attemptId).maybeSingle()
+      .then(({ data }) => {
+        if (huy || !data) return;
+        const daNghe = Number(data.audio_plays?.[questionId] ?? 0);
+        if (daNghe > 0) setConLai(Math.max(0, 2 - daNghe));
+      });
+    return () => { huy = true; };
+  }, [attemptId, questionId]);
+
+  const phat = async () => {
+    if (het || dangXin || chuaSanSang) return;
+    setDangXin(true); setLoi("");
+    try {
+      const { data, error } = await supabase.rpc("exam_play_audio", {
+        p_attempt: attemptId, p_question: questionId,
+      });
+      if (error) throw error;
+      if (data?.allowed) {
+        setConLai(data.remaining ?? 0);
+        ref.current?.play();
+      } else {
+        setConLai(0);
+        setLoi(data?.reason === "limit"
+          ? "Bạn đã dùng hết 2 lượt nghe cho phần này."
+          : "Không ghi nhận được lượt nghe.");
+      }
+    } catch (e) {
+      /* Không đếm được thì KHÔNG cho phát. Hướng an toàn ở đây là chặn: cho
+         phát khi mất kết nối là mở đúng đường vòng mà cả migration 024 sinh ra
+         để bịt — ngắt mạng một giây là nghe không giới hạn. */
+      setLoi("Không kết nối được máy chủ, chưa phát được. Thử lại sau giây lát.");
+      console.warn("[exam] exam_play_audio hỏng:", e?.message ?? e);
+    } finally {
+      setDangXin(false);
+    }
+  };
+
+  return (
+    <div className="mb-5 rounded-2xl border border-line bg-surface p-4">
+      {/* KHÔNG dùng `controls` mặc định: nó cho tua lại và phát lại tuỳ ý, tức
+          là bỏ qua bộ đếm hoàn toàn. Chỉ một nút, mỗi lần bấm là một lượt. */}
+      <audio ref={ref} src={src} onEnded={() => {}} />
+      <div className="flex flex-wrap items-center gap-3">
+        <button type="button" onClick={phat} disabled={het || dangXin || chuaSanSang}
+          className="inline-flex items-center gap-2 rounded-full border-0 bg-primary px-5 py-2.5 text-sm font-bold text-white transition enabled:hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-40">
+          <Volume2 size={15} /> {chuaSanSang ? "Đang mở bài thi…" : dangXin ? "…" : het ? "Hết lượt nghe" : "Phát"}
+        </button>
+        <span className="text-xs text-soft">
+          {conLai === null ? "2 lượt nghe" : `Còn ${conLai} lượt`}
+        </span>
+      </div>
+      {loi && <p className="m-0 mt-2 text-xs font-semibold text-danger">{loi}</p>}
+    </div>
+  );
+}
+
 /* ─────────────────────── Một phần thi ─────────────────────── */
 
-function PhanThi({ section, answers, setAnswers, onDone, onBlur }) {
+function PhanThi({ section, attemptId, answers, setAnswers, onDone, onBlur }) {
   const [conLai, setConLai] = useState(section.minutes * 60);
   const doneRef = useRef(false);
 
@@ -171,9 +258,7 @@ function PhanThi({ section, answers, setAnswers, onDone, onBlur }) {
 
       {ex.consigne && <p className="m-0 mb-4 text-sm italic text-soft">{ex.consigne}</p>}
       {ex.audioUrl && (
-        <audio controls src={ex.audioUrl} className="mb-5 w-full">
-          Trình duyệt không phát được audio.
-        </audio>
+        <AudioGioiHan src={ex.audioUrl} attemptId={attemptId} questionId={`ex:${ex.id}`} />
       )}
       {ex.readingText && (
         <div className="mb-6 max-h-80 overflow-y-auto rounded-2xl border border-line bg-surface p-5 text-sm leading-relaxed text-ink"
@@ -374,11 +459,34 @@ export default function ExamMode() {
   const [answers, setAnswers] = useState({});
   const [ketQua, setKetQua] = useState([]);
   const [blurCount, setBlurCount] = useState(0);
+  const [attemptId, setAttemptId] = useState(null);
 
   useEffect(() => { loadPractice().then(setKho).catch(() => setKho([])); }, []);
   useEffect(() => { if (kho) setPaper(assemblePaper(kho, level)); }, [kho, level]);
 
   const batDau = () => { setAnswers({}); setKetQua([]); setBlurCount(0); setIdx(0); setBuoc("thi"); };
+
+  /* Mở `attempt` NGAY khi vào phần thi, không đợi lúc nộp.
+   *
+   * Bộ đếm lượt nghe cần một dòng để ghi vào trong lúc đang làm bài. Nếu dòng
+   * đó chỉ sinh ra lúc chấm thì suốt phần CO không có chỗ nào đếm, và giới hạn
+   * 2 lượt lại phải quay về sống trong state React — đúng thứ roadmap §2.3 cấm.
+   *
+   * `exam_start` dùng lại lần làm chưa kết thúc, nên gọi lại nhiều lần cũng chỉ
+   * ra một dòng. Đó cũng là thứ khiến F5 không cấp thêm lượt nghe. */
+  useEffect(() => {
+    if (buoc !== "thi" || !paper?.sections[idx]) return;
+    let huy = false;
+    setAttemptId(null);
+    supabase.rpc("exam_start", {
+      p_exercise_id: paper.sections[idx].exercise.id, p_mode: "exam",
+    }).then(({ data, error }) => {
+      if (huy) return;
+      if (error) console.warn("[exam] không mở được attempt:", error.message);
+      else setAttemptId(data);
+    });
+    return () => { huy = true; };
+  }, [buoc, idx, paper]);
 
   const xongPhan = async () => {
     const s = paper.sections[idx];
@@ -387,7 +495,7 @@ export default function ExamMode() {
     /* Nộp NGAY từng phần, không đợi hết bài: hết giờ phần này là câu trả lời
        của nó đã an toàn trên máy chủ. Đợi tới cuối thì một lần đóng tab là mất
        cả buổi thi. */
-    const res = await gradeRemote(s.exercise.id, answers, { mode: "exam", blurCount });
+    const res = await gradeRemote(s.exercise.id, answers, { mode: "exam", blurCount, attemptId });
 
     setKetQua((p) => [...p, {
       ...s,
@@ -406,6 +514,7 @@ export default function ExamMode() {
   }
   if (buoc === "thi") {
     return <PhanThi key={paper.sections[idx].code} section={paper.sections[idx]}
+      attemptId={attemptId}
       answers={answers} setAnswers={setAnswers} onDone={xongPhan}
       onBlur={() => setBlurCount((n) => n + 1)} />;
   }

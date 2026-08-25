@@ -28,6 +28,7 @@ npm run check:submissions  # ánh xạ bài nộp ↔ bảng (50 ca)
 npm run check:exercises    # ánh xạ bài tập ↔ hai bảng (53 ca)
 npm run check:store        # kho đề có chỗ nào còn gọi blob không (8 ca)
 npm run check:parity       # bộ chấm server vs client có trôi khỏi nhau không
+npm run check:exam         # quy đổi điểm + luật đạt/trượt thi thử (29 ca)
 ```
 
 Mỗi bộ sinh ra từ một lỗi thật đã lọt lên production. **Build xanh không có
@@ -165,6 +166,12 @@ Viết đề hai ô rồi ghi `"arrive|allume"` thì học sinh gõ một vế l
 trọn. Ghi `"a/b"` thì hỏng ngược lại — `/` không phải dấu phân tách nào cả, nên
 gõ đúng cả hai vế vẫn sai. Cả 17 câu mắc lỗi này đã tách đôi (migration 017 và
 018); **thư viện hiện không còn câu nào ≥2 ô trống**. Đừng tạo câu mới như vậy.
+
+**REVOKE khỏi  KHÔNG xoá quyền cấp riêng cho /.**
+Supabase cấp thẳng cho hai vai đó (default privileges), nên phải thu đích danh.
+Đã dính hai lần: quyền CỘT ở 022, quyền HÀM ở 024 — lần sau suýt cho học sinh
+gọi  với  và nghe không giới hạn. Kiểm bằng
+, đừng tin câu REVOKE vừa viết.
 
 **Đếm ô trống thì đếm SỐ DÃY gạch dưới.** Regex `_{3,}.*_{3,}` khớp được với
 một dãy bảy gạch (ba cho vế trước, bốn cho vế sau) và báo động giả. Dùng

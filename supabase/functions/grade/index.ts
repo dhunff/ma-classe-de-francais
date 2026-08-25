@@ -178,15 +178,45 @@ Deno.serve(async (req) => {
 
   if (userId) {
     const mode = body?.mode === "exam" ? "exam" : "practice";
-    const { data: att, error: attErr } = await admin.from("attempts").insert({
-      user_id: userId,               // ← từ JWT, không từ body
-      exercise_id: exerciseId,
-      mode,
+    const xong = {
       finished_at: new Date().toISOString(),
       score: dung,
       max: tong,
       blur_count: Number(body?.blurCount) || 0,
-    }).select("id").maybeSingle();
+    };
+
+    /* Thi thử mở `attempt` TỪ ĐẦU (rpc `exam_start`), vì bộ đếm nghe audio cần
+     * một chỗ để ghi trong lúc đang làm. Nên ở đây phải ĐÓNG dòng đó lại, chứ
+     * không tạo dòng mới — tạo mới thì `audio_plays` vừa đếm cả buổi nằm mồ
+     * côi ở dòng cũ, và lần thi hiện ra hai lần trong lịch sử.
+     *
+     * Vẫn kiểm chủ sở hữu dù id đến từ body: `attemptId` là thứ người gọi tự
+     * gửi lên, nên tin thẳng nghĩa là cho phép ghi đè lần thi của người khác. */
+    let att: { id: string } | null = null;
+    let attErr: { message: string } | null = null;
+
+    const xinAttempt = String(body?.attemptId ?? "");
+    if (xinAttempt) {
+      const { data: cu } = await admin.from("attempts")
+        .select("id, user_id").eq("id", xinAttempt).maybeSingle();
+      if (cu && cu.user_id === userId) {
+        const r = await admin.from("attempts").update(xong)
+          .eq("id", cu.id).select("id").maybeSingle();
+        att = r.data; attErr = r.error;
+      } else {
+        console.warn("[grade] attemptId không thuộc người gọi, bỏ qua:", xinAttempt);
+      }
+    }
+
+    if (!att && !attErr) {
+      const r = await admin.from("attempts").insert({
+        user_id: userId,               // ← từ JWT, không từ body
+        exercise_id: exerciseId,
+        mode,
+        ...xong,
+      }).select("id").maybeSingle();
+      att = r.data; attErr = r.error;
+    }
 
     if (attErr) {
       console.error("[grade] không ghi được attempt:", attErr.message);
@@ -203,7 +233,11 @@ Deno.serve(async (req) => {
           ms_spent: Number(msSpent[r.id]) || null,
         }));
       if (rows.length) {
-        const { error: ansErr } = await admin.from("answers").insert(rows);
+        /* upsert chứ không insert: một attempt có thể được đóng hai lần (hết giờ
+           và bấm nộp gần như cùng lúc), và unique(attempt_id, question_id) sẽ
+           chặn lần thứ hai — làm mất luôn cả phần ghi nhận. */
+        const { error: ansErr } = await admin.from("answers")
+          .upsert(rows, { onConflict: "attempt_id,question_id" });
         if (ansErr) console.error("[grade] không ghi được answers:", ansErr.message);
       }
     }
