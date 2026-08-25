@@ -167,11 +167,11 @@ trọn. Ghi `"a/b"` thì hỏng ngược lại — `/` không phải dấu phân
 gõ đúng cả hai vế vẫn sai. Cả 17 câu mắc lỗi này đã tách đôi (migration 017 và
 018); **thư viện hiện không còn câu nào ≥2 ô trống**. Đừng tạo câu mới như vậy.
 
-**REVOKE khỏi  KHÔNG xoá quyền cấp riêng cho /.**
+**REVOKE khỏi `PUBLIC` KHÔNG xoá quyền cấp riêng cho `anon` / `authenticated`.**
 Supabase cấp thẳng cho hai vai đó (default privileges), nên phải thu đích danh.
 Đã dính hai lần: quyền CỘT ở 022, quyền HÀM ở 024 — lần sau suýt cho học sinh
-gọi  với  và nghe không giới hạn. Kiểm bằng
-, đừng tin câu REVOKE vừa viết.
+gọi `_exam_play` với `p_max: 999` và nghe không giới hạn. Kiểm bằng
+`has_function_privilege`, đừng tin câu REVOKE vừa viết.
 
 **Đếm ô trống thì đếm SỐ DÃY gạch dưới.** Regex `_{3,}.*_{3,}` khớp được với
 một dãy bảy gạch (ba cho vế trước, bốn cho vế sau) và báo động giả. Dùng
