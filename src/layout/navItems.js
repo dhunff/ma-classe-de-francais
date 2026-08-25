@@ -1,6 +1,6 @@
 import {
   LayoutDashboard, BookOpen, Users, BarChart3, Dumbbell,
-  ClipboardList, CheckSquare, CalendarDays, Settings, Lightbulb,
+  ClipboardList, CheckSquare, CalendarDays, Settings, Lightbulb, Timer,
 } from "lucide-react";
 
 /* Điều hướng của vỏ app.
@@ -33,6 +33,12 @@ export const STUDENT_NAV = [
   { to: "/etudiant/devoirs", labelKey: "nav.todo", Icon: ClipboardList, view: "todo" },
   { to: "/etudiant/rendus", labelKey: "nav.done", Icon: CheckSquare, view: "done" },
   { to: "/etudiant/entrainement", labelKey: "nav.practice", Icon: Dumbbell, view: "practice" },
+  /* Không có `view`: là route riêng trong App.jsx, giống « Sổ tay » bên giáo viên.
+     Ban đầu tôi cố ý KHÔNG đưa vào đây với lý do "vào là bắt đầu tính giờ, không
+     phải mục menu thường". Sai — kết quả là một màn hình không ai tới được, tức
+     là chưa làm xong. Chỗ cảnh báo trước khi tính giờ nằm ở màn chờ của chính
+     ExamMode, không phải ở việc giấu lối vào. */
+  { to: "/etudiant/examen", labelKey: "nav.exam", Icon: Timer },
   /* « Ma progression » đã rời khỏi menu theo yêu cầu. Route
      /etudiant/progression VẪN sống trong App.jsx nên hành trình tới Paris và
      biểu đồ điểm không mất — chỉ là hiện không còn lối vào từ thanh bên.
