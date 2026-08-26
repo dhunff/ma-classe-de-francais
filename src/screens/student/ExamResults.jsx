@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { ShieldCheck, Clock, MessageSquare, ClipboardCheck } from "lucide-react";
-import SelfAssess from "./SelfAssess.jsx";
+import { ShieldCheck, Clock, MessageSquare, ClipboardCheck, PenLine, ArrowLeft } from "lucide-react";
+import PESelfEvaluation from "./PESelfEvaluation.jsx";
 import { loadMyExamResults } from "../../shared/examResults.js";
 import { NGUONG_PHAN, NGUONG_TONG } from "../exam/examPaper.js";
 
@@ -26,7 +26,7 @@ const ngay = (iso) => {
   });
 };
 
-function Phan({ s }) {
+function Phan({ s, onTuCham }) {
   const yeu = s.score != null && s.score < NGUONG_PHAN;
   return (
     <li className={`rounded-xl border p-3 ${yeu ? "border-danger bg-dangerSoft" : "border-line bg-surface2"}`}>
@@ -67,13 +67,32 @@ function Phan({ s }) {
             </p>
           )}
 
-          {/* Chưa tự chấm và cũng chưa ai chấm → mở luôn bảng tự chấm. */}
+          {/* Chưa ai chấm → mời tự chấm.
+              Trước đây bảng tự chấm dựng THẲNG ở đây, bên trong thẻ này. Nhưng
+              trang kết quả rộng max-w-2xl, mà bố cục chia đôi cần cả chiều
+              rộng để bài viết nằm cạnh thang chấm — nhồi vào đây thì hai cột
+              thành hai cột giấy hẹp và mất đúng cái lợi của nó.
+
+              Nên nó mở ra thành một màn riêng chiếm cả trang. Không thêm route:
+              vẫn là màn kết quả, chỉ đổi thứ đang hiện — thêm route thì phải
+              đụng navItems và check:nav, cho một màn không nằm ở thanh bên. */}
           {p.answerId && p.score == null && (
-            <SelfAssess
-              answerId={p.answerId} questionId={p.questionId}
-              level={s.level} baiLam={p.raw} deBai={p.prompt}
-              daCo={p.selfBreakdown}
-              onXong={() => window.location.reload()} />
+            <button
+              type="button"
+              onClick={() => onTuCham({
+                answerId: p.answerId, questionId: p.questionId,
+                level: s.level, deBai: p.prompt, baiLam: p.raw,
+                daCo: p.selfBreakdown,
+              })}
+              className="flex w-full items-center gap-2 rounded-lg border-0 bg-surface px-3 py-2.5
+                         text-left text-xs font-bold text-ink transition hover:bg-primary-soft"
+            >
+              <PenLine size={13} className="shrink-0 text-primary" aria-hidden="true" />
+              {p.selfScore != null ? "Xem lại bản tự chấm" : "Tự chấm bài viết này"}
+              <span className="ml-auto font-normal text-soft">
+                {p.selfScore != null ? "sửa được" : `${s.level} · ${p.max} điểm`}
+              </span>
+            </button>
           )}
 
           {p.feedback && (
@@ -108,7 +127,7 @@ function Phan({ s }) {
   );
 }
 
-function Luot({ s }) {
+function Luot({ s, onTuCham }) {
   const mau = s.passed === true ? "text-ok" : s.passed === false ? "text-danger" : "text-warn";
 
   return (
@@ -140,7 +159,7 @@ function Luot({ s }) {
       )}
 
       <ul className="m-0 mt-4 list-none space-y-2 p-0">
-        {s.sections.map((x) => <Phan key={x.code + x.exerciseId} s={x} />)}
+        {s.sections.map((x) => <Phan key={x.code + x.exerciseId} s={x} onTuCham={onTuCham} />)}
       </ul>
     </li>
   );
@@ -149,6 +168,10 @@ function Luot({ s }) {
 export default function ExamResults() {
   const [sittings, setSittings] = useState(null);
   const [loi, setLoi] = useState("");
+  /* Bài đang tự chấm, hoặc null khi đang xem danh sách. Giữ cả object thay vì
+     mỗi answerId: dữ liệu đã nằm sẵn trong `sittings`, đi tìm lại nó bằng id là
+     thêm một đường có thể lệch mà chẳng được gì. */
+  const [dangCham, setDangCham] = useState(null);
 
   useEffect(() => {
     loadMyExamResults().then(({ sittings: s, error }) => {
@@ -162,6 +185,39 @@ export default function ExamResults() {
       setSittings(s);
     });
   }, []);
+
+  /* ── Màn tự chấm ──
+   *
+   * Rộng hơn hẳn trang kết quả (max-w-6xl thay vì max-w-2xl) vì bố cục chia đôi
+   * cần chỗ cho bài viết nằm CẠNH thang chấm. Đó là toàn bộ lý do nó là một màn
+   * riêng chứ không nhét vào thẻ kết quả. */
+  if (dangCham) {
+    return (
+      <div className="mx-auto max-w-6xl py-6">
+        <button
+          type="button"
+          onClick={() => setDangCham(null)}
+          className="mb-5 flex items-center gap-2 rounded-full border-0 bg-surface2 px-4 py-2
+                     text-xs font-bold text-soft transition hover:text-ink"
+        >
+          <ArrowLeft size={14} aria-hidden="true" />
+          Về kết quả thi
+        </button>
+
+        <PESelfEvaluation
+          {...dangCham}
+          /* Lưu xong thì đọc lại kết quả và quay ra, KHÔNG reload cả trang.
+             Bản cũ gọi window.location.reload() — nó chạy được, nhưng vứt luôn
+             vị trí cuộn và bắt tải lại toàn bộ ứng dụng cho một dòng dữ liệu
+             vừa đổi. */
+          onXong={() => {
+            loadMyExamResults().then(({ sittings: s }) => { if (s) setSittings(s); });
+            setDangCham(null);
+          }}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto max-w-2xl py-6">
@@ -194,7 +250,7 @@ export default function ExamResults() {
         </div>
       ) : (
         <ul className="m-0 mt-6 list-none space-y-4 p-0">
-          {sittings.map((s, i) => <Luot key={(s.examId ?? "cu") + i} s={s} />)}
+          {sittings.map((s, i) => <Luot key={(s.examId ?? "cu") + i} s={s} onTuCham={setDangCham} />)}
         </ul>
       )}
     </div>
