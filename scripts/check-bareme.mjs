@@ -24,7 +24,8 @@
 
 import { GRILLE } from "../src/screens/exam/delfGrille.js";
 import { BAREME, NHOM_CUA, THU_TU_NHOM, TEN_NHOM } from "../src/shared/peBareme.js";
-import { grilleToRubric, grilleLuuDuoc, giongThangChuan } from "../src/shared/grilleRubric.js";
+import { grilleToRubric, grilleLuuDuoc, giongThangChuan, chuanHoaGrille }
+  from "../src/shared/grilleRubric.js";
 
 let pass = 0, fail = 0;
 const t = (name, ok, detail = "") => {
@@ -257,6 +258,85 @@ for (const lv of MUC) {
   const trung = grilleToRubric(lv).criteria.filter((c) => c.name === TEN_NHOM[c.category]);
   t(`${lv}: tên tiêu chí khác tên nhóm`, trung.length === 0,
     trung.map((c) => c.id).join(", "));
+}
+
+/* Mô tả cũng phải là tiếng Việt, và giữ được bản Pháp để đối chiếu. */
+for (const lv of MUC) {
+  const r = grilleToRubric(lv);
+  t(`${lv}: mọi tiêu chí có mô tả tiếng Việt`,
+    r.criteria.every((c) => c.description && c.description !== c.description_fr),
+    r.criteria.filter((c) => !c.description || c.description === c.description_fr)
+      .map((c) => c.id).join(", "));
+  t(`${lv}: giữ lại mô tả tiếng Pháp ở description_fr`,
+    r.criteria.every((c) => !!c.description_fr));
+  /* Mô tả của cùng một id PHẢI khác nhau giữa các trình độ ở những chỗ thang
+     thật sự đòi khác — `coherence` ở A1 là "et, alors, mais", ở B2 là "8–10
+     loại connecteur". Chép chung một câu cho cả bốn là nói sai với ba. */
+  t(`${lv}: mô tả không trùng nhau trong cùng thang`,
+    new Set(r.criteria.map((c) => c.description)).size === r.criteria.length);
+}
+{
+  const moTaCoherence = MUC.map((lv) =>
+    grilleToRubric(lv).criteria.find((c) => c.id === "coherence")?.description);
+  t("mô tả `coherence` khác nhau theo trình độ",
+    new Set(moTaCoherence).size === moTaCoherence.length,
+    moTaCoherence.join(" | "));
+}
+
+/* ── 7. chuanHoaGrille: nâng thang cũ, KHÔNG đè lên chữ giáo viên tự viết ── */
+{
+  const lv = "B1";
+  const r = grilleToRubric(lv);
+
+  /* Thang lưu trước khi có label_vi/aide_vi: toàn tiếng Pháp, cờ official sai. */
+  const kieuCu = {
+    ...r, official: false,
+    criteria: r.criteria.map((c) => ({ ...c, name: c.name_fr, description: c.description_fr })),
+  };
+  const nang = chuanHoaGrille(kieuCu, lv);
+  t("chuanHoa: tên tiếng Pháp được nâng lên tiếng Việt",
+    nang.criteria.every((c, i) => c.name === r.criteria[i].name));
+  t("chuanHoa: mô tả tiếng Pháp được nâng lên tiếng Việt",
+    nang.criteria.every((c, i) => c.description === r.criteria[i].description));
+  t("chuanHoa: cờ official được tính lại", nang.official === true);
+
+  /* Chữ giáo viên tự viết PHẢI giữ nguyên. Đây là vế quan trọng hơn: nâng nhầm
+     là xoá công của người khác, và không có bản sao nào để lấy lại. */
+  const tuViet = {
+    ...r,
+    criteria: r.criteria.map((c, i) => (i === 0
+      ? { ...c, name: "Tên cô đặt", description: "Lời giải thích riêng của cô." }
+      : { ...c, name: c.name_fr, description: c.description_fr })),
+  };
+  const nang2 = chuanHoaGrille(tuViet, lv);
+  t("chuanHoa: KHÔNG đè tên giáo viên tự đặt", nang2.criteria[0].name === "Tên cô đặt");
+  t("chuanHoa: KHÔNG đè mô tả giáo viên tự viết",
+    nang2.criteria[0].description === "Lời giải thích riêng của cô.");
+  t("chuanHoa: đổi tên thì official thành false", nang2.official === false);
+  t("chuanHoa: các tiêu chí khác vẫn được nâng",
+    nang2.criteria[1].name === r.criteria[1].name);
+
+  /* `max_score` không bao giờ bị đụng tới — nó quyết định điểm của một buổi thi
+     có thể đã diễn ra rồi. */
+  const doiDiem = {
+    ...r,
+    criteria: r.criteria.map((c, i) => (i === 0 ? { ...c, max_score: 1.5 } : c)),
+  };
+  t("chuanHoa: KHÔNG sửa max_score", chuanHoaGrille(doiDiem, lv).criteria[0].max_score === 1.5);
+
+  /* Tiêu chí giáo viên tự thêm không có trong thang chuẩn — phải để nguyên,
+     không được nuốt mất. */
+  const themMoi = {
+    ...r,
+    criteria: [...r.criteria, { id: "tc_rieng", key: "tc_rieng", category: "pragmatique",
+      name: "Tiêu chí của cô", description: "…", max_score: 1, step: 0.5, bareme: null }],
+  };
+  const nang3 = chuanHoaGrille(themMoi, lv);
+  t("chuanHoa: giữ tiêu chí giáo viên tự thêm",
+    nang3.criteria.length === r.criteria.length + 1
+    && nang3.criteria.at(-1).name === "Tiêu chí của cô");
+
+  t("chuanHoa: null vẫn là null", chuanHoaGrille(null, lv) === null);
 }
 
 /* Thang cũ mang tên tiếng Pháp vẫn phải được nhận là thang chuẩn.

@@ -29,6 +29,13 @@ for (const [lv, g] of Object.entries(GRILLE)) {
        Việt nửa Pháp. Đó là lý do phải kiểm ở đây thay vì tin vào lối lùi. */
     if (!c.label_vi) { no(`${lv}/${c.id}: thiếu label_vi (tên hiện cho học sinh)`); continue; }
     if (c.label_vi === c.label) { no(`${lv}/${c.id}: label_vi chép y label tiếng Pháp`); continue; }
+
+    /* `aide_vi` là mô tả học sinh đọc dưới tên tiêu chí. Thiếu nó thì giao diện
+       lùi về `aide` tiếng Pháp — chạy được, nên không ai phát hiện, và màn hình
+       thành tên Việt kèm mô tả Pháp. */
+    if (!c.aide_vi) { no(`${lv}/${c.id}: thiếu aide_vi (mô tả hiện cho học sinh)`); continue; }
+    if (c.aide_vi === c.aide) { no(`${lv}/${c.id}: aide_vi chép y aide tiếng Pháp`); continue; }
+    if (c.aide_vi.length < 25) { no(`${lv}/${c.id}: aide_vi quá ngắn để làm mô tả tiêu chí`); continue; }
     pass++;
   }
 

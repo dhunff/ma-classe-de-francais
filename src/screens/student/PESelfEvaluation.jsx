@@ -4,7 +4,7 @@ import {
   BookOpen, ChevronDown, ChevronUp, AlertTriangle,
 } from "lucide-react";
 import { supabase } from "../../storageShim.js";
-import { grilleToRubric, giongThangChuan } from "../../shared/grilleRubric.js";
+import { grilleToRubric, chuanHoaGrille } from "../../shared/grilleRubric.js";
 import { TEN_NHOM, THU_TU_NHOM } from "../../shared/peBareme.js";
 
 /* Tự chấm Production écrite — bố cục chia đôi màn hình.
@@ -178,18 +178,14 @@ export default function PESelfEvaluation({
 }) {
   /* Không có `answerId` → chế độ xem thử: dữ liệu mẫu, không lưu được. */
   const xemThu = !answerId;
-  const rubric = useMemo(() => {
-    if (!rubricNgoai) return grilleToRubric(level);
-    /* Tính LẠI `official` thay vì tin cờ đã lưu.
-       Cờ nằm trong JSON có thể cũ hơn dữ liệu quanh nó: thang lưu trước khi cờ
-       được tính đúng đang mang `official: false` dù không sửa gì, và học sinh
-       sẽ đọc « không phải thang DELF chính thức » cho một thang chính thức.
-       Suy lại từ nội dung thì không có bản nào cũ được. */
-    return {
-      ...rubricNgoai,
-      official: giongThangChuan(rubricNgoai, rubricNgoai.level ?? level),
-    };
-  }, [rubricNgoai, level]);
+  /* Thang giáo viên soạn là JSON đông cứng, có thể cũ hơn thang chuẩn hôm nay —
+     nhãn và mô tả còn tiếng Pháp, cờ `official` còn sai. `chuanHoaGrille` nâng
+     đúng những phần giáo viên chưa đụng vào và tính lại cờ; phần họ tự viết thì
+     giữ nguyên. Xem shared/grilleRubric.js. */
+  const rubric = useMemo(
+    () => (rubricNgoai ? chuanHoaGrille(rubricNgoai, level) : grilleToRubric(level)),
+    [rubricNgoai, level],
+  );
 
   const consigne = (xemThu ? SUJET_MAU : deBai) || "(đề bài không còn trong hệ thống)";
   const copie = String((xemThu ? COPIE_MAU : baiLam) ?? "");

@@ -1,6 +1,7 @@
 import React from "react";
 import { Plus, Trash2, RotateCcw, AlertTriangle, Info, Database } from "lucide-react";
-import { grilleToRubric, grilleLuuDuoc, giongThangChuan } from "../../shared/grilleRubric.js";
+import { grilleToRubric, grilleLuuDuoc, giongThangChuan, chuanHoaGrille }
+  from "../../shared/grilleRubric.js";
 import { TEN_NHOM, THU_TU_NHOM } from "../../shared/peBareme.js";
 
 /* Soạn thang chấm Production écrite cho một đề.
@@ -41,7 +42,9 @@ export { grilleLuuDuoc };
 export default function GrilleEditor({ level, grille, onChange, cotSanSang = true }) {
   const chuan = grilleToRubric(level);
   const tuyChinh = !!grille;
-  const g = grille ?? chuan;
+  /* Nâng thang cũ ngay khi mở: không thì giáo viên thấy tên và mô tả tiếng Pháp
+     trong khi học sinh đã thấy tiếng Việt — hai người nhìn hai thang khác nhau. */
+  const g = grille ? chuanHoaGrille(grille, level) : chuan;
 
   const tong = lamTron(g.criteria.reduce((n, c) => n + (Number(c.max_score) || 0), 0));
   const lechDelf = tong !== TONG_DELF;

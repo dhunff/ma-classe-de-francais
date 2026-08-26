@@ -19,6 +19,46 @@ const lamTron = (n) => Math.round(n * 2) / 2;
  * và `max_score` — bốn thứ quyết định điểm và cách hiển thị. `description` cố ý
  * KHÔNG so: giáo viên viết lại lời giải thích cho lớp mình là việc nên khuyến
  * khích, và nó không đổi thang điểm chút nào. */
+/* Đưa một thang ĐÃ LƯU về dạng dùng được hôm nay.
+ *
+ * ══ VÌ SAO CẦN ══
+ *
+ * Thang giáo viên soạn nằm trong `exams.grille` dưới dạng JSON đông cứng —
+ * chụp lại thang chuẩn tại thời điểm bấm nút. Nghĩa là mỗi lần thang chuẩn đổi,
+ * mọi thang đã lưu vẫn giữ bản cũ. Nhãn tiếng Việt (`label_vi`) và mô tả tiếng
+ * Việt (`aide_vi`) thêm sau, nên thang lưu trước đó mang toàn tiếng Pháp.
+ *
+ * ══ NÂNG CÁI GÌ, VÀ KHÔNG NÂNG CÁI GÌ ══
+ *
+ * Chỉ thay khi giá trị đang lưu ĐÚNG BẰNG bản mặc định tiếng Pháp — tức là
+ * giáo viên chưa đụng vào nó. Khác một chữ nghĩa là họ đã tự viết, và viết lại
+ * lời giải thích cho lớp mình là việc nên khuyến khích; ghi đè lên đó là xoá
+ * công của người khác.
+ *
+ * `max_score` KHÔNG bao giờ đụng tới. Đó là con số quyết định điểm; tự ý sửa nó
+ * là đổi kết quả chấm của một buổi thi đã diễn ra.
+ */
+export function chuanHoaGrille(g, level) {
+  if (!g || !Array.isArray(g.criteria)) return g ?? null;
+  const lv = g.level ?? level;
+  const theoId = new Map(grilleToRubric(lv).criteria.map((c) => [c.id, c]));
+
+  const criteria = g.criteria.map((c) => {
+    const g0 = theoId.get(c.id);
+    if (!g0) return c;                       // tiêu chí giáo viên tự thêm
+    const moi = { ...c };
+    if (String(c.name ?? "").trim() === String(g0.name_fr).trim()) moi.name = g0.name;
+    if (String(c.description ?? "").trim() === String(g0.description_fr).trim()) {
+      moi.description = g0.description;
+    }
+    return moi;
+  });
+
+  /* `official` luôn tính lại. Cờ trong JSON có thể cũ hơn dữ liệu quanh nó, và
+     một cảnh báo sai đọc vài lần là người ta bỏ qua — kể cả lần đúng. */
+  return { ...g, criteria, official: giongThangChuan({ ...g, criteria }, lv) };
+}
+
 export function giongThangChuan(g, level) {
   if (!g || !Array.isArray(g.criteria)) return false;
   const chuan = grilleToRubric(level);
@@ -121,7 +161,8 @@ export function grilleToRubric(level) {
        Pháp còn hơn hiện ô trống, và `check:grille` canh không cho thiếu. */
     name: c.label_vi || c.label,
     name_fr: c.label,
-    description: c.aide,
+    description: c.aide_vi || c.aide,
+    description_fr: c.aide,
     max_score: c.max,
     step: 0.5,
     bareme: barLevel[c.id] ?? null,
