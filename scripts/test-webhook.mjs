@@ -87,8 +87,21 @@ const res = await fetch(`${URL_BASE}/functions/v1/sepay-webhook`, {
   method: "POST",
   headers: {
     "Content-Type": "application/json",
+    /* `apikey` để qua cổng Functions của Supabase. */
     apikey: ANON,
-    Authorization: `Bearer ${token}`,
+    /* Tiền tố phải là `Apikey`, KHÔNG phải `Bearer`.
+     *
+     * Webhook bóc đúng một tiền tố: `.replace(/^Apikey\s+/i, "")`. Gửi
+     * `Bearer <token>` thì chuỗi so sánh thành "Bearer abc" ≠ "abc", nên nó
+     * trả 401 kể cả khi token hoàn toàn đúng.
+     *
+     * Bản đầu của script này gửi `Bearer` và tôi tưởng đã kiểm chứng xong,
+     * vì token sai cũng ra 401 — hai nguyên nhân khác nhau cho cùng một kết
+     * quả. Đây là dạng "phép thử đỗ vì lý do sai": nó không phân biệt được
+     * "token sai" với "script gửi sai định dạng".
+     *
+     * `Apikey` là đúng thứ SePay gửi, nên script này mô phỏng đúng thật. */
+    Authorization: `Apikey ${token}`,
   },
   body: JSON.stringify({ content: memo, transferAmount: 0, referenceCode: "TEST-DRY-RUN" }),
 });
