@@ -13,6 +13,7 @@
    chủ (Supabase Edge Function) và siết RLS — khi đó hãy sửa cả chú thích này. */
 
 import { supabase } from "../storageShim.js";
+import { isPremium } from "./premium.js";
 import { load } from "./storage.js";
 
 export const ACCESS_KEY = "mcf-access";
@@ -24,7 +25,10 @@ export const STATUS = {
   GRANTED_BY_TEACHER: "GRANTED_BY_TEACHER", // cấp miễn phí, không qua thanh toán
 };
 
-export const isPremium = (ex) => !!ex?.isPremium && Number(ex?.price) > 0;
+/* Chuyển sang shared/premium.js — hàm thuần, kiểm được bằng node. Re-export ở
+   đây để 8 chỗ đang import từ access.js không phải sửa. Bản cũ đòi thêm
+   `price > 0`, nên tick trả phí mà quên gõ giá là bài thành MIỄN PHÍ. */
+export { isPremium, hasPrice, premiumThieuGia } from "./premium.js";
 
 /* Bài trả phí nằm ở HAI kho: `mcf-exercises` (bài được giao) và `mcf-practice`
    (thư viện luyện tập). Giao diện quản lý quyền trước đây chỉ lọc kho thứ

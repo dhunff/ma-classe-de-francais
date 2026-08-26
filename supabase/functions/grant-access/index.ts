@@ -15,17 +15,11 @@
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-const CORS = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-teacher-token, content-type",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-};
+/* CORS dùng chung — xem _shared/cors.ts. Bản khai tại chỗ trước đây thiếu
+   `x-client-info` VÀ `apikey`, nên nút « Cấp quyền » của giáo viên bị trình
+   duyệt chặn trước khi request rời máy. */
+import { CORS, json } from "../_shared/cors.ts";
 
-const json = (status: number, body: unknown) =>
-  new Response(JSON.stringify(body), {
-    status,
-    headers: { ...CORS, "Content-Type": "application/json" },
-  });
 
 /* So sánh không phụ thuộc độ dài khớp sớm, tránh rò rỉ thông tin qua thời gian. */
 const safeEqual = (a: string, b: string) => {

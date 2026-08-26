@@ -17,7 +17,8 @@
     "check:parity": "node scripts/check-parity.mjs",
     "check:exam": "node scripts/check-exam.mjs",
     "check:nav": "node scripts/check-nav.mjs",
-    "check:grille": "node scripts/check-grille.mjs"
+    "check:grille": "node scripts/check-grille.mjs",
+    "check:cors": "node scripts/check-cors.mjs"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

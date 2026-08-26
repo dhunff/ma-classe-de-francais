@@ -33,17 +33,10 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { fillOk, vfOk, ordreOk, tableauOk, autoQ, isQuestionAnswered }
   from "../_shared/questions.js";
 
-const CORS = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, apikey, content-type",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-};
-
-const json = (status: number, body: unknown) =>
-  new Response(JSON.stringify(body), {
-    status,
-    headers: { ...CORS, "Content-Type": "application/json" },
-  });
+/* CORS dùng chung — xem _shared/cors.ts. Bản khai tại chỗ trước đây thiếu
+   `x-client-info`, và thiếu đúng một tên header là mọi lời gọi từ trình duyệt
+   bị chặn im lặng trong khi curl vẫn xanh. */
+import { CORS, json } from "../_shared/cors.ts";
 
 /* Chấm MỘT câu. Trả về null cho câu tự luận — máy không chấm được bài viết,
    và giả vờ chấm được còn tệ hơn không chấm. */

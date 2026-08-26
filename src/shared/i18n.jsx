@@ -49,6 +49,7 @@ const I18N = {
       need_prompt: "đề bài cho câu {n}",
       need_options: "đủ phương án cho câu {n}",
       need_answer: "đáp án cho câu {n}",
+      need_price: "giá cho bài trả phí (đã tick « bài trả phí » nhưng chưa nhập giá)",
     },
     pay: {
       free: "Miễn phí", locked: "Cần mua", buy: "Mua ngay", practise: "Luyện tập",
@@ -278,6 +279,7 @@ const I18N = {
       need_prompt: "l'énoncé de la question {n}",
       need_options: "les options de la question {n}",
       need_answer: "la réponse de la question {n}",
+      need_price: "le prix de l'exercice payant",
     },
     pay: {
       free: "Gratuit", locked: "Payant", buy: "Acheter", practise: "S'entraîner",
@@ -501,6 +503,7 @@ const I18N = {
       need_prompt: "the prompt for question {n}",
       need_options: "the options for question {n}",
       need_answer: "the answer for question {n}",
+      need_price: "a price for the paid exercise",
     },
     pay: {
       free: "Free", locked: "Paid", buy: "Buy", practise: "Practise",

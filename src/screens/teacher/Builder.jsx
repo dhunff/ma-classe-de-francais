@@ -218,6 +218,11 @@ function Builder({ draft, setDraft, publish, cancel, accounts, classes = [] }) {
   if (draft.questions.length === 0) missing.push(t("builder.need_question"));
   if (dSkills.length === 0) missing.push(t("builder.need_skill"));
   if (draft.targeted && mergedTargets.size === 0) missing.push(t("builder.need_target"));
+  /* Tick « bài trả phí » mà bỏ trống ô giá là cấu hình nửa vời, và trước đây
+     nó âm thầm biến bài thành MIỄN PHÍ (xem shared/premium.js). Nay bài vẫn
+     khoá, nhưng học sinh không mua được — nên chặn ngay từ lúc soạn, đừng để
+     tạo ra được trạng thái đó. */
+  if (draft.isPremium && !(Number(draft.price) > 0)) missing.push(t("builder.need_price"));
   draft.questions.forEach((q, i) => {
     const n = i + 1;
     if (!q.prompt.trim()) missing.push(t("builder.need_prompt", { n }));

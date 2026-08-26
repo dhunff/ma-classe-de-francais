@@ -9,6 +9,7 @@ import {
   EX_COLUMNS, EX_META, Q_COLUMNS,
   exerciseFromRow, questionFromRow, fromRows, toRows,
 } from "../src/shared/exerciseMap.js";
+import { isPremium, hasPrice, premiumThieuGia } from "../src/shared/premium.js";
 
 let pass = 0, fail = 0;
 const stable = (v) => {
@@ -134,6 +135,24 @@ t("đọc lại vẫn còn isPremium", exerciseFromRow(paid.exRow).isPremium, tr
 t("đọc lại vẫn còn price", exerciseFromRow(paid.exRow).price, 50000);
 t("bài thường KHÔNG tự mọc cờ trả phí",
   "isPremium" in toRows({ id: "y", title: "T", questions: [] }, "practice").exRow.meta, false);
+
+
+/* ── khoá bài trả phí: phải HỎNG THEO CHIỀU KHOÁ ── */
+/* Bản cũ là `!!ex.isPremium && Number(ex.price) > 0`, nên tick trả phí mà quên
+   gõ giá → Number("") === 0 → bài thành MIỄN PHÍ. Một thiếu sót lúc soạn bài
+   biến thành nội dung phát không, âm thầm. Đây là ca kiểm cho đúng chỗ đó. */
+t("tick trả phí + có giá → khoá", isPremium({ isPremium: true, price: 50000 }), true);
+t("tick trả phí + QUÊN giá → VẪN khoá", isPremium({ isPremium: true, price: "" }), true);
+t("tick trả phí + giá 0 → VẪN khoá", isPremium({ isPremium: true, price: 0 }), true);
+t("không tick → miễn phí", isPremium({ price: 50000 }), false);
+t("bài rỗng → miễn phí", isPremium({}), false);
+t("undefined không nổ", isPremium(undefined), false);
+
+t("có giá thì bán được", hasPrice({ price: 50000 }), true);
+t("giá rỗng thì chưa bán được", hasPrice({ price: "" }), false);
+t("khoá mà thiếu giá → cảnh báo cấu hình", premiumThieuGia({ isPremium: true }), true);
+t("khoá và đủ giá → không cảnh báo", premiumThieuGia({ isPremium: true, price: 1000 }), false);
+t("bài miễn phí không bao giờ cảnh báo", premiumThieuGia({ price: 0 }), false);
 
 console.log(fail ? `\n${pass} đạt, ${fail} hỏng` : `\n${pass} đạt, 0 hỏng`);
 process.exit(fail ? 1 : 0);
