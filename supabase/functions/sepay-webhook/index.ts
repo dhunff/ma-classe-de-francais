@@ -145,18 +145,26 @@ Deno.serve(async (req) => {
 
   /* Ghi lại công thức ký đã khớp — xem migration 034.
    *
-   * Đặt ở đây, SAU khi đã có `supabase`, và cố ý KHÔNG chặn luồng: ghi hỏng thì
-   * học sinh vẫn phải được cấp quyền. Quan sát vận hành không bao giờ được
-   * quan trọng hơn việc người trả tiền nhận được thứ họ đã mua. */
+   * PHẢI `await`. Bản đầu bắn promise rồi đi tiếp, với lý do "không chặn
+   * luồng". Nhưng Edge Function huỷ isolate ngay sau khi trả phản hồi, nên một
+   * promise không await gần như chắc chắn chết trước khi ghi xong — nó không
+   * chặn luồng bằng cách KHÔNG BAO GIỜ CHẠY. Bảng vẫn trống sau giao dịch
+   * thành công, và ta lại không biết vì sao.
+   *
+   * Await một upsert nhỏ tốn vài mili-giây. Bọc try/catch để giữ đúng nguyên
+   * tắc ban đầu: ghi hỏng thì học sinh vẫn phải được cấp quyền — quan sát vận
+   * hành không bao giờ quan trọng hơn người đã trả tiền. */
   if (dinhDang) {
-    supabase.from("webhook_diag").upsert({
-      ten: "sepay_signature_format",
-      gia_tri: dinhDang,
-      lan_cuoi: new Date().toISOString(),
-    }, { onConflict: "ten" })
-      .then(({ error }: any) => {
-        if (error) console.warn("[webhook] không ghi được webhook_diag:", error.message);
-      });
+    try {
+      const { error: diagErr } = await supabase.from("webhook_diag").upsert({
+        ten: "sepay_signature_format",
+        gia_tri: dinhDang,
+        lan_cuoi: new Date().toISOString(),
+      }, { onConflict: "ten" });
+      if (diagErr) console.warn("[webhook] không ghi được webhook_diag:", diagErr.message);
+    } catch (e) {
+      console.warn("[webhook] webhook_diag ném lỗi:", (e as Error)?.message);
+    }
   }
 
   // 2. Tìm bài tập. Giá lấy từ máy chủ, KHÔNG lấy từ bất cứ thứ gì client gửi.
