@@ -27,8 +27,15 @@ export function giongThangChuan(g, level) {
   const theoId = new Map(chuan.criteria.map((c) => [c.id, c]));
   return g.criteria.every((c) => {
     const g0 = theoId.get(c.id);
-    return g0
-      && String(c.name).trim() === String(g0.name).trim()
+    if (!g0) return false;
+    /* Chấp nhận CẢ tên Việt lẫn tên Pháp.
+       Thang lưu trước khi có `label_vi` mang tên tiếng Pháp. So chặt với tên
+       Việt thì mọi thang cũ đột nhiên bị coi là "giáo viên đã sửa" và học sinh
+       đọc một cảnh báo mà không ai gây ra — một lần đổi nhãn hiển thị biến
+       thành một lần đổi ý nghĩa dữ liệu. */
+    const ten = String(c.name).trim();
+    const trungTen = ten === String(g0.name).trim() || ten === String(g0.name_fr).trim();
+    return trungTen
       && c.category === g0.category
       && lamTron(Number(c.max_score)) === lamTron(Number(g0.max_score));
   });
@@ -109,7 +116,11 @@ export function grilleToRubric(level) {
     id: c.id,
     key: c.id,
     category: NHOM_CUA[c.id] ?? "pragmatique",
-    name: c.label,
+    /* Tên hiển thị là tiếng Việt; `label` tiếng Pháp giữ lại ở `name_fr` để đối
+       chiếu với bản in của grille. Lùi về tiếng Pháp nếu thiếu — thà hiện tên
+       Pháp còn hơn hiện ô trống, và `check:grille` canh không cho thiếu. */
+    name: c.label_vi || c.label,
+    name_fr: c.label,
     description: c.aide,
     max_score: c.max,
     step: 0.5,

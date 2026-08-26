@@ -19,9 +19,16 @@ for (const [lv, g] of Object.entries(GRILLE)) {
   for (const c of g.criteres) {
     if (!(c.max > 0)) { no(`${lv}/${c.id}: max phải > 0`); continue; }
     if (!c.label || !c.aide) { no(`${lv}/${c.id}: thiếu label hoặc aide`); continue; }
-    /* `aide` đi thẳng vào prompt gửi cho model — một dòng trống ở đây nghĩa là
-       model phải tự đoán tiêu chí đó đo cái gì. */
+    /* `aide` là mô tả tiêu chí hiện dưới tên trên màn tự chấm. Một dòng trống ở
+       đây nghĩa là người học phải tự đoán tiêu chí đó đo cái gì. */
     if (c.aide.length < 25) { no(`${lv}/${c.id}: aide quá ngắn để làm mô tả tiêu chí`); continue; }
+
+    /* `label_vi` là tên học sinh THẬT SỰ đọc trên màn hình; `label` tiếng Pháp
+       chỉ còn để đối chiếu với bản in của grille. Thiếu nó thì giao diện lùi về
+       tiếng Pháp — chạy được, nên không ai phát hiện, và màn hình thành nửa
+       Việt nửa Pháp. Đó là lý do phải kiểm ở đây thay vì tin vào lối lùi. */
+    if (!c.label_vi) { no(`${lv}/${c.id}: thiếu label_vi (tên hiện cho học sinh)`); continue; }
+    if (c.label_vi === c.label) { no(`${lv}/${c.id}: label_vi chép y label tiếng Pháp`); continue; }
     pass++;
   }
 

@@ -214,5 +214,61 @@ for (const lv of MUC) {
 }
 t("official: null không phải thang chuẩn (là 'chưa soạn')", giongThangChuan(null, "B2") === false);
 
+/* ── 6. Nhãn tiếng Việt ──
+ *
+ * `label_vi` là tên học sinh đọc; `label` tiếng Pháp lùi về `name_fr` để đối
+ * chiếu với bản in. Thiếu label_vi thì giao diện lùi về tiếng Pháp — chạy được,
+ * nên không ai phát hiện, và màn hình thành nửa Việt nửa Pháp. */
+for (const lv of MUC) {
+  const r = grilleToRubric(lv);
+  t(`${lv}: mọi tiêu chí có tên tiếng Việt`,
+    r.criteria.every((c) => c.name && c.name !== c.name_fr),
+    r.criteria.filter((c) => !c.name || c.name === c.name_fr).map((c) => c.id).join(", "));
+  t(`${lv}: giữ lại tên tiếng Pháp ở name_fr`,
+    r.criteria.every((c) => !!c.name_fr));
+}
+
+/* Tên trùng nhau trong CÙNG một thang thì hai tiêu chí khác nhau đọc ra như
+   một, và người học không biết mình đang chấm cái nào. */
+for (const lv of MUC) {
+  const ten = grilleToRubric(lv).criteria.map((c) => c.name);
+  t(`${lv}: tên tiếng Việt không trùng nhau`, new Set(ten).size === ten.length,
+    ten.filter((x, i) => ten.indexOf(x) !== i).join(", "));
+}
+
+/* Cùng một `id` ở nhiều trình độ phải mang cùng một tên. Người học lên B1 không
+   nên phải học lại tên gọi của thứ họ đã biết ở A2. */
+{
+  const theoId = {};
+  for (const lv of MUC) {
+    for (const c of grilleToRubric(lv).criteria) {
+      (theoId[c.id] ??= new Set()).add(c.name);
+    }
+  }
+  const lech = Object.entries(theoId).filter(([, s]) => s.size > 1);
+  t("tên tiếng Việt nhất quán giữa các trình độ", lech.length === 0,
+    lech.map(([id, s]) => `${id}: ${[...s].join(" / ")}`).join(" · "));
+}
+
+/* Tên tiêu chí KHÔNG được trùng tên nhóm chứa nó — màn hình đọc ra như bị lặp.
+   `lexique` của A1 là "Lexique et orthographe lexicale", dịch thẳng sẽ đúng
+   bằng tên nhóm "Từ vựng và chính tả". */
+for (const lv of MUC) {
+  const trung = grilleToRubric(lv).criteria.filter((c) => c.name === TEN_NHOM[c.category]);
+  t(`${lv}: tên tiêu chí khác tên nhóm`, trung.length === 0,
+    trung.map((c) => c.id).join(", "));
+}
+
+/* Thang cũ mang tên tiếng Pháp vẫn phải được nhận là thang chuẩn.
+   Không có vế này thì một lần đổi nhãn hiển thị biến thành một lần đổi ý nghĩa
+   dữ liệu: mọi thang đã lưu đột nhiên bị coi là "giáo viên đã sửa", và học sinh
+   đọc một cảnh báo mà không ai gây ra. */
+for (const lv of MUC) {
+  const r = grilleToRubric(lv);
+  const kieuCu = { ...r, criteria: r.criteria.map((c) => ({ ...c, name: c.name_fr })) };
+  t(`${lv}: thang cũ (tên tiếng Pháp) vẫn là thang chuẩn`,
+    giongThangChuan(kieuCu, lv) === true);
+}
+
 console.log(fail ? `\n${pass} đạt, ${fail} hỏng` : `\n${pass} đạt, 0 hỏng`);
 process.exit(fail ? 1 : 0);
