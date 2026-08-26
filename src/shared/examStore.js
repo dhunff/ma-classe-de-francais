@@ -1,5 +1,6 @@
 import { supabase } from "../storageShim.js";
 import { fromRows } from "./exerciseMap.js";
+import { giongThangChuan } from "./grilleRubric.js";
 
 /* Lớp truy cập đề thi thử (migration 026).
  *
@@ -122,7 +123,13 @@ export async function saveExam(exam, sections) {
   if (exam.id) row.id = exam.id;
   /* Chỉ gửi `grille` khi có thật. Gửi `null` cũng chạm vào cột, nên trước
      migration 035 mọi lần lưu đề đều hỏng — kể cả đề không dùng thang riêng. */
-  if (exam.grille) row.grille = exam.grille;
+  if (exam.grille) {
+    /* Tính lại `official` ở ĐƯỜNG GHI, không chỉ lúc sửa trong trình soạn.
+       Hai lý do: đề đã lưu với cờ sai sẽ tự đúng khi mở ra lưu lại, và bất kỳ
+       đường ghi nào về sau cũng không phải nhớ làm việc này. Cờ suy ra được từ
+       dữ liệu thì đừng để ai phải tự đặt. */
+    row.grille = { ...exam.grille, official: giongThangChuan(exam.grille, row.level) };
+  }
 
   const up = await supabase.from("exams").upsert(row, { onConflict: "id" })
     .select("id").maybeSingle();

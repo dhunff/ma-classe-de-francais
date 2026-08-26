@@ -24,7 +24,7 @@
 
 import { GRILLE } from "../src/screens/exam/delfGrille.js";
 import { BAREME, NHOM_CUA, THU_TU_NHOM, TEN_NHOM } from "../src/shared/peBareme.js";
-import { grilleToRubric, grilleLuuDuoc } from "../src/shared/grilleRubric.js";
+import { grilleToRubric, grilleLuuDuoc, giongThangChuan } from "../src/shared/grilleRubric.js";
 
 let pass = 0, fail = 0;
 const t = (name, ok, detail = "") => {
@@ -173,6 +173,46 @@ for (const lv of MUC) {
   const r = grilleToRubric(lv);
   t(`035/JS: thang chuẩn ${lv} lưu được`, grilleLuuDuoc(r).ok === true);
 }
+
+/* ── 5. Cờ `official` phải theo NỘI DUNG, không theo thao tác ──
+ *
+ * Bản đầu đặt official=false ngay khi bấm « Thang riêng », kể cả khi chưa đổi
+ * gì. Dữ liệu thật đã có một đề như vậy: thang giống hệt thang chuẩn B1 nhưng
+ * học sinh vẫn đọc « không phải thang DELF chính thức ».
+ *
+ * Cảnh báo sai làm hỏng chính nó — đọc vài lần rồi người ta bỏ qua, kể cả lần
+ * thang lệch thật. */
+for (const lv of MUC) {
+  const r = grilleToRubric(lv);
+  t(`official: ${lv} chưa sửa gì thì vẫn là thang chuẩn`, giongThangChuan(r, lv) === true);
+
+  const doiDiem = { ...r, criteria: r.criteria.map((c, i) =>
+    (i === 0 ? { ...c, max_score: c.max_score + 0.5 } : c)) };
+  t(`official: ${lv} đổi điểm thì KHÔNG còn là thang chuẩn`,
+    giongThangChuan(doiDiem, lv) === false);
+
+  const doiTen = { ...r, criteria: r.criteria.map((c, i) =>
+    (i === 0 ? { ...c, name: c.name + " (sửa)" } : c)) };
+  t(`official: ${lv} đổi tên thì KHÔNG còn là thang chuẩn`,
+    giongThangChuan(doiTen, lv) === false);
+
+  const doiNhom = { ...r, criteria: r.criteria.map((c, i) =>
+    (i === 0 ? { ...c, category: c.category === "lexicale" ? "grammaticale" : "lexicale" } : c)) };
+  t(`official: ${lv} đổi nhóm thì KHÔNG còn là thang chuẩn`,
+    giongThangChuan(doiNhom, lv) === false);
+
+  const boBot = { ...r, criteria: r.criteria.slice(0, -1) };
+  t(`official: ${lv} bớt tiêu chí thì KHÔNG còn là thang chuẩn`,
+    giongThangChuan(boBot, lv) === false);
+
+  /* Sửa MÔ TẢ thì vẫn là thang chuẩn — cố ý. Giáo viên viết lại lời giải thích
+     cho lớp mình là việc nên khuyến khích, và nó không đổi thang điểm. */
+  const doiMoTa = { ...r, criteria: r.criteria.map((c, i) =>
+    (i === 0 ? { ...c, description: "Lời giải thích riêng của cô." } : c)) };
+  t(`official: ${lv} sửa mô tả VẪN là thang chuẩn`,
+    giongThangChuan(doiMoTa, lv) === true);
+}
+t("official: null không phải thang chuẩn (là 'chưa soạn')", giongThangChuan(null, "B2") === false);
 
 console.log(fail ? `\n${pass} đạt, ${fail} hỏng` : `\n${pass} đạt, 0 hỏng`);
 process.exit(fail ? 1 : 0);

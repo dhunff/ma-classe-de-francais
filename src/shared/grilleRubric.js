@@ -3,6 +3,37 @@ import { BAREME, NHOM_CUA, THU_TU_NHOM } from "./peBareme.js";
 
 const lamTron = (n) => Math.round(n * 2) / 2;
 
+/* Thang này có còn ĐÚNG là thang chuẩn không.
+ *
+ * ══ VÌ SAO KHÔNG DÙNG CỜ "ĐÃ BẤM SỬA" ══
+ *
+ * Bản đầu đặt `official: false` ngay khi giáo viên chọn « Thang riêng », kể cả
+ * khi họ chưa đổi gì. Kết quả có thật trong dữ liệu: một đề mang thang giống
+ * hệt thang chuẩn B1 — 10 tiêu chí, 13/5/7, đủ mốc — nhưng học sinh vẫn đọc
+ * dòng « không phải thang DELF chính thức ».
+ *
+ * Cảnh báo sai làm hỏng chính nó. Người đọc nó vài lần rồi sẽ bỏ qua, và lần
+ * thang lệch thật thì cũng bỏ qua nốt.
+ *
+ * Nên so bằng NỘI DUNG, không bằng lịch sử thao tác. So `id`, `name`, `category`
+ * và `max_score` — bốn thứ quyết định điểm và cách hiển thị. `description` cố ý
+ * KHÔNG so: giáo viên viết lại lời giải thích cho lớp mình là việc nên khuyến
+ * khích, và nó không đổi thang điểm chút nào. */
+export function giongThangChuan(g, level) {
+  if (!g || !Array.isArray(g.criteria)) return false;
+  const chuan = grilleToRubric(level);
+  if (g.criteria.length !== chuan.criteria.length) return false;
+
+  const theoId = new Map(chuan.criteria.map((c) => [c.id, c]));
+  return g.criteria.every((c) => {
+    const g0 = theoId.get(c.id);
+    return g0
+      && String(c.name).trim() === String(g0.name).trim()
+      && c.category === g0.category
+      && lamTron(Number(c.max_score)) === lamTron(Number(g0.max_score));
+  });
+}
+
 /* Thang có lưu được không.
  *
  * ══ PHẢI KHỚP VỚI `public.grille_hop_le` (migration 035) ══

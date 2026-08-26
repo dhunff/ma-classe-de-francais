@@ -1,6 +1,6 @@
 import React from "react";
 import { Plus, Trash2, RotateCcw, AlertTriangle, Info, Database } from "lucide-react";
-import { grilleToRubric, grilleLuuDuoc } from "../../shared/grilleRubric.js";
+import { grilleToRubric, grilleLuuDuoc, giongThangChuan } from "../../shared/grilleRubric.js";
 import { TEN_NHOM, THU_TU_NHOM } from "../../shared/peBareme.js";
 
 /* Soạn thang chấm Production écrite cho một đề.
@@ -49,15 +49,22 @@ export default function GrilleEditor({ level, grille, onChange, cotSanSang = tru
   /* `total` luôn được tính LẠI từ `max_score`, không bao giờ do người dùng gõ.
      Hai con số do hai nguồn thì sớm muộn lệch nhau, và ràng buộc ở migration
      035 sẽ từ chối lưu — đúng lúc giáo viên đã soạn xong và không hiểu vì sao. */
-  const capNhat = (criteria) => onChange({
-    ...g,
-    schema_version: 1,
-    level,
-    official: false,
-    adapted: false,
-    criteria,
-    total: lamTron(criteria.reduce((n, c) => n + (Number(c.max_score) || 0), 0)),
-  });
+  const capNhat = (criteria) => {
+    const moi = {
+      ...g,
+      schema_version: 1,
+      level,
+      adapted: false,
+      criteria,
+      total: lamTron(criteria.reduce((n, c) => n + (Number(c.max_score) || 0), 0)),
+    };
+    /* `official` tính từ NỘI DUNG, không từ chuyện đã bấm sửa hay chưa. Chọn
+       « Thang riêng » rồi không đổi gì thì nó vẫn đúng là thang chuẩn, và học
+       sinh không đáng phải đọc một cảnh báo sai — cảnh báo sai vài lần là người
+       ta bỏ qua nó, kể cả lần thang lệch thật. Xem giongThangChuan(). */
+    moi.official = giongThangChuan(moi, level);
+    onChange(moi);
+  };
 
   const doiTieuChi = (id, thayDoi) => capNhat(g.criteria.map((c) => {
     if (c.id !== id) return c;
@@ -116,7 +123,7 @@ export default function GrilleEditor({ level, grille, onChange, cotSanSang = tru
         </button>
         <button
           type="button"
-          onClick={() => onChange({ ...chuan, official: false, adapted: false })}
+          onClick={() => onChange({ ...chuan, adapted: false })}
           className={`rounded-full border-0 px-4 py-2 text-sm font-bold ${
             tuyChinh ? "bg-primary text-white" : "bg-surface2 text-soft"}`}
         >
@@ -164,7 +171,7 @@ export default function GrilleEditor({ level, grille, onChange, cotSanSang = tru
               <span className="text-xs font-semibold text-soft">
                 {g.criteria.length} tiêu chí
               </span>
-              <button type="button" onClick={() => onChange({ ...chuan, official: false, adapted: false })}
+              <button type="button" onClick={() => onChange({ ...chuan, adapted: false })}
                 className="inline-flex items-center gap-1.5 rounded-full border-0 bg-surface px-3 py-2 text-xs font-bold text-soft hover:text-ink">
                 <RotateCcw size={13} /> Về thang chuẩn
               </button>
