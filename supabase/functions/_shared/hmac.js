@@ -110,6 +110,40 @@ export async function verifyAny(secret, candidates, provided) {
   return null;
 }
 
+/* Timestamp còn tươi không.
+ *
+ * ══ CỬA SỔ RỘNG, VÀ ĐÂY LÀ LÝ DO ══
+ *
+ * Công dụng của timestamp là chặn PHÁT LẠI: kẻ bắt được một request hợp lệ gửi
+ * lại nó về sau. Nhưng ở đây phát lại gần như vô hại — `exercise_access.ref` là
+ * UNIQUE, nên gửi lại cùng giao dịch chỉ ra `duplicate: true`, không cấp thêm
+ * quyền cho ai.
+ *
+ * Trong khi đó, cửa sổ HẸP có hại thật: nút « Gọi lại » của SePay là thứ đang
+ * được dùng để cứu những giao dịch hỏng, và nếu SePay gửi lại kèm timestamp
+ * GỐC thì một cửa sổ 5 phút sẽ chặn đúng thao tác cứu vãn đó. Hôm nay đã có
+ * 94.000₫ phải cứu bằng tay vì webhook từ chối.
+ *
+ * Nên: 24 giờ. Đủ để chặn một bản ghi cũ bị phát lại tuần sau, không đủ hẹp để
+ * phá thao tác sửa lỗi trong ngày. Hàng rào chính vẫn là `ref` unique.
+ *
+ * Nhận cả giây lẫn mili-giây: không biết SePay dùng đơn vị nào, và đoán sai thì
+ * mọi request đều "quá cũ" hoặc mọi request đều lọt. Số lớn hơn 1e12 chắc chắn
+ * là mili-giây (1e12 giây là năm 33658). */
+export const CUA_SO_GIAY = 24 * 60 * 60;
+
+export function timestampConLai(timestamp, nowMs = Date.now()) {
+  if (!timestamp) return { ok: true, reason: "no_timestamp" };
+  const n = Number(String(timestamp).trim());
+  if (!Number.isFinite(n) || n <= 0) return { ok: true, reason: "unparsable" };
+
+  const giay = n > 1e12 ? n / 1000 : n;
+  const lech = Math.abs(nowMs / 1000 - giay);
+  return lech <= CUA_SO_GIAY
+    ? { ok: true, age: Math.round(lech) }
+    : { ok: false, reason: "timestamp_too_old", age: Math.round(lech) };
+}
+
 export const TIMESTAMP_HEADERS = ["x-sepay-timestamp", "x-timestamp", "x-webhook-timestamp"];
 
 export function findTimestamp(headers) {

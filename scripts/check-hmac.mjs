@@ -6,7 +6,7 @@
  * dụng. Nên mọi nhánh ở đây đều thử cả chiều đúng lẫn chiều sai.
  */
 import { signHex, signBase64, verifySignature, safeEqual, findSignature, SIGNATURE_HEADERS,
-  candidateBodies, verifyAny, findTimestamp }
+  candidateBodies, verifyAny, findTimestamp, timestampConLai, CUA_SO_GIAY }
   from "../supabase/functions/_shared/hmac.js";
 
 let pass = 0, fail = 0;
@@ -86,6 +86,27 @@ await t("bí mật sai → không cách nào khớp",
   verifyAny(SECRET, cands, await signHex("khac", TS + "." + BODY)), null);
 await t("timestamp khác → không khớp",
   verifyAny(SECRET, cands, await signHex(SECRET, "999." + BODY)), null);
+
+/* ── tuổi timestamp ── */
+const NOW = 1756200000000;   // mốc cố định, để bộ kiểm không phụ thuộc đồng hồ
+const giay = (t) => timestampConLai(String(t), NOW);
+
+await t("vừa gửi xong → nhận", giay(NOW/1000).ok, true);
+await t("1 giờ trước → nhận", giay(NOW/1000 - 3600).ok, true);
+await t("23 giờ trước → nhận", giay(NOW/1000 - 23*3600).ok, true);
+await t("25 giờ trước → TỪ CHỐI", giay(NOW/1000 - 25*3600).ok, false);
+await t("tuần sau (đồng hồ lệch xa) → TỪ CHỐI", giay(NOW/1000 + 7*86400).ok, false);
+
+/* Đơn vị: không biết SePay dùng giây hay mili-giây. Đoán sai một chiều thì mọi
+   request đều quá cũ; đoán sai chiều kia thì kiểm tra thành vô dụng. */
+await t("nhận mili-giây", giay(NOW).ok, true);
+await t("nhận giây", giay(NOW/1000).ok, true);
+await t("mili-giây quá cũ vẫn bị chặn", giay(NOW - 26*3600*1000).ok, false);
+
+/* Không có timestamp thì KHÔNG chặn — nhà cung cấp khác có thể không gửi. */
+await t("không timestamp → cho qua", timestampConLai(null, NOW).ok, true);
+await t("timestamp rác → cho qua, không nổ", giay("abc").ok, true);
+await t("cửa sổ là 24 giờ", CUA_SO_GIAY, 86400);
 
 console.log(fail ? `\n${pass} đạt, ${fail} hỏng` : `\n${pass} đạt, 0 hỏng`);
 process.exit(fail ? 1 : 0);

@@ -5,15 +5,15 @@
  *
  * Biến môi trường cần đặt (supabase secrets set ...):
  *   SEPAY_HMAC_SECRET        bí mật ký HMAC-SHA256 — cách nên dùng
- *   SEPAY_TOKEN              API Key cũ; giữ trong lúc chuyển, GỠ sau khi xong
+ *   (SEPAY_TOKEN đã bỏ — API Key thay bằng HMAC, xem phần xác thực bên dưới)
  *   SUPABASE_URL             có sẵn trong môi trường Edge Function
  *   SUPABASE_SERVICE_ROLE_KEY có sẵn trong môi trường Edge Function
  */
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 // @ts-ignore — JS thuần, dùng chung với bộ kiểm chạy bằng Node
-import { findSignature, findTimestamp, candidateBodies, verifyAny, safeEqual }
-  from "../_shared/hmac.js";
+import { findSignature, findTimestamp, candidateBodies, verifyAny,
+  timestampConLai, CUA_SO_GIAY } from "../_shared/hmac.js";
 
 /* Ngân hàng thường viết hoa và bỏ dấu nội dung chuyển khoản, nên phải chuẩn
    hoá cả hai phía trước khi so. "Đỗ Hùng" có thể về thành "DO HUNG". */
@@ -73,24 +73,40 @@ Deno.serve(async (req) => {
   const raw = await req.text();
 
   const hmacSecret = Deno.env.get("SEPAY_HMAC_SECRET") ?? "";
-  const apiKey = Deno.env.get("SEPAY_TOKEN") ?? "";
 
   const sig = findSignature(req.headers);
   const ts = findTimestamp(req.headers);
   let authed = false;
   let cach = "";
+  let dinhDang = "";
 
   if (hmacSecret && sig) {
     /* SePay gửi kèm `x-sepay-timestamp`, và một timestamp chỉ có tác dụng nếu
        nó NẰM TRONG phần được ký. Bản đầu chỉ ký body trần và bị từ chối —
        401 với chữ ký hợp lệ, chỉ vì ký nhầm chuỗi. Thử các cách thông dụng và
-       ghi lại cách nào khớp; xem candidateBodies trong _shared/hmac.js. */
+       GHI LẠI cách nào khớp; xem candidateBodies trong _shared/hmac.js. */
     const cachKhop = await verifyAny(hmacSecret, candidateBodies(raw, ts), sig.value);
-    if (cachKhop) { authed = true; cach = `hmac:${sig.header}:${cachKhop}`; }
+    if (cachKhop) { authed = true; dinhDang = cachKhop; cach = `hmac:${sig.header}:${cachKhop}`; }
   }
-  if (!authed && apiKey) {
-    const got = (req.headers.get("authorization") ?? "").replace(/^Apikey\s+/i, "").trim();
-    if (safeEqual(got, apiKey)) { authed = true; cach = "apikey"; }
+
+  /* Nhánh API Key đã GỠ.
+   *
+   * Nó tồn tại để không cắt đường trong lúc chuyển từ API Key sang HMAC. Việc
+   * chuyển đã xong và đã kiểm chứng bằng một giao dịch thật (#76727032 cấp
+   * quyền tự động), `SEPAY_TOKEN` cũng đã được thu hồi khỏi secrets.
+   *
+   * Giữ lại một đường xác thực yếu hơn nghĩa là độ an toàn của cả hệ thống bị
+   * quyết định bởi đường yếu nhất, không phải đường mạnh nhất. Và một nhánh
+   * không ai đi thì cũng không ai phát hiện khi nó hỏng. */
+
+  /* Timestamp quá cũ → từ chối. Kiểm SAU khi chữ ký hợp lệ: timestamp nằm
+     trong phần được ký, nên chữ ký sai thì bàn về tuổi của nó là vô nghĩa. */
+  if (authed && ts) {
+    const tuoi = timestampConLai(ts);
+    if (!tuoi.ok) {
+      return json(401, { error: "timestamp_too_old", age_seconds: tuoi.age,
+                         window_seconds: CUA_SO_GIAY });
+    }
   }
 
   if (!authed) {
@@ -126,6 +142,22 @@ Deno.serve(async (req) => {
     Deno.env.get("SUPABASE_URL")!,
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
   );
+
+  /* Ghi lại công thức ký đã khớp — xem migration 034.
+   *
+   * Đặt ở đây, SAU khi đã có `supabase`, và cố ý KHÔNG chặn luồng: ghi hỏng thì
+   * học sinh vẫn phải được cấp quyền. Quan sát vận hành không bao giờ được
+   * quan trọng hơn việc người trả tiền nhận được thứ họ đã mua. */
+  if (dinhDang) {
+    supabase.from("webhook_diag").upsert({
+      ten: "sepay_signature_format",
+      gia_tri: dinhDang,
+      lan_cuoi: new Date().toISOString(),
+    }, { onConflict: "ten" })
+      .then(({ error }: any) => {
+        if (error) console.warn("[webhook] không ghi được webhook_diag:", error.message);
+      });
+  }
 
   // 2. Tìm bài tập. Giá lấy từ máy chủ, KHÔNG lấy từ bất cứ thứ gì client gửi.
   /* ── Tìm bài tập trong BẢNG `exercises` ──
