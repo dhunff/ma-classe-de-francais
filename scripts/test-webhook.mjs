@@ -31,11 +31,23 @@
 
 import { readFileSync } from "node:fs";
 
+import { signHex } from "../supabase/functions/_shared/hmac.js";
+
+/* Hai cách xác thực, dùng cái nào có.
+ *
+ * HMAC được ưu tiên vì đó là cách nên dùng. Nhưng script vẫn nhận API Key, vì
+ * trong lúc chuyển đổi thì hai đầu có thể lệch nhau — và khi lệch, biết được
+ * "đường nào còn chạy" chính là thông tin cần thiết để sửa. */
+const hmacSecret = process.env.SEPAY_HMAC_SECRET;
 const token = process.env.SEPAY_TOKEN;
-if (!token) {
-  console.log("Chưa có SEPAY_TOKEN.\n"
-    + "  bash:       SEPAY_TOKEN=... node scripts/test-webhook.mjs\n"
-    + "  PowerShell: $env:SEPAY_TOKEN=\"...\"; node scripts/test-webhook.mjs");
+
+if (!hmacSecret && !token) {
+  console.log("Chưa có bí mật nào.\n\n"
+    + "  HMAC (nên dùng):\n"
+    + '    PowerShell: $env:SEPAY_HMAC_SECRET="..."; npm run test:webhook\n'
+    + "    bash:       SEPAY_HMAC_SECRET=... npm run test:webhook\n\n"
+    + "  API Key (cách cũ):\n"
+    + '    PowerShell: $env:SEPAY_TOKEN="..."; npm run test:webhook');
   process.exit(1);
 }
 
@@ -83,42 +95,48 @@ console.log(laPhepThuThat
 const memo = `LMS TEST ${normalize(bai.id).slice(-6)}`;
 console.log(`Memo gửi đi: ${memo}   ·   số tiền: 0 (cố ý, để KHÔNG cấp quyền)\n`);
 
+/* Ký trên ĐÚNG chuỗi sẽ gửi đi. Dựng body trước, ký nó, rồi gửi chính chuỗi đó
+   — không serialize lại lần thứ hai, vì hai lần stringify có thể ra hai chuỗi
+   khác nhau và chữ ký sẽ hỏng dù dữ liệu y hệt. */
+const body = JSON.stringify({ content: memo, transferAmount: 0, referenceCode: "TEST-DRY-RUN" });
+
+const headers = { "Content-Type": "application/json", apikey: ANON };
+if (hmacSecret) {
+  headers["x-signature"] = await signHex(hmacSecret, body);
+  console.log("Xác thực: HMAC-SHA256 (header x-signature)\n");
+} else {
+  headers.Authorization = `Apikey ${token}`;
+  console.log("Xác thực: API Key (cách cũ)\n");
+}
+
 const res = await fetch(`${URL_BASE}/functions/v1/sepay-webhook`, {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json",
-    /* `apikey` để qua cổng Functions của Supabase. */
-    apikey: ANON,
-    /* Tiền tố phải là `Apikey`, KHÔNG phải `Bearer`.
-     *
-     * Webhook bóc đúng một tiền tố: `.replace(/^Apikey\s+/i, "")`. Gửi
-     * `Bearer <token>` thì chuỗi so sánh thành "Bearer abc" ≠ "abc", nên nó
-     * trả 401 kể cả khi token hoàn toàn đúng.
-     *
-     * Bản đầu của script này gửi `Bearer` và tôi tưởng đã kiểm chứng xong,
-     * vì token sai cũng ra 401 — hai nguyên nhân khác nhau cho cùng một kết
-     * quả. Đây là dạng "phép thử đỗ vì lý do sai": nó không phân biệt được
-     * "token sai" với "script gửi sai định dạng".
-     *
-     * `Apikey` là đúng thứ SePay gửi, nên script này mô phỏng đúng thật. */
-    Authorization: `Apikey ${token}`,
-  },
-  body: JSON.stringify({ content: memo, transferAmount: 0, referenceCode: "TEST-DRY-RUN" }),
+  method: "POST", headers, body,
 });
 
-const body = await res.text();
+/* Tên khác `body` — biến đó đang giữ chuỗi ĐÃ KÝ. Đặt trùng tên thì chữ ký
+   tính trên một thứ, còn thứ gửi đi là thứ khác, và lỗi ấy chỉ lộ ra bằng
+   "chữ ký luôn sai" mà không rõ vì sao. */
+const traLoi = await res.text();
 console.log(`HTTP ${res.status}`);
-console.log(body.slice(0, 400));
+console.log(traLoi.slice(0, 400));
 
-const ok = /exercise_not_paid|amount_too_low|student_not_found/.test(body);
-const hong = /exercise_not_found/.test(body);
+const ok = /exercise_not_paid|amount_too_low|student_not_found/.test(traLoi);
+const hong = /exercise_not_found/.test(traLoi);
 
 console.log("");
 if (hong) {
   console.log("✗ VẪN HỎNG — webhook không tìm thấy bài trong bảng `exercises`.");
   process.exit(1);
-} else if (/unauthorized/.test(body)) {
-  console.log("✗ Token không đúng, hoặc SEPAY_TOKEN trên máy khác với secret trên Supabase.");
+} else if (/unauthorized/.test(traLoi)) {
+  console.log(hmacSecret
+    ? [
+        "✗ Chữ ký bị từ chối. Đọc hai trường trong phản hồi ở trên:",
+        "    hmac_configured=false        → chưa đặt SEPAY_HMAC_SECRET bên Supabase",
+        "    signature_header_found=null  → SePay dùng tên header khác danh sách đã biết",
+        "                                   (gửi phần headers_seen cho tôi để thêm vào)",
+        "    cả hai đều ổn mà vẫn 401     → hai đầu đang giữ hai chuỗi bí mật khác nhau",
+      ].join("\n")
+    : "✗ API Key sai, hoặc SePay đã chuyển sang HMAC — khi đó dùng SEPAY_HMAC_SECRET.");
   process.exit(1);
 } else if (ok) {
   console.log("✓ Webhook TÌM THẤY bài trong bảng. Bản vá đã ăn, và không dòng quyền nào được ghi.");
