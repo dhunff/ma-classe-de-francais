@@ -19,6 +19,7 @@
     "check:nav": "node scripts/check-nav.mjs",
     "check:grille": "node scripts/check-grille.mjs",
     "check:cors": "node scripts/check-cors.mjs",
+    "check:hmac": "node scripts/check-hmac.mjs",
     "test:webhook": "node scripts/test-webhook.mjs"
   },
   "dependencies": {

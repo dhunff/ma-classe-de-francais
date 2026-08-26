@@ -4,12 +4,15 @@
  * exercise_access. Trình duyệt bị RLS chặn hoàn toàn (xem migration 001).
  *
  * Biến môi trường cần đặt (supabase secrets set ...):
- *   SEPAY_TOKEN              chuỗi bí mật, phải khớp header SePay gửi lên
+ *   SEPAY_HMAC_SECRET        bí mật ký HMAC-SHA256 — cách nên dùng
+ *   SEPAY_TOKEN              API Key cũ; giữ trong lúc chuyển, GỠ sau khi xong
  *   SUPABASE_URL             có sẵn trong môi trường Edge Function
  *   SUPABASE_SERVICE_ROLE_KEY có sẵn trong môi trường Edge Function
  */
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+// @ts-ignore — JS thuần, dùng chung với bộ kiểm chạy bằng Node
+import { verifySignature, findSignature, safeEqual } from "../_shared/hmac.js";
 
 /* Ngân hàng thường viết hoa và bỏ dấu nội dung chuyển khoản, nên phải chuẩn
    hoá cả hai phía trước khi so. "Đỗ Hùng" có thể về thành "DO HUNG". */
@@ -46,13 +49,58 @@ const json = (status: number, body: unknown) =>
 Deno.serve(async (req) => {
   if (req.method !== "POST") return json(405, { error: "method_not_allowed" });
 
-  // 1. Xác thực. Thiếu bước này thì bất kỳ ai cũng gọi được và tự cấp quyền.
-  const expected = Deno.env.get("SEPAY_TOKEN");
-  const got = (req.headers.get("authorization") ?? "").replace(/^Apikey\s+/i, "").trim();
-  if (!expected || got !== expected) return json(401, { error: "unauthorized" });
+  /* ── 1. Xác thực ──
+   *
+   * Thiếu bước này thì bất kỳ ai cũng gọi được và tự cấp quyền cho mình.
+   *
+   * CHẤP NHẬN HAI ĐƯỜNG, cố ý:
+   *   · HMAC-SHA256 — cách đúng, bí mật không bao giờ rời khỏi hai đầu
+   *   · API Key     — cách cũ, bí mật đi kèm mọi request
+   *
+   * Nhận cả hai vì đổi cấu hình bên SePay và deploy hàm này KHÔNG xảy ra cùng
+   * một khoảnh khắc. Nếu hàm chỉ nhận HMAC mà SePay còn gửi API Key, thì mọi
+   * giao dịch trong quãng giữa đều bị từ chối — tiền vào, quyền không cấp, và
+   * học sinh không biết vì sao. Đúng lỗi mà migration 021/022 đã dạy.
+   *
+   * Khi đã chuyển xong và kiểm chứng, GỠ nhánh API Key: giữ lại nghĩa là kẻ
+   * tấn công vẫn có một cửa yếu hơn để đi, và cửa yếu nhất mới là cửa quyết
+   * định độ an toàn.
+   *
+   * Body phải đọc dưới dạng CHUỖI THÔ. Chữ ký tính trên từng byte nhận được;
+   * `req.json()` rồi `JSON.stringify` lại có thể đổi thứ tự khoá hay cách
+   * escape unicode, và chữ ký sẽ hỏng dù dữ liệu y hệt. */
+  const raw = await req.text();
+
+  const hmacSecret = Deno.env.get("SEPAY_HMAC_SECRET") ?? "";
+  const apiKey = Deno.env.get("SEPAY_TOKEN") ?? "";
+
+  const sig = findSignature(req.headers);
+  let authed = false;
+  let cach = "";
+
+  if (hmacSecret && sig) {
+    authed = await verifySignature(hmacSecret, raw, sig.value);
+    cach = authed ? `hmac:${sig.header}` : "";
+  }
+  if (!authed && apiKey) {
+    const got = (req.headers.get("authorization") ?? "").replace(/^Apikey\s+/i, "").trim();
+    if (safeEqual(got, apiKey)) { authed = true; cach = "apikey"; }
+  }
+
+  if (!authed) {
+    /* Liệt kê TÊN header đã nhận, không kèm giá trị. Tài liệu SePay không nằm
+       trong tay lúc viết, nên nếu họ dùng một tên header khác danh sách đã
+       biết, dòng này là thứ chỉ ra ngay — thay vì để ta đoán mò. */
+    return json(401, {
+      error: "unauthorized",
+      hmac_configured: !!hmacSecret,
+      signature_header_found: sig?.header ?? null,
+      headers_seen: [...req.headers.keys()].filter((h) => h !== "authorization"),
+    });
+  }
 
   let payload: Record<string, unknown>;
-  try { payload = await req.json(); } catch { return json(400, { error: "bad_json" }); }
+  try { payload = JSON.parse(raw); } catch { return json(400, { error: "bad_json" }); }
 
   // SePay chỉ quan tâm tiền VÀO.
   const direction = String(payload.transferType ?? "");
@@ -154,5 +202,8 @@ Deno.serve(async (req) => {
     return json(500, { error: "write_failed", detail: writeErr.message });
   }
 
-  return json(200, { ok: true, student, exercise_id: exercise.id, amount });
+  /* `auth` cho biết request này qua cửa nào. Cần nó để biết chắc SePay đã
+     chuyển sang HMAC thật — không có nó thì ta chỉ thấy "ok" và tưởng đã
+     chuyển xong trong khi vẫn đang đi cửa API Key. */
+  return json(200, { ok: true, auth: cach, student, exercise_id: exercise.id, amount });
 });
