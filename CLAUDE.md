@@ -31,6 +31,7 @@ npm run check:parity       # bộ chấm server vs client có trôi khỏi nhau 
 npm run check:exam         # quy đổi điểm + luật đạt/trượt thi thử (19 ca)
 npm run check:nav          # mục menu ↔ route ↔ nhãn i18n, cả hai chiều (74 ca)
 npm run check:grille       # grille DELF A1–B2 cộng đúng 25, đủ mô tả (59 ca)
+npm run check:cors         # Edge Function có cho trình duyệt gọi không
 ```
 
 Mỗi bộ sinh ra từ một lỗi thật đã lọt lên production. **Build xanh không có
@@ -174,6 +175,18 @@ Supabase cấp thẳng cho hai vai đó (default privileges), nên phải thu đ
 Đã dính hai lần: quyền CỘT ở 022, quyền HÀM ở 024 — lần sau suýt cho học sinh
 gọi `_exam_play` với `p_max: 999` và nghe không giới hạn. Kiểm bằng
 `has_function_privilege`, đừng tin câu REVOKE vừa viết.
+
+**curl KHÔNG kiểm được CORS.** curl gửi thẳng, không làm preflight. Hàm `grade`
+khai thiếu `x-client-info` — header mà `functions.invoke` LUÔN gửi — nên curl
+trả 200 với điểm đúng, còn ứng dụng bị trình duyệt huỷ request trước khi nó rời
+máy, không log ở đâu cả. Hậu quả: 5 lượt thi mở ra, 0 lượt đóng, 0 dòng
+`answers`, mọi phần hiện "chờ chấm 0/0". `check:cors` gửi đúng cái preflight mà
+trình duyệt gửi, tới hàm đã deploy.
+
+**Kiểm quyền phải hỏng theo chiều KHOÁ.** `isPremium` cũ đòi thêm `price > 0`,
+mà Builder cho tick "trả phí" rồi bỏ trống ô giá → `Number("") === 0` → bài
+thành MIỄN PHÍ. Chiều hỏng quan trọng hơn bản thân lỗi: một thiếu sót lúc soạn
+bài biến thành nội dung phát không, âm thầm. Nay cờ một mình quyết định khoá.
 
 **Thêm cột rồi quên ghi vào nó.** 026 thêm `attempts.exam_id`, 028 mới điền —
 suốt quãng giữa mọi lượt thi để NULL, và ba phần CO/CE/PE của cùng buổi thi
