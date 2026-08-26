@@ -93,28 +93,76 @@ const rpc = async (ten, thamSo) => {
   return { status: r.status, body };
 };
 
-{
-  const { status, body } = await rpc("grille_hop_le", { g: null });
-  ket(status === 200 && body === true, "hàm grille_hop_le gọi được (migration 035)",
-    body?.code === "PGRST202"
-      ? "chưa có hàm, HOẶC có rồi mà PostgREST chưa nạp lại lược đồ\n"
-        + "      → chạy: notify pgrst, 'reload schema';"
-      : `HTTP ${status} · ${JSON.stringify(body)?.slice(0, 120)}`);
-}
+/* ── 3b. Hành vi của grille_hop_le, chạy trên DATABASE THẬT ──
+ *
+ * Cùng bộ ca với khối tự đối chiếu trong migration 036 và với `check:bareme`.
+ * Ba nơi, ba mục đích:
+ *
+ *   036          chạy một lần lúc migration, kiểm được cả quyền cấp cột
+ *   check:bareme kiểm bản JS (`grilleLuuDuoc`), chạy offline
+ *   ở đây        kiểm bản SQL đang CHẠY THẬT, chạy bất cứ lúc nào
+ *
+ * Cái thứ ba là cái duy nhất phát hiện được việc ai đó `create or replace` đè
+ * lên hàm bằng một bản lỏng hơn. Hàm gọi được mà luôn trả `true` thì ràng buộc
+ * là đồ trang trí — và không ai nhìn ra điều đó từ bên ngoài.
+ *
+ * Gọi hàm thuần nên KHÔNG ghi gì. Chạy trên production cũng an toàn. */
+const HOP_LE = {
+  schema_version: 1, level: "B2", official: true, total: 5,
+  criteria: [
+    { id: "a", key: "consigne", category: "pragmatique", name: "Bám sát đề", max_score: 2, step: 0.5 },
+    { id: "b", key: "argumenter", category: "pragmatique", name: "Lập luận", max_score: 3, step: 0.5 },
+  ],
+};
+const doi = (duong, gia) => {
+  const g = structuredClone(HOP_LE);
+  const k = duong.split(".");
+  let o = g;
+  for (const x of k.slice(0, -1)) o = o[x];
+  o[k[k.length - 1]] = gia;
+  return g;
+};
 
-/* Hàm đúng thì phải TỪ CHỐI thang hỏng. Gọi được mà luôn trả true thì ràng buộc
-   là đồ trang trí — và đó là kiểu hỏng không ai nhìn ra từ bên ngoài. */
+const CA_GRILLE = [
+  ["thang hợp lệ được NHẬN", HOP_LE, true],
+  ["null được NHẬN (dùng thang chuẩn)", null, true],
+  ["tổng lệch bị TỪ CHỐI", doi("total", 6), false],
+  ["nhóm lạ bị TỪ CHỐI", doi("criteria.0.category", "linh tinh"), false],
+  ["tên rỗng bị TỪ CHỐI", doi("criteria.0.name", ""), false],
+  ["thiếu key bị TỪ CHỐI", doi("criteria.0.key", ""), false],
+  ["thiếu id bị TỪ CHỐI", doi("criteria.0.id", ""), false],
+  ["max_score = 0 bị TỪ CHỐI", doi("criteria.0.max_score", 0), false],
+  ["step không chia hết max bị TỪ CHỐI", doi("criteria.0.step", 0.3), false],
+  /* step = 0 là ca mà thứ tự đánh giá của OR quyết định: `max % step` là chia
+     cho 0, và SQL không hứa hẹn short-circuit. Phải TỪ CHỐI, không được NỔ. */
+  ["step = 0 bị TỪ CHỐI, không nổ vì chia 0", doi("criteria.0.step", 0), false],
+  ["id trùng bị TỪ CHỐI", doi("criteria.1.id", "a"), false],
+  ["mảng tiêu chí rỗng bị TỪ CHỐI", { total: 0, criteria: [] }, false],
+  ["không phải object bị TỪ CHỐI", "khong phai object", false],
+  ["criteria không phải mảng bị TỪ CHỐI", { total: 0, criteria: "x" }, false],
+];
+
 {
-  const hong = {
-    total: 6,
-    criteria: [{ id: "a", key: "k", category: "pragmatique", name: "x", max_score: 2, step: 0.5 }],
-  };
-  const { status, body } = await rpc("grille_hop_le", { g: hong });
-  if (status === 200) {
-    ket(body === false, "grille_hop_le từ chối thang có tổng lệch",
-      `trả về ${JSON.stringify(body)} — ràng buộc không chặn gì cả`);
+  const dau = await rpc("grille_hop_le", { g: null });
+  if (dau.status !== 200) {
+    ket(false, "hàm grille_hop_le gọi được (migration 035)",
+      dau.body?.code === "PGRST202"
+        ? "chưa có hàm, HOẶC có rồi mà PostgREST chưa nạp lại lược đồ\n"
+          + "      → chạy: notify pgrst, 'reload schema';"
+        : `HTTP ${dau.status} · ${JSON.stringify(dau.body)?.slice(0, 120)}`);
+    ket(false, "hành vi grille_hop_le (14 ca)", "bỏ qua — chưa gọi được hàm");
   } else {
-    ket(false, "grille_hop_le từ chối thang có tổng lệch", "không gọi được (xem ca trên)");
+    ket(true, "hàm grille_hop_le gọi được (migration 035)");
+    let hongCa = 0;
+    for (const [ten, g, mong] of CA_GRILLE) {
+      const { status, body } = await rpc("grille_hop_le", { g });
+      if (!(status === 200 && body === mong)) {
+        hongCa++;
+        console.log(`      ✗ ${ten} → trả về ${JSON.stringify(body)?.slice(0, 60)}, mong ${mong}`);
+      }
+    }
+    ket(hongCa === 0, `hành vi grille_hop_le (${CA_GRILLE.length} ca)`,
+      `${hongCa} ca sai — ràng buộc không chặn đúng thứ nó phải chặn`);
   }
 }
 
