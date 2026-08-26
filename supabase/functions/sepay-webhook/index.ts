@@ -12,7 +12,8 @@
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 // @ts-ignore — JS thuần, dùng chung với bộ kiểm chạy bằng Node
-import { verifySignature, findSignature, safeEqual } from "../_shared/hmac.js";
+import { findSignature, findTimestamp, candidateBodies, verifyAny, safeEqual }
+  from "../_shared/hmac.js";
 
 /* Ngân hàng thường viết hoa và bỏ dấu nội dung chuyển khoản, nên phải chuẩn
    hoá cả hai phía trước khi so. "Đỗ Hùng" có thể về thành "DO HUNG". */
@@ -75,12 +76,17 @@ Deno.serve(async (req) => {
   const apiKey = Deno.env.get("SEPAY_TOKEN") ?? "";
 
   const sig = findSignature(req.headers);
+  const ts = findTimestamp(req.headers);
   let authed = false;
   let cach = "";
 
   if (hmacSecret && sig) {
-    authed = await verifySignature(hmacSecret, raw, sig.value);
-    cach = authed ? `hmac:${sig.header}` : "";
+    /* SePay gửi kèm `x-sepay-timestamp`, và một timestamp chỉ có tác dụng nếu
+       nó NẰM TRONG phần được ký. Bản đầu chỉ ký body trần và bị từ chối —
+       401 với chữ ký hợp lệ, chỉ vì ký nhầm chuỗi. Thử các cách thông dụng và
+       ghi lại cách nào khớp; xem candidateBodies trong _shared/hmac.js. */
+    const cachKhop = await verifyAny(hmacSecret, candidateBodies(raw, ts), sig.value);
+    if (cachKhop) { authed = true; cach = `hmac:${sig.header}:${cachKhop}`; }
   }
   if (!authed && apiKey) {
     const got = (req.headers.get("authorization") ?? "").replace(/^Apikey\s+/i, "").trim();
@@ -95,6 +101,8 @@ Deno.serve(async (req) => {
       error: "unauthorized",
       hmac_configured: !!hmacSecret,
       signature_header_found: sig?.header ?? null,
+      timestamp_header_found: ts ? true : false,
+      formats_tried: candidateBodies("", ts).map((c) => c.label),
       headers_seen: [...req.headers.keys()].filter((h) => h !== "authorization"),
     });
   }

@@ -78,6 +78,48 @@ export async function verifySignature(secret, body, provided) {
       || safeEqual(got, toBase64(buf));
 }
 
+/* ══ KÝ TRÊN CHUỖI NÀO ══
+ *
+ * Biết bí mật và biết thuật toán vẫn chưa đủ: phải biết nhà cung cấp ký trên
+ * ĐÚNG chuỗi nào. SePay gửi kèm `x-sepay-timestamp`, và một timestamp chỉ có
+ * ích nếu nó nằm trong phần được ký — nếu không, kẻ tấn công sửa nó tuỳ ý và
+ * nó chẳng chống được gì.
+ *
+ * Không có tài liệu SePay trong tay, nên thay vì đoán MỘT công thức rồi hỏng
+ * im lặng, ta thử các cách thông dụng và TRẢ VỀ TÊN cách đã khớp. Lần chạy
+ * thật đầu tiên sẽ nói cho ta biết sự thật, và khi đó ghim lại đúng một cách.
+ *
+ * Thử nhiều cách KHÔNG làm yếu bảo mật: mỗi cách vẫn là một phép xác minh HMAC
+ * đầy đủ với cùng bí mật. Không biết bí mật thì không giả được cách nào. */
+export function candidateBodies(raw, timestamp) {
+  const c = [{ label: "raw", value: raw }];
+  if (timestamp) {
+    c.push({ label: "ts.raw", value: `${timestamp}.${raw}` });   // kiểu Stripe
+    c.push({ label: "ts+raw", value: `${timestamp}${raw}` });
+    c.push({ label: "raw+ts", value: `${raw}${timestamp}` });
+  }
+  return c;
+}
+
+/* Trả về nhãn của cách khớp, hoặc null. Nhãn đi vào phản hồi để ta đọc được
+   từ lần gọi thật đầu tiên. */
+export async function verifyAny(secret, candidates, provided) {
+  for (const c of candidates) {
+    if (await verifySignature(secret, c.value, provided)) return c.label;
+  }
+  return null;
+}
+
+export const TIMESTAMP_HEADERS = ["x-sepay-timestamp", "x-timestamp", "x-webhook-timestamp"];
+
+export function findTimestamp(headers) {
+  for (const h of TIMESTAMP_HEADERS) {
+    const v = headers.get(h);
+    if (v) return v;
+  }
+  return null;
+}
+
 /* Tên header mà các nhà cung cấp hay dùng cho chữ ký.
  *
  * Tài liệu SePay không nằm trong tay lúc viết hàm này, nên thay vì đoán MỘT

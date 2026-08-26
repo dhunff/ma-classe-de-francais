@@ -5,7 +5,8 @@
  * hàm CHẤP NHẬN chữ ký giả, và không có triệu chứng nào cho tới khi bị lợi
  * dụng. Nên mọi nhánh ở đây đều thử cả chiều đúng lẫn chiều sai.
  */
-import { signHex, signBase64, verifySignature, safeEqual, findSignature, SIGNATURE_HEADERS }
+import { signHex, signBase64, verifySignature, safeEqual, findSignature, SIGNATURE_HEADERS,
+  candidateBodies, verifyAny, findTimestamp }
   from "../supabase/functions/_shared/hmac.js";
 
 let pass = 0, fail = 0;
@@ -63,6 +64,28 @@ await t("tìm thấy x-signature", findSignature(H({ "x-signature": "abc" }))?.v
 await t("tìm thấy x-sepay-signature", findSignature(H({ "x-sepay-signature": "z" }))?.header, "x-sepay-signature");
 await t("không có header nào → null", findSignature(H({ "content-type": "application/json" })), null);
 await t("danh sách header không rỗng", SIGNATURE_HEADERS.length > 0, true);
+
+/* ── ký trên chuỗi nào ── */
+/* SePay gửi kèm x-sepay-timestamp. Ký body trần thì bị từ chối dù bí mật đúng:
+   401 với chữ ký hợp lệ, chỉ vì ký nhầm chuỗi. */
+const TS = "1756193718";
+const cands = candidateBodies(BODY, TS);
+await t("có timestamp → thử 4 cách", cands.length, 4);
+await t("không timestamp → chỉ body trần", candidateBodies(BODY, null).map(c=>c.label), ["raw"]);
+
+await t("khớp kiểu ts.raw",
+  verifyAny(SECRET, cands, await signHex(SECRET, TS + "." + BODY)), "ts.raw");
+await t("khớp kiểu ts+raw",
+  verifyAny(SECRET, cands, await signHex(SECRET, TS + BODY)), "ts+raw");
+await t("khớp kiểu raw+ts",
+  verifyAny(SECRET, cands, await signHex(SECRET, BODY + TS)), "raw+ts");
+await t("khớp body trần", verifyAny(SECRET, cands, await signHex(SECRET, BODY)), "raw");
+
+/* Thử nhiều cách KHÔNG được nới lỏng: không biết bí mật thì không cách nào khớp. */
+await t("bí mật sai → không cách nào khớp",
+  verifyAny(SECRET, cands, await signHex("khac", TS + "." + BODY)), null);
+await t("timestamp khác → không khớp",
+  verifyAny(SECRET, cands, await signHex(SECRET, "999." + BODY)), null);
 
 console.log(fail ? `\n${pass} đạt, ${fail} hỏng` : `\n${pass} đạt, 0 hỏng`);
 process.exit(fail ? 1 : 0);
