@@ -12,8 +12,14 @@
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 // @ts-ignore — JS thuần, dùng chung với bộ kiểm chạy bằng Node
-import { findSignature, findTimestamp, candidateBodies, verifyAny,
+import { findSignature, findTimestamp, candidateBodies, verifyAny, verifySignature,
   timestampConLai, CUA_SO_GIAY } from "../_shared/hmac.js";
+
+/* Công thức ký của SePay: `timestamp + "." + body`.
+ *
+ * ĐO ĐƯỢC, không đoán. Hàm từng thử bốn cách và ghi lại cách nào khớp; giao
+ * dịch #76732769 (26/08 11:37) trả về `ts.raw`, lưu trong `webhook_diag`. */
+const CONG_THUC = "ts.raw";
 
 /* Ngân hàng thường viết hoa và bỏ dấu nội dung chuyển khoản, nên phải chuẩn
    hoá cả hai phía trước khi so. "Đỗ Hùng" có thể về thành "DO HUNG". */
@@ -54,18 +60,18 @@ Deno.serve(async (req) => {
    *
    * Thiếu bước này thì bất kỳ ai cũng gọi được và tự cấp quyền cho mình.
    *
-   * CHẤP NHẬN HAI ĐƯỜNG, cố ý:
-   *   · HMAC-SHA256 — cách đúng, bí mật không bao giờ rời khỏi hai đầu
-   *   · API Key     — cách cũ, bí mật đi kèm mọi request
+   * CHỈ MỘT ĐƯỜNG: HMAC-SHA256. Bí mật không bao giờ rời khỏi hai đầu, và chữ
+   * ký phủ từng byte nên sửa số tiền giữa đường là chữ ký hỏng.
    *
-   * Nhận cả hai vì đổi cấu hình bên SePay và deploy hàm này KHÔNG xảy ra cùng
-   * một khoảnh khắc. Nếu hàm chỉ nhận HMAC mà SePay còn gửi API Key, thì mọi
-   * giao dịch trong quãng giữa đều bị từ chối — tiền vào, quyền không cấp, và
-   * học sinh không biết vì sao. Đúng lỗi mà migration 021/022 đã dạy.
+   * Từng có thêm nhánh API Key, cố ý, để không cắt đường trong lúc chuyển đổi
+   * — đổi cấu hình bên SePay và deploy hàm này không xảy ra cùng lúc, và nếu
+   * hàm chỉ nhận HMAC trong khi SePay còn gửi API Key thì mọi giao dịch ở
+   * quãng giữa bị từ chối. Đã xảy ra thật: 94.000₫ phải cấp quyền bằng tay
+   * (migration 033).
    *
-   * Khi đã chuyển xong và kiểm chứng, GỠ nhánh API Key: giữ lại nghĩa là kẻ
-   * tấn công vẫn có một cửa yếu hơn để đi, và cửa yếu nhất mới là cửa quyết
-   * định độ an toàn.
+   * Chuyển xong thì nhánh đó bị GỠ. Giữ một đường xác thực yếu hơn nghĩa là độ
+   * an toàn do đường yếu nhất quyết định, và một nhánh không ai đi cũng là
+   * nhánh không ai thấy khi nó hỏng.
    *
    * Body phải đọc dưới dạng CHUỖI THÔ. Chữ ký tính trên từng byte nhận được;
    * `req.json()` rồi `JSON.stringify` lại có thể đổi thứ tự khoá hay cách
@@ -81,23 +87,23 @@ Deno.serve(async (req) => {
   let dinhDang = "";
 
   if (hmacSecret && sig) {
-    /* SePay gửi kèm `x-sepay-timestamp`, và một timestamp chỉ có tác dụng nếu
-       nó NẰM TRONG phần được ký. Bản đầu chỉ ký body trần và bị từ chối —
-       401 với chữ ký hợp lệ, chỉ vì ký nhầm chuỗi. Thử các cách thông dụng và
-       GHI LẠI cách nào khớp; xem candidateBodies trong _shared/hmac.js. */
-    const cachKhop = await verifyAny(hmacSecret, candidateBodies(raw, ts), sig.value);
-    if (cachKhop) { authed = true; dinhDang = cachKhop; cach = `hmac:${sig.header}:${cachKhop}`; }
-  }
+    /* CHỈ chấp nhận CONG_THUC. Nhận nhiều công thức nghĩa là không còn biết
+       mình đang xác minh cái gì: nếu SePay đổi cách ký, bản "thử cả bốn" vẫn
+       khớp một cách nào đó và ta không hay biết, còn bản ghim trả 401 ngay và
+       hiện trong nhật ký SePay. Hỏng ồn ào hơn hẳn hỏng lặng lẽ. */
+    const canKy = candidateBodies(raw, ts).find((c: any) => c.label === CONG_THUC);
+    if (canKy) {
+      authed = await verifySignature(hmacSecret, canKy.value, sig.value);
+      if (authed) { dinhDang = CONG_THUC; cach = `hmac:${sig.header}:${CONG_THUC}`; }
+    }
 
-  /* Nhánh API Key đã GỠ.
-   *
-   * Nó tồn tại để không cắt đường trong lúc chuyển từ API Key sang HMAC. Việc
-   * chuyển đã xong và đã kiểm chứng bằng một giao dịch thật (#76727032 cấp
-   * quyền tự động), `SEPAY_TOKEN` cũng đã được thu hồi khỏi secrets.
-   *
-   * Giữ lại một đường xác thực yếu hơn nghĩa là độ an toàn của cả hệ thống bị
-   * quyết định bởi đường yếu nhất, không phải đường mạnh nhất. Và một nhánh
-   * không ai đi thì cũng không ai phát hiện khi nó hỏng. */
+    /* Không khớp → thử nốt các cách khác, CHỈ để chẩn đoán. Không chấp nhận
+       chúng: biết SePay đã đổi sang kiểu nào là thông tin quý, nhưng lặng lẽ
+       chấp nhận kiểu mới thì lại quay về đúng chỗ vừa thoát ra. */
+    if (!authed) {
+      dinhDang = (await verifyAny(hmacSecret, candidateBodies(raw, ts), sig.value)) ?? "";
+    }
+  }
 
   /* Timestamp quá cũ → từ chối. Kiểm SAU khi chữ ký hợp lệ: timestamp nằm
      trong phần được ký, nên chữ ký sai thì bàn về tuổi của nó là vô nghĩa. */
@@ -118,7 +124,12 @@ Deno.serve(async (req) => {
       hmac_configured: !!hmacSecret,
       signature_header_found: sig?.header ?? null,
       timestamp_header_found: ts ? true : false,
-      formats_tried: candidateBodies("", ts).map((c) => c.label),
+      format_pinned: CONG_THUC,
+      /* Nếu chữ ký khớp một công thức KHÁC, nói ra. Đó là dấu hiệu SePay đã
+         đổi cách ký — thứ cần biết ngay, và là lý do bản ghim vẫn chạy hết
+         các cách để CHẨN ĐOÁN dù chỉ chấp nhận một. */
+      format_would_match: dinhDang || null,
+      formats_known: candidateBodies("", ts).map((c) => c.label),
       headers_seen: [...req.headers.keys()].filter((h) => h !== "authorization"),
     });
   }

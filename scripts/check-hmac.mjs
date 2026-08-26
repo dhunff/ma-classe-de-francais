@@ -5,6 +5,8 @@
  * hàm CHẤP NHẬN chữ ký giả, và không có triệu chứng nào cho tới khi bị lợi
  * dụng. Nên mọi nhánh ở đây đều thử cả chiều đúng lẫn chiều sai.
  */
+import { readFileSync } from "node:fs";
+
 import { signHex, signBase64, verifySignature, safeEqual, findSignature, SIGNATURE_HEADERS,
   candidateBodies, verifyAny, findTimestamp, timestampConLai, CUA_SO_GIAY }
   from "../supabase/functions/_shared/hmac.js";
@@ -107,6 +109,35 @@ await t("mili-giây quá cũ vẫn bị chặn", giay(NOW - 26*3600*1000).ok, fa
 await t("không timestamp → cho qua", timestampConLai(null, NOW).ok, true);
 await t("timestamp rác → cho qua, không nổ", giay("abc").ok, true);
 await t("cửa sổ là 24 giờ", CUA_SO_GIAY, 86400);
+
+/* ══ WEBHOOK CHỈ CHẤP NHẬN MỘT CÔNG THỨC ══
+ *
+ * `candidateBodies` cố ý thử bốn cách — nó là công cụ dò. Nhưng webhook thì
+ * phải GHIM đúng `ts.raw`, con số đo được từ giao dịch #76732769.
+ *
+ * Đây là kiểm trên MÃ NGUỒN, không phải trên hành vi, vì thứ dễ trôi lại chính
+ * là một dòng trông vô hại: đổi `dinhDang = await verifyAny(...)` thành
+ * `authed = await verifyAny(...)` là quay về nhận cả bốn cách, và mọi bộ kiểm
+ * hành vi vẫn xanh vì chữ ký thật vẫn khớp. */
+const src = readFileSync(
+  new URL("../supabase/functions/sepay-webhook/index.ts", import.meta.url), "utf8");
+
+await t("webhook ghim công thức ts.raw", /CONG_THUC\s*=\s*"ts\.raw"/.test(src), true);
+/* Bắt MỌI dòng gán vào `authed` có nhắc tới `verifyAny`, không chỉ dạng gán
+   trực tiếp. Bản đầu của ca này viết `/authed\s*=\s*(await\s*)?verifyAny/` và
+   `authed = !!(await verifyAny(...))` đi lọt — đúng kiểu biến thể mà người sửa
+   vội hay viết ra. Một bộ kiểm chỉ bắt được đúng cách viết mình nghĩ tới thì
+   không bảo vệ được gì. */
+await t("verifyAny chỉ dùng để chẩn đoán, không cấp quyền",
+  src.split("\n").some((d) => /\bauthed\s*=[^=]/.test(d) && d.includes("verifyAny")),
+  false);
+await t("verifySignature chạy trên đúng ứng viên đã ghim",
+  /label === CONG_THUC/.test(src), true);
+await t("401 nói ra công thức đang ghim", /format_pinned/.test(src), true);
+await t("401 nói ra công thức lẽ ra khớp", /format_would_match/.test(src), true);
+
+/* Nhánh API Key đã gỡ. Giữ lại nghĩa là độ an toàn do đường yếu nhất quyết định. */
+await t("không còn nhánh SEPAY_TOKEN", /SEPAY_TOKEN"\)/.test(src), false);
 
 console.log(fail ? `\n${pass} đạt, ${fail} hỏng` : `\n${pass} đạt, 0 hỏng`);
 process.exit(fail ? 1 : 0);

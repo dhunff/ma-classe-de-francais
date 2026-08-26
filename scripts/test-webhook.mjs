@@ -1,18 +1,18 @@
-/* Kiểm webhook SePay mà KHÔNG cấp quyền thật, và không lộ token.
+/* Kiểm webhook SePay mà KHÔNG cấp quyền thật, và không lộ bí mật.
  *
  * ══ CÁCH DÙNG ══
  *
- *   SEPAY_TOKEN=... node scripts/test-webhook.mjs
+ *   SEPAY_HMAC_SECRET=... node scripts/test-webhook.mjs
  *
  * Trên PowerShell:
- *   $env:SEPAY_TOKEN="..."; node scripts/test-webhook.mjs
+ *   $env:SEPAY_HMAC_SECRET="..."; node scripts/test-webhook.mjs
  *
- * Token đọc từ biến môi trường, không bao giờ được in ra và không ghi vào file
+ * Bí mật đọc từ biến môi trường, không bao giờ được in ra và không ghi vào file
  * nào. Đừng dán nó vào mã, đừng commit, đừng gửi cho ai — kể cả tôi.
  *
  * ══ VÌ SAO GỬI SỐ TIỀN 0 ══
  *
- * Webhook xử lý theo thứ tự: xác thực token → đọc memo → tìm học sinh → TÌM
+ * Webhook xử lý theo thứ tự: xác thực chữ ký → đọc memo → tìm học sinh → TÌM
  * BÀI TẬP → đối chiếu giá → cấp quyền.
  *
  * Gửi `transferAmount: 0` thì nó đi qua được bước tìm bài rồi dừng ở bước đối
@@ -26,28 +26,22 @@
  *   exercise_not_paid   → ĐÃ SỬA. Tìm thấy bài, nhưng bài đó chưa bật trả phí.
  *   amount_too_low      → ĐÃ SỬA, và bài có giá. Đây là kết quả tốt nhất.
  *   student_not_found   → tên trong memo không khớp học sinh nào.
- *   unauthorized        → token sai hoặc chưa đặt.
+ *   unauthorized        → chữ ký sai, bí mật lệch, hoặc công thức ký đã đổi.
  */
 
 import { readFileSync } from "node:fs";
 
 import { signHex } from "../supabase/functions/_shared/hmac.js";
 
-/* Hai cách xác thực, dùng cái nào có.
- *
- * HMAC được ưu tiên vì đó là cách nên dùng. Nhưng script vẫn nhận API Key, vì
- * trong lúc chuyển đổi thì hai đầu có thể lệch nhau — và khi lệch, biết được
- * "đường nào còn chạy" chính là thông tin cần thiết để sửa. */
+/* Chỉ còn một cách: HMAC. Nhánh API Key đã gỡ khỏi webhook, nên script giữ nó
+   chỉ tạo ra một phép thử luôn thất bại và một thông báo lỗi nói sai nguyên
+   nhân. */
 const hmacSecret = process.env.SEPAY_HMAC_SECRET;
-const token = process.env.SEPAY_TOKEN;
 
-if (!hmacSecret && !token) {
-  console.log("Chưa có bí mật nào.\n\n"
-    + "  HMAC (nên dùng):\n"
-    + '    PowerShell: $env:SEPAY_HMAC_SECRET="..."; npm run test:webhook\n'
-    + "    bash:       SEPAY_HMAC_SECRET=... npm run test:webhook\n\n"
-    + "  API Key (cách cũ):\n"
-    + '    PowerShell: $env:SEPAY_TOKEN="..."; npm run test:webhook');
+if (!hmacSecret) {
+  console.log("Chưa đặt SEPAY_HMAC_SECRET.\n\n"
+    + '  PowerShell: $env:SEPAY_HMAC_SECRET="..."; npm run test:webhook\n'
+    + "  bash:       SEPAY_HMAC_SECRET=... npm run test:webhook");
   process.exit(1);
 }
 
@@ -100,14 +94,21 @@ console.log(`Memo gửi đi: ${memo}   ·   số tiền: 0 (cố ý, để KHÔN
    khác nhau và chữ ký sẽ hỏng dù dữ liệu y hệt. */
 const body = JSON.stringify({ content: memo, transferAmount: 0, referenceCode: "TEST-DRY-RUN" });
 
-const headers = { "Content-Type": "application/json", apikey: ANON };
-if (hmacSecret) {
-  headers["x-signature"] = await signHex(hmacSecret, body);
-  console.log("Xác thực: HMAC-SHA256 (header x-signature)\n");
-} else {
-  headers.Authorization = `Apikey ${token}`;
-  console.log("Xác thực: API Key (cách cũ)\n");
-}
+/* Ký ĐÚNG công thức webhook đã ghim: `timestamp + "." + body`, kiểu Stripe.
+ *
+ * Trước đây script ký body trần và webhook thì thử cả bốn công thức, nên nó
+ * vẫn qua. Từ khi webhook ghim `ts.raw`, ký body trần là 401 — và triệu chứng
+ * sẽ trông y hệt "bí mật sai", tức là bộ kiểm sẽ nói dối về nguyên nhân.
+ * Muốn giả được SePay thì phải giả cho giống. */
+const ts = String(Math.floor(Date.now() / 1000));
+
+const headers = {
+  "Content-Type": "application/json",
+  apikey: ANON,
+  "x-sepay-timestamp": ts,
+  "x-sepay-signature": await signHex(hmacSecret, `${ts}.${body}`),
+};
+console.log("Xác thực: HMAC-SHA256, công thức ts.raw (x-sepay-signature)\n");
 
 const res = await fetch(`${URL_BASE}/functions/v1/sepay-webhook`, {
   method: "POST", headers, body,
@@ -128,15 +129,14 @@ if (hong) {
   console.log("✗ VẪN HỎNG — webhook không tìm thấy bài trong bảng `exercises`.");
   process.exit(1);
 } else if (/unauthorized/.test(traLoi)) {
-  console.log(hmacSecret
-    ? [
-        "✗ Chữ ký bị từ chối. Đọc hai trường trong phản hồi ở trên:",
-        "    hmac_configured=false        → chưa đặt SEPAY_HMAC_SECRET bên Supabase",
-        "    signature_header_found=null  → SePay dùng tên header khác danh sách đã biết",
-        "                                   (gửi phần headers_seen cho tôi để thêm vào)",
-        "    cả hai đều ổn mà vẫn 401     → hai đầu đang giữ hai chuỗi bí mật khác nhau",
-      ].join("\n")
-    : "✗ API Key sai, hoặc SePay đã chuyển sang HMAC — khi đó dùng SEPAY_HMAC_SECRET.");
+  console.log([
+    "✗ Chữ ký bị từ chối. Đọc các trường trong phản hồi ở trên:",
+    "    hmac_configured=false        → chưa đặt SEPAY_HMAC_SECRET bên Supabase",
+    "    signature_header_found=null  → tên header chữ ký ngoài danh sách đã biết",
+    "    format_would_match=<nhãn>    → bí mật ĐÚNG, nhưng công thức ký đã đổi;",
+    "                                   sửa CONG_THUC trong webhook cho khớp nhãn đó",
+    "    format_would_match=null      → hai đầu đang giữ hai chuỗi bí mật khác nhau",
+  ].join("\n"));
   process.exit(1);
 } else if (ok) {
   console.log("✓ Webhook TÌM THẤY bài trong bảng. Bản vá đã ăn, và không dòng quyền nào được ghi.");

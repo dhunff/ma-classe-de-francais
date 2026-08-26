@@ -32,6 +32,7 @@ npm run check:exam         # quy đổi điểm + luật đạt/trượt thi th�
 npm run check:nav          # mục menu ↔ route ↔ nhãn i18n, cả hai chiều (74 ca)
 npm run check:grille       # grille DELF A1–B2 cộng đúng 25, đủ mô tả (59 ca)
 npm run check:cors         # Edge Function có cho trình duyệt gọi không
+npm run check:hmac         # chữ ký webhook SePay + bản ghim công thức (45 ca)
 ```
 
 Mỗi bộ sinh ra từ một lỗi thật đã lọt lên production. **Build xanh không có
@@ -182,6 +183,18 @@ trả 200 với điểm đúng, còn ứng dụng bị trình duyệt huỷ requ
 máy, không log ở đâu cả. Hậu quả: 5 lượt thi mở ra, 0 lượt đóng, 0 dòng
 `answers`, mọi phần hiện "chờ chấm 0/0". `check:cors` gửi đúng cái preflight mà
 trình duyệt gửi, tới hàm đã deploy.
+
+**"Thử mọi cách cho chắc" là chỗ trốn của lỗi.** Webhook SePay từng thử bốn
+công thức ký và chấp nhận cách nào khớp — hợp lý khi chưa có tài liệu, nhưng
+nghĩa là ta không còn biết mình đang xác minh cái gì. Giao dịch #76732769 trả
+lời: `ts.raw` (`timestamp + "." + body`, kiểu Stripe), ghi ở `webhook_diag`.
+Nay webhook GHIM đúng cách đó; ba cách kia vẫn chạy nhưng CHỈ để chẩn đoán, và
+401 in ra `format_would_match` để nếu SePay đổi cách ký thì đọc được ngay thay
+vì đoán. Nhánh API Key đã gỡ — độ an toàn do đường yếu nhất quyết định.
+
+Bộ kiểm cho việc này đọc MÃ NGUỒN, vì thứ dễ trôi là một dòng trông vô hại
+(`dinhDang = …` → `authed = …`) mà mọi kiểm hành vi vẫn xanh. Bản đầu của ca
+kiểm chỉ bắt dạng gán trực tiếp và `authed = !!(await verifyAny(…))` đi lọt.
 
 **Kiểm quyền phải hỏng theo chiều KHOÁ.** `isPremium` cũ đòi thêm `price > 0`,
 mà Builder cho tick "trả phí" rồi bỏ trống ô giá → `Number("") === 0` → bài
