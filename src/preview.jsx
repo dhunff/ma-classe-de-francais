@@ -19,6 +19,7 @@ import StudentDashboard from "./screens/dashboard/StudentDashboard.jsx";
 import TeacherDashboard from "./screens/dashboard/TeacherDashboard.jsx";
 import HomeDashboard from "./screens/dashboard/HomeDashboard.jsx";
 import CalendarView from "./screens/calendar/CalendarView.jsx";
+import PESelfEvaluation from "./screens/student/PESelfEvaluation.jsx";
 import TipsEditor from "./screens/teacher/TipsEditor.jsx";
 
 const VI = {
@@ -377,6 +378,12 @@ function Preview() {
                 exercises={empty ? [] : EXERCISES}
                 events={empty ? [] : mockCalendarEvents} />
             </>
+          } />
+          {/* Màn tự chấm PE — nằm ngoài STUDENT_NAV vì nó mở ra từ trang kết
+              quả thi thử, không phải từ thanh bên. Đặt ở đây để xem được bố cục
+              chia đôi mà không cần đăng nhập và không cần thi thử trước. */}
+          <Route path="/etudiant/auto-evaluation" element={
+            <><Controls /><PESelfEvaluation /></>
           } />
           {/* Ba route cũ ở đây trỏ tới /etudiant/bibliotheque, /progression,
               /parametres — những đường dẫn app THẬT đã đổi tên từ lâu. Kết quả:
