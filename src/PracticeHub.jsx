@@ -196,6 +196,25 @@ function PracticeHubInner({ role = "eleve", name = "", accounts = [], onRequireL
     setDeleteFolder(null); showToast("✅ Dossier supprimé — les exercices ont été conservés.");
   };
 
+  /* Webhook SePay vừa ghi quyền — nạp lại HAI thứ, không phải một.
+   *
+   * Bản cũ chỉ gọi `loadAccess()`, và thế là ĐỦ hồi ổ khoá còn thuần giao
+   * diện. Từ migration 019 thì không: RLS giấu luôn câu hỏi của bài chưa mua,
+   * nên lúc tải trang `ex.questions` về rỗng. Nạp lại mỗi bảng quyền thì thẻ
+   * khoá VẪN hiện, vì điều kiện của nó là "bài trả phí mà không có câu nào" —
+   * và số câu vẫn đang là 0.
+   *
+   * Triệu chứng đúng như được báo: trả tiền xong, thấy dấu tích xanh, rồi vẫn
+   * bị khoá cho tới khi tự tải lại trang.
+   *
+   * `loadPractice()` là lúc server mới chịu trả câu hỏi về, vì RLS giờ đã thấy
+   * dòng quyền của em đó. */
+  const sauKhiMoKhoa = async () => {
+    const [acc, kho] = await Promise.all([loadAccess(), loadPractice()]);
+    setAccess(acc);
+    setExercises(kho);
+  };
+
   const moveTo = async (exId, folderId) => {
     /* Chỉ sửa `meta`, không chạm tới câu hỏi — xem patchExerciseMeta. */
     const r = await patchExerciseMeta(exId, { folderId: folderId || undefined });
@@ -408,12 +427,10 @@ function PracticeHubInner({ role = "eleve", name = "", accounts = [], onRequireL
       <div>
         {MatModal()}
         {Toast}
-        {/* onUnlocked: webhook SePay vừa ghi quyền, nạp lại bảng access để ổ
-            khoá trên thẻ biến mất ngay — không bắt học sinh tải lại trang sau
-            khi vừa trả tiền. */}
+        {/* Sau khi trả tiền: nạp lại CẢ quyền LẪN bài — xem sauKhiMoKhoa. */}
         {payFor && <PaymentModal ex={payFor} student={name} config={payCfg}
           onClose={() => setPayFor(null)}
-          onUnlocked={() => loadAccess().then(setAccess)} />}
+          onUnlocked={sauKhiMoKhoa} />}
         <button style={{ ...S.btn(false), marginBottom: 16 }}
           onClick={() => setView(view.folder ? { page: "autres" } : { page: "home" })}><ChevronLeft size={16} /> {t("practice.back")}</button>
 

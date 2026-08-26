@@ -72,21 +72,44 @@ Deno.serve(async (req) => {
   );
 
   // 2. Tìm bài tập. Giá lấy từ máy chủ, KHÔNG lấy từ bất cứ thứ gì client gửi.
-  const keys = ["s:mcf-practice", "s:mcf-exercises"];
-  const { data: rows, error: readErr } = await supabase
-    .from("kv_store").select("key,value").in("key", keys);
-  if (readErr) return json(500, { error: "kv_read_failed", detail: readErr.message });
+  /* ── Tìm bài tập trong BẢNG `exercises` ──
+   *
+   * Trước đây đoạn này đọc hai blob `s:mcf-practice` và `s:mcf-exercises`.
+   * Đó là nguồn đúng cho tới migration 010; từ khi ứng dụng ghi thẳng vào bảng
+   * `exercises`, hai blob đó đóng băng thành bản sao lưu.
+   *
+   * Hậu quả: mọi bài tạo SAU lần chuyển đổi đều không có trong blob, nên
+   * webhook trả `exercise_not_found` và KHÔNG BAO GIỜ cấp quyền. Học sinh
+   * chuyển tiền xong, màn hình chờ quay mãi, không ai biết vì sao. Đã đối
+   * chiếu trên dữ liệu thật: 41 bài trong bảng, 39 trong blob, 2 bài chỉ có ở
+   * bảng.
+   *
+   * Bài học chung: chuyển nguồn dữ liệu thì phải đi hết MỌI nơi đọc nó — kể cả
+   * những nơi không nằm trong `src/`. Edge Function không bị `check:store` soi
+   * vì bộ kiểm đó chỉ quét thư mục src.
+   *
+   * `isPremium` và `price` nằm trong cột `meta` (jsonb), không phải cột riêng —
+   * xem EX_META trong shared/exerciseMap.js. */
+  const { data: exRows, error: readErr } = await supabase
+    .from("exercises").select("id, title, meta");
+  if (readErr) return json(500, { error: "exercise_read_failed", detail: readErr.message });
 
-  let exercise: any = null;
-  for (const row of rows ?? []) {
-    let list: any[] = [];
-    try { list = JSON.parse(row.value); } catch { continue; }
-    /* Chuẩn hoá TRƯỚC rồi mới cắt 6 ký tự cuối — ngược lại thì "prac-paid"
-       ra "C-PAID" trong khi ngân hàng gửi về "CPAID". */
-    const hit = list.find((e) => normalize(String(e?.id ?? "")).slice(-6) === parsed.exSuffix);
-    if (hit) { exercise = hit; break; }
+  /* Chuẩn hoá TRƯỚC rồi mới cắt 6 ký tự cuối — ngược lại thì "prac-paid"
+     ra "C-PAID" trong khi ngân hàng gửi về "CPAID". */
+  const khop = (exRows ?? []).filter(
+    (e: any) => normalize(String(e?.id ?? "")).slice(-6) === parsed.exSuffix,
+  );
+
+  /* Hai bài trùng 6 ký tự cuối thì không đoán bừa. Cấp nhầm bài là học sinh
+     trả tiền cho bài A mà mở được bài B, và không có gì lần ra được. */
+  if (khop.length > 1) {
+    return json(200, { ignored: "exercise_ambiguous", memo: parsed,
+                       ids: khop.map((e: any) => e.id) });
   }
-  if (!exercise) return json(200, { ignored: "exercise_not_found", memo: parsed });
+  const row: any = khop[0];
+  if (!row) return json(200, { ignored: "exercise_not_found", memo: parsed });
+
+  const exercise = { id: row.id, title: row.title, ...(row.meta ?? {}) };
 
   // 3. Đối chiếu số tiền. Thiếu thì không cấp — chuyển thiếu vẫn là chưa mua.
   const price = Math.round(Number(exercise.price ?? 0));

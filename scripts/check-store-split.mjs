@@ -24,14 +24,33 @@ const SRC = join(ROOT, "src");
    là chính lớp thay thế — tên khoá cũ nằm trong chú thích giải thích lý do. */
 const MIEN_TRU = ["preview.jsx", "preview", "shared/exerciseStore.js"];
 
+/* QUÉT CẢ supabase/functions, không chỉ src/.
+ *
+ * Bản đầu chỉ quét src/ và vì thế bỏ lọt đúng lỗi nghiêm trọng nhất của lần
+ * chuyển đổi: `sepay-webhook` vẫn đọc hai blob để tìm bài tập và giá. Mọi bài
+ * tạo sau khi nối bảng đều không có trong blob, nên webhook trả
+ * `exercise_not_found` và học sinh trả tiền xong không được cấp quyền — màn
+ * chờ quay mãi, không ai biết vì sao.
+ *
+ * Bài học: "chuyển nguồn dữ liệu" nghĩa là đi hết MỌI nơi đọc nó. Mã chạy trên
+ * máy chủ không nằm trong src/, và bộ kiểm chỉ nhìn src/ thì mù đúng chỗ đó. */
 const files = [];
 (function walk(dir) {
   for (const name of readdirSync(dir)) {
     const p = join(dir, name);
     if (statSync(p).isDirectory()) walk(p);
-    else if (/\.(jsx?|mjs)$/.test(name)) files.push(p);
+    else if (/\.(jsx?|mjs|ts)$/.test(name)) files.push(p);
   }
 })(SRC);
+walk2(join(ROOT, "supabase", "functions"));
+function walk2(dir) {
+  let ds; try { ds = readdirSync(dir); } catch { return; }
+  for (const name of ds) {
+    const p = join(dir, name);
+    if (statSync(p).isDirectory()) walk2(p);
+    else if (/\.(ts|jsx?|mjs)$/.test(name)) files.push(p);
+  }
+}
 
 let pass = 0, fail = 0;
 const loi = [];
@@ -40,14 +59,32 @@ const loi = [];
    chữ "mcf-practice" đứng một mình trong một câu tiếng Việt. */
 const GOI_BLOB = /\b(load|save|del)\s*\(\s*["'`]mcf-(practice|exercises)["'`]/;
 
+/* Edge Function không dùng `load()` — nó truy vấn kv_store thẳng bằng khoá
+   `"s:mcf-practice"`. Mẫu trên không bắt được hình dạng đó, và đúng vì thế mà
+   `sepay-webhook` đọc blob suốt một thời gian dài mà bộ kiểm vẫn xanh. */
+const KHOA_BLOB = /["'`]s:mcf-(practice|exercises)["'`]/;
+
 for (const f of files) {
   const rel = relative(ROOT, f).replace(/\\/g, "/");
   if (MIEN_TRU.some((m) => rel.includes(m))) continue;
 
   const lines = readFileSync(f, "utf8").split(/\r?\n/);
   lines.forEach((line, i) => {
+    /* Bỏ qua dòng CHÚ THÍCH. Bản đầu của mẫu `KHOA_BLOB` bắt trúng chính đoạn
+       chú thích giải thích vì sao không được đọc blob nữa — bộ kiểm báo lỗi ở
+       đúng dòng nói rằng lỗi đã được sửa. Một bộ kiểm kêu oan thì người ta học
+       cách ngó lơ nó, và khi đó nó vô dụng. */
+    const t = line.trimStart();
+    if (t.startsWith("//") || t.startsWith("*") || t.startsWith("/*")) return;
+
     const m = line.match(GOI_BLOB);
     if (m) loi.push(`${rel}:${i + 1}  ${m[1]}("mcf-${m[2]}"…)  → dùng exerciseStore.js`);
+
+    const k = line.match(KHOA_BLOB);
+    if (k) {
+      loi.push(`${rel}:${i + 1}  đọc thẳng khoá blob "s:mcf-${k[1]}"`
+        + `  → truy vấn bảng exercises (blob đã đóng băng từ migration 010)`);
+    }
   });
 }
 
