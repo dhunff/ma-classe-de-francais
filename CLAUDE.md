@@ -33,6 +33,7 @@ npm run check:nav          # mục menu ↔ route ↔ nhãn i18n, cả hai chi�
 npm run check:grille       # grille DELF A1–B2 cộng đúng 25, đủ mô tả (59 ca)
 npm run check:cors         # Edge Function có cho trình duyệt gọi không
 npm run check:hmac         # chữ ký webhook SePay + bản ghim công thức (45 ca)
+npm run check:bareme       # mốc cho điểm PE, xếp nhóm, đối chiếu với SQL (266 ca)
 ```
 
 Mỗi bộ sinh ra từ một lỗi thật đã lọt lên production. **Build xanh không có
@@ -183,6 +184,22 @@ trả 200 với điểm đúng, còn ứng dụng bị trình duyệt huỷ requ
 máy, không log ở đâu cả. Hậu quả: 5 lượt thi mở ra, 0 lượt đóng, 0 dòng
 `answers`, mọi phần hiện "chờ chấm 0/0". `check:cors` gửi đúng cái preflight mà
 trình duyệt gửi, tới hàm đã deploy.
+
+**Tailwind BỎ QUA lớp không tồn tại, không báo gì.** `tailwind.config.js` khai
+`danger: { DEFAULT, soft }` nên lớp đúng là `bg-danger-soft`; viết
+`bg-dangerSoft` thì không có lỗi, không cảnh báo, không CSS — phần tử chỉ mất
+nền. Đã lọt lên production ở 5 chỗ (thẻ "dưới ngưỡng" của ExamResults và
+ExamMode, ô lỗi, bảng chấm PE): mọi nền cảnh báo đỏ đều trong suốt, và không ai
+phát hiện vì chữ vẫn đọc được. `check:design` canh chỗ này.
+
+Lưu ý `C.dangerSoft` là chuyện khác — object màu JS cho inline style, camelCase
+ở đó là đúng. Bộ kiểm chỉ bắt trong chuỗi lớp.
+
+**`\b` viết qua đường ống shell thành ký tự backspace 0x08.** Bản đầu của bộ
+kiểm trên báo XANH trên một file có lỗi thật, vì regex hoá ra đang đòi một byte
+điều khiển vô hình. Đọc mã nguồn không thấy gì sai. Đây đúng là loại lỗi bộ
+kiểm ấy sinh ra để bắt, và nó tự dính. Dùng `(?![A-Za-z])`, và sửa file có cấu
+trúc bằng Edit — quy tắc 4 ở trên, lần thứ năm.
 
 **"Thử mọi cách cho chắc" là chỗ trốn của lỗi.** Webhook SePay từng thử bốn
 công thức ký và chấp nhận cách nào khớp — hợp lý khi chưa có tài liệu, nhưng

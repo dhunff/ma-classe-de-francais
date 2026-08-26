@@ -171,7 +171,7 @@ export default function PEGrading() {
       </div>
 
       {loi && (
-        <p className="m-0 mt-5 rounded-xl bg-dangerSoft p-4 text-sm font-semibold text-ink">{loi}</p>
+        <p className="m-0 mt-5 rounded-xl bg-danger-soft p-4 text-sm font-semibold text-ink">{loi}</p>
       )}
 
       {rows === null ? (

@@ -16,15 +16,46 @@ import { fromRows } from "./exerciseMap.js";
 const Q_COLS = "id, exercise_id, ord, type, prompt, payload, explanation, competence, point_gram";
 const EX_COLS = "*";   // bảng exercises không có cột bị khoá
 
+
+/* ── Cột `grille` có thể chưa tồn tại ──
+ *
+ * Migration 035 do người vận hành chạy tay ở SQL Editor, nên có một quãng —
+ * ngắn hay dài tuỳ lúc — mà mã đã deploy còn database thì chưa. PostgREST
+ * không bỏ qua cột lạ: nó trả 42703 và HUỶ CẢ CÂU. Nghĩa là chỉ cần nhắc tới
+ * `grille` sớm một nhịp là toàn bộ danh sách đề thi biến mất, chứ không phải
+ * mất riêng cột đó.
+ *
+ * Nên: thử có `grille`, gặp đúng mã lỗi ấy thì thử lại không có. Ứng dụng lùi
+ * về thang chuẩn — đúng thứ nó vẫn làm trước migration này.
+ *
+ * KHÔNG nuốt các lỗi khác. Mạng hỏng hay RLS chặn mà cũng lặng lẽ thử lại thì
+ * mất luôn thông báo lỗi thật. */
+const THIEU_COT = "42703";
+
+async function chonCoGrille(dungCau) {
+  const co = await dungCau(true);
+  if (!co.error) return { ...co, coGrille: true };
+  if (co.error.code !== THIEU_COT) return { ...co, coGrille: true };
+  const khong = await dungCau(false);
+  return { ...khong, coGrille: false };
+}
+
+/* Giao diện cần phân biệt "chưa chạy migration" với "giáo viên chưa soạn
+   thang". Hai thứ đều cho ra thang chuẩn, nhưng một cái là việc phải làm. */
+let cotGrilleCoSan = true;
+export const cotGrilleSanSang = () => cotGrilleCoSan;
+
 /* Danh sách đề. RLS lo phần phạm vi: học sinh chỉ nhận đề đã phát hành, giáo
    viên nhận cả bản nháp. Không lọc `is_published` ở đây — lọc ở client là thứ
    xoá được trong DevTools, và lọc hai nơi thì sớm muộn hai nơi lệch nhau. */
 export async function loadExams() {
-  const { data, error } = await supabase
+  const { data, error, coGrille } = await chonCoGrille((coGrille) => supabase
     .from("exams")
     .select("id, title, level, duration_min, is_published, created_at, "
+          + (coGrille ? "grille, " : "")
           + "exam_sections (id, code, exercise_id, minutes, points, ord)")
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false }));
+  cotGrilleCoSan = coGrille;
   if (error) { console.error("[exam] không đọc được danh sách đề:", error.message); return []; }
   return (data ?? []).map((e) => ({
     ...e,
@@ -39,12 +70,14 @@ export async function loadExams() {
  * và khi đó phần thi rỗng. Giao diện cần biết để nói rõ, chứ không phải hiện
  * một phần thi trắng không lời giải thích. */
 export async function loadExam(examId) {
-  const { data: exam, error } = await supabase
+  const { data: exam, error, coGrille } = await chonCoGrille((coGrille) => supabase
     .from("exams")
     .select("id, title, level, duration_min, is_published, "
+          + (coGrille ? "grille, " : "")
           + "exam_sections (id, code, exercise_id, minutes, points, ord)")
     .eq("id", examId)
-    .maybeSingle();
+    .maybeSingle());
+  cotGrilleCoSan = coGrille;
   if (error || !exam) return null;
 
   const secs = [...(exam.exam_sections ?? [])].sort((a, b) => a.ord - b.ord);
@@ -87,6 +120,9 @@ export async function saveExam(exam, sections) {
     is_published: !!exam.is_published,
   };
   if (exam.id) row.id = exam.id;
+  /* Chỉ gửi `grille` khi có thật. Gửi `null` cũng chạm vào cột, nên trước
+     migration 035 mọi lần lưu đề đều hỏng — kể cả đề không dùng thang riêng. */
+  if (exam.grille) row.grille = exam.grille;
 
   const up = await supabase.from("exams").upsert(row, { onConflict: "id" })
     .select("id").maybeSingle();

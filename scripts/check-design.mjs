@@ -21,6 +21,35 @@ for (const token of BANNED) {
   check(`banned:${token}`, hits.length === 0, hits.join(", "));
 }
 
+
+/* --- 1b. Lớp Tailwind trỏ tới token KHÔNG tồn tại ---
+ *
+ * tailwind.config.js khai `danger: { DEFAULT, soft }`, nên lớp đúng là
+ * `bg-danger-soft`. Viết `bg-dangerSoft` thì Tailwind KHÔNG báo lỗi, không
+ * cảnh báo, không sinh CSS — nó chỉ bỏ qua, và phần tử mất nền.
+ *
+ * Đã lọt lên production ở 5 chỗ: thẻ "dưới ngưỡng" của ExamResults và ExamMode,
+ * ô lỗi, và bảng chấm PE — tất cả đều mất nền cảnh báo màu đỏ. Không ai phát
+ * hiện vì chữ vẫn đọc được.
+ *
+ * Chỉ bắt trong CHUỖI LỚP. `C.dangerSoft` là object màu trong JS dùng cho
+ * inline style — hợp lệ, và tên camelCase ở đó là đúng.
+ *
+ * Dùng `(?![A-Za-z])` chứ KHÔNG dùng `\b`. Bản đầu viết `\b`, và bộ kiểm báo
+ * xanh trên một file có lỗi thật: chuỗi đi qua một lệnh shell, `\b` thành ký
+ * tự backspace 0x08, và regex hoá ra đang đòi một byte điều khiển vô hình sau
+ * chữ "soft". Đọc mã nguồn không thấy gì sai.
+ *
+ * Đúng loại lỗi mà chính bộ kiểm này sinh ra để bắt — một thứ trông đúng và
+ * không làm gì cả. Sửa file có cấu trúc bằng công cụ Edit, đừng qua shell:
+ * CLAUDE.md quy tắc 4. */
+const SAI_LOP = /(?:bg|text|border|ring|from|to|via)-(?:danger|warn|ok|primary)(?:Soft|soft)(?![A-Za-z])/g;
+for (const f of files) {
+  const hits = [...read(f).matchAll(SAI_LOP)].map((m) => m[0]);
+  check(`tokens:lop-hop-le:${f}`, hits.length === 0,
+    hits.join(", ") + " → dùng gạch nối, ví dụ bg-danger-soft");
+}
+
 // --- 2. Font nạp qua index.html, không qua @import trong JS ---
 const jsHasImport = files.some((f) => read(f).includes("@import url('https://fonts.googleapis"));
 check("fonts:no-js-import", !jsHasImport);

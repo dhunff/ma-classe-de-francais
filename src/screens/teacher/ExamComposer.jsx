@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { Plus, Trash2, Eye, EyeOff, Save, AlertTriangle, Headphones, BookOpen, PenLine } from "lucide-react";
 import { loadPractice } from "../../shared/exerciseStore.js";
-import { loadExams, saveExam, deleteExam } from "../../shared/examStore.js";
+import { loadExams, saveExam, deleteExam, cotGrilleSanSang } from "../../shared/examStore.js";
 import { EXAM_STRUCTURE } from "../exam/examPaper.js";
+import GrilleEditor, { grilleLuuDuoc } from "./GrilleEditor.jsx";
 
 /* Soạn đề thi thử — màn hình của giáo viên.
  *
@@ -42,12 +43,16 @@ export default function ExamComposer({ t }) {
   const [draft, setDraft] = useState(null);
   const [dangLuu, setDangLuu] = useState(false);
   const [toast, setToast] = useState("");
+  const [tab, setTab] = useState("de");
 
   const taiLai = () => loadExams().then(setDsDe);
   useEffect(() => { loadPractice().then(setKho); taiLai(); }, []);
 
   const doiLevel = (level) => setDraft((d) => ({
-    exam: { ...d.exam, level },
+    exam: { ...d.exam, level,
+      /* Thang riêng đi theo đề, nhưng nhãn trình độ bên trong phải khớp — nếu
+         không nó tự giới thiệu là thang B1 trên một đề B2. */
+      grille: d.exam.grille ? { ...d.exam.grille, level } : null },
     /* Đổi trình độ thì thời lượng từng phần đổi theo cấu trúc thật (B1 45′ CE,
        B2 60′). Giữ nguyên bài đã chọn nếu bài đó cùng trình độ, còn không thì
        bỏ — một đề B2 mà phần CE là bài A1 thì không còn là đề B2. */
@@ -62,6 +67,12 @@ export default function ExamComposer({ t }) {
   }));
 
   const luu = async () => {
+    /* Kiểm thang TRƯỚC khi gọi mạng. Ràng buộc ở migration 035 sẽ chặn thật,
+       nhưng nó trả về một thông báo Postgres thô — giáo viên đọc xong vẫn không
+       biết tiêu chí nào sai. Kiểm ở đây để nói được tên tiêu chí. */
+    const ok = grilleLuuDuoc(draft.exam.grille);
+    if (!ok.ok) { alert("❌ Thang chấm chưa dùng được: " + ok.vi); return; }
+
     setDangLuu(true);
     const r = await saveExam(draft.exam, draft.sections);
     setDangLuu(false);
@@ -90,7 +101,7 @@ export default function ExamComposer({ t }) {
               Ghép ba bài trong thư viện thành một đề CO + CE + PE.
             </p>
           </div>
-          <button type="button" onClick={() => setDraft(DeMoi("B1"))}
+          <button type="button" onClick={() => { setTab("de"); setDraft(DeMoi("B1")); }}
             className="inline-flex shrink-0 items-center gap-2 rounded-full border-0 bg-primary px-5 py-2.5 text-sm font-bold text-white shadow-lg">
             <Plus size={16} /> Soạn đề mới
           </button>
@@ -127,14 +138,18 @@ export default function ExamComposer({ t }) {
                 </div>
                 <div className="flex shrink-0 gap-2">
                   <button type="button"
-                    onClick={() => setDraft({
-                      exam: { id: e.id, title: e.title, level: e.level, is_published: e.is_published },
+                    onClick={() => { setTab("de"); setDraft({
+                      /* `grille` phải mang theo. Bỏ sót nó thì mở đề ra rồi bấm
+                         Lưu là thang riêng biến mất — không cảnh báo, không dấu
+                         vết, và giáo viên chỉ phát hiện khi học sinh tự chấm. */
+                      exam: { id: e.id, title: e.title, level: e.level,
+                              is_published: e.is_published, grille: e.grille ?? null },
                       sections: EXAM_STRUCTURE[e.level].map((p) => {
                         const cu = e.sections.find((s) => s.code === p.code);
                         return { code: p.code, minutes: cu?.minutes ?? p.minutes,
                                  points: cu?.points ?? p.points, exercise_id: cu?.exercise_id ?? "" };
                       }),
-                    })}
+                    }); }}
                     className="rounded-full border-0 bg-surface2 px-4 py-2 text-sm font-semibold text-ink">
                     Sửa
                   </button>
@@ -160,6 +175,45 @@ export default function ExamComposer({ t }) {
         {draft.exam.id ? "Sửa đề thi" : "Soạn đề thi mới"}
       </h1>
 
+      {/* Hai tab. Cấu trúc đề và thang chấm là hai việc khác nhau, làm ở hai
+          lúc khác nhau — nhồi chung một trang thì thang chấm nằm dưới cùng, sau
+          ba ô chọn bài, và không ai cuộn xuống tới nó. */}
+      <div className="mt-5 flex gap-2 border-b border-line">
+        {[["de", "Cấu trúc đề"], ["grille", "Thang chấm PE"]].map(([k, nhan]) => (
+          <button key={k} type="button" onClick={() => setTab(k)}
+            className={`-mb-px border-0 border-b-2 bg-transparent px-4 py-2.5 text-sm font-bold ${
+              tab === k ? "border-primary text-primary" : "border-transparent text-soft hover:text-ink"}`}>
+            {nhan}
+            {k === "grille" && draft.exam.grille && (
+              <span className="ml-2 rounded-full bg-warn-soft px-2 py-0.5 text-[10px] font-bold text-warn">
+                riêng
+              </span>
+            )}
+          </button>
+        ))}
+      </div>
+
+      {tab === "grille" ? (
+        <div className="mt-6">
+          <GrilleEditor
+            level={draft.exam.level}
+            grille={draft.exam.grille ?? null}
+            cotSanSang={cotGrilleSanSang()}
+            onChange={(g) => setDraft({ ...draft, exam: { ...draft.exam, grille: g } })}
+          />
+          <div className="mt-8 flex items-center gap-3 border-t border-line pt-5">
+            <button type="button" onClick={luu} disabled={dangLuu}
+              className="inline-flex items-center gap-2 rounded-full border-0 bg-primary px-6 py-2.5 text-sm font-bold text-white disabled:opacity-40">
+              <Save size={15} /> {dangLuu ? "Đang lưu…" : "Lưu đề"}
+            </button>
+            <button type="button" onClick={() => setDraft(null)}
+              className="rounded-full border-0 bg-surface2 px-5 py-2.5 text-sm font-bold text-soft">
+              Huỷ
+            </button>
+          </div>
+        </div>
+      ) : (
+      <>
       <div className="mt-6 space-y-4">
         <label className="block">
           <span className="text-xs font-bold uppercase tracking-wide text-soft">Tên đề</span>
@@ -258,6 +312,8 @@ export default function ExamComposer({ t }) {
           Huỷ
         </button>
       </div>
+      </>
+      )}
     </div>
   );
 }

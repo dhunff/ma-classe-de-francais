@@ -129,7 +129,7 @@ function ManCho({ dsDe, chon, paper, onStart, dangTai }) {
       </p>
 
       {paper?.missing?.length > 0 && (
-        <p className="m-0 mt-3 flex items-start gap-2 rounded-xl bg-dangerSoft p-3 text-xs text-ink">
+        <p className="m-0 mt-3 flex items-start gap-2 rounded-xl bg-danger-soft p-3 text-xs text-ink">
           <AlertTriangle size={14} className="mt-0.5 shrink-0 text-danger" />
           {/* `missing` ở đây KHÔNG phải "giáo viên quên chọn bài" — đề đã lưu
               thì phần nào cũng có exercise_id. Nó nghĩa là bài được trỏ tới
@@ -440,7 +440,7 @@ function KetQua({ sections, blurCount, onLai }) {
           return (
             <li key={s.code}
                 className={`flex items-center justify-between gap-3 rounded-2xl border p-4 ${
-                  yeu ? "border-danger bg-dangerSoft" : "border-line bg-surface"}`}>
+                  yeu ? "border-danger bg-danger-soft" : "border-line bg-surface"}`}>
               <div className="min-w-0">
                 <div className="text-sm font-bold text-ink">{s.code} · {s.label}</div>
                 <div className="truncate text-xs text-soft">{s.exercise.title}</div>

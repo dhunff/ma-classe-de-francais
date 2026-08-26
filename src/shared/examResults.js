@@ -41,7 +41,14 @@ export async function loadMyExamResults() {
 
   const [deRes, secRes, ansRes] = await Promise.all([
     examIds.length
-      ? supabase.from("exams").select("id, title, level").in("id", examIds)
+      /* Đọc `grille` bằng đường lùi được: migration 035 chạy tay ở SQL Editor,
+         nên có quãng mà mã đã deploy còn cột thì chưa. PostgREST trả 42703 và
+         HUỶ CẢ CÂU — nghĩa là nhắc tới cột sớm một nhịp thì mất luôn tên đề và
+         trình độ, không phải mất riêng thang chấm. */
+      ? supabase.from("exams").select("id, title, level, grille").in("id", examIds)
+          .then((r) => (r.error?.code === "42703"
+            ? supabase.from("exams").select("id, title, level").in("id", examIds)
+            : r))
       : Promise.resolve({ data: [] }),
     examIds.length
       ? supabase.from("exam_sections")
@@ -114,6 +121,8 @@ export async function loadMyExamResults() {
         choCham: r.max === 0 && !peList.length,
         /* Trình độ của đề — màn tự chấm cần nó để chọn đúng grille. */
         level: thongTinDe?.level ?? "B1",
+        /* Thang do giáo viên soạn, hoặc null = dùng thang chuẩn theo level. */
+        grille: thongTinDe?.grille ?? null,
       };
     }).sort((a, b) => a.ord - b.ord);
 

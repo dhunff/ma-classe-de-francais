@@ -1,5 +1,49 @@
 import { GRILLE } from "../screens/exam/delfGrille.js";
-import { BAREME, NHOM_CUA } from "./peBareme.js";
+import { BAREME, NHOM_CUA, THU_TU_NHOM } from "./peBareme.js";
+
+const lamTron = (n) => Math.round(n * 2) / 2;
+
+/* Thang có lưu được không.
+ *
+ * ══ PHẢI KHỚP VỚI `public.grille_hop_le` (migration 035) ══
+ *
+ * Ràng buộc thật nằm ở database — đó là lớp không đi vòng được. Hàm này chỉ
+ * tồn tại để nói cho giáo viên biết TIÊU CHÍ NÀO sai, thay vì để Postgres trả
+ * về "vi phạm ràng buộc exams_grille_hop_le" sau khi họ đã soạn xong.
+ *
+ * Chặt hơn phía SQL thì không sao — chỉ là từ chối sớm. LỎNG hơn thì hỏng:
+ * giao diện cho bấm Lưu, rồi database từ chối, và thông báo lỗi không giúp gì.
+ * `check:bareme` chạy lại đúng các ca trong khối tự đối chiếu của 035 để hai
+ * đầu không trôi khỏi nhau.
+ *
+ * Ở đây (JS) chứ không ở GrilleEditor.jsx: bộ kiểm chạy bằng node, và node
+ * không đọc được JSX. Một hàm không kiểm được thì sớm muộn cũng sai. */
+export function grilleLuuDuoc(g) {
+  if (!g) return { ok: true };                       // null = dùng thang chuẩn
+  if (!Array.isArray(g.criteria) || !g.criteria.length) {
+    return { ok: false, vi: "Thang chưa có tiêu chí nào." };
+  }
+  const ids = new Set();
+  for (const c of g.criteria) {
+    const ten = String(c.name || "").trim();
+    if (!ten) return { ok: false, vi: "Có tiêu chí chưa đặt tên." };
+    if (!String(c.id || "").trim()) return { ok: false, vi: `« ${ten} » thiếu mã.` };
+    if (!String(c.key || "").trim()) return { ok: false, vi: `« ${ten} » thiếu khoá.` };
+    if (!(Number(c.max_score) > 0)) return { ok: false, vi: `« ${ten} » phải có điểm tối đa lớn hơn 0.` };
+    if (!(Number(c.step) > 0)) return { ok: false, vi: `« ${ten} » thiếu bước nhảy.` };
+    if (Number(c.max_score) % Number(c.step) !== 0) {
+      return { ok: false, vi: `« ${ten} »: ${c.max_score} không chia hết cho bước ${c.step}, nên không kéo tới điểm tối đa được.` };
+    }
+    if (!THU_TU_NHOM.includes(c.category)) return { ok: false, vi: `« ${ten} » chưa xếp vào nhóm nào.` };
+    if (ids.has(c.id)) return { ok: false, vi: "Có hai tiêu chí trùng mã." };
+    ids.add(c.id);
+  }
+  const tong = lamTron(g.criteria.reduce((n, c) => n + Number(c.max_score), 0));
+  if (tong !== lamTron(Number(g.total))) {
+    return { ok: false, vi: `Tổng ghi ${g.total} nhưng cộng ra ${tong}.` };
+  }
+  return { ok: true };
+}
 
 /* Chuyển `GRILLE` sang lược đồ rubric mà giao diện tự chấm dùng.
  *

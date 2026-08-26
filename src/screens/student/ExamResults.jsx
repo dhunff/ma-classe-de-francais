@@ -29,7 +29,7 @@ const ngay = (iso) => {
 function Phan({ s, onTuCham }) {
   const yeu = s.score != null && s.score < NGUONG_PHAN;
   return (
-    <li className={`rounded-xl border p-3 ${yeu ? "border-danger bg-dangerSoft" : "border-line bg-surface2"}`}>
+    <li className={`rounded-xl border p-3 ${yeu ? "border-danger bg-danger-soft" : "border-line bg-surface2"}`}>
       <div className="flex items-center justify-between gap-3">
         <span className="text-sm font-bold text-ink">{s.code}</span>
         <span className="text-right">
@@ -83,6 +83,9 @@ function Phan({ s, onTuCham }) {
                 answerId: p.answerId, questionId: p.questionId,
                 level: s.level, deBai: p.prompt, baiLam: p.raw,
                 daCo: p.selfBreakdown,
+                /* Thang riêng của đề, nếu giáo viên có soạn. null thì
+                   PESelfEvaluation tự dựng thang chuẩn theo level. */
+                rubric: s.grille,
               })}
               className="flex w-full items-center gap-2 rounded-lg border-0 bg-surface px-3 py-2.5
                          text-left text-xs font-bold text-ink transition hover:bg-primary-soft"
@@ -237,7 +240,7 @@ export default function ExamResults() {
         </span>
       </p>
 
-      {loi && <p className="m-0 mt-5 rounded-xl bg-dangerSoft p-4 text-sm font-semibold text-ink">{loi}</p>}
+      {loi && <p className="m-0 mt-5 rounded-xl bg-danger-soft p-4 text-sm font-semibold text-ink">{loi}</p>}
 
       {sittings === null ? (
         <p className="mt-8 text-center text-sm text-soft">Đang tải…</p>

@@ -24,7 +24,7 @@
 
 import { GRILLE } from "../src/screens/exam/delfGrille.js";
 import { BAREME, NHOM_CUA, THU_TU_NHOM, TEN_NHOM } from "../src/shared/peBareme.js";
-import { grilleToRubric } from "../src/shared/grilleRubric.js";
+import { grilleToRubric, grilleLuuDuoc } from "../src/shared/grilleRubric.js";
 
 let pass = 0, fail = 0;
 const t = (name, ok, detail = "") => {
@@ -118,6 +118,50 @@ for (const lv of MUC) {
     t(`${lv}: lùi về description khi không có mốc`,
       r.criteria.every((c) => c.description && c.description.length > 10));
   }
+}
+
+/* ── 4. Bộ xác thực JS phải khớp ràng buộc SQL ──
+ *
+ * `grilleLuuDuoc` (giao diện) và `public.grille_hop_le` (migration 035) kiểm
+ * cùng một thứ ở hai nơi. Chúng phục vụ hai mục đích khác nhau — một cái nói
+ * tiêu chí nào sai, một cái là hàng rào thật — nhưng nếu bản JS LỎNG hơn thì
+ * giáo viên bấm Lưu, database từ chối, và thông báo lỗi Postgres không giúp gì.
+ *
+ * Các ca dưới đây là bản sao đúng khối tự đối chiếu ở cuối 035. Sửa một bên mà
+ * quên bên kia thì chỗ này đỏ. */
+const HOP_LE = {
+  schema_version: 1, level: "B2", official: false, total: 5,
+  criteria: [
+    { id: "a", key: "consigne", category: "pragmatique", name: "Bám sát đề", max_score: 2, step: 0.5 },
+    { id: "b", key: "argumenter", category: "pragmatique", name: "Lập luận", max_score: 3, step: 0.5 },
+  ],
+};
+const doi = (duong, gia) => {
+  const g = JSON.parse(JSON.stringify(HOP_LE));
+  const k = duong.split(".");
+  let o = g;
+  for (const x of k.slice(0, -1)) o = o[x];
+  o[k[k.length - 1]] = gia;
+  return g;
+};
+
+t("035/JS: thang hợp lệ được nhận", grilleLuuDuoc(HOP_LE).ok === true);
+t("035/JS: null được nhận (dùng thang chuẩn)", grilleLuuDuoc(null).ok === true);
+t("035/JS: tổng lệch bị chặn", grilleLuuDuoc(doi("total", 6)).ok === false);
+t("035/JS: nhóm lạ bị chặn", grilleLuuDuoc(doi("criteria.0.category", "linh tinh")).ok === false);
+t("035/JS: tên rỗng bị chặn", grilleLuuDuoc(doi("criteria.0.name", "")).ok === false);
+t("035/JS: step không chia hết max bị chặn", grilleLuuDuoc(doi("criteria.0.step", 0.3)).ok === false);
+t("035/JS: id trùng bị chặn", grilleLuuDuoc(doi("criteria.1.id", "a")).ok === false);
+t("035/JS: mảng tiêu chí rỗng bị chặn",
+  grilleLuuDuoc({ total: 0, criteria: [] }).ok === false);
+t("035/JS: max_score bằng 0 bị chặn", grilleLuuDuoc(doi("criteria.0.max_score", 0)).ok === false);
+t("035/JS: thiếu key bị chặn", grilleLuuDuoc(doi("criteria.0.key", "")).ok === false);
+
+/* Thang chuẩn của cả bốn trình độ phải tự nó lưu được. Nếu không thì giáo viên
+   bấm "Thang riêng" (khởi tạo từ thang chuẩn) là đã hỏng ngay từ giây đầu. */
+for (const lv of MUC) {
+  const r = grilleToRubric(lv);
+  t(`035/JS: thang chuẩn ${lv} lưu được`, grilleLuuDuoc(r).ok === true);
 }
 
 console.log(fail ? `\n${pass} đạt, ${fail} hỏng` : `\n${pass} đạt, 0 hỏng`);

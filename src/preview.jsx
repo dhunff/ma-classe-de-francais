@@ -20,6 +20,7 @@ import TeacherDashboard from "./screens/dashboard/TeacherDashboard.jsx";
 import HomeDashboard from "./screens/dashboard/HomeDashboard.jsx";
 import CalendarView from "./screens/calendar/CalendarView.jsx";
 import PESelfEvaluation from "./screens/student/PESelfEvaluation.jsx";
+import GrilleEditor from "./screens/teacher/GrilleEditor.jsx";
 import TipsEditor from "./screens/teacher/TipsEditor.jsx";
 
 const VI = {
@@ -130,6 +131,17 @@ const VI = {
     scroll_next: "Xem thẻ sau",
   },
 };
+/* Thử trình soạn thang: giữ state thật để bấm được, như màn giáo viên. */
+function GrilleThu() {
+  const [g, setG] = React.useState(null);
+  return <div className="mx-auto max-w-6xl py-6">
+    <GrilleEditor level="B2" grille={g} onChange={setG} />
+    <div className="mt-10 border-t border-line pt-8" id="mat-hoc-sinh">
+      <PESelfEvaluation level="B2" rubric={g} />
+    </div>
+  </div>;
+}
+
 const dig = (o, k) => k.split(".").reduce((x, p) => (x == null ? undefined : x[p]), o);
 const t = (key, vars) => {
   let s = dig(VI, key);
@@ -382,6 +394,7 @@ function Preview() {
           {/* Màn tự chấm PE — nằm ngoài STUDENT_NAV vì nó mở ra từ trang kết
               quả thi thử, không phải từ thanh bên. Đặt ở đây để xem được bố cục
               chia đôi mà không cần đăng nhập và không cần thi thử trước. */}
+          <Route path="/professeur/grille" element={<><Controls /><GrilleThu /></>} />
           <Route path="/etudiant/auto-evaluation" element={
             <><Controls /><PESelfEvaluation /></>
           } />
