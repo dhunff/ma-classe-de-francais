@@ -156,6 +156,16 @@ t("035/JS: mảng tiêu chí rỗng bị chặn",
   grilleLuuDuoc({ total: 0, criteria: [] }).ok === false);
 t("035/JS: max_score bằng 0 bị chặn", grilleLuuDuoc(doi("criteria.0.max_score", 0)).ok === false);
 t("035/JS: thiếu key bị chặn", grilleLuuDuoc(doi("criteria.0.key", "")).ok === false);
+t("035/JS: thiếu id bị chặn", grilleLuuDuoc(doi("criteria.0.id", "")).ok === false);
+
+/* step = 0 phải bị chặn, và quan trọng hơn là không được NỔ. Phía SQL đây là ca
+   mà thứ tự đánh giá của OR quyết định — `max % step` với step = 0 là chia cho
+   0. Phía JS thì `2 % 0` ra NaN chứ không ném lỗi, nên hai ngôn ngữ hỏng theo
+   hai kiểu khác nhau từ cùng một dữ liệu. Kiểm cả hai. */
+t("035/JS: step = 0 bị chặn", grilleLuuDuoc(doi("criteria.0.step", 0)).ok === false);
+t("035/JS: không phải object bị chặn", grilleLuuDuoc("khong phai object").ok === false);
+t("035/JS: criteria không phải mảng bị chặn",
+  grilleLuuDuoc({ total: 0, criteria: "x" }).ok === false);
 
 /* Thang chuẩn của cả bốn trình độ phải tự nó lưu được. Nếu không thì giáo viên
    bấm "Thang riêng" (khởi tạo từ thang chuẩn) là đã hỏng ngay từ giây đầu. */

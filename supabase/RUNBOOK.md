@@ -140,3 +140,51 @@ client nào ghi được.
 **Chưa chặn**: mọi thứ còn lại trong `kv_store` — điểm số, bài nộp, mã PIN giáo
 viên — vẫn để `anon` ghi thoải mái. Muốn đóng nốt thì phải có danh tính thật cho
 từng người dùng (Supabase Auth), và đó là dự án riêng.
+
+---
+
+## Thang chấm PE — migration 035 + 036
+
+Chạy **theo thứ tự**, mỗi file một lần dán:
+
+1. `035_exam_grille.sql` — tạo cột `exams.grille`, hàm `grille_hop_le`, ràng
+   buộc, và `notify pgrst`. In ba dòng trạng thái, **không** raise exception.
+2. `036_exam_grille_check.sql` — 16 phép thử hành vi. Không ghi gì vào bảng.
+
+Rồi đối chiếu từ máy mình:
+
+```bash
+npm run check:db
+```
+
+### Vì sao tách làm hai file
+
+Bản đầu gộp chung. SQL Editor chạy nguyên file trong **một transaction**, nên
+`raise exception` ở khối kiểm cuối file cuộn ngược luôn `alter table` ở đầu
+file. Người vận hành báo đã chạy, ứng dụng báo chưa có cột, và **cả hai đều
+đúng** — trạng thái sau khi cuộn ngược không phân biệt được với "chưa chạy bao
+giờ".
+
+Quy tắc rút ra: **DDL và phép kiểm không nằm chung transaction.** Với migration
+chuyển dữ liệu thì gộp là đúng (hỏng thì không muốn áp dụng nửa vời). Với
+migration chỉ tạo cấu trúc thì tách, vì bạn muốn giữ cái đã tạo và biết cái gì
+chưa đạt.
+
+### Đọc kết quả `check:db`
+
+| Dòng | Nghĩa |
+|---|---|
+| `exams: thang chấm PE` ✗ | chưa chạy 035, hoặc 035 đã cuộn ngược |
+| `hàm grille_hop_le` ✗ | 035 chạy nửa chừng, hoặc PostgREST chưa nạp lại lược đồ |
+| `grille_hop_le từ chối thang có tổng lệch` ✗ | hàm có nhưng luôn trả true — ràng buộc là đồ trang trí |
+| `answer_key KHÔNG đọc được` ✗ | **đáp án đang lộ.** Xem migration 022, xử lý ngay |
+
+Hai dòng cuối bảng là loại hỏng không nhìn ra được từ giao diện.
+
+### Ứng dụng không hỏng khi thiếu cột
+
+`examStore.js` bắt mã lỗi `42703` rồi truy vấn lại không có cột, và tab soạn
+thang hiện hướng dẫn chạy migration. Nghĩa là deploy mã trước migration thì mọi
+đề vẫn chấm bằng thang chuẩn — không đề nào vỡ. Không có bước này thì chỉ cần
+nhắc tới một cột chưa tồn tại là mất luôn cả danh sách đề thi, vì PostgREST huỷ
+cả câu chứ không trả về ít cột hơn.

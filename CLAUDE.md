@@ -33,8 +33,12 @@ npm run check:nav          # mục menu ↔ route ↔ nhãn i18n, cả hai chi�
 npm run check:grille       # grille DELF A1–B2 cộng đúng 25, đủ mô tả (59 ca)
 npm run check:cors         # Edge Function có cho trình duyệt gọi không
 npm run check:hmac         # chữ ký webhook SePay + bản ghim công thức (45 ca)
-npm run check:bareme       # mốc cho điểm PE, xếp nhóm, đối chiếu với SQL (266 ca)
+npm run check:bareme       # mốc cho điểm PE, xếp nhóm, đối chiếu với SQL (270 ca)
+npm run check:db           # database THẬT có khớp giả định của mã nguồn không
 ```
+
+`check:db` gọi mạng nên không chạy được khi offline, và nó là bộ duy nhất đối
+chiếu với hệ thống thật thay vì với mã nguồn. Chạy nó sau mỗi migration.
 
 Mỗi bộ sinh ra từ một lỗi thật đã lọt lên production. **Build xanh không có
 nghĩa là đúng** — cả sáu loại lỗi này đều để build đi qua.
@@ -184,6 +188,16 @@ trả 200 với điểm đúng, còn ứng dụng bị trình duyệt huỷ requ
 máy, không log ở đâu cả. Hậu quả: 5 lượt thi mở ra, 0 lượt đóng, 0 dòng
 `answers`, mọi phần hiện "chờ chấm 0/0". `check:cors` gửi đúng cái preflight mà
 trình duyệt gửi, tới hàm đã deploy.
+
+**DDL và phép kiểm không được nằm chung một transaction.** SQL Editor chạy
+nguyên file trong một transaction, nên `raise exception` ở khối tự kiểm cuối
+file cuộn ngược luôn `alter table` ở đầu file. Bản đầu của 035 dính đúng thế:
+người vận hành báo đã chạy, ứng dụng báo chưa có cột, **cả hai đều đúng** —
+trạng thái sau khi cuộn ngược không phân biệt được với "chưa chạy bao giờ".
+
+Migration chuyển DỮ LIỆU thì gộp vẫn đúng (hỏng thì không muốn áp dụng nửa
+vời). Migration chỉ tạo CẤU TRÚC thì tách: giữ cái đã tạo, và biết cái gì chưa
+đạt. Nay 035 tạo, 036 kiểm, `check:db` đối chiếu từ ngoài.
 
 **Tailwind BỎ QUA lớp không tồn tại, không báo gì.** `tailwind.config.js` khai
 `danger: { DEFAULT, soft }` nên lớp đúng là `bg-danger-soft`; viết
