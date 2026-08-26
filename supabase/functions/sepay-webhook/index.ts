@@ -112,7 +112,7 @@ Deno.serve(async (req) => {
 
   // SePay chỉ quan tâm tiền VÀO.
   const direction = String(payload.transferType ?? "");
-  if (direction && direction !== "in") return json(200, { ignored: "not_incoming" });
+  if (direction && direction !== "in") return json(200, { auth: cach, ignored: "not_incoming" });
 
   const content = String(payload.content ?? payload.description ?? "");
   const amount = Math.round(Number(payload.transferAmount ?? payload.amount ?? 0));
@@ -120,7 +120,7 @@ Deno.serve(async (req) => {
   if (!ref) return json(400, { error: "missing_reference" });
 
   const parsed = parseMemo(content);
-  if (!parsed) return json(200, { ignored: "memo_unrecognised", content });
+  if (!parsed) return json(200, { auth: cach, ignored: "memo_unrecognised", content });
 
   const supabase = createClient(
     Deno.env.get("SUPABASE_URL")!,
@@ -159,18 +159,18 @@ Deno.serve(async (req) => {
   /* Hai bài trùng 6 ký tự cuối thì không đoán bừa. Cấp nhầm bài là học sinh
      trả tiền cho bài A mà mở được bài B, và không có gì lần ra được. */
   if (khop.length > 1) {
-    return json(200, { ignored: "exercise_ambiguous", memo: parsed,
+    return json(200, { auth: cach, ignored: "exercise_ambiguous", memo: parsed,
                        ids: khop.map((e: any) => e.id) });
   }
   const row: any = khop[0];
-  if (!row) return json(200, { ignored: "exercise_not_found", memo: parsed });
+  if (!row) return json(200, { auth: cach, ignored: "exercise_not_found", memo: parsed });
 
   const exercise = { id: row.id, title: row.title, ...(row.meta ?? {}) };
 
   // 3. Đối chiếu số tiền. Thiếu thì không cấp — chuyển thiếu vẫn là chưa mua.
   const price = Math.round(Number(exercise.price ?? 0));
-  if (!exercise.isPremium || price <= 0) return json(200, { ignored: "exercise_not_paid" });
-  if (amount < price) return json(200, { ignored: "amount_too_low", amount, price });
+  if (!exercise.isPremium || price <= 0) return json(200, { auth: cach, ignored: "exercise_not_paid" });
+  if (amount < price) return json(200, { auth: cach, ignored: "amount_too_low", amount, price });
 
   /* 4. Khớp tên học sinh với người có thật, để không cấp cho tên bịa.
 
@@ -194,7 +194,7 @@ Deno.serve(async (req) => {
     } catch { /* danh sách hỏng — coi như không khớp */ }
   }
 
-  if (!student) return json(200, { ignored: "student_not_found", memo: parsed });
+  if (!student) return json(200, { auth: cach, ignored: "student_not_found", memo: parsed });
 
   // 5. Ghi quyền. `ref` là unique nên SePay gửi lại cùng giao dịch cũng không
   //    tạo bản ghi thứ hai; upsert theo (student, exercise_id) để mua lại không vỡ.
@@ -206,7 +206,7 @@ Deno.serve(async (req) => {
     );
   if (writeErr) {
     // Trùng `ref` nghĩa là đã xử lý giao dịch này rồi — không phải lỗi.
-    if (String(writeErr.code) === "23505") return json(200, { ok: true, duplicate: true });
+    if (String(writeErr.code) === "23505") return json(200, { ok: true, auth: cach, duplicate: true });
     return json(500, { error: "write_failed", detail: writeErr.message });
   }
 
