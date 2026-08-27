@@ -189,6 +189,27 @@ máy, không log ở đâu cả. Hậu quả: 5 lượt thi mở ra, 0 lượt �
 `answers`, mọi phần hiện "chờ chấm 0/0". `check:cors` gửi đúng cái preflight mà
 trình duyệt gửi, tới hàm đã deploy.
 
+**Đặt lại ĐÚNG giá trị cũ thì React KHÔNG gọi `onChange`.** React gắn một bộ
+theo dõi giá trị lên input; giá trị mới bằng giá trị đang có thì sự kiện bị bỏ.
+
+Thanh trượt tự chấm hiển thị ở vị trí 0 khi chưa chấm, nên người muốn cho 0
+điểm kéo tới 0 — và **không có gì được ghi**. Tiêu chí đó không được đếm, nút
+Lưu khoá vĩnh viễn, người dùng không có đường thoát: mọi thanh trượt đều nằm
+đúng chỗ họ muốn, nút thì im lặng. Một buổi tự chấm mất trắng.
+
+Với `range`/`checkbox`, thêm `onPointerUp` và `onKeyUp` để bắt lần TƯƠNG TÁC
+kết thúc, chứ không chỉ lần đổi giá trị.
+
+Hai bài học đi kèm, đắt hơn bản thân lỗi:
+
+- **"Chưa nhập" và "nhập giá trị rỗng/0" phải khác nhau BẰNG MẮT.** Vẽ giống
+  nhau thì người dùng tin mình đã xong.
+- **Kiểm chứng bằng cách gán giá trị qua JS luôn bỏ sót lỗi này** — gọi setter
+  rồi tự bắn sự kiện thì bao giờ cũng chạy. Người thật gặp ngay lần đầu.
+
+**Nút bị `disabled` là ngõ cụt.** Bấm, không có gì xảy ra, không ai nói vì sao.
+Thà để nút bấm được rồi chỉ ra chỗ còn thiếu — tô viền, cuộn tới, gọi tên.
+
 **DDL và phép kiểm không được nằm chung một transaction.** SQL Editor chạy
 nguyên file trong một transaction, nên `raise exception` ở khối tự kiểm cuối
 file cuộn ngược luôn `alter table` ở đầu file. Bản đầu của 035 dính đúng thế:
@@ -252,6 +273,30 @@ Xem `docs/roadmap-delf.md` — có nhật ký quyết định ở §5.
   chỗ khác là tách đôi cả ba thứ: đáp án bị khoá ở answer_key, đường chấm của
   Edge Function, và trình soạn Builder. Màn thi nằm NGOÀI vỏ app (không thanh
   bên); soạn đề ở /professeur/examens.
+- ~~Tự chấm Production écrite~~ — xong 2026-08-27, đã chạy qua người dùng thật.
+
+  Màn chia đôi (`PESelfEvaluation.jsx`): trái là đề + bài làm cuộn độc lập,
+  phải là thang chấm. Mở từ trang kết quả thi thử, chiếm cả trang — nhồi vào
+  thẻ `max-w-2xl` thì hai cột thành hai cột giấy hẹp.
+
+  Thang chấm đi qua `shared/grilleRubric.js`, KHÔNG đọc thẳng `delfGrille.js`.
+  Nhờ vậy thang do giáo viên soạn (`exams.grille`, migration 035) chỉ là một
+  nguồn dữ liệu khác, không cần nhánh `if` nào trong giao diện.
+
+  **Thang đã lưu là JSON đông cứng.** Mỗi lần thang chuẩn đổi — thêm `label_vi`,
+  thêm `aide_vi` — mọi thang đã lưu vẫn giữ bản cũ. `chuanHoaGrille()` nâng
+  chúng lúc ĐỌC, và chỉ nâng khi giá trị đang lưu đúng bằng bản mặc định cũ;
+  khác một chữ nghĩa là giáo viên đã tự viết, và đè lên đó là xoá công của
+  người khác. `max_score` không bao giờ đụng tới.
+
+  **Cờ suy ra được từ dữ liệu thì đừng để ai tự đặt.** `official` từng được đặt
+  cứng thành `false` ngay khi bấm « Thang riêng », nên một thang giống hệt thang
+  chuẩn vẫn khiến học sinh đọc "không phải thang DELF chính thức". Nay tính lại
+  ở cả đường ghi lẫn đường đọc.
+
+  Kiểm: `check:grille` (59), `check:bareme` (339), `check:db` (18) chạy trên
+  database thật, và `037_self_assessment_check.sql` chạy tay để soi dữ liệu học
+  sinh mà RLS không cho khoá anon thấy.
 - ~~Chấm ở server~~ — xong 2026-08-25. Edge Function `grade` chấm, đáp án nằm
   ở cột `answer_key` KHÔNG cấp SELECT cho anon/authenticated (migration 022).
   `payload` chỉ còn phần để dựng câu hỏi.
