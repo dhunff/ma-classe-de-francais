@@ -68,10 +68,34 @@ t("khứ hồi giữ folderId (trong meta)", back.folderId, EX.folderId);
 t("khứ hồi giữ assignedClasses", back.assignedClasses, EX.assignedClasses);
 t("số câu không đổi", back.questions.length, QUESTIONS.length);
 
-/* Mỗi loại câu phải về nguyên vẹn — đây là phần dễ vỡ nhất. */
+/* Mỗi loại câu phải về nguyên vẹn — đây là phần dễ vỡ nhất.
+ *
+ * ĐỌC TỪ CẢ HAI CỘT, đúng như Edge Function `grade` làm:
+ * `{ ...payload, ...answer_key }`. Từ migration 022 đáp án nằm ở `answer_key`,
+ * nên khứ hồi chỉ qua `payload` sẽ báo mất dữ liệu ở chỗ không mất.
+ *
+ * Bản trước của các ca này so `back.questions` (chỉ dựng từ payload) với câu
+ * gốc, nên chúng CHỈ xanh khi đáp án còn nằm trong payload — tức là chúng đang
+ * bắt buộc chỗ rò rỉ phải tồn tại. Một bộ kiểm viết trước một quyết định bảo
+ * mật, rồi biến quyết định ấy thành lỗi. */
+const gopHaiCot = (r) => ({
+  ...questionFromRow(r),
+  ...r.answer_key,
+});
 for (const q of QUESTIONS) {
-  const got = back.questions.find((x) => x.id === q.id);
-  t(`câu "${q.type}" về nguyên vẹn`, got, q);
+  const r = qRows.find((x) => x.id === q.id);
+  t(`câu "${q.type}" về nguyên vẹn (payload + answer_key)`, gopHaiCot(r), q);
+}
+
+/* `ordre` là ngoại lệ: payload cố ý giữ bản ĐÃ XÁO, nên gộp hai cột thì
+   answer_key thắng và thứ tự đúng quay lại. Ca trên đã phủ; ca này nói rõ vì
+   sao nó không mâu thuẫn. */
+{
+  const r = qRows.find((x) => x.type === "ordre");
+  if (r) {
+    t("ordre: gộp hai cột cho lại thứ tự đúng",
+      gopHaiCot(r).elements, QUESTIONS.find((q) => q.type === "ordre").elements);
+  }
 }
 
 /* ── cột nâng lên đúng chỗ, không lặp trong payload ── */
@@ -86,7 +110,14 @@ for (const m of EX_META) {
   if (EX[m] !== undefined) t(`meta giữ "${m}"`, exRow.meta[m], EX[m]);
 }
 t("payload giữ options", qRows[0].payload.options, QUESTIONS[0].options);
-t("payload giữ answers của tableau", qRows[5].payload.answers, QUESTIONS[5].answers);
+
+/* Đổi chiều khẳng định, cố ý.
+ *
+ * Ca cũ là `t("payload giữ answers của tableau", ...)` — nó ĐÒI đáp án phải nằm
+ * trong payload, tức là đòi đúng chỗ rò rỉ. `payload` cấp SELECT cho anon, nên
+ * ca đó biến một lỗ bảo mật thành yêu cầu. */
+t("payload KHÔNG giữ answers của tableau", qRows[5].payload.answers, undefined);
+t("answer_key giữ answers của tableau", qRows[5].answer_key.answers, QUESTIONS[5].answers);
 
 /* ── thứ tự câu ── */
 t("ord bắt đầu từ 1", qRows[0].ord, 1);
@@ -153,6 +184,82 @@ t("giá rỗng thì chưa bán được", hasPrice({ price: "" }), false);
 t("khoá mà thiếu giá → cảnh báo cấu hình", premiumThieuGia({ isPremium: true }), true);
 t("khoá và đủ giá → không cảnh báo", premiumThieuGia({ isPremium: true, price: 1000 }), false);
 t("bài miễn phí không bao giờ cảnh báo", premiumThieuGia({ price: 0 }), false);
+
+/* ── Đáp án phải đi vào `answer_key`, KHÔNG ở lại `payload` ──
+ *
+ * `payload` cấp SELECT cho anon; `answer_key` thì không (migration 022).
+ *
+ * Đây là chỗ đã hỏng thật, và hỏng theo kiểu tệ nhất: 022 dọn đáp án ra khỏi
+ * payload MỘT LẦN, còn `toRows` thì ghi lại payload MỖI LẦN giáo viên bấm Lưu.
+ * Nên một migration bảo mật bị chính ứng dụng hoàn tác, âm thầm, từng câu một
+ * theo nhịp giáo viên sửa bài. Đo được: câu tableau sửa gần nhất lộ trọn bộ
+ * đáp án qua khoá anon.
+ *
+ * Kiểm từng LOẠI câu, vì mỗi loại giấu đáp án ở một tên trường khác nhau —
+ * thiếu một tên trong danh sách là một loại tiếp tục lộ. */
+const KHONG_DUOC_LO = ["answer", "accepted", "justification", "answers", "model"];
+
+const rowsCua = (q) => toRows({ id: "e1", title: "x", questions: [q] }, "practice").qRows[0];
+
+{
+  const r = rowsCua({ id: "q1", type: "qcm", prompt: "p", options: ["a", "b"], answer: 1 });
+  t("qcm: đáp án vào answer_key", r.answer_key.answer, 1);
+  t("qcm: payload không còn answer", r.payload.answer, undefined);
+  t("qcm: options vẫn ở payload (cần để hiển thị)", r.payload.options, ["a", "b"]);
+}
+{
+  const r = rowsCua({ id: "q2", type: "fill", prompt: "p", accepted: "où|ou" });
+  t("fill: accepted vào answer_key", r.answer_key.accepted, "où|ou");
+  t("fill: payload không còn accepted", r.payload.accepted, undefined);
+}
+{
+  const r = rowsCua({ id: "q3", type: "vf", prompt: "p", answer: 1, justification: "vì thế" });
+  t("vf: answer + justification vào answer_key",
+    [r.answer_key.answer, r.answer_key.justification], [1, "vì thế"]);
+  t("vf: payload sạch", [r.payload.answer, r.payload.justification], [undefined, undefined]);
+}
+{
+  const r = rowsCua({ id: "q4", type: "tableau", prompt: "p",
+    criteres: [{ id: "r" }], colonnes: [{ id: "c" }], answers: { r_c: "OUI" } });
+  t("tableau: answers vào answer_key", r.answer_key.answers, { r_c: "OUI" });
+  t("tableau: payload không còn answers", r.payload.answers, undefined);
+  t("tableau: criteres/colonnes vẫn ở payload",
+    [r.payload.criteres.length, r.payload.colonnes.length], [1, 1]);
+}
+{
+  const r = rowsCua({ id: "q5", type: "open", prompt: "p", model: "bài mẫu…" });
+  t("open: bài mẫu vào answer_key", r.answer_key.model, "bài mẫu…");
+  t("open: payload không còn model", r.payload.model, undefined);
+}
+{
+  /* `ordre`: đáp án là THỨ TỰ, không có trường riêng. payload giữ bản đã xáo. */
+  const goc = [{ id: "1" }, { id: "2" }, { id: "3" }, { id: "4" }, { id: "5" }];
+  const r = rowsCua({ id: "q6", type: "ordre", prompt: "p", elements: goc });
+  t("ordre: thứ tự đúng vào answer_key",
+    r.answer_key.elements.map((e) => e.id), ["1", "2", "3", "4", "5"]);
+  t("ordre: payload giữ đủ số mảnh", r.payload.elements.length, 5);
+  t("ordre: payload KHÔNG giữ thứ tự đúng",
+    r.payload.elements.map((e) => e.id).join(",") === "1,2,3,4,5", false);
+  t("ordre: xáo ổn định theo id câu",
+    rowsCua({ id: "q6", type: "ordre", prompt: "p", elements: goc })
+      .payload.elements.map((e) => e.id).join(","),
+    r.payload.elements.map((e) => e.id).join(","));
+}
+
+/* Quét tổng: không loại nào để sót trường đáp án trong payload. */
+for (const q of [
+  { id: "a", type: "qcm", answer: 0, options: [] },
+  { id: "b", type: "fill", accepted: "x" },
+  { id: "c", type: "conj", accepted: "x" },
+  { id: "d", type: "vf", answer: 1, justification: "j" },
+  { id: "e", type: "tableau", answers: {}, criteres: [], colonnes: [] },
+  { id: "f", type: "ordre", elements: [{ id: "1" }, { id: "2" }] },
+  { id: "g", type: "open", model: "m" },
+]) {
+  const r = rowsCua(q);
+  const lo = KHONG_DUOC_LO.filter((k) => r.payload[k] !== undefined);
+  t(`${q.type}: payload không lộ trường nào`, lo, []);
+}
 
 console.log(fail ? `\n${pass} đạt, ${fail} hỏng` : `\n${pass} đạt, 0 hỏng`);
 process.exit(fail ? 1 : 0);

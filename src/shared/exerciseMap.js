@@ -11,6 +11,29 @@
  * giao diện vẫn dựng.
  */
 
+/* Xáo có hạt giống, dùng cho câu `ordre`.
+ *
+ * Trùng thuật toán với `seedShuffle` trong shared/questions.js, và CỐ Ý chép
+ * lại chứ không import: giao ước ở đầu file là file này không phụ thuộc gì, để
+ * `check-exercises.mjs` chạy thẳng bằng node.
+ *
+ * Chép mã thường là mở đường cho hai bản trôi khỏi nhau, nhưng ở đây thì không
+ * hại: bản đúng thứ tự nằm ở `answer_key.elements`, còn cái này chỉ cần cho ra
+ * MỘT hoán vị nào đó để payload không tiết lộ đáp án. Hai bên xáo khác nhau
+ * cũng không ai chấm sai. */
+function xaoTheoHat(arr, seedStr) {
+  let sd = 0;
+  for (const c of String(seedStr)) sd = (sd * 31 + c.charCodeAt(0)) >>> 0;
+  sd = sd || 1;
+  const rnd = () => ((sd = (sd * 1103515245 + 12345) >>> 0) / 4294967296);
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(rnd() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
 /* Trường được nâng thành cột thật. Phải khớp lược đồ ở migration 010. */
 export const EX_COLUMNS = [
   "id", "title", "level", "skills", "usageType", "deadline", "timeLimit",
@@ -126,6 +149,34 @@ export function toRows(ex, store) {
         payload[k] = v;
       }
     }
+
+    /* ── ĐÁP ÁN KHÔNG ĐƯỢC Ở LẠI TRONG `payload` ──
+     *
+     * `payload` cấp SELECT cho anon; `answer_key` thì KHÔNG (migration 022).
+     * Vòng lặp trên gom mọi trường lạ vào payload, nên nếu để nguyên thì đáp án
+     * đi thẳng ra chỗ ai cũng đọc được.
+     *
+     * Migration 022 đã dọn một lần. Nhưng hàm này ghi lại payload mỗi lần giáo
+     * viên bấm Lưu, nên nó ĐẶT NGƯỢC đáp án về chỗ cũ — 022 dọn, Builder bày
+     * lại. Đo được: câu tableau mrigyggjafq4jz lộ trọn bộ đáp án qua khoá anon,
+     * và đó chính là câu được sửa gần đây nhất.
+     *
+     * Danh sách trường phải khớp HỆT migration 022. Thiếu một tên ở đây là một
+     * loại câu tiếp tục lộ, và không có gì trên màn hình nói ra. */
+    const answer_key = {};
+    for (const k of ["answer", "accepted", "justification", "answers", "model"]) {
+      if (payload[k] !== undefined) { answer_key[k] = payload[k]; delete payload[k]; }
+    }
+
+    /* `ordre`: đáp án chính là THỨ TỰ của mảng, không có trường riêng để giấu.
+       Client vẫn cần nội dung các mảnh để hiển thị, nên payload giữ elements đã
+       XÁO, còn bản đúng thứ tự nằm ở answer_key — đúng như 022 làm, và `grade`
+       ưu tiên answer_key nên nó chấm theo bản đúng. */
+    if ((q.type === "ordre") && Array.isArray(payload.elements)) {
+      answer_key.elements = payload.elements;
+      payload.elements = xaoTheoHat(payload.elements, String(q.id));
+    }
+
     return {
       id: String(q.id),
       exercise_id: exRow.id,
@@ -133,6 +184,7 @@ export function toRows(ex, store) {
       type: q.type || "fill",
       prompt: q.prompt || "",
       payload,
+      answer_key,
       explanation: q.explanation || null,
       competence: q.competence || null,
       point_gram: q.pointGram || null,
