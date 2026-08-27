@@ -20,6 +20,7 @@ import TeacherDashboard from "./screens/dashboard/TeacherDashboard.jsx";
 import HomeDashboard from "./screens/dashboard/HomeDashboard.jsx";
 import CalendarView from "./screens/calendar/CalendarView.jsx";
 import PESelfEvaluation from "./screens/student/PESelfEvaluation.jsx";
+import { PhanThi } from "./screens/exam/ExamMode.jsx";
 import GrilleEditor from "./screens/teacher/GrilleEditor.jsx";
 import TipsEditor from "./screens/teacher/TipsEditor.jsx";
 
@@ -140,6 +141,51 @@ function GrilleThu() {
       <PESelfEvaluation level="B2" rubric={g} />
     </div>
   </div>;
+}
+
+/* Một phần thi để xem thử.
+ *
+ * Màn thi nằm sau đăng nhập VÀ sau một lượt thi đang mở, nên không có đường nào
+ * khác để nhìn thấy nó. Mà đúng ở đây mới có hai thứ từng hỏng lặng lẽ:
+ *
+ *   · `consigne` là HTML — dựng bằng chữ thuần thì học sinh đọc `<div style=…>`
+ *   · `imageUrl` — với bài đọc hiểu, ảnh thường CHÍNH LÀ ngữ liệu
+ *
+ * Ảnh là data URI, không phải link Supabase: fixture không được phụ thuộc vào
+ * mạng hay vào dữ liệu thật của lớp học. */
+const ANH_MAU =
+  "data:image/svg+xml;utf8," + encodeURIComponent(
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 340">
+       <rect width="600" height="340" fill="#EEF2FF"/>
+       <text x="300" y="150" font-family="sans-serif" font-size="26" font-weight="700"
+             fill="#2563EB" text-anchor="middle">Document de l'exercice</text>
+       <text x="300" y="190" font-family="sans-serif" font-size="15"
+             fill="#6E7280" text-anchor="middle">affiche · ticket · annonce</text>
+     </svg>`);
+
+const PHAN_THI_MAU = {
+  code: "CE", label: "Activité 1 — les musées de Paris", minutes: 45, points: 25,
+  exercise: {
+    id: "xem-thu", title: "Activité 1", level: "B1",
+    consigne: '<div style="text-align: center;"><span style="color: var(--mcf-ink);">'
+      + "Vous êtes en vacances avec vos parents&nbsp;à Paris.</span></div>"
+      + "<div><i>Vous cherchez un musée qui intéresse les adolescents.</i></div>",
+    imageUrl: ANH_MAU, readingText: "", audioUrl: "",
+    questions: [
+      { id: "q1", ord: 0, type: "qcm", prompt: "Quel musée convient le mieux ?",
+        options: ["Palais de la découverte", "Grande Galerie", "Arts et Métiers"] },
+    ],
+  },
+};
+
+function PhanThiThu() {
+  const [ans, setAns] = useState({});
+  return (
+    <div className="mx-auto max-w-4xl py-6">
+      <PhanThi section={PHAN_THI_MAU} attemptId="xem-thu" answers={ans} setAnswers={setAns}
+        onDone={() => {}} onBlur={() => {}} />
+    </div>
+  );
 }
 
 const dig = (o, k) => k.split(".").reduce((x, p) => (x == null ? undefined : x[p]), o);
@@ -395,6 +441,7 @@ function Preview() {
               quả thi thử, không phải từ thanh bên. Đặt ở đây để xem được bố cục
               chia đôi mà không cần đăng nhập và không cần thi thử trước. */}
           <Route path="/professeur/grille" element={<><Controls /><GrilleThu /></>} />
+          <Route path="/etudiant/phan-thi" element={<><Controls /><PhanThiThu /></>} />
           <Route path="/etudiant/auto-evaluation" element={
             <><Controls /><PESelfEvaluation /></>
           } />

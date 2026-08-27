@@ -250,7 +250,10 @@ function AudioGioiHan({ src, attemptId, questionId }) {
 
 /* ─────────────────────── Một phần thi ─────────────────────── */
 
-function PhanThi({ section, attemptId, answers, setAnswers, onDone, onBlur }) {
+/* Xuất tên để `preview.html` dựng được ĐÚNG component này với dữ liệu thật.
+   Màn thi nằm sau đăng nhập và sau một lượt thi đang mở, nên không có đường nào
+   khác để nhìn thấy nó — mà đúng ở đây thì mới có ảnh đề bài và consigne. */
+export function PhanThi({ section, attemptId, answers, setAnswers, onDone, onBlur }) {
   const [conLai, setConLai] = useState(section.minutes * 60);
   const doneRef = useRef(false);
 
