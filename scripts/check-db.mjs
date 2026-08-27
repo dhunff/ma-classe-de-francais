@@ -176,18 +176,30 @@ const CA_GRILLE = [
  * `is_teacher()`. Chỉ kiểm một tầng thì tầng kia hỏng lúc nào không biết. */
 {
   const { status, body } = await rpc("get_answer_keys", { p_exercise_ids: ["bat-ky"] });
-  if (body?.code === "PGRST202") {
-    ket(false, "hàm get_answer_keys tồn tại (migration 040)",
-      "chưa có hàm, HOẶC PostgREST chưa nạp lại lược đồ\n"
-      + "      → chạy: notify pgrst, 'reload schema';");
-  } else {
-    ket(true, "hàm get_answer_keys tồn tại (migration 040)");
-    /* 42501 = quyền EXECUTE đã thu (đúng). 200 + mảng rỗng = quyền còn nhưng
-       `is_teacher()` chặn (cũng an toàn, nhưng tầng ngoài đã hở). */
-    ket(status !== 200, "anon KHÔNG gọi được get_answer_keys",
-      status === 200 && Array.isArray(body) && body.length === 0
-        ? "gọi được nhưng trả 0 dòng — thân hàm chặn, còn quyền EXECUTE thì chưa thu"
-        : `HTTP ${status} · trả về ${JSON.stringify(body)?.slice(0, 80)}`);
+
+  /* Bộ kiểm này KHÔNG khẳng định được hàm có tồn tại hay không, và đó là hệ quả
+     tất yếu của thiết kế chứ không phải thiếu sót:
+
+       hàm chưa tạo            → PGRST202
+       hàm có, anon bị thu quyền → PGRST202 (PostgREST lọc theo quyền của vai)
+
+     Hai trạng thái ấy giống hệt nhau từ phía ngoài. Bản đầu của ca này đòi
+     "hàm phải tồn tại", tức là đòi khoá anon nhìn thấy một hàm mà ta vừa cố ý
+     giấu — nó không thể xanh, dù mọi thứ đều đúng.
+
+     Việc khẳng định hàm tồn tại + đúng SECURITY DEFINER + đúng quyền do khối tự
+     đối chiếu của chính migration 040 làm, nơi đọc được pg_proc.
+
+     Ở đây chỉ kiểm điều DUY NHẤT anon quan sát được, và cũng là điều quan
+     trọng nhất: người lạ không lấy được đáp án. */
+  const anToan = status !== 200
+    || (Array.isArray(body) && body.length === 0);
+  ket(anToan, "anon KHÔNG lấy được đáp án qua get_answer_keys",
+    `HTTP ${status} · trả về ${JSON.stringify(body)?.slice(0, 100)}`);
+
+  if (status === 200 && Array.isArray(body) && body.length === 0) {
+    console.log("      ⓘ gọi được nhưng trả 0 dòng: is_teacher() chặn, còn quyền"
+      + " EXECUTE thì chưa thu khỏi anon — xem 040.");
   }
 }
 

@@ -67,8 +67,21 @@ update public.questions
    and answer_key -> 'answers' ->> 'mrih0l77jiug8j_mrigyggjk7utu3' is null;
 
 -- ─────────────────── Tự đối chiếu ───────────────────
+--
+-- ĐÂY LÀ MIGRATION DỮ LIỆU, nên khối kiểm CỐ Ý nằm cùng transaction: kiểm hỏng
+-- thì cuộn ngược tất cả, vì áp dụng nửa vời lên dữ liệu thật còn tệ hơn không
+-- áp dụng. (Với migration chỉ tạo CẤU TRÚC thì ngược lại — xem 035 và 036.)
+--
+-- Đổi lại, chính khối kiểm phải đơn giản tới mức không thể là thứ hỏng. Bản đầu
+-- của file này dùng một CTE lồng `jsonb_array_elements` với truy vấn con tương
+-- quan bên trong `count(*) filter`, nó lỗi, và cả migration cuộn ngược — người
+-- vận hành báo đã chạy, dữ liệu thì y nguyên. Đúng cái bẫy 035 đã dạy.
 do $$
-declare con_lo int; so_o int; so_dap_an int;
+declare
+  con_lo int;
+  j jsonb;
+  so_o int;
+  so_dap_an int;
 begin
   select count(*) into con_lo from public.questions
    where payload ?| array['answer', 'accepted', 'justification', 'answers', 'model'];
@@ -76,24 +89,24 @@ begin
     raise exception 'còn % câu để đáp án trong payload', con_lo;
   end if;
 
-  with q as (select payload || answer_key as j from public.questions where id = 'mrigyggjafq4jz'),
-       o as (
-         select (cr ->> 'id') || '_' || (co ->> 'id') as khoa
-           from q,
-                jsonb_array_elements(q.j -> 'criteres') cr,
-                jsonb_array_elements(q.j -> 'colonnes') co
-       )
-  select count(*),
-         count(*) filter (where coalesce((select (payload || answer_key) -> 'answers' ->> o.khoa
-                                            from public.questions
-                                           where id = 'mrigyggjafq4jz'), '') <> '')
-    into so_o, so_dap_an
-    from o;
+  -- Lấy MỘT object đã gộp rồi mới đếm. Đọc một lần, đếm trên biến — không truy
+  -- vấn lại bảng ở giữa phép đếm.
+  select payload || answer_key into j from public.questions where id = 'mrigyggjafq4jz';
+  if j is null then
+    raise exception 'không tìm thấy câu mrigyggjafq4jz';
+  end if;
+
+  select count(*) into so_o
+    from jsonb_array_elements(j -> 'criteres') cr,
+         jsonb_array_elements(j -> 'colonnes') co;
+
+  select count(*) into so_dap_an
+    from jsonb_array_elements(j -> 'criteres') cr,
+         jsonb_array_elements(j -> 'colonnes') co
+   where coalesce(j -> 'answers' ->> ((cr ->> 'id') || '_' || (co ->> 'id')), '') <> '';
 
   if so_o <> 16 then raise exception 'mong 16 ô, thấy %', so_o; end if;
-  if so_dap_an <> 16 then
-    raise exception 'mới có %/16 ô có đáp án', so_dap_an;
-  end if;
+  if so_dap_an <> 16 then raise exception 'mới có %/16 ô có đáp án', so_dap_an; end if;
 
   raise notice 'xong — không câu nào còn lộ đáp án, bảng đủ 16/16 ô';
 end $$;
