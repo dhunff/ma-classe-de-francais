@@ -213,3 +213,52 @@ Nó kiểm năm thứ mà **không ràng buộc nào ở database bắt buộc**
 `check:db` **không** kiểm được những thứ này: `answers` bị RLS lọc theo
 `auth.uid()`, nên khoá anon thấy mảng rỗng — đúng như phải thế. Đây là lý do
 tồn tại của một file SQL chạy tay bên cạnh bộ kiểm tự động.
+
+---
+
+## Trước khi chạy BẤT KỲ migration nào: kiểm mình đang ở database nào
+
+```sql
+select current_database() as db,
+       (select count(*) from public.questions) as tong_cau,
+       (select count(*) from public.questions where point_gram is not null) as da_gan;
+```
+
+Rồi đối chiếu với số đo từ ngoài:
+
+```bash
+npm run check:db
+```
+
+### Vì sao bước này bắt buộc
+
+Ngày 27/08, ba migration liên tiếp "chạy xong" mà dữ liệu không đổi. Supabase
+báo `142 rows`, khối tự kiểm in ra con số ĐÚNG, người vận hành thấy mọi thứ
+bình thường — còn ứng dụng thì y nguyên.
+
+Nguyên nhân: **SQL Editor nối tới một database khác với ứng dụng.** Cùng lúc
+đó, câu đếm trong editor cho `da_gan = 374` còn đo từ ngoài cho `232`. Cả hai
+số đều đúng; chúng chỉ ở hai nơi.
+
+Nút **`Database ▾`** cạnh nút Run là thứ chọn nơi chạy. Supabase có tính năng
+branching, và một nhánh preview trông giống hệt production trong trình soạn.
+
+Đây là lần thứ HAI dự án dính đúng loại lỗi này — lần đầu là migration 001 chạy
+nhầm sang project `psnrkpccevwetznreuqz` (xem đầu file). Lần đầu là nhầm
+PROJECT, lần này là nhầm DATABASE trong cùng project. Triệu chứng giống hệt:
+lệnh thành công, dữ liệu không đổi, và không ai sai cả.
+
+**"Lệnh chạy xong" không bao giờ là bằng chứng.** Bằng chứng là đo lại từ phía
+ứng dụng.
+
+### Lấy nội dung file migration (Windows)
+
+KHÔNG dùng `cat` trong PowerShell — nó đọc UTF-8 bằng bảng mã ANSI và tiếng
+Việt thành `bÃ i táº­p trÃ¹ng láº·p`. Copy từ màn hình đó là dán SQL đã hỏng.
+
+```powershell
+Get-Content -Raw -Encoding UTF8 supabase\migrations\042_point_gram_traduction.sql | Set-Clipboard
+```
+
+Đọc đúng mã và vào thẳng clipboard — không qua hiển thị, không chọn tay, không
+sót dòng.

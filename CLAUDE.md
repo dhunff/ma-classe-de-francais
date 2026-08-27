@@ -210,20 +210,33 @@ Hai bài học đi kèm, đắt hơn bản thân lỗi:
 **Nút bị `disabled` là ngõ cụt.** Bấm, không có gì xảy ra, không ai nói vì sao.
 Thà để nút bấm được rồi chỉ ra chỗ còn thiếu — tô viền, cuộn tới, gọi tên.
 
-**Khối `do $$ … $$` ở cuối file migration đã hai lần nuốt mất phần `update`
-đứng trước nó.** Lần đầu khối đó có `raise exception` — giải thích được: cuộn
-ngược. Lần sau chỉ có `raise notice`, và vẫn thế: khối in ra con số ĐÚNG (0 câu
-lộ, 16/16 ô), rồi thay đổi không ở lại. Gỡ khối `do` ra, dán mấy câu trần vào
-cùng trình soạn ấy: ăn ngay.
+**"Lệnh chạy xong" KHÔNG BAO GIỜ là bằng chứng dữ liệu đã đổi.** Đo lại từ phía
+ứng dụng: `npm run check:db`, hoặc gọi Edge Function `grade` và xem `max`.
 
-**Tôi không biết cơ chế** và không viết một lời giải thích nghe có lý mà chưa
-kiểm được. Điều dùng được: với migration DỮ LIỆU, kết thúc bằng một câu `select`
-đọc lại trạng thái, đừng kết thúc bằng khối `do`. Kết quả `select` hiện thành
-bảng ngay dưới trình soạn và không thể can thiệp vào các câu ghi ở trên.
+Ngày 27/08, ba migration liên tiếp báo thành công — Supabase in `142 rows`,
+khối tự kiểm in ra con số đúng — mà ứng dụng không đổi gì. Nguyên nhân:
+**SQL Editor nối tới một database khác với ứng dụng** (nút `Database ▾` cạnh
+nút Run; Supabase có branching). Cùng lúc, editor đếm được `374` còn đo từ
+ngoài được `232`. Cả hai số đều đúng, chỉ ở hai nơi. Xem RUNBOOK.
 
-Hệ quả kèm theo: **"lệnh chạy xong" không phải bằng chứng dữ liệu đã đổi.** Đo
-lại từ ngoài — `npm run check:db`, hoặc gọi Edge Function `grade` và xem `max`.
-Hai lần liền người vận hành báo đã chạy, và cả hai lần dữ liệu y nguyên.
+Lần thứ HAI dự án dính loại lỗi này — lần đầu là migration 001 chạy nhầm sang
+project khác. Triệu chứng giống hệt: lệnh thành công, dữ liệu y nguyên, không
+ai sai cả.
+
+**Bài học về cách tôi đã tìm sai.** Trước khi đo, tôi đổ lỗi lần lượt cho: khối
+`do $$` ở cuối file, ký tự `« »`, kích thước file, rồi mã hoá PowerShell. Bốn
+giả thuyết, đều nghe có lý, đều sai — và mỗi lần tôi lại viết lại file theo giả
+thuyết đó. Một câu truy vấn `select current_database(), count(*)` chấm dứt tất
+cả trong một lượt. **Khi hai bên nhìn thấy hai sự thật khác nhau, hãy hỏi xem
+có phải đang nhìn hai thứ khác nhau không — trước khi sửa bất cứ dòng mã nào.**
+
+**`cat` trong PowerShell làm hỏng file UTF-8 khi ĐỌC**, không chỉ khi ghi:
+tiếng Việt ra `bÃ i táº­p trÃ¹ng láº·p`, và copy từ màn hình đó là dán SQL hỏng.
+Dùng `Get-Content -Raw -Encoding UTF8 <file> | Set-Clipboard`.
+
+**Migration nên có ĐÚNG MỘT câu lệnh** khi làm được. Không phải vì đã chứng
+minh nhiều câu thì hỏng — mà vì một câu thì loại sạch cả một lớp nghi ngờ
+(chỉ-chạy-câu-dưới-con-trỏ, cuộn ngược giữa chừng, dán thiếu) mà không tốn gì.
 
 **DDL và phép kiểm không được nằm chung một transaction.** SQL Editor chạy
 nguyên file trong một transaction, nên `raise exception` ở khối tự kiểm cuối
