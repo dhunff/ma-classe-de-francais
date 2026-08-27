@@ -188,3 +188,28 @@ thang hiện hướng dẫn chạy migration. Nghĩa là deploy mã trước mig
 đề vẫn chấm bằng thang chuẩn — không đề nào vỡ. Không có bước này thì chỉ cần
 nhắc tới một cột chưa tồn tại là mất luôn cả danh sách đề thi, vì PostgREST huỷ
 cả câu chứ không trả về ít cột hơn.
+
+---
+
+## Kiểm bản tự chấm — 037
+
+```
+037_self_assessment_check.sql
+```
+
+Chỉ đọc, chạy lại bao nhiêu lần cũng được. Dán vào SQL Editor sau mỗi đợt học
+sinh tự chấm, hoặc bất cứ khi nào nghi ngờ.
+
+Nó kiểm năm thứ mà **không ràng buộc nào ở database bắt buộc**:
+
+| Kiểm | Hỏng thì sao |
+|---|---|
+| `self_score` = tổng các tiêu chí | Con số học sinh nhìn thấy không phải con số họ tạo ra |
+| Không tiêu chí nào `note` NULL | Lưu lúc chưa chấm xong |
+| Điểm nằm trong 0..`max_score` | — |
+| Đủ số tiêu chí của thang | **Âm thầm nhất**: tổng vẫn đúng, màn hình vẫn đẹp, học sinh chấm thiếu mà không ai nói |
+| Không có khoá lạ | Giáo viên sửa thang sau khi học sinh đã chấm; điểm cũ neo vào tiêu chí không còn tồn tại |
+
+`check:db` **không** kiểm được những thứ này: `answers` bị RLS lọc theo
+`auth.uid()`, nên khoá anon thấy mảng rỗng — đúng như phải thế. Đây là lý do
+tồn tại của một file SQL chạy tay bên cạnh bộ kiểm tự động.
