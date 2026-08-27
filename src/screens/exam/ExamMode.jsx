@@ -566,7 +566,13 @@ function KetQua({ sections, blurCount, onLai }) {
                   yeu ? "border-danger bg-danger-soft" : "border-line bg-surface"}`}>
               <div className="min-w-0">
                 <div className="text-sm font-bold text-ink">{s.code} · {s.label}</div>
-                <div className="truncate text-xs text-soft">{s.exercise.title}</div>
+                {/* Lượt thi lưu TRƯỚC migration 044 mang `exercise`, lượt sau mang
+                    `baiLabel`. Đọc cả hai: dữ liệu cũ không tự đổi hình khi mã
+                    đổi, và một lượt thi cũ mở ra làm sập cả trang là cái giá
+                    quá đắt cho một dòng chữ phụ. */}
+                <div className="truncate text-xs text-soft">
+                  {s.baiLabel ?? s.exercise?.title ?? ""}
+                </div>
                 {yeu && (
                   <div className="mt-1 text-xs font-bold text-danger">
                     Dưới {NGUONG_PHAN}/25 — riêng phần này đã đủ làm trượt cả bài.
@@ -719,7 +725,12 @@ export default function ExamMode() {
 
     const ghi = {
       code: k.code, points: k.points, exerciseId: k.exercises[0]?.id,
-      label: k.exercises.map((e) => e.title).join(" · "),
+      /* Hai nhãn khác nhau, đừng gộp làm một: `label` là tên kỹ năng
+         (« Compréhension de l'oral »), `baiLabel` là tên các bài đã làm. Màn
+         kết quả hiện cả hai, dòng trên dòng dưới. Bản trước đặt tên bài vào
+         `label` và làm mất tên kỹ năng khỏi thanh tiêu đề lúc đang thi. */
+      label: k.label ?? k.code,
+      baiLabel: k.exercises.map((e) => e.title).join(" · "),
       /* tong === 0 nghĩa là phần này không có câu nào máy chấm được (Production
          écrite chỉ có bài viết) → để `null`, tức "chờ chấm", chứ không phải 0. */
       score: tong > 0 ? sectionScore(dung, tong, k.points) : null,

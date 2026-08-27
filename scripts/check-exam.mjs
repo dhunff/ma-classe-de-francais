@@ -8,6 +8,7 @@
 
 import { EXAM_STRUCTURE, sectionScore, verdict, ghiPhan, gomTheoKyNang, NGUONG_PHAN }
   from "../src/screens/exam/examPaper.js";
+import { readFileSync } from "node:fs";
 
 let pass = 0, fail = 0;
 const t = (ten, got, want) => {
@@ -197,6 +198,34 @@ const dong = (code, exId, ord, minutes = 25, points = 25) =>
 
 t("không có phần thi nào thì không có khối nào", gomTheoKyNang([]).length, 0);
 t("đầu vào null không làm nổ", gomTheoKyNang(null).length, 0);
+
+/* ── nhãn kỹ năng ──
+ *
+ * `exam_sections` chỉ lưu « CO ». Nếu khối không mang theo tên đầy đủ thì
+ * thanh tiêu đề lúc đang thi trống trơn, và không có gì báo — chỉ là một
+ * dòng chữ không hiện ra. */
+{
+  const khoi = gomTheoKyNang([dong("CO", "co1", 0), dong("CE", "ce1", 1, 45)]);
+  t("khối mang tên đầy đủ của kỹ năng",
+    khoi.map((k) => k.label), ["Compréhension de l'oral", "Compréhension des écrits"]);
+  t("code lạ không làm nhãn thành undefined",
+    gomTheoKyNang([{ code: "XX", ord: 0 }])[0].label, "XX");
+}
+
+/* ── màn kết quả không đọc thẳng `.exercise.` ──
+ *
+ * Đã sập thật trên production: bản ghi kết quả bỏ trường `exercise` khi một
+ * phần có nhiều bài, nhưng JSX vẫn đọc `s.exercise.title` → cả trang trắng
+ * với « Cannot read properties of undefined ». Một dòng chữ phụ làm mất
+ * luôn kết quả cả buổi thi.
+ *
+ * Kiểm bằng văn bản vì `check:exam` chạy node và không dựng được JSX. Thô,
+ * nhưng bắt đúng lớp lỗi đã xảy ra. */
+{
+  const src = readFileSync(new URL("../src/screens/exam/ExamMode.jsx", import.meta.url), "utf8");
+  const xau = src.split(".exercise.").length - 1;
+  t("ExamMode không đọc .exercise. mà thiếu ?.", xau, 0);
+}
 
 console.log(fail ? `\n${pass} đạt, ${fail} hỏng` : `\n${pass} đạt, 0 hỏng`);
 process.exit(fail ? 1 : 0);

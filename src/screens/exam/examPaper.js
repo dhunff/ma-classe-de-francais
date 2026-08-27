@@ -44,6 +44,18 @@ export const EXAM_STRUCTURE = {
   ],
 };
 
+/* Tên đầy đủ của một kỹ năng, tra theo `code`.
+ *
+ * `exam_sections` chỉ lưu `code` — hai chữ « CO » không phải thứ để hiện cho
+ * thí sinh đọc giữa buổi thi. Bảng này dựng từ chính EXAM_STRUCTURE nên không
+ * có nguồn thứ hai để lệch: sửa nhãn ở trên là mọi chỗ đổi theo.
+ *
+ * Gộp cả bốn trình độ vào một bản đồ được, vì nhãn của cùng một `code` giống
+ * hệt nhau ở mọi trình độ — chỉ `minutes` khác. */
+export const NHAN_KY_NANG = Object.fromEntries(
+  Object.values(EXAM_STRUCTURE).flat().map((p) => [p.code, p.label]),
+);
+
 export const NGUONG_TONG = 50;      // /100 toàn bài
 export const NGUONG_PHAN = 5;       // /25 mỗi phần — điều kiện dễ trượt hơn
 
@@ -103,6 +115,7 @@ export function gomTheoKyNang(sections) {
         /* Thời lượng và điểm lấy từ dòng ĐẦU TIÊN của khối, không cộng dồn:
            chúng là con số của cả phần thi, không phải của từng bài. Cộng dồn
            thì đề CO ba bài thành 75 điểm. */
+        label: NHAN_KY_NANG[s.code] ?? s.code,
         minutes: s.minutes,
         points: s.points,
         ord: s.ord ?? 0,
