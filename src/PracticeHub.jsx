@@ -5,7 +5,7 @@ import {
   RotateCcw, CheckCircle2, XCircle, Plus, ChevronLeft, PartyPopper, Trash2, Pencil, Copy, MoreVertical, Folder, FolderPlus, Image as ImageIcon, ChevronDown, Lightbulb, FileCheck,
 } from "lucide-react";
 import { C, S, QTYPES, VF_OPTS } from "./shared/tokens.js";
-import { uid, fillOk, fillAccepted, vfOk, stripHtml, autoQ, tableauOk, tableauCells, ordreOk, getUnansweredQuestionsCount } from "./shared/questions.js";
+import { uid, fillOk, fillAccepted, vfOk, stripHtml, autoQ, tableauOk, tableauCells, diemCau, ordreOk, getUnansweredQuestionsCount } from "./shared/questions.js";
 import { load, save } from "./shared/storage.js";
 import { loadPractice, saveExercise, deleteExercise, patchExerciseMeta, clearFolder } from "./shared/exerciseStore.js";
 import { exSkills } from "./shared/exercises.js";
@@ -1063,7 +1063,12 @@ function PracticeWorkspace({ ex, back, onFinish }) {
     gradedRef.current = false; setGraded(false); setAnswers({}); setRemote(null);
   };
 
-  const score = graded ? autos.reduce((n, q) => n + (isGood(q) ? 1 : 0), 0) : 0;
+  /* Điểm hiển thị phải cộng theo ĐƠN VỊ, không theo số câu: một bảng OUI/NON
+     đáng bằng số ô của nó ở máy chủ, nên cộng "mỗi câu 1 điểm" ở đây sẽ ra một
+     con số khác con số đã lưu. Xem diemCau() trong shared/questions.js. */
+  const score = graded
+    ? autos.reduce((n, q) => n + diemCau(q, answersRef.current[q.id], ex).dung, 0)
+    : 0;
   const perfect = graded && autos.length > 0 && score === autos.length;
   const allAnswered = ex.questions.every((q) =>
     q.type === "qcm" ? answers[q.id] != null

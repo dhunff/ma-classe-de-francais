@@ -30,7 +30,7 @@
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 // @ts-ignore — JS thuần, cố ý không có khai báo kiểu
-import { fillOk, vfOk, ordreOk, tableauOk, autoQ, isQuestionAnswered }
+import { fillOk, vfOk, ordreOk, tableauOk, autoQ, diemCau, isQuestionAnswered }
   from "../_shared/questions.js";
 
 /* CORS dùng chung — xem _shared/cors.ts. Bản khai tại chỗ trước đây thiếu
@@ -125,8 +125,18 @@ Deno.serve(async (req) => {
       continue;
     }
 
-    tong++;
-    if (ok) dung++;
+    /* Một câu KHÔNG phải luôn đáng một điểm.
+     *
+     * Bảng OUI/NON 4×4 là mười sáu quyết định độc lập; tính nó bằng một đơn vị
+     * nhị phân nghĩa là sai một ô mất trắng cả mười sáu. Học sinh đúng 15/16
+     * nhận 0 — và với bài chỉ có một bảng, đó là 0/25 cho cả phần thi.
+     *
+     * `diemCau` trả `{ dung, tong }`: mọi loại câu là 1 đơn vị, riêng bảng đáng
+     * đúng số ô. Cộng dồn số nguyên nên `dung`/`tong` vẫn là số nguyên, và
+     * `sectionScore` quy về thang 25 y như cũ. */
+    const { dung: d, tong: n } = diemCau(q, answers[row.id], exercise);
+    tong += n;
+    dung += d;
 
     /* CÓ THỬ LÀM hay không quyết định việc lộ đáp án.
      *

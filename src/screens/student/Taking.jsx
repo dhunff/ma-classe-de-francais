@@ -4,7 +4,7 @@ import { load, save, del } from "../../shared/storage.js";
 import { loadSubmissions, saveSubmission } from "../../shared/submissions.js";
 import { useT } from "../../shared/i18n.jsx";
 import { SKILLS, fmtDate, isLate, exSkills, assignedTo, totalScore } from "../../shared/exercises.js";
-import { uid, norm, stripHtml, wordCount, vfOk, fillAccepted, fillOk, autoQ, ordreOk, tableauCells, tableauOk, isQuestionAnswered, getUnansweredQuestionsCount } from "../../shared/questions.js";
+import { uid, norm, stripHtml, wordCount, vfOk, fillAccepted, fillOk, autoQ, ordreOk, tableauCells, tableauOk, diemCau, isQuestionAnswered, getUnansweredQuestionsCount } from "../../shared/questions.js";
 import { AVA_COLORS, avaColor, fmtDateFR, fmtDuration, targetedAccounts, fileNameFromUrl, formatLastSeen } from "../../shared/display.js";
 import { FloatingLayer, KebabMenu } from "../../shared/ui.jsx";
 import { PROFILE_FIELDS, LEVELS_PROFILE, GOALS_PROFILE, emptyProfile, calculateProfileCompletion, validateProfile } from "../../shared/profile.js";
@@ -66,15 +66,17 @@ function Taking({ ex, name, setSubmissions, done }) {
   const autoSubmit = async () => {
     const a = answersRef.current;
     const autos = ex.questions.filter(autoQ);
-    const autoScore = autos.reduce((n, q) =>
-      n + (q.type === "qcm" ? (a[q.id] === q.answer ? 1 : 0)
-        : q.type === "vf" ? (vfOk(q, a[q.id]) ? 1 : 0)
-        : q.type === "tableau" ? (tableauOk(q, a[q.id]) ? 1 : 0)
-        : q.type === "ordre" ? (ordreOk(q, a[q.id]) ? 1 : 0)
-        : (fillOk(q, a[q.id]) ? 1 : 0)), 0);
+    /* Cộng qua `diemCau` để khớp Edge Function `grade`. Tự cộng riêng ở đây là
+       mở đường cho bài được giao và bài thi chấm cùng một câu ra hai điểm khác
+       nhau — và bảng OUI/NON đúng là loại câu làm chuyện đó xảy ra: 1 đơn vị ở
+       một bên, 16 ở bên kia. */
+    const diem = autos.reduce((acc, q) => {
+      const r = diemCau(q, a[q.id], ex);
+      return { dung: acc.dung + r.dung, tong: acc.tong + r.tong };
+    }, { dung: 0, tong: 0 });
     const sub = {
       id: uid(), exerciseId: ex.id, student: name, answers: a,
-      autoScore, autoMax: autos.length, openMarks: {}, qComments: {},
+      autoScore: diem.dung, autoMax: diem.tong, openMarks: {}, qComments: {},
       late: isLate(ex), at: Date.now(), comment: "", graded: false, timedOut: true,
       durationMs: Date.now() - startedAtRef.current,
     };
@@ -110,16 +112,15 @@ function Taking({ ex, name, setSubmissions, done }) {
   const submit = async () => {
     setSaving(true); setErr("");
     const autos = ex.questions.filter(autoQ);
-    const autoScore = autos.reduce((n, q) =>
-      n + (q.type === "qcm" ? (answers[q.id] === q.answer ? 1 : 0)
-        : q.type === "vf" ? (vfOk(q, answers[q.id]) ? 1 : 0)
-        : q.type === "tableau" ? (tableauOk(q, answers[q.id]) ? 1 : 0)
-        : q.type === "ordre" ? (ordreOk(q, answers[q.id]) ? 1 : 0)
-        : (fillOk(q, answers[q.id]) ? 1 : 0)), 0);
+    /* Cùng phép cộng với `autoSubmit` ở trên và với Edge Function `grade`. */
+    const diem = autos.reduce((acc, q) => {
+      const r = diemCau(q, answers[q.id], ex);
+      return { dung: acc.dung + r.dung, tong: acc.tong + r.tong };
+    }, { dung: 0, tong: 0 });
     const sub = {
       id: uid(), exerciseId: ex.id, student: name, answers,
       durationMs: Date.now() - startedAtRef.current,
-      autoScore, autoMax: autos.length, openMarks: {}, qComments: {},
+      autoScore: diem.dung, autoMax: diem.tong, openMarks: {}, qComments: {},
       late: isLate(ex), at: Date.now(), comment: "", graded: false,
     };
     const { ok } = await saveSubmission(sub);

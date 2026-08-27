@@ -195,6 +195,17 @@ for (const bang of ["attempts", "answers", "submissions"]) {
       : `thấy ${body?.length} dòng — RLS đang để lộ bài làm của học sinh`);
 }
 
+/* Không kiểm đáp án của bảng OUI/NON ở đây được.
+ *
+ * Từ migration 022, đáp án nằm ở `questions.answer_key` — cột KHÔNG cấp SELECT
+ * cho anon, đúng như phải thế. Bản đầu của ca này đọc `payload.answers` và báo
+ * "thiếu 16/16 ô" cho một bảng hoàn toàn lành lặn: đáp án của nó đã chuyển sang
+ * answer_key từ lâu.
+ *
+ * Một bộ kiểm không nhìn thấy dữ liệu mà vẫn phán xét thì chỉ sinh ra báo động
+ * giả. Phép kiểm ấy chuyển sang 038_tableau_answers_check.sql, chạy trong
+ * database nơi đọc được cả hai cột. */
+
 /* `select=*` trên questions cũng phải hỏng, vì PostgREST khai triển `*` thành
    mọi cột kể cả cột bị thu quyền. Đây là lý do exerciseStore phải liệt kê cột,
    và `check:store` canh chỗ đó trong mã nguồn. Ca này canh ở đầu database. */
