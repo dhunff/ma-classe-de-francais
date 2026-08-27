@@ -66,32 +66,27 @@ update public.questions
  where id = 'mrigyggjafq4jz'
    and coalesce(answer_key -> 'answers' ->> 'mrih0l77jiug8j_mrigyggjk7utu3', '') = '';
 
--- ── 3. Báo cáo trạng thái ──
+-- ── 3. Đọc lại kết quả ──
 --
--- KHÔNG `raise exception`. File này chỉ cập nhật; việc phán xét để 041 làm.
--- Ở đây chỉ nói ra cái gì đã đổi, để nhìn một dòng là biết.
-do $$
-declare con_lo int; so_o int; so_dap_an int; j jsonb;
-begin
-  select count(*) into con_lo from public.questions
-   where payload ?| array['answer', 'accepted', 'justification', 'answers', 'model'];
-  raise notice 'câu còn để đáp án trong payload: %  (phải là 0)', con_lo;
-
-  select payload || answer_key into j from public.questions where id = 'mrigyggjafq4jz';
-  if j is null then
-    raise notice 'KHÔNG tìm thấy câu mrigyggjafq4jz — bảng CE đã bị xoá hay đổi id?';
-    return;
-  end if;
-
-  select count(*) into so_o
-    from jsonb_array_elements(j -> 'criteres') cr,
-         jsonb_array_elements(j -> 'colonnes') co;
-
-  select count(*) into so_dap_an
-    from jsonb_array_elements(j -> 'criteres') cr,
-         jsonb_array_elements(j -> 'colonnes') co
-   where coalesce(j -> 'answers' ->> ((cr ->> 'id') || '_' || (co ->> 'id')), '') <> '';
-
-  raise notice 'bảng CE: %/% ô có đáp án  (phải là 16/16)', so_dap_an, so_o;
-  raise notice '→ hai dòng trên đúng thì chạy tiếp 041 để kiểm kỹ.';
-end $$;
+-- ══ VÌ SAO LÀ `select`, KHÔNG PHẢI KHỐI `do` ══
+--
+-- File này đã chạy HAI LẦN mà dữ liệu không đổi, và cả hai lần đều có một khối
+-- `do $$ ... $$` ở cuối — lần đầu có `raise exception`, lần sau chỉ có
+-- `raise notice`. Cả hai lần khối đó in ra con số ĐÚNG (0 câu lộ, 16/16 ô), rồi
+-- thay đổi không ở lại.
+--
+-- Gỡ khối `do` ra, dán ba câu trần vào cùng một trình soạn ấy: ăn ngay.
+--
+-- Tôi KHÔNG biết cơ chế. Không phải `raise exception` (bản thứ hai không có),
+-- không phải lỗi SQL (nó tính ra số đúng). Nên không viết một lời giải thích
+-- nghe có lý mà chưa kiểm được — chỉ ghi lại điều quan sát được, và tránh cấu
+-- trúc đã hỏng hai lần.
+--
+-- `select` thì không có gì để nghi: kết quả hiện thành bảng ngay dưới trình
+-- soạn, và một câu đọc không thể can thiệp vào hai câu ghi ở trên.
+select id,
+       payload ? 'answers'                                            as payload_con_dap_an,
+       (select count(*) from jsonb_object_keys(answer_key -> 'answers')) as so_o_co_dap_an
+  from public.questions
+ where id = 'mrigyggjafq4jz';
+-- Mong đợi: payload_con_dap_an = false · so_o_co_dap_an = 16

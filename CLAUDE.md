@@ -210,6 +210,21 @@ Hai bài học đi kèm, đắt hơn bản thân lỗi:
 **Nút bị `disabled` là ngõ cụt.** Bấm, không có gì xảy ra, không ai nói vì sao.
 Thà để nút bấm được rồi chỉ ra chỗ còn thiếu — tô viền, cuộn tới, gọi tên.
 
+**Khối `do $$ … $$` ở cuối file migration đã hai lần nuốt mất phần `update`
+đứng trước nó.** Lần đầu khối đó có `raise exception` — giải thích được: cuộn
+ngược. Lần sau chỉ có `raise notice`, và vẫn thế: khối in ra con số ĐÚNG (0 câu
+lộ, 16/16 ô), rồi thay đổi không ở lại. Gỡ khối `do` ra, dán mấy câu trần vào
+cùng trình soạn ấy: ăn ngay.
+
+**Tôi không biết cơ chế** và không viết một lời giải thích nghe có lý mà chưa
+kiểm được. Điều dùng được: với migration DỮ LIỆU, kết thúc bằng một câu `select`
+đọc lại trạng thái, đừng kết thúc bằng khối `do`. Kết quả `select` hiện thành
+bảng ngay dưới trình soạn và không thể can thiệp vào các câu ghi ở trên.
+
+Hệ quả kèm theo: **"lệnh chạy xong" không phải bằng chứng dữ liệu đã đổi.** Đo
+lại từ ngoài — `npm run check:db`, hoặc gọi Edge Function `grade` và xem `max`.
+Hai lần liền người vận hành báo đã chạy, và cả hai lần dữ liệu y nguyên.
+
 **DDL và phép kiểm không được nằm chung một transaction.** SQL Editor chạy
 nguyên file trong một transaction, nên `raise exception` ở khối tự kiểm cuối
 file cuộn ngược luôn `alter table` ở đầu file. Bản đầu của 035 dính đúng thế:
