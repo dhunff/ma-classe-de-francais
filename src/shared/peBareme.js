@@ -10,14 +10,23 @@
  * lại phải chạy qua bộ kiểm thang điểm, và một bộ kiểm hay báo động vì lý do
  * không liên quan là bộ kiểm người ta bắt đầu bỏ qua.
  *
- * ══ VÌ SAO CHỈ CÓ B1 VÀ B2 ══
+ * ══ A1 / A2 CŨNG CÓ MỐC, VÀ VÌ SAO ĐỔI Ý ══
  *
- * Hai trình độ hệ thống nhắm tới, và là hai bản bám sát grille chính thức. A1
- * và A2 trong `delfGrille.js` đã tự nhận là bản PHỎNG THEO; viết mốc chi tiết
- * cho một thang phỏng theo là cho nó một vẻ chính xác mà nó không có.
+ * Bản đầu cố ý bỏ trống A1/A2: thang hai trình độ ấy trong `delfGrille.js` tự
+ * nhận là PHỎNG THEO, và viết mốc chi tiết cho một thang phỏng theo là cho nó
+ * một vẻ chính xác mà nó không có.
  *
- * Tiêu chí không có mốc thì giao diện lùi về dùng `aide` của grille. Đó là lối
- * lùi có chủ ý, vì thang do giáo viên tự soạn cũng sẽ không có mốc.
+ * Lý do đó không còn đứng vững. Màn tự chấm nay hiện thẳng dòng « Thang A1 ở
+ * đây là bản phỏng theo, quy về 25 điểm » (cờ `adapted` → `official: false`),
+ * nên người học không thể nhầm nó với thang chính thức. Khi lời cảnh báo đã ở
+ * đúng chỗ, giữ mốc trống chỉ còn là bỏ mặc người học A1 tự đoán "3/5 nghĩa là
+ * gì" — mà đó chính là nhóm cần được dắt tay nhất.
+ *
+ * Chữ trong mốc A1/A2 cố ý viết ĐƠN GIẢN HƠN B1/B2: không nhắc tên thuật ngữ
+ * (registre, connecteur, subjonctif) mà mô tả thẳng việc phải nhìn vào bài.
+ *
+ * Tiêu chí vẫn có thể không có mốc — thang do giáo viên tự soạn chẳng hạn — và
+ * khi đó giao diện lùi về `aide`. Lối lùi ấy giữ nguyên.
  *
  * ══ ĐỌC THẾ NÀO ══
  *
@@ -30,6 +39,113 @@
  */
 
 export const BAREME = {
+  /* A1 — 40 từ: điền phiếu và viết vài câu đơn giản về mình.
+     Mốc bám vào việc CỤ THỂ người học phải nhìn thấy trong bài, không bám vào
+     tên khái niệm. Người ở trình độ này chưa biết "connecteur" là gì. */
+  A1: {
+    consigne: [
+      [3, "Làm đúng việc đề yêu cầu và viết đủ số từ"],
+      [2, "Đúng việc nhưng bài hơi ngắn"],
+      [1, "Chỉ làm được một phần đề bài"],
+      [0, "Không làm đúng việc đề yêu cầu"],
+    ],
+    fiche: [
+      [3, "Điền đúng mọi ô: họ tên, tuổi, quốc tịch, địa chỉ"],
+      [2, "Điền đúng phần lớn, nhầm một hai ô"],
+      [1, "Điền được vài ô, nhầm nhiều chỗ"],
+      [0, "Không điền được, hoặc điền sai hết"],
+    ],
+    informer: [
+      [6, "Nhiều câu đơn giản về mình, sở thích và việc mình làm"],
+      [4, "Viết được vài câu, nội dung còn mỏng"],
+      [2, "Chỉ được một hai câu rời rạc"],
+      [0, "Không viết được câu nào về bản thân"],
+    ],
+    lexique: [
+      [5, "Dùng đúng vốn từ cơ bản, viết đúng chính tả từ quen"],
+      [3, "Đủ từ để hiểu, nhưng sai chính tả nhiều"],
+      [1, "Rất ít từ, người đọc phải đoán"],
+      [0, "Không đủ từ để diễn đạt"],
+    ],
+    morpho: [
+      [5, "Các câu đã học dùng đúng, lỗi không cản việc hiểu"],
+      [3, "Đúng ở câu quen, sai khi ghép câu dài hơn"],
+      [1, "Sai nhiều, người đọc phải tự ghép nghĩa"],
+      [0, "Không kiểm soát được cấu trúc câu"],
+    ],
+    coherence: [
+      [3, "Nối câu bằng et, alors, mais một cách hợp lý"],
+      [2, "Có nối câu nhưng lặp đi lặp lại một từ"],
+      [1, "Các câu đứng rời, gần như không nối"],
+      [0, "Không có liên kết nào giữa các câu"],
+    ],
+  },
+
+  /* A2 — 60 từ: kể một việc đã làm và nói cảm nhận. */
+  A2: {
+    consigne: [
+      [2, "Đúng tình huống, đúng loại tin nhắn, đủ độ dài"],
+      [1, "Đúng loại nhưng thiếu độ dài hoặc lệch tình huống"],
+      [0.5, "Chỉ lờ mờ nhận ra đây là loại tin nhắn gì"],
+      [0, "Sai loại, hoặc quá ngắn để đánh giá"],
+    ],
+    raconter: [
+      [4, "Kể rõ việc đã làm, có thời gian và chi tiết"],
+      [3, "Kể được nhưng thiếu chi tiết cụ thể"],
+      [2, "Chỉ nêu sự việc, chưa kể được diễn biến"],
+      [1, "Rời rạc, người đọc phải tự ghép"],
+      [0, "Không kể được việc gì"],
+    ],
+    impressions: [
+      [3, "Nói rõ mình thấy thế nào và vì sao"],
+      [2, "Có nói cảm nhận nhưng chưa giải thích"],
+      [1, "Chỉ nói thích hoặc không thích"],
+      [0, "Không nói cảm nhận nào"],
+    ],
+    coherence: [
+      [2, "Nối câu bằng et, mais, parce que một cách hợp lý"],
+      [1, "Có nối nhưng lặp lại một hai từ"],
+      [0.5, "Các câu gần như đứng rời nhau"],
+      [0, "Không có liên kết nào giữa các câu"],
+    ],
+    etendue_lex: [
+      [2, "Đủ từ cho các tình huống đời thường"],
+      [1, "Đủ dùng nhưng lặp thấy rõ"],
+      [0.5, "Rất hẹp, phải nói vòng mới diễn đạt được"],
+      [0, "Không đủ từ để diễn đạt"],
+    ],
+    maitrise_lex: [
+      [2, "Dùng từ đúng nghĩa, người đọc hiểu đúng ý"],
+      [1, "Còn nhầm từ nhưng vẫn hiểu được"],
+      [0.5, "Nhầm từ khiến người đọc hiểu sai"],
+      [0, "Dùng từ sai liên tục"],
+    ],
+    orthographe: [
+      [2, "Viết đúng chính tả các từ quen và cụm ngắn"],
+      [1, "Sai rải rác nhưng đọc vẫn trôi"],
+      [0.5, "Sai dày, phải đoán mới đọc được"],
+      [0, "Lỗi chính tả khiến bài khó đọc"],
+    ],
+    phrases: [
+      [2, "Viết câu đơn, thỉnh thoảng nối được hai câu"],
+      [1, "Chỉ toàn câu đơn rất ngắn"],
+      [0.5, "Câu chưa thành câu hoàn chỉnh"],
+      [0, "Không kiểm soát được câu"],
+    ],
+    temps: [
+      [3, "Dùng présent và passé composé nhìn chung đúng"],
+      [2, "Đúng présent, còn lúng túng với quá khứ"],
+      [1, "Gần như chỉ dùng présent"],
+      [0, "Không kiểm soát được thì"],
+    ],
+    morpho: [
+      [3, "Hợp giống–số cơ bản đúng, mạo từ dùng đúng"],
+      [2, "Đúng ở cấu trúc quen, sai khi phức tạp hơn"],
+      [1, "Sai hợp giống–số thường xuyên"],
+      [0, "Không kiểm soát được"],
+    ],
+  },
+
   B1: {
     consigne: [
       [2, "Đúng loại văn bản, đúng người nhận, đủ độ dài"],

@@ -33,7 +33,7 @@ npm run check:nav          # mục menu ↔ route ↔ nhãn i18n, cả hai chi�
 npm run check:grille       # grille DELF A1–B2 cộng đúng 25, đủ mô tả (59 ca)
 npm run check:cors         # Edge Function có cho trình duyệt gọi không
 npm run check:hmac         # chữ ký webhook SePay + bản ghim công thức (45 ca)
-npm run check:bareme       # mốc cho điểm PE, nhãn Việt, đối chiếu với SQL (339 ca)
+npm run check:bareme       # mốc cho điểm PE, nhãn Việt, đối chiếu với SQL (457 ca)
 npm run check:db           # database THẬT có khớp giả định của mã nguồn không
 ```
 

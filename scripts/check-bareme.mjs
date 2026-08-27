@@ -108,17 +108,19 @@ for (const lv of MUC) {
   t(`${lv}: cờ official đúng`, r.official === !GRILLE[lv].adapted);
   t(`${lv}: mọi tiêu chí có step`, r.criteria.every((c) => c.step > 0));
 
-  /* B1/B2 phải có mốc — đó là hai trình độ hệ thống nhắm tới. A1/A2 thì không,
-     và giao diện lùi về `description`. Kiểm cả hai chiều để không ai lặng lẽ
-     xoá mốc của B2. */
+  /* CẢ BỐN trình độ phải có mốc.
+     Trước đây A1/A2 được miễn, với lý do thang hai trình độ ấy là bản phỏng
+     theo. Nhưng màn tự chấm đã nói thẳng điều đó bằng dòng cảnh báo, nên miễn
+     trừ chỉ còn nghĩa là bỏ mặc người học A1 tự đoán "3/5 nghĩa là gì". */
   const coMoc = r.criteria.filter((c) => c.bareme).length;
-  if (lv === "B1" || lv === "B2") {
-    t(`${lv}: mọi tiêu chí đều có mốc`, coMoc === r.criteria.length,
-      `${coMoc}/${r.criteria.length}`);
-  } else {
-    t(`${lv}: lùi về description khi không có mốc`,
-      r.criteria.every((c) => c.description && c.description.length > 10));
-  }
+  t(`${lv}: mọi tiêu chí đều có mốc`, coMoc === r.criteria.length,
+    `${coMoc}/${r.criteria.length} — thiếu: `
+    + r.criteria.filter((c) => !c.bareme).map((c) => c.id).join(", "));
+
+  /* Vẫn phải có `description`: thang do giáo viên tự soạn không có mốc, và khi
+     đó giao diện lùi về đúng trường này. */
+  t(`${lv}: mọi tiêu chí có mô tả để lùi về`,
+    r.criteria.every((c) => c.description && c.description.length > 10));
 }
 
 /* ── 4. Bộ xác thực JS phải khớp ràng buộc SQL ──
