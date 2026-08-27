@@ -210,6 +210,24 @@ Hai bài học đi kèm, đắt hơn bản thân lỗi:
 **Nút bị `disabled` là ngõ cụt.** Bấm, không có gì xảy ra, không ai nói vì sao.
 Thà để nút bấm được rồi chỉ ra chỗ còn thiếu — tô viền, cuộn tới, gọi tên.
 
+**Một phần thi = MỘT khối, MỘT đồng hồ, NHIỀU bài.** Từ migration 044 một kỹ
+năng chứa được nhiều bài (`exam_sections` vốn đã là bảng nối; thứ chặn chỉ là
+`unique (exam_id, code)`). Chỗ dễ phá nhất là coi mỗi bài như một phần thi
+riêng — khi đó đề CO ba bài có ba đồng hồ 25 phút, tức 75 phút cho phần mà kỳ
+thi thật cho 25.
+
+`gomTheoKyNang()` giữ đúng mô hình: đồng hồ và điểm lấy từ dòng đầu của khối,
+KHÔNG cộng dồn. `check:exam` canh chỗ này.
+
+Kéo theo, ba phép cộng phải nhớ: `duration_min` cộng theo KỸ NĂNG chứ không
+theo dòng; số phần hiển thị đếm `new Set(code)` chứ không đếm `sections.length`;
+và chấm thì cộng THÔ điểm từng bài rồi mới quy về thang 25 một lần — quy đổi
+từng bài rồi cộng khiến bài 7 câu nặng bằng bài 15 câu.
+
+Mọi chỗ dùng `sections.find(s => s.code === …)` đều là bug từ 044: nó lấy đúng
+bài đầu và bỏ im phần còn lại. Đã sửa ba chỗ (nút Sửa của trình soạn, bảng tổng
+quan màn chờ, danh sách đề); tìm thấy chỗ thứ tư thì sửa tiếp.
+
 **"Lệnh chạy xong" KHÔNG BAO GIỜ là bằng chứng dữ liệu đã đổi.** Đo lại từ phía
 ứng dụng: `npm run check:db`, hoặc gọi Edge Function `grade` và xem `max`.
 
