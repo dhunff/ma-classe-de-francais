@@ -54,7 +54,57 @@ export async function loadExercises(store) {
       .order("ord", { ascending: true })),
   ]);
   if (exRes.error) return [];
-  return fromRows(exRes.rows, qRes.rows);
+
+  /* ── Giáo viên phải nhận cả đáp án ──
+   *
+   * `answer_key` không cấp SELECT cho `authenticated`, và giáo viên cũng nằm
+   * trong vai đó — GRANT không phân biệt được người trong cùng một vai. Nên
+   * đáp án về qua RPC `get_answer_keys` (migration 040), nơi kiểm `is_teacher()`
+   * từng NGƯỜI.
+   *
+   * Không phải để hiển thị. Là để KHÔNG XOÁ MẤT: `saveExercise` xoá hết câu hỏi
+   * rồi chèn lại, nên client không cầm đáp án thì dòng mới sinh ra rỗng — mở
+   * bài cũ sửa một dấu phẩy là mất đáp án cả bài.
+   *
+   * Học sinh không gọi RPC này. Không phải vì hàm sẽ trả 0 dòng (nó có trả),
+   * mà để khỏi tốn một vòng mạng cho mỗi lần mở thư viện. */
+  const rows = qRes.rows;
+  if (await laGiaoVien()) {
+    const ids = exRes.rows.map((e) => e.id);
+    if (ids.length) {
+      const { data, error } = await supabase.rpc("get_answer_keys", { p_exercise_ids: ids });
+      if (error) {
+        /* KHÔNG im lặng. Thiếu đáp án ở đây không làm hỏng màn hình ngay —
+           thư viện vẫn hiện đủ bài — nhưng nó biến lần Lưu kế tiếp thành một
+           lần xoá. Nói ra để còn lần theo được. */
+        console.error("[exercises] không lấy được đáp án cho giáo viên:", error.message,
+          "— ĐỪNG sửa và lưu bài lúc này, đáp án sẽ mất.");
+      } else {
+        const theoCau = new Map((data ?? []).map((r) => [r.question_id, r.answer_key]));
+        for (const r of rows) {
+          const ak = theoCau.get(r.id);
+          if (ak && typeof ak === "object") Object.assign(r.payload ?? (r.payload = {}), ak);
+        }
+      }
+    }
+  }
+
+  return fromRows(exRes.rows, rows);
+}
+
+/* Vai trò đọc từ JWT đang có sẵn trong bộ nhớ — không tốn vòng mạng nào.
+ *
+ * `app_metadata` là chỗ duy nhất người dùng không tự ghi được (xem
+ * shared/authRole.js), và cũng chính là chỗ `is_teacher()` đọc. Ở đây nó chỉ
+ * quyết định CÓ GỌI RPC HAY KHÔNG — quyền thật vẫn do hàm SQL kiểm. Đoán sai
+ * phía này thì tệ nhất là một lời gọi thừa trả về 0 dòng. */
+async function laGiaoVien() {
+  try {
+    const { data } = await supabase.auth.getUser();
+    return data?.user?.app_metadata?.role === "prof";
+  } catch {
+    return false;
+  }
 }
 
 export const loadPractice = () => loadExercises("practice");

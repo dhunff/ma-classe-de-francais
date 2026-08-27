@@ -166,6 +166,31 @@ const CA_GRILLE = [
   }
 }
 
+/* ── 3c. Cửa đọc đáp án của giáo viên phải đóng với khoá anon ──
+ *
+ * `get_answer_keys` (migration 040) tồn tại để giáo viên sửa bài mà không xoá
+ * mất đáp án. Nó là cửa THỨ HAI tới cùng một dữ liệu mà migration 022 đã khoá,
+ * nên nó phải khoá chặt bằng đúng chừng ấy.
+ *
+ * Hai tầng, kiểm cả hai: quyền EXECUTE thu khỏi `anon`, VÀ thân hàm đòi
+ * `is_teacher()`. Chỉ kiểm một tầng thì tầng kia hỏng lúc nào không biết. */
+{
+  const { status, body } = await rpc("get_answer_keys", { p_exercise_ids: ["bat-ky"] });
+  if (body?.code === "PGRST202") {
+    ket(false, "hàm get_answer_keys tồn tại (migration 040)",
+      "chưa có hàm, HOẶC PostgREST chưa nạp lại lược đồ\n"
+      + "      → chạy: notify pgrst, 'reload schema';");
+  } else {
+    ket(true, "hàm get_answer_keys tồn tại (migration 040)");
+    /* 42501 = quyền EXECUTE đã thu (đúng). 200 + mảng rỗng = quyền còn nhưng
+       `is_teacher()` chặn (cũng an toàn, nhưng tầng ngoài đã hở). */
+    ket(status !== 200, "anon KHÔNG gọi được get_answer_keys",
+      status === 200 && Array.isArray(body) && body.length === 0
+        ? "gọi được nhưng trả 0 dòng — thân hàm chặn, còn quyền EXECUTE thì chưa thu"
+        : `HTTP ${status} · trả về ${JSON.stringify(body)?.slice(0, 80)}`);
+  }
+}
+
 /* ── 4. Thứ KHÔNG được lộ ──
  *
  * Đây là phần quan trọng nhất của cả file. `answer_key` giữ đáp án và bài mẫu;
