@@ -56,6 +56,30 @@ export function sectionScore(correct, total, points = 25) {
  * phần chưa chấm thì CHƯA kết luận được — trả `passed: null`, đừng đoán. Một
  * lời "bạn đạt rồi" dựa trên hai phần ba bài thi là lời nói dối tử tế nhưng
  * vẫn là nói dối. */
+/* Ghi kết quả một phần thi vào danh sách, THAY THẾ nếu phần đó đã có.
+ *
+ * ══ VÌ SAO KHÔNG DÙNG `[...p, moi]` ══
+ *
+ * Một buổi thi có đúng một phần CO, một CE, một PE — `code` là khoá tự nhiên.
+ * Nối thêm thì mảng chỉ đúng khi mỗi phần được nộp đúng một lần, mà "đúng một
+ * lần" không có gì bảo đảm: bấm hai lần trong lúc chờ mạng, hết giờ đúng lúc
+ * đang nộp, F5 giữa chừng.
+ *
+ * Đã hỏng thật: người dùng bấm « Terminer cette partie » năm lần trong lúc chờ
+ * `gradeRemote`, và màn kết quả hiện năm thẻ CO giống hệt nhau, tổng 47,5/150
+ * thay vì 9,5/75. Cả tử số lẫn MẪU SỐ đều sai, vì `verdict` cộng `points` của
+ * từng phần tử trong mảng.
+ *
+ * Hàm này ở đây, không nằm trong component, vì `check:exam` chạy bằng node và
+ * không đọc được JSX. Một bản sửa không kiểm được là một bản sửa tạm thời. */
+export function ghiPhan(danhSach, phan) {
+  const i = danhSach.findIndex((x) => x.code === phan.code);
+  if (i < 0) return [...danhSach, phan];
+  const moi = [...danhSach];
+  moi[i] = phan;
+  return moi;
+}
+
 export function verdict(sections) {
   const chuaCham = sections.filter((s) => s.score == null);
   const daCham = sections.filter((s) => s.score != null);

@@ -6,7 +6,7 @@
  * hai thì hệ thống báo "đạt" cho một người sẽ trượt thật.
  */
 
-import { EXAM_STRUCTURE, sectionScore, verdict, NGUONG_PHAN }
+import { EXAM_STRUCTURE, sectionScore, verdict, ghiPhan, NGUONG_PHAN }
   from "../src/screens/exam/examPaper.js";
 
 let pass = 0, fail = 0;
@@ -58,6 +58,57 @@ t("còn cứu được thì vẫn để ngỏ",
 /* PO cố ý không có: 25/100 của kỳ thi thật, hệ thống chưa tổ chức được. */
 t("không bịa ra phần thi nói",
   EXAM_STRUCTURE.B1.some((x) => x.code === "PO"), false);
+
+/* ── Nộp một phần hai lần không được sinh ra hai bản ghi ──
+ *
+ * Tái hiện đúng lỗi đã gặp: người dùng bấm « Terminer cette partie » năm lần
+ * trong lúc `gradeRemote` còn đang chạy. Bản cũ nối thêm mỗi lần, nên màn kết
+ * quả hiện năm thẻ CO và `verdict` cộng cả năm — 47,5/150 thay vì 9,5/75.
+ *
+ * Kiểm CẢ HAI con số. Chỉ kiểm tử số thì một bản sửa nửa vời — gộp thẻ nhưng
+ * vẫn cộng `points` năm lần — sẽ đi lọt. */
+const phanCO = (diem) => ({ code: "CO", points: 25, score: diem });
+
+{
+  let ds = [];
+  for (let i = 0; i < 5; i++) ds = ghiPhan(ds, phanCO(9.5));
+  t("bấm nộp 5 lần → vẫn 1 phần", ds.length, 1);
+  t("bấm nộp 5 lần → tổng không nhân lên", verdict(ds).total, 9.5);
+  t("bấm nộp 5 lần → mẫu số không nhân lên", verdict(ds).maxScored, 25);
+}
+
+{
+  /* Ba phần khác nhau vẫn phải nối bình thường — bản sửa không được chặn nhầm
+     đường đi đúng. */
+  let ds = [];
+  ds = ghiPhan(ds, { code: "CO", points: 25, score: 20 });
+  ds = ghiPhan(ds, { code: "CE", points: 25, score: 15 });
+  ds = ghiPhan(ds, { code: "PE", points: 25, score: null });
+  t("ba phần khác nhau đều được ghi", ds.length, 3);
+  t("tổng cộng đúng ba phần đã chấm", verdict(ds).total, 35);
+  t("mẫu số chỉ tính phần đã chấm", verdict(ds).maxScored, 50);
+  t("PE vẫn ở trạng thái chờ chấm", verdict(ds).pending.length, 1);
+}
+
+{
+  /* Nộp lại cùng một phần phải GHI ĐÈ, không giữ điểm cũ. Xảy ra khi lần nộp
+     đầu lỗi mạng và người dùng thử lại. */
+  let ds = ghiPhan([], phanCO(4));
+  ds = ghiPhan(ds, phanCO(18));
+  t("nộp lại thì lấy điểm mới", ds[0].score, 18);
+  t("nộp lại không sinh thêm dòng", ds.length, 1);
+}
+
+{
+  /* Thứ tự phải giữ nguyên: CO trước CE trước PE, đúng thứ tự làm bài. Ghi đè
+     mà đẩy phần đó xuống cuối thì danh sách kết quả xáo trộn sau mỗi lần thử
+     lại — trông như lỗi hiển thị, thật ra là lỗi ở đây. */
+  let ds = [];
+  ds = ghiPhan(ds, { code: "CO", points: 25, score: 10 });
+  ds = ghiPhan(ds, { code: "CE", points: 25, score: 10 });
+  ds = ghiPhan(ds, { code: "CO", points: 25, score: 20 });
+  t("ghi đè giữ nguyên thứ tự", ds.map((x) => x.code).join(","), "CO,CE");
+}
 
 console.log(fail ? `\n${pass} đạt, ${fail} hỏng` : `\n${pass} đạt, 0 hỏng`);
 process.exit(fail ? 1 : 0);

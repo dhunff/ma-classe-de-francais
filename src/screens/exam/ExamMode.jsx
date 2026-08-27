@@ -4,7 +4,7 @@ import { Timer, ShieldCheck, AlertTriangle, Clock, Volume2, ArrowLeft } from "lu
 import { supabase } from "../../storageShim.js";
 import { loadExams, loadExam } from "../../shared/examStore.js";
 import { gradeRemote } from "../../shared/gradeRemote.js";
-import { EXAM_STRUCTURE, sectionScore, verdict, NGUONG_PHAN, NGUONG_TONG }
+import { EXAM_STRUCTURE, sectionScore, verdict, ghiPhan, NGUONG_PHAN, NGUONG_TONG }
   from "./examPaper.js";
 
 /* Mode Examen — thi thử có tính giờ.
@@ -256,6 +256,10 @@ function AudioGioiHan({ src, attemptId, questionId }) {
 export function PhanThi({ section, attemptId, answers, setAnswers, onDone, onBlur }) {
   const [conLai, setConLai] = useState(section.minutes * 60);
   const doneRef = useRef(false);
+  /* Chỉ để đổi CHỮ trên nút. Việc chặn do `doneRef` lo: ref đổi ngay trong cùng
+     một nhịp, còn state thì phải đợi render kế — mà hai cú bấm liên tiếp lọt
+     vừa đúng vào khe đó. */
+  const [dangNop, setDangNop] = useState(false);
 
   /* Đồng hồ neo vào MỐC THỜI GIAN THẬT, không cộng dồn từng giây.
      setInterval bị trình duyệt giảm nhịp ở tab nền, nên đếm ngược bằng cách
@@ -423,9 +427,28 @@ export function PhanThi({ section, attemptId, answers, setAnswers, onDone, onBlu
         ))}
       </ol>
 
-      <button type="button" onClick={() => { doneRef.current = true; onDone(false); }}
-        className="mt-8 rounded-full border-0 bg-primary px-6 py-3 text-sm font-bold text-white shadow-lg">
-        Terminer cette partie
+      {/* ══ VÌ SAO PHẢI CHẶN BẤM LẦN THỨ HAI ══
+       *
+       * `onDone` là `xongPhan`, và nó `await gradeRemote(...)` — một vòng gọi
+       * mạng — TRƯỚC khi chuyển sang phần kế. Suốt quãng chờ đó, nút vẫn bấm
+       * được và màn hình không đổi gì.
+       *
+       * Người sốt ruột bấm thêm bốn lần thì `xongPhan` chạy năm lần cho CÙNG
+       * một phần, và mỗi lần nối thêm một bản ghi vào `ketQua`. Kết quả thật đã
+       * gặp: năm thẻ CO giống hệt nhau, tổng 47,5/150 thay vì 9,5/75.
+       *
+       * `doneRef` trước đây chỉ được ĐẶT ở đây chứ không được ĐỌC — nó chỉ chặn
+       * đồng hồ bắn `onDone` lần nữa, không chặn ngón tay. */}
+      <button type="button" disabled={doneRef.current}
+        onClick={() => {
+          if (doneRef.current) return;
+          doneRef.current = true;
+          setDangNop(true);
+          onDone(false);
+        }}
+        className="mt-8 rounded-full border-0 bg-primary px-6 py-3 text-sm font-bold text-white shadow-lg
+                   disabled:cursor-not-allowed disabled:bg-surface2 disabled:text-soft disabled:shadow-none">
+        {dangNop ? "Đang nộp…" : "Terminer cette partie"}
       </button>
     </div>
   );
@@ -590,12 +613,18 @@ export default function ExamMode() {
        cả buổi thi. */
     const res = await gradeRemote(s.exercise.id, answers, { mode: "exam", blurCount, attemptId });
 
-    setKetQua((p) => [...p, {
+    const ghi = {
       ...s,
       /* max === 0 nghĩa là phần này không có câu nào máy chấm được (Production
          écrite chỉ có bài viết) → để `null`, tức "chờ chấm", chứ không phải 0. */
       score: res && res.max > 0 ? sectionScore(res.score, res.max, s.points) : null,
-    }]);
+    };
+
+    /* Nút đã chặn bấm lại (xem PhanThi) — đó là chỗ sửa NGUYÊN NHÂN. `ghiPhan`
+       là lớp thứ hai: dù có đường nào lọt qua thì mảng vẫn không thể chứa hai
+       bản ghi cùng `code`. Chặn một chỗ là sửa lỗi; làm cho trạng thái sai
+       KHÔNG BIỂU DIỄN ĐƯỢC mới là hết lo. */
+    setKetQua((p) => ghiPhan(p, ghi));
 
     /* Phần viết KHÔNG được chấm tự động ở đây — học sinh tự chấm ở màn
        « Kết quả thi », đối chiếu với bài mẫu. Xem migration 030. */
