@@ -27,15 +27,21 @@
 -- Chạy lại được: `drop ... if exists` và tên ràng buộc mới cố định, nên lần
 -- chạy thứ hai chỉ báo lỗi trùng tên chứ không làm hỏng gì.
 
--- ══ VÌ SAO LIỆT KÊ HAI TÊN ══
+-- ══ TÊN RÀNG BUỘC: ĐÃ XÁC NHẬN ══
 --
--- Ràng buộc cũ khai inline trong `create table` ở migration 026, nên Postgres
--- TỰ đặt tên. Tên chuẩn là `<bảng>_<cột>_<cột>_key`, nhưng nếu nó khác thì
--- `drop constraint if exists` IM LẶNG không làm gì, câu `add` vẫn thành công,
--- và mọi thứ trông như đã xong trong khi vẫn bị chặn.
+-- Ràng buộc cũ khai inline trong `create table` ở 026 nên Postgres tự đặt tên.
+-- Tên thật là `exam_sections_exam_id_code_key` — không phải đoán nữa: chính
+-- production nói ra nó, qua thông báo lỗi khi giáo viên bấm Lưu một đề có hai
+-- bài trong cùng một kỹ năng:
 --
--- Nên thử cả hai cách đặt tên thường gặp. Và chạy 045 sau để biết chắc — đừng
--- tin vào việc câu lệnh này không báo lỗi.
+--     duplicate key value violates unique constraint
+--     "exam_sections_exam_id_code_key"
+--
+-- Tên thứ hai giữ lại cho chắc, và vô hại: `drop ... if exists` không nổ khi
+-- tên không tồn tại.
+--
+-- Vẫn chạy 045 sau. Không phải để biết tên — mà vì `drop ... if exists` im lặng
+-- khi trượt, và im lặng thì trông y hệt thành công.
 
 alter table public.exam_sections
   drop constraint if exists exam_sections_exam_id_code_key,
