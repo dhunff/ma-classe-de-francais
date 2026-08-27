@@ -179,6 +179,22 @@ const CA_GRILLE = [
     `HTTP ${status} — đáp án đang lộ! Xem migration 022.\n      ${JSON.stringify(body)?.slice(0, 160)}`);
 }
 
+/* Bài làm và lượt thi là dữ liệu RIÊNG của từng học sinh. RLS lọc theo
+   `auth.uid()`, nên khoá anon phải nhận về MẢNG RỖNG — không phải lỗi, mà là
+   không có dòng nào thuộc về "không ai".
+
+   Ca này khác hai ca trên: `answer_key` bị chặn ở mức CỘT (401), còn đây bị
+   chặn ở mức DÒNG (200 + rỗng). Nhầm hai cơ chế là chỗ dễ tưởng đã an toàn —
+   một bảng trả 200 trông như đọc được, và chỉ số dòng mới nói lên sự thật. */
+for (const bang of ["attempts", "answers", "submissions"]) {
+  const { status, body } = await rest(`${bang}?select=id&limit=1`);
+  ket(status === 200 && Array.isArray(body) && body.length === 0,
+    `${bang}: khoá anon KHÔNG thấy dòng nào`,
+    status !== 200
+      ? `HTTP ${status} · ${body?.message ?? ""}`
+      : `thấy ${body?.length} dòng — RLS đang để lộ bài làm của học sinh`);
+}
+
 /* `select=*` trên questions cũng phải hỏng, vì PostgREST khai triển `*` thành
    mọi cột kể cả cột bị thu quyền. Đây là lý do exerciseStore phải liệt kê cột,
    và `check:store` canh chỗ đó trong mã nguồn. Ca này canh ở đầu database. */
