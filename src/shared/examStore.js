@@ -159,6 +159,35 @@ export async function saveExam(exam, sections) {
     const ins = await supabase.from("exam_sections").insert(rows);
     if (ins.error) return { ok: false, error: ins.error };
   }
+
+  /* ── ĐỌC LẠI ĐỂ CHẮC ──
+   *
+   * Đã xảy ra thật: giáo viên thêm hai bài vào phần CE, giao diện hiện đủ ba
+   * dòng, bấm Lưu, thấy "✅ Đã lưu đề" — và database chỉ có MỘT dòng CE. Không
+   * lỗi nào được ném ra, không cảnh báo nào hiện lên.
+   *
+   * Báo thành công cho một việc chưa làm là kiểu hỏng tệ nhất: người dùng tin
+   * và đi tiếp, rồi phát hiện ở một chỗ hoàn toàn khác, muộn hơn nhiều.
+   *
+   * PostgREST không cho transaction, nên xoá-rồi-chèn là hai lời gọi rời và
+   * không có gì bảo đảm cả hai cùng thành công. Cách duy nhất biết chắc là ĐẾM
+   * LẠI. Một vòng mạng nữa, đổi lấy việc không bao giờ nói dối. */
+  const { count, error: demErr } = await supabase
+    .from("exam_sections")
+    .select("id", { count: "exact", head: true })
+    .eq("exam_id", examId);
+
+  if (demErr) {
+    return { ok: false, error: { message:
+      "Đã ghi nhưng không đọc lại được để kiểm: " + demErr.message
+      + ". Mở lại đề để xem có đủ bài không." } };
+  }
+  if (count !== rows.length) {
+    return { ok: false, error: { message:
+      `Lưu thiếu: gửi ${rows.length} bài, database nhận ${count}. `
+      + "Đề đang ở trạng thái dở dang — mở lại và lưu một lần nữa." } };
+  }
+
   return { ok: true, id: examId };
 }
 
