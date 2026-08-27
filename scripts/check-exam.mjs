@@ -59,6 +59,44 @@ t("còn cứu được thì vẫn để ngỏ",
 t("không bịa ra phần thi nói",
   EXAM_STRUCTURE.B1.some((x) => x.code === "PO"), false);
 
+/* ── Cả bốn trình độ đều soạn được đề ──
+ *
+ * Trước 28/08 chỉ có B1/B2, nên giáo viên dạy lớp A1 mở trình soạn ra là gặp
+ * một bộ chọn trình độ không có lớp của mình. Không có lỗi nào hiện ra — chỉ
+ * là thiếu, và thiếu thì im lặng.
+ *
+ * Thang chấm ở delfGrille.js đã phủ đủ A1–B2 từ lâu; chỉ cấu trúc đề bị bỏ
+ * lại. Ca này buộc hai bên đi cùng nhau. */
+for (const lv of ["A1", "A2", "B1", "B2"]) {
+  /* `t` là (tên, thực_tế, mong_đợi) — thiếu tham số thứ ba thì `want` là
+     undefined và ca luôn đỏ, kể cả khi mọi thứ đúng. Đã quên đúng chỗ này một
+     lần ở check:bareme rồi. */
+  t(`${lv}: có cấu trúc đề`,
+    Array.isArray(EXAM_STRUCTURE[lv]) && EXAM_STRUCTURE[lv].length > 0, true);
+  if (!EXAM_STRUCTURE[lv]) continue;
+  t(`${lv}: đủ ba phần CO/CE/PE`,
+    EXAM_STRUCTURE[lv].map((x) => x.code).join(","), "CO,CE,PE");
+  t(`${lv}: mỗi phần 25 điểm`, EXAM_STRUCTURE[lv].every((x) => x.points === 25), true);
+  t(`${lv}: thời lượng đều dương`, EXAM_STRUCTURE[lv].every((x) => x.minutes > 0), true);
+  t(`${lv}: không có phần thi nói`,
+    EXAM_STRUCTURE[lv].some((x) => x.code === "PO"), false);
+  /* Kỹ năng phải khớp HỆT chuỗi trong `exercises.skills`, nếu không bộ lọc của
+     trình soạn đề trả về rỗng và giáo viên đọc "Thư viện chưa có bài" trong khi
+     thư viện có đủ. */
+  t(`${lv}: tên kỹ năng đúng bộ`,
+    EXAM_STRUCTURE[lv].map((x) => x.skill).join(","),
+    "Écoute,Lecture,Production écrite");
+}
+
+/* Thời lượng phải TĂNG dần theo trình độ ở phần đọc và viết — đó là thực tế
+   của kỳ thi, và một con số chép nhầm sẽ lọt qua mọi ca ở trên. */
+for (const code of ["CE", "PE"]) {
+  const phut = ["A1", "A2", "B1", "B2"].map(
+    (lv) => EXAM_STRUCTURE[lv].find((x) => x.code === code).minutes);
+  t(`${code}: thời lượng không giảm khi lên trình độ`,
+    phut.every((v, i) => i === 0 || v >= phut[i - 1]), true, phut.join(" → "));
+}
+
 /* ── Nộp một phần hai lần không được sinh ra hai bản ghi ──
  *
  * Tái hiện đúng lỗi đã gặp: người dùng bấm « Terminer cette partie » năm lần

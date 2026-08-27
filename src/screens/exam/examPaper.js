@@ -12,6 +12,26 @@
  * đưa cho học sinh một con số dự đoán sai — tệ hơn hẳn việc nói thẳng là thiếu.
  */
 export const EXAM_STRUCTURE = {
+  /* Thời lượng là con số của KỲ THI THẬT, không phải tuỳ chọn sản phẩm — nên
+     giao diện soạn đề không cho sửa. Nguồn: France Éducation international.
+
+     A1 và A2 thêm vào 28/08. Trước đó chỉ có B1/B2, nên giáo viên dạy lớp mới
+     bắt đầu không soạn được đề thi thử nào — mà đó lại là nhóm cần thi thử
+     nhất, vì họ chưa từng thấy một đề DELF trông ra sao.
+
+     Cả bốn trình độ đều KHÔNG có Production orale. Đó là 25/100 điểm của kỳ
+     thi thật, và hệ thống chưa tổ chức được phần nói; `check:exam` canh không
+     cho ai lặng lẽ bịa ra một phần PO. */
+  A1: [
+    { code: "CO", skill: "Écoute",            label: "Compréhension de l'oral",  minutes: 20, points: 25 },
+    { code: "CE", skill: "Lecture",           label: "Compréhension des écrits", minutes: 30, points: 25 },
+    { code: "PE", skill: "Production écrite", label: "Production écrite",        minutes: 30, points: 25 },
+  ],
+  A2: [
+    { code: "CO", skill: "Écoute",            label: "Compréhension de l'oral",  minutes: 25, points: 25 },
+    { code: "CE", skill: "Lecture",           label: "Compréhension des écrits", minutes: 30, points: 25 },
+    { code: "PE", skill: "Production écrite", label: "Production écrite",        minutes: 45, points: 25 },
+  ],
   B1: [
     { code: "CO", skill: "Écoute",            label: "Compréhension de l'oral",  minutes: 25, points: 25 },
     { code: "CE", skill: "Lecture",           label: "Compréhension des écrits", minutes: 45, points: 25 },
