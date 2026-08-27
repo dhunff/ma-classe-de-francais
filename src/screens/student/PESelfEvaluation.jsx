@@ -105,9 +105,25 @@ const THANH_CUON =
  *
  * Dưới thanh luôn hiện mô tả của nấc đang chọn. Đây là chỗ thanh trượt hay thua
  * nút bấm: kéo thì nhanh, nhưng nhanh tới mức người ta không đọc mốc nào cả. */
-function ThanhTieuChi({ c, gia, onChange }) {
+function ThanhTieuChi({ c, gia, onChange, nhacNho }) {
   const chuaCham = gia == null;
   const v = chuaCham ? 0 : gia;
+
+  /* ══ CHƯA CHẤM ≠ CHẤM 0 ĐIỂM ══
+   *
+   * Bản đầu vẽ hai trạng thái này GIỐNG HỆT NHAU: núm ở vị trí 0, vệt màu
+   * trống. Ai muốn cho một tiêu chí 0 điểm sẽ nhìn vào đó và tưởng mình đã
+   * chọn xong — trong khi `diem[c.id]` vẫn là undefined, `daCham` không đếm nó,
+   * và nút Lưu không bao giờ mở khoá.
+   *
+   * Người dùng thì không thấy gì sai: mọi thanh trượt đều ở đúng chỗ họ muốn.
+   * Họ bấm Lưu, nút xám, và bỏ cuộc.
+   *
+   * Nên: chưa chấm thì núm mờ đi và có viền nhắc; chấm 0 thì núm đậm như mọi
+   * giá trị khác. Hai trạng thái phải phân biệt được mà không cần đọc chữ. */
+  const vien = chuaCham
+    ? (nhacNho ? "ring-2 ring-warn" : "ring-1 ring-line")
+    : "ring-1 ring-line";
 
   /* Nấc đang áp dụng = mốc cao nhất mà điểm còn với tới. `bareme` xếp giảm dần
      nên chỉ cần tìm phần tử đầu tiên thoả. Thang không có mốc (A1/A2, hoặc
@@ -116,7 +132,7 @@ function ThanhTieuChi({ c, gia, onChange }) {
   const phanTram = (v / c.max_score) * 100;
 
   return (
-    <li className="rounded-md bg-surface p-5 ring-1 ring-line">
+    <li id={`tc-${c.id}`} className={"rounded-md bg-surface p-5 " + vien}>
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
           <h4 className="m-0 text-sm font-bold leading-snug text-ink">{c.name}</h4>
@@ -127,7 +143,7 @@ function ThanhTieuChi({ c, gia, onChange }) {
             chuaCham ? "bg-surface2 text-soft" : "bg-primary-soft text-primary"
           }`}
         >
-          {chuaCham ? `— / ${c.max_score}` : `${v} / ${c.max_score}`}
+          {chuaCham ? `chưa chấm · /${c.max_score}` : `${v} / ${c.max_score}`}
         </span>
       </div>
 
@@ -139,9 +155,24 @@ function ThanhTieuChi({ c, gia, onChange }) {
         value={v}
         aria-label={`${c.name}, tối đa ${c.max_score} điểm`}
         onChange={(e) => onChange(Number(e.target.value))}
-        className="mt-4 h-1.5 w-full cursor-pointer appearance-none rounded-full bg-surface2 accent-primary
-                   focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4
-                   focus-visible:outline-primary"
+        /* ══ VÌ SAO CẦN CẢ pointerUp/keyUp, KHÔNG CHỈ onChange ══
+         *
+         * Thanh chưa chấm hiển thị ở vị trí 0. Người dùng muốn cho 0 điểm sẽ
+         * kéo tới 0 — nhưng giá trị của input VỐN ĐÃ là "0", nên React thấy
+         * không có gì đổi và KHÔNG gọi onChange. Điểm 0 không bao giờ ghi được.
+         *
+         * Hậu quả không phải là một ô hiển thị sai: `daCham` không đếm tiêu chí
+         * đó, nút Lưu khoá vĩnh viễn, và người dùng không có cách nào thoát ra.
+         * Đã xảy ra thật — một buổi tự chấm mất trắng, không dòng nào vào DB.
+         *
+         * `onChange` bắt mọi lần đổi giá trị; hai handler này bắt lần TƯƠNG TÁC
+         * kết thúc, kể cả khi giá trị không đổi. Gọi trùng nhau vô hại: cùng
+         * ghi một con số vào cùng một khoá. */
+        onPointerUp={(e) => onChange(Number(e.currentTarget.value))}
+        onKeyUp={(e) => onChange(Number(e.currentTarget.value))}
+        className={"mt-4 h-1.5 w-full cursor-pointer appearance-none rounded-full bg-surface2 accent-primary "
+          + (chuaCham ? "opacity-40 " : "") +
+          "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"}
         style={{
           /* Vệt màu bên trái núm. `input[type=range]` không có phần tử riêng cho
              nó ở mọi trình duyệt, nên vẽ bằng gradient trên chính nền. */
@@ -204,6 +235,10 @@ export default function PESelfEvaluation({
   const [dangLuu, setDangLuu] = useState(false);
   const [daLuu, setDaLuu] = useState(false);
   const [loi, setLoi] = useState("");
+  /* Bật khi người dùng bấm Lưu lúc chưa chấm đủ. Chỉ khi ĐÓ mới tô viền nhắc —
+     tô sẵn từ đầu thì cả màn hình vàng khè ngay lúc chưa ai làm gì sai, và
+     người dùng học cách bỏ qua màu đó trước khi nó có ích. */
+  const [nhacThieu, setNhacThieu] = useState(false);
   const [baiMau, setBaiMau] = useState(null);   // null = chưa xin
   const [moMau, setMoMau] = useState(false);
 
@@ -220,6 +255,7 @@ export default function PESelfEvaluation({
   }, [diem, rubric]);
 
   const xong = daCham === rubric.criteria.length;
+  const conThieu = rubric.criteria.filter((c) => diem[c.id] == null);
   const soTu = copie.trim() ? copie.trim().split(/\s+/).length : 0;
 
   /* Bài mẫu tải khi người dùng MỞ, không tải sẵn. Tải sẵn thì nó nằm trong bộ
@@ -376,7 +412,8 @@ export default function PESelfEvaluation({
               </div>
               <ul className="m-0 flex list-none flex-col gap-3 p-0">
                 {list.map((c) => (
-                  <ThanhTieuChi key={c.id} c={c} gia={diem[c.id]} onChange={(v) => dat(c.id, v)} />
+                  <ThanhTieuChi key={c.id} c={c} gia={diem[c.id]}
+                    nhacNho={nhacThieu} onChange={(v) => dat(c.id, v)} />
                 ))}
               </ul>
             </div>
@@ -418,8 +455,24 @@ export default function PESelfEvaluation({
                 )}
                 <button
                   type="button"
-                  disabled={!xong || dangLuu || daLuu || xemThu}
-                  onClick={luu}
+                  disabled={dangLuu || daLuu || xemThu}
+                  onClick={() => {
+                    /* Nút bị KHOÁ là một ngõ cụt: người dùng bấm, không có gì
+                       xảy ra, không ai nói vì sao. Ở đây điều đó tệ gấp đôi, vì
+                       thanh trượt chưa chấm trông y như đã chấm 0 — người dùng
+                       tin mình đã làm xong và nút thì im lặng.
+
+                       Nay nút luôn bấm được. Thiếu thì nó tô viền những tiêu
+                       chí còn trống và cuộn tới cái đầu tiên. */
+                    if (!xong) {
+                      setNhacThieu(true);
+                      setLoi("");
+                      document.getElementById(`tc-${conThieu[0].id}`)
+                        ?.scrollIntoView({ behavior: "smooth", block: "center" });
+                      return;
+                    }
+                    luu();
+                  }}
                   className="flex items-center gap-1.5 rounded-full border-0 bg-primary px-4 py-2
                              text-xs font-bold text-on-primary transition
                              disabled:cursor-not-allowed disabled:bg-surface2 disabled:text-soft"
@@ -444,7 +497,9 @@ export default function PESelfEvaluation({
                 ? "Chế độ xem thử — dữ liệu mẫu, không lưu được."
                 : xong
                   ? "Đã chấm đủ tiêu chí."
-                  : `Còn ${rubric.criteria.length - daCham} tiêu chí chưa chấm.`}
+                  : `Còn ${conThieu.length} tiêu chí chưa chấm: ${
+                      conThieu.slice(0, 3).map((c) => c.name).join(", ")}${
+                      conThieu.length > 3 ? "…" : ""}`}
             </p>
 
             {loi && <p className="m-0 mt-2 text-xs font-bold text-danger">{loi}</p>}
