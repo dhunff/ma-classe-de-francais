@@ -27,3 +27,4 @@ supabase/.temp/
 # học sinh dạng thô — đúng thứ script đó sinh ra để xoá khỏi database, nên
 # tuyệt đối không được đẩy lên remote.
 *.backup.json
+_*.json
