@@ -28,6 +28,34 @@ const ICON = { CO: Headphones, CE: BookOpen, PE: PenLine };
 const coSkill = (ex, skill) =>
   Array.isArray(ex?.skills) ? ex.skills.includes(skill) : ex?.skill === skill;
 
+/* Nhãn cho một bài trong ô chọn.
+ *
+ * ══ VÌ SAO KHÔNG THÊM TRÌNH ĐỘ ══
+ *
+ * Danh sách đã lọc `ex.level === draft.exam.level`, nên mọi dòng đều cùng một
+ * trình độ. In nó ra thì mỗi dòng đều "B1" — tốn chỗ, không phân biệt được gì,
+ * và làm loãng phần thật sự khác nhau.
+ *
+ * ══ THỨ THẬT SỰ PHÂN BIỆT ══
+ *
+ * Thư viện có hai bài cùng tên « Activité 1 »: một bài kèm ảnh, bài kia không.
+ * Ô chọn cũ chỉ hiện tên và số câu, nên hai dòng trông y hệt — giáo viên chọn
+ * nhầm thì học sinh vào phòng thi mới biết, và không ai truy được vì sao.
+ *
+ * Nên: đánh dấu NGỮ LIỆU (ảnh / bài đọc / nghe). Đó là thứ khác nhau giữa hai
+ * bài trùng tên, và cũng là thứ giáo viên cần biết khi ghép đề.
+ *
+ * Mã id chỉ hiện khi tên bị TRÙNG trong chính danh sách này. Hiện mọi lúc là
+ * thêm nhiễu cho trường hợp không có gì để phân biệt. */
+const nhanBai = (ex, trungTen) => {
+  const phan = [`${ex.questions.length} câu`];
+  if (ex.imageUrl) phan.push("ảnh");
+  if (ex.readingText) phan.push("bài đọc");
+  if (ex.audioUrl) phan.push("âm thanh");
+  if (trungTen) phan.push(`#${String(ex.id).slice(-4)}`);
+  return `${ex.title} — ${phan.join(" · ")}`;
+};
+
 function DeMoi(level) {
   return {
     exam: { title: "", level, is_published: false },
@@ -247,6 +275,17 @@ export default function ExamComposer({ t }) {
             (ex) => ex.level === draft.exam.level && coSkill(ex, phan.skill)
                  && (ex.questions?.length ?? 0) > 0,
           );
+          /* Tên nào xuất hiện quá một lần TRONG CHÍNH danh sách này. Tính theo
+             danh sách đã lọc, không theo cả thư viện: hai bài trùng tên nhưng
+             khác kỹ năng thì không bao giờ đứng cạnh nhau, và gắn mã id cho
+             chúng chỉ là nhiễu. */
+          const demTen = {};
+          for (const ex of ungVien) {
+            const t = String(ex.title).trim();
+            demTen[t] = (demTen[t] ?? 0) + 1;
+          }
+          const tenTrung = new Set(Object.keys(demTen).filter((t) => demTen[t] > 1));
+
           const chon = (id) => setDraft({
             ...draft,
             sections: draft.sections.map((x, j) => (j === i ? { ...x, exercise_id: id } : x)),
@@ -272,7 +311,7 @@ export default function ExamComposer({ t }) {
                   <option value="">— chọn bài —</option>
                   {ungVien.map((ex) => (
                     <option key={ex.id} value={ex.id}>
-                      {ex.title} ({ex.questions.length} câu)
+                      {nhanBai(ex, tenTrung.has(String(ex.title).trim()))}
                     </option>
                   ))}
                 </select>
