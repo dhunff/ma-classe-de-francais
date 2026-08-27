@@ -86,6 +86,7 @@ function Phan({ s, onTuCham }) {
                 /* Thang riêng của đề, nếu giáo viên có soạn. null thì
                    PESelfEvaluation tự dựng thang chuẩn theo level. */
                 rubric: s.grille,
+                boiCanh: s.consigne,
               })}
               className="flex w-full items-center gap-2 rounded-lg border-0 bg-surface px-3 py-2.5
                          text-left text-xs font-bold text-ink transition hover:bg-primary-soft"

@@ -52,7 +52,14 @@ export async function loadMyExamResults() {
       : Promise.resolve({ data: [] }),
     examIds.length
       ? supabase.from("exam_sections")
-          .select("exam_id, code, exercise_id, points, ord").in("exam_id", examIds)
+          .select("exam_id, code, exercise_id, points, ord, "
+                + /* `consigne` là BỐI CẢNH đề — "Depuis une dizaine d'années,
+                     vous êtes membre de l'association…". Màn tự chấm trước đây
+                     chỉ nhận `questions.prompt` ("Vous écrivez au président…"),
+                     tức một nửa đề. Mà tiêu chí đầu tiên là « Bám sát đề bài »:
+                     không có bối cảnh thì không có gì để bám. */
+                  "exercises (consigne)")
+          .in("exam_id", examIds)
       : Promise.resolve({ data: [] }),
     /* Chỉ lấy câu ĐÃ được chấm tay — phần PE. Câu trắc nghiệm đã nằm trong
        `attempts.score`, kéo về nữa là đếm hai lần. */
@@ -123,6 +130,9 @@ export async function loadMyExamResults() {
         level: thongTinDe?.level ?? "B1",
         /* Thang do giáo viên soạn, hoặc null = dùng thang chuẩn theo level. */
         grille: thongTinDe?.grille ?? null,
+        /* Bối cảnh đề, dạng HTML do trình soạn sinh ra. Màn tự chấm dựng nó
+           bằng dangerouslySetInnerHTML, giống Taking.jsx và ExamMode. */
+        consigne: sec?.exercises?.consigne ?? "",
       };
     }).sort((a, b) => a.ord - b.ord);
 

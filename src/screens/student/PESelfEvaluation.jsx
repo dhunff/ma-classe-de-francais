@@ -205,7 +205,7 @@ function ThanhTieuChi({ c, gia, onChange, nhacNho }) {
 
 export default function PESelfEvaluation({
   answerId, questionId, level = "B2",
-  deBai, baiLam, daCo, rubric: rubricNgoai, onXong,
+  deBai, boiCanh, baiLam, daCo, rubric: rubricNgoai, onXong,
 }) {
   /* Không có `answerId` → chế độ xem thử: dữ liệu mẫu, không lưu được. */
   const xemThu = !answerId;
@@ -218,7 +218,11 @@ export default function PESelfEvaluation({
     [rubricNgoai, level],
   );
 
-  const consigne = (xemThu ? SUJET_MAU : deBai) || "(đề bài không còn trong hệ thống)";
+  /* Câu lệnh của CÂU HỎI ("Vous écrivez au président…") — khác `boiCanh`, vốn
+     là consigne của BÀI ("Depuis une dizaine d'années, vous êtes membre…").
+     Hai thứ giờ cùng có mặt trên màn, nên không được đặt trùng tên.
+     Đã đo: 0 trong 433 câu có HTML ở `prompt`, nên chữ thuần ở đây là đúng. */
+  const cauLenh = (xemThu ? SUJET_MAU : deBai) || "(đề bài không còn trong hệ thống)";
   const copie = String((xemThu ? COPIE_MAU : baiLam) ?? "");
 
   /* Khoá theo `id` của tiêu chí, KHÔNG theo chỉ số mảng. Giáo viên sửa thang
@@ -307,7 +311,16 @@ export default function PESelfEvaluation({
               {rubric.min_words ? ` · tối thiểu ${rubric.min_words} từ` : ""}
             </span>
           </header>
-          <p className="m-0 px-5 py-4 text-sm italic leading-relaxed text-soft">{consigne}</p>
+          {/* Bối cảnh đề trước, câu lệnh sau — đúng thứ tự học sinh đã đọc lúc
+             làm bài. `consigne` là HTML do trình soạn sinh ra; dựng bằng chữ
+             thuần thì học sinh đọc phải `<div style="text-align: center;">`.
+             Cùng mức tin cậy với `readingText` ở ExamMode: giáo viên soạn, nằm
+             sau `is_teacher()`. */}
+          {boiCanh && (
+            <div className="border-b border-line px-5 py-4 text-sm italic leading-relaxed text-soft"
+                 dangerouslySetInnerHTML={{ __html: boiCanh }} />
+          )}
+          <p className="m-0 px-5 py-4 text-sm italic leading-relaxed text-soft">{cauLenh}</p>
         </div>
 
         <div className="mt-4 flex flex-col rounded-md bg-surface ring-1 ring-line">

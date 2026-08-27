@@ -295,9 +295,33 @@ function PhanThi({ section, attemptId, answers, setAnswers, onDone, onBlur }) {
         </div>
       </div>
 
-      {ex.consigne && <p className="m-0 mb-4 text-sm italic text-soft">{ex.consigne}</p>}
+      {/* Consigne là HTML, không phải chữ thuần.
+         Trình soạn bài (RichTextEditor) sinh ra thẻ — căn giữa, in nghiêng, tô
+         màu — và lưu nguyên vào `consigne`. Dựng bằng `{ex.consigne}` thì React
+         escape hết, và học sinh đọc đúng nghĩa đen của mã nguồn:
+         `<div style="text-align: center;"> <span style=…>Depuis une dizaine…`
+
+         `Taking.jsx` và `PracticeHub.jsx` đã dùng dangerouslySetInnerHTML cho
+         đúng trường này từ lâu; chỉ màn thi bị bỏ sót. Nội dung do giáo viên
+         soạn và đã nằm sau `is_teacher()`, cùng mức tin cậy với `readingText`
+         ngay bên dưới. */}
+      {ex.consigne && (
+        <div className="m-0 mb-4 text-sm italic leading-relaxed text-soft"
+             dangerouslySetInnerHTML={{ __html: ex.consigne }} />
+      )}
       {ex.audioUrl && (
         <AudioGioiHan src={ex.audioUrl} attemptId={attemptId} questionId={`ex:${ex.id}`} />
+      )}
+
+      {/* Ảnh đề bài — màn thi trước đây KHÔNG dựng nó.
+         Với bài đọc hiểu, ảnh thường CHÍNH LÀ ngữ liệu: áp phích, vé tàu, quảng
+         cáo. Thiếu nó thì câu hỏi vẫn hiện đủ nhưng không trả lời được, và học
+         sinh mất điểm vì một thứ không phải lỗi của họ. */}
+      {ex.imageUrl && (
+        <figure className="m-0 mb-6">
+          <img src={ex.imageUrl} alt="Document de l'exercice" loading="lazy"
+            className="mx-auto block w-full max-w-3xl rounded-2xl border border-line object-contain" />
+        </figure>
       )}
       {ex.readingText && (
         <div className="mb-6 max-h-80 overflow-y-auto rounded-2xl border border-line bg-surface p-5 text-sm leading-relaxed text-ink"

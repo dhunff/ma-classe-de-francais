@@ -50,6 +50,26 @@ for (const f of files) {
     hits.join(", ") + " → dùng gạch nối, ví dụ bg-danger-soft");
 }
 
+/* --- 1c. `consigne` là HTML, phải dựng bằng dangerouslySetInnerHTML ---
+ *
+ * Trình soạn bài sinh ra thẻ và lưu nguyên vào `consigne`. Dựng bằng
+ * `{ex.consigne}` thì React escape hết, và học sinh đọc đúng nghĩa đen của mã
+ * nguồn: `<div style="text-align: center;"> <span style=…>Depuis une dizaine…`
+ *
+ * ExamMode dính đúng lỗi này, và nó chỉ lộ ra khi có người thi thật. 23 trong
+ * 40 bài của thư viện có HTML trong consigne — hơn nửa số đề.
+ *
+ * Chỉ bắt ở VỊ TRÍ CON của JSX — tức có `>` ngay trước. Bản đầu bắt mọi
+ * `{...consigne}` và kêu oan ba chỗ: cú pháp rút gọn `{ consigne }` trong
+ * object của Builder, và chính đoạn chú thích này. Một bộ kiểm hay báo động
+ * giả là bộ kiểm người ta học cách bỏ qua — lúc đó nó tệ hơn là không có. */
+const CONSIGNE_THUAN = />\s*\{\s*(?:\w+\.)?consigne\s*\}/g;
+for (const f of files) {
+  const hits = [...read(f).matchAll(CONSIGNE_THUAN)].map((m) => m[0]);
+  check(`consigne:html:${f}`, hits.length === 0,
+    hits.join(", ") + " → dùng dangerouslySetInnerHTML, xem ExamMode.jsx");
+}
+
 // --- 2. Font nạp qua index.html, không qua @import trong JS ---
 const jsHasImport = files.some((f) => read(f).includes("@import url('https://fonts.googleapis"));
 check("fonts:no-js-import", !jsHasImport);
