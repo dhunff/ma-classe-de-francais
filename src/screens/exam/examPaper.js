@@ -76,6 +76,46 @@ export function sectionScore(correct, total, points = 25) {
  * phần chưa chấm thì CHƯA kết luận được — trả `passed: null`, đừng đoán. Một
  * lời "bạn đạt rồi" dựa trên hai phần ba bài thi là lời nói dối tử tế nhưng
  * vẫn là nói dối. */
+/* Gom các dòng `exam_sections` thành KHỐI theo kỹ năng.
+ *
+ * ══ VÌ SAO KHỐI, KHÔNG PHẢI TỪNG BÀI RỜI ══
+ *
+ * Từ migration 044, một kỹ năng chứa được nhiều bài. Nếu coi mỗi bài là một
+ * "phần thi" riêng thì đề CO ba bài sẽ có BA đồng hồ 25 phút — tức 75 phút cho
+ * một phần mà kỳ thi thật cho 25.
+ *
+ * DELF tổ chức khác: CO là MỘT khối có một đồng hồ, bên trong có mấy bài. Nên
+ * ở đây gom lại đúng thế — đồng hồ và điểm thuộc về KHỐI, còn bài là thứ học
+ * sinh đi qua bên trong khối.
+ *
+ * Thứ tự giữ nguyên theo `ord`, và thứ tự khối theo lần xuất hiện đầu tiên —
+ * tức là CO, CE, PE, đúng thứ tự làm bài. Không sắp lại theo bảng chữ cái: một
+ * đề bắt đầu bằng phần viết thì không còn là đề DELF.
+ */
+export function gomTheoKyNang(sections) {
+  const khoi = [];
+  const theoCode = new Map();
+  for (const s of [...(sections ?? [])].sort((a, b) => (a.ord ?? 0) - (b.ord ?? 0))) {
+    let k = theoCode.get(s.code);
+    if (!k) {
+      k = {
+        code: s.code,
+        /* Thời lượng và điểm lấy từ dòng ĐẦU TIÊN của khối, không cộng dồn:
+           chúng là con số của cả phần thi, không phải của từng bài. Cộng dồn
+           thì đề CO ba bài thành 75 điểm. */
+        minutes: s.minutes,
+        points: s.points,
+        ord: s.ord ?? 0,
+        exercises: [],
+      };
+      theoCode.set(s.code, k);
+      khoi.push(k);
+    }
+    if (s.exercise) k.exercises.push(s.exercise);
+  }
+  return khoi;
+}
+
 /* Ghi kết quả một phần thi vào danh sách, THAY THẾ nếu phần đó đã có.
  *
  * ══ VÌ SAO KHÔNG DÙNG `[...p, moi]` ══

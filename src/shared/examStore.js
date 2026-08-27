@@ -117,7 +117,12 @@ export async function saveExam(exam, sections) {
   const row = {
     title: String(exam.title || "").trim() || "(Đề chưa đặt tên)",
     level: exam.level || "B1",
-    duration_min: sections.reduce((n, s) => n + (Number(s.minutes) || 0), 0) || null,
+    /* Cộng theo KỸ NĂNG, không theo dòng.
+       Từ migration 044 một kỹ năng có nhiều dòng, và ba bài CO đều mang
+       `minutes: 25` — cộng thẳng thì đề hiện 75 phút cho riêng phần nghe. Đồng
+       hồ thuộc về cả phần, không phải từng bài. */
+    duration_min: [...new Map(sections.map((s) => [s.code, Number(s.minutes) || 0])).values()]
+      .reduce((n, m) => n + m, 0) || null,
     is_published: !!exam.is_published,
   };
   if (exam.id) row.id = exam.id;

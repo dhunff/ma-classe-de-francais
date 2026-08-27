@@ -6,7 +6,7 @@
  * hai thì hệ thống báo "đạt" cho một người sẽ trượt thật.
  */
 
-import { EXAM_STRUCTURE, sectionScore, verdict, ghiPhan, NGUONG_PHAN }
+import { EXAM_STRUCTURE, sectionScore, verdict, ghiPhan, gomTheoKyNang, NGUONG_PHAN }
   from "../src/screens/exam/examPaper.js";
 
 let pass = 0, fail = 0;
@@ -147,6 +147,56 @@ const phanCO = (diem) => ({ code: "CO", points: 25, score: diem });
   ds = ghiPhan(ds, { code: "CO", points: 25, score: 20 });
   t("ghi đè giữ nguyên thứ tự", ds.map((x) => x.code).join(","), "CO,CE");
 }
+
+/* ── Gom bài theo kỹ năng (migration 044) ──
+ *
+ * Một kỹ năng chứa được nhiều bài. Chỗ dễ sai nhất không phải việc gom, mà là
+ * ĐỒNG HỒ và ĐIỂM: chúng thuộc về cả khối, không phải từng bài. Cộng dồn thì
+ * đề CO ba bài thành 75 phút và 75 điểm — vẫn chạy, vẫn hiện ra số, chỉ là sai
+ * hoàn toàn so với kỳ thi thật. */
+const bai = (id) => ({ id, questions: [{ id: id + "-q" }] });
+const dong = (code, exId, ord, minutes = 25, points = 25) =>
+  ({ code, ord, minutes, points, exercise: bai(exId) });
+
+{
+  const khoi = gomTheoKyNang([
+    dong("CO", "co1", 0), dong("CO", "co2", 1), dong("CO", "co3", 2),
+    dong("CE", "ce1", 3, 45), dong("CE", "ce2", 4, 45),
+    dong("PE", "pe1", 5, 45),
+  ]);
+  t("gom thành 3 khối", khoi.map((k) => k.code), ["CO", "CE", "PE"]);
+  t("CO giữ đủ 3 bài", khoi[0].exercises.map((e) => e.id), ["co1", "co2", "co3"]);
+  t("CE giữ đủ 2 bài", khoi[1].exercises.length, 2);
+  t("đồng hồ KHÔNG cộng dồn", khoi[0].minutes, 25);
+  t("điểm KHÔNG cộng dồn", khoi[0].points, 25);
+  t("tổng điểm cả đề vẫn 75", khoi.reduce((n, k) => n + k.points, 0), 75);
+}
+
+{
+  /* Thứ tự phải theo `ord`, không theo thứ tự dòng trả về từ database —
+     PostgREST không hứa hẹn thứ tự nếu không `order by`. */
+  const khoi = gomTheoKyNang([
+    dong("PE", "pe1", 5), dong("CO", "co2", 1), dong("CE", "ce1", 3),
+    dong("CO", "co1", 0),
+  ]);
+  t("khối xếp theo thứ tự làm bài", khoi.map((k) => k.code), ["CO", "CE", "PE"]);
+  t("bài trong khối xếp theo ord", khoi[0].exercises.map((e) => e.id), ["co1", "co2"]);
+}
+
+{
+  /* Phần thi trỏ tới bài học sinh không mở được (bài trả phí, RLS 019 giấu) về
+     với `exercise` undefined. Khối vẫn phải tồn tại — mất khối là mất luôn
+     đồng hồ và điểm của phần ấy, và đề trông như chỉ có hai phần. */
+  const khoi = gomTheoKyNang([
+    { code: "CO", ord: 0, minutes: 25, points: 25 },
+    dong("CE", "ce1", 1, 45),
+  ]);
+  t("phần thiếu bài vẫn thành khối", khoi.map((k) => k.code), ["CO", "CE"]);
+  t("khối thiếu bài có mảng rỗng", khoi[0].exercises.length, 0);
+}
+
+t("không có phần thi nào thì không có khối nào", gomTheoKyNang([]).length, 0);
+t("đầu vào null không làm nổ", gomTheoKyNang(null).length, 0);
 
 console.log(fail ? `\n${pass} đạt, ${fail} hỏng` : `\n${pass} đạt, 0 hỏng`);
 process.exit(fail ? 1 : 0);

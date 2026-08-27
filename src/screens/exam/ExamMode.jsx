@@ -4,7 +4,7 @@ import { Timer, ShieldCheck, AlertTriangle, Clock, Volume2, ArrowLeft } from "lu
 import { supabase } from "../../storageShim.js";
 import { loadExams, loadExam } from "../../shared/examStore.js";
 import { gradeRemote } from "../../shared/gradeRemote.js";
-import { EXAM_STRUCTURE, sectionScore, verdict, ghiPhan, NGUONG_PHAN, NGUONG_TONG }
+import { EXAM_STRUCTURE, sectionScore, verdict, ghiPhan, gomTheoKyNang, NGUONG_PHAN, NGUONG_TONG }
   from "./examPaper.js";
 
 /* Mode Examen — thi thử có tính giờ.
@@ -81,7 +81,10 @@ function ManCho({ dsDe, chon, paper, onStart, dangTai }) {
               paper?.id === e.id ? "bg-primary text-white" : "bg-surface2 text-ink hover:brightness-95"}`}>
             <span className="text-sm font-bold">{e.title}</span>
             <span className={`ml-2 text-xs ${paper?.id === e.id ? "text-white/75" : "text-soft"}`}>
-              {e.level} · {e.sections.length} phần · {e.duration_min ?? 0}′
+              {/* Đếm KỸ NĂNG, không đếm dòng — một đề 6 bài vẫn là 3 phần. */}
+              {e.level} · {new Set(e.sections.map((s) => s.code)).size} phần
+              {e.sections.length > 3 ? ` · ${e.sections.length} bài` : ""}
+              {` · ${e.duration_min ?? 0}′`}
             </span>
           </button>
         ))}
@@ -99,17 +102,30 @@ function ManCho({ dsDe, chon, paper, onStart, dangTai }) {
           </thead>
           <tbody>
             {cauTruc.map((p) => {
-              const co = paper?.sections.find((s) => s.code === p.code);
+              const co = (paper?.sections ?? []).filter((s) => s.code === p.code);
               return (
                 <tr key={p.code} className="border-t border-line">
                   <td className="p-3 font-bold text-ink">{p.code}
                     <span className="ml-2 font-normal text-soft">{p.label}</span></td>
                   <td className="p-3 text-ink">{p.minutes}′</td>
                   <td className="p-3 text-ink">/{p.points}</td>
+                  {/* Liệt kê ĐỦ số bài của phần, không chỉ bài đầu.
+                      Một phần có thể có nhiều bài (migration 044), và học sinh
+                      cần biết trước phần CO là một bài hay ba — nó quyết định
+                      cách chia 25 phút. Bản cũ dùng `find` nên đề ba bài trông
+                      y hệt đề một bài. */}
                   <td className="p-3">
-                    {co
-                      ? <span className="text-soft">{co.exercise.title.slice(0, 34)}</span>
-                      : <span className="font-bold text-danger">chưa có bài</span>}
+                    {co.length === 0
+                      ? <span className="font-bold text-danger">chưa có bài</span>
+                      : (
+                        <span className="text-soft">
+                          {co.length > 1 && (
+                            <strong className="text-ink">{co.length} bài · </strong>
+                          )}
+                          {co.map((s) => s.exercise?.title ?? "(không mở được)")
+                            .join(" · ").slice(0, 46)}
+                        </span>
+                      )}
                   </td>
                 </tr>
               );
@@ -253,9 +269,30 @@ function AudioGioiHan({ src, attemptId, questionId }) {
 /* Xuất tên để `preview.html` dựng được ĐÚNG component này với dữ liệu thật.
    Màn thi nằm sau đăng nhập và sau một lượt thi đang mở, nên không có đường nào
    khác để nhìn thấy nó — mà đúng ở đây thì mới có ảnh đề bài và consigne. */
-export function PhanThi({ section, attemptId, answers, setAnswers, onDone, onBlur }) {
+export function PhanThi({ section, attemptId, answers, setAnswers, onDone, onBlur, onDoiBai }) {
   const [conLai, setConLai] = useState(section.minutes * 60);
   const doneRef = useRef(false);
+
+  /* ══ NHIỀU BÀI TRONG MỘT PHẦN ══
+   *
+   * Từ migration 044, một kỹ năng chứa được nhiều bài. Nhưng phần thi vẫn là
+   * MỘT khối có MỘT đồng hồ — đúng như DELF: CO là 25 phút cho cả ba bài, không
+   * phải 25 phút mỗi bài.
+   *
+   * Nên `baiIdx` chỉ đổi thứ ĐANG HIỆN, không chạm vào đồng hồ và không nộp gì.
+   * Câu trả lời nằm ở `answers` của cả buổi thi (state ở component cha), khoá
+   * theo `question.id` — nên chuyển qua lại giữa các bài không mất gì, kể cả
+   * khi bài kia đã bị gỡ khỏi DOM.
+   *
+   * Chỉ cho đi lại trong CÙNG một kỹ năng. Nhảy giữa CO và CE thì đồng hồ từng
+   * phần mất nghĩa, và bài thi thử không còn dựng lại được kỳ thi thật. */
+  const [baiIdx, setBaiIdx] = useState(0);
+  const dsBai = section.exercises ?? (section.exercise ? [section.exercise] : []);
+  const ex = dsBai[Math.min(baiIdx, dsBai.length - 1)];
+
+  /* Đổi bài thì báo lên cha để nó mở `attempt` cho bài mới — bộ đếm lượt nghe
+     audio gắn vào từng bài, không gắn vào cả phần. */
+  useEffect(() => { onDoiBai?.(ex?.id); }, [ex?.id]); // eslint-disable-line react-hooks/exhaustive-deps
   /* Chỉ để đổi CHỮ trên nút. Việc chặn do `doneRef` lo: ref đổi ngay trong cùng
      một nhịp, còn state thì phải đợi render kế — mà hai cú bấm liên tiếp lọt
      vừa đúng vào khe đó. */
@@ -284,7 +321,6 @@ export function PhanThi({ section, attemptId, answers, setAnswers, onDone, onBlu
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const ex = section.exercise;
   const gap = conLai <= 60 ? "text-danger" : conLai <= 300 ? "text-warn" : "text-ink";
 
   const dat = (qid, v) => setAnswers((p) => ({ ...p, [qid]: v }));
@@ -295,6 +331,11 @@ export function PhanThi({ section, attemptId, answers, setAnswers, onDone, onBlu
         <div className="min-w-0">
           <div className="text-xs font-bold uppercase tracking-wide text-primary">{section.code}</div>
           <div className="truncate text-sm font-bold text-ink">{section.label}</div>
+          {dsBai.length > 1 && (
+            <div className="mt-0.5 text-xs text-soft">
+              Bài {baiIdx + 1}/{dsBai.length} · dùng chung {section.minutes} phút của phần này
+            </div>
+          )}
         </div>
         {/* Không nhấp nháy: gây hoảng, không giúp gì thêm. */}
         <div className={`flex shrink-0 items-center gap-2 rounded-full bg-surface2 px-4 py-2 font-bold tabular-nums ${gap}`}>
@@ -427,6 +468,38 @@ export function PhanThi({ section, attemptId, answers, setAnswers, onDone, onBlu
         ))}
       </ol>
 
+      {/* ── Đi lại giữa các bài TRONG phần này ──
+         Chỉ trong cùng một kỹ năng. Nhảy sang CO khi đang làm CE thì đồng hồ
+         từng phần mất nghĩa, và bài thi thử thôi dựng lại được kỳ thi thật.
+
+         Câu trả lời nằm ở `answers` của cả buổi thi, khoá theo `question.id`,
+         nên đi qua đi lại không mất gì — kể cả khi bài kia đã rời khỏi DOM. */}
+      {dsBai.length > 1 && (
+        <div className="mt-8 flex flex-wrap items-center gap-2 rounded-2xl bg-surface2 p-3">
+          <span className="mr-1 text-xs font-bold uppercase tracking-wide text-soft">
+            Bài trong phần này
+          </span>
+          {dsBai.map((b, j) => {
+            /* Đánh dấu bài ĐÃ TRẢ LỜI ÍT NHẤT MỘT CÂU — không đánh dấu "đã xong",
+               vì ta không nói cho học sinh biết họ đã đủ hay chưa: đếm câu còn
+               thiếu trong lúc thi là một dạng gợi ý. */
+            const daDung = (b.questions ?? []).some((q) => answers[q.id] !== undefined);
+            return (
+              <button key={b.id} type="button" onClick={() => setBaiIdx(j)}
+                className={`rounded-full border-0 px-3.5 py-1.5 text-xs font-bold transition ${
+                  j === baiIdx ? "bg-primary text-white"
+                    : daDung ? "bg-surface text-ink" : "bg-surface text-soft"}`}>
+                {j + 1}
+                {daDung && j !== baiIdx && <span className="ml-1 text-ok">•</span>}
+              </button>
+            );
+          })}
+          <span className="ml-auto text-xs text-soft">
+            Nộp một lần cho cả {dsBai.length} bài
+          </span>
+        </div>
+      )}
+
       {/* ══ VÌ SAO PHẢI CHẶN BẤM LẦN THỨ HAI ══
        *
        * `onDone` là `xongPhan`, và nó `await gradeRemote(...)` — một vòng gọi
@@ -555,6 +628,18 @@ export default function ExamMode() {
   const [ketQua, setKetQua] = useState([]);
   const [blurCount, setBlurCount] = useState(0);
   const [attemptId, setAttemptId] = useState(null);
+  /* Bài đang hiện trong phần hiện tại. Đổi bài KHÔNG nộp gì và không chạm đồng
+     hồ — nó chỉ quyết định mở `attempt` cho bài nào. */
+  const [baiHienTai, setBaiHienTai] = useState(null);
+  /* attempt của TỪNG bài. Bộ đếm lượt nghe audio gắn vào bài, không gắn vào
+     phần, nên một phần ba bài cần ba dòng attempt. Dùng ref chứ không state:
+     giá trị này chỉ để đọc lúc chấm, và đưa vào state sẽ khiến mỗi lần đổi bài
+     render lại cả cây. */
+  const attemptTheoBai = useRef({});
+
+  /* Gom các dòng exam_sections thành KHỐI theo kỹ năng — một khối, một đồng hồ,
+     nhiều bài bên trong. Xem gomTheoKyNang() trong examPaper.js. */
+  const khoi = useMemo(() => gomTheoKyNang(paper?.sections), [paper]);
 
   /* Đề đến từ bảng `exams` — do giáo viên soạn và phát hành (migration 026).
      RLS lo phần lọc: học sinh chỉ nhận đề đã phát hành. Không lọc lại ở đây,
@@ -575,7 +660,11 @@ export default function ExamMode() {
     setPaper(de);
   };
 
-  const batDau = () => { setAnswers({}); setKetQua([]); setBlurCount(0); setIdx(0); setBuoc("thi"); };
+  const batDau = () => {
+    setAnswers({}); setKetQua([]); setBlurCount(0); setIdx(0);
+    setBaiHienTai(null); attemptTheoBai.current = {};
+    setBuoc("thi");
+  };
 
   /* Mở `attempt` NGAY khi vào phần thi, không đợi lúc nộp.
    *
@@ -586,11 +675,12 @@ export default function ExamMode() {
    * `exam_start` dùng lại lần làm chưa kết thúc, nên gọi lại nhiều lần cũng chỉ
    * ra một dòng. Đó cũng là thứ khiến F5 không cấp thêm lượt nghe. */
   useEffect(() => {
-    if (buoc !== "thi" || !paper?.sections[idx]) return;
+    const exId = baiHienTai ?? khoi[idx]?.exercises[0]?.id;
+    if (buoc !== "thi" || !exId) return;
     let huy = false;
     setAttemptId(null);
     supabase.rpc("exam_start", {
-      p_exercise_id: paper.sections[idx].exercise.id,
+      p_exercise_id: exId,
       /* Gắn lượt làm vào ĐỀ. Thiếu tham số này thì ba phần CO/CE/PE của cùng
          một buổi thi trông như ba lần luyện tập rời rạc, và màn hình kết quả
          không gom lại được — đúng lỗi migration 028 sửa. */
@@ -599,25 +689,40 @@ export default function ExamMode() {
     }).then(({ data, error }) => {
       if (huy) return;
       if (error) console.warn("[exam] không mở được attempt:", error.message);
-      else setAttemptId(data);
+      else { setAttemptId(data); attemptTheoBai.current[exId] = data; }
     });
     return () => { huy = true; };
-  }, [buoc, idx, paper]);
+  }, [buoc, idx, paper, baiHienTai]);
 
   const xongPhan = async () => {
-    const s = paper.sections[idx];
-    const conNua = idx + 1 < paper.sections.length;
+    const k = khoi[idx];
+    const conNua = idx + 1 < khoi.length;
 
     /* Nộp NGAY từng phần, không đợi hết bài: hết giờ phần này là câu trả lời
        của nó đã an toàn trên máy chủ. Đợi tới cuối thì một lần đóng tab là mất
-       cả buổi thi. */
-    const res = await gradeRemote(s.exercise.id, answers, { mode: "exam", blurCount, attemptId });
+       cả buổi thi.
+
+       Một phần có thể có NHIỀU bài (migration 044), và mỗi bài là một lời gọi
+       chấm riêng — `gradeRemote` nhận đúng một `exerciseId`. Nên chấm lần lượt
+       rồi CỘNG DỒN, và chỉ quy về thang 25 MỘT LẦN ở cuối.
+
+       Quy đổi từng bài rồi cộng là sai: hai bài 7 câu và 15 câu sẽ có trọng số
+       bằng nhau, trong khi bài 15 câu đáng gấp đôi. Cộng thô rồi mới chia thì
+       mỗi câu nặng như nhau — đúng cách DELF đếm. */
+    let dung = 0, tong = 0;
+    for (const ex of k.exercises) {
+      const r = await gradeRemote(ex.id, answers, {
+        mode: "exam", blurCount, attemptId: attemptTheoBai.current[ex.id],
+      });
+      if (r) { dung += r.score ?? 0; tong += r.max ?? 0; }
+    }
 
     const ghi = {
-      ...s,
-      /* max === 0 nghĩa là phần này không có câu nào máy chấm được (Production
+      code: k.code, points: k.points, exerciseId: k.exercises[0]?.id,
+      label: k.exercises.map((e) => e.title).join(" · "),
+      /* tong === 0 nghĩa là phần này không có câu nào máy chấm được (Production
          écrite chỉ có bài viết) → để `null`, tức "chờ chấm", chứ không phải 0. */
-      score: res && res.max > 0 ? sectionScore(res.score, res.max, s.points) : null,
+      score: tong > 0 ? sectionScore(dung, tong, k.points) : null,
     };
 
     /* Nút đã chặn bấm lại (xem PhanThi) — đó là chỗ sửa NGUYÊN NHÂN. `ghiPhan`
@@ -629,7 +734,10 @@ export default function ExamMode() {
     /* Phần viết KHÔNG được chấm tự động ở đây — học sinh tự chấm ở màn
        « Kết quả thi », đối chiếu với bài mẫu. Xem migration 030. */
 
-    if (conNua) { setIdx(idx + 1); setAnswers({}); }
+    /* KHÔNG xoá `answers` khi sang phần mới: nó khoá theo question.id, nên câu
+       của phần trước không đụng gì tới phần sau — mà giữ lại thì nếu có đường
+       nào quay lại, bài làm vẫn còn. Bản cũ xoá vì mỗi phần chỉ một bài. */
+    if (conNua) { setIdx(idx + 1); setBaiHienTai(null); }
     else setBuoc("xong");
   };
 
@@ -638,9 +746,13 @@ export default function ExamMode() {
       dangTai={dangTai} onStart={batDau} />;
   }
   if (buoc === "thi") {
-    return <PhanThi key={paper.sections[idx].code} section={paper.sections[idx]}
+    /* `key` theo code: đổi phần thì PhanThi được dựng lại từ đầu, nên đồng hồ
+       và chỉ số bài đều reset. Đổi BÀI trong cùng phần thì không — key không
+       đổi, component sống tiếp, đồng hồ chạy tiếp. */
+    return <PhanThi key={khoi[idx].code} section={khoi[idx]}
       attemptId={attemptId}
       answers={answers} setAnswers={setAnswers} onDone={xongPhan}
+      onDoiBai={setBaiHienTai}
       onBlur={() => setBlurCount((n) => n + 1)} />;
   }
   return <KetQua sections={ketQua} blurCount={blurCount}

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Plus, Trash2, Eye, EyeOff, Save, AlertTriangle, Headphones, BookOpen, PenLine } from "lucide-react";
+import { Plus, Trash2, Eye, EyeOff, Save, AlertTriangle, Headphones, BookOpen, PenLine, ChevronUp, ChevronDown } from "lucide-react";
 import { loadPractice } from "../../shared/exerciseStore.js";
 import { loadExams, saveExam, deleteExam, cotGrilleSanSang } from "../../shared/examStore.js";
 import { EXAM_STRUCTURE } from "../exam/examPaper.js";
@@ -56,13 +56,18 @@ const nhanBai = (ex, trungTen) => {
   return `${ex.title} — ${phan.join(" · ")}`;
 };
 
+/* `sections` giờ chỉ chứa những bài ĐÃ CHỌN, mỗi bài một dòng.
+ *
+ * Bản cũ tạo sẵn ba dòng rỗng — một cho mỗi kỹ năng — vì mỗi kỹ năng chỉ nhận
+ * đúng một bài. Từ migration 044 thì một kỹ năng nhận được nhiều bài, nên "ba
+ * dòng rỗng" không còn là hình dạng đúng: nó vừa giới hạn số bài, vừa buộc mọi
+ * chỗ đọc phải phân biệt dòng rỗng với dòng thật.
+ *
+ * Nay mảng bắt đầu RỖNG và chỉ dài ra khi giáo viên chọn. Khung ba kỹ năng vẫn
+ * hiện đủ, nhưng nó dựng từ EXAM_STRUCTURE chứ không từ dữ liệu — cấu trúc kỳ
+ * thi là hằng số, không phải thứ nằm trong bản nháp. */
 function DeMoi(level) {
-  return {
-    exam: { title: "", level, is_published: false },
-    sections: EXAM_STRUCTURE[level].map((p) => ({
-      code: p.code, minutes: p.minutes, points: p.points, exercise_id: "",
-    })),
-  };
+  return { exam: { title: "", level, is_published: false }, sections: [] };
 }
 
 export default function ExamComposer({ t }) {
@@ -82,16 +87,16 @@ export default function ExamComposer({ t }) {
          không nó tự giới thiệu là thang B1 trên một đề B2. */
       grille: d.exam.grille ? { ...d.exam.grille, level } : null },
     /* Đổi trình độ thì thời lượng từng phần đổi theo cấu trúc thật (B1 45′ CE,
-       B2 60′). Giữ nguyên bài đã chọn nếu bài đó cùng trình độ, còn không thì
-       bỏ — một đề B2 mà phần CE là bài A1 thì không còn là đề B2. */
-    sections: EXAM_STRUCTURE[level].map((p) => {
-      const cu = d.sections.find((s) => s.code === p.code);
-      const bai = kho.find((x) => x.id === cu?.exercise_id);
-      return {
-        code: p.code, minutes: p.minutes, points: p.points,
-        exercise_id: bai && bai.level === level ? bai.id : "",
-      };
-    }),
+       B2 60′). Giữ những bài đã chọn NẾU chúng cùng trình độ, bỏ những bài
+       không — một đề B2 mà phần CE là bài A1 thì không còn là đề B2.
+       Bỏ im lặng là đúng ở đây: giáo viên vừa tự tay đổi trình độ, nên việc
+       danh sách bài đổi theo không phải là điều bất ngờ. */
+    sections: d.sections
+      .filter((s) => kho.find((x) => x.id === s.exercise_id)?.level === level)
+      .map((s) => {
+        const p = EXAM_STRUCTURE[level].find((x) => x.code === s.code);
+        return { ...s, minutes: p.minutes, points: p.points };
+      }),
   }));
 
   const luu = async () => {
@@ -158,8 +163,12 @@ export default function ExamComposer({ t }) {
                       : <span className="inline-flex items-center gap-1 text-xs font-bold text-warn"><EyeOff size={12} /> nháp</span>}
                   </div>
                   <div className="mt-1 text-xs text-soft">
-                    {e.sections.length}/3 phần · {e.duration_min ?? 0}′
-                    {e.sections.length < 3 && (
+                    {/* Đếm KỸ NĂNG, không đếm dòng: một đề 6 bài chia đều ba kỹ
+                        năng vẫn là « 3/3 phần », không phải « 6/3 ». */}
+                    {new Set(e.sections.map((s) => s.code)).size}/3 phần
+                    {e.sections.length > 3 && ` · ${e.sections.length} bài`}
+                    {` · ${e.duration_min ?? 0}′`}
+                    {new Set(e.sections.map((s) => s.code)).size < 3 && (
                       <span className="ml-2 font-bold text-danger">thiếu phần</span>
                     )}
                   </div>
@@ -172,10 +181,13 @@ export default function ExamComposer({ t }) {
                          vết, và giáo viên chỉ phát hiện khi học sinh tự chấm. */
                       exam: { id: e.id, title: e.title, level: e.level,
                               is_published: e.is_published, grille: e.grille ?? null },
-                      sections: EXAM_STRUCTURE[e.level].map((p) => {
-                        const cu = e.sections.find((s) => s.code === p.code);
-                        return { code: p.code, minutes: cu?.minutes ?? p.minutes,
-                                 points: cu?.points ?? p.points, exercise_id: cu?.exercise_id ?? "" };
+                      /* Mang theo MỌI dòng, không gom về một dòng mỗi kỹ năng.
+                         Bản cũ dùng `find` nên đề có ba bài CO mở ra chỉ còn
+                         bài đầu — và bấm Lưu là hai bài kia biến mất. */
+                      sections: (e.sections ?? []).map((cu) => {
+                        const p = EXAM_STRUCTURE[e.level].find((x) => x.code === cu.code);
+                        return { code: cu.code, exercise_id: cu.exercise_id,
+                                 minutes: p?.minutes ?? cu.minutes, points: p?.points ?? cu.points };
                       }),
                     }); }}
                     className="rounded-full border-0 bg-surface2 px-4 py-2 text-sm font-semibold text-ink">
@@ -195,7 +207,10 @@ export default function ExamComposer({ t }) {
   }
 
   /* ── Trình soạn ── */
-  const thieu = draft.sections.filter((s) => !s.exercise_id);
+  /* Kỹ năng CHƯA CÓ BÀI NÀO. Bản cũ đếm dòng có exercise_id rỗng — hình dạng
+     đó không còn tồn tại từ khi sections chỉ chứa bài đã chọn. */
+  const thieu = EXAM_STRUCTURE[draft.exam.level]
+    .filter((p) => !draft.sections.some((s) => s.code === p.code));
 
   return (
     <div className="mx-auto max-w-3xl py-6">
@@ -268,9 +283,14 @@ export default function ExamComposer({ t }) {
       {/* Ba phần thi. Thời lượng lấy từ cấu trúc DELF thật và KHÔNG cho sửa —
           đó là con số của kỳ thi, không phải tuỳ chọn. */}
       <div className="mt-8 space-y-4">
-        {draft.sections.map((s, i) => {
-          const phan = EXAM_STRUCTURE[draft.exam.level].find((p) => p.code === s.code);
-          const Icon = ICON[s.code];
+        {/* Lặp theo CẤU TRÚC KỲ THI, không theo dữ liệu nháp.
+           Cấu trúc DELF là hằng số — ba phần, thời lượng cố định — nên khung
+           phải luôn hiện đủ ba kể cả khi chưa chọn bài nào. Lặp theo
+           `draft.sections` như bản cũ thì đề rỗng hiện ra một trang trắng, và
+           giáo viên không biết mình đang thiếu gì. */}
+        {EXAM_STRUCTURE[draft.exam.level].map((phan) => {
+          const daChon = draft.sections.filter((s) => s.code === phan.code);
+          const Icon = ICON[phan.code];
           const ungVien = kho.filter(
             (ex) => ex.level === draft.exam.level && coSkill(ex, phan.skill)
                  && (ex.questions?.length ?? 0) > 0,
@@ -286,18 +306,92 @@ export default function ExamComposer({ t }) {
           }
           const tenTrung = new Set(Object.keys(demTen).filter((t) => demTen[t] > 1));
 
-          const chon = (id) => setDraft({
+          /* Bài đã chọn rồi thì không hiện lại trong ô thêm. Ràng buộc ở
+             migration 044 chặn trùng ở tầng database, nhưng để giáo viên chọn
+             được rồi mới báo lỗi khoá trùng là bắt họ đoán. */
+          const daChonId = new Set(daChon.map((s) => s.exercise_id));
+          const conLai = ungVien.filter((ex) => !daChonId.has(ex.id));
+
+          const them = (id) => {
+            if (!id) return;
+            setDraft({
+              ...draft,
+              /* Nối vào CUỐI: thứ tự chọn là thứ tự học sinh sẽ làm, và giáo
+                 viên chọn theo thứ tự họ muốn. `ord` sinh lúc lưu. */
+              sections: [...draft.sections, {
+                code: phan.code, minutes: phan.minutes, points: phan.points, exercise_id: id,
+              }],
+            });
+          };
+          const bo = (id) => setDraft({
             ...draft,
-            sections: draft.sections.map((x, j) => (j === i ? { ...x, exercise_id: id } : x)),
+            sections: draft.sections.filter((s) => !(s.code === phan.code && s.exercise_id === id)),
           });
+          const doiCho = (id, huong) => {
+            const ds = [...draft.sections];
+            const iTrong = ds.findIndex((s) => s.code === phan.code && s.exercise_id === id);
+            /* Đổi chỗ với bài LIỀN KỀ CÙNG KỸ NĂNG, không phải với phần tử liền
+               kề trong mảng — mảng trộn lẫn cả ba kỹ năng, nên đổi mù sẽ đẩy
+               một bài CO sang giữa nhóm CE. */
+            const cungCode = ds.map((s, j) => (s.code === phan.code ? j : -1)).filter((j) => j >= 0);
+            const viTri = cungCode.indexOf(iTrong);
+            const dich = cungCode[viTri + huong];
+            if (dich === undefined) return;
+            [ds[iTrong], ds[dich]] = [ds[dich], ds[iTrong]];
+            setDraft({ ...draft, sections: ds });
+          };
 
           return (
-            <div key={s.code} className="rounded-2xl border border-line bg-surface p-5">
+            <div key={phan.code} className="rounded-2xl border border-line bg-surface p-5">
               <div className="flex items-center gap-2">
                 <Icon size={16} className="text-primary" />
-                <span className="text-sm font-bold text-ink">{s.code} · {phan.label}</span>
-                <span className="ml-auto text-xs text-soft">{phan.minutes}′ · /{phan.points}</span>
+                <span className="text-sm font-bold text-ink">{phan.code} · {phan.label}</span>
+                <span className="ml-auto text-xs text-soft">
+                  {phan.minutes}′ · /{phan.points}
+                  {daChon.length > 0 && ` · ${daChon.length} bài`}
+                </span>
               </div>
+
+              {/* Đồng hồ và điểm thuộc về CẢ PHẦN, không phải từng bài. Nói ra
+                  ở đây vì giáo viên thêm bài thứ ba rất dễ tưởng đề dài thêm
+                  25 phút nữa. */}
+              {daChon.length > 1 && (
+                <p className="m-0 mt-2 text-xs text-soft">
+                  {daChon.length} bài dùng chung {phan.minutes} phút và {phan.points} điểm của phần này.
+                </p>
+              )}
+
+              {daChon.length > 0 && (
+                <ol className="m-0 mt-3 list-none space-y-2 p-0">
+                  {daChon.map((s, j) => {
+                    const ex = kho.find((x) => x.id === s.exercise_id);
+                    return (
+                      <li key={s.exercise_id}
+                          className="flex items-center gap-2 rounded-xl bg-surface2 px-3 py-2">
+                        <span className="shrink-0 text-xs font-bold tabular-nums text-soft">{j + 1}.</span>
+                        <span className="min-w-0 flex-1 truncate text-sm text-ink">
+                          {ex ? nhanBai(ex, tenTrung.has(String(ex.title).trim()))
+                              : `(bài ${s.exercise_id} không còn trong thư viện)`}
+                        </span>
+                        <button type="button" onClick={() => doiCho(s.exercise_id, -1)}
+                          disabled={j === 0} title="Đưa lên trên"
+                          className="shrink-0 rounded-full border-0 bg-transparent px-1.5 py-1 text-soft hover:text-ink disabled:opacity-30">
+                          <ChevronUp size={15} />
+                        </button>
+                        <button type="button" onClick={() => doiCho(s.exercise_id, 1)}
+                          disabled={j === daChon.length - 1} title="Đưa xuống dưới"
+                          className="shrink-0 rounded-full border-0 bg-transparent px-1.5 py-1 text-soft hover:text-ink disabled:opacity-30">
+                          <ChevronDown size={15} />
+                        </button>
+                        <button type="button" onClick={() => bo(s.exercise_id)} title="Bỏ khỏi đề"
+                          className="shrink-0 rounded-full border-0 bg-transparent px-1.5 py-1 text-soft hover:text-danger">
+                          <Trash2 size={14} />
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ol>
+              )}
 
               {ungVien.length === 0 ? (
                 <p className="m-0 mt-3 flex items-start gap-2 text-xs text-danger">
@@ -305,11 +399,20 @@ export default function ExamComposer({ t }) {
                   Thư viện chưa có bài « {phan.skill} » trình độ {draft.exam.level}.
                   Soạn một bài ở mục Luyện tập trước đã.
                 </p>
+              ) : conLai.length === 0 ? (
+                <p className="m-0 mt-3 text-xs text-soft">
+                  Đã dùng hết {ungVien.length} bài « {phan.skill} » {draft.exam.level} của thư viện.
+                </p>
               ) : (
-                <select value={s.exercise_id} onChange={(e) => chon(e.target.value)}
+                /* `value=""` và reset ngay sau khi chọn: ô này là NÚT THÊM, không
+                   phải ô hiển thị lựa chọn hiện tại. Để nó giữ giá trị thì chọn
+                   lại cùng một bài lần nữa sẽ không kích hoạt onChange. */
+                <select value="" onChange={(e) => them(e.target.value)}
                   className="mt-3 w-full rounded-xl border border-line bg-surface2 px-4 py-2.5 text-sm text-ink">
-                  <option value="">— chọn bài —</option>
-                  {ungVien.map((ex) => (
+                  <option value="">
+                    {daChon.length ? "+ thêm bài nữa vào phần này —" : "— chọn bài —"}
+                  </option>
+                  {conLai.map((ex) => (
                     <option key={ex.id} value={ex.id}>
                       {nhanBai(ex, tenTrung.has(String(ex.title).trim()))}
                     </option>
