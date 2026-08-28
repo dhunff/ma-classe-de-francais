@@ -270,10 +270,17 @@ for (const bang of ["attempts", "answers", "submissions"]) {
   ket(status === 200 && Array.isArray(body),
     "046: ba cột danh tính có mặt (display_name, username, avatar)",
     body?.code === "42703"
-      ? "cột chưa tồn tại — 046 CHƯA vào database này. "
-        + "Kiểm bằng: select count(*) from public.questions where point_gram is not null; "
-        + "ra 232 nghĩa là đang đứng đúng database, và khi đó 046 đã bị cuộn ngược "
-        + "hoặc chỉ chạy một phần."
+      ? "PostgREST không thấy cột. BA nguyên nhân, đừng đoán — chạy MỘT câu này "
+        + "trong SQL Editor và đọc cả ba số một lượt — "
+        + "notify pgrst, 'reload schema'; select current_database(), "
+        + "(select count(*) from public.questions where point_gram is not null) as point_gram, "
+        + "(select count(*) from information_schema.columns where table_schema='public' "
+        + "and table_name='profiles' and column_name in "
+        + "('display_name','username','avatar')) as cot_moi;  ·  "
+        + "point_gram≠232 → Editor đang ở database khác. "
+        + "cot_moi=0 → 046 bị cuộn ngược. "
+        + "Cả hai đúng mà ca này vẫn đỏ → bộ nhớ đệm lược đồ của PostgREST cũ, "
+        + "và câu notify ở trên vừa xử lý xong."
       : `HTTP ${status} · ${body?.message ?? ""}`);
 }
 
