@@ -252,6 +252,52 @@ for (const bang of ["attempts", "answers", "submissions"]) {
     `HTTP ${status} — cột answer_key có thể đã được cấp lại quyền`);
 }
 
+/* ── Migration 046: ba cột danh tính ──
+ *
+ * PostgREST trả 42703 và HUỶ CẢ CÂU khi gặp cột lạ, nên câu này phân biệt được
+ * ba chuyện mà từ phía ứng dụng trông giống hệt nhau:
+ *
+ *   200 + []      cột có, RLS không cho khoá anon thấy dòng nào — ĐÚNG
+ *   42703         cột chưa có, tức 046 chưa vào database NÀY
+ *   401/403       cột có nhưng bị thu quyền ở mức cột
+ *
+ * Ca này tồn tại vì "đã chạy migration rồi" đã bốn lần không đồng nghĩa với
+ * "dữ liệu đã đổi" trong dự án này — hai lần vì SQL Editor nối tới database
+ * khác, một lần vì khối tự kiểm cuối file cuộn ngược cả DDL ở đầu file. Xem
+ * CLAUDE.md. Một câu đo từ ngoài chấm dứt mọi tranh luận trong ba giây. */
+{
+  const { status, body } = await rest("profiles?select=id,display_name,username,avatar&limit=1");
+  ket(status === 200 && Array.isArray(body),
+    "046: ba cột danh tính có mặt (display_name, username, avatar)",
+    body?.code === "42703"
+      ? "cột chưa tồn tại — 046 CHƯA vào database này. "
+        + "Kiểm bằng: select count(*) from public.questions where point_gram is not null; "
+        + "ra 232 nghĩa là đang đứng đúng database, và khi đó 046 đã bị cuộn ngược "
+        + "hoặc chỉ chạy một phần."
+      : `HTTP ${status} · ${body?.message ?? ""}`);
+}
+
+/* ── Hai hàm RPC phải VÔ HÌNH với khoá anon ──
+ *
+ * Cả hai là `security definer`. Nếu anon gọi được `update_my_identity` thì bất
+ * kỳ ai trên internet cũng ghi được vào hồ sơ người khác; nếu gọi được
+ * `username_available` thì cả internet dò được danh sách username.
+ *
+ * CẢNH BÁO khi đọc kết quả: một hàm đã khoá quyền và một hàm KHÔNG TỒN TẠI trả
+ * về cùng một thứ — 404 PGRST202. Ca này chỉ chứng minh "anon không gọi được",
+ * KHÔNG chứng minh hàm đã được tạo. Việc đó do ca cột ở trên và khối tự kiểm
+ * cuối file 046 lo. Ghi rõ ở đây vì đúng chỗ này dễ tưởng đã xanh là đã xong. */
+for (const ham of ["username_available", "update_my_identity"]) {
+  const r = await fetch(`${URL_BASE}/rest/v1/rpc/${ham}`, {
+    method: "POST",
+    headers: { apikey: ANON, "Content-Type": "application/json" },
+    body: JSON.stringify({ p_username: "kiem_tra_tu_dong" }),
+  });
+  ket(r.status === 404 || r.status === 401 || r.status === 403,
+    `046: khoá anon KHÔNG gọi được ${ham}()`,
+    `HTTP ${r.status} — hàm đang mở cho anon, thu quyền lại ngay`);
+}
+
 console.log(fail
   ? `\n${pass} đạt, ${fail} hỏng — database chưa khớp với mã nguồn`
   : `\n${pass} đạt, 0 hỏng — database khớp với mã nguồn`);
