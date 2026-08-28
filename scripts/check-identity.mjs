@@ -16,6 +16,35 @@ import {
   DANG_USERNAME, USERNAME_TOI_THIEU, USERNAME_TOI_DA, TEN_HIEN_THI_TOI_DA,
   goiYUsername, chuanHoaUsername, kiemUsername, kiemTenHienThi,
 } from "../src/shared/identityRules.js";
+/* profile.js không import gì cả, nên `node` nạp được — cùng lý do đã khiến
+   identityRules.js tách khỏi identity.js. */
+import { PROFILE_FIELDS, LEVELS_PROFILE, GOALS_PROFILE, validateProfile }
+  from "../src/shared/profile.js";
+
+/* Bỏ chú thích `--` khỏi SQL trước khi soi bằng regex.
+ *
+ * Cần thiết vì các migration ở đây TRÍCH DẪN câu lệnh nguy hiểm để giải thích
+ * vì sao không được viết nó. Bộ kiểm đọc mã nguồn thì phải phân biệt được câu
+ * lệnh với lời bàn về câu lệnh — nếu không, cách duy nhất làm nó xanh là xoá
+ * đoạn giải thích, tức là nó phạt đúng việc viết chú thích tử tế.
+ *
+ * ══ VÌ SAO TÁCH RA HÀM, VÀ VÌ SAO `\r` LẠI QUAN TRỌNG ══
+ *
+ * Bản trước viết `sql.split("\n").map((d) => d.replace(/--.*$/, ""))` ba lần,
+ * và nó KHÔNG bỏ được chú thích nào cả trên file lưu bằng CRLF: trong
+ * JavaScript, `.` không khớp `\r` (cũng như không khớp `\n`), nên `.*` dừng
+ * TRƯỚC ký tự `\r` cuối dòng, và `$` — không có cờ `m` — không khớp ở đó. Cả
+ * biểu thức trượt, dòng giữ nguyên.
+ *
+ * Hậu quả: ca "046 không thêm policy update nào trên profiles" báo ĐỎ trên một
+ * file hoàn toàn đúng, vì nó đọc được câu `create policy … for update` nằm
+ * trong khối chú thích giải thích vì sao KHÔNG viết câu đó.
+ *
+ * Cùng họ với cái bẫy `\b` đã ghi trong CLAUDE.md: một ký tự vô hình làm regex
+ * nói một chuyện khác hẳn với thứ đọc trên màn hình. Đọc mã nguồn không thấy
+ * gì sai. `split(/\r?\n/)` xử lý dứt điểm cả hai kiểu xuống dòng. */
+const boChuThich = (sql) =>
+  sql.split(/\r?\n/).map((d) => d.replace(/--.*$/, "")).join("\n");
 
 let pass = 0, fail = 0;
 const t = (ten, got, want) => {
@@ -41,7 +70,7 @@ const t = (ten, got, want) => {
    * thích vì sao không được viết nó. Bộ kiểm đọc mã nguồn thì phải phân biệt
    * được câu lệnh với lời bàn về câu lệnh — nếu không, cách duy nhất làm nó
    * xanh là xoá đoạn giải thích, tức là nó phạt đúng việc viết chú thích tử tế. */
-  const lenh = sql.split("\n").map((d) => d.replace(/--.*$/, "")).join("\n");
+  const lenh = boChuThich(sql);
 
   /* Ràng buộc viết dạng: username ~ '^[a-z_][a-z0-9_]{2,19}$' */
   const m = lenh.match(/username\s*~\s*'([^']+)'/);
@@ -67,6 +96,104 @@ const t = (ten, got, want) => {
      là ai đó đã đi đường tắt. */
   t("046 không thêm policy update nào trên profiles",
     /create policy[^;]*for\s+(update|all)[^;]*on public\.profiles/i.test(lenh), false);
+}
+
+/* ══ HỒ SƠ MỞ RỘNG: JS ↔ SQL (migration 048 + 050) ══
+ *
+ * Chín trường hồ sơ vừa chuyển từ blob `s:mcf-profiles` sang cột trên
+ * `profiles`. Ba danh sách phải khớp nhau ở ba chỗ khác nhau, và lệch ở bất kỳ
+ * cặp nào cũng KHÔNG gây lỗi build:
+ *
+ *   PROFILE_FIELDS   ↔ chín cột của 048     lệch → một trường điền xong không
+ *                                            lưu được, hoặc lưu rồi đọc không ra
+ *   LEVELS_PROFILE   ↔ ràng buộc level      lệch → chọn từ dropdown rồi bị
+ *   GOALS_PROFILE    ↔ ràng buộc goal         database từ chối, không hiểu vì sao
+ *
+ * Cái thứ hai và thứ ba là kiểu lỗi tệ nhất trong biểu mẫu: giao diện chỉ đưa
+ * ra những lựa chọn mà chính nó cho là hợp lệ, nên người dùng không có cách
+ * nào tự thoát ra. */
+{
+  const sql = ["048_ho_so_cot", "049_ho_so_chep", "050_ho_so_ham"]
+    .map((f) => readFileSync(new URL(`../supabase/migrations/${f}.sql`, import.meta.url), "utf8"))
+    .join("\n");
+  /* Bỏ chú thích `--`: các file này TRÍCH DẪN câu lệnh nguy hiểm để giải thích
+     vì sao không được viết nó. Bộ kiểm đọc mã nguồn phải phân biệt được câu
+     lệnh với lời bàn về câu lệnh, nếu không nó phạt đúng việc viết chú thích
+     tử tế. Cùng lý do đã ghi ở khối 046/047 phía trên. */
+  const lenh = boChuThich(sql);
+
+  /* Chín cột. Đọc từ `add column if not exists <tên>` để không phụ thuộc vào
+     cách xuống dòng của file. */
+  const cot = [...lenh.matchAll(/add column if not exists\s+(\w+)/g)].map((m) => m[1]);
+  t("048 khai đủ chín cột, đúng bằng PROFILE_FIELDS",
+    [...cot].sort(), [...PROFILE_FIELDS].sort());
+
+  /* Danh sách trình độ và mục tiêu trong ràng buộc `check`. */
+  const trongNgoac = (ten) => {
+    const m = lenh.match(new RegExp(`${ten} is null or ${ten} in \\(([^)]+)\\)`));
+    return m ? m[1].split(",").map((x) => x.trim().replace(/^'|'$/g, "")) : null;
+  };
+  t("048: danh sách trình độ khớp LEVELS_PROFILE", trongNgoac("level"), LEVELS_PROFILE);
+  t("048: danh sách mục tiêu khớp GOALS_PROFILE", trongNgoac("goal"), GOALS_PROFILE);
+
+  /* Regex điện thoại phải nhận đúng những gì `validateProfile` nhận. Hai bên
+     viết khác nhau (`\d` vs `0-9`, thứ tự trong lớp ký tự) nên so từng ký tự
+     là vô nghĩa — so bằng HÀNH VI trên những chuỗi người ta thật sự gõ. */
+  const mPhone = lenh.match(/phone is null or phone ~ '([^']+)'/);
+  t("048 có ràng buộc dạng điện thoại", !!mPhone, true);
+  if (mPhone) {
+    const reSql = new RegExp(mPhone[1]);
+    const ca = ["0912345678", "+33 6 12 34 56 78", "(024) 3825.1234",
+                "090-123-456", "1234567", "not a phone", "0912345678901234567890"];
+    const lech = ca.filter((s) => reSql.test(s) !== !validateProfile({ phone: s }).phone);
+    t("regex điện thoại SQL xử sự giống validateProfile", lech, []);
+  }
+
+  /* Hàm ghi phải là security definer. Đổi thành security invoker thì RLS chặn
+     học sinh và tính năng chết lặng — hoặc tệ hơn, có người "sửa" bằng cách
+     thêm policy update cho học sinh, và mở luôn đường tự đặt role = 'prof'. */
+  t("update_my_profile là security definer",
+    /create or replace function public\.update_my_profile[\s\S]{0,900}?security definer/.test(lenh), true);
+
+  t("thu hồi quyền gọi của anon đích danh",
+    /revoke all on function\s+public\.update_my_profile\([^)]*\)\s+from public, anon;/.test(lenh), true);
+
+  /* Đây là toàn bộ lý do RPC tồn tại. Một dòng `create policy ... for update`
+     trên `profiles` nghĩa là ai đó đã đi đường tắt — và đường tắt đó cho học
+     sinh tự đặt `role = 'prof'` cùng `has_premium_access`. */
+  t("048–050 không thêm policy update nào trên profiles",
+    /create policy[^;]*for\s+(update|all)[^;]*on public\.profiles/i.test(lenh), false);
+
+  /* Hàm nhận `p_dob` là TEXT. Đổi sang `date` thì ô ngày để trống gửi chuỗi
+     rỗng và PostgREST trả 400 thô — giao diện không đọc được thành câu gì. */
+  t("update_my_profile nhận p_dob dạng text",
+    /p_dob\s+text/.test(lenh), true);
+}
+
+/* ══ 051 phải thật sự đóng `s:mcf-profiles` ══
+ *
+ * Chuyển dữ liệu sang bảng mà quên siết policy thì đã làm hết việc khó và bỏ
+ * đúng phần vá lỗ hổng. Ca này đọc file 051 và đòi cả hai chiều. */
+{
+  const sql = readFileSync(
+    new URL("../supabase/migrations/051_kv_ho_so_dong_cua.sql", import.meta.url), "utf8");
+  const lenh = boChuThich(sql);
+
+  t("051 loại s:mcf-profiles khỏi policy ĐỌC",
+    /key not in \([^)]*'s:mcf-profiles'[^)]*\)/.test(lenh), true);
+
+  /* Hai policy ghi được dựng lại; không cái nào còn nhắc tới khoá đó.
+   *
+   * Cắt tới dấu `;` chứ không lấy hết phần đuôi file: khối SELECT tự kiểm ở
+   * cuối 051 CÓ chứa chuỗi 'mcf-profiles' — nó đi tìm chính những policy còn
+   * sót. Bản đầu của ca này báo đỏ vì đọc luôn cả câu kiểm, tức là nó phạt
+   * đúng việc viết phần tự kiểm. */
+  const khoiGhi = [...lenh.matchAll(/create policy kv_student_[^;]*;/g)]
+    .map((m) => m[0]).join("\n");
+  t("051 gỡ s:mcf-profiles khỏi hai policy GHI",
+    khoiGhi.includes("mcf-profiles"), false);
+  t("051 dựng lại đủ hai policy ghi của học sinh",
+    (lenh.match(/create policy kv_student_(insert|update)/g) || []).length, 2);
 }
 
 /* ── chuẩn hoá ── */
@@ -128,7 +255,9 @@ t("hằng số tên hiển thị", TEN_HIEN_THI_TOI_DA, 40);
     "checking", "free", "taken", "unknown",
     "err_username_taken", "err_username_invalid", "err_not_signed_in",
     "err_no_profile", "err_chua_co_ham", "err_mang", "err_khong_ro",
-    "chua_co_cot", "avatar_pick", "avatar_letter", "avatar_change",
+    "err_dob_invalid", "err_profile_invalid",
+    "chua_co_cot", "chua_co_cot_ho_so",
+    "avatar_pick", "avatar_letter", "avatar_change",
     "display_name", "username", "username_help", "identity_title",
   ];
   t("có đúng 3 khối identity (vi/fr/en)",
@@ -147,7 +276,7 @@ t("hằng số tên hiển thị", TEN_HIEN_THI_TOI_DA, 40);
      HAI và nối lại: bộ kiểm quan tâm tới nội dung migration, không quan tâm
      nội dung ấy được chia làm mấy tệp — và nếu ai gộp lại hay tách tiếp thì nó
      vẫn phải xanh. */
-  const sql = ["046_danh_tinh_ho_so", "047_danh_tinh_ham"]
+  const sql = ["046_danh_tinh_ho_so", "047_danh_tinh_ham", "050_ho_so_ham"]
     .map((f) => readFileSync(new URL(`../supabase/migrations/${f}.sql`, import.meta.url), "utf8"))
     .join("\n");
   const i18n = readFileSync(new URL("../src/shared/i18n.jsx", import.meta.url), "utf8");

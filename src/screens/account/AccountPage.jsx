@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { User, Lock, LogOut, Calendar, Pencil, CheckCircle2, Loader2, AlertTriangle } from "lucide-react";
-import { load, save } from "../../shared/storage.js";
 import { useT } from "../../shared/i18n.jsx";
+import { loadHoSo, luuHoSo } from "../../shared/profileStore.js";
 import { emptyProfile, calculateProfileCompletion, validateProfile, LEVELS_PROFILE, GOALS_PROFILE } from "../../shared/profile.js";
 import { Avatar } from "../../shared/avatars.jsx";
 import { ChonAvatar, ONhapUsername } from "./DanhTinh.jsx";
@@ -73,20 +73,31 @@ export default function AccountPage({ name, role, email, emailVerified, onLogout
   const [dt, setDt] = useState({ display_name: "", username: "", avatar: "" });
   const [dtGoc, setDtGoc] = useState({ username: "" });
   const [chuaCoCot, setChuaCoCot] = useState(false);
+  /* Cờ riêng cho hồ sơ mở rộng: 046 và 048 là hai migration khác nhau, và
+     database có thể chạy cái này mà chưa chạy cái kia. Gộp thành một cờ thì
+     người vận hành đọc thông báo rồi đi chạy nhầm file. */
+  const [chuaCoCotHoSo, setChuaCoCotHoSo] = useState(false);
   const [moChonAvatar, setMoChonAvatar] = useState(false);
   const [loiDt, setLoiDt] = useState("");
+  const [loiHoSo, setLoiHoSo] = useState("");
   const oUsername = useRef(null);
 
   useEffect(() => {
     (async () => {
-      /* Hai nguồn, đọc song song. Chúng độc lập nhau — hồ sơ mở rộng nằm ở
-         kv_store, danh tính nằm ở bảng `profiles` — nên chờ tuần tự chỉ làm
-         trang tải chậm gấp đôi mà không được gì. */
-      const [all, danhTinh] = await Promise.all([
-        load("mcf-profiles", {}),
+      /* Hai lời gọi, chạy song song. Cả hai đọc cùng một DÒNG `profiles` —
+         gộp thành một câu select được, nhưng khi đó một cột thiếu ở phía này
+         làm hỏng luôn phía kia: PostgREST trả 42703 và HUỶ CẢ CÂU. Tách ra thì
+         database chạy 046 mà chưa chạy 048 chỉ mất một nửa trang, và nửa còn
+         lại nói rõ mình thiếu gì. */
+      const [hoSo, danhTinh] = await Promise.all([
+        loadHoSo(),
         loadDanhTinh(),
       ]);
-      setP({ ...emptyProfile(), ...((all && all[name]) || {}) });
+      if (hoSo) {
+        const { chuaCoCot: thieuCot, ...truong } = hoSo;
+        setP({ ...emptyProfile(), ...truong });
+        setChuaCoCotHoSo(!!thieuCot);
+      }
       if (danhTinh) {
         setDt({
           display_name: danhTinh.display_name || "",
@@ -111,6 +122,7 @@ export default function AccountPage({ name, role, email, emailVerified, onLogout
   const submit = async (e) => {
     e.preventDefault();
     setLoiDt("");
+    setLoiHoSo("");
     const found = validateProfile(p);
     setErrs(found);
     if (Object.keys(found).length) return;
@@ -153,11 +165,23 @@ export default function AccountPage({ name, role, email, emailVerified, onLogout
          chặn người dùng vì mạng chập chờn. */
     }
 
-    /* Đọc lại rồi mới ghi: hồ sơ của cả lớp nằm chung một object, nên ghi đè
-       bằng bản đã tải lúc mở trang sẽ xoá thay đổi của người khác trong lúc
-       mình đang mở form. */
-    const all = await load("mcf-profiles", {});
-    await save("mcf-profiles", { ...all, [name]: p });
+    /* Hồ sơ mở rộng đi qua RPC `update_my_profile`, ghi vào chín cột trên
+       dòng của chính mình. Không còn bước "đọc lại rồi ghi đè cả object" —
+       chuyện đó cần thiết khi cả lớp chung một blob, và chính nó là lỗ hổng:
+       ai cũng ghi đè được hồ sơ của người khác. Xem migration 048.
+
+       Ghi TRƯỚC danh tính vì nếu hai lời gọi mà một cái hỏng thì trường hợp dễ
+       hiểu hơn là "hồ sơ đã lưu, tên chưa" — người dùng đang nhìn thẳng vào ô
+       tên và thấy nó chưa đổi. Ngược lại thì họ không có gì để nhìn. */
+    const kqHoSo = await luuHoSo(p);
+    if (!kqHoSo.ok) {
+      setSaving(false);
+      /* Lỗi hồ sơ hiện cạnh NÚT LƯU, không phải trong khối danh tính. Cùng một
+         câu chữ đặt sai chỗ là một chỉ dẫn sai: người dùng sẽ đi sửa ô
+         @username trong khi thứ hỏng là ngày sinh. */
+      setLoiHoSo(t(`identity.err_${kqHoSo.loi}`));
+      return;
+    }
 
     /* Ghi danh tính đi qua RPC `update_my_identity`, KHÔNG phải `.update()`:
        RLS phân quyền theo dòng, nên cho học sinh ghi dòng của mình là cho họ
@@ -400,6 +424,22 @@ export default function AccountPage({ name, role, email, emailVerified, onLogout
                     </Field>
                   </div>
                 </div>
+
+                {/* Migration 048 chưa chạy: nói thẳng thay vì để người dùng
+                    điền xong rồi nhận lỗi lúc bấm Lưu. Quy tắc 1 — trạng thái
+                    rỗng phải nói rõ lý do. */}
+                {chuaCoCotHoSo && (
+                  <p className="m-0 mt-6 flex items-start gap-2 rounded-xl bg-warn-soft p-3 text-xs font-semibold text-warn">
+                    <AlertTriangle size={14} className="mt-px shrink-0" />
+                    {t("identity.chua_co_cot_ho_so")}
+                  </p>
+                )}
+
+                {loiHoSo && (
+                  <p className="m-0 mt-6 flex items-start gap-2 rounded-xl bg-danger-soft p-3 text-xs font-bold text-danger">
+                    <AlertTriangle size={14} className="mt-px shrink-0" /> {loiHoSo}
+                  </p>
+                )}
 
                 <div className="mt-8 flex flex-wrap items-center justify-end gap-3">
                   {toast && <span className="mr-auto text-sm font-bold text-ok">{toast}</span>}

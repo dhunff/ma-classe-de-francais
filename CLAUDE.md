@@ -118,7 +118,12 @@ Panel phụ (sổ tay) là con `absolute` của tấm thẻ, không phải `fixe
 
 | Đã là bảng thật | Còn là blob `kv_store` |
 |---|---|
-| `profiles`, `exercise_access`, `submissions`, `tips`, `exercises`, `questions` | `mcf-profiles`, `mcf-accounts`, `mcf-classes`, `mcf-folders`, `mcf-custom-cats`, `mcf-ph-<tên>`… |
+| `profiles`, `exercise_access`, `submissions`, `tips`, `exercises`, `questions` | `mcf-accounts`, `mcf-classes`, `mcf-folders`, `mcf-custom-cats`, `mcf-ph-<tên>`… |
+
+Hồ sơ mở rộng (địa chỉ, điện thoại, ngày sinh, trường, trình độ, mục tiêu) đã
+rời `s:mcf-profiles` sang chín cột trên `profiles` — migration 048–051, đi qua
+`shared/profileStore.js`. Blob còn đó làm sao lưu nhưng học sinh không đọc,
+không ghi được nữa.
 
 Kho đề đi qua `shared/exerciseStore.js`, KHÔNG gọi `load("mcf-practice")` nữa —
 `check:store` canh chỗ này. Hai kho phân biệt bằng cột `store`
@@ -292,6 +297,18 @@ kiểm trên báo XANH trên một file có lỗi thật, vì regex hoá ra đan
 điều khiển vô hình. Đọc mã nguồn không thấy gì sai. Đây đúng là loại lỗi bộ
 kiểm ấy sinh ra để bắt, và nó tự dính. Dùng `(?![A-Za-z])`, và sửa file có cấu
 trúc bằng Edit — quy tắc 4 ở trên, lần thứ năm.
+
+**Trong JavaScript, `.` không khớp `\r` — không chỉ `\n`.** Bộ lọc chú thích
+SQL của `check:identity` viết `d.replace(/--.*$/, "")` trên từng dòng tách bằng
+`split("\n")`. Trên file lưu CRLF thì `.*` dừng TRƯỚC `\r`, `$` (không có cờ
+`m`) không khớp ở đó, cả biểu thức trượt, và **không một dòng chú thích nào bị
+bỏ**. Hậu quả: ca "046 không thêm policy update nào trên profiles" báo ĐỎ trên
+một file đúng, vì nó đọc được câu `create policy … for update` nằm trong khối
+chú thích giải thích vì sao KHÔNG viết câu đó. Dùng `split(/\r?\n/)`.
+
+Cùng họ với bẫy `\b` ở trên, và cùng một bài học: bộ kiểm đọc mã nguồn bằng
+regex thì chính nó là chỗ dễ sai nhất, vì sai ở đó không tạo ra triệu chứng nào
+ngoài một con số pass/fail mà không ai đối chiếu với gì.
 
 **"Thử mọi cách cho chắc" là chỗ trốn của lỗi.** Webhook SePay từng thử bốn
 công thức ký và chấp nhận cách nào khớp — hợp lý khi chưa có tài liệu, nhưng
