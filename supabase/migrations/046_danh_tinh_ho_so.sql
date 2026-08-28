@@ -1,4 +1,6 @@
--- 046 — tên hiển thị, @username duy nhất, và ảnh đại diện
+-- 046 — cột danh tính: tên hiển thị, @username, ảnh đại diện
+--
+-- CHỈ TẠO CẤU TRÚC. Hàm và quyền nằm ở 047 — chạy file này trước.
 --
 -- ══════════════════════════════════════════════════════════════════════════
 -- VÌ SAO KHÔNG THÊM POLICY "HỌC SINH SỬA HỒ SƠ CỦA MÌNH"
@@ -36,6 +38,33 @@
 -- Đánh đổi: mỗi trường mới về sau phải sửa hàm này. Đó là cái giá đúng — nó
 -- buộc người thêm cột phải nghĩ xem học sinh có được tự ghi cột đó không.
 
+
+-- ══════════════════════════════════════════════════════════════════════════
+-- VÌ SAO FILE NÀY CHỈ CÓ DDL
+-- ══════════════════════════════════════════════════════════════════════════
+--
+-- Bản đầu của 046 gộp cả cột, ràng buộc, hai hàm, phần cấp quyền và một khối
+-- tự kiểm vào một file. Người vận hành chạy nó và báo đã xong; đo từ ứng dụng
+-- thì `profiles.display_name` vẫn không tồn tại. Cả hai đều đúng.
+--
+-- SQL Editor chạy NGUYÊN FILE trong MỘT transaction. Một câu lỗi ở cuối file
+-- cuộn ngược luôn `alter table` ở đầu file — và trạng thái sau khi cuộn ngược
+-- không phân biệt được với "chưa chạy bao giờ". Không có lỗi nào còn lại để
+-- đọc, không có nửa việc nào được giữ.
+--
+-- Đây là lần thứ HAI dự án dính đúng chuyện này; lần đầu là 035, và bài học đã
+-- nằm trong CLAUDE.md khi tôi viết bản gộp. Nên tách theo đúng khuôn 035/036:
+--
+--     046  chỉ tạo CẤU TRÚC — cột, ràng buộc, index
+--     047  hàm, quyền gọi, và khối tự kiểm
+--
+-- Chạy 046 trước. Nó ngắn, chỉ có DDL, và `npm run check:db` xác nhận được
+-- ngay từ bên ngoài. Chạy 047 sau. Nếu 047 hỏng thì 046 vẫn còn nguyên, và
+-- thông báo lỗi nói về đúng thứ đang hỏng.
+--
+-- Chạy lại được cả hai lần: `if not exists` cho cột, `drop ... if exists`
+-- trước mỗi `add constraint`, `create or replace` cho hàm.
+
 -- ══════════════════════════════════════════════════════════════════════════
 -- CỘT
 -- ══════════════════════════════════════════════════════════════════════════
@@ -66,7 +95,7 @@ alter table public.profiles
 -- không lẫn với một mã số nào đó về sau).
 --
 -- Chuỗi này PHẢI khớp từng ký tự với `DANG_USERNAME` trong
--- src/shared/identity.js. `check:identity` so hai bên và đỏ nếu lệch — vì lệch
+-- src/shared/identityRules.js. `check:identity` so hai bên và đỏ nếu lệch — vì lệch
 -- ở đây không gây lỗi, nó chỉ khiến người dùng gõ một username mà giao diện
 -- bảo hợp lệ rồi database từ chối, và không ai hiểu vì sao.
 --
@@ -102,133 +131,6 @@ alter table public.profiles
     check (avatar is null
            or avatar ~ '^[a-z][a-z0-9_]{1,23}$'
            or avatar ~ '^https://[^\s]{5,300}$');
-
--- ══════════════════════════════════════════════════════════════════════════
--- HÀM 1 — username này còn trống không?
--- ══════════════════════════════════════════════════════════════════════════
---
--- Bắt buộc phải là `security definer`. RLS của 003 chỉ cho học sinh đọc dòng
--- của chính mình, nên nếu giao diện tự chạy
---
---     select id from profiles where username = 'marie'
---
--- thì kết quả LUÔN rỗng — kể cả khi Marie đã tồn tại. Giao diện đọc "rỗng" là
--- "còn trống" và hiện dấu tích xanh. Hai người cùng đặt `@marie`, cả hai đều
--- thấy hợp lệ, người bấm Lưu sau mới vỡ. Sai lặng lẽ và sai theo hướng tệ
--- nhất: bảo người ta rằng làm được, rồi từ chối.
---
--- Hàm chỉ trả về `boolean`. Nó không tiết lộ username thuộc về ai, và cũng
--- không nhận vào id nào — chỉ dùng `auth.uid()` để tự bỏ qua chính mình (sửa
--- tên hiển thị mà giữ nguyên username thì không được báo "đã tồn tại").
---
--- Có, hàm này cho phép dò xem một username đã có người dùng chưa. Đó là bản
--- chất của mọi hệ thống username công khai — giáo viên tìm học sinh bằng
--- `@username` thì nó phải tra được. Thứ không lộ ra là email, tên thật và id.
-
-create or replace function public.username_available(p_username text)
-returns boolean
-language sql
-security definer
-set search_path = ''
-stable
-as $$
-  select
-    -- Tên dành riêng: chặn người đầu tiên nhanh tay lấy `@admin` rồi nhắn tin
-    -- cho cả lớp. Danh sách ngắn và cố ý ngắn — dài quá thì thành trò đoán mò.
-    lower(btrim(coalesce(p_username, ''))) not in (
-      'admin', 'administrateur', 'fracile', 'prof', 'professeur',
-      'support', 'root', 'system', 'moderator', 'delf', 'null', 'undefined'
-    )
-    and not exists (
-      select 1
-      from public.profiles p
-      where p.username = lower(btrim(p_username))
-        and p.id is distinct from (select auth.uid())
-    );
-$$;
-
--- ══════════════════════════════════════════════════════════════════════════
--- HÀM 2 — ghi ba cột danh tính của CHÍNH MÌNH
--- ══════════════════════════════════════════════════════════════════════════
---
--- Trả về `jsonb` chứ không `raise exception`, cho hai trường hợp mà giao diện
--- cần xử lý KHÁC NHAU:
---
---   {"ok": true}
---   {"ok": false, "error": "username_taken"}
---   {"ok": false, "error": "username_invalid"}
---
--- "Đã có người lấy" không phải một sự cố — nó là câu trả lời hợp lệ cho một
--- câu hỏi hợp lệ, và giao diện cần hiện nó cạnh ô nhập chứ không phải trong
--- một hộp thoại lỗi đỏ. Bắt theo MÃ chuỗi, không phải theo lời văn của
--- Postgres: lời văn đổi theo phiên bản và theo ngôn ngữ máy chủ.
---
--- Vẫn bắt `unique_violation` dù giao diện đã kiểm trước, vì giữa lúc kiểm và
--- lúc ghi luôn có một khoảng — hai người có thể bấm Lưu cách nhau 50ms. Kiểm
--- trước là để tử tế với người dùng; ràng buộc unique mới là thứ giữ đúng.
-
-create or replace function public.update_my_identity(
-  p_display_name text,
-  p_username     text,
-  p_avatar       text
-)
-returns jsonb
-language plpgsql
-security definer
-set search_path = ''
-as $$
-declare
-  v_uid      uuid := (select auth.uid());
-  v_username text := nullif(lower(btrim(coalesce(p_username, ''))), '');
-  v_name     text := nullif(btrim(coalesce(p_display_name, '')), '');
-  v_avatar   text := nullif(btrim(coalesce(p_avatar, '')), '');
-begin
-  if v_uid is null then
-    return jsonb_build_object('ok', false, 'error', 'not_signed_in');
-  end if;
-
-  if v_username is not null and not public.username_available(v_username) then
-    return jsonb_build_object('ok', false, 'error', 'username_taken');
-  end if;
-
-  update public.profiles
-     set display_name = v_name,
-         username     = v_username,
-         avatar       = v_avatar
-   where id = v_uid;
-
-  if not found then
-    return jsonb_build_object('ok', false, 'error', 'no_profile');
-  end if;
-
-  return jsonb_build_object('ok', true);
-
-exception
-  -- Ràng buộc dạng ở trên từ chối: username sai khuôn, tên quá dài, avatar lạ.
-  when check_violation then
-    return jsonb_build_object('ok', false, 'error', 'username_invalid');
-  -- Hai người cùng bấm Lưu trong cùng một khoảnh khắc.
-  when unique_violation then
-    return jsonb_build_object('ok', false, 'error', 'username_taken');
-end;
-$$;
-
--- ══════════════════════════════════════════════════════════════════════════
--- QUYỀN GỌI
--- ══════════════════════════════════════════════════════════════════════════
---
--- `security definer` chạy với quyền của người tạo hàm, nên mặc định "ai cũng
--- gọi được" là mặc định nguy hiểm. Thu hồi sạch rồi cấp lại đúng vai cần.
---
--- `anon` KHÔNG được gọi cả hai: người chưa đăng nhập không có hồ sơ để sửa, và
--- cũng không cần dò username. Cho anon gọi `username_available` là mở một cửa
--- liệt kê username cho cả internet.
-
-revoke all on function public.username_available(text)             from public, anon;
-revoke all on function public.update_my_identity(text, text, text) from public, anon;
-grant execute on function public.username_available(text)             to authenticated;
-grant execute on function public.update_my_identity(text, text, text) to authenticated;
-
 -- ══════════════════════════════════════════════════════════════════════════
 -- CHO GIÁO VIÊN TÌM HỌC SINH BẰNG @username
 -- ══════════════════════════════════════════════════════════════════════════
@@ -245,21 +147,22 @@ create index if not exists profiles_username_prefix_idx
   where username is not null;
 
 -- ══════════════════════════════════════════════════════════════════════════
--- KIỂM TRA SAU KHI CHẠY
+-- KIỂM TRA SAU KHI CHẠY 046
 -- ══════════════════════════════════════════════════════════════════════════
 --
--- Chạy cả khối này. Cả bốn dòng phải đúng như ghi chú.
+-- Đây là câu SELECT, KHÔNG phải khối `do` có `raise exception`. Cố ý: một
+-- phép kiểm biết ném lỗi nằm chung transaction với DDL sẽ cuộn ngược chính cái
+-- DDL nó vừa kiểm. Muốn biết đạt hay không thì đọc hai con số.
+--
+-- Sau khi chạy, đo lại từ NGOÀI database — `npm run check:db` phải chuyển ca
+-- "046: ba cột danh tính có mặt" sang xanh. Lệnh chạy xong không bao giờ là
+-- bằng chứng dữ liệu đã đổi.
 
 select
   (select count(*) from information_schema.columns
     where table_schema = 'public' and table_name = 'profiles'
-      and column_name in ('display_name', 'username', 'avatar'))          as cot_moi,        -- 3
+      and column_name in ('display_name', 'username', 'avatar'))          as cot_moi,     -- phải là 3
   (select count(*) from pg_constraint
     where conrelid = 'public.profiles'::regclass
       and conname in ('profiles_username_dang', 'profiles_username_duy_nhat',
-                      'profiles_display_name_dai', 'profiles_avatar_dang'))as rang_buoc,     -- 4
-  (select count(*) from pg_proc
-    where pronamespace = 'public'::regnamespace
-      and proname in ('username_available', 'update_my_identity'))         as ham,           -- 2
-  (select has_function_privilege('anon', 'public.username_available(text)', 'execute'))
-                                                                          as anon_goi_duoc; -- false
+                      'profiles_display_name_dai', 'profiles_avatar_dang'))as rang_buoc;  -- phải là 4

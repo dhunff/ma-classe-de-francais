@@ -26,7 +26,13 @@ const t = (ten, got, want) => {
 
 /* ── JS và SQL phải nói cùng một luật ── */
 {
-  const sql = readFileSync(new URL("../supabase/migrations/046_danh_tinh_ho_so.sql", import.meta.url), "utf8");
+  /* Từ lần tách 046/047, luật nằm ở file cột còn hàm nằm ở file hàm. Đọc CẢ
+     HAI và nối lại: bộ kiểm quan tâm tới nội dung migration, không quan tâm
+     nội dung ấy được chia làm mấy tệp — và nếu ai gộp lại hay tách tiếp thì nó
+     vẫn phải xanh. */
+  const sql = ["046_danh_tinh_ho_so", "047_danh_tinh_ham"]
+    .map((f) => readFileSync(new URL(`../supabase/migrations/${f}.sql`, import.meta.url), "utf8"))
+    .join("\n");
 
   /* Bỏ chú thích `--` trước khi soi.
    *
@@ -137,7 +143,13 @@ t("hằng số tên hiển thị", TEN_HIEN_THI_TOI_DA, 40);
  * `identity.err_username_taken`. Đổi một chuỗi mà quên chuỗi kia thì người
  * dùng thấy `identity.err_...` in ra nguyên văn. */
 {
-  const sql = readFileSync(new URL("../supabase/migrations/046_danh_tinh_ho_so.sql", import.meta.url), "utf8");
+  /* Từ lần tách 046/047, luật nằm ở file cột còn hàm nằm ở file hàm. Đọc CẢ
+     HAI và nối lại: bộ kiểm quan tâm tới nội dung migration, không quan tâm
+     nội dung ấy được chia làm mấy tệp — và nếu ai gộp lại hay tách tiếp thì nó
+     vẫn phải xanh. */
+  const sql = ["046_danh_tinh_ho_so", "047_danh_tinh_ham"]
+    .map((f) => readFileSync(new URL(`../supabase/migrations/${f}.sql`, import.meta.url), "utf8"))
+    .join("\n");
   const i18n = readFileSync(new URL("../src/shared/i18n.jsx", import.meta.url), "utf8");
   const ma = [...sql.matchAll(/'error',\s*'([a-z_]+)'/g)].map((m) => m[1]);
   t("046 có trả mã lỗi", ma.length > 0, true);
