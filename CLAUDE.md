@@ -34,6 +34,7 @@ npm run check:grille       # grille DELF A1–B2 cộng đúng 25, đủ mô t�
 npm run check:cors         # Edge Function có cho trình duyệt gọi không
 npm run check:hmac         # chữ ký webhook SePay + bản ghim công thức (45 ca)
 npm run check:bareme       # mốc cho điểm PE, nhãn Việt, đối chiếu với SQL (457 ca)
+npm run check:identity     # luật @username, JS ↔ SQL ↔ i18n (46 ca)
 npm run check:db           # database THẬT có khớp giả định của mã nguồn không
 ```
 
@@ -162,6 +163,16 @@ Dùng `.no-scrollbar`. Đã cắn hai lần: thanh bên và lịch.
 
 **`rAF` đóng băng ở tab nền** → framer-motion và `ResizeObserver` đứng im khi
 kiểm chứng bằng công cụ. Không phải lỗi mã; chụp màn hình để kích hoạt tab.
+
+Cùng gốc, khác triệu chứng: **`getComputedStyle` trả về màu ĐANG DỞ của một
+transition chưa chạy xong.** Bật bản tối rồi đo nền ô nhập ra `#FAFAFC` (màu
+sáng) trong khi biến `--mcf-surface2-rgb` trên chính phần tử đó đã là
+`20 20 26`. Không phải lỗi màu — class `transition` khiến `background-color`
+nội suy dần, mà tab không vẽ khung thì phép nội suy đứng ở khung đầu tiên,
+vĩnh viễn.
+
+Cách phân biệt trong ba mươi giây: nhân bản phần tử, bỏ class `transition`,
+gắn vào DOM rồi đo. Ra màu đúng nghĩa là CSS không sai, chỉ có phép đo sai.
 
 **Cờ emoji không hiện trên Windows** — nó vẽ thành hai chữ cái vùng, nên
 `🇻🇳 VN` đọc ra "VN VN".

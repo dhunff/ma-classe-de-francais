@@ -123,3 +123,28 @@ body {
      thái cuối. */
   .mcf-rise { opacity: 1 !important; transform: none !important; }
 }
+
+/* ─────────────────── Ảnh đại diện động (shared/avatars.jsx) ───────────────────
+
+   Hoạt ảnh nằm ở CSS chứ không phải SMIL (`<animate>`) vì khối
+   `prefers-reduced-motion` ở trên tắt được CSS, còn SMIL thì không — nó chạy
+   tiếp bất kể người dùng đã xin dừng chuyển động.
+
+   Chớp mắt và ngoe nguẩy tai dồn vào cuối chu kỳ (88–96%) rồi đứng yên phần
+   còn lại. Chuyển động đều đặn suốt thời gian đọc thì gây mất tập trung; một
+   cái chớp mắt mỗi năm giây thì thành có hồn. */
+
+@keyframes mcfAvBlink { 0%, 92%, 100% { transform: scaleY(1); } 96% { transform: scaleY(.08); } }
+@keyframes mcfAvWiggle { 0%, 86%, 100% { transform: rotate(0); } 91% { transform: rotate(-8deg); } 95% { transform: rotate(6deg); } }
+@keyframes mcfAvBob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-1.5px); } }
+
+/* `transform-box: fill-box` là phần bắt buộc trong SVG: mặc định gốc toạ độ
+   của transform là gốc của cả khung vẽ, nên `scaleY` không thu con mắt lại mà
+   kéo nó lên đỉnh ảnh. */
+.mcf-av-eye, .mcf-av-ear { transform-box: fill-box; }
+.mcf-av-eye { transform-origin: center; animation: mcfAvBlink 5.2s ease-in-out infinite; }
+.mcf-av-ear { transform-origin: bottom center; animation: mcfAvWiggle 6.1s ease-in-out infinite; }
+.mcf-av-bob { animation: mcfAvBob 3.6s ease-in-out infinite; }
+/* Danh sách dài (bảng lớp): ba mươi con vật cùng chớp mắt là một trang không
+   đọc nổi. Tắt hết hoạt ảnh bên trong một ảnh đại diện, kể cả mắt và tai. */
+.mcf-av-still, .mcf-av-still * { animation: none !important; }

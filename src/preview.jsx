@@ -7,7 +7,7 @@ import ReactDOM from "react-dom/client";
 import "./styles/tokens.css";
 import "./styles/base.css";
 import "./styles/tailwind.css";
-import { MemoryRouter, Routes, Route } from "react-router-dom";
+import { MemoryRouter, Routes, Route, useNavigate, useLocation } from "react-router-dom";
 import AppLayout from "./layout/AppLayout.jsx";
 import { ROLE_HOME, TEACHER_NAV, STUDENT_NAV } from "./layout/navItems.js";
 
@@ -23,6 +23,8 @@ import PESelfEvaluation from "./screens/student/PESelfEvaluation.jsx";
 import { PhanThi } from "./screens/exam/ExamMode.jsx";
 import GrilleEditor from "./screens/teacher/GrilleEditor.jsx";
 import TipsEditor from "./screens/teacher/TipsEditor.jsx";
+import { ChonAvatar, ONhapUsername } from "./screens/account/DanhTinh.jsx";
+import { Avatar, DS_AVATAR } from "./shared/avatars.jsx";
 
 const VI = {
   /* Phải khớp đủ các khoá mà navItems.js dùng. Thiếu khoá nào thì t() trả về
@@ -36,6 +38,21 @@ const VI = {
   header: { teacher: "Giáo viên", student: "Học sinh", logout: "Đăng xuất",
     search: "Tìm bài tập, học sinh…", dark_mode: "Chuyển sang nền tối", light_mode: "Chuyển sang nền sáng",
     dark_mode_label: "Nền tối", settings: "Cài đặt" },
+  identity: {
+    display_name: "Tên hiển thị", display_name_ph: "Tên bạn muốn mọi người thấy",
+    display_name_help: "Được trùng với người khác. Đổi lúc nào cũng được.",
+    username: "Tên người dùng", username_ph: "vidu_2026",
+    username_help: "Chữ thường, số và gạch dưới. Giáo viên tìm bạn bằng tên này.",
+    checking: "Đang kiểm tra…", free: "Dùng được", taken: "Tên này đã có người dùng",
+    unknown: "Chưa kiểm tra được — kiểm tra lại kết nối mạng",
+    bad_ngan: "Quá ngắn — cần ít nhất 3 ký tự",
+    bad_dai: "Quá dài — tối đa 20 ký tự",
+    bad_bat_dau_so: "Không được bắt đầu bằng chữ số",
+    bad_ky_tu_la: "Chỉ dùng chữ thường không dấu, số và gạch dưới",
+    avatar_pick: "Chọn ảnh đại diện", avatar_help: "Tám con vật, hoặc chữ cái đầu tên bạn.",
+    avatar_letter: "Chữ cái đầu", avatar_change: "Đổi ảnh đại diện", close: "Đóng",
+    identity_title: "Danh tính",
+  },
   empty: { no_submission: "Hiện tại chưa có bài nộp nào." },
   tips: {
     title: 'Sổ tay lớp', subtitle: 'Mẹo hiện trong sổ tay của học sinh',
@@ -347,6 +364,36 @@ function Preview() {
   const submissions = empty ? [] : SUBMISSIONS;
   const session = { role, name: role === "prof" ? "" : "Linh" };
 
+  /* ── Màn hình KHÔNG có trong thanh bên ──
+   *
+   * Bốn màn này mở ra từ trong luồng (kết quả thi, soạn thang chấm, trang tài
+   * khoản) chứ không phải từ menu, nên trước đây trang xem thử khai route cho
+   * chúng mà KHÔNG có gì dẫn tới — muốn xem phải sửa `initialEntries` rồi tải
+   * lại. Một màn hình xem thử được mà không ai tới được thì cũng như không có.
+   *
+   * MemoryRouter không đọc thanh địa chỉ, nên phải đi bằng `navigate`. */
+  const MAN_PHU = [
+    ["", "— màn hình phụ —"],
+    ["/etudiant/danh-tinh", "Danh tính (avatar + @username)"],
+    ["/etudiant/auto-evaluation", "Tự chấm Production écrite"],
+    ["/etudiant/phan-thi", "Một phần thi thử"],
+    ["/professeur/grille", "Soạn thang chấm"],
+  ];
+
+  const ChonManPhu = () => {
+    const di = useNavigate();
+    const oDau = useLocation().pathname;
+    return (
+      <select
+        value={MAN_PHU.some(([v]) => v === oDau) ? oDau : ""}
+        onChange={(e) => e.target.value && di(e.target.value)}
+        className="rounded-md border border-solid border-line bg-surface px-3 py-2 text-sm font-bold text-ink shadow-sm"
+      >
+        {MAN_PHU.map(([v, l]) => <option key={v || "x"} value={v}>{l}</option>)}
+      </select>
+    );
+  };
+
   const Controls = () => (
     <div className="mb-4 flex flex-wrap gap-2">
       <button type="button" onClick={() => setRole((r) => (r === "prof" ? "eleve" : "prof"))}
@@ -361,6 +408,7 @@ function Preview() {
         className="rounded-md border border-solid border-line bg-surface px-4 py-2 text-sm font-bold text-ink shadow-sm">
         Màn hình: {home ? "Trang chủ chung" : "Dashboard"}
       </button>
+      <ChonManPhu />
       {home && (
         <button type="button" onClick={() => setGuest((g) => !g)}
           className="rounded-md border border-solid border-line bg-surface px-4 py-2 text-sm font-bold text-ink shadow-sm">
@@ -442,6 +490,7 @@ function Preview() {
               chia đôi mà không cần đăng nhập và không cần thi thử trước. */}
           <Route path="/professeur/grille" element={<><Controls /><GrilleThu /></>} />
           <Route path="/etudiant/phan-thi" element={<><Controls /><PhanThiThu /></>} />
+          <Route path="/etudiant/danh-tinh" element={<><Controls /><DanhTinhThu /></>} />
           <Route path="/etudiant/auto-evaluation" element={
             <><Controls /><PESelfEvaluation /></>
           } />
@@ -458,6 +507,80 @@ function Preview() {
         </Route>
       </Routes>
     </MemoryRouter>
+  );
+}
+
+/* Danh tính: ảnh đại diện + @username.
+ *
+ * Ô @username có NĂM trạng thái và bốn trong số đó chỉ hiện ra khi mạng trả
+ * lời. Không xem thử được thì cách duy nhất nhìn thấy chúng là đăng nhập bằng
+ * tài khoản thật rồi cố tình gõ trùng tên người khác.
+ *
+ * `hoiConTrong` ở đây là fixture, KHÔNG gọi mạng: "marie" và "admin" coi như
+ * đã có người lấy, "loi" trả về null để xem trạng thái « chưa kiểm được ».
+ * Trễ 350ms để nhìn thấy vòng xoay chứ không phải một cái nháy. */
+function DanhTinhThu() {
+  const [ten, setTen] = React.useState("Hùng Đỗ");
+  const [user, setUser] = React.useState("");
+  const [avatar, setAvatar] = React.useState("renard");
+  const [mo, setMo] = React.useState(false);
+
+  const hoiConTrong = React.useCallback(async (u) => {
+    await new Promise((r) => setTimeout(r, 350));
+    if (u === "loi") return null;
+    return !["marie", "admin", "hung"].includes(u);
+  }, []);
+
+  return (
+    <div className="mx-auto max-w-3xl">
+      <div className="rounded-3xl bg-surface p-8 shadow-sm">
+        <h1 className="m-0 text-2xl font-bold text-ink">Danh tính</h1>
+
+        <div className="mt-6 flex items-center gap-5">
+          <span className="relative">
+            <button type="button" onClick={() => setMo(true)}
+              className="grid cursor-pointer place-items-center rounded-full border-0 bg-transparent p-0">
+              <Avatar khoa={avatar} ten={ten} size={96} />
+            </button>
+          </span>
+          <div className="min-w-0">
+            <p className="m-0 text-lg font-bold text-ink">{ten || "—"}</p>
+            {user && <p className="m-0 mt-0.5 text-sm font-semibold text-primary">@{user}</p>}
+            <p className="m-0 mt-0.5 text-sm text-soft">Học sinh</p>
+          </div>
+        </div>
+
+        <div className="mt-6 grid gap-5 sm:grid-cols-2">
+          <div>
+            <span className="mb-1.5 block text-sm text-soft">Tên hiển thị</span>
+            <input
+              className="w-full rounded-xl border-0 bg-surface2 px-4 py-3 text-sm font-medium text-ink outline-none focus:ring-2 focus:ring-primary/50"
+              value={ten} onChange={(e) => setTen(e.target.value)} maxLength={40} />
+            <p className="m-0 mt-1 min-h-[1.1rem] text-xs text-soft">
+              Được trùng với người khác. Đổi lúc nào cũng được.
+            </p>
+          </div>
+          <ONhapUsername giaTri={user} datGiaTri={setUser}
+            usernameHienTai="" hoiConTrong={hoiConTrong} />
+        </div>
+
+        <p className="m-0 mt-6 rounded-xl bg-warn-soft p-3 text-xs font-semibold text-warn">
+          Fixture: « marie », « admin », « hung » coi như đã có người lấy;
+          « loi » trả về « chưa kiểm được ». Không gọi mạng.
+        </p>
+
+        {/* Cả tám con vật một lượt, để soi nét vẽ mà không phải mở hộp tám lần. */}
+        <div className="mt-6 flex flex-wrap gap-3 border-0 border-t border-solid border-line pt-6">
+          {DS_AVATAR.map((k) => <Avatar key={k} khoa={k} size={64} />)}
+          <Avatar khoa="" ten={ten} size={64} />
+        </div>
+      </div>
+
+      {mo && (
+        <ChonAvatar dangChon={avatar} ten={ten}
+          chon={(k) => { setAvatar(k); setMo(false); }} dong={() => setMo(false)} />
+      )}
+    </div>
   );
 }
 
