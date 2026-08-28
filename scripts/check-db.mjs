@@ -283,6 +283,51 @@ for (const bang of ["attempts", "answers", "submissions"]) {
       : `HTTP ${status} · ${body?.message ?? ""}`);
 }
 
+/* ── Cột thiếu: là CHƯA CÓ, hay là PostgREST CHƯA BIẾT? ──
+ *
+ * Đường ĐỌC không phân biệt được. Cả hai trường hợp đều ra 42703 với
+ * details/hint rỗng, giống hệt một cột bịa hẳn tên.
+ *
+ * Đường GHI thì nói thẳng. PostgREST kiểm thân yêu cầu với bộ nhớ đệm TRƯỚC
+ * khi chạm database, nên nó trả về đúng chữ "schema cache":
+ *
+ *   PGRST204  Could not find the 'display_name' column of 'profiles'
+ *             in the schema cache
+ *
+ * Đây là PATCH với bộ lọc không khớp dòng nào, và `anon` cũng không có policy
+ * update nào trên `profiles` — không ghi được gì kể cả khi muốn. Nó chỉ hỏi
+ * bộ nhớ đệm.
+ *
+ * Còn lại: PGRST204 vẫn KHÔNG phân biệt được "bộ nhớ đệm cũ" với "cột không
+ * tồn tại trong database mà PostgREST nối tới". Muốn tách nốt hai cái đó thì
+ * phải nhìn từ phía database — xem đầu migration 048. */
+{
+  const KHONG_KHOP = "id=eq.00000000-0000-0000-0000-000000000000";
+  const patch = async (than) => {
+    const r = await fetch(`${URL_BASE}/rest/v1/profiles?${KHONG_KHOP}`, {
+      method: "PATCH",
+      headers: { apikey: ANON, "Content-Type": "application/json" },
+      body: JSON.stringify(than),
+    });
+    let body = null;
+    try { body = await r.json(); } catch { /* 204 không có thân */ }
+    return { status: r.status, body };
+  };
+
+  const cu = await patch({ name: "x" });
+  const moi = await patch({ display_name: "x" });
+
+  ket(moi.body?.code !== "PGRST204",
+    "046: PostgREST BIẾT cột display_name (bộ nhớ đệm lược đồ)",
+    cu.body?.code === "PGRST204"
+      ? "cả cột CŨ cũng không thấy — vấn đề rộng hơn 046, đừng dừng ở đây"
+      : "bộ nhớ đệm thiếu cột. Cột cũ thì bình thường, nên KHÔNG phải hỏng cả bảng. "
+        + "Thử: notify pgrst, 'reload schema'; — nếu chạy rồi mà vẫn vậy thì "
+        + "PostgREST đang nối tới database khác với SQL Editor, và cách duy nhất "
+        + "buộc nó dựng lại từ đầu là khởi động lại project (Settings → General → "
+        + "Restart project). Đó là thao tác hạ tầng, hỏi người vận hành trước.");
+}
+
 /* ── Hai hàm RPC phải VÔ HÌNH với khoá anon ──
  *
  * Cả hai là `security definer`. Nếu anon gọi được `update_my_identity` thì bất
