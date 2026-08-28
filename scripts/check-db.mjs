@@ -270,17 +270,16 @@ for (const bang of ["attempts", "answers", "submissions"]) {
   ket(status === 200 && Array.isArray(body),
     "046: ba cột danh tính có mặt (display_name, username, avatar)",
     body?.code === "42703"
-      ? "PostgREST không thấy cột. BA nguyên nhân, đừng đoán — chạy MỘT câu này "
-        + "trong SQL Editor và đọc cả ba số một lượt — "
-        + "notify pgrst, 'reload schema'; select current_database(), "
-        + "(select count(*) from public.questions where point_gram is not null) as point_gram, "
-        + "(select count(*) from information_schema.columns where table_schema='public' "
-        + "and table_name='profiles' and column_name in "
-        + "('display_name','username','avatar')) as cot_moi;  ·  "
-        + "point_gram≠232 → Editor đang ở database khác. "
-        + "cot_moi=0 → 046 bị cuộn ngược. "
-        + "Cả hai đúng mà ca này vẫn đỏ → bộ nhớ đệm lược đồ của PostgREST cũ, "
-        + "và câu notify ở trên vừa xử lý xong."
+      ? "PostgREST không thấy cột. Nguyên nhân ĐÃ TỪNG xảy ra, theo thứ tự dễ nhầm nhất: "
+        + "(1) quyền cấp ở mức CỘT nên cột thêm sau không có quyền đọc — cột có thật "
+        + "nhưng PostgREST bỏ nó khỏi lược đồ và báo y hệt như không tồn tại; "
+        + "kiểm bằng has_column_privilege('anon','public.profiles','display_name','select') "
+        + "và sửa bằng migration 048.  "
+        + "(2) SQL Editor nối tới database khác — đọc current_database(), "
+        + "ĐỪNG dùng số liệu dữ liệu làm dấu hiệu vì nhánh mới sao chép nguyên dữ liệu.  "
+        + "(3) cả file migration bị cuộn ngược vì một câu phía sau lỗi.  "
+        + "(4) bộ nhớ đệm lược đồ cũ — notify pgrst, 'reload schema'.  "
+        + "Phân biệt (1) trước: nó là cái duy nhất mà Editor và ứng dụng cùng đúng."
       : `HTTP ${status} · ${body?.message ?? ""}`);
 }
 

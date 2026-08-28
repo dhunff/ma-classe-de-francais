@@ -193,6 +193,37 @@ Supabase cấp thẳng cho hai vai đó (default privileges), nên phải thu đ
 gọi `_exam_play` với `p_max: 999` và nghe không giới hạn. Kiểm bằng
 `has_function_privilege`, đừng tin câu REVOKE vừa viết.
 
+**Và GRANT ở mức CỘT KHÔNG áp cho cột thêm SAU.** Quyền theo cột là một danh
+sách tên đóng băng lúc cấp. Thêm cột mới vào bảng đó thì cột ấy không có trong
+danh sách, PostgREST bỏ nó khỏi lược đồ, và câu trả lời cho nó là
+`column ... does not exist` — do PostgREST sinh ra, không phải Postgres.
+
+Mất ba lượt đo mới tìm ra, vì mọi dấu hiệu đều chỉ sai hướng: SQL Editor xác
+nhận cột có (`cot_moi = 3`), `notify pgrst, 'reload schema'` không đổi gì, và
+thông báo lỗi giống hệt lỗi của một cột bịa hẳn tên. Dấu hiệu duy nhất phân
+biệt được: `details` và `hint` đều `null` — lỗi 42703 thật của Postgres gần
+như luôn kèm "Perhaps you meant to reference the column …".
+
+Đây là cùng cơ chế với 022 nhưng NGƯỢC CHIỀU: 022 thu quyền và làm hỏng cả câu
+(401), 048 thiếu quyền và làm một cột trông như không tồn tại. Hai triệu chứng
+khác nhau tới mức tôi không nối được chúng với nhau, dù đã tự viết đoạn về 022
+ở ngay trên.
+
+Kiểm bằng `has_column_privilege('anon', 'public.<bảng>', '<cột>', 'select')`.
+Câu này liệt kê mọi cột đang vô hình với ứng dụng:
+
+```sql
+select a.attname from pg_attribute a
+where a.attrelid = 'public.profiles'::regclass and a.attnum > 0 and not a.attisdropped
+  and not has_column_privilege('anon', a.attrelid, a.attname, 'select');
+```
+
+**Đừng dùng SỐ LIỆU DỮ LIỆU làm dấu hiệu nhận biết database.** Tôi dùng
+`count(point_gram) = 232` để phân biệt production với nhánh, vì hồi đó nhánh
+đọc ra 374. Nhánh mới tạo sao chép nguyên dữ liệu, nên nó cũng ra 232 — dấu
+hiệu hết tác dụng từ lúc nhánh cũ bị bỏ, mà tôi vẫn dùng thêm mấy lượt nữa.
+Dùng `current_database()` và project ref trên thanh địa chỉ.
+
 **curl KHÔNG kiểm được CORS.** curl gửi thẳng, không làm preflight. Hàm `grade`
 khai thiếu `x-client-info` — header mà `functions.invoke` LUÔN gửi — nên curl
 trả 200 với điểm đúng, còn ứng dụng bị trình duyệt huỷ request trước khi nó rời
