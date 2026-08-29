@@ -15,8 +15,15 @@
    « Supprimer », gọi `deleteExercise`. Người mở trang này trên trình duyệt
    đang có phiên giáo viên mà bấm nhầm thì xoá bài thật.
 
-   Không phải giả định: `/preview.html` ĐANG được deploy lên production và mở
-   được từ ngoài internet.
+   Trang này KHÔNG được deploy: Vite chỉ dựng `index.html`, và `dist/` không
+   có `preview.html`. Nên rủi ro ở trên chỉ tồn tại khi chạy `npm run dev` trên
+   máy của người đang đăng nhập bằng tài khoản giáo viên. Vẫn đủ để không làm.
+
+   Ghi rõ vì tôi từng kết luận ngược: `https://www.fracile.vn/preview.html` trả
+   200, và tôi đọc đó là "đang được deploy". Thật ra `vercel.json` rewrite MỌI
+   đường dẫn về `/index.html`, nên một đường bịa hẳn tên cũng trả 200. Muốn
+   biết một tệp có thật hay không thì so nội dung với trang chủ, đừng nhìn mã
+   trạng thái.
 
    Muốn kiểm loại màn đó thì dựng riêng phần giao diện với hàm truyền vào —
    như `ONhapUsername` nhận `hoiConTrong` thay vì tự import. */

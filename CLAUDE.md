@@ -229,6 +229,20 @@ where attrelid = 'public.<bảng>'::regclass and attnum > 0 and not attisdropped
 `attacl = NULL` nghĩa là không có quyền theo cột — cột thêm sau thừa hưởng
 quyền mức bảng, không cần cấp gì.
 
+**Mã trạng thái 200 KHÔNG chứng minh tệp tồn tại.** `vercel.json` rewrite mọi
+đường dẫn về `/index.html` cho SPA, nên `/preview.html`, `/abc`, và một chuỗi
+bịa hẳn tên đều trả 200 với nội dung y hệt trang chủ. Tôi đọc một mã 200 rồi
+kết luận "trang xem thử đang được deploy ra internet" và viết nó vào commit —
+trong khi `dist/` không hề có tệp đó, và chính phép đo đầu tiên của tôi đã in
+ra dấu hiệu ngược lại.
+
+So NỘI DUNG, đừng nhìn mã trạng thái:
+
+```bash
+curl -s https://<host>/<đường> -o /tmp/a; curl -s https://<host>/ -o /tmp/b
+cmp -s /tmp/a /tmp/b && echo "chỉ là rewrite" || echo "tệp thật"
+```
+
 **So hai hệ thống bằng ĐỊNH DANH của chúng, không bằng dữ liệu bên trong.**
 Ngày 28–29/08 mất gần một ngày cho câu hỏi "SQL Editor và API có cùng một
 database không". Tôi trả lời nó bằng `count(point_gram) = 232` rồi bằng
