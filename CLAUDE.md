@@ -193,30 +193,36 @@ Supabase cấp thẳng cho hai vai đó (default privileges), nên phải thu đ
 gọi `_exam_play` với `p_max: 999` và nghe không giới hạn. Kiểm bằng
 `has_function_privilege`, đừng tin câu REVOKE vừa viết.
 
-**Và GRANT ở mức CỘT KHÔNG áp cho cột thêm SAU.** Quyền theo cột là một danh
-sách tên đóng băng lúc cấp. Thêm cột mới vào bảng đó thì cột ấy không có trong
-danh sách, PostgREST bỏ nó khỏi lược đồ, và câu trả lời cho nó là
-`column ... does not exist` — do PostgREST sinh ra, không phải Postgres.
+**Phép kiểm nằm cùng transaction với thứ nó kiểm thì vô giá trị.** 035 dạy
+"đừng đặt khối tự kiểm biết `raise exception` chung transaction với DDL". Tôi
+đọc thành "không ném lỗi thì an toàn" và kết thúc 046 bằng một câu `select`
+đếm cột. Nó in `cot_moi = 3` trong khi ba cột không hề tồn tại sau đó — bên
+trong transaction thì `alter table` đã có hiệu lực, nên select đọc đúng trạng
+thái lúc ấy, rồi transaction cuộn ngược.
 
-Mất ba lượt đo mới tìm ra, vì mọi dấu hiệu đều chỉ sai hướng: SQL Editor xác
-nhận cột có (`cot_moi = 3`), `notify pgrst, 'reload schema'` không đổi gì, và
-thông báo lỗi giống hệt lỗi của một cột bịa hẳn tên. Dấu hiệu duy nhất phân
-biệt được: `details` và `hint` đều `null` — lỗi 42703 thật của Postgres gần
-như luôn kèm "Perhaps you meant to reference the column …".
+Sai theo hướng tệ hơn cả 035: khối `do` ném lỗi ít ra còn hỏng to tiếng, còn
+một câu select thì BÁO THÀNH CÔNG cho việc sắp bị huỷ. Người vận hành đọc số,
+tin là xong, và ta mất một ngày đi tìm ở chỗ khác.
 
-Đây là cùng cơ chế với 022 nhưng NGƯỢC CHIỀU: 022 thu quyền và làm hỏng cả câu
-(401), 048 thiếu quyền và làm một cột trông như không tồn tại. Hai triệu chứng
-khác nhau tới mức tôi không nối được chúng với nhau, dù đã tự viết đoạn về 022
-ở ngay trên.
+Nguyên tắc: phép kiểm phải chạy ở **một lần Run RIÊNG**, sau khi transaction
+kia đã commit. Nay 046 tạo, 048 kiểm, `check:db` đo lần thứ ba từ ngoài.
 
-Kiểm bằng `has_column_privilege('anon', 'public.<bảng>', '<cột>', 'select')`.
-Câu này liệt kê mọi cột đang vô hình với ứng dụng:
+**`information_schema` lọc theo quyền; `pg_attribute` thì không.** Một cột bị
+giấu vì quyền trông y hệt một cột không tồn tại. Và
+`information_schema.column_privileges` khai triển quyền mức BẢNG thành từng
+dòng cột, nên một bảng cấp mức bảng nhìn qua khung đó giống hệt một bảng cấp
+đủ từng cột — tôi đọc nhầm chỗ này và dựng cả một chẩn đoán sai về "GRANT theo
+cột" lên trên nó, viết hẳn một migration để sửa thứ không hỏng.
+
+Muốn biết cột có thật hay không, hỏi danh mục thẳng:
 
 ```sql
-select a.attname from pg_attribute a
-where a.attrelid = 'public.profiles'::regclass and a.attnum > 0 and not a.attisdropped
-  and not has_column_privilege('anon', a.attrelid, a.attname, 'select');
+select attnum, attname, attacl from pg_attribute
+where attrelid = 'public.<bảng>'::regclass and attnum > 0 and not attisdropped;
 ```
+
+`attacl = NULL` nghĩa là không có quyền theo cột — cột thêm sau thừa hưởng
+quyền mức bảng, không cần cấp gì.
 
 **Đừng dùng SỐ LIỆU DỮ LIỆU làm dấu hiệu nhận biết database.** Tôi dùng
 `count(point_gram) = 232` để phân biệt production với nhánh, vì hồi đó nhánh

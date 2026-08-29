@@ -147,22 +147,29 @@ create index if not exists profiles_username_prefix_idx
   where username is not null;
 
 -- ══════════════════════════════════════════════════════════════════════════
--- KIỂM TRA SAU KHI CHẠY 046
+-- ĐỪNG KIỂM Ở ĐÂY — PHÉP KIỂM NẰM Ở 048
 -- ══════════════════════════════════════════════════════════════════════════
 --
--- Đây là câu SELECT, KHÔNG phải khối `do` có `raise exception`. Cố ý: một
--- phép kiểm biết ném lỗi nằm chung transaction với DDL sẽ cuộn ngược chính cái
--- DDL nó vừa kiểm. Muốn biết đạt hay không thì đọc hai con số.
+-- Bản trước của file này kết thúc bằng một câu select đếm cột, và nó in ra
 --
--- Sau khi chạy, đo lại từ NGOÀI database — `npm run check:db` phải chuyển ca
--- "046: ba cột danh tính có mặt" sang xanh. Lệnh chạy xong không bao giờ là
--- bằng chứng dữ liệu đã đổi.
-
-select
-  (select count(*) from information_schema.columns
-    where table_schema = 'public' and table_name = 'profiles'
-      and column_name in ('display_name', 'username', 'avatar'))          as cot_moi,     -- phải là 3
-  (select count(*) from pg_constraint
-    where conrelid = 'public.profiles'::regclass
-      and conname in ('profiles_username_dang', 'profiles_username_duy_nhat',
-                      'profiles_display_name_dai', 'profiles_avatar_dang'))as rang_buoc;  -- phải là 4
+--     cot_moi = 3    rang_buoc = 4
+--
+-- trong khi ba cột KHÔNG hề tồn tại sau đó. Câu select không nói dối: SQL
+-- Editor chạy nguyên file trong MỘT transaction, nên bên trong transaction
+-- thì `alter table` đã có hiệu lực và select đọc đúng trạng thái lúc ấy. Nếu
+-- transaction cuộn ngược sau đó, cột biến mất còn con số 3 thì người vận hành
+-- đã đọc rồi — và tin rằng đã xong.
+--
+-- Bài học 035 nói đừng đặt khối tự kiểm biết `raise exception` chung
+-- transaction với DDL. Tôi đọc thành "không ném lỗi thì an toàn" và vẫn để
+-- câu kiểm ở đây. Sai, và sai theo hướng tệ hơn: một khối `do` ném lỗi ít ra
+-- còn làm hỏng to tiếng, còn một câu select thì BÁO THÀNH CÔNG cho việc sắp
+-- bị huỷ.
+--
+-- Nguyên tắc rút ra, rộng hơn 035:
+--
+--     Một phép kiểm chạy trong cùng transaction với thứ nó kiểm thì không
+--     kiểm được gì. Nó chỉ xác nhận câu lệnh đã chạy — điều ta vốn đã biết.
+--
+-- Nên: chạy file này tới hết, ĐỌC thông báo lỗi nếu có, rồi chạy 048 trong
+-- một lần Run RIÊNG. Rồi đo lần thứ ba từ ngoài bằng `npm run check:db`.

@@ -270,16 +270,17 @@ for (const bang of ["attempts", "answers", "submissions"]) {
   ket(status === 200 && Array.isArray(body),
     "046: ba cột danh tính có mặt (display_name, username, avatar)",
     body?.code === "42703"
-      ? "PostgREST không thấy cột. Nguyên nhân ĐÃ TỪNG xảy ra, theo thứ tự dễ nhầm nhất: "
-        + "(1) quyền cấp ở mức CỘT nên cột thêm sau không có quyền đọc — cột có thật "
-        + "nhưng PostgREST bỏ nó khỏi lược đồ và báo y hệt như không tồn tại; "
-        + "kiểm bằng has_column_privilege('anon','public.profiles','display_name','select') "
-        + "và sửa bằng migration 048.  "
-        + "(2) SQL Editor nối tới database khác — đọc current_database(), "
-        + "ĐỪNG dùng số liệu dữ liệu làm dấu hiệu vì nhánh mới sao chép nguyên dữ liệu.  "
-        + "(3) cả file migration bị cuộn ngược vì một câu phía sau lỗi.  "
-        + "(4) bộ nhớ đệm lược đồ cũ — notify pgrst, 'reload schema'.  "
-        + "Phân biệt (1) trước: nó là cái duy nhất mà Editor và ứng dụng cùng đúng."
+      ? "PostgREST không thấy cột. Hỏi danh mục hệ thống TRƯỚC, đừng đoán: "
+        + "select attnum, attname, attacl from pg_attribute where attrelid = "
+        + "'public.profiles'::regclass and attnum > 0 and not attisdropped;  ·  "
+        + "Không có 3 cột trong danh sách → 046 chưa thật sự chạy ở đây; câu kiểm "
+        + "cuối file cũ từng in cot_moi=3 cho một transaction sau đó cuộn ngược, "
+        + "nên ĐỪNG tin số đọc trong cùng lần Run — chạy 048 riêng.  ·  "
+        + "Có đủ 3 cột mà ca này vẫn đỏ → bộ nhớ đệm lược đồ của PostgREST, "
+        + "chạy notify pgrst, 'reload schema';  ·  "
+        + "ĐỪNG dùng information_schema để kết luận: nó lọc theo quyền, và "
+        + "column_privileges khai triển quyền mức bảng thành từng cột nên trông "
+        + "y hệt quyền cấp theo cột."
       : `HTTP ${status} · ${body?.message ?? ""}`);
 }
 
