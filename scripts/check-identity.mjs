@@ -11,7 +11,7 @@
  * thật gõ đúng ký tự đó.
  */
 
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import {
   DANG_USERNAME, USERNAME_TOI_THIEU, USERNAME_TOI_DA, TEN_HIEN_THI_TOI_DA,
   goiYUsername, chuanHoaUsername, kiemUsername, kiemTenHienThi,
@@ -98,13 +98,13 @@ const t = (ten, got, want) => {
     /create policy[^;]*for\s+(update|all)[^;]*on public\.profiles/i.test(lenh), false);
 }
 
-/* ══ HỒ SƠ MỞ RỘNG: JS ↔ SQL (migration 048 + 050) ══
+/* ══ HỒ SƠ MỞ RỘNG: JS ↔ SQL (migration 049 + 051) ══
  *
  * Chín trường hồ sơ vừa chuyển từ blob `s:mcf-profiles` sang cột trên
  * `profiles`. Ba danh sách phải khớp nhau ở ba chỗ khác nhau, và lệch ở bất kỳ
  * cặp nào cũng KHÔNG gây lỗi build:
  *
- *   PROFILE_FIELDS   ↔ chín cột của 048     lệch → một trường điền xong không
+ *   PROFILE_FIELDS   ↔ chín cột của 049     lệch → một trường điền xong không
  *                                            lưu được, hoặc lưu rồi đọc không ra
  *   LEVELS_PROFILE   ↔ ràng buộc level      lệch → chọn từ dropdown rồi bị
  *   GOALS_PROFILE    ↔ ràng buộc goal         database từ chối, không hiểu vì sao
@@ -125,7 +125,7 @@ const t = (ten, got, want) => {
   /* Chín cột. Đọc từ `add column if not exists <tên>` để không phụ thuộc vào
      cách xuống dòng của file. */
   const cot = [...lenh.matchAll(/add column if not exists\s+(\w+)/g)].map((m) => m[1]);
-  t("048 khai đủ chín cột, đúng bằng PROFILE_FIELDS",
+  t("049 khai đủ chín cột, đúng bằng PROFILE_FIELDS",
     [...cot].sort(), [...PROFILE_FIELDS].sort());
 
   /* Danh sách trình độ và mục tiêu trong ràng buộc `check`. */
@@ -133,14 +133,14 @@ const t = (ten, got, want) => {
     const m = lenh.match(new RegExp(`${ten} is null or ${ten} in \\(([^)]+)\\)`));
     return m ? m[1].split(",").map((x) => x.trim().replace(/^'|'$/g, "")) : null;
   };
-  t("048: danh sách trình độ khớp LEVELS_PROFILE", trongNgoac("level"), LEVELS_PROFILE);
-  t("048: danh sách mục tiêu khớp GOALS_PROFILE", trongNgoac("goal"), GOALS_PROFILE);
+  t("049: danh sách trình độ khớp LEVELS_PROFILE", trongNgoac("level"), LEVELS_PROFILE);
+  t("049: danh sách mục tiêu khớp GOALS_PROFILE", trongNgoac("goal"), GOALS_PROFILE);
 
   /* Regex điện thoại phải nhận đúng những gì `validateProfile` nhận. Hai bên
      viết khác nhau (`\d` vs `0-9`, thứ tự trong lớp ký tự) nên so từng ký tự
      là vô nghĩa — so bằng HÀNH VI trên những chuỗi người ta thật sự gõ. */
   const mPhone = lenh.match(/phone is null or phone ~ '([^']+)'/);
-  t("048 có ràng buộc dạng điện thoại", !!mPhone, true);
+  t("049 có ràng buộc dạng điện thoại", !!mPhone, true);
   if (mPhone) {
     const reSql = new RegExp(mPhone[1]);
     const ca = ["0912345678", "+33 6 12 34 56 78", "(024) 3825.1234",
@@ -161,7 +161,7 @@ const t = (ten, got, want) => {
   /* Đây là toàn bộ lý do RPC tồn tại. Một dòng `create policy ... for update`
      trên `profiles` nghĩa là ai đó đã đi đường tắt — và đường tắt đó cho học
      sinh tự đặt `role = 'prof'` cùng `has_premium_access`. */
-  t("048–050 không thêm policy update nào trên profiles",
+  t("049–051 không thêm policy update nào trên profiles",
     /create policy[^;]*for\s+(update|all)[^;]*on public\.profiles/i.test(lenh), false);
 
   /* Hàm nhận `p_dob` là TEXT. Đổi sang `date` thì ô ngày để trống gửi chuỗi
@@ -170,29 +170,29 @@ const t = (ten, got, want) => {
     /p_dob\s+text/.test(lenh), true);
 }
 
-/* ══ 051 phải thật sự đóng `s:mcf-profiles` ══
+/* ══ 052 phải thật sự đóng `s:mcf-profiles` ══
  *
  * Chuyển dữ liệu sang bảng mà quên siết policy thì đã làm hết việc khó và bỏ
- * đúng phần vá lỗ hổng. Ca này đọc file 051 và đòi cả hai chiều. */
+ * đúng phần vá lỗ hổng. Ca này đọc file 052 và đòi cả hai chiều. */
 {
   const sql = readFileSync(
     new URL("../supabase/migrations/052_kv_ho_so_dong_cua.sql", import.meta.url), "utf8");
   const lenh = boChuThich(sql);
 
-  t("051 loại s:mcf-profiles khỏi policy ĐỌC",
+  t("052 loại s:mcf-profiles khỏi policy ĐỌC",
     /key not in \([^)]*'s:mcf-profiles'[^)]*\)/.test(lenh), true);
 
   /* Hai policy ghi được dựng lại; không cái nào còn nhắc tới khoá đó.
    *
    * Cắt tới dấu `;` chứ không lấy hết phần đuôi file: khối SELECT tự kiểm ở
-   * cuối 051 CÓ chứa chuỗi 'mcf-profiles' — nó đi tìm chính những policy còn
+   * cuối 052 CÓ chứa chuỗi 'mcf-profiles' — nó đi tìm chính những policy còn
    * sót. Bản đầu của ca này báo đỏ vì đọc luôn cả câu kiểm, tức là nó phạt
    * đúng việc viết phần tự kiểm. */
   const khoiGhi = [...lenh.matchAll(/create policy kv_student_[^;]*;/g)]
     .map((m) => m[0]).join("\n");
-  t("051 gỡ s:mcf-profiles khỏi hai policy GHI",
+  t("052 gỡ s:mcf-profiles khỏi hai policy GHI",
     khoiGhi.includes("mcf-profiles"), false);
-  t("051 dựng lại đủ hai policy ghi của học sinh",
+  t("052 dựng lại đủ hai policy ghi của học sinh",
     (lenh.match(/create policy kv_student_(insert|update)/g) || []).length, 2);
 }
 
@@ -284,6 +284,57 @@ t("hằng số tên hiển thị", TEN_HIEN_THI_TOI_DA, 40);
   t("046 có trả mã lỗi", ma.length > 0, true);
   const thieu = [...new Set(ma)].filter((m) => !i18n.includes(`err_${m}:`));
   t("mọi mã lỗi SQL đều có câu chữ", thieu, []);
+}
+
+/* ── SỐ MIGRATION trong câu chữ HIỂN THỊ phải trỏ đúng file ──
+ *
+ * Ba dải cảnh báo trên trang Tài khoản nói thẳng với người vận hành rằng phải
+ * chạy migration nào. Số sai ở đó là loại lỗi tệ nhất trong dự án này: nó gửi
+ * người ta đi chạy nhầm file, và họ mất hàng giờ trước khi nghi ngờ chính lời
+ * hướng dẫn.
+ *
+ * Đã xảy ra: sau khi gộp nhánh hồ sơ, các file 048–051 dời thành 049–052,
+ * nhưng chuỗi hiển thị vẫn nói "migration 048" — mà 048 lúc đó đã là file KIỂM
+ * của việc danh tính. Chạy nó thì không có gì xảy ra, và không có gì giải
+ * thích vì sao.
+ *
+ * Ca này không so số cứng. Nó tìm file migration THẬT SỰ chứa thứ đang thiếu,
+ * rồi đối chiếu với con số trong câu chữ — nên đánh số lại lần nữa cũng không
+ * làm nó xanh nhầm. */
+{
+  const thuMuc = new URL("../supabase/migrations/", import.meta.url);
+  const ds = readdirSync(thuMuc).filter((f) => f.endsWith(".sql"));
+  const noiDung = Object.fromEntries(
+    ds.map((f) => [f, readFileSync(new URL(f, thuMuc), "utf8")]));
+
+  /* File nào thật sự tạo ra thứ này? Tìm theo NỘI DUNG, không theo tên. */
+  const timFile = (dau) => {
+    const hit = ds.filter((f) => dau.test(noiDung[f]));
+    return hit.length === 1 ? hit[0].slice(0, 3) : hit.map((f) => f.slice(0, 3)).join("|");
+  };
+
+  const soCua = {
+    /* Cột danh tính: file có `add column ... display_name` */
+    danh_tinh: timFile(/add column if not exists display_name/),
+    /* Hàm ghi danh tính */
+    ham_danh_tinh: timFile(/create or replace function public\.update_my_identity/),
+    /* Cột hồ sơ mở rộng: file có `add column ... adresse` */
+    ho_so: timFile(/add column if not exists adresse/),
+  };
+
+  const i18nSrc = readFileSync(new URL("../src/shared/i18n.jsx", import.meta.url), "utf8");
+  const soTrongChuoi = (khoa) => {
+    const dong = i18nSrc.split("\n").filter((l) => l.includes(khoa + ':'));
+    const so = [...new Set(dong.map((l) => (l.match(/migration (\d{3})/) || [])[1]).filter(Boolean))];
+    return so.length === 1 ? so[0] : so.join("|") || "(không thấy)";
+  };
+
+  t("chua_co_cot trỏ đúng file tạo cột danh tính",
+    soTrongChuoi("chua_co_cot"), soCua.danh_tinh);
+  t("chua_co_cot_ho_so trỏ đúng file tạo cột hồ sơ",
+    soTrongChuoi("chua_co_cot_ho_so"), soCua.ho_so);
+  t("err_chua_co_ham trỏ đúng file tạo hàm",
+    soTrongChuoi("err_chua_co_ham"), soCua.ham_danh_tinh);
 }
 
 console.log(fail ? `\n${pass} đạt, ${fail} hỏng` : `\n${pass} đạt, 0 hỏng`);
