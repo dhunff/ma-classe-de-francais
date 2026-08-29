@@ -119,6 +119,14 @@ order by a.attnum;
 rows, but I understand `postgres` is not a superuser here so this may simply be
 a visibility restriction rather than evidence.
 
+### Additionally
+
+- The **Table Editor UI lists all three columns** on `public.profiles`. So the
+  dashboard sees them; only PostgREST does not.
+- The anon API key is a JWT whose `ref` claim is `cdszvnuaibnnkrvynyck`, which
+  matches the host in the Project URL. Key and endpoint belong to the same
+  project.
+
 ### Question
 
 Is the SQL Editor / Table Editor for this project writing to a different
