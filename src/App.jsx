@@ -14,6 +14,7 @@ import ExamResults from './screens/student/ExamResults.jsx'
 import { C } from './shared/tokens.js'
 import { load } from './shared/storage.js'
 import { loadSubmissions } from './shared/submissions.js'
+import { loadHoSo } from './shared/profileStore.js'
 import { loadAssignments } from './shared/exerciseStore.js'
 import { supabase } from './storageShim.js'
 import { resolveRole } from './shared/authRole.js'
@@ -146,8 +147,13 @@ function AppInner() {
   // Hồ sơ học sinh — Dashboard đọc mục tiêu DELF từ đây.
   // Cửa đăng nhập bật lên khi khách bấm vào việc cần tài khoản.
   const [gate, setGate] = useState(null);
-  const [profiles, setProfiles] = useState({});
-  useEffect(() => { load("mcf-profiles", {}).then((p) => setProfiles(p || {})); }, []);
+  /* Hồ sơ của CHÍNH mình, một dòng, không phải cả lớp.
+     Trước migration 048 chỗ này tải nguyên object hồ sơ của mọi người rồi lấy
+     ra một phần tử — tức là mọi học sinh đăng nhập đều kéo về địa chỉ và số
+     điện thoại của bạn cùng lớp, chỉ để hiện một dòng "Mục tiêu: DELF B1".
+     Xem src/shared/profileStore.js. */
+  const [profile, setProfile] = useState(null);
+  useEffect(() => { loadHoSo().then(setProfile); }, [session?.name]);
 
   if (loading || !authChecked) {
     return (
@@ -266,7 +272,7 @@ function AppInner() {
 
             <Route element={<RequireRole session={session} role="eleve">{shell}</RequireRole>}>
               <Route path="/etudiant/dashboard"
-                element={<StudentDashboard name={session?.name} profile={profiles[session?.name]}
+                element={<StudentDashboard name={session?.name} profile={profile}
                   {...{ exercises, submissions, t }} />} />
               {STUDENT_NAV.filter((i) => i.view).map((i) => (
                 <Route key={i.to} path={i.to} element={studentRoute(i.view)} />

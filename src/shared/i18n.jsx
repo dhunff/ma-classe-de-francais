@@ -181,7 +181,10 @@ const I18N = {
       err_chua_co_ham: "Máy chủ chưa sẵn sàng cho tính năng này (migration 046 chưa chạy).",
       err_mang: "Không gửi được. Kiểm tra kết nối rồi thử lại.",
       err_khong_ro: "Không lưu được, chưa rõ lý do.",
+      err_dob_invalid: "Ngày sinh không hợp lệ.",
+      err_profile_invalid: "Có ô trong hồ sơ không hợp lệ. Kiểm tra lại điện thoại, trường và ngày sinh.",
       chua_co_cot: "Phần danh tính chưa dùng được: database chưa chạy migration 046.",
+      chua_co_cot_ho_so: "Phần hồ sơ chưa dùng được: database chưa chạy migration 048.",
     },
     auth: {
       or: "Hoặc",
@@ -436,7 +439,10 @@ const I18N = {
       err_chua_co_ham: "Le serveur n'est pas prêt (migration 046 non exécutée).",
       err_mang: "Envoi impossible. Vérifie ta connexion et réessaie.",
       err_khong_ro: "Enregistrement impossible, raison inconnue.",
+      err_dob_invalid: "Date de naissance invalide.",
+      err_profile_invalid: "Un champ du profil est invalide. Vérifie le téléphone, l'école et la date de naissance.",
       chua_co_cot: "Section identité indisponible : la migration 046 n'a pas été exécutée.",
+      chua_co_cot_ho_so: "Section profil indisponible : la migration 048 n'a pas été exécutée.",
     },
     auth: {
       or: "Ou",
@@ -692,7 +698,10 @@ const I18N = {
       err_chua_co_ham: "The server isn't ready for this yet (migration 046 not run).",
       err_mang: "Couldn't send. Check your connection and try again.",
       err_khong_ro: "Couldn't save, reason unknown.",
+      err_dob_invalid: "Invalid date of birth.",
+      err_profile_invalid: "A profile field is invalid. Check phone, school and date of birth.",
       chua_co_cot: "Identity section unavailable: migration 046 hasn't been run.",
+      chua_co_cot_ho_so: "Profile section unavailable: migration 048 hasn't been run.",
     },
     auth: {
       or: "Or",

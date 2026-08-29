@@ -339,6 +339,65 @@ for (const bang of ["attempts", "answers", "submissions"]) {
  * về cùng một thứ — 404 PGRST202. Ca này chỉ chứng minh "anon không gọi được",
  * KHÔNG chứng minh hàm đã được tạo. Việc đó do ca cột ở trên và khối tự kiểm
  * cuối file 046 lo. Ghi rõ ở đây vì đúng chỗ này dễ tưởng đã xanh là đã xong. */
+/* ── Migration 048: chín cột hồ sơ mở rộng ──
+ *
+ * Cùng cách đọc kết quả với ca 046 ở trên: 200 + [] là ĐÚNG (cột có, RLS
+ * không cho khoá anon thấy dòng nào), 42703 nghĩa là 048 chưa vào database
+ * NÀY.
+ *
+ * Ca này quan trọng hơn vẻ ngoài của nó: chừng nào 048 chưa chạy mà mã đã
+ * deploy thì trang « Mon Compte » rơi vào nhánh lùi và hiện băng cảnh báo —
+ * người dùng vẫn dùng được, nhưng KHÔNG lưu được hồ sơ. Còn nếu ai đó chạy
+ * 051 trước 048 thì họ mất cả đường ghi cũ lẫn đường ghi mới. */
+{
+  const cot = "genre,prenom,nom,adresse,phone,dob,level,goal,school";
+  const { status, body } = await rest(`profiles?select=id,${cot}&limit=1`);
+  ket(status === 200 && Array.isArray(body),
+    "048: chín cột hồ sơ mở rộng có mặt",
+    body?.code === "42703"
+      ? "PostgREST không thấy cột — 048 chưa chạy trên database NÀY, hoặc bị "
+        + "cuộn ngược, hoặc bộ nhớ đệm lược đồ cũ. Chạy trong SQL Editor: "
+        + "notify pgrst, 'reload schema'; select current_database(), "
+        + "(select count(*) from information_schema.columns where "
+        + "table_schema='public' and table_name='profiles' and column_name in "
+        + "('genre','prenom','nom','adresse','phone','dob','level','goal',"
+        + "'school')) as cot_moi;  ·  cot_moi phải là 9."
+      : `HTTP ${status} · ${body?.message ?? ""}`);
+}
+
+/* ── Hồ sơ của học sinh KHÔNG được lộ cho khoá anon ──
+ *
+ * Đây là chính cái lỗ hổng mà 048–051 vá. Trước đó địa chỉ và số điện thoại
+ * của cả lớp nằm trong `s:mcf-profiles`, và `kv_auth_read` của 002 cho mọi
+ * người ĐÃ ĐĂNG NHẬP đọc nó.
+ *
+ * Bộ kiểm này chạy bằng khoá anon nên chỉ chứng minh được nửa dưới: người
+ * CHƯA đăng nhập không đọc được. Nửa còn lại — học sinh A không đọc được hồ sơ
+ * của học sinh B — do RLS `profiles_read_self` (003) giữ, và muốn đo thì phải
+ * có phiên đăng nhập thật. Ghi rõ ở đây vì đúng chỗ này dễ tưởng đã xanh là
+ * đã xong. */
+{
+  const { status, body } = await rest("profiles?select=phone,adresse&limit=1");
+  ket(status === 200 && Array.isArray(body) && body.length === 0,
+    "khoá anon KHÔNG đọc được điện thoại/địa chỉ của ai",
+    status !== 200
+      ? `HTTP ${status} · ${body?.message ?? ""}`
+      : `thấy ${body?.length} dòng — hồ sơ học sinh đang lộ ra ngoài`);
+}
+
+/* ── Blob cũ phải ĐÓNG với khoá anon ──
+ *
+ * `s:mcf-profiles` vẫn còn trong kv_store làm sao lưu (049 cố ý không xoá).
+ * Sao lưu thì được, đọc được từ ngoài thì không — bản sao lưu chứa đúng cái
+ * dữ liệu vừa đem đi giấu. 002 vốn đã cấm anon; ca này canh cho nó ở nguyên
+ * chỗ cấm sau khi 051 viết lại policy đọc. */
+{
+  const { status, body } = await rest("kv_store?select=key&key=eq.s:mcf-profiles");
+  ket(status !== 200 || (Array.isArray(body) && body.length === 0),
+    "s:mcf-profiles KHÔNG đọc được bằng khoá anon",
+    `HTTP ${status} — blob hồ sơ đang lộ! Xem 002 và 051.`);
+}
+
 for (const ham of ["username_available", "update_my_identity"]) {
   const r = await fetch(`${URL_BASE}/rest/v1/rpc/${ham}`, {
     method: "POST",
@@ -347,6 +406,22 @@ for (const ham of ["username_available", "update_my_identity"]) {
   });
   ket(r.status === 404 || r.status === 401 || r.status === 403,
     `046: khoá anon KHÔNG gọi được ${ham}()`,
+    `HTTP ${r.status} — hàm đang mở cho anon, thu quyền lại ngay`);
+}
+
+/* `update_my_profile` (050) mang đúng rủi ro ấy, nặng hơn: nó GHI vào hồ sơ.
+   Anon gọi được nghĩa là bất kỳ ai trên internet cũng xoá được địa chỉ và số
+   điện thoại của học sinh — cùng lỗ hổng vừa vá, chỉ đổi cửa. */
+{
+  const r = await fetch(`${URL_BASE}/rest/v1/rpc/update_my_profile`, {
+    method: "POST",
+    headers: { apikey: ANON, "Content-Type": "application/json" },
+    body: JSON.stringify({ p_genre: null, p_prenom: null, p_nom: null,
+      p_adresse: null, p_phone: null, p_dob: null,
+      p_level: null, p_goal: null, p_school: null }),
+  });
+  ket(r.status === 404 || r.status === 401 || r.status === 403,
+    "050: khoá anon KHÔNG gọi được update_my_profile()",
     `HTTP ${r.status} — hàm đang mở cho anon, thu quyền lại ngay`);
 }
 

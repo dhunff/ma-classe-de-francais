@@ -8,6 +8,7 @@ import { SKILLS, fmtDate, isLate, exSkills, assignedTo, totalScore } from "../..
 import { uid, norm, stripHtml, wordCount, vfOk, fillAccepted, fillOk, autoQ, ordreOk, tableauCells, tableauOk, isQuestionAnswered, getUnansweredQuestionsCount } from "../../shared/questions.js";
 import { AVA_COLORS, avaColor, fmtDateFR, fmtDuration, targetedAccounts, fileNameFromUrl, formatLastSeen } from "../../shared/display.js";
 import { FloatingLayer, KebabMenu } from "../../shared/ui.jsx";
+import { loadHoSoHocSinh } from "../../shared/profileStore.js";
 import { PROFILE_FIELDS, LEVELS_PROFILE, GOALS_PROFILE, emptyProfile, calculateProfileCompletion, validateProfile } from "../../shared/profile.js";
 import { OrdreChip, OrdreBlocks, TableauCompare, ConfirmSubmitModal } from "../student/answers.jsx";
 import ReadingPanel from "../../editor/ReadingPanel.jsx";
@@ -644,11 +645,20 @@ function StudentDossier({ acc, classes, exercises, submissions, presence, back }
 
   useEffect(() => {
     (async () => {
-      const [profs, notesAll, ph, prac] = await Promise.all([
-        load("mcf-profiles", {}), load("mcf-teacher-notes", {}),
+      /* Hồ sơ đọc từ BẢNG `profiles` theo `acc.id`, không còn từ blob
+         `s:mcf-profiles`. Xem migration 049: blob là một object khoá theo TÊN
+         mà mọi học sinh đọc và ghi đè được.
+
+         `acc.id` chỉ có với người đã ĐĂNG KÝ; người mới được mời qua danh bạ
+         `mcf-accounts` thì chưa có dòng nào trong `profiles`, và
+         `loadHoSoHocSinh` trả về `null`. Đổi thành `{}` để giao diện hiện
+         "Non renseigné" cho từng ô — đúng sự thật — thay vì kẹt ở "Chargement…"
+         vĩnh viễn, vì `profile === null` là trạng thái ĐANG TẢI ở dưới. */
+      const [hoSo, notesAll, ph, prac] = await Promise.all([
+        loadHoSoHocSinh(acc.id), load("mcf-teacher-notes", {}),
         load(`mcf-ph-${name}`, {}, false), loadPractice(),
       ]);
-      setProfile((profs && profs[name]) || {});
+      setProfile(hoSo || {});
       setNotes((notesAll && notesAll[name]) || "");
       setPractice(ph && typeof ph === "object" ? ph : {});
       setPracEx(Array.isArray(prac) ? prac : []);
