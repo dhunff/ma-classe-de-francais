@@ -40,6 +40,30 @@ npm run check:css          # lớp Tailwind có thật sinh ra CSS không
 npm run check:db           # database THẬT có khớp giả định của mã nguồn không
 ```
 
+## Chạy migration — dùng CLI, đừng dùng SQL Editor
+
+```bash
+npx supabase db push --dry-run   # xem sẽ chạy file nào
+npx supabase db push
+npm run check:db                 # đo lại TỪ NGOÀI
+```
+
+Ngày 28–29/08 mất gần hai ngày vì SQL Editor và Table Editor **báo thành
+công mà lược đồ không bao giờ tới được PostgREST**. Cột hiện trong Table
+Editor, `pg_attribute` lúc thấy lúc không, `notify pgrst` vô ích, Restart
+project vô ích. CLI nối thẳng tới Postgres thì tám migration chạy sạch trong
+một lượt và PostgREST thấy ngay.
+
+CLI còn hai thứ SQL Editor không có: `--dry-run` cho biết trước sẽ chạy file
+nào (nó đọc `supabase_migrations.schema_migrations`, nên không chạy lại file
+cũ — kể cả file xoá dữ liệu như 043), và **thông báo lỗi thật**. File đã chạy
+tay trước đó sẽ lỗi "already exists"; đánh dấu bằng
+`npx supabase migration repair --status applied <số>` rồi đẩy tiếp.
+
+Migration nào ĐÓNG một đường cũ (siết policy, thu quyền) thì tạm dời ra khỏi
+thư mục trước khi đẩy, và chỉ chạy sau khi xác nhận đường mới đã mở. Nhánh
+lùi trong mã giả định cửa cũ còn đó.
+
 `check:db` gọi mạng nên không chạy được khi offline, và nó là bộ duy nhất đối
 chiếu với hệ thống thật thay vì với mã nguồn. Chạy nó sau mỗi migration.
 

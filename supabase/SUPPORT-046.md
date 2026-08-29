@@ -1,5 +1,34 @@
 # Báo cáo gửi Supabase — cột mới không bao giờ hiện ra
 
+> **CẬP NHẬT 29/08 — ĐÃ GỠ ĐƯỢC, phạm vi hẹp hơn nhiều so với mô tả bên dưới.**
+>
+> `npx supabase db push` qua kết nối trực tiếp chạy sạch tám migration trong
+> một lượt, và PostgREST thấy MỌI thứ ngay lập tức — không cần `notify`, không
+> cần restart. Bảng `notifications` mới tinh cũng hiện ra.
+>
+> Nên loại được ba nghi phạm lớn nhất trong ticket:
+>
+> | Từng nghi | Kết luận |
+> |---|---|
+> | PostgREST không nạp lại lược đồ | **không phải** — nó nạp ngay khi CLI ghi |
+> | Bộ nhớ đệm lược đồ hỏng | **không phải** — cùng lý do |
+> | Ghi nhầm project | **không phải** — project thứ hai gần như rỗng |
+>
+> Còn lại đúng một nghi phạm: **đường ghi lược đồ của dashboard**. Cùng một
+> câu `alter table` — qua SQL Editor thì PostgREST không bao giờ thấy, qua CLI
+> thì thấy ngay.
+>
+> Nếu vẫn gửi ticket, đây mới là câu hỏi đáng hỏi:
+>
+> *"Why does DDL executed through the SQL Editor / Table Editor not become
+> visible to PostgREST, while the same DDL applied via `supabase db push`
+> works immediately? `pg_attribute` also returned inconsistent results across
+> two reads in the SQL Editor, minutes apart, with no `drop column` between."*
+>
+> Phần dưới giữ nguyên làm hồ sơ những gì đã đo.
+
+---
+
 Dán phần tiếng Anh bên dưới vào ticket. Phần tiếng Việt là ghi chú cho mình.
 
 ---
