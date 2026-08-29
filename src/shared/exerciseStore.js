@@ -133,6 +133,40 @@ export async function saveExercise(exercise, store) {
     const ins = await supabase.from("questions").insert(qRows);
     if (ins.error) return { ok: false, error: ins.error };
   }
+
+  /* ── ĐẾM LẠI TRƯỚC KHI BÁO THÀNH CÔNG ──
+   *
+   * Đã xảy ra thật với `saveExam`: giáo viên thêm hai bài vào một phần, giao
+   * diện hiện đủ, bấm Lưu, thấy "✅ Đã lưu đề" — và database chỉ nhận một
+   * dòng. Không lỗi nào được ném ra. Người dùng tin, đi tiếp, rồi phát hiện ở
+   * một chỗ hoàn toàn khác và muộn hơn nhiều.
+   *
+   * `saveExercise` có đúng cùng hình dạng rủi ro, và còn nặng hơn: nó XOÁ
+   * SẠCH câu hỏi rồi chèn lại. PostgREST không cho transaction, nên xoá và
+   * chèn là hai lời gọi rời — chèn hỏng sau khi xoá xong thì bài tập còn
+   * nguyên mà mất hết câu hỏi. Nếu lúc đó vẫn báo thành công, giáo viên đóng
+   * tab và bài trở thành vỏ rỗng.
+   *
+   * Cách duy nhất biết chắc là đếm lại. Một vòng mạng, đổi lấy việc không bao
+   * giờ nói dối về một thao tác phá huỷ.
+   *
+   * `head: true` nên chỉ lấy con số, không kéo về nội dung câu hỏi. */
+  const { count, error: demErr } = await supabase
+    .from("questions")
+    .select("id", { count: "exact", head: true })
+    .eq("exercise_id", exRow.id);
+
+  if (demErr) {
+    return { ok: false, error: { message:
+      "Đã ghi nhưng không đọc lại được để kiểm: " + demErr.message
+      + ". Mở lại bài để xem có đủ câu hỏi không." } };
+  }
+  if (count !== qRows.length) {
+    return { ok: false, error: { message:
+      `Lưu thiếu: gửi ${qRows.length} câu, database nhận ${count}. `
+      + "Bài đang ở trạng thái dở dang — mở lại và lưu một lần nữa." } };
+  }
+
   return { ok: true };
 }
 

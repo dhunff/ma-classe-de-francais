@@ -121,5 +121,31 @@ if (saoTrenQuestions.test(store)) {
 } else {
   pass++;
 }
+/* ── saveExercise phải ĐẾM LẠI trước khi báo thành công ──
+ *
+ * Nó xoá sạch câu hỏi rồi chèn lại, và PostgREST không cho transaction. Chèn
+ * hỏng sau khi xoá xong thì bài tập còn nguyên mà mất hết câu hỏi — nếu lúc đó
+ * vẫn trả { ok: true }, giáo viên đóng tab và bài thành vỏ rỗng.
+ *
+ * Đã xảy ra với saveExam: "✅ Đã lưu đề" cho một việc chưa làm, phát hiện ở
+ * chỗ khác và muộn hơn nhiều. Ca này canh không cho ai lặng lẽ gỡ lớp đếm lại
+ * để tiết kiệm một vòng mạng.
+ *
+ * Kiểm bằng văn bản: chỉ soi RIÊNG thân hàm saveExercise, vì cả file có nhiều
+ * chỗ đếm khác và một phép tìm trên toàn file sẽ xanh nhầm. */
+{
+  const dau = store.indexOf("export async function saveExercise");
+  const sau = store.indexOf("export async function deleteExercise");
+  const than = dau >= 0 && sau > dau ? store.slice(dau, sau) : "";
+
+  const coDem = /count:\s*["'`]exact["'`]/.test(than) && /head:\s*true/.test(than);
+  if (coDem) pass++;
+  else { fail++; console.log("  ✗ saveExercise không đếm lại sau khi ghi"); }
+
+  /* Đếm rồi mà không SO thì cũng như không. */
+  if (/count\s*!==?\s*qRows\.length/.test(than)) pass++;
+  else { fail++; console.log("  ✗ saveExercise đếm nhưng không so với số câu đã gửi"); }
+}
+
 console.log(fail ? `\n${pass} đạt, ${fail} hỏng` : `\n${pass} đạt, 0 hỏng`);
 process.exit(fail ? 1 : 0);
