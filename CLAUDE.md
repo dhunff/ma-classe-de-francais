@@ -224,6 +224,32 @@ where attrelid = 'public.<bảng>'::regclass and attnum > 0 and not attisdropped
 `attacl = NULL` nghĩa là không có quyền theo cột — cột thêm sau thừa hưởng
 quyền mức bảng, không cần cấp gì.
 
+**So hai hệ thống bằng ĐỊNH DANH của chúng, không bằng dữ liệu bên trong.**
+Ngày 28–29/08 mất gần một ngày cho câu hỏi "SQL Editor và API có cùng một
+database không". Tôi trả lời nó bằng `count(point_gram) = 232` rồi bằng
+`current_database() = postgres`. Cả hai đều vô dụng: một bản sao tạo gần đây
+trùng hết số liệu, và mọi database Supabase đều tên `postgres`. Bốn con số
+`exam_sections/exams/exercises/questions` khớp nhau tuyệt đối — và vẫn không
+chứng minh được gì.
+
+Thứ duy nhất trả lời được là định danh: **project ref**. Trong `.env` thì nó
+nằm ở `VITE_SUPABASE_URL`; trong trình duyệt thì ở
+Project Settings → Data API → Project URL, và trong chính đường dẫn dashboard
+`/dashboard/project/<ref>/`. So hai chuỗi ấy mất năm giây.
+
+Dấu hiệu phụ, đo từ trong database: `select … from pg_stat_activity where
+usename = 'authenticator'`. PostgREST giữ kết nối thường trực bằng vai đó.
+Không có dòng nào nghĩa là PostgREST không nối tới đây.
+
+CLAUDE.md đã ghi sẵn "lần đầu là migration 001 chạy nhầm sang project khác,
+triệu chứng giống hệt". Tôi đọc dòng đó, viết lại nó trong một commit, rồi vẫn
+đi hết ba giả thuyết khác — vì tôi TƯỞNG mình đã loại khả năng ấy bằng hai dấu
+hiệu tự chọn mà không kiểm xem chúng có phân biệt được gì không.
+
+**Trước khi dùng một con số làm dấu hiệu nhận biết, hỏi: nếu hai bên KHÁC
+nhau, con số này có chắc chắn khác không?** Không trả lời được thì nó không
+phải dấu hiệu, nó là sự trùng hợp đang chờ đánh lừa mình.
+
 **Đừng dùng SỐ LIỆU DỮ LIỆU làm dấu hiệu nhận biết database.** Tôi dùng
 `count(point_gram) = 232` để phân biệt production với nhánh, vì hồi đó nhánh
 đọc ra 374. Nhánh mới tạo sao chép nguyên dữ liệu, nên nó cũng ra 232 — dấu
