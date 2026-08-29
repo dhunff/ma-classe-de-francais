@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { C, S, LEVEL_COLORS, LEVEL_PASTEL, QTYPES, VF_OPTS } from "../../shared/tokens.js";
 import { load, save, del } from "../../shared/storage.js";
+import { docThongBao, danhDauDaDoc } from "../../shared/notifications.js";
 import { useT } from "../../shared/i18n.jsx";
 import { SKILLS, fmtDate, isLate, exSkills, assignedTo, totalScore } from "../../shared/exercises.js";
 import { uid, norm, stripHtml, wordCount, vfOk, fillAccepted, fillOk, autoQ, ordreOk, tableauCells, tableauOk, isQuestionAnswered, getUnansweredQuestionsCount } from "../../shared/questions.js";
@@ -21,13 +22,21 @@ function Bell({ name, exercises, submissions }) {
   const [seen, setSeen] = useState({});
   const [annonces, setAnnonces] = useState([]);
   useEffect(() => { load(`mcf-seen-${name}`, {}, false).then(setSeen); }, [name]);
-  // 📣 Annonces du professeur : charge + rafraîchit toutes les 60 s
+  /* 📣 Thông báo của giáo viên — làm mới mỗi 60 giây.
+   *
+   * Đi qua `docThongBao` chứ không đọc thẳng blob: hàm đó tự chọn giữa bảng
+   * `notifications` (migration 053) và khoá cũ `s:mcf-notifs`, nên chỗ này
+   * không cần biết migration đã chạy hay chưa. Xem đầu shared/notifications.js.
+   *
+   * Bỏ lượt trả về nếu component đã gỡ giữa chừng — một cú điều hướng ngay sau
+   * khi mở trang để lại một lời hứa đang bay, và setState sau khi gỡ thì React
+   * cảnh báo ầm lên trong console. */
   useEffect(() => {
-    const fetchA = () => load("mcf-notifs", []).then((all) =>
-      setAnnonces(all.filter((n) => !n.targets || n.targets.includes(name))));
+    let con = true;
+    const fetchA = () => docThongBao(name).then((ds) => { if (con) setAnnonces(ds); });
     fetchA();
     const t = setInterval(fetchA, 60_000);
-    return () => clearInterval(t);
+    return () => { con = false; clearInterval(t); };
   }, [name]);
 
   const notifs = useMemo(() => {
@@ -58,6 +67,18 @@ function Bell({ name, exercises, submissions }) {
       const next = { ...seen };
       notifs.forEach((n) => { if (n.id.startsWith("graded-") || n.id.startsWith("ann-")) next[n.id] = true; });
       setSeen(next); await save(`mcf-seen-${name}`, next, false);
+
+      /* Ghi "đã đọc" lên SERVER cho các thông báo đi qua bảng.
+       *
+       * Khoá `mcf-seen-<tên>` ở trên là bộ nhớ riêng của từng MÁY, nên đổi máy
+       * là mọi thông báo cũ hiện lại như mới. Cột `is_read` sửa được điều đó,
+       * và `danhDauDaDoc` tự trả `false` khi bảng chưa tồn tại — chưa chạy
+       * migration 053 thì không có gì xảy ra, đúng hành vi cũ.
+       *
+       * Cắt tiền tố "ann-" để lấy lại id thật. Không dùng `replace("ann-","")`
+       * vì nó cắt cả chuỗi đó ở GIỮA id nếu chẳng may trùng. */
+      const idThat = notifs.filter((n) => n.id.startsWith("ann-")).map((n) => n.id.slice(4));
+      if (idThat.length) await danhDauDaDoc(idThat);
     }
   };
 

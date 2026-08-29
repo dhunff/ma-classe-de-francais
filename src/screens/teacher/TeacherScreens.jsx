@@ -5,6 +5,7 @@ import { loadPractice, saveExercise, deleteExercise } from "../../shared/exercis
 import { loadSubmissions, patchSubmission } from "../../shared/submissions.js";
 import { useT } from "../../shared/i18n.jsx";
 import { SKILLS, fmtDate, isLate, exSkills, assignedTo, totalScore } from "../../shared/exercises.js";
+import { guiThongBao } from "../../shared/notifications.js";
 import { uid, norm, stripHtml, wordCount, vfOk, fillAccepted, fillOk, autoQ, ordreOk, tableauCells, tableauOk, isQuestionAnswered, getUnansweredQuestionsCount } from "../../shared/questions.js";
 import { AVA_COLORS, avaColor, fmtDateFR, fmtDuration, targetedAccounts, fileNameFromUrl, formatLastSeen } from "../../shared/display.js";
 import { FloatingLayer, KebabMenu } from "../../shared/ui.jsx";
@@ -13,7 +14,7 @@ import { PROFILE_FIELDS, LEVELS_PROFILE, GOALS_PROFILE, emptyProfile, calculateP
 import { OrdreChip, OrdreBlocks, TableauCompare, ConfirmSubmitModal } from "../student/answers.jsx";
 import ReadingPanel from "../../editor/ReadingPanel.jsx";
 import RichTextEditor from "../../editor/RichTextEditor.jsx";
-import { BookOpen, GraduationCap, MoreVertical, Pencil, Copy, Trash2, RotateCcw, Image as ImageIcon, X, Phone, Calendar, Target, Briefcase, ChevronLeft, TrendingUp, Clock, CheckCircle } from "lucide-react";
+import { BookOpen, GraduationCap, MoreVertical, Pencil, Copy, Trash2, RotateCcw, RotateCw, Bell, Loader2, Send, AlertTriangle, Image as ImageIcon, X, Phone, Calendar, Target, Briefcase, ChevronLeft, TrendingUp, Clock, CheckCircle } from "lucide-react";
 import { BarChart, Bar, LineChart, Line, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from "recharts";
 import Builder from "./Builder.jsx";
 import PracticeHub from "../../PracticeHub.jsx";
@@ -24,6 +25,22 @@ import AccessPanel from "./AccessPanel.jsx";
 
 
 /* ================= Teacher ================= */
+/* Nút hình viên thuốc cho thanh công cụ.
+ *
+ * MÀU ĐI QUA TOKEN, không viết cứng. Bản mô tả đề nghị bg-[#1C1D22] và
+ * border-gray-700/50 — đúng màu, nhưng viết cứng thì nút giữ nguyên màu tối
+ * khi người dùng bật bản SÁNG, và `check:design` chặn (quy tắc 2). Chính
+ * token là thứ tạo ra bản tối trong ảnh chụp: surface2 = #14141A ở bản tối,
+ * #FAFAFC ở bản sáng.
+ *
+ * `border-0` bắt buộc vì preflight của Tailwind đang TẮT — thiếu nó thì nút
+ * còn viền xám mặc định của trình duyệt chồng lên viền ta tự đặt. */
+const NUT_PILL =
+  "inline-flex cursor-pointer items-center gap-2 rounded-full border-0 bg-surface2 px-4 py-2 " +
+  "text-sm font-semibold text-soft ring-1 ring-inset ring-line transition-colors " +
+  "hover:bg-primary-soft hover:text-primary hover:ring-primary/40 " +
+  "disabled:cursor-not-allowed disabled:opacity-50";
+
 function Teacher({ exercises, setExercises, submissions, setSubmissions, accounts, setAccounts, classes, setClasses, refresh, routeView }) {
   /* `routeView` đến từ URL. State nội bộ vẫn giữ, vì hai màn hình không có
      địa chỉ riêng — trình soạn bài ("new") và màn chấm bài ("progress:<id>")
@@ -39,23 +56,65 @@ function Teacher({ exercises, setExercises, submissions, setSubmissions, account
   const [annStudents, setAnnStudents] = useState([]);
   const [annSearch, setAnnSearch] = useState("");
   const [annToast, setAnnToast] = useState("");
+  const [annSending, setAnnSending] = useState(false);
+  const [annLoi, setAnnLoi] = useState("");
 
+  /* Gửi thông báo.
+   *
+   * Bản cũ có ba lỗi, và cả ba đều im lặng:
+   *
+   *   1. `await save(...)` rồi hiện "✅ Annonce envoyée !" mà KHÔNG đọc giá
+   *      trị trả về. `save` nuốt lỗi và trả `false`, nên ghi hỏng vì mạng hay
+   *      RLS thì giáo viên vẫn thấy dấu tích xanh. Cùng lỗi đã làm mất một
+   *      buổi soạn đề (`saveExam`) và suýt xoá sạch câu hỏi (`saveExercise`).
+   *
+   *   2. Nhắm học sinh theo TÊN lấy từ danh bạ giáo viên gõ tay, còn Bell so
+   *      với tên trong phiên đăng nhập. Lệch một dấu cách là không ai nhận,
+   *      không có gì báo. Nay gửi kèm `id` để đường mới nhắm bằng uuid.
+   *
+   *   3. `if (!names.size) return;` — bấm Envoyer, không có gì xảy ra, không
+   *      lời giải thích. Nay mọi nhánh thoát đều để lại một câu.
+   */
   const sendAnnonce = async () => {
-    const msg = annMsg.trim();
-    if (!msg) return;
-    let targets = null; // null = broadcast à tous
+    setAnnLoi("");
+    const chon = new Map();          // id/tên → { id, name }
     if (!annAll) {
-      const names = new Set(annStudents);
-      annClasses.forEach((cid) => accounts.filter((a) => a.classId === cid).forEach((a) => names.add(a.name)));
-      if (!names.size) return;
-      targets = [...names];
+      const them = (a) => chon.set(a.id || a.name, { id: a.id, name: a.name });
+      accounts.filter((a) => annStudents.includes(a.name)).forEach(them);
+      annClasses.forEach((cid) => accounts.filter((a) => a.classId === cid).forEach(them));
     }
-    const latest = await load("mcf-notifs", []);
-    const next = [...latest, { id: uid(), message: msg, targets, createdAt: Date.now() }].slice(-30);
-    await save("mcf-notifs", next);
+    const ds = [...chon.values()];
+
+    setAnnSending(true);
+    const kq = await guiThongBao({
+      noiDung: annMsg,
+      choTatCa: annAll,
+      ids: ds.map((x) => x.id).filter(Boolean),
+      tens: ds.map((x) => x.name),
+    });
+    setAnnSending(false);
+
+    if (!kq.ok) {
+      setAnnLoi({
+        trong: "Chưa nhập nội dung thông báo.",
+        dai: "Thông báo dài quá 2000 ký tự.",
+        chua_chon_ai: "Chưa chọn lớp hoặc học sinh nào.",
+        khong_phai_giao_vien: "Phiên đăng nhập không có quyền giáo viên. Đăng nhập lại rồi thử lại.",
+        chua_co_ham: "Máy chủ chưa sẵn sàng (migration 053 chưa chạy).",
+        mang: "Không gửi được. Kiểm tra kết nối rồi thử lại.",
+      }[kq.loi] || "Không gửi được, chưa rõ lý do.");
+      return;
+    }
+
     setAnnModal(false);
-    setAnnToast("✅ Annonce envoyée !");
-    setTimeout(() => setAnnToast(""), 3200);
+    /* Nói SỐ NGƯỜI NHẬN khi biết. "Đã gửi cho 0 em" xảy ra thật khi lớp chưa
+       có ai đăng ký, và im lặng thành công ở đó là nói dối. Đường cũ không
+       đếm được nên trả `null`, và khi đó chỉ nói "đã gửi". */
+    setAnnToast(
+      kq.soNguoiNhan == null ? "✅ Đã gửi thông báo."
+        : kq.soNguoiNhan === 0 ? "⚠️ Đã gửi, nhưng không có học sinh nào nhận — lớp chưa có ai đăng ký tài khoản."
+          : `✅ Đã gửi tới ${kq.soNguoiNhan} học sinh.`);
+    setTimeout(() => setAnnToast(""), 4500);
   };
   const [draft, setDraft] = useState(null);
 
@@ -157,13 +216,14 @@ function Teacher({ exercises, setExercises, submissions, setSubmissions, account
           có URL riêng: soạn bài mới và chấm bài. */}
       <div className="mb-5 flex flex-wrap items-center gap-2">
         <button type="button" onClick={refresh}
-          className="rounded-md px-3 py-1.5 text-sm font-medium text-soft transition-colors hover:bg-surface2 hover:text-ink">
-          ↻ {t("actions.refresh")}
+          className={NUT_PILL}>
+          <RotateCw size={15} aria-hidden /> {t("actions.refresh")}
         </button>
         {view === "list" && (
-          <button type="button" onClick={() => { setAnnModal(true); setAnnMsg(""); setAnnAll(true); setAnnClasses([]); setAnnStudents([]); setAnnSearch(""); }}
-            className="rounded-md px-3 py-1.5 text-sm font-medium text-soft transition-colors hover:bg-surface2 hover:text-ink">
-            📣 {t("actions.announce")}
+          <button type="button"
+            onClick={() => { setAnnModal(true); setAnnMsg(""); setAnnAll(true); setAnnClasses([]); setAnnStudents([]); setAnnSearch(""); setAnnLoi(""); }}
+            className={NUT_PILL}>
+            <Bell size={15} aria-hidden /> {t("actions.announce")}
           </button>
         )}
         {view === "list" && (
@@ -175,17 +235,39 @@ function Teacher({ exercises, setExercises, submissions, setSubmissions, account
       </div>
 
       {annModal && (
-        <div style={{ position: "fixed", inset: 0, background: "rgba(17,24,39,.55)", display: "grid", placeItems: "center", padding: 16, zIndex: 9999 }}
-          onClick={() => setAnnModal(false)}>
-          <div className="mcf-card" style={{ ...S.card, width: "100%", maxWidth: 520, maxHeight: "88vh", overflowY: "auto" }} onClick={(e) => e.stopPropagation()}>
-            <h3 style={{ ...S.display, fontSize: 20, marginTop: 0 }}>📣 Envoyer une annonce</h3>
-            <textarea style={{ ...S.input, minHeight: 90, resize: "vertical" }} value={annMsg} autoFocus
-              placeholder="ex. Rappel : rendez le devoir B1 avant vendredi 19h !"
-              onChange={(e) => setAnnMsg(e.target.value)} />
+        /* Bấm ra ngoài để đóng — nhưng chỉ khi bấm ĐÚNG lớp phủ. `onMouseDown`
+           chứ không `onClick`: bôi đen chữ trong ô nhập rồi thả chuột ra ngoài
+           sẽ tính là một cú click trên lớp phủ và đóng mất hộp cùng nội dung
+           đang gõ dở. */
+        <div className="fixed inset-0 z-[9999] grid place-items-center bg-ink/50 p-4 backdrop-blur-sm"
+          onMouseDown={(e) => { if (e.target === e.currentTarget && !annSending) setAnnModal(false); }}>
+          <div role="dialog" aria-modal="true" aria-label="Envoyer une annonce"
+            className="max-h-[88vh] w-full max-w-lg overflow-y-auto rounded-3xl bg-surface p-6 shadow-2xl ring-1 ring-inset ring-line">
+            <h3 className="m-0 flex items-center gap-2 text-lg font-bold text-ink">
+              <Bell size={18} className="text-primary" aria-hidden /> Envoyer une annonce
+            </h3>
 
-            <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 14.5, fontWeight: 700, cursor: "pointer", marginTop: 12 }}>
-              <input type="checkbox" checked={annAll} onChange={(e) => setAnnAll(e.target.checked)} />
-              👥 Envoyer à tous les élèves
+            <textarea
+              className="mt-4 min-h-[110px] w-full resize-y rounded-xl border-0 bg-surface2 px-4 py-3 text-sm
+                         font-medium text-ink outline-none ring-1 ring-inset ring-line transition
+                         placeholder:text-soft focus:ring-2 focus:ring-primary"
+              value={annMsg} autoFocus maxLength={2000} disabled={annSending}
+              placeholder="ex. Rappel : rendez le devoir B1 avant vendredi 19h !"
+              onChange={(e) => { setAnnMsg(e.target.value); if (annLoi) setAnnLoi(""); }} />
+
+            {/* Đếm ký tự chỉ hiện khi gần chạm giới hạn. Hiện suốt thì nó là
+                nhiễu; im lặng tới lúc bị cắt thì là bẫy. */}
+            {annMsg.length > 1800 && (
+              <p className="m-0 mt-1 text-right text-xs font-semibold text-warn">
+                {annMsg.length}/2000
+              </p>
+            )}
+
+            <label className="mt-4 flex cursor-pointer items-center gap-2.5 text-sm font-bold text-ink">
+              <input type="checkbox" checked={annAll} disabled={annSending}
+                onChange={(e) => { setAnnAll(e.target.checked); if (annLoi) setAnnLoi(""); }}
+                className="h-4 w-4 cursor-pointer accent-[color:var(--mcf-primary)]" />
+              Envoyer à tous les élèves
             </label>
 
             {!annAll && (
@@ -232,11 +314,34 @@ function Teacher({ exercises, setExercises, submissions, setSubmissions, account
               </div>
             )}
 
-            <div style={{ display: "flex", gap: 10, marginTop: 16 }}>
-              <button style={{ ...S.btn(true), opacity: annMsg.trim() && (annAll || annClasses.length || annStudents.length) ? 1 : 0.4 }}
-                disabled={!annMsg.trim() || (!annAll && !annClasses.length && !annStudents.length)}
-                onClick={sendAnnonce}>📣 Envoyer</button>
-              <button style={S.btn(false)} onClick={() => setAnnModal(false)}>Annuler</button>
+            {/* Lỗi hiện Ở ĐÂY, cạnh nút, chứ không phải một alert() rồi biến
+                mất. Người dùng cần đọc lại được lý do trong lúc sửa. */}
+            {annLoi && (
+              <p className="m-0 mt-4 flex items-start gap-2 rounded-xl bg-danger-soft p-3 text-xs font-bold text-danger">
+                <AlertTriangle size={14} className="mt-px shrink-0" aria-hidden /> {annLoi}
+              </p>
+            )}
+
+            <div className="mt-5 flex items-center justify-end gap-3">
+              {/* NÚT GỬI KHÔNG BỊ `disabled` khi thiếu thông tin.
+                  CLAUDE.md: nút xám bấm không được là ngõ cụt câm — dự án đã
+                  trả giá cho kiểu đó ở thanh trượt tự chấm. Bấm được, và
+                  `guiThongBao` trả về đúng lý do để hiện ngay bên trên.
+                  Chỉ khoá trong lúc ĐANG GỬI, để không gửi hai lần. */}
+              <button type="button" onClick={() => setAnnModal(false)} disabled={annSending}
+                className="cursor-pointer rounded-xl border-0 bg-transparent px-5 py-3 font-[inherit] text-sm
+                           font-semibold text-soft transition-colors hover:bg-surface2 hover:text-ink
+                           disabled:cursor-not-allowed disabled:opacity-50">
+                Annuler
+              </button>
+              <button type="button" onClick={sendAnnonce} disabled={annSending}
+                className="flex cursor-pointer items-center gap-2 rounded-xl border-0 bg-primary px-6 py-3
+                           font-[inherit] text-sm font-bold text-on-primary shadow-lg shadow-primary/30
+                           transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60">
+                {annSending
+                  ? <><Loader2 size={15} className="mcf-spin" aria-hidden /> Envoi…</>
+                  : <><Send size={15} aria-hidden /> Envoyer</>}
+              </button>
             </div>
           </div>
         </div>

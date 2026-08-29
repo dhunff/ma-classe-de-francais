@@ -35,6 +35,8 @@ npm run check:cors         # Edge Function có cho trình duyệt gọi không
 npm run check:hmac         # chữ ký webhook SePay + bản ghim công thức (45 ca)
 npm run check:bareme       # mốc cho điểm PE, nhãn Việt, đối chiếu với SQL (457 ca)
 npm run check:identity     # luật @username, JS ↔ SQL ↔ i18n (46 ca)
+npm run check:notifs       # đường gửi thông báo + luật RPC (25 ca)
+npm run check:css          # lớp Tailwind có thật sinh ra CSS không
 npm run check:db           # database THẬT có khớp giả định của mã nguồn không
 ```
 
@@ -377,7 +379,369 @@ trúc bằng Edit — quy tắc 4 ở trên, lần thứ năm.
 
 **Trong JavaScript, `.` không khớp `\r` — không chỉ `\n`.** Bộ lọc chú thích
 SQL của `check:identity` viết `d.replace(/--.*$/, "")` trên từng dòng tách bằng
-`split("\n")`. Trên file lưu CRLF thì `.*` dừng TRƯỚC `\r`, `$` (không có cờ
+`split("\n")`. Trên file lưu CRLF thì `.*` dừng TRƯỚC `\r`, `# FRACILE — ghi chú cho phiên làm việc
+
+LMS tự học tiếng Pháp, nhắm DELF B1/B2. React 18 + Vite + Tailwind + Supabase.
+Deploy tự động lên Vercel khi push `main` → https://fracile.vercel.app
+
+---
+
+## Chạy thử
+
+```bash
+npm run dev              # ứng dụng thật, cần đăng nhập
+npm run build
+```
+
+`/preview.html` là trang xem thử **không cần đăng nhập** — dựng vỏ app thật với
+dữ liệu giả. Đây là cách duy nhất xem được các màn hình sau cổng đăng nhập.
+Nó có từ điển i18n RIÊNG; thêm khoá vào `shared/i18n.jsx` mà quên chỗ này thì
+trang xem thử hiện khoá thô như `nav.menu`.
+
+## Bộ kiểm — chạy hết trước khi commit
+
+```bash
+npm run check:design       # tương phản màu WCAG, token, font
+npm run check:imports      # định danh dùng trong JSX mà chưa import
+npm run check:grading      # chấm bài tiếng Pháp (46 ca)
+npm run check:hooks        # hook đặt sau `return` sớm
+npm run check:submissions  # ánh xạ bài nộp ↔ bảng (50 ca)
+npm run check:exercises    # ánh xạ bài tập ↔ hai bảng (53 ca)
+npm run check:store        # kho đề có chỗ nào còn gọi blob không (8 ca)
+npm run check:parity       # bộ chấm server vs client có trôi khỏi nhau không
+npm run check:exam         # quy đổi điểm + luật đạt/trượt thi thử (19 ca)
+npm run check:nav          # mục menu ↔ route ↔ nhãn i18n, cả hai chiều (74 ca)
+npm run check:grille       # grille DELF A1–B2 cộng đúng 25, đủ mô tả (59 ca)
+npm run check:cors         # Edge Function có cho trình duyệt gọi không
+npm run check:hmac         # chữ ký webhook SePay + bản ghim công thức (45 ca)
+npm run check:bareme       # mốc cho điểm PE, nhãn Việt, đối chiếu với SQL (457 ca)
+npm run check:identity     # luật @username, JS ↔ SQL ↔ i18n (46 ca)
+npm run check:notifs       # đường gửi thông báo + luật RPC (25 ca)
+npm run check:db           # database THẬT có khớp giả định của mã nguồn không
+```
+
+`check:db` gọi mạng nên không chạy được khi offline, và nó là bộ duy nhất đối
+chiếu với hệ thống thật thay vì với mã nguồn. Chạy nó sau mỗi migration.
+
+Mỗi bộ sinh ra từ một lỗi thật đã lọt lên production. **Build xanh không có
+nghĩa là đúng** — cả sáu loại lỗi này đều để build đi qua.
+
+Viết bộ kiểm mới thì phải **chứng minh nó bắt được lỗi**: tạm hoàn tác bản sửa,
+chạy lại, thấy nó FAIL. Bộ kiểm chỉ biết xanh là đồ trang trí.
+
+---
+
+## Nguyên tắc không thương lượng
+
+### 1. Không bịa dữ liệu
+
+Mọi con số trên màn hình phải tính được từ dữ liệu thật. Chưa có nguồn thì hiện
+**trạng thái rỗng nói rõ lý do**, đừng dựng số minh hoạ — học sinh tin vào những
+gì trang này nói.
+
+Ví dụ đang áp dụng: "Chuỗi ngày học" và "Giờ học" hiện dấu gạch kèm câu giải
+thích, vì hệ thống chưa ghi hoạt động theo ngày.
+
+Dữ liệu giả để xem bố cục **chỉ** sống trong `src/preview.jsx`.
+
+### 2. Màu đi qua token, không viết cứng
+
+`bg-surface`, `text-ink`, `text-soft`, `bg-primary-soft`… định nghĩa ở
+`styles/tokens.css`, khai báo cho Tailwind ở `tailwind.config.js`. Token tự đảo
+ở bản tối và được `check:design` đo tương phản.
+
+Ngoại lệ có chủ ý, đã ghi lý do tại chỗ: bốn ô số liệu nhiều màu
+(`STAT_GRADIENTS`), dải màu trình độ (`LEVEL_COLORS`), và thanh bên dùng trắng
+thẳng vì nền khung không đảo theo bản sáng/tối.
+
+### 3. Tailwind preflight ĐANG TẮT
+
+Nên `<button>` còn viền xám mặc định, `<h1>`/`<p>` còn margin. Mọi nút phải có
+`border-0` và nền rõ ràng, mọi tiêu đề phải có `m-0`. Bỏ qua là giao diện vỡ.
+
+### 4. Sửa file bằng công cụ Edit/Write, KHÔNG qua đường ống PowerShell
+
+`Get-Content` của PowerShell 5.1 đọc mặc định bằng ANSI, nên
+`Get-Content x | … | Set-Content x -Encoding utf8` biến chú thích tiếng Việt
+thành mojibake. Đã xảy ra một lần với `HomeDashboard.jsx`.
+
+Bash + `node -e` an toàn hơn, nhưng chuỗi JSX nhiều dòng vẫn hay vỡ — với sửa
+đổi có cấu trúc thì dùng thẳng công cụ Edit.
+
+### 5. Trả lời bằng tiếng Việt
+
+Kể cả khi câu hỏi viết bằng tiếng Anh. Chú thích trong mã cũng tiếng Việt.
+Giữ tiếng Anh cho tên biến, lệnh shell, thuật ngữ không có bản dịch quen.
+
+### 6. Tự commit và push, không hỏi
+
+Trong repo này đã được cấp quyền thường trực. Xong việc thì chạy đủ bộ kiểm,
+kiểm chứng trên trình duyệt nếu thay đổi nhìn thấy được, rồi commit + push.
+Vẫn phải **nói rõ những gì chưa kiểm chứng được**.
+
+Vẫn dừng lại hỏi khi: xoá dữ liệu, đổi cấu hình hạ tầng, hoặc làm hỏng đường vào
+hiện có của người dùng.
+
+---
+
+## Kiến trúc
+
+### Vỏ ứng dụng — "thẻ lồng"
+
+`AppLayout.jsx`: nền xanh đặc làm khung, nội dung là tấm thẻ trắng bo góc trái.
+Thanh bên **không** `fixed` — nó là phần tử flex cạnh tấm thẻ, để mục đang chọn
+chạm được vào mép thẻ (`-mr-3 rounded-l-full bg-bg`) trông như liền khối.
+
+**Trang không cuộn.** Khung cao đúng một màn hình, khoá tràn; chỉ `<main>` cuộn.
+Panel phụ (sổ tay) là con `absolute` của tấm thẻ, không phải `fixed` — nhờ vậy
+`overflow-hidden` cắt nó theo đúng khung và nó không liếm sang thanh bên.
+
+### Dữ liệu — đang chuyển từ blob sang bảng
+
+| Đã là bảng thật | Còn là blob `kv_store` |
+|---|---|
+| `profiles`, `exercise_access`, `submissions`, `tips`, `exercises`, `questions` | `mcf-accounts`, `mcf-classes`, `mcf-folders`, `mcf-custom-cats`, `mcf-ph-<tên>`… |
+
+Hồ sơ mở rộng (địa chỉ, điện thoại, ngày sinh, trường, trình độ, mục tiêu) đã
+rời `s:mcf-profiles` sang chín cột trên `profiles` — migration 048–051, đi qua
+`shared/profileStore.js`. Blob còn đó làm sao lưu nhưng học sinh không đọc,
+không ghi được nữa.
+
+Kho đề đi qua `shared/exerciseStore.js`, KHÔNG gọi `load("mcf-practice")` nữa —
+`check:store` canh chỗ này. Hai kho phân biệt bằng cột `store`
+('practice' | 'assignment'), nên chuyển bài giữa hai bên giờ là một lệnh ghi
+chứ không phải ghi hai blob rồi cầu cho đừng hỏng giữa chừng.
+
+Blob có ba vấn đề: đọc-sửa-ghi làm mất dữ liệu khi hai người sửa cùng lúc, chi
+phí đọc tăng tuyến tính, không truy vấn được. **Đừng thêm blob mới.**
+
+Chuyển blob → bảng thì theo khuôn `migrations/005` + `007`: tạo bảng, chép dữ
+liệu, **giữ blob làm sao lưu**, kèm câu SQL đối chiếu số lượng, chỉ chuyển ứng
+dụng sau khi hai số khớp. `009_tips.sql` là bản mẫu gọn nhất.
+
+RLS: dùng lại `public.is_teacher()` (migration 002) — nó đọc `app_metadata`, chỗ
+duy nhất người dùng không tự sửa được. Bọc `(select auth.uid())` trong subquery
+để Postgres tính một lần cho cả câu.
+
+### Chấm bài
+
+`shared/gradingEngine.js` — hàm thuần. `fillOk()` trong `shared/questions.js`
+gọi vào đó; năm màn hình gọi `fillOk`, nên chỉ có **một** đường chấm.
+
+Dấu tiếng Pháp **được tính** (`strictAccents` mặc định `true`): `ou` ≠ `où`,
+`a` ≠ `à`. Bài cho người mới đặt cờ riêng qua `q.strictAccents` hoặc
+`exercise.strictAccents`.
+
+Đáp án đọc được cả hai lược đồ: mảng `correctAnswers` (mới) và chuỗi ngăn bằng
+`|` (đang có trong kho).
+
+---
+
+## Bẫy đã gặp
+
+**Hook sau `return` sớm** → React error #300, error boundary nuốt cả trang.
+Lỗi nằm im 5 ngày trong `Student.jsx`. `check:hooks` bắt được.
+
+**`overflow-x: auto` ép luôn `overflow-y` thành `auto`** → thanh cuộn dọc thừa.
+Dùng `.no-scrollbar`. Đã cắn hai lần: thanh bên và lịch.
+
+**Flex/grid item mặc định `min-width: auto`** → cột phình theo nội dung thay vì
+để con cuộn. Băng chuyền cần `min-w-0` ở cột chứa nó.
+
+**`rAF` đóng băng ở tab nền** → framer-motion và `ResizeObserver` đứng im khi
+kiểm chứng bằng công cụ. Không phải lỗi mã; chụp màn hình để kích hoạt tab.
+
+Cùng gốc, khác triệu chứng: **`getComputedStyle` trả về màu ĐANG DỞ của một
+transition chưa chạy xong.** Bật bản tối rồi đo nền ô nhập ra `#FAFAFC` (màu
+sáng) trong khi biến `--mcf-surface2-rgb` trên chính phần tử đó đã là
+`20 20 26`. Không phải lỗi màu — class `transition` khiến `background-color`
+nội suy dần, mà tab không vẽ khung thì phép nội suy đứng ở khung đầu tiên,
+vĩnh viễn.
+
+Cách phân biệt trong ba mươi giây: nhân bản phần tử, bỏ class `transition`,
+gắn vào DOM rồi đo. Ra màu đúng nghĩa là CSS không sai, chỉ có phép đo sai.
+
+**Cờ emoji không hiện trên Windows** — nó vẽ thành hai chữ cái vùng, nên
+`🇻🇳 VN` đọc ra "VN VN".
+
+**Trình nhập JSON của Builder** phải được cập nhật khi thêm trường vào câu hỏi —
+mọi bài đều vào bằng đường đó, quên là trường mới lặng lẽ bị bỏ.
+
+**Một câu `fill`/`conj` = MỘT ô trống.** Giao diện chỉ dựng một ô nhập, và
+`|` trong `accepted` nghĩa là CÁC CÁCH VIẾT được chấp nhận cho cùng một đáp án.
+Viết đề hai ô rồi ghi `"arrive|allume"` thì học sinh gõ một vế là được điểm
+trọn. Ghi `"a/b"` thì hỏng ngược lại — `/` không phải dấu phân tách nào cả, nên
+gõ đúng cả hai vế vẫn sai. Cả 17 câu mắc lỗi này đã tách đôi (migration 017 và
+018); **thư viện hiện không còn câu nào ≥2 ô trống**. Đừng tạo câu mới như vậy.
+
+**REVOKE khỏi `PUBLIC` KHÔNG xoá quyền cấp riêng cho `anon` / `authenticated`.**
+Supabase cấp thẳng cho hai vai đó (default privileges), nên phải thu đích danh.
+Đã dính hai lần: quyền CỘT ở 022, quyền HÀM ở 024 — lần sau suýt cho học sinh
+gọi `_exam_play` với `p_max: 999` và nghe không giới hạn. Kiểm bằng
+`has_function_privilege`, đừng tin câu REVOKE vừa viết.
+
+**Phép kiểm nằm cùng transaction với thứ nó kiểm thì vô giá trị.** 035 dạy
+"đừng đặt khối tự kiểm biết `raise exception` chung transaction với DDL". Tôi
+đọc thành "không ném lỗi thì an toàn" và kết thúc 046 bằng một câu `select`
+đếm cột. Nó in `cot_moi = 3` trong khi ba cột không hề tồn tại sau đó — bên
+trong transaction thì `alter table` đã có hiệu lực, nên select đọc đúng trạng
+thái lúc ấy, rồi transaction cuộn ngược.
+
+Sai theo hướng tệ hơn cả 035: khối `do` ném lỗi ít ra còn hỏng to tiếng, còn
+một câu select thì BÁO THÀNH CÔNG cho việc sắp bị huỷ. Người vận hành đọc số,
+tin là xong, và ta mất một ngày đi tìm ở chỗ khác.
+
+Nguyên tắc: phép kiểm phải chạy ở **một lần Run RIÊNG**, sau khi transaction
+kia đã commit. Nay 046 tạo, 048 kiểm, `check:db` đo lần thứ ba từ ngoài.
+
+**`information_schema` lọc theo quyền; `pg_attribute` thì không.** Một cột bị
+giấu vì quyền trông y hệt một cột không tồn tại. Và
+`information_schema.column_privileges` khai triển quyền mức BẢNG thành từng
+dòng cột, nên một bảng cấp mức bảng nhìn qua khung đó giống hệt một bảng cấp
+đủ từng cột — tôi đọc nhầm chỗ này và dựng cả một chẩn đoán sai về "GRANT theo
+cột" lên trên nó, viết hẳn một migration để sửa thứ không hỏng.
+
+Muốn biết cột có thật hay không, hỏi danh mục thẳng:
+
+```sql
+select attnum, attname, attacl from pg_attribute
+where attrelid = 'public.<bảng>'::regclass and attnum > 0 and not attisdropped;
+```
+
+`attacl = NULL` nghĩa là không có quyền theo cột — cột thêm sau thừa hưởng
+quyền mức bảng, không cần cấp gì.
+
+**Mã trạng thái 200 KHÔNG chứng minh tệp tồn tại.** `vercel.json` rewrite mọi
+đường dẫn về `/index.html` cho SPA, nên `/preview.html`, `/abc`, và một chuỗi
+bịa hẳn tên đều trả 200 với nội dung y hệt trang chủ. Tôi đọc một mã 200 rồi
+kết luận "trang xem thử đang được deploy ra internet" và viết nó vào commit —
+trong khi `dist/` không hề có tệp đó, và chính phép đo đầu tiên của tôi đã in
+ra dấu hiệu ngược lại.
+
+So NỘI DUNG, đừng nhìn mã trạng thái:
+
+```bash
+curl -s https://<host>/<đường> -o /tmp/a; curl -s https://<host>/ -o /tmp/b
+cmp -s /tmp/a /tmp/b && echo "chỉ là rewrite" || echo "tệp thật"
+```
+
+**So hai hệ thống bằng ĐỊNH DANH của chúng, không bằng dữ liệu bên trong.**
+Ngày 28–29/08 mất gần một ngày cho câu hỏi "SQL Editor và API có cùng một
+database không". Tôi trả lời nó bằng `count(point_gram) = 232` rồi bằng
+`current_database() = postgres`. Cả hai đều vô dụng: một bản sao tạo gần đây
+trùng hết số liệu, và mọi database Supabase đều tên `postgres`. Bốn con số
+`exam_sections/exams/exercises/questions` khớp nhau tuyệt đối — và vẫn không
+chứng minh được gì.
+
+Thứ duy nhất trả lời được là định danh: **project ref**. Trong `.env` thì nó
+nằm ở `VITE_SUPABASE_URL`; trong trình duyệt thì ở
+Project Settings → Data API → Project URL, và trong chính đường dẫn dashboard
+`/dashboard/project/<ref>/`. So hai chuỗi ấy mất năm giây.
+
+Dấu hiệu phụ, đo từ trong database: `select … from pg_stat_activity where
+usename = 'authenticator'`. PostgREST giữ kết nối thường trực bằng vai đó.
+Không có dòng nào nghĩa là PostgREST không nối tới đây.
+
+CLAUDE.md đã ghi sẵn "lần đầu là migration 001 chạy nhầm sang project khác,
+triệu chứng giống hệt". Tôi đọc dòng đó, viết lại nó trong một commit, rồi vẫn
+đi hết ba giả thuyết khác — vì tôi TƯỞNG mình đã loại khả năng ấy bằng hai dấu
+hiệu tự chọn mà không kiểm xem chúng có phân biệt được gì không.
+
+**Trước khi dùng một con số làm dấu hiệu nhận biết, hỏi: nếu hai bên KHÁC
+nhau, con số này có chắc chắn khác không?** Không trả lời được thì nó không
+phải dấu hiệu, nó là sự trùng hợp đang chờ đánh lừa mình.
+
+**Đừng dùng SỐ LIỆU DỮ LIỆU làm dấu hiệu nhận biết database.** Tôi dùng
+`count(point_gram) = 232` để phân biệt production với nhánh, vì hồi đó nhánh
+đọc ra 374. Nhánh mới tạo sao chép nguyên dữ liệu, nên nó cũng ra 232 — dấu
+hiệu hết tác dụng từ lúc nhánh cũ bị bỏ, mà tôi vẫn dùng thêm mấy lượt nữa.
+Dùng `current_database()` và project ref trên thanh địa chỉ.
+
+**curl KHÔNG kiểm được CORS.** curl gửi thẳng, không làm preflight. Hàm `grade`
+khai thiếu `x-client-info` — header mà `functions.invoke` LUÔN gửi — nên curl
+trả 200 với điểm đúng, còn ứng dụng bị trình duyệt huỷ request trước khi nó rời
+máy, không log ở đâu cả. Hậu quả: 5 lượt thi mở ra, 0 lượt đóng, 0 dòng
+`answers`, mọi phần hiện "chờ chấm 0/0". `check:cors` gửi đúng cái preflight mà
+trình duyệt gửi, tới hàm đã deploy.
+
+**Đặt lại ĐÚNG giá trị cũ thì React KHÔNG gọi `onChange`.** React gắn một bộ
+theo dõi giá trị lên input; giá trị mới bằng giá trị đang có thì sự kiện bị bỏ.
+
+Thanh trượt tự chấm hiển thị ở vị trí 0 khi chưa chấm, nên người muốn cho 0
+điểm kéo tới 0 — và **không có gì được ghi**. Tiêu chí đó không được đếm, nút
+Lưu khoá vĩnh viễn, người dùng không có đường thoát: mọi thanh trượt đều nằm
+đúng chỗ họ muốn, nút thì im lặng. Một buổi tự chấm mất trắng.
+
+Với `range`/`checkbox`, thêm `onPointerUp` và `onKeyUp` để bắt lần TƯƠNG TÁC
+kết thúc, chứ không chỉ lần đổi giá trị.
+
+Hai bài học đi kèm, đắt hơn bản thân lỗi:
+
+- **"Chưa nhập" và "nhập giá trị rỗng/0" phải khác nhau BẰNG MẮT.** Vẽ giống
+  nhau thì người dùng tin mình đã xong.
+- **Kiểm chứng bằng cách gán giá trị qua JS luôn bỏ sót lỗi này** — gọi setter
+  rồi tự bắn sự kiện thì bao giờ cũng chạy. Người thật gặp ngay lần đầu.
+
+**Nút bị `disabled` là ngõ cụt.** Bấm, không có gì xảy ra, không ai nói vì sao.
+Thà để nút bấm được rồi chỉ ra chỗ còn thiếu — tô viền, cuộn tới, gọi tên.
+
+**Một phần thi = MỘT khối, MỘT đồng hồ, NHIỀU bài.** Từ migration 044 một kỹ
+năng chứa được nhiều bài (`exam_sections` vốn đã là bảng nối; thứ chặn chỉ là
+`unique (exam_id, code)`). Chỗ dễ phá nhất là coi mỗi bài như một phần thi
+riêng — khi đó đề CO ba bài có ba đồng hồ 25 phút, tức 75 phút cho phần mà kỳ
+thi thật cho 25.
+
+`gomTheoKyNang()` giữ đúng mô hình: đồng hồ và điểm lấy từ dòng đầu của khối,
+KHÔNG cộng dồn. `check:exam` canh chỗ này.
+
+Kéo theo, ba phép cộng phải nhớ: `duration_min` cộng theo KỸ NĂNG chứ không
+theo dòng; số phần hiển thị đếm `new Set(code)` chứ không đếm `sections.length`;
+và chấm thì cộng THÔ điểm từng bài rồi mới quy về thang 25 một lần — quy đổi
+từng bài rồi cộng khiến bài 7 câu nặng bằng bài 15 câu.
+
+Mọi chỗ dùng `sections.find(s => s.code === …)` đều là bug từ 044: nó lấy đúng
+bài đầu và bỏ im phần còn lại. Đã sửa ba chỗ (nút Sửa của trình soạn, bảng tổng
+quan màn chờ, danh sách đề); tìm thấy chỗ thứ tư thì sửa tiếp.
+
+**"Lệnh chạy xong" KHÔNG BAO GIỜ là bằng chứng dữ liệu đã đổi.** Đo lại từ phía
+ứng dụng: `npm run check:db`, hoặc gọi Edge Function `grade` và xem `max`.
+
+Ngày 27/08, ba migration liên tiếp báo thành công — Supabase in `142 rows`,
+khối tự kiểm in ra con số đúng — mà ứng dụng không đổi gì. Nguyên nhân:
+**SQL Editor nối tới một database khác với ứng dụng** (nút `Database ▾` cạnh
+nút Run; Supabase có branching). Cùng lúc, editor đếm được `374` còn đo từ
+ngoài được `232`. Cả hai số đều đúng, chỉ ở hai nơi. Xem RUNBOOK.
+
+Lần thứ HAI dự án dính loại lỗi này — lần đầu là migration 001 chạy nhầm sang
+project khác. Triệu chứng giống hệt: lệnh thành công, dữ liệu y nguyên, không
+ai sai cả.
+
+**Bài học về cách tôi đã tìm sai.** Trước khi đo, tôi đổ lỗi lần lượt cho: khối
+`do $$` ở cuối file, ký tự `« »`, kích thước file, rồi mã hoá PowerShell. Bốn
+giả thuyết, đều nghe có lý, đều sai — và mỗi lần tôi lại viết lại file theo giả
+thuyết đó. Một câu truy vấn `select current_database(), count(*)` chấm dứt tất
+cả trong một lượt. **Khi hai bên nhìn thấy hai sự thật khác nhau, hãy hỏi xem
+có phải đang nhìn hai thứ khác nhau không — trước khi sửa bất cứ dòng mã nào.**
+
+**`cat` trong PowerShell làm hỏng file UTF-8 khi ĐỌC**, không chỉ khi ghi:
+tiếng Việt ra `bÃ i táº­p trÃ¹ng láº·p`, và copy từ màn hình đó là dán SQL hỏng.
+Dùng `Get-Content -Raw -Encoding UTF8 <file> | Set-Clipboard`.
+
+**Migration nên có ĐÚNG MỘT câu lệnh** khi làm được. Không phải vì đã chứng
+minh nhiều câu thì hỏng — mà vì một câu thì loại sạch cả một lớp nghi ngờ
+(chỉ-chạy-câu-dưới-con-trỏ, cuộn ngược giữa chừng, dán thiếu) mà không tốn gì.
+
+**DDL và phép kiểm không được nằm chung một transaction.** SQL Editor chạy
+nguyên file trong một transaction, nên `raise exception` ở khối tự kiểm cuối
+file cuộn ngược luôn `alter table` ở đầu file. Bản đầu của 035 dính đúng thế:
+người vận hành báo đã chạy, ứng dụng báo chưa có cột, **cả hai đều đúng** —
+trạng thái sau khi cuộn ngược không phân biệt được với "chưa chạy bao giờ".
+
+Migration chuyển DỮ LIỆU thì gộp vẫn đúng (hỏng thì không muốn áp dụng nửa
+vời). Migration chỉ tạo CẤU TRÚC thì tách: giữ cái đã tạo, và biết cái gì chưa
+đạt. Nay 035 tạo, 036 kiểm, `check:db` đối chiếu từ ngoài.
+
+ (không có cờ
 `m`) không khớp ở đó, cả biểu thức trượt, và **không một dòng chú thích nào bị
 bỏ**. Hậu quả: ca "046 không thêm policy update nào trên profiles" báo ĐỎ trên
 một file đúng, vì nó đọc được câu `create policy … for update` nằm trong khối
@@ -498,3 +862,20 @@ Xem `docs/roadmap-delf.md` — có nhật ký quyết định ở §5.
   `__backup_016`. Chưa xoá, và đừng xoá cho tới khi đường ghi được thử tay.
 - **Không có Production Orale** — 25/100 điểm của kỳ thi, chưa có gì.
 - `s:mcf-submissions` vẫn giữ làm sao lưu, chưa xoá.
+
+
+Cách chắc chắn nhất để biết một lớp có thật: tìm nó trong CSS đã build. Nhưng
+Tailwind THOÁT ký tự trong tên selector — `/`, `:`, `[`, `]`, `(`, `)`, `.`
+đều được thêm dấu chéo ngược — nên dựng lại bộ thoát bằng regex là chỗ rất dễ
+sai. Tôi sai hai lần liên tiếp và suýt "sửa" ba lớp hoàn toàn đúng.
+
+Gỡ hết dấu thoát rồi so chuỗi thô, không còn gì để sai — `npm run check:css`
+làm đúng việc đó:
+
+```js
+const css = fs.readFileSync(cssDaBuild, "utf8").split("\\").join("");
+css.includes(".hover:ring-primary/40");   // tên lớp y như viết trong JSX
+```
+
+Nhớ tìm ĐÚNG tên trong mã, kể cả biến thể: `ring-primary/40` không tồn tại
+nhưng `hover:ring-primary/40` thì có.
