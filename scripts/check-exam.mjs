@@ -6,7 +6,8 @@
  * hai thì hệ thống báo "đạt" cho một người sẽ trượt thật.
  */
 
-import { EXAM_STRUCTURE, sectionScore, verdict, ghiPhan, gomTheoKyNang, NGUONG_PHAN }
+import { EXAM_STRUCTURE, sectionScore, verdict, ghiPhan, gomTheoKyNang, NGUONG_PHAN,
+  chiaLuotThi, gopDiemKyNang }
   from "../src/screens/exam/examPaper.js";
 import { readFileSync } from "node:fs";
 
@@ -225,6 +226,63 @@ t("đầu vào null không làm nổ", gomTheoKyNang(null).length, 0);
   const src = readFileSync(new URL("../src/screens/exam/ExamMode.jsx", import.meta.url), "utf8");
   const xau = src.split(".exercise.").length - 1;
   t("ExamMode không đọc .exercise. mà thiếu ?.", xau, 0);
+}
+
+/* ══ TRANG KẾT QUẢ: một kỹ năng = MỘT dòng, một buổi thi = MỘT thẻ ══
+ *
+ * Hai lỗi đã lọt lên production cùng lúc, và cộng hưởng với nhau:
+ *
+ *   1. `examResults` làm `list.map(r => …)` — mỗi dòng `attempts` thành một
+ *      phần thi. Từ 044 một kỹ năng có nhiều bài, mỗi bài một dòng `attempts`.
+ *   2. Gom lượt thi chỉ theo `exam_id`, nên thi lại cùng đề thì mọi buổi dính
+ *      vào một khối.
+ *
+ * Người dùng thấy: một đề ba kỹ năng hiện 13 dòng, tổng 104.5/375 thay vì /75.
+ * Và tệ hơn con số — mỗi BÀI bị đo riêng theo ngưỡng 5/25, nên một bài khó kéo
+ * cả buổi xuống "Chưa đạt" dù kỹ năng đó đạt. */
+
+/* ── cắt buổi thi theo khoảng trống thời gian ── */
+{
+  const r = (h, id) => ({ finished_at: "2026-08-28T00:00:00Z".replace("00:", String(h).padStart(2, "0") + ":"), exercise_id: id });
+  const lien = [r(9, "a"), r(10, "b"), r(11, "c")];
+  t("ba bài liền nhau là MỘT buổi", chiaLuotThi(lien).length, 1);
+
+  const xa = [r(9, "a"), r(10, "b"), r(20, "c")];
+  t("cách 10 giờ thì tách thành hai buổi", chiaLuotThi(xa).map((x) => x.length), [2, 1]);
+
+  /* Đúng ngưỡng thì vẫn CÙNG buổi — biên phải nằm về phía gộp, vì cắt đôi một
+     buổi có nghỉ giải lao trông như dữ liệu bị mất. */
+  t("đúng 4 giờ vẫn là một buổi", chiaLuotThi([r(9, "a"), r(13, "b")]).length, 1);
+  t("hơn 4 giờ một chút thì tách", chiaLuotThi([r(9, "a"), r(14, "b")]).length, 2);
+
+  t("đầu vào rỗng không làm nổ", chiaLuotThi([]).length, 0);
+  t("null không làm nổ", chiaLuotThi(null).length, 0);
+
+  /* Thứ tự vào lộn xộn vẫn phải ra đúng — `attempts` về theo thời gian GIẢM. */
+  t("đầu vào ngược thứ tự vẫn gom đúng",
+    chiaLuotThi([r(20, "c"), r(9, "a"), r(10, "b")]).map((x) => x.length), [2, 1]);
+}
+
+/* ── gộp nhiều bài của MỘT kỹ năng ── */
+{
+  /* Đây là ca quan trọng nhất: cộng THÔ rồi quy đổi MỘT LẦN.
+     Bài 7 câu đúng 7, bài 15 câu đúng 0 → 7/22, KHÔNG phải (25 + 0) / 2. */
+  t("cộng thô rồi quy đổi một lần",
+    gopDiemKyNang([{ score: 7, max: 7 }, { score: 0, max: 15 }], 25), sectionScore(7, 22, 25));
+  t("KHÔNG phải trung bình của hai bài",
+    gopDiemKyNang([{ score: 7, max: 7 }, { score: 0, max: 15 }], 25) === 12.5, false);
+
+  t("một bài thì giống hệt sectionScore", gopDiemKyNang([{ score: 4, max: 8 }], 25), 12.5);
+  t("đúng hết mọi bài → trọn điểm", gopDiemKyNang([{ score: 7, max: 7 }, { score: 15, max: 15 }], 25), 25);
+  t("sai hết → 0", gopDiemKyNang([{ score: 0, max: 7 }, { score: 0, max: 15 }], 25), 0);
+
+  /* max = 0 nghĩa là không có câu nào máy chấm được (phần viết) → CHỜ CHẤM,
+     không phải 0 điểm. Trả 0 ở đây là báo học sinh trượt phần họ chưa được
+     chấm. */
+  t("không có câu máy chấm → null, không phải 0",
+    gopDiemKyNang([{ score: 0, max: 0 }], 25), null);
+  t("mảng rỗng → null", gopDiemKyNang([], 25), null);
+  t("null → null", gopDiemKyNang(null, 25), null);
 }
 
 console.log(fail ? `\n${pass} đạt, ${fail} hỏng` : `\n${pass} đạt, 0 hỏng`);

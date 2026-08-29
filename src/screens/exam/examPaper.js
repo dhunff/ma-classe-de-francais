@@ -129,6 +129,50 @@ export function gomTheoKyNang(sections) {
   return khoi;
 }
 
+/* Cắt danh sách lượt chấm thành từng BUỔI THI.
+ *
+ * `attempts` không có cột nào đánh dấu "buổi thi nào", nên phải suy ra từ thời
+ * gian. Thi lại cùng một đề mà gom chỉ theo `exam_id` thì mọi buổi dính vào
+ * nhau: người dùng thi ba lần thấy MỘT thẻ với sáu dòng CO và tổng /375.
+ *
+ * Ngưỡng 4 giờ: đề dài nhất (B2) là 30+60+60 = 150 phút, cộng thời gian nghỉ
+ * giữa các phần. Chọn rộng có chủ ý — gộp nhầm hai buổi liền kề thì nhìn thấy
+ * ngay (hai dòng cùng một kỹ năng), còn cắt đôi một buổi có nghỉ giải lao thì
+ * trông như dữ liệu bị mất.
+ *
+ * Trả về mảng các mảng, mỗi phần tử là một buổi, cũ nhất trước. */
+export function chiaLuotThi(rows, gapMs = 4 * 3600 * 1000) {
+  const ds = [...(rows ?? [])].sort((a, b) =>
+    String(a.finished_at ?? "").localeCompare(String(b.finished_at ?? "")));
+  const luot = [];
+  let truoc = null;
+  for (const r of ds) {
+    const t = new Date(r.finished_at).getTime();
+    if (truoc === null || !(t - truoc <= gapMs)) luot.push([]);
+    truoc = Number.isNaN(t) ? truoc : t;
+    luot[luot.length - 1].push(r);
+  }
+  return luot;
+}
+
+/* Điểm của MỘT kỹ năng gộp từ NHIỀU bài.
+ *
+ * Cộng THÔ rồi quy về thang `points` một lần. Quy đổi từng bài rồi cộng thì
+ * bài 7 câu nặng bằng bài 15 câu — cùng luật mà ExamMode dùng lúc đang thi, và
+ * hai chỗ phải giống nhau, nếu không thì điểm hiện lúc nộp khác điểm hiện ở
+ * trang kết quả.
+ *
+ * Trả `null` khi không có bài nào máy chấm được (phần viết) — "chờ chấm", chứ
+ * không phải 0. */
+export function gopDiemKyNang(rows, points = 25) {
+  let dung = 0, tong = 0;
+  for (const r of rows ?? []) {
+    dung += Number(r.score) || 0;
+    tong += Number(r.max) || 0;
+  }
+  return tong > 0 ? sectionScore(dung, tong, points) : null;
+}
+
 /* Ghi kết quả một phần thi vào danh sách, THAY THẾ nếu phần đó đã có.
  *
  * ══ VÌ SAO KHÔNG DÙNG `[...p, moi]` ══
