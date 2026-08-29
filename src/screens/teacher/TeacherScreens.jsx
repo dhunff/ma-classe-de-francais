@@ -107,6 +107,35 @@ function Teacher({ exercises, setExercises, submissions, setSubmissions, account
     setExercises([...others, final].sort((a, b) => a.createdAt - b.createdAt));
     setView("list");
   };
+  /* Nhân bản một bài thành BẢN NHÁP.
+   *
+   * Mục « Dupliquer » trong menu đã gọi hàm này từ lâu, nhưng hàm chưa bao giờ
+   * tồn tại: giáo viên bấm vào là `duplicate is not defined`, error boundary
+   * nuốt cả màn hình, và cách duy nhất thoát ra là tải lại trang. Bản nâng cấp
+   * `check:imports` tìm ra — bản cũ chỉ dò thẻ JSX nên không thấy lời gọi hàm.
+   *
+   * Gỡ hạn nộp và danh sách được giao: bản sao là chỗ để sửa, không phải một
+   * bài thứ hai lặng lẽ giao cho cả lớp với cùng deadline.
+   *
+   * `id` mới cho cả bài LẪN từng câu. Giữ id câu cũ thì hai bài chung câu hỏi,
+   * và `submissions` khoá theo question.id sẽ trộn bài làm của hai bên. */
+  const duplicate = async (ex) => {
+    const ban = {
+      ...structuredClone(ex),
+      id: uid(),
+      title: (ex.title || "Exercice") + " (copie)",
+      createdAt: Date.now(),
+      assignedTo: null,
+      targeted: false,
+      deadline: "",
+      questions: (ex.questions ?? []).map((q) => ({ ...structuredClone(q), id: uid() })),
+    };
+    const store = ex.usageType === "practice" ? "practice" : "assignment";
+    const r = await saveExercise(ban, store);
+    if (!r.ok) { alert("❌ Échec de la duplication."); return; }
+    setExercises([...exercises, ban].sort((a, b) => a.createdAt - b.createdAt));
+  };
+
   const remove = async (id) => {
     const r = await deleteExercise(id);
     if (!r.ok) { alert("❌ Échec de la suppression."); return; }
