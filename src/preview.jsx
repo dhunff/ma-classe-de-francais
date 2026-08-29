@@ -1,7 +1,25 @@
 /* Trang xem thử — TẠM THỜI, chỉ để kiểm chứng thị giác.
    Cố tình KHÔNG import App.jsx, vì App.jsx kéo theo storageShim.js vốn mở
    kết nối tới Supabase thật. Trang này không chạm vào dữ liệu nào.
-   Dữ liệu dưới đây là fixture kiểm thử, không phải số hiển thị cho học sinh. */
+   Dữ liệu dưới đây là fixture kiểm thử, không phải số hiển thị cho học sinh.
+
+   ══ MÀN NÀO KHÔNG ĐƯỢC ĐƯA VÀO ĐÂY ══
+
+   Bất cứ màn nào import tới `exerciseStore`, `examStore`, `profileStore`,
+   `identity` — nói chung là tới `storageShim`. Chúng mở kết nối Supabase thật
+   ngay lúc nạp module, và khi đó trang này không còn là bản dựng khô nữa.
+
+   Đã thử một lần với danh sách bài của giáo viên (TeacherScreens) để bấm kiểm
+   nút « Dupliquer », và nó GỬI THẬT một lệnh ghi lên production — bị RLS từ
+   chối vì không có phiên giáo viên, nhưng chỉ vì thế mà thôi. Cạnh nút ấy là
+   « Supprimer », gọi `deleteExercise`. Người mở trang này trên trình duyệt
+   đang có phiên giáo viên mà bấm nhầm thì xoá bài thật.
+
+   Không phải giả định: `/preview.html` ĐANG được deploy lên production và mở
+   được từ ngoài internet.
+
+   Muốn kiểm loại màn đó thì dựng riêng phần giao diện với hàm truyền vào —
+   như `ONhapUsername` nhận `hoiConTrong` thay vì tự import. */
 import React, { useState } from "react";
 import ReactDOM from "react-dom/client";
 import "./styles/tokens.css";
