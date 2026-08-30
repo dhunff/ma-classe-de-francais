@@ -6,12 +6,17 @@ import { uid } from "./questions.js";
  *
  * ══ HAI ĐƯỜNG, TỰ CHỌN ══
  *
- * Bảng `notifications` (migration 053) là đích đến. Nhưng migration chưa chạy
- * được — Supabase đang mắc sự cố "cột/bảng mới không vào lược đồ PostgREST",
- * xem supabase/SUPPORT-046.md. Nếu file này chỉ biết đường mới thì tính năng
- * chết cho tới khi họ gỡ xong.
+ * Bảng `notifications` (migration 053) là đường ĐANG chạy — đã áp dụng
+ * 29/08/2026 bằng `supabase db push`.
  *
- * Nên nó hỏi một lần mỗi phiên xem bảng có chưa, rồi đi HẲN một đường: có bảng
+ * Nhánh lùi về `s:mcf-notifs` vẫn giữ, và cố ý giữ. Nó được viết trong hai ngày
+ * mà mọi migration đều không vào được database (xem
+ * supabase/SUCO-046-ddl-dashboard.md), và trong quãng đó nó là thứ duy nhất
+ * khiến tính năng còn dùng được. Giữ lại vì nó rẻ — một lời gọi mỗi phiên — và
+ * vì nó biến thứ tự "deploy trước hay migration trước" thành chuyện không cần
+ * canh. Xoá được, nhưng chỉ nên xoá khi đã bỏ hẳn khoá `s:mcf-notifs`.
+ *
+ * Nó hỏi một lần mỗi phiên xem bảng có chưa, rồi đi HẲN một đường: có bảng
  * thì RPC, chưa có thì khoá `s:mcf-notifs` trong kv_store y như trước. Cả hai
  * đầu — gửi và đọc — phải cùng nhìn một chỗ, nếu không thì gửi vào bảng mà đọc
  * từ blob và không ai thấy gì.

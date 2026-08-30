@@ -1,33 +1,56 @@
-# Báo cáo gửi Supabase — cột mới không bao giờ hiện ra
+# Sự cố 28–29/08/2026 — DDL qua dashboard không tới được PostgREST
 
-> **CẬP NHẬT 29/08 — ĐÃ GỠ ĐƯỢC, phạm vi hẹp hơn nhiều so với mô tả bên dưới.**
+**ĐÃ ĐÓNG.** Giữ lại làm hồ sơ, và làm cảnh báo cho lần sau.
+
+## Tóm tắt trong ba dòng
+
+Suốt hai ngày, mọi `alter table` và `create table` chạy qua **SQL Editor** hoặc
+**Table Editor** đều báo thành công mà PostgREST không bao giờ thấy. Cùng những
+migration ấy, chạy qua `npx supabase db push` (kết nối trực tiếp tới Postgres),
+vào ngay lập tức và PostgREST thấy ngay — không cần `notify`, không cần restart.
+
+## Cách gỡ, nếu gặp lại
+
+```bash
+npx supabase db push --dry-run   # xem sẽ chạy file nào
+npx supabase db push
+npm run check:db                 # đo lại TỪ NGOÀI
+```
+
+File đã chạy tay trước đó sẽ lỗi "already exists" — đánh dấu bằng
+`npx supabase migration repair --status applied <số>` rồi đẩy tiếp.
+
+**Đừng dùng SQL Editor cho migration nữa.** Xem CLAUDE.md, mục "Chạy migration".
+
+## Nếu vẫn muốn báo cho Supabase
+
+Phạm vi thật hẹp hơn nhiều so với bản mô tả ban đầu bên dưới:
+
+| Từng nghi | Kết luận |
+|---|---|
+| PostgREST không nạp lại lược đồ | **không phải** — nạp ngay khi CLI ghi |
+| Bộ nhớ đệm lược đồ hỏng | **không phải** — cùng lý do |
+| Ghi nhầm project | **không phải** — project thứ hai gần như rỗng |
+| Thiếu quyền ở mức cột | **không phải** — `attacl` NULL trên mọi cột |
+
+Câu hỏi đúng, bằng tiếng Anh, để dán vào ticket:
+
+> Resolved on our side by applying the migrations with `supabase db push`
+> instead of the dashboard — everything appeared in PostgREST immediately.
 >
-> `npx supabase db push` qua kết nối trực tiếp chạy sạch tám migration trong
-> một lượt, và PostgREST thấy MỌI thứ ngay lập tức — không cần `notify`, không
-> cần restart. Bảng `notifications` mới tinh cũng hiện ra.
+> The open question, if useful to you: why does DDL executed through the SQL
+> Editor / Table Editor never become visible to PostgREST on this project,
+> while the identical DDL applied over a direct connection works instantly?
+> During the incident `pg_attribute` also returned inconsistent results across
+> two reads in the SQL Editor minutes apart, with no `drop column` in between.
 >
-> Nên loại được ba nghi phạm lớn nhất trong ticket:
->
-> | Từng nghi | Kết luận |
-> |---|---|
-> | PostgREST không nạp lại lược đồ | **không phải** — nó nạp ngay khi CLI ghi |
-> | Bộ nhớ đệm lược đồ hỏng | **không phải** — cùng lý do |
-> | Ghi nhầm project | **không phải** — project thứ hai gần như rỗng |
->
-> Còn lại đúng một nghi phạm: **đường ghi lược đồ của dashboard**. Cùng một
-> câu `alter table` — qua SQL Editor thì PostgREST không bao giờ thấy, qua CLI
-> thì thấy ngay.
->
-> Nếu vẫn gửi ticket, đây mới là câu hỏi đáng hỏi:
->
-> *"Why does DDL executed through the SQL Editor / Table Editor not become
-> visible to PostgREST, while the same DDL applied via `supabase db push`
-> works immediately? `pg_attribute` also returned inconsistent results across
-> two reads in the SQL Editor, minutes apart, with no `drop column` between."*
->
-> Phần dưới giữ nguyên làm hồ sơ những gì đã đo.
+> No action needed from us now. Closing.
 
 ---
+
+## Hồ sơ gốc — những gì đã đo trong lúc sự cố
+
+
 
 Dán phần tiếng Anh bên dưới vào ticket. Phần tiếng Việt là ghi chú cho mình.
 

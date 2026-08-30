@@ -1,8 +1,10 @@
 -- 053 — bảng thông báo, và hàm gửi hàng loạt
 --
--- Chạy sau khi Supabase gỡ được sự cố "cột mới không vào lược đồ PostgREST"
--- (xem supabase/SUPPORT-046.md). Trước đó ứng dụng vẫn chạy: `notifications.js`
--- lùi về khoá `s:mcf-notifs` trong kv_store, y như trước.
+-- ĐÃ ÁP DỤNG 29/08/2026 bằng `npx supabase db push`.
+--
+-- Chạy tay qua SQL Editor thì KHÔNG vào được — bảng tạo xong mà PostgREST
+-- không bao giờ thấy. Xem supabase/SUCO-046-ddl-dashboard.md; tóm tắt: dùng
+-- CLI cho mọi migration, đừng dùng SQL Editor.
 --
 -- ══════════════════════════════════════════════════════════════════════════
 -- VÌ SAO RỜI KHỎI kv_store
