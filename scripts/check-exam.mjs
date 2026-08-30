@@ -285,5 +285,30 @@ t("đầu vào null không làm nổ", gomTheoKyNang(null).length, 0);
   t("null → null", gopDiemKyNang(null, 25), null);
 }
 
+/* ══ Bài thi KHÔNG lưu được thì phải NÓI RA ══
+ *
+ * Edge Function `grade` ghi `attempts` bên trong `if (userId)`, còn câu trả
+ * về nằm NGOÀI khối đó. Máy chủ không nhận ra người gọi — phiên hết hạn, chưa
+ * đăng nhập — thì nó vẫn chấm, vẫn trả điểm ĐÚNG, chỉ là `attemptId: null` và
+ * không ghi dòng nào.
+ *
+ * Đã xảy ra thật: một buổi thi đầy đủ hiện CO 19 / CE 14.5, database không có
+ * lấy một dòng. Học sinh chỉ biết khi mở trang Kết quả thi và không thấy buổi
+ * thi ấy — lúc đó bài làm đã mất hẳn.
+ *
+ * Lần thứ TƯ cùng một lỗi trong dự án (saveExam, saveExercise, sendAnnonce).
+ * Ca này đọc mã nguồn vì nó canh một dòng trông vô hại. */
+{
+  const src = readFileSync(new URL("../src/screens/exam/ExamMode.jsx", import.meta.url), "utf8");
+  /* Bỏ chú thích trước khi soi — file này TRÍCH DẪN đoạn mã sai để giải thích
+     vì sao không được viết nó. Lần thứ tư cùng cái bẫy; xem CLAUDE.md. */
+  const ma = src.replace(new RegExp("\\/\\*[\\s\\S]*?\\*\\/", "g"), " ")
+    .split(new RegExp("\\r?\\n")).map((x) => x.replace(new RegExp("^\\s*\\/\\/.*$"), "")).join("\n");
+
+  t("theo dõi được attempt có ghi hay không", ma.includes("luuDuoc"), true);
+  t("coi attemptId rỗng là KHÔNG lưu được", ma.includes("luuDuoc = false"), true);
+  t("cờ đi kèm bản ghi kết quả", ma.includes("      luuDuoc,"), true);
+  t("màn kết quả đọc cờ đó", ma.includes("s.luuDuoc === false"), true);
+}
 console.log(fail ? `\n${pass} đạt, ${fail} hỏng` : `\n${pass} đạt, 0 hỏng`);
 process.exit(fail ? 1 : 0);

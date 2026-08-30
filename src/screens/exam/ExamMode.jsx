@@ -530,6 +530,14 @@ export function PhanThi({ section, attemptId, answers, setAnswers, onDone, onBlu
 /* ─────────────────────────── Kết quả ─────────────────────────── */
 
 function KetQua({ sections, blurCount, onLai }) {
+  /* Có phần nào KHÔNG lưu được lên máy chủ không.
+   *
+   * Không gộp vào `verdict`: điểm và "có lưu được không" là hai câu hỏi khác
+   * nhau, và trộn chúng thì một buổi thi mất trắng sẽ hiện thành điểm thấp —
+   * sai theo hướng nguy hiểm nhất, vì học sinh sẽ đi làm lại bài thay vì đăng
+   * nhập lại. */
+  const mat = sections.some((s) => s.luuDuoc === false);
+
   const v = verdict(sections);
   const mau = v.passed === true ? "text-ok" : v.passed === false ? "text-danger" : "text-warn";
 
@@ -556,6 +564,23 @@ function KetQua({ sections, blurCount, onLai }) {
           </p>
         )}
       </div>
+
+      {mat && (
+        <div className="mt-5 rounded-2xl border border-solid border-danger bg-danger-soft p-4">
+          <p className="m-0 text-sm font-bold text-danger">
+            ⚠️ Kết quả này CHƯA được lưu lên máy chủ.
+          </p>
+          <p className="m-0 mt-1 text-xs font-semibold text-danger">
+            Máy chủ không nhận ra bạn là ai — nhiều khả năng phiên đăng nhập đã
+            hết hạn. Điểm ở đây chỉ nằm trong trình duyệt và sẽ mất khi bạn tải
+            lại trang; buổi thi này cũng sẽ không hiện ở « Kết quả thi ».
+          </p>
+          <p className="m-0 mt-1 text-xs text-danger">
+            Đăng nhập lại rồi thi lại. Đừng đóng tab trước khi chép lại điểm nếu
+            bạn cần.
+          </p>
+        </div>
+      )}
 
       <ul className="m-0 mt-5 list-none space-y-3 p-0">
         {sections.map((s) => {
@@ -716,11 +741,28 @@ export default function ExamMode() {
        bằng nhau, trong khi bài 15 câu đáng gấp đôi. Cộng thô rồi mới chia thì
        mỗi câu nặng như nhau — đúng cách DELF đếm. */
     let dung = 0, tong = 0;
+    /* ── CÓ THẬT SỰ LƯU ĐƯỢC KHÔNG ──
+     *
+     * Hàm `grade` ghi `attempts` bên trong `if (userId)`, còn câu trả về nằm
+     * NGOÀI khối đó. Máy chủ không nhận ra người gọi là ai — phiên hết hạn,
+     * chưa đăng nhập, JWT không kèm theo — thì nó vẫn chấm và vẫn trả điểm
+     * đúng, chỉ là `attemptId: null` và không một dòng nào được ghi.
+     *
+     * Đã xảy ra thật: một buổi thi đầy đủ, màn hình hiện CO 19 / CE 14.5, và
+     * database không có lấy một dòng `attempts`. Học sinh chỉ phát hiện khi mở
+     * trang Kết quả thi và không thấy buổi thi ấy ở đâu — muộn hơn nhiều, và
+     * lúc đó bài làm đã mất hẳn.
+     *
+     * `attemptId` trả về là dấu hiệu chắc chắn: có id nghĩa là đã ghi. Đây là
+     * lần thứ TƯ dự án gặp cùng một lỗi — báo thành công cho việc chưa làm.
+     * Xem `saveExam`, `saveExercise`, `sendAnnonce`. */
+    let luuDuoc = true;
     for (const ex of k.exercises) {
       const r = await gradeRemote(ex.id, answers, {
         mode: "exam", blurCount, attemptId: attemptTheoBai.current[ex.id],
       });
       if (r) { dung += r.score ?? 0; tong += r.max ?? 0; }
+      if (!r || !r.attemptId) luuDuoc = false;
     }
 
     const ghi = {
@@ -734,6 +776,9 @@ export default function ExamMode() {
       /* tong === 0 nghĩa là phần này không có câu nào máy chấm được (Production
          écrite chỉ có bài viết) → để `null`, tức "chờ chấm", chứ không phải 0. */
       score: tong > 0 ? sectionScore(dung, tong, k.points) : null,
+      /* Phần này có được lưu lên máy chủ không. Màn kết quả dùng nó để nói
+         thẳng khi bài thi chỉ tồn tại trong trình duyệt. */
+      luuDuoc,
     };
 
     /* Nút đã chặn bấm lại (xem PhanThi) — đó là chỗ sửa NGUYÊN NHÂN. `ghiPhan`
