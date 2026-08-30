@@ -310,5 +310,43 @@ t("đầu vào null không làm nổ", gomTheoKyNang(null).length, 0);
   t("cờ đi kèm bản ghi kết quả", ma.includes("      luuDuoc,"), true);
   t("màn kết quả đọc cờ đó", ma.includes("s.luuDuoc === false"), true);
 }
+/* ══ Edge Function `grade`: hai thứ đã làm mất một buổi thi ══
+ *
+ * 1. `auth.getUser()` gọi KHÔNG THAM SỐ. Trong Deno không có nơi lưu phiên,
+ *    nên nó chỉ chạy nếu thư viện tự đọc header Authorization — việc không
+ *    nằm trong hợp đồng và đã đổi giữa các bản v2. Dạng đúng là
+ *    `getUser(token)`.
+ *
+ * 2. Import KHÔNG GHIM phiên bản. `@supabase/supabase-js@2` trỏ tới bản mới
+ *    nhất tại thời điểm khởi động nguội, nên hành vi đổi được mà ta không
+ *    deploy gì cả. Đúng thứ đã xảy ra: 28/08 ghi được, 30/08 thì không.
+ *
+ * Hậu quả chung: hàm vẫn chấm, vẫn trả điểm đúng, và không lưu gì. Ca kiểm
+ * dùng includes() chứ không regex — chuỗi cần tìm đầy dấu chéo, và regex qua
+ * đường ống shell là chỗ đã sai bảy lần trong dự án này. */
+{
+  const fn = readFileSync(new URL("../supabase/functions/grade/index.ts", import.meta.url), "utf8");
+
+  t("grade truyền token vào getUser", fn.includes("auth.getUser(token)"), true);
+  /* Bỏ khối chú thích, không dùng regex: chuỗi cần tìm đầy dấu chéo và
+     regex qua đường ống shell đã sai bảy lần trong dự án này. Cắt từ mỗi "/*"
+     tới "*" + "/" gần nhất là đủ cho mục đích ở đây. */
+  const boKhoi = (src) => src.split("/" + "*")
+    .map((x, k) => (k === 0 ? x : x.slice(x.indexOf("*" + "/") + 2))).join("");
+  t("grade không gọi getUser() rỗng ngoài chú thích",
+    boKhoi(fn).includes("auth.getUser()"), false);
+  t("grade ghi log khi không nhận ra người gọi",
+    fn.includes("CHẤM NHƯNG KHÔNG LƯU"), true);
+}
+
+/* Mọi Edge Function phải GHIM phiên bản thư viện. */
+{
+  const ds = ["grade", "grant-access", "sepay-webhook"];
+  const khongGhim = ds.filter((f) => {
+    const src = readFileSync(new URL(`../supabase/functions/${f}/index.ts`, import.meta.url), "utf8");
+    return src.includes("supabase-js@2\";") || src.includes("supabase-js@2'");
+  });
+  t("không Edge Function nào để phiên bản trôi", khongGhim, []);
+}
 console.log(fail ? `\n${pass} đạt, ${fail} hỏng` : `\n${pass} đạt, 0 hỏng`);
 process.exit(fail ? 1 : 0);

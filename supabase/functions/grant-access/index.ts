@@ -13,7 +13,12 @@
  * Nó nằm trong localStorage của máy giáo viên, và chỉ ở đó.
  */
 
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+/* GHIM phiên bản. `@supabase/supabase-js@2` trỏ tới bản v2 MỚI NHẤT tại thời
+   điểm hàm khởi động nguội — nghĩa là hành vi đổi được mà ta không deploy gì.
+   Đã trả giá ngày 30/08: `auth.getUser()` thôi đọc header Authorization, và
+   một buổi thi được chấm mà không lưu. Nâng phiên bản là một quyết định, không
+   phải chuyện xảy ra sau lưng. */
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
 
 /* CORS dùng chung — xem _shared/cors.ts. Bản khai tại chỗ trước đây thiếu
    `x-client-info` VÀ `apikey`, nên nút « Cấp quyền » của giáo viên bị trình

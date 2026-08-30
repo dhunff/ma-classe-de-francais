@@ -28,7 +28,12 @@
  * Biến môi trường: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY (có sẵn).
  */
 
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+/* GHIM phiên bản. `@supabase/supabase-js@2` trỏ tới bản v2 MỚI NHẤT tại thời
+   điểm hàm khởi động nguội — nghĩa là hành vi đổi được mà ta không deploy gì.
+   Đã trả giá ngày 30/08: `auth.getUser()` thôi đọc header Authorization, và
+   một buổi thi được chấm mà không lưu. Nâng phiên bản là một quyết định, không
+   phải chuyện xảy ra sau lưng. */
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
 // @ts-ignore — JS thuần, cố ý không có khai báo kiểu
 import { fillOk, vfOk, ordreOk, tableauOk, autoQ, diemCau, isQuestionAnswered }
   from "../_shared/questions.js";
@@ -175,8 +180,35 @@ Deno.serve(async (req) => {
    * Ghi hỏng KHÔNG làm hỏng việc chấm: học sinh vẫn phải nhận được điểm dù
    * thống kê có trục trặc. Nên nhánh này chỉ log, không ném lỗi.
    */
-  const { data: userData } = await asCaller.auth.getUser();
+  /* ── TRUYỀN THẲNG JWT VÀO `getUser`, đừng gọi không tham số ──
+   *
+   * `auth.getUser()` không tham số đi tìm phiên đã lưu. Trong Deno không có
+   * localStorage, không có phiên nào — nên nó chỉ chạy được nếu thư viện tự
+   * đọc header `Authorization` mà ta đặt ở `global.headers`. Việc đó KHÔNG có
+   * trong hợp đồng, và nó đã đổi giữa các bản v2.
+   *
+   * Đã trả giá: ngày 30/08 một buổi thi đầy đủ hiện điểm đúng trên màn hình mà
+   * database không nhận một dòng nào. Người dùng đăng nhập bình thường, RPC
+   * qua PostgREST vẫn ghi được (username, hồ sơ đều lưu đúng) — chỉ hàm này là
+   * không đọc ra người gọi. Toàn bộ phần ghi nằm trong `if (userId)`, còn câu
+   * `return` nằm ngoài, nên hàm im lặng trả điểm và bỏ đi.
+   *
+   * `getUser(token)` hỏi thẳng Auth API bằng đúng token nhận được. Không phụ
+   * thuộc phiên, không phụ thuộc phiên bản. */
+  const token = authHeader.replace(/^Bearer\s+/i, "").trim();
+  const { data: userData } = token
+    ? await asCaller.auth.getUser(token)
+    : { data: null };
   const userId = userData?.user?.id ?? null;
+
+  /* Không ghi được thì phải để lại DẤU VẾT. Trước đây nhánh này im hoàn toàn:
+     không log, không trả về gì khác — và người vận hành không có cách nào biết
+     bài thi đã bốc hơi. Client nhìn `attemptId: null` để cảnh báo học sinh. */
+  if (!userId) {
+    console.warn("[grade] không nhận ra người gọi — CHẤM NHƯNG KHÔNG LƯU."
+      + " authHeader=" + (authHeader ? "có" : "KHÔNG CÓ")
+      + " token=" + (token ? token.slice(0, 12) + "…" : "rỗng"));
+  }
   let attemptId: string | null = null;
 
   if (userId) {
