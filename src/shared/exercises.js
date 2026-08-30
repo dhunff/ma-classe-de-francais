@@ -4,7 +4,7 @@
 
 export const SKILLS = [
   "Grammaire", "Vocabulaire", "Écoute", "Lecture",
-  "Production écrite", "Traduction", "Communication",
+  "Production écrite", "Production orale", "Traduction", "Communication",
 ];
 
 export const fmtDate = (d) =>

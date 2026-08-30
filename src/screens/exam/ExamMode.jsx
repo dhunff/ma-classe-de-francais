@@ -4,8 +4,9 @@ import { Timer, ShieldCheck, AlertTriangle, Clock, Volume2, ArrowLeft } from "lu
 import { supabase } from "../../storageShim.js";
 import { loadExams, loadExam } from "../../shared/examStore.js";
 import { gradeRemote } from "../../shared/gradeRemote.js";
-import { EXAM_STRUCTURE, sectionScore, verdict, ghiPhan, gomTheoKyNang, NGUONG_PHAN, NGUONG_TONG }
+import { EXAM_STRUCTURE, sectionScore, verdict, ghiPhan, gomTheoKyNang, NGUONG_PHAN, NGUONG_TONG, khongCham }
   from "./examPaper.js";
+import GhiAmBaiNoi from "./GhiAmBaiNoi.jsx";
 
 /* Mode Examen — thi thử có tính giờ.
  *
@@ -32,10 +33,18 @@ const dongHo = (giay) => `${hai(Math.floor(giay / 60))}:${hai(Math.max(0, giay %
 
 /* ─────────────────────────── Màn chờ ─────────────────────────── */
 
-function ManCho({ dsDe, chon, paper, onStart, dangTai }) {
+function ManCho({ dsDe, chon, paper, onStart, dangTai, lamPhanNoi, setLamPhanNoi }) {
   const level = paper?.level ?? "B1";
   const cauTruc = EXAM_STRUCTURE[level] ?? [];
-  const tongPhut = cauTruc.reduce((n, p) => n + p.minutes, 0);
+  /* Đề có phần nói không — hỏi DỮ LIỆU của đề, không hỏi cấu trúc chuẩn.
+     EXAM_STRUCTURE khai PO cho mọi trình độ, nhưng đề cụ thể chỉ có nó khi
+     giáo viên đã ghép một bài nói vào. */
+  const coPhanNoi = (paper?.sections ?? []).some((x) => x.code === "PO");
+  const phutPhanNoi = cauTruc.find((x) => x.code === "PO")?.minutes ?? 0;
+  /* Tổng phút phải theo LỰA CHỌN, không theo cấu trúc: bỏ phần nói mà vẫn hứa
+     "tôi có 130 phút liên tục" là bắt người ta cam kết một điều sai. */
+  const tongPhut = cauTruc.reduce(
+    (n, p) => n + (p.code === "PO" && (!coPhanNoi || !lamPhanNoi) ? 0 : p.minutes), 0);
   const [sanSang, setSanSang] = useState(false);
 
   /* Chưa có đề nào thì nói rõ NGUYÊN NHÂN, đừng hiện một màn hình trống.
@@ -160,6 +169,26 @@ function ManCho({ dsDe, chon, paper, onStart, dangTai }) {
         </p>
       )}
 
+      {/* Bỏ chọn phần nói.
+          Chỉ hiện khi đề THẬT SỰ có phần đó — một ô tích cho thứ không tồn tại
+          làm người dùng tưởng mình vừa tắt mất cái gì.
+
+          Mặc định BẬT: đề có phần nói thì mặc định làm đủ. Người muốn bỏ tự
+          bấm, và khi đó họ biết chính xác mình đang bỏ gì. */}
+      {coPhanNoi && (
+        <label className="mt-6 flex cursor-pointer items-start gap-3 rounded-2xl bg-surface2 p-4 text-sm text-ink">
+          <input type="checkbox" checked={lamPhanNoi}
+            onChange={(e) => setLamPhanNoi(e.target.checked)} className="mt-1" />
+          <span>
+            <strong>Làm cả phần thi nói (PO)</strong> — thêm {phutPhanNoi} phút.
+            <span className="mt-1 block text-xs text-soft">
+              Phần này không được chấm điểm: bạn ghi âm để tự nghe lại. Bỏ chọn
+              thì buổi thi chỉ còn ba phần, và tổng điểm không đổi.
+            </span>
+          </span>
+        </label>
+      )}
+
       <label className="mt-6 flex cursor-pointer items-start gap-3 text-sm text-ink">
         <input type="checkbox" checked={sanSang} onChange={(e) => setSanSang(e.target.checked)}
           className="mt-1" />
@@ -269,7 +298,7 @@ function AudioGioiHan({ src, attemptId, questionId }) {
 /* Xuất tên để `preview.html` dựng được ĐÚNG component này với dữ liệu thật.
    Màn thi nằm sau đăng nhập và sau một lượt thi đang mở, nên không có đường nào
    khác để nhìn thấy nó — mà đúng ở đây thì mới có ảnh đề bài và consigne. */
-export function PhanThi({ section, attemptId, answers, setAnswers, onDone, onBlur, onDoiBai }) {
+export function PhanThi({ section, attemptId, answers, setAnswers, onDone, onBlur, onDoiBai, examId }) {
   const [conLai, setConLai] = useState(section.minutes * 60);
   const doneRef = useRef(false);
 
@@ -376,6 +405,17 @@ export function PhanThi({ section, attemptId, answers, setAnswers, onDone, onBlu
              dangerouslySetInnerHTML={{ __html: ex.readingText }} />
       )}
 
+      {/* ── PHẦN NÓI: ghi âm thay cho câu hỏi ──
+          Bài nói không có câu trắc nghiệm nào để trả lời. Đề bài (consigne và
+          ảnh) đã hiện ở trên; dưới đây là bộ ghi âm.
+
+          Nhận biết theo MÃ phần, không theo "bài này có câu hỏi hay không":
+          một bài nói soạn thiếu vẫn phải hiện đúng bộ ghi âm chứ không phải
+          một danh sách rỗng. */}
+      {section.code === "PO" ? (
+        <GhiAmBaiNoi examId={examId} exerciseId={ex.id}
+          gioiHanGiay={Math.max(60, (section.minutes ?? 15) * 60)} />
+      ) : (
       <ol className="m-0 list-none space-y-5 p-0">
         {ex.questions.map((q, i) => (
           <li key={q.id} className="rounded-2xl border border-line bg-surface p-5">
@@ -467,6 +507,7 @@ export function PhanThi({ section, attemptId, answers, setAnswers, onDone, onBlu
           </li>
         ))}
       </ol>
+      )}
 
       {/* ── Đi lại giữa các bài TRONG phần này ──
          Chỉ trong cùng một kỹ năng. Nhảy sang CO khi đang làm CE thì đồng hồ
@@ -670,7 +711,13 @@ export default function ExamMode() {
 
   /* Gom các dòng exam_sections thành KHỐI theo kỹ năng — một khối, một đồng hồ,
      nhiều bài bên trong. Xem gomTheoKyNang() trong examPaper.js. */
-  const khoi = useMemo(() => gomTheoKyNang(paper?.sections), [paper]);
+  /* Bỏ chọn phần nói: lọc NGAY ở đây, trước mọi thứ khác.
+     Lọc ở chỗ khác thì đồng hồ, thanh tiến trình và phép chấm mỗi nơi đếm một
+     kiểu — và số phần hiện ra sẽ lệch với số phần thật sự phải làm. */
+  const [lamPhanNoi, setLamPhanNoi] = useState(true);
+  const khoi = useMemo(
+    () => gomTheoKyNang(paper?.sections).filter((k) => lamPhanNoi || k.code !== "PO"),
+    [paper, lamPhanNoi]);
 
   /* Đề đến từ bảng `exams` — do giáo viên soạn và phát hành (migration 026).
      RLS lo phần lọc: học sinh chỉ nhận đề đã phát hành. Không lọc lại ở đây,
@@ -756,6 +803,28 @@ export default function ExamMode() {
      * `attemptId` trả về là dấu hiệu chắc chắn: có id nghĩa là đã ghi. Đây là
      * lần thứ TƯ dự án gặp cùng một lỗi — báo thành công cho việc chưa làm.
      * Xem `saveExam`, `saveExercise`, `sendAnnonce`. */
+    /* ── PHẦN NÓI: không chấm, không gọi máy chủ ──
+     *
+     * Bản ghi âm đã được `GhiAmBaiNoi` tải thẳng lên kho riêng tư khi học sinh
+     * bấm Dừng. Ở đây không có gì để chấm và không có gì để gửi.
+     *
+     * Ghi `score: null` kèm `khongCham`, và `verdict` loại nó khỏi mọi phép
+     * tính — nếu không thì kết luận đạt/trượt treo vĩnh viễn ở "chưa kết luận
+     * được". Xem MA_KHONG_CHAM trong examPaper.js. */
+    if (khongCham(k)) {
+      setKetQua((p) => ghiPhan(p, {
+        code: k.code, points: 0, khongCham: true,
+        label: k.label ?? k.code,
+        baiLabel: k.exercises.map((e) => e.title).join(" · "),
+        exerciseId: k.exercises[0]?.id,
+        score: null,
+        luuDuoc: true,
+      }));
+      if (conNua) { setIdx(idx + 1); setBaiHienTai(null); }
+      else setBuoc("xong");
+      return;
+    }
+
     let luuDuoc = true;
     for (const ex of k.exercises) {
       const r = await gradeRemote(ex.id, answers, {
@@ -800,13 +869,14 @@ export default function ExamMode() {
 
   if (buoc === "cho") {
     return <ManCho dsDe={dsDe} chon={chonDe} paper={paper}
+      lamPhanNoi={lamPhanNoi} setLamPhanNoi={setLamPhanNoi}
       dangTai={dangTai} onStart={batDau} />;
   }
   if (buoc === "thi") {
     /* `key` theo code: đổi phần thì PhanThi được dựng lại từ đầu, nên đồng hồ
        và chỉ số bài đều reset. Đổi BÀI trong cùng phần thì không — key không
        đổi, component sống tiếp, đồng hồ chạy tiếp. */
-    return <PhanThi key={khoi[idx].code} section={khoi[idx]}
+    return <PhanThi key={khoi[idx].code} section={khoi[idx]} examId={paper?.id}
       attemptId={attemptId}
       answers={answers} setAnswers={setAnswers} onDone={xongPhan}
       onDoiBai={setBaiHienTai}

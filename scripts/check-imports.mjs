@@ -20,6 +20,8 @@ const GLOBALS = new Set([
   "Promise", "Map", "Set", "Error", "RegExp", "Intl", "URL", "Blob", "FileReader",
   "Image", "Audio", "Event", "KeyboardEvent", "CustomEvent", "DOMParser", "Infinity", "NaN",
   "HTMLInputElement", "HTMLSelectElement", "HTMLElement", "MutationObserver",
+  /* Ghi âm phần nói — API sẵn có của trình duyệt, không import từ đâu cả. */
+  "MediaRecorder", "MediaStream", "MediaStreamTrack",
   "URLSearchParams", "FormData", "AbortController", "File", "Response", "Request",
   "Headers", "TextEncoder", "TextDecoder", "WeakMap", "WeakSet", "Symbol", "BigInt",
   "Proxy", "Reflect", "Function", "AudioContext", "ResizeObserver", "IntersectionObserver",

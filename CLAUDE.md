@@ -600,7 +600,28 @@ Xem `docs/roadmap-delf.md` — có nhật ký quyết định ở §5.
 
   Blob `s:mcf-practice` / `s:mcf-exercises` VẪN GIỮ làm sao lưu, cộng bản
   `__backup_016`. Chưa xoá, và đừng xoá cho tới khi đường ghi được thử tay.
-- **Không có Production Orale** — 25/100 điểm của kỳ thi, chưa có gì.
+- **Production Orale — có, nhưng KHÔNG chấm điểm** (migration 057/058).
+  DELF chấm phần nói bằng đối thoại với giám khảo; app tự học không mô phỏng
+  được, và cho ra một con số là bịa (quy tắc 1). Nên PO cho đề bài, đồng hồ,
+  và ghi âm để tự nghe lại — hết.
+
+  `points: 0` và `khongCham: true`. `verdict` LOẠI HẲN phần không chấm trước
+  mọi phép tính: để nó lọt vào thì nó rơi vào nhóm "chờ chấm" và kết luận
+  đạt/trượt treo vĩnh viễn ở `null`. Tổng vẫn /75, không phải /100, nên lượt
+  thi cũ và mới so sánh được.
+
+  Học sinh bỏ chọn được PO ở màn chờ; khi đó tổng phút cam kết cũng giảm
+  theo — hứa "tôi có 130 phút" cho một buổi 115 phút là bắt người ta cam kết
+  một điều sai.
+
+  **Bản ghi âm nằm ở bucket RIÊNG (`bai-noi`, `public = false`)**, không phải
+  bucket đề bài vốn công khai. Giọng nói của trẻ vị thành niên ở một URL đoán
+  được là chuyện khác hẳn về pháp lý lẫn đạo đức. Đường dẫn mang phân quyền:
+  `<user_id>/<exam_id>/<exercise_id>-<mốc>.webm`, policy chỉ so đoạn thư mục
+  đầu với `auth.uid()`. Không có policy xoá và không có policy sửa — ghi lại
+  thì tạo file mới, giữ được cả quá trình luyện tập.
+
+  Còn treo: giáo viên chưa có màn nghe và nhận xét bài nói.
 - `s:mcf-submissions` vẫn giữ làm sao lưu, chưa xoá.
 
 

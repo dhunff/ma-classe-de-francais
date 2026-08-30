@@ -26,21 +26,25 @@ export const EXAM_STRUCTURE = {
     { code: "CO", skill: "Écoute",            label: "Compréhension de l'oral",  minutes: 20, points: 25 },
     { code: "CE", skill: "Lecture",           label: "Compréhension des écrits", minutes: 30, points: 25 },
     { code: "PE", skill: "Production écrite", label: "Production écrite",        minutes: 30, points: 25 },
+    { code: "PO", skill: "Production orale",  label: "Production orale",         minutes: 10, points: 0, khongCham: true },
   ],
   A2: [
     { code: "CO", skill: "Écoute",            label: "Compréhension de l'oral",  minutes: 25, points: 25 },
     { code: "CE", skill: "Lecture",           label: "Compréhension des écrits", minutes: 30, points: 25 },
     { code: "PE", skill: "Production écrite", label: "Production écrite",        minutes: 45, points: 25 },
+    { code: "PO", skill: "Production orale",  label: "Production orale",         minutes: 12, points: 0, khongCham: true },
   ],
   B1: [
     { code: "CO", skill: "Écoute",            label: "Compréhension de l'oral",  minutes: 25, points: 25 },
     { code: "CE", skill: "Lecture",           label: "Compréhension des écrits", minutes: 45, points: 25 },
     { code: "PE", skill: "Production écrite", label: "Production écrite",        minutes: 45, points: 25 },
+    { code: "PO", skill: "Production orale",  label: "Production orale",         minutes: 15, points: 0, khongCham: true },
   ],
   B2: [
     { code: "CO", skill: "Écoute",            label: "Compréhension de l'oral",  minutes: 30, points: 25 },
     { code: "CE", skill: "Lecture",           label: "Compréhension des écrits", minutes: 60, points: 25 },
     { code: "PE", skill: "Production écrite", label: "Production écrite",        minutes: 60, points: 25 },
+    { code: "PO", skill: "Production orale",  label: "Production orale",         minutes: 20, points: 0, khongCham: true },
   ],
 };
 
@@ -55,6 +59,30 @@ export const EXAM_STRUCTURE = {
 export const NHAN_KY_NANG = Object.fromEntries(
   Object.values(EXAM_STRUCTURE).flat().map((p) => [p.code, p.label]),
 );
+
+/* Những phần KHÔNG tính điểm.
+ *
+ * Production orale có mặt trong đề để học sinh LUYỆN — đề bài, đồng hồ, ghi
+ * âm để tự nghe lại — nhưng không chấm. DELF thật chấm phần nói bằng đối
+ * thoại với giám khảo, và một app tự học không mô phỏng được việc đó. Cho ra
+ * một con số ở đây là bịa, và quy tắc 1 của dự án cấm chuyện đó.
+ *
+ * ══ VÌ SAO PHẢI LOẠI HẲN, KHÔNG ĐỂ "CHỜ CHẤM" ══
+ *
+ * `verdict` xếp mọi phần `score == null` vào nhóm chờ, và chừng nào còn phần
+ * chờ thì kết luận đạt/trượt treo ở `null`. Một phần KHÔNG BAO GIỜ được chấm
+ * sẽ khiến mọi lượt thi mãi mãi hiện "Chưa kết luận được" — tệ hơn hẳn việc
+ * không có phần đó. Đã đo trước khi sửa: verdict trả `passed: null` với đúng
+ * bộ điểm lẽ ra phải là "đạt".
+ *
+ * Nhận biết theo MÃ, không theo cờ trong dữ liệu: dòng `exam_sections` đến từ
+ * database và không mang cờ nào. Đặt ở đây thì mọi đường đọc đều thấy như
+ * nhau, kể cả đường tính lại từ database ở trang Kết quả thi.
+ *
+ * Hệ quả có chủ ý: tổng vẫn là /75, KHÔNG phải /100. Thang không đổi, nên
+ * lượt thi cũ và mới vẫn so sánh được với nhau. */
+export const MA_KHONG_CHAM = new Set(["PO"]);
+export const khongCham = (s) => !!s?.khongCham || MA_KHONG_CHAM.has(s?.code);
 
 export const NGUONG_TONG = 50;      // /100 toàn bài
 export const NGUONG_PHAN = 5;       // /25 mỗi phần — điều kiện dễ trượt hơn
@@ -198,8 +226,11 @@ export function ghiPhan(danhSach, phan) {
 }
 
 export function verdict(sections) {
-  const chuaCham = sections.filter((s) => s.score == null);
-  const daCham = sections.filter((s) => s.score != null);
+  /* Bỏ phần không chấm TRƯỚC mọi phép tính. Để lọt vào thì nó rơi vào nhóm
+     "chờ chấm" và khoá kết luận đạt/trượt ở `null` vĩnh viễn. */
+  const tinhDiem = sections.filter((x) => !khongCham(x));
+  const chuaCham = tinhDiem.filter((s) => s.score == null);
+  const daCham = tinhDiem.filter((s) => s.score != null);
 
   const tong = daCham.reduce((n, s) => n + s.score, 0);
   const phanYeu = daCham.filter((s) => s.score < NGUONG_PHAN);

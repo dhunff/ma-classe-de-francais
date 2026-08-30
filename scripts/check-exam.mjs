@@ -57,9 +57,42 @@ t("còn cứu được thì vẫn để ngỏ",
 
 /* Các ca kiểm `assemblePaper` từng ở đây, gỡ cùng hàm đó — xem examPaper.js. */
 
-/* PO cố ý không có: 25/100 của kỳ thi thật, hệ thống chưa tổ chức được. */
-t("không bịa ra phần thi nói",
-  EXAM_STRUCTURE.B1.some((x) => x.code === "PO"), false);
+/* ══ PHẦN NÓI: CÓ trong đề, nhưng KHÔNG chấm ══
+ *
+ * Ca này trước đây đòi PO KHÔNG tồn tại — nó canh cho ai đó khỏi lặng lẽ bịa
+ * ra một phần thi mà hệ thống không tổ chức được. Ngày 30/08 PO được thêm vào
+ * CÓ CHỦ ĐÍCH, ở dạng luyện tập: đề bài, đồng hồ, ghi âm để tự nghe lại, và
+ * KHÔNG có điểm.
+ *
+ * Nên ca kiểm đổi nghĩa chứ không biến mất. Thứ nó canh bây giờ mới là chỗ
+ * nguy hiểm: PO lọt vào phép tính điểm.
+ *
+ * Nếu ai đó cho PO 25 điểm, tổng thành /100 trong khi phần nói luôn null —
+ * mọi học sinh tự nhiên trượt. Nếu quên `khongCham`, `verdict` xếp nó vào
+ * nhóm chờ chấm và kết luận đạt/trượt treo vĩnh viễn ở "chưa kết luận được". */
+t("PO có mặt ở cả bốn trình độ",
+  ["A1", "A2", "B1", "B2"].every((lv) => EXAM_STRUCTURE[lv].some((x) => x.code === "PO")), true);
+t("PO không mang điểm",
+  ["A1", "A2", "B1", "B2"].every((lv) =>
+    EXAM_STRUCTURE[lv].find((x) => x.code === "PO").points === 0), true);
+t("PO gắn cờ khongCham",
+  ["A1", "A2", "B1", "B2"].every((lv) =>
+    EXAM_STRUCTURE[lv].find((x) => x.code === "PO").khongCham === true), true);
+
+/* verdict phải LOẠI HẲN phần không chấm, không xếp vào "chờ chấm". */
+t("verdict bỏ qua PO, vẫn kết luận được",
+  verdict([s(20), s(20), s(20), { code: "PO", score: null, points: 0, khongCham: true }]).passed,
+  true);
+t("PO không làm phồng mẫu số",
+  verdict([s(20), s(20), s(20), { code: "PO", score: null, points: 0, khongCham: true }]).maxScored,
+  75);
+t("PO không nằm trong nhóm chờ chấm",
+  verdict([s(20), s(20), s(20), { code: "PO", score: null, points: 0, khongCham: true }]).pending.length,
+  0);
+/* Nhận theo MÃ kể cả khi dòng không mang cờ — dòng `exam_sections` đọc từ
+   database không có `khongCham`. */
+t("nhận PO theo mã, không cần cờ",
+  verdict([s(20), s(20), s(20), { code: "PO", score: null, points: 25 }]).passed, true);
 
 /* ── Cả bốn trình độ đều soạn được đề ──
  *
@@ -76,18 +109,22 @@ for (const lv of ["A1", "A2", "B1", "B2"]) {
   t(`${lv}: có cấu trúc đề`,
     Array.isArray(EXAM_STRUCTURE[lv]) && EXAM_STRUCTURE[lv].length > 0, true);
   if (!EXAM_STRUCTURE[lv]) continue;
-  t(`${lv}: đủ ba phần CO/CE/PE`,
-    EXAM_STRUCTURE[lv].map((x) => x.code).join(","), "CO,CE,PE");
-  t(`${lv}: mỗi phần 25 điểm`, EXAM_STRUCTURE[lv].every((x) => x.points === 25), true);
+  t(`${lv}: đủ bốn phần CO/CE/PE/PO`,
+    EXAM_STRUCTURE[lv].map((x) => x.code).join(","), "CO,CE,PE,PO");
+  /* Ba phần CHẤM ĐIỂM đáng 25 mỗi phần; PO đáng 0 vì không chấm. Gộp cả
+     bốn vào một phép kiểm thì hoặc phải hạ chuẩn, hoặc phải cho PO 25 điểm —
+     và 25 điểm cho phần không bao giờ chấm là cách làm mọi học sinh trượt. */
+  t(`${lv}: ba phần chấm điểm đều 25`,
+    EXAM_STRUCTURE[lv].filter((x) => x.code !== "PO").every((x) => x.points === 25), true);
   t(`${lv}: thời lượng đều dương`, EXAM_STRUCTURE[lv].every((x) => x.minutes > 0), true);
-  t(`${lv}: không có phần thi nói`,
-    EXAM_STRUCTURE[lv].some((x) => x.code === "PO"), false);
+  t(`${lv}: tổng điểm chấm được vẫn là 75`,
+    EXAM_STRUCTURE[lv].reduce((n, x) => n + x.points, 0), 75);
   /* Kỹ năng phải khớp HỆT chuỗi trong `exercises.skills`, nếu không bộ lọc của
      trình soạn đề trả về rỗng và giáo viên đọc "Thư viện chưa có bài" trong khi
      thư viện có đủ. */
   t(`${lv}: tên kỹ năng đúng bộ`,
     EXAM_STRUCTURE[lv].map((x) => x.skill).join(","),
-    "Écoute,Lecture,Production écrite");
+    "Écoute,Lecture,Production écrite,Production orale");
 }
 
 /* Thời lượng phải TĂNG dần theo trình độ ở phần đọc và viết — đó là thực tế
