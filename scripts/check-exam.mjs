@@ -339,5 +339,26 @@ t("đầu vào null không làm nổ", gomTheoKyNang(null).length, 0);
     fn.includes("CHẤM NHƯNG KHÔNG LƯU"), true);
 }
 
+/* ══ Lượt làm phải GẮN VÀO ĐỀ, kể cả bài chưa mở ══
+ *
+ * `exam_start` chỉ chạy cho bài ĐANG MỞ. Từ 044 một kỹ năng có nhiều bài, và
+ * nộp cả phần mà không mở bài thứ hai là chuyện bình thường — bài đó chưa có
+ * attempt, nên hàm `grade` tạo dòng mới. Câu insert đó từng quên `exam_id`.
+ *
+ * Đo được ngày 30/08, một lượt thi đề 5 bài: bài ĐẦU của mỗi kỹ năng có
+ * exam_id, bài THỨ HAI thì NULL. Trang Kết quả gom theo exam_id nên buổi thi
+ * hiện thành hai thẻ, và điểm CO tính từ một bài thay vì hai. */
+{
+  const fn = readFileSync(new URL("../supabase/functions/grade/index.ts", import.meta.url), "utf8");
+  const gr = readFileSync(new URL("../src/shared/gradeRemote.js", import.meta.url), "utf8");
+  const em = readFileSync(new URL("../src/screens/exam/ExamMode.jsx", import.meta.url), "utf8");
+
+  t("ExamMode gửi examId", em.includes("examId: paper?.id"), true);
+  t("gradeRemote chuyển tiếp examId", gr.includes("examId: opts.examId"), true);
+  t("grade đặt exam_id khi tạo dòng mới", fn.includes("exam_id: examId,"), true);
+  /* Không tin thẳng examId từ body: kiểm bài có thuộc đề thật không. */
+  t("grade kiểm bài thuộc đề trước khi gắn",
+    fn.includes("from(\"exam_sections\")") && fn.includes("eq(\"exercise_id\", exerciseId)"), true);
+}
 console.log(fail ? `\n${pass} đạt, ${fail} hỏng` : `\n${pass} đạt, 0 hỏng`);
 process.exit(fail ? 1 : 0);

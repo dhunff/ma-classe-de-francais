@@ -760,6 +760,7 @@ export default function ExamMode() {
     for (const ex of k.exercises) {
       const r = await gradeRemote(ex.id, answers, {
         mode: "exam", blurCount, attemptId: attemptTheoBai.current[ex.id],
+        examId: paper?.id ?? null,
       });
       if (r) { dung += r.score ?? 0; tong += r.max ?? 0; }
       if (!r || !r.attemptId) luuDuoc = false;

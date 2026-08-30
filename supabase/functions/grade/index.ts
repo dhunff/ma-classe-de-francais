@@ -239,9 +239,41 @@ Deno.serve(async (req) => {
     }
 
     if (!att && !attErr) {
+      /* ── GẮN LƯỢT LÀM VÀO ĐỀ, kể cả khi tạo dòng mới ──
+       *
+       * `exam_start` chỉ chạy cho bài ĐANG MỞ. Từ migration 044 một kỹ năng có
+       * nhiều bài, và học sinh nộp cả phần mà không mở bài thứ hai là chuyện
+       * bình thường — bài đó chưa có `attempt` nào, nên nhánh này tạo mới.
+       *
+       * Bản trước quên `exam_id` ở đúng câu insert này. Kết quả đo được ngày
+       * 30/08, một lượt thi đề 5 bài:
+       *
+       *   CO bài 1 ✓ có exam_id   ·  CO bài 2 ✗ NULL
+       *   CE bài 1 ✓ có exam_id   ·  CE bài 2 ✗ NULL
+       *
+       * Trang Kết quả thi gom theo `exam_id`, nên những dòng NULL rơi vào thẻ
+       * "Lượt thi cũ (không gắn đề)" — buổi thi hiện thành hai thẻ, và điểm CO
+       * tính từ một bài thay vì hai. Đúng lớp lỗi migration 028 đã sửa một lần,
+       * tái phát ở đường ghi thứ hai mà lần đó không ai để ý.
+       *
+       * KIỂM bài có thuộc đề thật không, đừng tin thẳng `examId` từ body: nó là
+       * thứ người gọi tự gửi, và tin thẳng thì một lượt luyện tập gắn được vào
+       * đề bất kỳ, làm bẩn lịch sử thi của chính họ. Không phải lỗ hổng bảo mật
+       * — dữ liệu vẫn của họ — nhưng là dữ liệu sai, và dữ liệu sai thì tệ hơn
+       * dữ liệu thiếu. */
+      let examId: string | null = null;
+      const xinExam = String(body?.examId ?? "");
+      if (xinExam && mode === "exam") {
+        const { data: khop } = await admin.from("exam_sections")
+          .select("exam_id").eq("exam_id", xinExam).eq("exercise_id", exerciseId).maybeSingle();
+        if (khop) examId = xinExam;
+        else console.warn("[grade] examId không chứa bài này, bỏ qua:", xinExam, exerciseId);
+      }
+
       const r = await admin.from("attempts").insert({
         user_id: userId,               // ← từ JWT, không từ body
         exercise_id: exerciseId,
+        exam_id: examId,
         mode,
         ...xong,
       }).select("id").maybeSingle();

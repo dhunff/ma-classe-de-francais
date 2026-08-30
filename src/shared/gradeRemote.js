@@ -34,6 +34,11 @@ export async function gradeRemote(exerciseId, answers, opts = {}) {
         /* Thi thử mở attempt từ đầu (rpc exam_start) để đếm lượt nghe; gửi id
            lên để hàm ĐÓNG đúng dòng đó thay vì tạo dòng thứ hai. */
         attemptId: opts.attemptId ?? null,
+        /* Gắn lượt làm vào ĐỀ. Cần cả khi `attemptId` rỗng: bài thứ hai của
+           một kỹ năng thường chưa được mở, nên chưa có attempt nào, và hàm sẽ
+           tạo dòng mới — thiếu tham số này thì dòng đó không gắn với đề nào.
+           Máy chủ vẫn kiểm bài có thuộc đề thật không. */
+        examId: opts.examId ?? null,
       },
     });
     if (error || !data || data.error) {
