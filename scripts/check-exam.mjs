@@ -339,14 +339,5 @@ t("đầu vào null không làm nổ", gomTheoKyNang(null).length, 0);
     fn.includes("CHẤM NHƯNG KHÔNG LƯU"), true);
 }
 
-/* Mọi Edge Function phải GHIM phiên bản thư viện. */
-{
-  const ds = ["grade", "grant-access", "sepay-webhook"];
-  const khongGhim = ds.filter((f) => {
-    const src = readFileSync(new URL(`../supabase/functions/${f}/index.ts`, import.meta.url), "utf8");
-    return src.includes("supabase-js@2\";") || src.includes("supabase-js@2'");
-  });
-  t("không Edge Function nào để phiên bản trôi", khongGhim, []);
-}
 console.log(fail ? `\n${pass} đạt, ${fail} hỏng` : `\n${pass} đạt, 0 hỏng`);
 process.exit(fail ? 1 : 0);

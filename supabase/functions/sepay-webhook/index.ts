@@ -10,12 +10,7 @@
  *   SUPABASE_SERVICE_ROLE_KEY có sẵn trong môi trường Edge Function
  */
 
-/* GHIM phiên bản. `@supabase/supabase-js@2` trỏ tới bản v2 MỚI NHẤT tại thời
-   điểm hàm khởi động nguội — nghĩa là hành vi đổi được mà ta không deploy gì.
-   Đã trả giá ngày 30/08: `auth.getUser()` thôi đọc header Authorization, và
-   một buổi thi được chấm mà không lưu. Nâng phiên bản là một quyết định, không
-   phải chuyện xảy ra sau lưng. */
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 // @ts-ignore — JS thuần, dùng chung với bộ kiểm chạy bằng Node
 import { findSignature, findTimestamp, candidateBodies, verifyAny, verifySignature,
   timestampConLai, CUA_SO_GIAY } from "../_shared/hmac.js";

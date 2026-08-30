@@ -568,6 +568,16 @@ Xem `docs/roadmap-delf.md` — có nhật ký quyết định ở §5.
 
   Blob `s:mcf-practice` / `s:mcf-exercises` VẪN GIỮ làm sao lưu, cộng bản
   `__backup_016`. Chưa xoá, và đừng xoá cho tới khi đường ghi được thử tay.
+- **Edge Function chưa ghim phiên bản thư viện.** Cả ba hàm import
+  `https://esm.sh/@supabase/supabase-js@2`, trỏ tới bản v2 MỚI NHẤT tại thời
+  điểm khởi động nguội — hành vi đổi được mà không ai deploy gì. Đã trả giá
+  ngày 30/08: `auth.getUser()` thôi đọc header Authorization, và một buổi thi
+  được chấm mà không lưu, im lặng hoàn toàn.
+
+  Bản sửa `getUser(token)` deploy riêng trước để biết chắc nó là nguyên nhân.
+  Ghim phiên bản là bước sau, và là bước nên làm — nhưng nó đổi thư viện nên
+  phải deploy có chủ đích, không gộp vào một bản sửa khác.
+
 - **Không có Production Orale** — 25/100 điểm của kỳ thi, chưa có gì.
 - `s:mcf-submissions` vẫn giữ làm sao lưu, chưa xoá.
 
