@@ -64,6 +64,17 @@ Migration nào ĐÓNG một đường cũ (siết policy, thu quyền) thì tạ
 thư mục trước khi đẩy, và chỉ chạy sau khi xác nhận đường mới đã mở. Nhánh
 lùi trong mã giả định cửa cũ còn đó.
 
+Cần đọc một câu SQL trên database thật thì dùng:
+
+```bash
+npx supabase db query --linked "select …"
+```
+
+**Nhớ `--linked`** — thiếu nó thì CLI nối tới Postgres CỤC BỘ (cổng 54322,
+cần Docker) và báo `ECONNREFUSED`, chứ không phải nối tới production. Đây là
+cách duy nhất đọc được những thứ PostgREST không phơi ra: `pg_publication_tables`,
+`pg_policy`, `pg_attribute`, quyền theo cột.
+
 `check:db` gọi mạng nên không chạy được khi offline, và nó là bộ duy nhất đối
 chiếu với hệ thống thật thay vì với mã nguồn. Chạy nó sau mỗi migration.
 
