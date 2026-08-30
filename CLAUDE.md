@@ -28,14 +28,14 @@ npm run check:submissions  # ánh xạ bài nộp ↔ bảng (50 ca)
 npm run check:exercises    # ánh xạ bài tập ↔ hai bảng (53 ca)
 npm run check:store        # kho đề có chỗ nào còn gọi blob không (8 ca)
 npm run check:parity       # bộ chấm server vs client có trôi khỏi nhau không
-npm run check:exam         # quy đổi điểm + luật đạt/trượt thi thử (19 ca)
+npm run check:exam         # quy đổi điểm + luật đạt/trượt thi thử (85 ca)
 npm run check:nav          # mục menu ↔ route ↔ nhãn i18n, cả hai chiều (74 ca)
 npm run check:grille       # grille DELF A1–B2 cộng đúng 25, đủ mô tả (59 ca)
 npm run check:cors         # Edge Function có cho trình duyệt gọi không
 npm run check:hmac         # chữ ký webhook SePay + bản ghim công thức (45 ca)
 npm run check:bareme       # mốc cho điểm PE, nhãn Việt, đối chiếu với SQL (457 ca)
 npm run check:identity     # luật @username + hồ sơ, JS ↔ SQL ↔ i18n (61 ca)
-npm run check:notifs       # đường gửi thông báo + luật RPC (25 ca)
+npm run check:notifs       # gửi thông báo + chuông + luật RPC (38 ca)
 npm run check:css          # lớp Tailwind có thật sinh ra CSS không
 npm run check:db           # database THẬT có khớp giả định của mã nguồn không
 ```
@@ -147,7 +147,7 @@ Panel phụ (sổ tay) là con `absolute` của tấm thẻ, không phải `fixe
 | `profiles`, `exercise_access`, `submissions`, `tips`, `exercises`, `questions` | `mcf-accounts`, `mcf-classes`, `mcf-folders`, `mcf-custom-cats`, `mcf-ph-<tên>`… |
 
 Hồ sơ mở rộng (địa chỉ, điện thoại, ngày sinh, trường, trình độ, mục tiêu) đã
-rời `s:mcf-profiles` sang chín cột trên `profiles` — migration 048–051, đi qua
+rời `s:mcf-profiles` sang chín cột trên `profiles` — migration 049–052, đi qua
 `shared/profileStore.js`. Blob còn đó làm sao lưu nhưng học sinh không đọc,
 không ghi được nữa.
 
@@ -419,6 +419,22 @@ kiểm trên báo XANH trên một file có lỗi thật, vì regex hoá ra đan
 điều khiển vô hình. Đọc mã nguồn không thấy gì sai. Đây đúng là loại lỗi bộ
 kiểm ấy sinh ra để bắt, và nó tự dính. Dùng `(?![A-Za-z])`, và sửa file có cấu
 trúc bằng Edit — quy tắc 4 ở trên, lần thứ năm.
+
+**Bộ kiểm đọc mã nguồn thì PHẢI bỏ chú thích trước khi soi.** Ba lần dính:
+check:identity với SQL, rồi lần `` ngay dưới, rồi check:notifs với JSX. Lý
+do luôn giống nhau — chú thích tử tế TRÍCH DẪN đoạn mã sai để giải thích vì
+sao không được viết nó, và bộ kiểm đọc trúng câu trích dẫn ấy rồi báo đỏ trên
+một file hoàn toàn đúng.
+
+Hậu quả tinh vi hơn con số đỏ: cách nhanh nhất làm nó xanh trở lại là **xoá
+đoạn giải thích**. Tức là bộ kiểm phạt đúng thứ ta muốn khuyến khích.
+
+Với JS/JSX, chỉ bỏ khối `/* */` và dòng bắt đầu bằng `//`. Đừng bỏ `//` giữa
+dòng — `"https://…"` trong một chuỗi cũng có hai dấu chéo.
+
+**Và đừng ràng ca kiểm vào MỘT lối viết.** Ca "huỷ lượt fetch khi gỡ" tìm
+`if (con) setAnnonces`; bản viết lại dùng `if (!con) return;` — đúng hơn, và
+làm ca kiểm đỏ. Kiểm cái Ý ĐỊNH, chấp nhận nhiều cách viết.
 
 **Trong JavaScript, `.` không khớp `\r` — không chỉ `\n`.** Bộ lọc chú thích
 SQL của `check:identity` viết `d.replace(/--.*$/, "")` trên từng dòng tách bằng

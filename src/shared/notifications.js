@@ -134,9 +134,24 @@ export async function docThongBao(ten) {
       .sort((a, b) => (b.createdAt ?? 0) - (a.createdAt ?? 0));
   }
 
+  /* ── LỌC THEO `user_id`, dù RLS đã lọc ──
+   *
+   * Với học sinh thì thừa: `notifications_read_self` chỉ trả dòng của chính họ.
+   * Với GIÁO VIÊN thì bắt buộc — `notifications_read_teacher` (migration 053)
+   * cho họ đọc MỌI dòng, để xem lại những gì đã gửi. Thiếu bộ lọc này thì
+   * chuông của giáo viên hiện thông báo của cả lớp, mỗi em một dòng.
+   *
+   * Bài học chung: RLS định nghĩa TRẦN của những gì đọc được, không phải thứ
+   * câu truy vấn này CẦN. Hai vai khác nhau nhìn cùng một câu select ra hai kết
+   * quả khác hẳn, và người viết chỉ thử bằng một vai. */
+  const { data: u } = await supabase.auth.getUser();
+  const uid = u?.user?.id;
+  if (!uid) return [];
+
   const { data, error } = await supabase
     .from("notifications")
     .select("id, message, is_read, created_at")
+    .eq("user_id", uid)
     .order("created_at", { ascending: false })
     .limit(50);
 

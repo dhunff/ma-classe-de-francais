@@ -25,6 +25,27 @@ const t = (ten, got, want) => {
 };
 
 const doc = (p) => readFileSync(new URL(p, import.meta.url), "utf8");
+
+/* Bỏ chú thích khỏi JS/JSX trước khi soi bằng regex.
+ *
+ * BẮT BUỘC, và đây là lần thứ BA cùng một cái bẫy trong dự án (trước đó:
+ * check-identity với SQL, rồi lần sửa \r). Mọi file ở đây đều TRÍCH DẪN đoạn
+ * mã sai để giải thích vì sao không được viết nó:
+ *
+ *     // Bản trước lọc danh sách bằng `if (!seen[id])` …
+ *
+ * Bộ kiểm đọc mã nguồn thì phải phân biệt câu lệnh với lời bàn về câu lệnh.
+ * Không phân biệt thì cách duy nhất làm nó xanh là XOÁ đoạn giải thích — tức
+ * là nó phạt đúng việc viết chú thích tử tế.
+ *
+ * Chỉ bỏ khối `/* *\/` và dòng bắt đầu bằng `//`. KHÔNG bỏ `//` giữa dòng:
+ * "https://…" trong một chuỗi cũng có hai dấu chéo, và cắt ở đó thì hỏng mã
+ * thật. Mọi báo động giả gặp được đều nằm trong khối `/* *\/`, nên chừng này
+ * là đủ mà không tạo ra lớp sai mới. */
+const boChuThichJs = (src) =>
+  src.replace(/\/\*[\s\S]*?\*\//g, " ")
+     .split(/\r?\n/).map((d) => d.replace(/^\s*\/\/.*$/, "")).join("\n");
+
 const ts = doc("../src/screens/teacher/TeacherScreens.jsx");
 const nt = doc("../src/shared/notifications.js");
 const bell = doc("../src/screens/student/Bell.jsx");
@@ -116,7 +137,71 @@ const lenh = sql.split("\n").map((d) => d.replace(/--.*$/, "")).join("\n");
   t("Bell không đọc thẳng blob", /load\(\s*["'`]mcf-notifs/.test(bell), false);
   /* Bỏ lượt trả về khi component đã gỡ — thiếu thì React cảnh báo setState
      sau unmount mỗi lần điều hướng nhanh. */
-  t("Bell huỷ lượt fetch khi gỡ", /if \(con\) setAnnonces/.test(bell), true);
+  /* Bỏ lượt trả về khi component đã gỡ. Ca này soi bản ĐÃ LỌC chú thích và
+     chấp nhận cả hai lối viết — `if (con) setAnnonces(…)` lẫn `if (!con)
+     return;` — vì cả hai đều đúng, và ràng ca kiểm vào MỘT lối viết thì nó
+     chặn cả những bản viết lại hoàn toàn hợp lệ. */
+  t("Bell huỷ lượt fetch khi gỡ",
+    /if \(con\) setAnnonces|if \(!con\) return;/.test(boChuThichJs(bell)), true);
+}
+
+/* ══ CHUÔNG: danh sách không được tự xoá khi mở ══
+ *
+ * Lỗi đã lọt lên production: chuông báo "1", bấm vào hiện "Aucune notification".
+ * Cả hai đều đúng theo mã cũ —
+ *
+ *     notifs = annonces.filter(n => !seen[n.id])   // chỉ hiện thứ CHƯA xem
+ *     openBell: seen[n.id] = true cho MỌI mục      // đánh dấu đã xem khi mở
+ *
+ * Bấm chuông → `seen` đổi → `useMemo` chạy lại → danh sách rỗng.
+ *
+ * Gốc rễ: `seen` gánh hai việc mâu thuẫn — "có hiện không" và "có tính vào huy
+ * hiệu không". Các ca dưới đây canh đúng chỗ tách đó. */
+{
+  /* `bell` ở ngoài còn chú thích; ở đây soi bản đã lọc. */
+  const ma = boChuThichJs(bell);
+
+  /* Danh sách KHÔNG được lọc theo `seen`. */
+  t("notifs không lọc bằng !seen[…]",
+    /if \(!seen\[/.test(ma), false);
+
+  /* Mỗi mục mang cờ riêng, và huy hiệu đếm cờ đó. */
+  t("mỗi mục có cờ chuaDoc", /chuaDoc:/.test(ma), true);
+  t("có biến đếm riêng cho huy hiệu", /soChuaDoc/.test(ma), true);
+  t("huy hiệu dùng soChuaDoc, không dùng notifs.length",
+    /\{soChuaDoc\}/.test(ma), true);
+  t("không còn hiện notifs.length trên huy hiệu",
+    /\{notifs\.length\}/.test(ma), false);
+
+  /* Ba nhánh render, không phải hai. Thiếu nhánh đang tải thì lượt đọc đầu
+     tiên hiện "không có thông báo nào" — khẳng định một điều chưa biết. */
+  t("có cờ đang tải", /dangTai/.test(ma), true);
+  t("khung xương chỉ hiện khi đang tải",
+    /dangTai \? \(/.test(ma), true);
+  t("trạng thái rỗng nằm SAU nhánh đang tải",
+    ma.indexOf("dangTai ? (") < ma.indexOf("Aucune notification"), true);
+
+  /* Realtime phải huỷ đăng ký khi gỡ — thiếu thì mỗi lượt điều hướng để lại
+     một kênh sống, và một thông báo sinh ra nhiều bản sao. */
+  t("có đăng ký realtime", /supabase\s*\n?\s*\.channel\(/.test(ma), true);
+  t("realtime lọc ở SERVER theo user_id",
+    /filter: `user_id=eq\.\$\{uid\}`/.test(ma), true);
+  t("realtime huỷ kênh khi gỡ", /removeChannel\(kenh\)/.test(ma), true);
+  t("realtime chống trùng dòng", /cu\.some\(\(x\) => x\.id === n\.id\)/.test(ma), true);
+}
+
+/* ══ Đọc thông báo phải lọc theo user_id ══
+ *
+ * RLS định nghĩa TRẦN của những gì đọc được, không phải thứ câu truy vấn CẦN.
+ * `notifications_read_teacher` (053) cho giáo viên đọc MỌI dòng để xem lại
+ * những gì đã gửi — nên thiếu `.eq("user_id", …)` thì chuông của giáo viên
+ * hiện thông báo của cả lớp, mỗi em một dòng. Học sinh không thấy lỗi này vì
+ * RLS che, nên nó chỉ lộ ra ở tài khoản giáo viên. */
+{
+  const dau = nt.indexOf("export async function docThongBao");
+  const sau = nt.indexOf("export async function danhDauDaDoc");
+  const than = dau >= 0 && sau > dau ? nt.slice(dau, sau) : "";
+  t("docThongBao lọc theo user_id", /\.eq\("user_id", uid\)/.test(than), true);
 }
 
 console.log(fail ? `\n${pass} đạt, ${fail} hỏng` : `\n${pass} đạt, 0 hỏng`);
