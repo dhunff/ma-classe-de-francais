@@ -176,10 +176,17 @@ const lenh = sql.split("\n").map((d) => d.replace(/--.*$/, "")).join("\n");
   /* Ba nhánh render, không phải hai. Thiếu nhánh đang tải thì lượt đọc đầu
      tiên hiện "không có thông báo nào" — khẳng định một điều chưa biết. */
   t("có cờ đang tải", /dangTai/.test(ma), true);
+
+  /* Phần HIỂN THỊ nằm ở NotificationDropdown.jsx từ lần tách component; Bell
+     chỉ còn lo nguồn dữ liệu. Hai ca dưới soi đúng file đó — trỏ nhầm file thì
+     bộ kiểm đỏ trên mã hoàn toàn đúng, và cách nhanh nhất làm nó xanh lại là
+     gộp component về như cũ. Bộ kiểm không được ép kiến trúc theo hình dạng
+     nó tình cờ được viết ra. */
+  const drop = boChuThichJs(doc("../src/screens/student/NotificationDropdown.jsx"));
   t("khung xương chỉ hiện khi đang tải",
-    /dangTai \? \(/.test(ma), true);
+    /dangTai \? \(/.test(drop), true);
   t("trạng thái rỗng nằm SAU nhánh đang tải",
-    ma.indexOf("dangTai ? (") < ma.indexOf("Aucune notification"), true);
+    drop.indexOf("dangTai ? (") < drop.indexOf("Aucune notification"), true);
 
   /* Realtime phải huỷ đăng ký khi gỡ — thiếu thì mỗi lượt điều hướng để lại
      một kênh sống, và một thông báo sinh ra nhiều bản sao. */

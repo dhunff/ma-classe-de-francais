@@ -3,7 +3,27 @@ import { createPortal } from "react-dom";
 import { MoreVertical } from "lucide-react";
 import { C, S } from "./tokens.js";
 
-function FloatingLayer({ anchorRef, open, onClose, children, width = 300, align = "right", radius = 24, padding = 10 }) {
+/* Lớp nổi: portal + định vị + bấm-ra-ngoài + Esc.
+ *
+ * HAI THAM SỐ MỚI, cả hai đều PHẢI opt-in:
+ *
+ *   bare     bỏ nền/viền/padding mặc định, để component con tự trang trí
+ *   animate  hiện dần khi mở, mờ dần khi đóng
+ *
+ * Mặc định tắt vì `KebabMenu` và vài chỗ khác đang dùng lớp này và trông
+ * đúng như hiện tại. Đổi hành vi mặc định là sửa những màn hình không ai
+ * yêu cầu sửa.
+ *
+ * ══ VÌ SAO HOẠT ẢNH ĐÓNG CẦN THÊM STATE ══
+ *
+ * Bản gốc `return null` ngay khi `open` thành false, nên phần tử biến mất
+ * trước khi trình duyệt kịp vẽ khung hình nào — không có gì để chuyển động.
+ * Muốn mờ dần thì phải GIỮ nó lại thêm một nhịp rồi mới gỡ.
+ *
+ * `dangHien` giữ nó sống thêm 160ms, khớp với thời lượng transition. Lệch
+ * hai con số này thì hoặc phần tử biến mất giữa chừng, hoặc nó nằm lại vô
+ * hình mà vẫn chặn chuột — lỗi thứ hai tệ hơn vì không nhìn thấy được. */
+function FloatingLayer({ anchorRef, open, onClose, children, width = 300, align = "right", radius = 24, padding = 10, bare = false, animate = false }) {
   const [pos, setPos] = useState(null);
   const layerRef = useRef(null);
   useLayoutEffect(() => {
@@ -34,12 +54,40 @@ function FloatingLayer({ anchorRef, open, onClose, children, width = 300, align 
     document.addEventListener("keydown", onKey);
     return () => { document.removeEventListener("mousedown", onDown); document.removeEventListener("keydown", onKey); };
   }, [open, onClose, anchorRef]);
-  if (!open || typeof document === "undefined") return null;
+  /* Giữ phần tử sống thêm 160ms sau khi đóng để hoạt ảnh chạy xong. Không bật
+     `animate` thì gỡ ngay như cũ — không thêm độ trễ cho ai không xin. */
+  const [dangHien, setDangHien] = useState(open);
+  useEffect(() => {
+    if (open) { setDangHien(true); return; }
+    if (!animate) { setDangHien(false); return; }
+    const t = setTimeout(() => setDangHien(false), 160);
+    return () => clearTimeout(t);
+  }, [open, animate]);
+
+  /* Bật lớp "đã mở" ở khung hình SAU khi gắn vào DOM.
+     Đặt cùng lúc với lúc gắn thì trình duyệt gộp hai trạng thái làm một và
+     không có chuyển động nào — lỗi kinh điển của transition lúc mount. */
+  const [daMo, setDaMo] = useState(false);
+  useEffect(() => {
+    if (!open) { setDaMo(false); return; }
+    const r = requestAnimationFrame(() => setDaMo(true));
+    return () => cancelAnimationFrame(r);
+  }, [open]);
+
+  if ((!open && !dangHien) || typeof document === "undefined") return null;
   return createPortal(
-    <div ref={layerRef} className="mcf-float" style={{ position: "fixed", top: pos?.top ?? -9999, left: pos?.left ?? -9999, width,
-      zIndex: 9999, background: "var(--mcf-surface, #FFFFFF)", borderRadius: radius, padding, color: "var(--mcf-ink, #111827)",
-      border: "1px solid var(--mcf-line, #EEF0F4)", boxShadow: "0 18px 44px rgba(17,24,39,.28)", opacity: 1,
-      visibility: pos ? "visible" : "hidden" }}>
+    <div ref={layerRef}
+      className={"mcf-float" + (animate
+        ? " origin-top-right transition-all duration-150 ease-out "
+          + (daMo && open ? "opacity-100 scale-100 translate-y-0" : "opacity-0 scale-95 -translate-y-2")
+        : "")}
+      style={{ position: "fixed", top: pos?.top ?? -9999, left: pos?.left ?? -9999, width,
+        zIndex: 9999, color: "var(--mcf-ink, #111827)",
+        ...(bare ? {} : {
+          background: "var(--mcf-surface, #FFFFFF)", borderRadius: radius, padding,
+          border: "1px solid var(--mcf-line, #EEF0F4)", boxShadow: "0 18px 44px rgba(17,24,39,.28)",
+        }),
+        visibility: pos ? "visible" : "hidden" }}>
       {children}
     </div>,
     document.body

@@ -415,6 +415,19 @@ script sửa file lớn, đếm lại:
 grep -c '^## ' CLAUDE.md      # mỗi tiêu đề phải xuất hiện đúng một lần
 ```
 
+**Hai lớp Tailwind đánh nhau thì lớp sai có thể thắng, và cũng im lặng.**
+`line-clamp-2` đặt `display: -webkit-box`; viết kèm `block` là ghi đè đúng
+thuộc tính ấy, và `-webkit-line-clamp: 2` vẫn nằm trong CSS mà không cắt gì.
+Đo được: `display` ra `block`, chiều cao 520px thay vì hai dòng 40px.
+
+Khác với bẫy ngay dưới: ở đó lớp KHÔNG sinh ra CSS, `check:css` bắt được. Ở
+đây lớp có sinh ra, nên `check:css` xanh — chỉ đo giá trị TÍNH RA mới thấy:
+
+```js
+getComputedStyle(el).display        // phải là -webkit-box, không phải block
+el.scrollHeight > el.clientHeight   // true nghĩa là thật sự có cắt
+```
+
 **Tailwind BỎ QUA lớp không tồn tại, không báo gì.** `tailwind.config.js` khai
 `danger: { DEFAULT, soft }` nên lớp đúng là `bg-danger-soft`; viết
 `bg-dangerSoft` thì không có lỗi, không cảnh báo, không CSS — phần tử chỉ mất

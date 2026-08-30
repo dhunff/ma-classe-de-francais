@@ -28,4 +28,32 @@ function formatLastSeen(ts) {
   return { online: false, label: `Il y a ${days} jour${days > 1 ? "s" : ""}` };
 }
 
-export { AVA_COLORS, avaColor, fmtDateFR, fmtDuration, targetedAccounts, fileNameFromUrl, formatLastSeen };
+/* Thời gian tương đối, tiếng Việt. Cho bảng thông báo.
+ *
+ * Vì sao KHÔNG dùng `Intl.RelativeTimeFormat`: giao diện đã có công tắc ngôn
+ * ngữ riêng, còn API của trình duyệt lấy theo ngôn ngữ hệ điều hành. Người chọn
+ * Tiếng Việt trên máy cài tiếng Anh sẽ đọc "2 hours ago" giữa một trang tiếng
+ * Việt — cùng lý do đã khiến tên thứ và tháng được viết tay trong i18n.
+ *
+ * Mốc "vừa xong" là 60 giây. Dưới ngưỡng đó mà hiện "0 phút trước" thì vừa
+ * đúng vừa vô nghĩa.
+ *
+ * Quá 7 ngày thì trả ngày tháng: "12 phút trước" hữu ích, "43 ngày trước" thì
+ * không — người đọc phải tự tính ngược ra ngày. */
+const thoiGianTuongDoi = (ts) => {
+  const t = typeof ts === "number" ? ts : Date.parse(ts);
+  if (!t || Number.isNaN(t)) return "";
+  const giay = Math.floor((Date.now() - t) / 1000);
+  /* Đồng hồ máy người dùng có thể chạy nhanh hơn máy chủ vài giây, và khi đó
+     `giay` âm. "Vừa xong" đúng hơn là "-3 giây trước". */
+  if (giay < 60) return "Vừa xong";
+  const phut = Math.floor(giay / 60);
+  if (phut < 60) return phut + " phút trước";
+  const gio = Math.floor(phut / 60);
+  if (gio < 24) return gio + " giờ trước";
+  const ngay = Math.floor(gio / 24);
+  if (ngay <= 7) return ngay + " ngày trước";
+  return new Date(t).toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit" });
+};
+
+export { AVA_COLORS, avaColor, fmtDateFR, fmtDuration, targetedAccounts, fileNameFromUrl, formatLastSeen, thoiGianTuongDoi };

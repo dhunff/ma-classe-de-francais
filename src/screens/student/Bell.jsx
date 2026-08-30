@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo, useRef, useCallback } from "react"
 import { C, S, LEVEL_COLORS, LEVEL_PASTEL, QTYPES, VF_OPTS } from "../../shared/tokens.js";
 import { load, save, del } from "../../shared/storage.js";
 import { docThongBao, danhDauDaDoc } from "../../shared/notifications.js";
+import NotificationDropdown from "./NotificationDropdown.jsx";
 import { supabase } from "../../storageShim.js";
 import { useT } from "../../shared/i18n.jsx";
 import { SKILLS, fmtDate, isLate, exSkills, assignedTo, totalScore } from "../../shared/exercises.js";
@@ -123,7 +124,7 @@ function Bell({ name, exercises, submissions }) {
     const list = [];
     annonces.forEach((n) => {
       list.push({
-        id: "ann-" + n.id, icon: "📣", text: n.message, ts: n.createdAt,
+        id: "ann-" + n.id, loai: "annonce", text: n.message, ts: n.createdAt,
         /* Hai nguồn "đã đọc", và phải xét CẢ HAI:
            · `n.daDoc` — cột `is_read` trên server, theo TÀI KHOẢN
            · `seen`    — khoá `mcf-seen-<tên>`, theo MÁY
@@ -141,15 +142,15 @@ function Bell({ name, exercises, submissions }) {
       if (ex.deadline && !sub) {
         const dt = new Date(ex.deadline).getTime() - now;
         if (dt > 0 && dt < 24 * 3600 * 1000)
-          list.push({ id: "due-" + ex.id, icon: "⏰", chuaDoc: true,
+          list.push({ id: "due-" + ex.id, loai: "due", chuaDoc: true, title: ex.title,
             text: `« ${ex.title} » est à rendre avant ${fmtDate(ex.deadline)} !` });
       }
       if (sub?.graded && !sub.redo)
-        list.push({ id: "graded-" + sub.id, icon: "✅",
+        list.push({ id: "graded-" + sub.id, loai: "graded", title: ex.title,
           chuaDoc: !seen["graded-" + sub.id],
           text: `Ta copie « ${ex.title} » a été corrigée.` });
       if (sub?.redo)
-        list.push({ id: "redo-" + sub.id, icon: "🔁", chuaDoc: true,
+        list.push({ id: "redo-" + sub.id, loai: "redo", chuaDoc: true, title: ex.title,
           text: `Le professeur te demande de refaire « ${ex.title} »${sub.redoNote ? " : " + sub.redoNote : ""}.` });
     });
     /* Mới nhất trước. `ts` chỉ có ở thông báo của giáo viên; những mục sinh từ
@@ -160,27 +161,27 @@ function Bell({ name, exercises, submissions }) {
   /* Con số trên huy hiệu — CHỈ đếm mục chưa đọc, không phải cả danh sách. */
   const soChuaDoc = useMemo(() => notifs.filter((n) => n.chuaDoc).length, [notifs]);
 
+  /* Đánh dấu đã đọc TẤT CẢ.
+   *
+   * Tách ra khỏi `openBell` vì giờ có hai đường gọi tới nó: mở chuông, và nút
+   * "Đánh dấu đã đọc" ở đầu bảng. Hai lối vào cùng một hành động thì phải gọi
+   * cùng một hàm — viết hai bản là cách chắc chắn để chúng lệch nhau, và ở đây
+   * lệch nghĩa là huy hiệu nói một đằng, server ghi một nẻo. */
+  const docHet = async () => {
+    if (!soChuaDoc) return;
+    const next = { ...seen };
+    notifs.forEach((n) => { if (n.id.startsWith("graded-") || n.id.startsWith("ann-")) next[n.id] = true; });
+    setSeen(next);
+    await save(`mcf-seen-${name}`, next, false);
+    const idThat = notifs.filter((n) => n.id.startsWith("ann-")).map((n) => n.id.slice(4));
+    if (idThat.length) await danhDauDaDoc(idThat);
+  };
+
   const openBell = async () => {
     setOpen(!open);
-    /* Đánh dấu đã đọc khi MỞ. Giờ việc này chỉ làm huy hiệu về 0 — danh sách
-       vẫn hiện nguyên, chỉ mất phần tô sáng. Trước đây nó xoá luôn danh sách. */
-    if (!open && soChuaDoc) {
-      const next = { ...seen };
-      notifs.forEach((n) => { if (n.id.startsWith("graded-") || n.id.startsWith("ann-")) next[n.id] = true; });
-      setSeen(next); await save(`mcf-seen-${name}`, next, false);
-
-      /* Ghi "đã đọc" lên SERVER cho các thông báo đi qua bảng.
-       *
-       * Khoá `mcf-seen-<tên>` ở trên là bộ nhớ riêng của từng MÁY, nên đổi máy
-       * là mọi thông báo cũ hiện lại như mới. Cột `is_read` sửa được điều đó,
-       * và `danhDauDaDoc` tự trả `false` khi bảng chưa tồn tại — chưa chạy
-       * migration 053 thì không có gì xảy ra, đúng hành vi cũ.
-       *
-       * Cắt tiền tố "ann-" để lấy lại id thật. Không dùng `replace("ann-","")`
-       * vì nó cắt cả chuỗi đó ở GIỮA id nếu chẳng may trùng. */
-      const idThat = notifs.filter((n) => n.id.startsWith("ann-")).map((n) => n.id.slice(4));
-      if (idThat.length) await danhDauDaDoc(idThat);
-    }
+    /* Mở chuông = đã xem. Giờ việc này chỉ làm huy hiệu về 0; danh sách vẫn
+       hiện nguyên, chỉ mất phần tô sáng. Trước đây nó xoá luôn danh sách. */
+    if (!open) await docHet();
   };
 
   return (
@@ -195,45 +196,17 @@ function Bell({ name, exercises, submissions }) {
           </span>
         )}
       </button>
-      <FloatingLayer anchorRef={bellRef} open={open} onClose={() => setOpen(false)} width={300}>
-        {/* BA nhánh, không phải hai.
-            Nhánh `dangTai` là thứ bản trước thiếu: lượt đọc đầu chưa xong thì
-            danh sách rỗng, và hiện "Aucune notification" lúc ấy là khẳng định
-            một điều ta chưa biết. Khung xương nói đúng thứ đang xảy ra. */}
-        {dangTai ? (
-          <div className="space-y-2 p-3" aria-busy="true" aria-label="Đang tải thông báo">
-            {[0, 1, 2].map((i) => (
-              <div key={i} className="flex items-start gap-2.5">
-                <span className="mt-0.5 h-4 w-4 shrink-0 animate-pulse rounded-full bg-surface2" />
-                <span className="flex-1 space-y-1.5">
-                  <span className="block h-3 animate-pulse rounded bg-surface2" />
-                  {/* Dòng thứ hai ngắn hơn — khối chữ thật không bao giờ vuông
-                      vức, và khung xương vuông vức thì trông như lỗi bố cục. */}
-                  <span className="block h-3 w-2/3 animate-pulse rounded bg-surface2" />
-                </span>
-              </div>
-            ))}
-          </div>
-        ) : notifs.length === 0 ? (
-          <div className="p-3 text-sm text-soft">Aucune notification. Tout est à jour ! 🎉</div>
-        ) : (
-          <ul className="m-0 list-none p-0">
-            {notifs.map((n) => (
-              <li key={n.id}
-                  className={`flex items-start gap-2.5 border-0 border-b border-solid border-line px-3 py-2.5 text-sm
-                              ${n.chuaDoc ? "bg-primary-soft/40" : ""}`}>
-                <span aria-hidden className="shrink-0">{n.icon}</span>
-                <span className="min-w-0 flex-1 text-ink">{n.text}</span>
-                {/* Chấm xanh cho mục chưa đọc. Nền tô sáng một mình là không
-                    đủ: người mù màu, và màn hình chói nắng, đều mất nó. */}
-                {n.chuaDoc && (
-                  <span aria-label="chưa đọc"
-                        className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-primary" />
-                )}
-              </li>
-            ))}
-          </ul>
-        )}
+      {/* `bare` để bảng tự trang trí, `animate` để hiện dần/mờ dần. Cả hai
+          là tham số opt-in thêm vào FloatingLayer — mặc định tắt, nên
+          KebabMenu và các chỗ dùng khác không đổi gì. */}
+      <FloatingLayer anchorRef={bellRef} open={open} onClose={() => setOpen(false)}
+        width={360} bare animate>
+        <NotificationDropdown
+          notifs={notifs}
+          dangTai={dangTai}
+          soChuaDoc={soChuaDoc}
+          onDocHet={docHet}
+        />
       </FloatingLayer>
     </div>
   );

@@ -49,6 +49,7 @@ import { PhanThi } from "./screens/exam/ExamMode.jsx";
 import GrilleEditor from "./screens/teacher/GrilleEditor.jsx";
 import TipsEditor from "./screens/teacher/TipsEditor.jsx";
 import { ChonAvatar, ONhapUsername } from "./screens/account/DanhTinh.jsx";
+import NotificationDropdown from "./screens/student/NotificationDropdown.jsx";
 import { Avatar, DS_AVATAR } from "./shared/avatars.jsx";
 
 const VI = {
@@ -400,6 +401,7 @@ function Preview() {
   const MAN_PHU = [
     ["", "— màn hình phụ —"],
     ["/etudiant/danh-tinh", "Danh tính (avatar + @username)"],
+    ["/etudiant/thong-bao", "Bảng thông báo"],
     ["/etudiant/auto-evaluation", "Tự chấm Production écrite"],
     ["/etudiant/phan-thi", "Một phần thi thử"],
     ["/professeur/grille", "Soạn thang chấm"],
@@ -516,6 +518,7 @@ function Preview() {
           <Route path="/professeur/grille" element={<><Controls /><GrilleThu /></>} />
           <Route path="/etudiant/phan-thi" element={<><Controls /><PhanThiThu /></>} />
           <Route path="/etudiant/danh-tinh" element={<><Controls /><DanhTinhThu /></>} />
+          <Route path="/etudiant/thong-bao" element={<><Controls /><ThongBaoThu /></>} />
           <Route path="/etudiant/auto-evaluation" element={
             <><Controls /><PESelfEvaluation /></>
           } />
@@ -605,6 +608,54 @@ function DanhTinhThu() {
         <ChonAvatar dangChon={avatar} ten={ten}
           chon={(k) => { setAvatar(k); setMo(false); }} dong={() => setMo(false)} />
       )}
+    </div>
+  );
+}
+
+/* Bảng thông báo — dựng được ở đây vì nó nhận dữ liệu qua props và KHÔNG tự
+ * gọi mạng. Đó cũng là lý do nó được tách khỏi Bell.jsx: Bell chạm storageShim
+ * nên không đưa vào trang xem thử được (xem rào ở đầu file này).
+ *
+ * Bốn trạng thái cần nhìn tận mắt, và ba trong số đó khó dựng lại trên bản
+ * thật: đang tải chỉ hiện chưa tới một giây, rỗng thì phải xoá hết thông báo,
+ * và danh sách dài phải chờ tích đủ tin. */
+function ThongBaoThu() {
+  const [tt, setTt] = React.useState("co");
+
+  const gio = (phut) => Date.now() - phut * 60000;
+  const day = [
+    { id: "a1", loai: "annonce", chuaDoc: true, ts: gio(3),
+      text: "Rappel : rendez le devoir B1 avant vendredi 19h ! N'oubliez pas de relire la consigne avant de commencer, elle a changé depuis la semaine dernière." },
+    { id: "a2", loai: "due", chuaDoc: true, ts: gio(45), title: "Le passé composé",
+      text: "« Le passé composé » est à rendre avant 12/09/2026 !" },
+    { id: "a3", loai: "graded", ts: gio(60 * 5), title: "Rédiger une lettre formelle",
+      text: "Ta copie « Rédiger une lettre formelle » a été corrigée." },
+    { id: "a4", loai: "redo", chuaDoc: true, ts: gio(60 * 30), title: "L'expression de la cause",
+      text: "Le professeur te demande de refaire « L'expression de la cause » : relis la partie sur « parce que » et « car »." },
+    { id: "a5", loai: "annonce", ts: gio(60 * 24 * 3),
+      text: "Cours annulé mardi prochain." },
+  ];
+
+  const ds = tt === "co" ? day : tt === "dai" ? [...day, ...day, ...day].map((n, i) => ({ ...n, id: n.id + i })) : [];
+
+  return (
+    <div className="mx-auto max-w-md">
+      <div className="mb-4 flex flex-wrap gap-2">
+        {[["co", "Có thông báo"], ["dai", "Danh sách dài"], ["rong", "Rỗng"], ["tai", "Đang tải"]].map(([v, l]) => (
+          <button key={v} type="button" onClick={() => setTt(v)}
+            className={`cursor-pointer rounded-full border-0 px-4 py-2 text-sm font-semibold transition-colors ${
+              tt === v ? "bg-primary text-on-primary" : "bg-surface2 text-soft hover:text-ink"}`}>
+            {l}
+          </button>
+        ))}
+      </div>
+
+      <NotificationDropdown
+        notifs={ds}
+        dangTai={tt === "tai"}
+        soChuaDoc={ds.filter((n) => n.chuaDoc).length}
+        onDocHet={() => alert("đánh dấu đã đọc tất cả")}
+      />
     </div>
   );
 }
