@@ -1,0 +1,65 @@
+# Cấu hình project Supabase — phần Edge Functions.
+#
+# ══════════════════════════════════════════════════════════════════════════
+# VÌ SAO `grade` TẮT verify_jwt
+# ══════════════════════════════════════════════════════════════════════════
+#
+# Cổng vào của Supabase, khi `verify_jwt` bật, kiểm tra JWT rồi GỠ header
+# `Authorization` trước khi chuyển tiếp. Hàm không bao giờ nhìn thấy nó.
+#
+# Đo được ngày 30/08/2026, ba phép thử từ trình duyệt:
+#
+#   không Authorization  → 401 UNAUTHORIZED_NO_AUTH_HEADER, hàm không chạy
+#   có Authorization     → 200, hàm chạy
+#   log trong hàm        → authHeader=KHÔNG CÓ, với MỌI lời gọi
+#
+# Hậu quả, im lặng và tốn hai ngày để tìm:
+#
+#   · `auth.getUser(token)` không có token → `userId` null → toàn bộ phần ghi
+#     `attempts` nằm trong `if (userId)` bị bỏ qua. Hàm vẫn chấm, vẫn TRẢ ĐIỂM
+#     ĐÚNG, và không lưu gì. Một buổi thi đầy đủ hiện CO 19 / CE 14.5 trên màn
+#     hình trong khi database không nhận một dòng nào.
+#
+#   · `asCaller` thành client ẩn danh, nên `can_open_exercise` chạy dưới vai
+#     anon — bài TRẢ PHÍ không chấm được cho cả người đã mua.
+#
+# ══════════════════════════════════════════════════════════════════════════
+# TẮT ĐI CÓ NỚI LỎNG BẢO MẬT KHÔNG — KHÔNG
+# ══════════════════════════════════════════════════════════════════════════
+#
+# Khoá anon nằm trong bundle gửi xuống mọi trình duyệt. Nên "phải có JWT hợp
+# lệ" ở cổng vào thực chất chỉ có nghĩa là "phải có một khoá công khai" — nó
+# không chặn được ai.
+#
+# Hàm tự kiểm quyền bằng hai cửa, và cả hai đều mạnh hơn cổng vào:
+#
+#   1. `can_open_exercise` — hàm RLS của migration 019, chạy với ĐÚNG token
+#      của người gọi. Đây là chỗ quyết định bài trả phí có mở được không.
+#   2. `answer_key` chỉ đọc bằng `service_role`, không bao giờ rời khỏi hàm.
+#
+# Tắt cổng vào là TRẢ LẠI cho hàm cái token nó cần để kiểm cho đúng. Giữ bật
+# thì hàm mãi mãi không biết người gọi là ai, và cửa 1 luôn chạy dưới vai anon
+# — tức là lỏng hơn, không phải chặt hơn.
+#
+# ══════════════════════════════════════════════════════════════════════════
+# VÌ SAO GHI Ở ĐÂY, KHÔNG DÙNG CỜ `--no-verify-jwt`
+# ══════════════════════════════════════════════════════════════════════════
+#
+# Cờ dòng lệnh chỉ tồn tại trong lịch sử shell của một người. Người sau deploy
+# lại bằng `supabase functions deploy grade` là cấu hình lặng lẽ quay về mặc
+# định, và lỗi trên tái diễn — im lặng y như lần đầu.
+#
+# Ghi trong file thì nó nằm trong git, có chú thích, và đi theo mọi lần deploy.
+
+project_id = "cdszvnuaibnnkrvynyck"
+
+[functions.grade]
+verify_jwt = false
+
+# Hai hàm còn lại GIỮ NGUYÊN mặc định (verify_jwt = true):
+#
+#   grant-access   tự kiểm bằng `x-teacher-token`, không cần đọc JWT người gọi
+#   sepay-webhook  do SePay gọi, xác thực bằng chữ ký HMAC — không có JWT nào
+#                  để kiểm, và cổng vào bật cũng không cản được gì
+#
+# Không tắt hàng loạt: mỗi hàm tắt là một quyết định riêng, cần lý do riêng.
