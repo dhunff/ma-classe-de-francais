@@ -13,7 +13,26 @@
  * Nó nằm trong localStorage của máy giáo viên, và chỉ ở đó.
  */
 
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+/* GHIM PHIÊN BẢN — đừng đổi thành `@2`.
+ *
+ * `@supabase/supabase-js@2` trỏ tới bản v2 MỚI NHẤT tại thời điểm hàm khởi
+ * động nguội. Hành vi của hàm đổi được mà không ai deploy gì, và không có
+ * dòng nào trong git ghi lại việc đó.
+ *
+ * Đã trả giá ngày 28–30/08/2026: `auth.getUser()` thôi đọc header
+ * `Authorization` đặt ở `global.headers`. Hàm `grade` vì thế không nhận ra
+ * người gọi, và vì phần ghi `attempts` nằm trong `if (userId)` còn câu
+ * `return` nằm ngoài, nó vẫn chấm và vẫn TRẢ ĐIỂM ĐÚNG trong khi không lưu
+ * gì cả. Hai ngày đi tìm một lỗi không nằm trong mã của mình.
+ *
+ * 2.112.4 là bản `@2` đang phân giải ra tại lúc ghim (đo bằng header
+ * `X-Esm-Path` của esm.sh), tức là ĐÚNG bản đang chạy — ghim vào nó không
+ * đổi hành vi gì, chỉ khoá lại chuyện trôi.
+ *
+ * Nâng cấp thì sửa số ở đây, deploy, rồi KIỂM: một lượt thi phải để lại dòng
+ * trong `attempts`. Nâng phiên bản là một quyết định, không phải chuyện xảy
+ * ra sau lưng. */
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.112.4";
 
 /* CORS dùng chung — xem _shared/cors.ts. Bản khai tại chỗ trước đây thiếu
    `x-client-info` VÀ `apikey`, nên nút « Cấp quyền » của giáo viên bị trình

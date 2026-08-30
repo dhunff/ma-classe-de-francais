@@ -428,6 +428,25 @@ getComputedStyle(el).display        // phải là -webkit-box, không phải blo
 el.scrollHeight > el.clientHeight   // true nghĩa là thật sự có cắt
 ```
 
+**GHIM phiên bản thư viện trong Edge Function.** `@supabase/supabase-js@2`
+trỏ tới bản v2 mới nhất tại lúc hàm khởi động nguội — hành vi đổi được mà
+không ai deploy gì, và không có dòng nào trong git ghi lại.
+
+Ngày 28–30/08 mất hai ngày vì đúng chuyện đó: `auth.getUser()` thôi đọc
+header `Authorization` đặt ở `global.headers`, nên `grade` không nhận ra
+người gọi. Phần ghi `attempts` nằm trong `if (userId)` còn câu `return` nằm
+ngoài — hàm vẫn chấm, vẫn trả điểm ĐÚNG, và không lưu gì.
+
+Hai bài học đi kèm:
+
+- **Dùng `auth.getUser(token)`**, không gọi rỗng. Trong Deno không có nơi
+  lưu phiên, nên dạng rỗng phụ thuộc vào việc thư viện có tự đọc header hay
+  không — điều không nằm trong hợp đồng.
+- **Ghim vào bản `@2` ĐANG phân giải ra**, đo bằng header `X-Esm-Path`:
+  `curl -sI https://esm.sh/@supabase/supabase-js@2 | grep X-Esm-Path`.
+  Ghim vào đúng bản đang chạy thì thay đổi bằng không; chọn một số cũ hơn là
+  vừa ghim vừa nâng cấp ngược, và khi hỏng thì không biết vì cái nào.
+
 **Tailwind BỎ QUA lớp không tồn tại, không báo gì.** `tailwind.config.js` khai
 `danger: { DEFAULT, soft }` nên lớp đúng là `bg-danger-soft`; viết
 `bg-dangerSoft` thì không có lỗi, không cảnh báo, không CSS — phần tử chỉ mất
@@ -581,16 +600,6 @@ Xem `docs/roadmap-delf.md` — có nhật ký quyết định ở §5.
 
   Blob `s:mcf-practice` / `s:mcf-exercises` VẪN GIỮ làm sao lưu, cộng bản
   `__backup_016`. Chưa xoá, và đừng xoá cho tới khi đường ghi được thử tay.
-- **Edge Function chưa ghim phiên bản thư viện.** Cả ba hàm import
-  `https://esm.sh/@supabase/supabase-js@2`, trỏ tới bản v2 MỚI NHẤT tại thời
-  điểm khởi động nguội — hành vi đổi được mà không ai deploy gì. Đã trả giá
-  ngày 30/08: `auth.getUser()` thôi đọc header Authorization, và một buổi thi
-  được chấm mà không lưu, im lặng hoàn toàn.
-
-  Bản sửa `getUser(token)` deploy riêng trước để biết chắc nó là nguyên nhân.
-  Ghim phiên bản là bước sau, và là bước nên làm — nhưng nó đổi thư viện nên
-  phải deploy có chủ đích, không gộp vào một bản sửa khác.
-
 - **Không có Production Orale** — 25/100 điểm của kỳ thi, chưa có gì.
 - `s:mcf-submissions` vẫn giữ làm sao lưu, chưa xoá.
 

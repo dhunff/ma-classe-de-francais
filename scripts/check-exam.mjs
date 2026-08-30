@@ -360,5 +360,21 @@ t("đầu vào null không làm nổ", gomTheoKyNang(null).length, 0);
   t("grade kiểm bài thuộc đề trước khi gắn",
     fn.includes("from(\"exam_sections\")") && fn.includes("eq(\"exercise_id\", exerciseId)"), true);
 }
+/* Mọi Edge Function phải GHIM phiên bản thư viện.
+ *
+ * `@2` trỏ tới bản mới nhất tại thời điểm khởi động nguội, nên hành vi đổi
+ * được mà không ai deploy gì. Đã trả giá hai ngày 28–30/08: auth.getUser()
+ * thôi đọc header Authorization, và bài thi được chấm mà không lưu.
+ *
+ * Dùng includes() chứ không regex: chuỗi cần tìm đầy dấu chéo, và regex qua
+ * đường ống shell là chỗ đã sai bảy lần trong dự án này. */
+{
+  const ds = ["grade", "grant-access", "sepay-webhook"];
+  const troi = ds.filter((f) => {
+    const src = readFileSync(new URL(`../supabase/functions/${f}/index.ts`, import.meta.url), "utf8");
+    return src.includes("supabase-js@2\";");
+  });
+  t("không Edge Function nào để phiên bản trôi", troi, []);
+}
 console.log(fail ? `\n${pass} đạt, ${fail} hỏng` : `\n${pass} đạt, 0 hỏng`);
 process.exit(fail ? 1 : 0);
