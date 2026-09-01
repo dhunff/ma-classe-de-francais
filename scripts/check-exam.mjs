@@ -11,6 +11,16 @@ import { EXAM_STRUCTURE, sectionScore, verdict, ghiPhan, gomTheoKyNang, NGUONG_P
   from "../src/screens/exam/examPaper.js";
 import { readFileSync } from "node:fs";
 
+/* Bỏ chú thích trước khi soi bằng regex. BẮT BUỘC ở đây: chính các ca bên dưới
+   TRÍCH DẪN đoạn mã sai để giải thích vì sao không được viết nó. Không phân
+   biệt câu lệnh với lời bàn về câu lệnh thì cách duy nhất làm bộ kiểm xanh là
+   XOÁ đoạn giải thích — tức là nó phạt đúng việc viết chú thích tử tế.
+
+   Đây là lần thứ tư cùng cái bẫy này trong dự án. */
+const boChuThichJs = (src) =>
+  src.replace(/\/\*[\s\S]*?\*\//g, ' ')
+     .split(/\r?\n/).map((d) => d.replace(/^\s*\/\/.*$/, '')).join('\n');
+
 let pass = 0, fail = 0;
 const t = (ten, got, want) => {
   const ok = JSON.stringify(got) === JSON.stringify(want);
@@ -434,6 +444,25 @@ t("đầu vào null không làm nổ", gomTheoKyNang(null).length, 0);
      giáo viên một điều sai: đề không có PO vẫn là đề đủ. */
   t("đếm phần đủ bỏ qua phần không chấm", /!khongCham\(s\)/.test(src), true);
   t("cảnh báo thiếu phần bỏ qua phần không chấm", /!khongCham\(p\) &&/.test(src), true);
+}
+/* ══ ĐƯỜNG GHI ĐỀ THI ══
+ *
+ * Hai lỗi đã sống thật, lộ ra trong cùng một lượt bấm Lưu ngày 01/09. */
+{
+  const src = readFileSync(new URL("../src/shared/examStore.js", import.meta.url), "utf8");
+  const ma = boChuThichJs(src);
+
+  /* `Number(x) || 25` đổi 0 thành 25, vì 0 là falsy. Phần PO mang 0 điểm, nên
+     nó vừa làm sai dữ liệu vừa đâm vào ràng buộc 059 và làm hỏng cả lượt lưu. */
+  t("saveExam không dùng || 25 cho points", /points:[^,]*\|\|[^,]*25/.test(ma), false);
+  t("saveExam nhận điểm 0 là điểm hợp lệ", /Number.isFinite\(Number\(s.points\)\)/.test(ma), true);
+
+  /* Xoá-rồi-chèn là hai lời gọi rời — PostgREST không cho transaction. Chèn
+     hỏng sau khi xoá xong thì đề mất SẠCH phần thi, và nếu đề đang phát hành
+     thì học sinh mở ra gặp một đề rỗng. Đã xảy ra thật, phải khôi phục tay
+     bằng SQL — thứ giáo viên không làm được. */
+  t("saveExam chụp bản cũ trước khi xoá", /const banCu =/.test(ma), true);
+  t("saveExam lùi lại khi chèn hỏng", /insert\(banCu\)/.test(ma), true);
 }
 console.log(fail ? `\n${pass} đạt, ${fail} hỏng` : `\n${pass} đạt, 0 hỏng`);
 process.exit(fail ? 1 : 0);

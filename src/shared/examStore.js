@@ -142,6 +142,23 @@ export async function saveExam(exam, sections) {
   const examId = up.data?.id;
   if (!examId) return { ok: false, error: { message: "không lấy được id đề" } };
 
+  /* ── CHỤP BẢN CŨ TRƯỚC KHI XOÁ ──
+   *
+   * PostgREST không cho transaction, nên "xoá hết rồi chèn lại" là hai lời gọi
+   * rời. Lượt chèn hỏng sau khi lượt xoá đã xong thì đề mất SẠCH phần thi — và
+   * nếu đề đang phát hành thì học sinh mở ra gặp một đề rỗng.
+   *
+   * Không phải chuyện giả định: đã xảy ra ngày 01/09, một dòng PO mang 25 điểm
+   * bị ràng buộc từ chối, và một đề đang phát hành thành trống. Phải khôi phục
+   * tay bằng SQL — thứ giáo viên không làm được.
+   *
+   * Nên chụp lại bản cũ trước, để còn đường lùi. Một vòng mạng, đổi lấy việc
+   * không bao giờ để lại một đề dở dang. */
+  const cu = await supabase.from("exam_sections")
+    .select("code, exercise_id, minutes, points, ord").eq("exam_id", examId);
+  if (cu.error) return { ok: false, error: cu.error };
+  const banCu = (cu.data ?? []).map((r) => ({ ...r, exam_id: examId }));
+
   const del = await supabase.from("exam_sections").delete().eq("exam_id", examId);
   if (del.error) return { ok: false, error: del.error };
 
@@ -152,12 +169,42 @@ export async function saveExam(exam, sections) {
       code: s.code,
       exercise_id: s.exercise_id,
       minutes: Number(s.minutes) || 0,
-      points: Number(s.points) || 25,
+      /* KHÔNG dùng `|| 25`. Phần PO mang 0 điểm, và 0 là falsy — nên `|| 25`
+         lặng lẽ đổi nó thành 25, rồi đâm vào ràng buộc
+         `exam_sections_po_khong_diem` (migration 059) và làm HỎNG CẢ LƯỢT LƯU.
+
+         Đã xảy ra thật, và cái giá không dừng ở một thông báo lỗi: xoá và chèn
+         là hai lời gọi rời (PostgREST không cho transaction), nên lượt xoá đã
+         chạy xong trước khi lượt chèn bị từ chối — đề đang phát hành bỗng
+         không còn phần nào. Phải khôi phục tay bằng SQL.
+
+         Nếu không có ràng buộc ở 059 thì mọi dòng PO đã lặng lẽ mang 25 điểm,
+         và sai số chỉ lộ ra ở một bảng thống kê nào đó rất lâu sau. */
+      points: Number.isFinite(Number(s.points)) ? Number(s.points) : 25,
       ord: i,
     }));
   if (rows.length) {
     const ins = await supabase.from("exam_sections").insert(rows);
-    if (ins.error) return { ok: false, error: ins.error };
+    if (ins.error) {
+      /* Trả đề về đúng như trước khi bấm Lưu. Thất bại một lượt sửa là chuyện
+         bình thường; để lại một đề rỗng thì không.
+
+         Lượt lùi cũng có thể hỏng (mất mạng giữa chừng). Khi đó phải NÓI RA
+         thật rõ, kèm số phần đã mất — im lặng ở đây nghĩa là giáo viên tin đề
+         vẫn nguyên trong khi nó đã trống. */
+      if (banCu.length) {
+        const lui = await supabase.from("exam_sections").insert(banCu);
+        if (lui.error) {
+          return { ok: false, error: { message:
+            "Không lưu được: " + ins.error.message
+            + " — VÀ không khôi phục được bản cũ: " + lui.error.message
+            + `. Đề đang MẤT ${banCu.length} phần. Đừng đóng trang; `
+            + "báo người quản trị trước khi thao tác tiếp." } };
+        }
+      }
+      return { ok: false, error: { message:
+        ins.error.message + " (đề đã được trả về như cũ, không mất gì)" } };
+    }
   }
 
   /* ── ĐỌC LẠI ĐỂ CHẮC ──
