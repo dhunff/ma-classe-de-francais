@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { Plus, Trash2, Eye, EyeOff, Save, AlertTriangle, Headphones, BookOpen, PenLine, ChevronUp, ChevronDown } from "lucide-react";
+import { Plus, Trash2, Eye, EyeOff, Save, AlertTriangle, Headphones, BookOpen, PenLine, Mic, ChevronUp, ChevronDown } from "lucide-react";
 import { loadPractice } from "../../shared/exerciseStore.js";
 import { loadExams, saveExam, deleteExam, cotGrilleSanSang } from "../../shared/examStore.js";
-import { EXAM_STRUCTURE } from "../exam/examPaper.js";
+import { EXAM_STRUCTURE, khongCham } from "../exam/examPaper.js";
 import GrilleEditor, { grilleLuuDuoc } from "./GrilleEditor.jsx";
 
 /* Soạn đề thi thử — màn hình của giáo viên.
@@ -23,7 +23,17 @@ import GrilleEditor, { grilleLuuDuoc } from "./GrilleEditor.jsx";
  * chặn, và học sinh là người phát hiện ra.
  */
 
-const ICON = { CO: Headphones, CE: BookOpen, PE: PenLine };
+/* Mọi mã trong EXAM_STRUCTURE phải có một icon ở đây.
+   Thiếu một dòng thì `const Icon = ICON[phan.code]` ra undefined, và React
+   ném "Element type is invalid" — trắng cả màn soạn đề, không phải thiếu một
+   hình. Đúng chuyện đã xảy ra khi PO được thêm vào cấu trúc mà quên dòng này;
+   check:exam nay canh chỗ đó. */
+const ICON = { CO: Headphones, CE: BookOpen, PE: PenLine, PO: Mic };
+
+/* Số phần CHẤM ĐIỂM đã có bài. Phần không chấm không nằm trong phép đếm
+   "đề đã đủ chưa" — nó không làm đề thiếu, và cũng không làm đề đủ. */
+const soPhanCham = (sections) =>
+  new Set((sections ?? []).filter((s) => !khongCham(s)).map((s) => s.code)).size;
 
 const coSkill = (ex, skill) =>
   Array.isArray(ex?.skills) ? ex.skills.includes(skill) : ex?.skill === skill;
@@ -164,12 +174,20 @@ export default function ExamComposer({ t }) {
                   </div>
                   <div className="mt-1 text-xs text-soft">
                     {/* Đếm KỸ NĂNG, không đếm dòng: một đề 6 bài chia đều ba kỹ
-                        năng vẫn là « 3/3 phần », không phải « 6/3 ». */}
-                    {new Set(e.sections.map((s) => s.code)).size}/3 phần
+                        năng vẫn là « 3/3 phần », không phải « 6/3 ».
+
+                        Và chỉ đếm phần CHẤM ĐIỂM. PO là tuỳ chọn — đề không có
+                        nó vẫn là đề đủ, học sinh còn bỏ chọn được ở màn chờ.
+                        Tính PO vào đây thì mọi đề đang có bỗng hiện « thiếu
+                        phần » màu đỏ, và lời cảnh báo đó là sai. */}
+                    {soPhanCham(e.sections)}/3 phần
                     {e.sections.length > 3 && ` · ${e.sections.length} bài`}
                     {` · ${e.duration_min ?? 0}′`}
-                    {new Set(e.sections.map((s) => s.code)).size < 3 && (
+                    {soPhanCham(e.sections) < 3 && (
                       <span className="ml-2 font-bold text-danger">thiếu phần</span>
+                    )}
+                    {e.sections.some((s) => s.code === "PO") && (
+                      <span className="ml-2 font-semibold text-primary">+ PO</span>
                     )}
                   </div>
                 </div>
@@ -210,7 +228,7 @@ export default function ExamComposer({ t }) {
   /* Kỹ năng CHƯA CÓ BÀI NÀO. Bản cũ đếm dòng có exercise_id rỗng — hình dạng
      đó không còn tồn tại từ khi sections chỉ chứa bài đã chọn. */
   const thieu = EXAM_STRUCTURE[draft.exam.level]
-    .filter((p) => !draft.sections.some((s) => s.code === p.code));
+    .filter((p) => !khongCham(p) && !draft.sections.some((s) => s.code === p.code));
 
   return (
     <div className="mx-auto max-w-3xl py-6">
@@ -291,9 +309,14 @@ export default function ExamComposer({ t }) {
         {EXAM_STRUCTURE[draft.exam.level].map((phan) => {
           const daChon = draft.sections.filter((s) => s.code === phan.code);
           const Icon = ICON[phan.code];
+          /* Bài không có câu hỏi nào thì vô dụng — TRỪ phần không chấm.
+             Bài nói không có câu để trả lời: đề bài nằm ở `consigne`, và màn
+             thi thay danh sách câu hỏi bằng bộ ghi âm. Giữ nguyên điều kiện cũ
+             cho PO thì thư viện luôn báo "chưa có bài" dù bài đã soạn xong, và
+             không có gì chỉ ra vì sao. */
           const ungVien = kho.filter(
             (ex) => ex.level === draft.exam.level && coSkill(ex, phan.skill)
-                 && (ex.questions?.length ?? 0) > 0,
+                 && (khongCham(phan) || (ex.questions?.length ?? 0) > 0),
           );
           /* Tên nào xuất hiện quá một lần TRONG CHÍNH danh sách này. Tính theo
              danh sách đã lọc, không theo cả thư viện: hai bài trùng tên nhưng
@@ -347,7 +370,7 @@ export default function ExamComposer({ t }) {
                 <Icon size={16} className="text-primary" />
                 <span className="text-sm font-bold text-ink">{phan.code} · {phan.label}</span>
                 <span className="ml-auto text-xs text-soft">
-                  {phan.minutes}′ · /{phan.points}
+                  {phan.minutes}′ · {khongCham(phan) ? "không chấm điểm" : `/${phan.points}`}
                   {daChon.length > 0 && ` · ${daChon.length} bài`}
                 </span>
               </div>
@@ -355,7 +378,15 @@ export default function ExamComposer({ t }) {
               {/* Đồng hồ và điểm thuộc về CẢ PHẦN, không phải từng bài. Nói ra
                   ở đây vì giáo viên thêm bài thứ ba rất dễ tưởng đề dài thêm
                   25 phút nữa. */}
-              {daChon.length > 1 && (
+              {khongCham(phan) && (
+                <p className="m-0 mt-2 text-xs text-soft">
+                  Phần tuỳ chọn. Học sinh ghi âm để tự nghe lại và bạn nghe ở mục
+                  « Bài nói »; hệ thống không cho điểm, và học sinh bỏ chọn được
+                  phần này khi vào thi. Đề không có PO vẫn là đề đủ.
+                </p>
+              )}
+
+              {daChon.length > 1 && !khongCham(phan) && (
                 <p className="m-0 mt-2 text-xs text-soft">
                   {daChon.length} bài dùng chung {phan.minutes} phút và {phan.points} điểm của phần này.
                 </p>

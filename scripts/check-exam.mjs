@@ -413,5 +413,27 @@ t("đầu vào null không làm nổ", gomTheoKyNang(null).length, 0);
   });
   t("không Edge Function nào để phiên bản trôi", troi, []);
 }
+/* ══ MÀN SOẠN ĐỀ PHẢI CHỊU ĐƯỢC MỌI MÃ TRONG CẤU TRÚC ══
+ *
+ * ExamComposer lặp theo EXAM_STRUCTURE và tra icon bằng `ICON[phan.code]`.
+ * Thêm một mã vào cấu trúc mà quên dòng icon thì Icon là undefined, React ném
+ * "Element type is invalid", và TRẮNG cả màn soạn đề — không phải thiếu một
+ * cái hình. Đúng chuyện đã xảy ra khi PO được thêm vào cấu trúc: bản vá làm
+ * hỏng một màn hình chẳng liên quan gì tới phần nói, và không có gì báo.
+ *
+ * Bộ kiểm này để nó không xảy ra lần nữa với mã tiếp theo. */
+{
+  const src = readFileSync(new URL("../src/screens/teacher/ExamComposer.jsx", import.meta.url), "utf8");
+  const icon = (src.match(/const ICON = \{([^}]*)\}/) || [])[1] ?? "";
+  const coIcon = (ma) => new RegExp("\\b" + ma + "\\s*:").test(icon);
+  const ma = [...new Set(Object.values(EXAM_STRUCTURE).flat().map((x) => x.code))];
+  t("mọi mã phần thi đều có icon ở ExamComposer", ma.filter((x) => !coIcon(x)), []);
+
+  /* Phần KHÔNG CHẤM không được tính vào "đề đã đủ chưa". Tính vào thì mọi đề
+     đang có bỗng hiện « thiếu phần » màu đỏ, và cảnh báo lúc phát hành nói với
+     giáo viên một điều sai: đề không có PO vẫn là đề đủ. */
+  t("đếm phần đủ bỏ qua phần không chấm", /!khongCham\(s\)/.test(src), true);
+  t("cảnh báo thiếu phần bỏ qua phần không chấm", /!khongCham\(p\) &&/.test(src), true);
+}
 console.log(fail ? `\n${pass} đạt, ${fail} hỏng` : `\n${pass} đạt, 0 hỏng`);
 process.exit(fail ? 1 : 0);

@@ -621,6 +621,17 @@ Xem `docs/roadmap-delf.md` — có nhật ký quyết định ở §5.
   đầu với `auth.uid()`. Không có policy xoá và không có policy sửa — ghi lại
   thì tạo file mới, giữ được cả quá trình luyện tập.
 
+  **`exam_sections.code` có một CHECK đóng** (`CO/CE/PE/PO`, migration 059).
+  Trước 059 nó chỉ nhận ba mã, nên toàn bộ tính năng PO — cấu trúc, ô bỏ
+  chọn, bộ ghi âm, kho file riêng, màn nghe — không tới được ai, vì không
+  ghép nổi PO vào một đề nào. Thêm mã phần thi mới thì phải sửa cả ràng buộc
+  này. Dòng PO còn bị chặn cứng `points = 0`.
+
+  **Không bộ kiểm nào bắt được chuyện đó.** `check:exam` đọc mã nguồn,
+  `check:db` đọc CỘT chứ không đọc ràng buộc CHECK — cả hai xanh trong khi
+  tính năng chết ở tầng dưới cùng. Chỗ canh hiện nay là migration 060, và nó
+  chỉ chạy một lần lúc push. Khoảng trống này vẫn còn.
+
   Giáo viên nghe ở `/professeur/oral`. Màn này KHÔNG có ô điểm — cùng lý do
   ở trên. Nhận xét đi đường THÔNG BÁO đang có, không dựng bảng mới: hệ thống
   đã có cách đưa chữ từ giáo viên tới đúng một học sinh, kèm chuông và dấu đã
