@@ -1,6 +1,6 @@
 import {
   LayoutDashboard, BookOpen, Users, BarChart3, Dumbbell,
-  ClipboardList, CheckSquare, CalendarDays, Settings, Lightbulb, Timer, PenLine, Trophy,
+  ClipboardList, CheckSquare, CalendarDays, Settings, Lightbulb, Timer, PenLine, Trophy, Mic,
 } from "lucide-react";
 
 /* Điều hướng của vỏ app.
@@ -29,6 +29,10 @@ export const TEACHER_NAV = [
   /* Soạn đề thi thử — cũng là route riêng, không có `view`. */
   { to: "/professeur/examens", labelKey: "nav.exams", Icon: Timer },
   { to: "/professeur/copies", labelKey: "nav.grading", Icon: PenLine },
+  /* Nghe bài nói. Mục RIENG, không gộp vào « Chấm bài viết »: hai màn hình
+     làm hai việc khác nhau — một cái cho điểm, một cái cố ý không. Gộp lại
+     thì người dùng chờ có ô điểm ở cả hai. */
+  { to: "/professeur/oral", labelKey: "nav.oral", Icon: Mic },
 ];
 
 export const STUDENT_NAV = [

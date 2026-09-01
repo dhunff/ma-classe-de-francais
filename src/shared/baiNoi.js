@@ -97,3 +97,74 @@ export async function dsBaiNoi({ examId, exerciseId }) {
       luc: Number((f.name.match(/-(\d{10,})\./) || [])[1]) || null,
     }));
 }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   PHÍA GIÁO VIÊN
+   ══════════════════════════════════════════════════════════════════════════
+
+   Không có bảng nào, nên không truy vấn được — phải DUYỆT cây thư mục:
+
+       bai-noi/<user_id>/<exam_id>/<exercise_id>-<mốc>.webm
+
+   Ba tầng, ba lượt `list()`. Đắt hơn một câu SQL, và đó là cái giá đã chọn khi
+   quyết định không dựng bảng phụ (xem đầu file). Đắt ở đây nghĩa là vài chục
+   lượt gọi cho một lớp vài chục em — chấp nhận được cho một màn hình giáo viên
+   mở vài lần một tuần, và rẻ hơn nhiều so với một bảng lệch với kho file.
+
+   Nếu lớp lớn tới mức chậm thấy rõ thì lúc đó mới dựng bảng — chứ không phải
+   dựng trước cho một vấn đề chưa có.
+
+   RLS cho phép giáo viên đọc MỌI file trong kho (policy `bai_noi_giao_vien_doc`).
+   Với học sinh, cùng đoạn mã này chỉ thấy thư mục của chính họ — nên hàm không
+   cần tự kiểm vai, nhưng cũng không được dựa vào đó: giao diện gọi nó nằm sau
+   `RequireRole role="prof"`. */
+
+/* Đọc một tầng thư mục. Trả về [] khi lỗi thay vì ném — một thư mục hỏng không
+   được làm mất cả danh sách. */
+async function _liet(duong, gioiHan = 100) {
+  const { data, error } = await supabase.storage.from(KHO)
+    .list(duong, { limit: gioiHan, sortBy: { column: "name", order: "asc" } });
+  return error ? [] : (data ?? []);
+}
+
+/* `list()` trả cả file lẫn thư mục. Thư mục KHÔNG có `id` — đó là cách duy
+   nhất phân biệt, vì tên thư mục cũng có thể trông như tên file. */
+const _laThuMuc = (x) => x && x.id == null;
+
+export async function dsBaiNoiMoiNguoi({ toiDaHocSinh = 60 } = {}) {
+  const nguoi = (await _liet("", toiDaHocSinh)).filter(_laThuMuc);
+  const ra = [];
+
+  for (const n of nguoi) {
+    const uid = n.name;
+    const deThi = (await _liet(uid, 50)).filter(_laThuMuc);
+    const bai = [];
+
+    for (const d of deThi) {
+      for (const f of await _liet(`${uid}/${d.name}`, 100)) {
+        if (_laThuMuc(f)) continue;
+        bai.push({
+          ten: f.name,
+          examId: d.name,
+          duongDan: `${uid}/${d.name}/${f.name}`,
+          bytes: f.metadata?.size ?? 0,
+          /* Mốc lấy từ TÊN FILE, không từ `created_at`: created_at là lúc tải
+             lên xong, lệch với lúc ghi âm khi mạng chậm. */
+          luc: Number((f.name.match(/-(\d{10,})\./) || [])[1]) || null,
+        });
+      }
+    }
+
+    /* Thư mục rỗng vẫn hiện được ở `list()` sau khi file bị dọn tay. Bỏ qua —
+       "học sinh này có 0 bài" và "học sinh này chưa từng ghi" trông giống nhau
+       trên màn hình mà chỉ cái sau là thật. */
+    if (!bai.length) continue;
+
+    bai.sort((a, b) => (b.luc ?? 0) - (a.luc ?? 0));
+    ra.push({ userId: uid, bai });
+  }
+
+  /* Ai mới ghi thì lên đầu: giáo viên mở màn này để nghe bài MỚI. */
+  ra.sort((a, b) => (b.bai[0]?.luc ?? 0) - (a.bai[0]?.luc ?? 0));
+  return ra;
+}

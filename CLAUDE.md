@@ -621,7 +621,11 @@ Xem `docs/roadmap-delf.md` — có nhật ký quyết định ở §5.
   đầu với `auth.uid()`. Không có policy xoá và không có policy sửa — ghi lại
   thì tạo file mới, giữ được cả quá trình luyện tập.
 
-  Còn treo: giáo viên chưa có màn nghe và nhận xét bài nói.
+  Giáo viên nghe ở `/professeur/oral`. Màn này KHÔNG có ô điểm — cùng lý do
+  ở trên. Nhận xét đi đường THÔNG BÁO đang có, không dựng bảng mới: hệ thống
+  đã có cách đưa chữ từ giáo viên tới đúng một học sinh, kèm chuông và dấu đã
+  đọc. Đánh đổi: nhận xét không dính vào file, nên phần mở đầu tin nhắn tự
+  nói rõ nó nói về bản ghi nào.
 - `s:mcf-submissions` vẫn giữ làm sao lưu, chưa xoá.
 
 

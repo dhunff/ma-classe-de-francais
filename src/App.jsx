@@ -9,6 +9,7 @@ import { ROLE_HOME, TEACHER_NAV, STUDENT_NAV } from './layout/navItems.js'
 import ExamMode from './screens/exam/ExamMode.jsx'
 import ExamComposer from './screens/teacher/ExamComposer.jsx'
 import PEGrading from './screens/teacher/PEGrading.jsx'
+import BaiNoiGiaoVien from './screens/teacher/BaiNoiGiaoVien.jsx'
 import ExamResults from './screens/student/ExamResults.jsx'
 
 import { C } from './shared/tokens.js'
@@ -256,6 +257,7 @@ function AppInner() {
               <Route path="/professeur/carnet" element={<TipsEditor t={t} />} />
               <Route path="/professeur/examens" element={<ExamComposer t={t} />} />
               <Route path="/professeur/copies" element={<PEGrading />} />
+              <Route path="/professeur/oral" element={<BaiNoiGiaoVien />} />
 
               <Route path="/professeur/*" element={<Navigate to="/professeur/dashboard" replace />} />
             </Route>
