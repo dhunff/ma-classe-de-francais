@@ -224,6 +224,22 @@ vĩnh viễn.
 Cách phân biệt trong ba mươi giây: nhân bản phần tử, bỏ class `transition`,
 gắn vào DOM rồi đo. Ra màu đúng nghĩa là CSS không sai, chỉ có phép đo sai.
 
+**Bẫy này áp cho MỌI thuộc tính có transition, không riêng màu.** Ngày 03/09
+nó quay lại ở `transform`, và triệu chứng đọc còn giống một lỗi thật hơn: rê
+chuột khỏi thẻ bộ rồi đo, `matches(':hover')` trả `false` mà `transform` vẫn
+là `translateY(-6px)`, mũi tên vẫn `translateX(6px)`, bóng vẫn ở mức hover.
+Đọc thẳng thì đó là "hiệu ứng dính, không bao giờ trở về" — tôi đã định đi
+sửa một thứ hoàn toàn đúng.
+
+Lý do y hệt: chuột rời đi, transition NGƯỢC bắt đầu, tab không vẽ khung nên nó
+đóng băng ở khung đầu — tức đúng giá trị hover. Phép nhân bản trả về
+`transform: none` và bóng nghỉ, và bản gốc cũng tự về `none` ngay khi trang vẽ
+lại.
+
+Đoạn trên viết cho `background-color` nên tôi không nhận ra ngay. Khi đo bất kỳ
+thuộc tính nào có `transition`, hỏi trước: **giá trị này có đang trên đường đi
+tới đâu đó không?**
+
 **Cờ emoji không hiện trên Windows** — nó vẽ thành hai chữ cái vùng, nên
 `🇻🇳 VN` đọc ra "VN VN".
 
