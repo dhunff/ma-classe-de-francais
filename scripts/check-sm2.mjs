@@ -307,6 +307,15 @@ const MOC = new Date(2026, 8, 2);      // 02/09/2026, giờ địa phương
 
   t("màn hình đọc kết quả trước khi gỡ khỏi danh sách", /if \(!kq\.ok\)/.test(man), true);
   t("nói ra số thẻ vừa được làm mới", /soTheLamMoi/.test(man), true);
+
+  /* Hàm phải TỪ CHỐI người không phải giáo viên, không trả rỗng.
+     Bản 069 viết phép kiểm vai vào mệnh đề `where`, nên người không có quyền
+     nhận 0 dòng — và giao diện đọc 0 dòng là « đã viết hết rồi », tức là
+     chúc mừng đúng cái thất bại vừa xảy ra. Sửa ở 071. */
+  const sql071 = readFileSync(new URL("../supabase/migrations/071_loi_giai_khong_im_lang.sql", import.meta.url), "utf8");
+  t("danh sách ném lỗi khi không phải giáo viên",
+    /if not public\.is_teacher\(\)/.test(sql071), true);
+  t("màn hình có trạng thái riêng cho lỗi vai", /loiVai/.test(man), true);
 }
 console.log(fail ? `\n${pass} đạt, ${fail} hỏng` : `\n${pass} đạt, 0 hỏng`);
 process.exit(fail ? 1 : 0);

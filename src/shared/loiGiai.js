@@ -14,7 +14,14 @@ import { supabase } from "../storageShim.js";
  * "không gọi được máy chủ" là việc phải xử lý. */
 export async function docCauCanLoiGiai(gioiHan = 40) {
   const { data, error } = await supabase.rpc("cau_can_loi_giai", { p_gioi_han: gioiHan });
-  if (error) return null;
+  if (error) {
+    /* 42501 = hàm từ chối vì người gọi không phải giáo viên (migration 071).
+       Tách riêng khỏi lỗi mạng: hai chuyện cần hai câu khác nhau, và trước 071
+       trường hợp này còn tệ hơn — hàm trả về RỖNG, giao diện đọc là "đã viết
+       hết rồi", và người không có quyền nhận một lời chúc mừng. */
+    if (error.code === "42501") return { loi: "khong_phai_giao_vien" };
+    return null;
+  }
   return data ?? [];
 }
 

@@ -85,9 +85,15 @@ export default function LoiGiaiUuTien() {
   const [ds, setDs] = useState(undefined);   // undefined = đang tải, null = lỗi
   const [tin, setTin] = useState("");
 
+  const [loiVai, setLoiVai] = useState(false);
+
   const tai = async () => {
-    setDs(undefined); setTin("");
-    setDs(await docCauCanLoiGiai(40));
+    setDs(undefined); setTin(""); setLoiVai(false);
+    const kq = await docCauCanLoiGiai(40);
+    /* Ba kết quả, ba trạng thái. Không gộp: "không có quyền" mà hiện thành
+       danh sách rỗng là chúc mừng đúng cái thất bại vừa xảy ra. */
+    if (kq && kq.loi === "khong_phai_giao_vien") { setLoiVai(true); setDs([]); return; }
+    setDs(kq);
   };
 
   useEffect(() => { tai(); }, []);
@@ -126,6 +132,15 @@ export default function LoiGiaiUuTien() {
 
       {ds === undefined ? (
         <p className="mt-10 text-center text-sm text-soft">Đang tải…</p>
+      ) : loiVai ? (
+        <div className="mt-8 rounded-2xl bg-danger-soft p-6 text-center">
+          <AlertTriangle size={20} className="mx-auto text-danger" />
+          <p className="m-0 mt-2 font-bold text-ink">Tài khoản này không có quyền giáo viên</p>
+          <p className="m-0 mt-1 text-sm text-ink">
+            Máy chủ không nhận ra bạn là giáo viên. Đăng xuất rồi đăng nhập lại;
+            nếu vẫn vậy thì phiên đang thiếu vai — báo người quản trị.
+          </p>
+        </div>
       ) : ds === null ? (
         /* "Không đọc được" KHÁC "đã viết hết". Gộp lại là chúc mừng người vừa
            gặp sự cố. */
