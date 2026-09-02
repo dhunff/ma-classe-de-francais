@@ -268,5 +268,45 @@ const MOC = new Date(2026, 8, 2);      // 02/09/2026, giờ địa phương
   t("hàm viết lại vẫn lọc theo user", /where t\.user_id = ai/.test(lenh), true);
   t("hàm viết lại vẫn là security definer", /security definer/.test(lenh), true);
 }
+/* ══ VIẾT LỜI GIẢI PHẢI KÉO THEO THẺ ĐÃ SINH ══
+ *
+ * `cards.back` là bản CHÉP của `questions.explanation` tại lúc thẻ được sinh —
+ * cố ý, để buổi ôn không phải join sang bảng đề. Nhưng thẻ không bao giờ sinh
+ * lại (ràng buộc unique), nên nếu đường ghi lời giải không đè lên những thẻ
+ * còn mang câu dự phòng thì giáo viên viết xong, thấy "đã lưu", và phía học
+ * sinh không có gì đổi — mãi mãi.
+ *
+ * Đây là nửa dễ quên nhất của cả tính năng, và nó im lặng tuyệt đối. */
+{
+  const sql = readFileSync(new URL("../supabase/migrations/069_loi_giai_uu_tien.sql", import.meta.url), "utf8")
+    .replace(/\/\*[\s\S]*?\*\//g, " ")
+    .split(/\r?\n/).map((x) => x.replace(/--.*$/, "")).join("\n");
+  const man = readFileSync(new URL("../src/screens/teacher/LoiGiaiUuTien.jsx", import.meta.url), "utf8");
+
+  t("lưu lời giải cũng làm mới thẻ",
+    /update public\.cards[\s\S]{0,200}?set back = /.test(sql), true);
+
+  /* Chỉ đè lên thẻ còn mang câu dự phòng. Đè hết thì một lần sửa lời giải sẽ
+     xoá trắng nội dung của những thẻ đang có nội dung thật. */
+  t("chỉ đè thẻ còn trống nội dung",
+    /back like 'Câu này chưa có lời giải thích/.test(sql), true);
+
+  /* Hàm security definer chạy vòng qua RLS, nên phép kiểm vai phải nằm TRONG
+     câu. Thiếu nó là mọi học sinh đọc được danh sách câu hỏi kèm số người sai,
+     và ghi được lời giải cho cả thư viện. */
+  t("danh sách kiểm vai giáo viên trong câu", /public\.is_teacher\(\)/.test(sql), true);
+  t("đường ghi kiểm vai giáo viên", /if not public\.is_teacher\(\)/.test(sql), true);
+
+  /* Câu `vf` KHÔNG cần explanation — chúng đã có `justification` hiện ngay dưới
+     đáp án. Đưa chúng vào danh sách là tạo ra 25 việc không có thật. */
+  t("bỏ câu vf khỏi danh sách việc", /q\.type <> 'vf'/.test(sql), true);
+
+  /* Đếm NGƯỜI và đếm LƯỢT là hai con số khác nhau: một người làm lại mười lần
+     trông y hệt mười người cùng sai nếu chỉ đếm lượt. */
+  t("đếm cả số người lẫn số lượt", /count\(distinct t\.user_id\)/.test(sql), true);
+
+  t("màn hình đọc kết quả trước khi gỡ khỏi danh sách", /if \(!kq\.ok\)/.test(man), true);
+  t("nói ra số thẻ vừa được làm mới", /soTheLamMoi/.test(man), true);
+}
 console.log(fail ? `\n${pass} đạt, ${fail} hỏng` : `\n${pass} đạt, 0 hỏng`);
 process.exit(fail ? 1 : 0);

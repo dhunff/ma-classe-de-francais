@@ -586,7 +586,7 @@ Phần lớn là việc không hào nhoáng. Cố ý.
 | Chuyển `exercises` / `questions` sang bảng thật, theo khuôn 005 | Chặn mọi thứ phía sau |
 | Thêm `attempts` + `answers` | Không có nó thì không có phân tích |
 | Gắn nhãn `competence` + `point_gram` cho 415 câu | Việc tay, làm một lần |
-| Viết `explanation` cho các câu hay sai | Hiện **0/415 câu** có |
+| ~~Viết `explanation` cho các câu hay sai~~ | 207/373 câu có. Màn xếp thứ tự ưu tiên: `/professeur/loi-giai` (02/09) |
 | Neo `evidence` cho bài CE | Tính năng khác biệt lớn nhất |
 
 Việc đầu tiên nhỏ và nên làm ngay: bảng, dữ liệu và policy đều đã có, chỉ thiếu

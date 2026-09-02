@@ -37,7 +37,7 @@ npm run check:bareme       # mốc cho điểm PE, nhãn Việt, đối chiếu 
 npm run check:identity     # luật @username + hồ sơ, JS ↔ SQL ↔ i18n (61 ca)
 npm run check:notifs       # gửi thông báo + chuông + luật RPC (38 ca)
 npm run check:hoatdong     # nhật ký theo ngày + chuỗi ngày học (28 ca)
-npm run check:sm2          # lịch ôn thẻ ghi nhớ SM-2 (57 ca)
+npm run check:sm2          # thẻ ghi nhớ SM-2 + đường viết lời giải (73 ca)
 npm run check:css          # lớp Tailwind có thật sinh ra CSS không
 npm run check:db           # database THẬT có khớp giả định của mã nguồn không
 ```
@@ -691,6 +691,30 @@ Xem `docs/roadmap-delf.md` — có nhật ký quyết định ở §5.
   KHÔNG gỡ được quyền cấp ở mức BẢNG. Lần này bộ kiểm ở 064 bắt được và cả
   lượt push dừng lại — 065 thu mức bảng rồi cấp lại năm cột. Đây chính là lý
   do phép kiểm phải nằm ở lần Run riêng và phải THẬT SỰ đo.
+- **Câu cần lời giải — xong 02/09** (migration 069/070), `/professeur/loi-giai`.
+
+  Thư viện thiếu 166 lời giải, gần hết là bài đọc–nghe hiểu. Trước đó điều này
+  chỉ làm trang kết quả nghèo đi; từ khi có thẻ ghi nhớ nó thành chặn đường —
+  đo được 18/18 thẻ đầu tiên đều rỗng nghĩa, vì chỗ người ta SAI và chỗ có lời
+  giải gần như không giao nhau.
+
+  Bày cả 166 câu là bày một việc không bao giờ xong. Nhưng chúng KHÔNG đáng
+  giá như nhau, và dữ liệu để xếp thứ tự đã nằm sẵn trong `answers` từ lâu —
+  chỉ là chưa ai hỏi. Xếp theo SỐ NGƯỜI từng sai; câu đứng đầu hiện có 3 học
+  sinh sai 9 lượt.
+
+  Đếm NGƯỜI và đếm LƯỢT là hai con số, hiện cả hai: một người làm lại mười lần
+  trông y hệt mười người cùng sai nếu chỉ đếm lượt.
+
+  Câu `vf` bị loại khỏi danh sách — chúng đã có `justification` hiện ngay dưới
+  đáp án, đưa vào là tạo ra 25 việc không có thật.
+
+  **NỬA DỄ QUÊN NHẤT: viết lời giải phải KÉO THEO thẻ đã sinh.** `cards.back`
+  là bản chép của `explanation` tại lúc thẻ được sinh, và thẻ không bao giờ
+  sinh lại (ràng buộc unique). Không đè lên thẻ còn mang câu dự phòng thì giáo
+  viên viết xong, thấy "đã lưu", và phía học sinh không đổi gì — mãi mãi, im
+  lặng tuyệt đối. `luu_loi_giai` làm cả hai việc và TRẢ VỀ số thẻ vừa làm mới;
+  giao diện nói ra con số đó.
 - `s:mcf-submissions` vẫn giữ làm sao lưu, chưa xoá.
 
 

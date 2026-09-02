@@ -1,6 +1,6 @@
 import {
   LayoutDashboard, BookOpen, Users, BarChart3, Dumbbell,
-  ClipboardList, CheckSquare, CalendarDays, Settings, Lightbulb, Timer, PenLine, Trophy, Mic, Layers,
+  ClipboardList, CheckSquare, CalendarDays, Settings, Lightbulb, Timer, PenLine, Trophy, Mic, Layers, Lightbulb as Bulb,
 } from "lucide-react";
 
 /* Điều hướng của vỏ app.
@@ -33,6 +33,10 @@ export const TEACHER_NAV = [
      làm hai việc khác nhau — một cái cho điểm, một cái cố ý không. Gộp lại
      thì người dùng chờ có ô điểm ở cả hai. */
   { to: "/professeur/oral", labelKey: "nav.oral", Icon: Mic },
+  /* Viết lời giải, xếp theo số học sinh từng sai. Route riêng, không có
+     `view`. Đặt cạnh hai màn chấm vì cùng một loại việc: nhìn vào chỗ học
+     sinh chưa hiểu rồi làm gì đó về nó. */
+  { to: "/professeur/loi-giai", labelKey: "nav.explanations", Icon: Bulb },
 ];
 
 export const STUDENT_NAV = [
