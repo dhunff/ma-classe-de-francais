@@ -10,6 +10,7 @@ import ExamMode from './screens/exam/ExamMode.jsx'
 import ExamComposer from './screens/teacher/ExamComposer.jsx'
 import PEGrading from './screens/teacher/PEGrading.jsx'
 import BaiNoiGiaoVien from './screens/teacher/BaiNoiGiaoVien.jsx'
+import TheGhiNho from './screens/student/TheGhiNho.jsx'
 import ExamResults from './screens/student/ExamResults.jsx'
 
 import { C } from './shared/tokens.js'
@@ -290,6 +291,7 @@ function AppInner() {
                   mục menu bị bỏ. */}
               <Route path="/etudiant/progression" element={studentRoute("progress")} />
               <Route path="/etudiant/resultats" element={<ExamResults />} />
+              <Route path="/etudiant/the-ghi-nho" element={<TheGhiNho />} />
 
 
 

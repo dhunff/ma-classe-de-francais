@@ -1,5 +1,6 @@
 import { supabase } from "../storageShim.js";
 import { ghiHoatDong } from "./hoatDong.js";
+import { sinhTheTuLoiSai, datLaiTheSai } from "./theGhiNho.js";
 
 /* Gọi Edge Function `grade` để chấm bài ở máy chủ.
  *
@@ -64,6 +65,24 @@ export async function gradeRemote(exerciseId, answers, opts = {}) {
      * bài rơi về chấm ở trình duyệt — chưa chắc có gì được lưu, nên đếm nó
      * vào chuỗi là đếm một ngày học có thể không tồn tại. */
     ghiHoatDong({ soMuc: 1 });
+
+    /* Thẻ ghi nhớ sinh TỰ ĐỘNG từ câu vừa làm sai.
+     *
+     * roadmap §1.3: thẻ nhập tay là thứ người học không bao giờ làm, và mọi
+     * app thẻ ghi nhớ đều chết ở chỗ đó. Câu vừa sai thì đã có sẵn đề bài,
+     * lời giải thích, và bằng chứng rằng người này chưa nắm được nó.
+     *
+     * Máy chủ tự đọc `answers` — client không khai mình sai câu nào, và cũng
+     * không cần biết đáp án để dựng mặt sau.
+     *
+     * Câu SAI LẠI mà đã có thẻ thì không đẻ thêm (ràng buộc unique chặn), mà
+     * phải KÉO thẻ đó về hôm nay: sai lại nghĩa là nó đang được xếp lịch quá
+     * thưa. "Đã có thẻ rồi nên bỏ qua" là bỏ mất đúng tín hiệu quan trọng
+     * nhất mà lần làm bài này cung cấp. */
+    const sai = Object.entries(data.results ?? {})
+      .filter(([, r]) => r && r.graded && r.correct === false)
+      .map(([id]) => id);
+    if (sai.length) { sinhTheTuLoiSai(sai.length); datLaiTheSai(sai); }
 
     return data;
   } catch (e) {

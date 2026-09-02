@@ -1,6 +1,6 @@
 import {
   LayoutDashboard, BookOpen, Users, BarChart3, Dumbbell,
-  ClipboardList, CheckSquare, CalendarDays, Settings, Lightbulb, Timer, PenLine, Trophy, Mic,
+  ClipboardList, CheckSquare, CalendarDays, Settings, Lightbulb, Timer, PenLine, Trophy, Mic, Layers,
 } from "lucide-react";
 
 /* Điều hướng của vỏ app.
@@ -47,6 +47,10 @@ export const STUDENT_NAV = [
      ExamMode, không phải ở việc giấu lối vào. */
   { to: "/etudiant/examen", labelKey: "nav.exam", Icon: Timer },
   { to: "/etudiant/resultats", labelKey: "nav.results", Icon: Trophy },
+  /* Thẻ ghi nhớ. Route riêng, không có `view`: nó không nằm trong Student.jsx.
+     Đặt NGAY SAU kết quả thi vì hai thứ nối nhau — thẻ sinh ra từ câu làm
+     sai, và chỗ người ta nhìn thấy mình sai là trang kết quả. */
+  { to: "/etudiant/the-ghi-nho", labelKey: "nav.cards", Icon: Layers },
   /* « Ma progression » đã rời khỏi menu theo yêu cầu. Route
      /etudiant/progression VẪN sống trong App.jsx nên hành trình tới Paris và
      biểu đồ điểm không mất — chỉ là hiện không còn lối vào từ thanh bên.

@@ -603,7 +603,8 @@ lại nó ở giai đoạn 2.
 - Bộ máy thi thử đủ CO + CE + PE, tính giờ theo từng phần
 - Giới hạn nghe 2 lần, đếm ở máy chủ
 - Giao diện chữa bài có neo ngữ liệu (§3.2)
-- Thẻ ghi nhớ SM-2, sinh tự động từ lỗi sai
+- ~~Thẻ ghi nhớ SM-2, sinh tự động từ lỗi sai~~ — xong 02/09,
+  migration 063–066. Chi tiết và hai chỗ dễ viết sai ở CLAUDE.md.
 - ~~`daily_activity` → chuỗi ngày học hết là ô trống~~ — xong 02/09,
   migration 061/062. Chi tiết và ba cái bẫy ở CLAUDE.md.
 - "Mode Squelette" cho bài đọc
