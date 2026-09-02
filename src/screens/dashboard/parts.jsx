@@ -213,7 +213,14 @@ export function StatTile({ Icon, label, value, unit, hint, tone = "ink", animate
     : (
       <>
         {animate && typeof value === "number" ? <CountUp to={value} /> : value}
-        {unit && <span className="ml-0.5 text-xl font-bold">{unit}</span>}
+        {/* Ký hiệu dính sát số là đúng (`78%`); một TỪ thì không — `5ngày` đọc
+            ra như một từ lạ. Ngưỡng một ký tự đủ tách hai trường hợp mà không
+            cần chỗ gọi nào phải nghĩ về khoảng cách. */}
+        {unit && (
+          <span className={`${String(unit).length > 1 ? "ml-1.5" : "ml-0.5"} text-xl font-bold`}>
+            {unit}
+          </span>
+        )}
       </>
     );
 

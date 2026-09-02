@@ -1,4 +1,5 @@
 import { supabase } from "../storageShim.js";
+import { ghiHoatDong } from "./hoatDong.js";
 
 /* Gọi Edge Function `grade` để chấm bài ở máy chủ.
  *
@@ -50,6 +51,20 @@ export async function gradeRemote(exerciseId, answers, opts = {}) {
       console.warn("[grade] máy chủ trả về hình dạng lạ, tạm chấm ở trình duyệt.");
       return null;
     }
+    /* Ghi một mục vào nhật ký hoạt động — nguồn của "Chuỗi ngày học".
+     *
+     * Đặt ở ĐÂY chứ không ở từng màn hình: mọi đường làm bài đều đi qua hàm
+     * này, nên một chỗ gọi là đủ và không màn hình mới nào phải nhớ làm.
+     *
+     * KHÔNG await. Chuỗi ngày là việc phụ; bắt học sinh chờ thêm một vòng
+     * mạng sau khi nộp bài là đổi thứ quan trọng lấy thứ không quan trọng.
+     * Hàm tự nuốt lỗi (xem hoatDong.js) nên không có promise nào bị bỏ rơi.
+     *
+     * Chỉ ghi khi máy chủ đã chấm THẬT. Nhánh lỗi phía trên trả `null` và
+     * bài rơi về chấm ở trình duyệt — chưa chắc có gì được lưu, nên đếm nó
+     * vào chuỗi là đếm một ngày học có thể không tồn tại. */
+    ghiHoatDong({ soMuc: 1 });
+
     return data;
   } catch (e) {
     console.warn("[grade] không gọi được hàm chấm, tạm chấm ở trình duyệt.",

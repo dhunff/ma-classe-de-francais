@@ -375,9 +375,16 @@ Không nhét mẹo vào chú thích bài tập. Cho nó bảng riêng, gắn th�
 `point_gram`, và **hiện đúng lúc**: học sinh vừa sai một câu về *à cause de /
 grâce à* → hiện mẹo về cực tính của nguyên nhân, ngay tại đó.
 
-**Chuỗi ngày học — đang hỏng, và biết vì sao.**
-Ô "Chuỗi ngày học" trên trang chủ đang hiện `—` kèm dòng "hệ thống chưa ghi
-hoạt động theo ngày". Đúng như vậy. Cần:
+**Chuỗi ngày học — xong 2026-09-02 (migration 061).**
+Ô trên trang chủ từng hiện `—` kèm dòng "hệ thống chưa ghi hoạt động theo
+ngày". Nay có nguồn thật. Lược đồ dựng đúng như phác dưới đây, thêm ba thứ mà
+bản phác không lường:
+
+- ngày do CLIENT gửi xuống (múi giờ), máy chủ chặn khoảng ±1 để không ai tự
+  đắp chuỗi;
+- không có policy ghi — đường ghi duy nhất là RPC `ghi_hoat_dong`;
+- `minutes` để sẵn nhưng KHÔNG ghi: hệ thống chưa đo được thời gian học thật,
+  và một con số ước lượng ở đó là bịa dữ liệu.
 
 ```sql
 create table daily_activity (
@@ -597,7 +604,8 @@ lại nó ở giai đoạn 2.
 - Giới hạn nghe 2 lần, đếm ở máy chủ
 - Giao diện chữa bài có neo ngữ liệu (§3.2)
 - Thẻ ghi nhớ SM-2, sinh tự động từ lỗi sai
-- `daily_activity` → chuỗi ngày học hết là ô trống
+- ~~`daily_activity` → chuỗi ngày học hết là ô trống~~ — xong 02/09,
+  migration 061/062. Chi tiết và ba cái bẫy ở CLAUDE.md.
 - "Mode Squelette" cho bài đọc
 
 ### Giai đoạn 3 — AI & cá nhân hoá (10–12 tuần)

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   CheckCircle, Target, Clock, Flame, PartyPopper, AlertTriangle, Inbox,
@@ -10,13 +10,18 @@ import {
   studentWorkload, averageScore, skillBreakdown, nextUp, isLate, exSkills, fmtDate,
 } from "../../shared/exercises.js";
 import { calculateProfileCompletion } from "../../shared/profile.js";
+import { docChuoiNgay } from "../../shared/hoatDong.js";
 
 /* Trang chủ học sinh.
 
    Nguyên tắc không đổi: mỗi con số ở đây phải tính được từ dữ liệu thật.
    Thứ nào chưa có nguồn thì hiện trạng thái rỗng nói rõ lý do — tuyệt đối
-   không dựng số minh hoạ, vì học sinh sẽ tin vào nó. "Chuỗi ngày học" vẫn
-   thuộc diện đó: hệ thống chưa ghi nhật ký hoạt động theo ngày.
+   không dựng số minh hoạ, vì học sinh sẽ tin vào nó.
+
+   "Chuỗi ngày học" từng là ví dụ của diện đó suốt nhiều tháng. Nay nó có
+   nguồn thật: bảng `daily_activity` (migration 061), ghi mỗi khi máy chủ
+   chấm xong một bài. Trạng thái rỗng vẫn còn — nhưng giờ nó nghĩa là "chưa
+   học ngày nào", chứ không phải "hệ thống không biết".
 
    Bố cục hai cột, không phải ba: cột điều hướng bên trái đã do AppLayout cấp.
    Dựng thêm một sidebar nữa trong đây là lặp lại đúng thứ vừa được gỡ bỏ.
@@ -27,7 +32,7 @@ import { calculateProfileCompletion } from "../../shared/profile.js";
 /* `practice` và `practiceHistory` chỉ để preview.jsx bơm fixture vào; lúc
    chạy thật bỏ trống và các khối tự nạp từ kho. */
 export default function StudentDashboard({
-  name, exercises, submissions, profile, t, onOpen, practice, practiceHistory,
+  name, exercises, submissions, profile, t, onOpen, practice, practiceHistory, chuoiFixture,
 }) {
   const navigate = useNavigate();
   const { assigned, done, todo } = studentWorkload(exercises, submissions, name);
@@ -45,6 +50,24 @@ export default function StudentDashboard({
   const goal = profile?.goal || "";
   const profilePct = calculateProfileCompletion(profile);
   const donePct = assigned.length ? Math.round((done.length / assigned.length) * 100) : 0;
+
+  /* Chuỗi ngày học. BA trạng thái, không phải hai:
+       undefined → chưa hỏi xong
+       null      → hỏi rồi, KHÔNG đọc được (mạng, chưa đăng nhập)
+       số        → câu trả lời thật, kể cả 0
+     Gộp "không đọc được" với "0 ngày" là nói với người vừa học ba ngày liền
+     rằng họ chưa học buổi nào. */
+  const [chuoi, setChuoi] = useState(undefined);
+  useEffect(() => {
+    /* `chuoiFixture` chỉ để preview.jsx bơm số vào — cùng nếp với `practice`
+       và `practiceHistory` ngay trên. Trang xem thử không có phiên đăng nhập
+       nên lời gọi thật luôn trả null, và một ô "Không đọc được" ở đó khiến
+       người xem tưởng trang hỏng trong khi nó đang đúng. */
+    if (chuoiFixture !== undefined) { setChuoi(chuoiFixture); return; }
+    let con = true;
+    docChuoiNgay().then((v) => { if (con) setChuoi(v); });
+    return () => { con = false; };
+  }, [chuoiFixture]);
 
   return (
     /* Nền chuyển sắc rất nhạt để thẻ nền mờ có thứ để mờ lên trên. Bản tối
@@ -105,8 +128,16 @@ export default function StudentDashboard({
               hint={avg === null ? t("dash.avg_empty") : undefined} />
             <StatTile gradient="fuchsia" Icon={Clock} label={t("dash.pending")} value={todo.length}
               hint={overdue ? t("dash.overdue", { n: overdue }) : undefined} />
-            <StatTile gradient="pink" Icon={Flame} label={t("dash.streak")} value={null}
-              hint={t("dash.streak_empty")} />
+            {/* Ba trạng thái → ba câu khác nhau. Một ô số liệu nói "0" trong
+                khi thật ra nó không hỏi được máy chủ là một lời nói dối nhỏ mà
+                người dùng không có cách nào phát hiện. */}
+            <StatTile gradient="pink" Icon={Flame} label={t("dash.streak")}
+              value={typeof chuoi === "number" && chuoi > 0 ? chuoi : null}
+              unit={typeof chuoi === "number" && chuoi > 0 ? t("dash.streak_unit") : undefined}
+              hint={chuoi === undefined ? t("dash.streak_loading")
+                : chuoi === null ? t("dash.streak_error")
+                : chuoi === 0 ? t("dash.streak_zero")
+                : undefined} />
           </Rise>
 
           {/* Biểu đồ cột thuần CSS. Không phải "hoạt động theo ngày" như bản

@@ -36,6 +36,7 @@ npm run check:hmac         # chữ ký webhook SePay + bản ghim công thức (
 npm run check:bareme       # mốc cho điểm PE, nhãn Việt, đối chiếu với SQL (457 ca)
 npm run check:identity     # luật @username + hồ sơ, JS ↔ SQL ↔ i18n (61 ca)
 npm run check:notifs       # gửi thông báo + chuông + luật RPC (38 ca)
+npm run check:hoatdong     # nhật ký theo ngày + chuỗi ngày học (28 ca)
 npm run check:css          # lớp Tailwind có thật sinh ra CSS không
 npm run check:db           # database THẬT có khớp giả định của mã nguồn không
 ```
@@ -94,8 +95,14 @@ Mọi con số trên màn hình phải tính được từ dữ liệu thật. C
 **trạng thái rỗng nói rõ lý do**, đừng dựng số minh hoạ — học sinh tin vào những
 gì trang này nói.
 
-Ví dụ đang áp dụng: "Chuỗi ngày học" và "Giờ học" hiện dấu gạch kèm câu giải
-thích, vì hệ thống chưa ghi hoạt động theo ngày.
+Ví dụ đang áp dụng: "Giờ học" hiện dấu gạch kèm câu giải thích, vì hệ thống
+chưa đo được thời gian học thật. Cột `daily_activity.minutes` để sẵn cho lúc
+đo được và KHÔNG được điền số ước lượng.
+
+"Chuỗi ngày học" từng là ví dụ chính ở đây suốt nhiều tháng. Nó có nguồn thật
+từ 02/09 (migration 061). Câu trả lời đúng cho "chưa có nguồn" cuối cùng vẫn
+là DỰNG NGUỒN, không phải giữ mãi một ô trống lịch sự — nhưng chỉ khi dựng
+được thật, và trong lúc chờ thì ô trống vẫn hơn một con số bịa.
 
 Dữ liệu giả để xem bố cục **chỉ** sống trong `src/preview.jsx`.
 
@@ -637,6 +644,23 @@ Xem `docs/roadmap-delf.md` — có nhật ký quyết định ở §5.
   đã có cách đưa chữ từ giáo viên tới đúng một học sinh, kèm chuông và dấu đã
   đọc. Đánh đổi: nhận xét không dính vào file, nên phần mở đầu tin nhắn tự
   nói rõ nó nói về bản ghi nào.
+- **Chuỗi ngày học — xong 02/09** (migration 061/062). Bảng `daily_activity`,
+  một dòng mỗi người mỗi ngày, theo đúng roadmap §1.3.
+
+  **Ngày là ngày của NGƯỜI DÙNG, không của máy chủ.** PostgREST chạy ở UTC, nên
+  `current_date` ghi sai cho đúng những giờ hay lệch nhất. Client gửi ngày địa
+  phương xuống; máy chủ chặn khoảng ±1 ngày để không ai tự đắp chuỗi. Và
+  `toISOString()` KHÔNG dùng được — nó đổi sang UTC trước khi cắt chuỗi.
+
+  **Không có policy ghi.** Đường ghi duy nhất là RPC `ghi_hoat_dong`; cho ghi
+  thẳng thì phép chặn khoảng ngày thành đồ trang trí. Chuỗi tính ở máy chủ
+  (`chuoi_ngay_hoc`) bằng thủ thuật gaps-and-islands, và vẫn sống nếu hôm nay
+  chưa học nhưng hôm qua có — đứt lúc 00:00 là trừng phạt người ta đúng lúc họ
+  vừa định học.
+
+  **Ba trạng thái trên màn hình, không hai:** chưa hỏi xong / không đọc được /
+  số thật kể cả 0. Gộp "không đọc được" với "0 ngày" là nói với người vừa học
+  ba ngày liền rằng họ chưa học buổi nào.
 - `s:mcf-submissions` vẫn giữ làm sao lưu, chưa xoá.
 
 
