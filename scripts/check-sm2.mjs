@@ -216,6 +216,16 @@ const MOC = new Date(2026, 8, 2);      // 02/09/2026, giờ địa phương
   /* Ba trạng thái: đang tải / không đọc được / danh sách thật. */
   t("phân biệt đang tải", /ds === undefined/.test(man), true);
   t("phân biệt không đọc được", /ds === null/.test(man), true);
+
+  /* Màn hình phải TỰ tìm thẻ lần đầu. Chỉ sinh thẻ sau khi chấm bài và sau
+     một cú bấm nút thì người đã làm hàng trăm câu TRƯỚC khi có tính năng
+     này mở màn ra và thấy « không có thẻ nào » — đúng chữ, sai hoàn toàn
+     về ý. Đo được 02/09: tài khoản có 111 câu trả lời, database 0 thẻ. */
+  t("lần đầu mở màn thì tự tìm thẻ", /daTuTim/.test(man), true);
+
+  /* Cờ chặn vòng lặp. Thiếu nó thì mỗi lần trả về 0 thẻ lại kích một lượt
+     tìm nữa, mãi mãi — một vòng lặp mạng vô hạn mà không có gì báo. */
+  t("có cờ chặn vòng lặp tự tìm", /if \(daTuTim \|\| /.test(man), true);
 }
 console.log(fail ? `\n${pass} đạt, ${fail} hỏng` : `\n${pass} đạt, 0 hỏng`);
 process.exit(fail ? 1 : 0);

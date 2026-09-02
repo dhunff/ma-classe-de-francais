@@ -51,6 +51,33 @@ export default function TheGhiNho() {
     setDs(await docTheDenHan());
   };
 
+  /* ── LẦN ĐẦU MỞ MÀN: TỰ TÌM THẺ, KHÔNG BẮT BẤM NÚT ──
+   *
+   * Bản đầu chỉ sinh thẻ ở hai chỗ: sau khi chấm bài, và sau một cú bấm nút.
+   * Nghĩa là người đã làm hàng trăm câu TRƯỚC khi có tính năng này mở màn ra
+   * và thấy "Hôm nay không có thẻ nào tới hạn" — đúng chữ, sai hoàn toàn về
+   * ý: lỗi sai của họ nằm sẵn trong database, chỉ là chưa ai đi lấy.
+   *
+   * Đo được ngày 02/09: một tài khoản có 111 câu trả lời, hàng chục câu sai,
+   * mở màn này ra — và database vẫn 0 thẻ.
+   *
+   * Nên lần mở đầu tiên mà danh sách rỗng thì TỰ tìm một lượt. Nút vẫn còn
+   * cho những lần sau, nhưng không ai phải khám phá ra nó mới dùng được.
+   *
+   * `daTuTim` chặn vòng lặp: thiếu nó thì mỗi lần trả về 0 thẻ lại kích một
+   * lượt tìm nữa, mãi mãi. */
+  const [daTuTim, setDaTuTim] = useState(false);
+  useEffect(() => {
+    if (daTuTim || !Array.isArray(ds) || ds.length > 0) return;
+    setDaTuTim(true);
+    (async () => {
+      const kq = await sinhTheTuLoiSai(50);
+      /* Chỉ tải lại khi THẬT SỰ có thẻ mới. Tải lại vô ích thì màn hình nháy
+         một cái rồi về đúng chỗ cũ, và người dùng tưởng mình bấm nhầm gì. */
+      if (kq.ok && kq.soThe > 0) tai();
+    })();
+  }, [ds, daTuTim]);
+
   useEffect(() => { tai(); }, []);
 
   const the = Array.isArray(ds) ? ds[i] : null;
@@ -118,7 +145,11 @@ export default function TheGhiNho() {
           <p className="m-0 mt-1 text-sm text-soft">
             {daOn > 0
               ? "Thẻ tiếp theo sẽ tự hiện đúng ngày cần ôn lại."
-              : "Thẻ mới sinh ra từ câu bạn làm sai. Bấm bên dưới để tìm."}
+              : daTuTim
+                /* Đã tự tìm rồi mà vẫn rỗng — nói ra, để người dùng không ngồi
+                   chờ một thứ sẽ không tới. */
+                ? "Đã tìm trong những bài bạn từng làm: không còn câu sai nào chưa thành thẻ. Làm thêm vài bài rồi quay lại."
+                : "Đang tìm trong những câu bạn từng làm sai…"}
           </p>
           <button type="button" onClick={sinh} disabled={dangSinh}
             className="mt-4 inline-flex items-center gap-2 rounded-full border-0 bg-primary px-5 py-2.5 text-left text-sm font-bold text-white disabled:opacity-50">
