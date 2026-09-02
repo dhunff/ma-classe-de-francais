@@ -7,6 +7,7 @@ import { gradeRemote } from "../../shared/gradeRemote.js";
 import { EXAM_STRUCTURE, sectionScore, verdict, ghiPhan, gomTheoKyNang, NGUONG_PHAN, NGUONG_TONG, khongCham }
   from "./examPaper.js";
 import GhiAmBaiNoi from "./GhiAmBaiNoi.jsx";
+import { coPhienMayChu } from "../../shared/phienMayChu.js";
 
 /* Mode Examen — thi thử có tính giờ.
  *
@@ -33,7 +34,7 @@ const dongHo = (giay) => `${hai(Math.floor(giay / 60))}:${hai(Math.max(0, giay %
 
 /* ─────────────────────────── Màn chờ ─────────────────────────── */
 
-function ManCho({ dsDe, chon, paper, onStart, dangTai, lamPhanNoi, setLamPhanNoi }) {
+function ManCho({ dsDe, chon, paper, onStart, dangTai, lamPhanNoi, setLamPhanNoi, phienThuc }) {
   const level = paper?.level ?? "B1";
   const cauTruc = EXAM_STRUCTURE[level] ?? [];
   /* Đề có phần nói không — hỏi DỮ LIỆU của đề, không hỏi cấu trúc chuẩn.
@@ -143,15 +144,23 @@ function ManCho({ dsDe, chon, paper, onStart, dangTai, lamPhanNoi, setLamPhanNoi
         </table>
       </div>
 
-      {/* Phần nói KHÔNG có, và phải nói ra. Nó là 25/100 của kỳ thi thật; im
-          lặng ở đây là để học sinh tưởng điểm thi thử dự đoán được điểm thật. */}
-      <p className="m-0 mt-4 flex items-start gap-2 rounded-xl bg-surface2 p-3 text-xs text-soft">
-        <AlertTriangle size={14} className="mt-0.5 shrink-0" />
-        <span>
-          Đề này <strong className="text-ink">không có phần thi nói (PO)</strong>, vốn chiếm
-          25/100 điểm kỳ thi thật. Kết quả dưới đây chỉ phản ánh ba phần còn lại.
-        </span>
-      </p>
+      {/* Đề KHÔNG có phần nói, và phải nói ra: nó là 25/100 của kỳ thi thật,
+          im lặng ở đây là để học sinh tưởng điểm thi thử dự đoán được điểm
+          thật.
+
+          Câu này từng hiện VÔ ĐIỀU KIỆN. Đúng vào lúc viết ra, vì hồi đó chưa
+          đề nào có PO — nhưng nó thành lời nói dối ngay khi có đề đầu tiên
+          kèm phần nói, và màn hình khẳng định điều ngược hẳn với bảng ngay
+          phía trên nó. */}
+      {!coPhanNoi && (
+        <p className="m-0 mt-4 flex items-start gap-2 rounded-xl bg-surface2 p-3 text-xs text-soft">
+          <AlertTriangle size={14} className="mt-0.5 shrink-0" />
+          <span>
+            Đề này <strong className="text-ink">không có phần thi nói (PO)</strong>, vốn chiếm
+            25/100 điểm kỳ thi thật. Kết quả dưới đây chỉ phản ánh ba phần còn lại.
+          </span>
+        </p>
+      )}
 
       {paper?.missing?.length > 0 && (
         <p className="m-0 mt-3 flex items-start gap-2 rounded-xl bg-danger-soft p-3 text-xs text-ink">
@@ -189,6 +198,31 @@ function ManCho({ dsDe, chon, paper, onStart, dangTai, lamPhanNoi, setLamPhanNoi
         </label>
       )}
 
+      {/* ── KHÔNG CÓ PHIÊN MÁY CHỦ THÌ KHÔNG CHO VÀO ──
+          Xem phienMayChu.js. Ngắn gọn: app có đường đăng nhập cũ chỉ lưu tên
+          trong trình duyệt, đủ để đi qua RequireRole nhưng KHÔNG có token nào.
+          Người đó thi đủ 115 phút và không một dòng nào được ghi.
+
+          Chặn ở CỬA, không báo lỗi ở cuối. Mời ai đó bỏ ra gần hai tiếng rồi
+          mới nói "không lưu được gì" là hỏng ở chỗ tệ nhất. */}
+      {phienThuc === false && (
+        <div className="mt-6 rounded-2xl bg-danger-soft p-4">
+          <p className="m-0 flex items-start gap-2 text-sm font-bold text-ink">
+            <AlertTriangle size={16} className="mt-0.5 shrink-0 text-danger" />
+            Phiên đăng nhập không còn hiệu lực với máy chủ.
+          </p>
+          <p className="m-0 mt-2 text-xs leading-relaxed text-ink">
+            Trình duyệt vẫn nhớ tên bạn, nhưng máy chủ thì không — nên bài làm và
+            bản ghi âm sẽ KHÔNG được lưu, dù màn hình vẫn hiện điểm. Đăng nhập
+            lại rồi quay lại đây; đề vẫn còn nguyên.
+          </p>
+          <a href="/login"
+            className="mt-3 inline-block rounded-full bg-primary px-5 py-2 text-sm font-bold text-white no-underline">
+            Đăng nhập lại
+          </a>
+        </div>
+      )}
+
       <label className="mt-6 flex cursor-pointer items-start gap-3 text-sm text-ink">
         <input type="checkbox" checked={sanSang} onChange={(e) => setSanSang(e.target.checked)}
           className="mt-1" />
@@ -198,10 +232,16 @@ function ManCho({ dsDe, chon, paper, onStart, dangTai, lamPhanNoi, setLamPhanNoi
         </span>
       </label>
 
-      <button type="button" disabled={!sanSang || dangTai || !paper?.sections.length}
+      <button type="button"
+        disabled={!sanSang || dangTai || !paper?.sections.length || phienThuc !== true}
         onClick={onStart}
         className="mt-6 inline-flex items-center gap-2 rounded-full border-0 bg-primary px-6 py-3 text-sm font-bold text-white shadow-lg transition enabled:hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-40">
-        <Timer size={16} /> {dangTai ? "Đang tải đề…" : "Bắt đầu thi"}
+        {/* Nút mờ đi mà không nói vì sao là một cánh cửa khoá không biển
+            báo. Ba lý do khoá, ba câu khác nhau. */}
+        <Timer size={16} /> {dangTai ? "Đang tải đề…"
+          : phienThuc === null ? "Đang kiểm phiên đăng nhập…"
+          : phienThuc === false ? "Cần đăng nhập lại"
+          : "Bắt đầu thi"}
       </button>
     </div>
   );
@@ -715,6 +755,16 @@ export default function ExamMode() {
      Lọc ở chỗ khác thì đồng hồ, thanh tiến trình và phép chấm mỗi nơi đếm một
      kiểu — và số phần hiện ra sẽ lệch với số phần thật sự phải làm. */
   const [lamPhanNoi, setLamPhanNoi] = useState(true);
+
+  /* Phiên máy chủ: null = chưa hỏi xong, true/false = câu trả lời.
+     Ba trạng thái chứ không phải hai — coi "chưa biết" như "không có" thì màn
+     chờ chớp một cảnh báo đỏ ngay lần render đầu rồi tự rút lại. */
+  const [phienThuc, setPhienThuc] = useState(null);
+  useEffect(() => {
+    let con = true;
+    coPhienMayChu().then((v) => { if (con) setPhienThuc(v); });
+    return () => { con = false; };
+  }, []);
   const khoi = useMemo(
     () => gomTheoKyNang(paper?.sections).filter((k) => lamPhanNoi || k.code !== "PO"),
     [paper, lamPhanNoi]);
@@ -870,6 +920,7 @@ export default function ExamMode() {
   if (buoc === "cho") {
     return <ManCho dsDe={dsDe} chon={chonDe} paper={paper}
       lamPhanNoi={lamPhanNoi} setLamPhanNoi={setLamPhanNoi}
+      phienThuc={phienThuc}
       dangTai={dangTai} onStart={batDau} />;
   }
   if (buoc === "thi") {

@@ -464,5 +464,31 @@ t("đầu vào null không làm nổ", gomTheoKyNang(null).length, 0);
   t("saveExam chụp bản cũ trước khi xoá", /const banCu =/.test(ma), true);
   t("saveExam lùi lại khi chèn hỏng", /insert\(banCu\)/.test(ma), true);
 }
+/* ══ CỬA PHÒNG THI: KHÔNG CÓ PHIÊN MÁY CHỦ THÌ KHÔNG CHO VÀO ══
+ *
+ * App có hai đường đăng nhập. `mcf-session` trong localStorage chỉ chứa tên và
+ * vai, không có token nào — nhưng nó đủ để đi qua RequireRole. Người đó thi đủ
+ * 115 phút và KHÔNG một dòng nào được ghi: `grade` trả `attemptId: null`, còn
+ * lượt tải bản ghi âm bị RLS từ chối.
+ *
+ * Đo được ngày 01/09: một buổi thi ba phần cộng một lần ghi âm, `attempts`
+ * đứng yên ở 41, kho bản ghi rỗng. Giao diện thì cư xử như bình thường.
+ *
+ * Chặn ở CỬA, không báo lỗi ở cuối: mời ai đó bỏ ra gần hai tiếng rồi mới nói
+ * "không lưu được gì" là hỏng ở chỗ tệ nhất. */
+{
+  const src = readFileSync(new URL("../src/screens/exam/ExamMode.jsx", import.meta.url), "utf8");
+  const ma = boChuThichJs(src);
+  t("màn chờ hỏi phiên máy chủ", /coPhienMayChu\(\)/.test(ma), true);
+  t("nút bắt đầu khoá khi không có phiên", /phienThuc !== true/.test(ma), true);
+
+  /* Ba trạng thái, không phải hai. Coi "chưa biết" như "không có" thì màn chờ
+     chớp một cảnh báo đỏ ngay lần render đầu rồi tự rút lại. */
+  t("phân biệt chưa-biết với không-có", /phienThuc === false/.test(ma), true);
+
+  /* Câu "đề này không có phần nói" phải có ĐIỀU KIỆN. Hiện vô điều kiện thì nó
+     khẳng định điều ngược hẳn với bảng ngay phía trên nó. */
+  t("cảnh báo thiếu PO chỉ hiện khi đề thật sự thiếu", /\{!coPhanNoi && \(/.test(ma), true);
+}
 console.log(fail ? `\n${pass} đạt, ${fail} hỏng` : `\n${pass} đạt, 0 hỏng`);
 process.exit(fail ? 1 : 0);
