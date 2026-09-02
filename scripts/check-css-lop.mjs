@@ -16,6 +16,17 @@ const LOP = [
   "backdrop-blur-sm", "accent-[color:var(--mcf-primary)]", "disabled:opacity-60",
   "disabled:cursor-not-allowed", "hover:bg-primary-soft", "focus:ring-2",
   "min-h-[110px]", "z-[9999]", "rounded-3xl", "shadow-2xl", "hover:ring-primary/40",
+
+  /* Bốn lớp của thẻ lật 3D (TheLat3D.jsx). Đây là loại RỦI RO NHẤT trong cả
+     danh sách: Tailwind 3 không có tiện ích xoay theo trục Y, nên phải viết
+     bằng giá trị tuỳ ý — và một dấu ngoặc sai thì lớp im lặng biến mất, thẻ
+     vẫn hiện, chỉ là không bao giờ lật.
+
+     `preserve-3d` thiếu → mặt sau không bao giờ ngửa ra.
+     `backface-visibility` thiếu → hai mặt vẽ đè, đọc được chữ ngược.
+     `perspective` thiếu → quay bẹp, không có chiều sâu. */
+  "[perspective:1200px]", "[transform-style:preserve-3d]",
+  "[backface-visibility:hidden]", "[transform:rotateY(180deg)]",
 ];
 
 let thieu = 0;

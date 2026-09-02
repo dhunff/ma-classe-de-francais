@@ -37,7 +37,7 @@ npm run check:bareme       # mốc cho điểm PE, nhãn Việt, đối chiếu 
 npm run check:identity     # luật @username + hồ sơ, JS ↔ SQL ↔ i18n (61 ca)
 npm run check:notifs       # gửi thông báo + chuông + luật RPC (38 ca)
 npm run check:hoatdong     # nhật ký theo ngày + chuỗi ngày học (28 ca)
-npm run check:sm2          # thẻ ghi nhớ SM-2 + đường viết lời giải (73 ca)
+npm run check:sm2          # thẻ ghi nhớ SM-2, lời giải, thẻ tự tạo (90 ca)
 npm run check:css          # lớp Tailwind có thật sinh ra CSS không
 npm run check:db           # database THẬT có khớp giả định của mã nguồn không
 ```
@@ -715,6 +715,39 @@ Xem `docs/roadmap-delf.md` — có nhật ký quyết định ở §5.
   viên viết xong, thấy "đã lưu", và phía học sinh không đổi gì — mãi mãi, im
   lặng tuyệt đối. `luu_loi_giai` làm cả hai việc và TRẢ VỀ số thẻ vừa làm mới;
   giao diện nói ra con số đó.
+- **Thẻ tự tạo + giao diện lật 3D — xong 02/09** (migration 073/074).
+
+  **KHÔNG dựng bảng `flashcards` riêng.** Bản mô tả giả định có bảng đó; thứ
+  đang có là `cards` + `reviews`. Hai bảng cho cùng một khái niệm nghĩa là màn
+  ôn phải đọc hai chỗ rồi trộn, SM-2 phải ghi hai chỗ, `reviews` khoá ngoại
+  tới `cards` nên thẻ tự tạo hoặc không có lịch hoặc cần bảng lịch thứ hai, và
+  phép đếm hạn mức thành phép cộng hai truy vấn. Nên: một bảng, thêm cột
+  `example_sentence` + `nguon` ('loi_sai' | 'tu_tao').
+
+  **Hạn mức 10 thẻ/ngày ở MÁY CHỦ.** `cards` không cấp INSERT cho
+  `authenticated`, đường ghi duy nhất là `tao_the_tu_viet`. "Hôm nay" là ngày
+  của NGƯỜI DÙNG — client gửi `p_ngay`, máy chủ chặn ±1 ngày; để máy chủ tự
+  lấy `current_date` (UTC) thì học sinh ở Hà Nội tạo thẻ lúc 6 giờ sáng bị
+  tính vào hạn mức hôm qua.
+
+  Mã lỗi RIÊNG `DAILY_LIMIT_REACHED`: giao diện phải nói "mai tạo tiếp được"
+  chứ không phải "thử lại sau" — thử lại sẽ không thành công cho tới sáng mai.
+  Con số « 3/10 » đọc TRƯỚC khi người ta gõ.
+
+  **Bốn nút SRS, không phải ba** — khác có chủ đích với bản mô tả. Ba nút thì
+  nút thấp nhất vẫn là "nhớ được, hơi khó"; không có cách nào nói "quên sạch",
+  mà chính vế đó (q < 3) mới đặt lại quãng và tăng `lapses`.
+
+  **Lật 3D cần đủ bốn mảnh**, thiếu mảnh nào hỏng theo một kiểu khác:
+  `perspective` ở thẻ cha (thiếu → quay bẹp), `transform-style: preserve-3d` ở
+  lớp quay (thiếu → mặt sau không bao giờ ngửa ra), `backface-visibility:
+  hidden` ở CẢ HAI mặt (thiếu → đọc được chữ ngược lúc quay), và mặt sau quay
+  sẵn 180°. Tailwind 3 không có tiện ích xoay trục Y nên phải dùng giá trị tuỳ
+  ý; `check:css` canh cả bốn lớp đó sinh ra CSS thật.
+
+  Độ lệch chồng thẻ phải TÍNH: `scale-90` thu quanh tâm nên mép trên tụt xuống
+  5% chiều cao, và `-translate-y-4` chỉ bù được một phần — bản đầu nhô ra ≈5px
+  và trên màn hình không thấy gì. Đo bằng ảnh chụp mới ra.
 - `s:mcf-submissions` vẫn giữ làm sao lưu, chưa xoá.
 
 

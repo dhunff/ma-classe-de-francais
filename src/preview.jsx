@@ -50,6 +50,10 @@ import GrilleEditor from "./screens/teacher/GrilleEditor.jsx";
 import TipsEditor from "./screens/teacher/TipsEditor.jsx";
 import { ChonAvatar, ONhapUsername } from "./screens/account/DanhTinh.jsx";
 import NotificationDropdown from "./screens/student/NotificationDropdown.jsx";
+/* TheLat3D KHÔNG import storageShim — nó là thành phần trình bày thuần, nhận
+   mọi thứ qua props. Đó là lý do duy nhất nó được phép có mặt ở đây; xem quy
+   tắc ở đầu file. */
+import TheLat3D from "./screens/student/TheLat3D.jsx";
 import { Avatar, DS_AVATAR } from "./shared/avatars.jsx";
 
 const VI = {
@@ -226,6 +230,30 @@ const PHAN_THI_MAU = {
     ],
   },
 };
+
+/* Thẻ lật 3D — chỉ dựng phần TRÌNH BÀY.
+ *
+ * `TheLat3D` nhận mọi thứ qua props và không chạm tới storageShim, nên đưa vào
+ * trang xem thử không mở kết nối nào — đúng điều kiện duy nhất mà đầu file này
+ * đặt ra cho việc đó.
+ *
+ * Có mặt ở đây vì hiệu ứng 3D là thứ KHÔNG bộ kiểm nào thay được: `check:css`
+ * chỉ biết lớp có sinh ra CSS hay không, còn "lật xong có đọc được mặt sau
+ * không, có thấy chữ ngược lúc quay không" thì phải nhìn bằng mắt. */
+function TheLatThu() {
+  const [lat, setLat] = useState(false);
+  return (
+    <div className="mx-auto max-w-2xl py-6">
+      <h1 className="m-0 text-2xl font-extrabold text-ink">Thẻ ghi nhớ</h1>
+      <p className="m-0 mt-1 text-sm text-soft">Bấm vào thẻ để lật.</p>
+      <TheLat3D
+        mat="Que montre la seconde étude américaine, parue en mai ?"
+        sau="Đáp án đúng DIỄN ĐẠT LẠI ý của văn bản; đáp án kia lặp nguyên từ nhưng đổi chủ thể."
+        viDu="L'étude montre que la baisse concerne surtout les moins de 25 ans."
+        daLat={lat} onLat={() => setLat((v) => !v)} conLai={4} />
+    </div>
+  );
+}
 
 function PhanThiThu() {
   const [ans, setAns] = useState({});
@@ -410,6 +438,7 @@ function Preview() {
     ["/etudiant/thong-bao", "Bảng thông báo"],
     ["/etudiant/auto-evaluation", "Tự chấm Production écrite"],
     ["/etudiant/phan-thi", "Một phần thi thử"],
+    ["/etudiant/the-lat", "Thẻ ghi nhớ — lật 3D"],
     ["/professeur/grille", "Soạn thang chấm"],
   ];
 
@@ -524,6 +553,7 @@ function Preview() {
               chia đôi mà không cần đăng nhập và không cần thi thử trước. */}
           <Route path="/professeur/grille" element={<><Controls /><GrilleThu /></>} />
           <Route path="/etudiant/phan-thi" element={<><Controls /><PhanThiThu /></>} />
+          <Route path="/etudiant/the-lat" element={<><Controls /><TheLatThu /></>} />
           <Route path="/etudiant/danh-tinh" element={<><Controls /><DanhTinhThu /></>} />
           <Route path="/etudiant/thong-bao" element={<><Controls /><ThongBaoThu /></>} />
           <Route path="/etudiant/auto-evaluation" element={

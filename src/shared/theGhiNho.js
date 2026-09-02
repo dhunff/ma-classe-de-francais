@@ -1,5 +1,6 @@
 import { supabase } from "../storageShim.js";
 import { onLai, xepLichOn, ngayCong } from "./sm2.js";
+import { ngayHomNay } from "./hoatDong.js";
 
 /* Thẻ ghi nhớ — lớp truy cập (migration 063/065).
  *
@@ -13,7 +14,7 @@ import { onLai, xepLichOn, ngayCong } from "./sm2.js";
 export async function docTheDenHan() {
   const { data, error } = await supabase
     .from("reviews")
-    .select("card_id, due_at, interval_days, ease, lapses, reps, cards(front, back, kind)")
+    .select("card_id, due_at, interval_days, ease, lapses, reps, cards(front, back, kind, example_sentence, nguon, source_question_id)")
     .lte("due_at", ngayCong(0))
     .order("due_at", { ascending: true })
     .limit(100);
@@ -28,8 +29,15 @@ export async function docTheDenHan() {
      PHƯƠNG, còn máy chủ so chuỗi — nên biên có thể lệch một ngày quanh nửa
      đêm. Lọc hai lần rẻ hơn nhiều so với một thẻ hiện sai ngày. */
   return xepLichOn(
-    (data ?? []).map((r) => ({ ...r, front: r.cards?.front ?? "", back: r.cards?.back ?? "",
-      kind: r.cards?.kind ?? "mot" })),
+    (data ?? []).map((r) => ({
+      ...r,
+      front: r.cards?.front ?? "",
+      back: r.cards?.back ?? "",
+      kind: r.cards?.kind ?? "mot",
+      viDu: r.cards?.example_sentence ?? "",
+      nguon: r.cards?.nguon ?? "loi_sai",
+      questionId: r.cards?.source_question_id ?? null,
+    })),
   );
 }
 
@@ -80,4 +88,37 @@ export async function datLaiTheSai(questionIds) {
   for (const id of ds) {
     try { await supabase.rpc("dat_lai_the_sai", { p_question_id: id }); } catch { /* việc phụ */ }
   }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   THẺ TỰ TẠO (migration 073)
+   ══════════════════════════════════════════════════════════════════════════ */
+
+export const HAN_MUC_NGAY = 10;
+
+/* Đã tạo mấy thẻ hôm nay. Gọi TRƯỚC khi người ta gõ, để hiện « 3/10 » ngay —
+   bắt viết xong cả thẻ rồi mới báo hết hạn mức là phí công của họ.
+   `null` = không đọc được, khác hẳn số 0. */
+export async function demTheTuViet() {
+  const { data, error } = await supabase.rpc("dem_the_tu_viet", { p_ngay: ngayHomNay() });
+  return error ? null : Number(data) || 0;
+}
+
+/* Tạo một thẻ. Ngày gửi từ client vì "hôm nay" là ngày của NGƯỜI DÙNG, không
+   phải của máy chủ chạy UTC — xem chú thích trong 073. */
+export async function taoTheTuViet({ front, back, viDu }) {
+  const { data, error } = await supabase.rpc("tao_the_tu_viet", {
+    p_front: front, p_back: back, p_example: viDu || null, p_ngay: ngayHomNay(),
+  });
+  if (error) {
+    /* Hết hạn mức KHÔNG phải sự cố: thử lại sẽ không bao giờ thành công cho
+       tới sáng mai, nên nó phải có câu chữ riêng chứ không phải "thử lại sau". */
+    if (/DAILY_LIMIT_REACHED/.test(error.message || "")) return { ok: false, loi: "het_han_muc" };
+    if (error.code === "22023") return { ok: false, loi: "trong" };
+    if (error.code === "22001") return { ok: false, loi: "qua_dai" };
+    if (error.code === "42501") return { ok: false, loi: "chua_dang_nhap" };
+    return { ok: false, loi: "mang", chiTiet: error.message };
+  }
+  const d = Array.isArray(data) ? data[0] : data;
+  return { ok: true, cardId: d?.card_id ?? null, conLai: Number(d?.con_lai ?? 0) };
 }

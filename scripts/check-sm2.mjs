@@ -317,5 +317,70 @@ const MOC = new Date(2026, 8, 2);      // 02/09/2026, giờ địa phương
     /if not public\.is_teacher\(\)/.test(sql071), true);
   t("màn hình có trạng thái riêng cho lỗi vai", /loiVai/.test(man), true);
 }
+/* ══ THẺ TỰ TẠO: HẠN MỨC PHẢI Ở MÁY CHỦ ══
+ *
+ * Hạn mức kiểm ở trình duyệt là hạn mức không tồn tại — ai mở DevTools cũng bỏ
+ * qua được. Ở đây nó lại càng phải nằm ở máy chủ, vì `cards` KHÔNG cấp INSERT
+ * cho `authenticated`: đường ghi duy nhất là hàm.
+ *
+ * Và "hôm nay" phải là ngày của NGƯỜI DÙNG. PostgREST chạy UTC, nên
+ * `date(created_at) = current_date` tính học sinh ở Hà Nội tạo thẻ lúc 6 giờ
+ * sáng vào hạn mức của hôm qua — họ mất một phần hạn mức vì múi giờ. */
+{
+  const sql = readFileSync(new URL("../supabase/migrations/073_the_tu_tao.sql", import.meta.url), "utf8")
+    .replace(/\/\*[\s\S]*?\*\//g, " ")
+    .split(/\r?\n/).map((x) => x.replace(/--.*$/, "")).join("\n");
+  const modal = readFileSync(new URL("../src/screens/student/OTaoThe.jsx", import.meta.url), "utf8");
+  /* Lọc chú thích TRƯỚC khi đếm. Bản đầu đếm `aria-hidden` ra 3 thay vì 2, vì
+     chính chú thích trong file giải thích "chúng aria-hidden và không nhận
+     chuột". Lần thứ sáu cùng cái bẫy này trong dự án — và ở một ca ĐẾM thì nó
+     còn kín hơn ở một ca có/không. */
+  const lat = readFileSync(new URL("../src/screens/student/TheLat3D.jsx", import.meta.url), "utf8")
+    .replace(/\/\*[\s\S]*?\*\//g, " ")
+    .replace(/\{\/\*[\s\S]*?\*\/\}/g, " ");
+
+  t("hàm tạo thẻ là security definer",
+    /create or replace function public\.tao_the_tu_viet[\s\S]{0,400}?security definer/.test(sql), true);
+  t("chặn ở mốc 10", /if da_co >= 10 then/.test(sql), true);
+  t("ném đúng mã DAILY_LIMIT_REACHED", /DAILY_LIMIT_REACHED/.test(sql), true);
+  t("ngày do client gửi, chặn khoảng ±1", /ngay < current_date - 1/.test(sql), true);
+
+  /* Thẻ tạo xong phải có lịch ôn ngay. Thiếu thì thẻ tồn tại mà không bao giờ
+     đến hạn — người học tạo xong rồi không thấy nó ở đâu nữa. */
+  t("thẻ mới được cấp lịch ôn ngay", /insert into public\.reviews \(card_id, user_id\)/.test(sql), true);
+
+  /* Không dựng bảng `flashcards` thứ hai: `reviews` khoá ngoại tới `cards`, và
+     hai bảng cho cùng một khái niệm là hai nguồn sự thật để lệch. */
+  t("dùng bảng cards đang có, không dựng flashcards",
+    /create table[\s\S]{0,40}flashcards/i.test(sql), false);
+
+  /* Giao diện phải hiện hạn mức TRƯỚC khi người ta gõ. Bắt viết xong cả thẻ
+     rồi mới báo hết hạn mức là vứt đi công của họ. */
+  t("modal đọc số thẻ đã tạo khi mở", /demTheTuViet\(\)/.test(modal), true);
+  t("hết hạn mức có câu chữ riêng", /het_han_muc/.test(modal), true);
+
+  /* Bốn mảnh của phép lật 3D. Thiếu mảnh nào cũng hỏng theo một kiểu khác
+     nhau, và `check:css` chỉ biết lớp có sinh CSS chứ không biết nó có mặt
+     trong đúng thành phần này hay không. */
+  t("có perspective ở thẻ cha", /\[perspective:1200px\]/.test(lat), true);
+  t("có preserve-3d ở lớp quay", /\[transform-style:preserve-3d\]/.test(lat), true);
+  t("có backface-visibility ở cả hai mặt",
+    (lat.match(/\[backface-visibility:hidden\]/g) ?? []).length, 2);
+  t("mặt sau quay sẵn 180 độ",
+    (lat.match(/\[transform:rotateY\(180deg\)\]/g) ?? []).length >= 2, true);
+
+  /* Thẻ giả trong chồng phải bị ẩn khỏi trình đọc màn hình: chúng là hình vẽ,
+     không phải nội dung. */
+  t("thẻ giả trong chồng là aria-hidden", (lat.match(/aria-hidden/g) ?? []).length, 2);
+  t("thẻ giả không nhận chuột", (lat.match(/pointer-events-none/g) ?? []).length, 2);
+
+  /* Bốn nút, không phải ba. Ba nút thì nút thấp nhất vẫn là "nhớ được, hơi
+     khó" — không có cách nào nói "tôi QUÊN SẠCH", mà chính vế đó (q < 3) mới
+     đặt lại quãng và tăng lapses trong SM-2. */
+  const man = readFileSync(new URL("../src/screens/student/TheGhiNho.jsx", import.meta.url), "utf8");
+  t("giữ đủ bốn mức, không rút còn ba",
+    /THU_TU = \["lai", "kho", "tot", "de"\]/.test(man), true);
+}
+
 console.log(fail ? `\n${pass} đạt, ${fail} hỏng` : `\n${pass} đạt, 0 hỏng`);
 process.exit(fail ? 1 : 0);
