@@ -54,6 +54,8 @@ import NotificationDropdown from "./screens/student/NotificationDropdown.jsx";
    mọi thứ qua props. Đó là lý do duy nhất nó được phép có mặt ở đây; xem quy
    tắc ở đầu file. */
 import TheLat3D from "./screens/student/TheLat3D.jsx";
+import TheBoThe from "./screens/student/TheBoThe.jsx";
+import { Lightbulb, PenLine } from "lucide-react";
 import { Avatar, DS_AVATAR } from "./shared/avatars.jsx";
 
 const VI = {
@@ -240,6 +242,34 @@ const PHAN_THI_MAU = {
  * Có mặt ở đây vì hiệu ứng 3D là thứ KHÔNG bộ kiểm nào thay được: `check:css`
  * chỉ biết lớp có sinh ra CSS hay không, còn "lật xong có đọc được mặt sau
  * không, có thấy chữ ngược lúc quay không" thì phải nhìn bằng mắt. */
+/* Thẻ bộ — chỉ dựng phần TRÌNH BÀY.
+ *
+ * `TheBoThe` nhận mọi thứ qua props và không chạm storageShim, nên đưa vào
+ * trang xem thử không mở kết nối nào.
+ *
+ * Có mặt ở đây vì hover và active là thứ KHÔNG bộ kiểm nào thay được:
+ * `check:css` chỉ biết lớp có sinh ra CSS hay không, còn "trỏ vào thì thẻ có
+ * nổi lên và mũi tên có nhích không" thì phải rê chuột mới biết. */
+function TheBoThu() {
+  const bo = [
+    { khoa: "loi_sai", ten: "Từ lỗi sai", Icon: Lightbulb,
+      nen: "bg-gradient-to-br from-indigo-500 to-purple-600 shadow-lg shadow-indigo-500/30 hover:shadow-2xl hover:shadow-indigo-500/40",
+      the: new Array(9).fill(0) },
+    { khoa: "tu_tao", ten: "Thẻ tự tạo", Icon: PenLine,
+      nen: "bg-gradient-to-br from-pink-400 to-rose-500 shadow-lg shadow-pink-500/30 hover:shadow-2xl hover:shadow-pink-500/40",
+      the: new Array(3).fill(0) },
+  ];
+  return (
+    <div className="mx-auto max-w-3xl py-6">
+      <h1 className="m-0 text-2xl font-extrabold text-ink">Thẻ ghi nhớ</h1>
+      <p className="m-0 mt-1 text-sm text-soft">Rê chuột lên thẻ để xem hiệu ứng.</p>
+      <div className="mt-6 grid gap-4 sm:grid-cols-2">
+        {bo.map((b) => <TheBoThe key={b.khoa} bo={b} onMo={() => {}} />)}
+      </div>
+    </div>
+  );
+}
+
 function TheLatThu() {
   const [lat, setLat] = useState(false);
   return (
@@ -439,6 +469,7 @@ function Preview() {
     ["/etudiant/auto-evaluation", "Tự chấm Production écrite"],
     ["/etudiant/phan-thi", "Một phần thi thử"],
     ["/etudiant/the-lat", "Thẻ ghi nhớ — lật 3D"],
+    ["/etudiant/the-bo", "Thẻ ghi nhớ — danh sách bộ"],
     ["/professeur/grille", "Soạn thang chấm"],
   ];
 
@@ -554,6 +585,7 @@ function Preview() {
           <Route path="/professeur/grille" element={<><Controls /><GrilleThu /></>} />
           <Route path="/etudiant/phan-thi" element={<><Controls /><PhanThiThu /></>} />
           <Route path="/etudiant/the-lat" element={<><Controls /><TheLatThu /></>} />
+          <Route path="/etudiant/the-bo" element={<><Controls /><TheBoThu /></>} />
           <Route path="/etudiant/danh-tinh" element={<><Controls /><DanhTinhThu /></>} />
           <Route path="/etudiant/thong-bao" element={<><Controls /><ThongBaoThu /></>} />
           <Route path="/etudiant/auto-evaluation" element={

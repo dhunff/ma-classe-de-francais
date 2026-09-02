@@ -27,6 +27,12 @@ const LOP = [
      `perspective` thiếu → quay bẹp, không có chiều sâu. */
   "[perspective:1200px]", "[transform-style:preserve-3d]",
   "[backface-visibility:hidden]", "[transform:rotateY(180deg)]",
+
+  /* Hiệu ứng thẻ bộ. `active:scale-[0.98]` là giá trị tuỳ ý; hai lớp kia là
+     biến thể ghép (group-hover, motion-reduce) — cả ba đều thuộc loại viết
+     sai một ký tự thì lớp im lặng biến mất và thẻ vẫn hiện bình thường,
+     chỉ là không phản ứng gì khi trỏ vào. */
+  "active:scale-[0.98]", "group-hover:translate-x-1.5", "motion-reduce:transition-none",
 ];
 
 let thieu = 0;

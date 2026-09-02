@@ -1,12 +1,13 @@
 import React, { useEffect, useMemo, useState } from "react";
 import {
   Layers, Sparkles, RefreshCw, CheckCircle2, AlertTriangle, Plus,
-  BookOpen, Headphones, PenLine, Lightbulb, ChevronRight, ArrowLeft,
+  BookOpen, Headphones, PenLine, Lightbulb, ArrowLeft,
 } from "lucide-react";
 import { docTheDenHan, sinhTheTuLoiSai, chamThe } from "../../shared/theGhiNho.js";
 import { MUC } from "../../shared/sm2.js";
 import TheLat3D from "./TheLat3D.jsx";
 import OTaoThe from "./OTaoThe.jsx";
+import TheBoThe from "./TheBoThe.jsx";
 
 /* Thẻ ghi nhớ — buổi ôn của học sinh.
  *
@@ -61,13 +62,13 @@ const MAU = {
    Chữ luôn trắng nên tương phản không phụ thuộc chủ đề. */
 const BO = {
   loi_sai:  { ten: "Từ lỗi sai", Icon: Lightbulb,
-              nen: "bg-gradient-to-br from-indigo-500 to-purple-600 shadow-lg shadow-indigo-500/30" },
+              nen: "bg-gradient-to-br from-indigo-500 to-purple-600 shadow-lg shadow-indigo-500/30 hover:shadow-2xl hover:shadow-indigo-500/40" },
   tu_tao:   { ten: "Thẻ tự tạo", Icon: PenLine,
-              nen: "bg-gradient-to-br from-pink-400 to-rose-500 shadow-lg shadow-pink-500/30" },
+              nen: "bg-gradient-to-br from-pink-400 to-rose-500 shadow-lg shadow-pink-500/30 hover:shadow-2xl hover:shadow-pink-500/40" },
   nghe:     { ten: "Nghe hiểu", Icon: Headphones,
-              nen: "bg-gradient-to-br from-blue-400 to-blue-600 shadow-lg shadow-blue-500/30" },
+              nen: "bg-gradient-to-br from-blue-400 to-blue-600 shadow-lg shadow-blue-500/30 hover:shadow-2xl hover:shadow-blue-500/40" },
   doc:      { ten: "Đọc hiểu", Icon: BookOpen,
-              nen: "bg-gradient-to-br from-fuchsia-500 to-purple-500 shadow-lg shadow-fuchsia-500/30" },
+              nen: "bg-gradient-to-br from-fuchsia-500 to-purple-500 shadow-lg shadow-fuchsia-500/30 hover:shadow-2xl hover:shadow-fuchsia-500/40" },
 };
 
 /* Xếp thẻ vào bộ. Thẻ tự tạo đứng riêng; còn lại gom theo nguồn.
@@ -84,26 +85,6 @@ function chiaBo(ds) {
     .filter(([, v]) => v.length > 0)
     .map(([k, v]) => ({ khoa: k, ...BO[k], the: v }))
     .sort((a, b) => b.the.length - a.the.length);
-}
-
-function TheBo({ bo, onMo }) {
-  const { Icon } = bo;
-  return (
-    <button type="button" onClick={onMo}
-      className={`relative w-full overflow-hidden rounded-3xl border-0 p-5 text-left ${bo.nen}`}>
-      <div className="grid h-11 w-11 place-items-center rounded-2xl bg-white/20">
-        <Icon size={20} className="text-white" />
-      </div>
-      <div className="mt-14 text-xs font-bold uppercase tracking-wide text-white/70">Thẻ ghi nhớ</div>
-      <div className="text-lg font-extrabold text-white">{bo.ten}</div>
-      <div className="text-sm text-white/80">{bo.the.length} thẻ tới hạn</div>
-
-      <span aria-hidden
-        className="absolute bottom-5 right-5 grid h-10 w-10 place-items-center rounded-full bg-white/25">
-        <ChevronRight size={18} className="text-white" />
-      </span>
-    </button>
-  );
 }
 
 export default function TheGhiNho() {
@@ -290,7 +271,7 @@ export default function TheGhiNho() {
       ) : (
         <div className="mt-6 grid gap-4 sm:grid-cols-2">
           {cacBo.map((b) => (
-            <TheBo key={b.khoa} bo={b} onMo={() => { setBoDangOn(b.khoa); setI(0); setLat(false); }} />
+            <TheBoThe key={b.khoa} bo={b} onMo={() => { setBoDangOn(b.khoa); setI(0); setLat(false); }} />
           ))}
         </div>
       )}
