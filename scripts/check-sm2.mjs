@@ -227,5 +227,46 @@ const MOC = new Date(2026, 8, 2);      // 02/09/2026, giờ địa phương
      tìm nữa, mãi mãi — một vòng lặp mạng vô hạn mà không có gì báo. */
   t("có cờ chặn vòng lặp tự tìm", /if \(daTuTim \|\| /.test(man), true);
 }
+/* ══ MẶT SAU KHÔNG ĐƯỢC CHỈ ĐƯỜNG TỚI CHỖ KHÔNG TỒN TẠI ══
+ *
+ * Câu dự phòng ban đầu viết "Mở lại bài để xem đáp án". Vế sau SAI: học sinh
+ * không có đường nào xem đáp án đúng — `answer_key` không cấp SELECT cho
+ * `authenticated` (migration 022), và Edge Function `grade` chỉ trả về đúng/sai
+ * kèm `explanation`. Không màn hình nào trong app hiện nó.
+ *
+ * Đo được 02/09: 18/18 thẻ sinh ra đều mang câu dự phòng đó, vì chỗ người ta
+ * SAI (bài đọc–nghe hiểu) và chỗ có lời giải thích (bài ngữ pháp) gần như
+ * không giao nhau. Sửa ở 067.
+ *
+ * BẢN ĐẦU CỦA CHÍNH CA KIỂM NÀY XANH GIẢ: tôi viết chuỗi tìm KHÔNG DẤU, nên nó
+ * không bao giờ khớp được câu tiếng Việt trong file, và `false === false` cho
+ * ra màu xanh dù có sửa hay không. Chuỗi phải y hệt bản trong mã. */
+{
+  const sql067 = readFileSync(new URL("../supabase/migrations/067_the_mat_sau_that_tha.sql", import.meta.url), "utf8");
+
+  const lenh = sql067
+    .replace(/\/\*[\s\S]*?\*\//g, " ")
+    .split(/\r?\n/).map((d) => d.replace(/--.*$/, "")).join("\n");
+
+  /* Chỉ soi THÂN HÀM, không soi cả file.
+     Bản trước của ca này soi cả file và đỏ — nhưng mã đúng, ca kiểm sai: câu cũ
+     BẮT BUỘC còn trong mệnh đề `where` của lệnh `update` dọn dữ liệu, nếu không
+     thì không tìm ra dòng nào để sửa. Thứ phải biến mất là câu cũ trong THÂN
+     HÀM, tức nội dung mà thẻ MỚI sẽ mang. */
+  const than = (lenh.match(/create or replace function public\.tao_the_tu_lo_hong[\s\S]*?end \$\$;/) || [""])[0];
+  t("đọc được thân hàm", than.length > 200, true);
+  t("thẻ mới không còn câu chỉ đường sai", /Mở lại bài để xem đáp án/.test(than), false);
+  t("thẻ mới mang câu thay thế nói thật", /Hãy hỏi giáo viên/.test(than), true);
+
+  /* Dữ liệu CŨ cũng phải được dọn — sửa hàm thôi thì 18 thẻ đã sinh vẫn mang
+     câu sai, và người dùng không có cách nào làm chúng sinh lại. */
+  t("có lệnh dọn thẻ cũ", /update public\.cards[\s\S]{0,300}?where back = /.test(lenh), true);
+
+  /* Phép lọc theo người dùng phải còn nguyên sau khi viết lại hàm. Đây là chỗ
+     dễ mất nhất khi chép lại một hàm dài, và mất nó nghĩa là mọi học sinh nhận
+     thẻ dựng từ câu sai của người khác. */
+  t("hàm viết lại vẫn lọc theo user", /where t\.user_id = ai/.test(lenh), true);
+  t("hàm viết lại vẫn là security definer", /security definer/.test(lenh), true);
+}
 console.log(fail ? `\n${pass} đạt, ${fail} hỏng` : `\n${pass} đạt, 0 hỏng`);
 process.exit(fail ? 1 : 0);
