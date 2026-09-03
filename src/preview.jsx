@@ -56,6 +56,7 @@ import NotificationDropdown from "./screens/student/NotificationDropdown.jsx";
 import TheLat3D from "./screens/student/TheLat3D.jsx";
 import TheBoThe from "./screens/student/TheBoThe.jsx";
 import NeoNguLieu from "./screens/student/NeoNguLieu.jsx";
+import ChonDoanVan from "./screens/teacher/ChonDoanVan.jsx";
 import { Lightbulb, PenLine } from "lucide-react";
 import { Avatar, DS_AVATAR } from "./shared/avatars.jsx";
 
@@ -67,6 +68,7 @@ const VI = {
     practice: "Luyện tập", calendar: "Lịch", settings: "Cài đặt",
     todo: "Cần làm", done: "Đã nộp", account: "Tài khoản", stats: "Thống kê", exam: "Thi thử", exams: "Đề thi thử", grading: "Chấm bài viết", oral: "Bài nói", results: "Kết quả thi",
     explanations: "Câu cần lời giải",
+    anchors: "Neo ngữ liệu",
     cards: "Thẻ ghi nhớ",
     primary: "Điều hướng chính", collapse: "Thu gọn thanh bên", expand: "Mở rộng thanh bên",
     menu: "Menu", people: "Lớp của bạn", close: "Đóng menu", open_menu: "Mở menu", tips: "Sổ tay lớp" },
@@ -276,6 +278,37 @@ function TheBoThu() {
  * `NeoNguLieu` nhận mọi thứ qua props và không chạm storageShim, nên được phép
  * có mặt ở đây. Và nó PHẢI có mặt: toàn bộ giá trị của tính năng này nằm ở chỗ
  * nhìn thấy đoạn nào được tô, nên không nhìn thì không kiểm được. */
+/* Bôi đen đoạn văn — chỉ dựng phần TRÌNH BÀY.
+ *
+ * `ChonDoanVan` chỉ import một hàm thuần, nên được phép có mặt ở đây. Và nó
+ * PHẢI có mặt: `getSelection` phụ thuộc hành vi trình duyệt chứ không phải
+ * logic, nên không bộ kiểm nào thay được việc bôi đen thật một lần. */
+function ChonDoanThu() {
+  const [chon, setChon] = useState("");
+  const van = "<p>En 2019, les ventes ont fortement augmenté dans toute l'Europe.</p>"
+    + "<p>Mais depuis 2023, la baisse concerne surtout les moins de 25 ans.</p>";
+  return (
+    <div className="mx-auto max-w-2xl py-6">
+      <h1 className="m-0 text-2xl font-extrabold text-ink">Bôi đen đoạn văn</h1>
+      <p className="m-0 mt-1 text-sm text-soft">
+        Kéo chuột qua một đoạn bên dưới. Chuỗi lấy được hiện ở khung dưới cùng.
+      </p>
+      <div className="mt-4">
+        <ChonDoanVan vanBan={van} onChon={setChon} />
+      </div>
+      <p className="m-0 mt-3 min-h-12 rounded-xl bg-surface2 p-3 text-sm text-ink">
+        {chon.trim()
+          ? <>Đang chọn: <em>« {chon.trim()} »</em></>
+          : <span className="text-soft">Chưa chọn đoạn nào.</span>}
+      </p>
+      <p className="m-0 mt-3 text-xs text-soft">
+        Thử bôi đen chính dòng chữ này — nó nằm NGOÀI đoạn văn, nên khung trên
+        phải không đổi.
+      </p>
+    </div>
+  );
+}
+
 function NeoThu() {
   const [chon, setChon] = useState(null);
   const vanBan = "<p>En 2019, les ventes ont fortement augmenté dans toute l'Europe.</p>"
@@ -517,6 +550,7 @@ function Preview() {
     ["/etudiant/the-lat", "Thẻ ghi nhớ — lật 3D"],
     ["/etudiant/the-bo", "Thẻ ghi nhớ — danh sách bộ"],
     ["/etudiant/neo", "Neo đáp án vào ngữ liệu"],
+    ["/professeur/chon-doan", "Đặt neo — bôi đen đoạn văn"],
     ["/professeur/grille", "Soạn thang chấm"],
   ];
 
@@ -634,6 +668,7 @@ function Preview() {
           <Route path="/etudiant/the-lat" element={<><Controls /><TheLatThu /></>} />
           <Route path="/etudiant/the-bo" element={<><Controls /><TheBoThu /></>} />
           <Route path="/etudiant/neo" element={<><Controls /><NeoThu /></>} />
+          <Route path="/professeur/chon-doan" element={<><Controls /><ChonDoanThu /></>} />
           <Route path="/etudiant/danh-tinh" element={<><Controls /><DanhTinhThu /></>} />
           <Route path="/etudiant/thong-bao" element={<><Controls /><ThongBaoThu /></>} />
           <Route path="/etudiant/auto-evaluation" element={

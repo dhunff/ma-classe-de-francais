@@ -38,7 +38,7 @@ npm run check:identity     # luật @username + hồ sơ, JS ↔ SQL ↔ i18n (6
 npm run check:notifs       # gửi thông báo + chuông + luật RPC (38 ca)
 npm run check:hoatdong     # nhật ký theo ngày + chuỗi ngày học (28 ca)
 npm run check:sm2          # thẻ ghi nhớ SM-2, lời giải, thẻ tự tạo (90 ca)
-npm run check:neo          # neo đáp án vào ngữ liệu (48 ca)
+npm run check:neo          # neo đáp án vào ngữ liệu (59 ca)
 npm run check:css          # lớp Tailwind có thật sinh ra CSS không
 npm run check:db           # database THẬT có khớp giả định của mã nguồn không
 ```
@@ -821,7 +821,25 @@ Xem `docs/roadmap-delf.md` — có nhật ký quyết định ở §5.
   nên học sinh nhiều khả năng đang đọc `undefined` ở đó. Cần đo trên tài khoản
   học sinh thật trước khi sửa.
 
-  CÒN TREO: chưa có màn cho giáo viên ĐẶT neo.
+  **Màn đặt neo — `/professeur/neo`, 03/09.** Giáo viên BÔI ĐEN đoạn văn chứ
+  không gõ lại: neo lưu đoạn trích nguyên văn, nên gõ lại là mời một lỗi
+  chính tả vào đúng chỗ không chịu được lỗi chính tả — sai một ký tự thì học
+  sinh nhận cảnh báo "chỗ đánh dấu không còn khớp" cho một bài chưa ai sửa.
+
+  `window.getSelection()` trả về vùng bôi đen của CẢ TRANG, nên phải kiểm cả
+  hai đầu (`anchorNode` và `focusNode`) có nằm trong đoạn văn không. Thiếu
+  phép kiểm đó thì bôi đen ở tiêu đề cũng được nhận.
+
+  `kiemNeo` chạy ngay lúc chọn và KHOÁ nút Lưu khi neo hỏng — đừng lưu xong
+  rồi để học sinh phát hiện hộ. Khối xem trước dùng thẳng `NeoNguLieu`, không
+  dựng lại bản gần giống: hai bản dựng cho cùng dữ liệu là hai chỗ để trôi
+  khỏi nhau, và chỗ trôi chỉ lộ ra ở phía học sinh nơi không ai đang nhìn.
+
+  `ChonDoanVan.jsx` tách riêng vì `DatNeo` import `exerciseStore` nên không
+  vào được /preview.html — mà `getSelection` phụ thuộc hành vi trình duyệt,
+  không bộ kiểm nào thay được việc bôi đen thật một lần.
+
+  CÒN TREO: chưa câu nào trong thư viện có neo, nên chưa chạy được đầu-cuối.
 - `s:mcf-submissions` vẫn giữ làm sao lưu, chưa xoá.
 
 

@@ -1,6 +1,6 @@
 import {
   LayoutDashboard, BookOpen, Users, BarChart3, Dumbbell,
-  ClipboardList, CheckSquare, CalendarDays, Settings, Lightbulb, Timer, PenLine, Trophy, Mic, Layers, Lightbulb as Bulb,
+  ClipboardList, CheckSquare, CalendarDays, Settings, Lightbulb, Timer, PenLine, Trophy, Mic, Layers, Lightbulb as Bulb, Anchor,
 } from "lucide-react";
 
 /* Điều hướng của vỏ app.
@@ -37,6 +37,9 @@ export const TEACHER_NAV = [
      `view`. Đặt cạnh hai màn chấm vì cùng một loại việc: nhìn vào chỗ học
      sinh chưa hiểu rồi làm gì đó về nó. */
   { to: "/professeur/loi-giai", labelKey: "nav.explanations", Icon: Bulb },
+  /* Đặt neo. Đứng cạnh « Câu cần lời giải » vì cùng một loại việc: nhìn vào
+     chỗ học sinh chưa hiểu rồi làm gì đó về nó. */
+  { to: "/professeur/neo", labelKey: "nav.anchors", Icon: Anchor },
 ];
 
 export const STUDENT_NAV = [

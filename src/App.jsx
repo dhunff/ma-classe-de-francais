@@ -12,6 +12,7 @@ import PEGrading from './screens/teacher/PEGrading.jsx'
 import BaiNoiGiaoVien from './screens/teacher/BaiNoiGiaoVien.jsx'
 import TheGhiNho from './screens/student/TheGhiNho.jsx'
 import LoiGiaiUuTien from './screens/teacher/LoiGiaiUuTien.jsx'
+import DatNeo from './screens/teacher/DatNeo.jsx'
 import ExamResults from './screens/student/ExamResults.jsx'
 
 import { C } from './shared/tokens.js'
@@ -261,6 +262,7 @@ function AppInner() {
               <Route path="/professeur/copies" element={<PEGrading />} />
               <Route path="/professeur/oral" element={<BaiNoiGiaoVien />} />
               <Route path="/professeur/loi-giai" element={<LoiGiaiUuTien />} />
+              <Route path="/professeur/neo" element={<DatNeo />} />
 
               <Route path="/professeur/*" element={<Navigate to="/professeur/dashboard" replace />} />
             </Route>

@@ -224,5 +224,53 @@ const t = (ten, got, want) => {
   t("hỏng thì quên đi để còn hỏi lại", /daHoi\.delete\(exerciseId\)/.test(store), true);
 }
 
+/* ══ MÀN ĐẶT NEO CỦA GIÁO VIÊN ══
+ *
+ * Chỗ dễ hỏng nhất không phải phép lưu mà là cách LẤY đoạn trích. Bắt gõ lại
+ * đoạn văn là mời một lỗi chính tả vào đúng chỗ không chịu được lỗi chính tả:
+ * sai một ký tự thì `viTriTrich` trả null, và học sinh nhận cảnh báo "chỗ đánh
+ * dấu không còn khớp" cho một bài chưa ai sửa. */
+{
+  const boChuThich = (src) => src.replace(/\/\*[\s\S]*?\*\//g, " ")
+    .replace(/\{\/\*[\s\S]*?\*\/\}/g, " ")
+    .split(/\r?\n/).map((x) => x.replace(/^\s*\/\/.*$/, "")).join("\n");
+  const man = boChuThich(readFileSync(new URL("../src/screens/teacher/DatNeo.jsx", import.meta.url), "utf8"));
+
+  /* Cơ chế bôi đen nằm ở `ChonDoanVan.jsx` — tách ra file riêng vì `DatNeo`
+     import `exerciseStore` nên không vào được /preview.html, mà `getSelection`
+     phụ thuộc hành vi trình duyệt và phải nhìn thấy mới kiểm được. */
+  const chon = boChuThich(readFileSync(new URL("../src/screens/teacher/ChonDoanVan.jsx", import.meta.url), "utf8"));
+
+  t("lấy đoạn bằng vùng bôi đen", /window\.getSelection/.test(chon), true);
+
+  /* Vùng bôi đen phải nằm TRONG đoạn văn, và kiểm CẢ HAI đầu: bôi từ trong kéo
+     ra ngoài thì một đầu vẫn nằm trong, và chuỗi nhận được dài hơn đoạn văn. */
+  t("chỉ nhận vùng chọn nằm trong đoạn văn", /contains\(sel\.anchorNode\)/.test(chon), true);
+  t("kiểm cả đầu kia của vùng chọn", /contains\(sel\.focusNode\)/.test(chon), true);
+  t("màn soạn dùng lại ChonDoanVan", /<ChonDoanVan/.test(man), true);
+
+  /* Kiểm TRƯỚC khi lưu: neo hỏng thì khoá nút, đừng để học sinh phát hiện hộ. */
+  t("kiểm neo trước khi cho lưu", /kiemNeo\(/.test(man), true);
+  t("nút lưu khoá khi neo hỏng", /disabled=\{dangLuu \|\| !luuDuoc\}/.test(man), true);
+
+  /* Đọc kết quả trước khi báo xong — lần thứ sáu trong dự án. */
+  t("đọc kết quả trả về trước khi báo xong", /if \(!kq\.ok\)/.test(man), true);
+
+  /* Bộ nhớ của docNeo giữ theo bài. Không quên thì chính màn này và cả học
+     sinh còn đọc bản cũ cho tới khi tải lại trang. */
+  t("quên bộ nhớ sau khi lưu", /quenNeo\(bai\.id\)/.test(man), true);
+
+  /* Xem trước dùng ĐÚNG thành phần học sinh thấy, không dựng lại bản gần
+     giống — hai bản dựng cho cùng dữ liệu là hai chỗ để trôi khỏi nhau, và chỗ
+     trôi chỉ lộ ra ở phía học sinh nơi không ai đang nhìn. */
+  t("xem trước dùng lại NeoNguLieu", /<NeoNguLieu/.test(man), true);
+
+  /* `key` theo câu: thiếu thì đoạn trích của câu trước dính sang câu sau. */
+  t("dựng lại trình soạn khi đổi câu", /<SoanNeo key=\{cau\.id\}/.test(man), true);
+
+  /* Chỉ bày bài CÓ ngữ liệu. Bài không có đoạn văn thì không có gì để neo. */
+  t("lọc bài không có ngữ liệu", /filter\(\(x\) => String\(x\.readingText/.test(man), true);
+}
+
 console.log(fail ? `\n${pass} đạt, ${fail} hỏng` : `\n${pass} đạt, 0 hỏng`);
 process.exit(fail ? 1 : 0);
