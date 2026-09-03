@@ -55,6 +55,7 @@ import NotificationDropdown from "./screens/student/NotificationDropdown.jsx";
    tắc ở đầu file. */
 import TheLat3D from "./screens/student/TheLat3D.jsx";
 import TheBoThe from "./screens/student/TheBoThe.jsx";
+import NeoNguLieu from "./screens/student/NeoNguLieu.jsx";
 import { Lightbulb, PenLine } from "lucide-react";
 import { Avatar, DS_AVATAR } from "./shared/avatars.jsx";
 
@@ -270,6 +271,51 @@ function TheBoThu() {
   );
 }
 
+/* Neo ngữ liệu — chỉ dựng phần TRÌNH BÀY.
+ *
+ * `NeoNguLieu` nhận mọi thứ qua props và không chạm storageShim, nên được phép
+ * có mặt ở đây. Và nó PHẢI có mặt: toàn bộ giá trị của tính năng này nằm ở chỗ
+ * nhìn thấy đoạn nào được tô, nên không nhìn thì không kiểm được. */
+function NeoThu() {
+  const [chon, setChon] = useState(null);
+  const vanBan = "<p>En 2019, les ventes ont fortement augmenté dans toute l'Europe.</p>"
+    + "<p>Mais depuis 2023, la baisse concerne surtout les moins de 25 ans, "
+    + "un renversement que les chercheurs jugent durable.</p>";
+  const evidence = {
+    trich: "depuis 2023, la baisse concerne surtout les moins de 25 ans",
+    pieges: [
+      { option: 0, trich: "En 2019, les ventes ont fortement augmenté",
+        vi_sao: "Đúng số liệu, nhưng nói về năm 2019 — câu hỏi hỏi về giai đoạn từ 2023." },
+      { option: 2, trich: "dans toute l'Europe",
+        vi_sao: "Lặp nguyên cụm trong bài, nhưng nó gắn với vế tăng, không phải vế giảm." },
+    ],
+  };
+  return (
+    <div className="mx-auto max-w-2xl py-6">
+      <h1 className="m-0 text-2xl font-extrabold text-ink">Chữa bài</h1>
+      <p className="m-0 mt-1 text-sm text-soft">
+        Chọn một đáp án để xem vì sao nó dụ được bạn.
+      </p>
+      <div className="mt-4 flex flex-wrap gap-2">
+        {[["Chưa chọn", null], ["Chọn bẫy A", 0], ["Chọn bẫy C", 2], ["Chọn đúng", 1]].map(
+          ([nhan, v]) => (
+            <button key={nhan} type="button" onClick={() => setChon(v)}
+              className={`rounded-full border-0 px-4 py-2 text-left text-sm font-bold ${
+                chon === v ? "bg-primary text-white" : "bg-surface2 text-ink"}`}>
+              {nhan}
+            </button>
+          ))}
+      </div>
+      <div className="mt-4">
+        <NeoNguLieu vanBan={vanBan} evidence={evidence} chonSai={chon} />
+      </div>
+      <div className="mt-4">
+        <NeoNguLieu vanBan={vanBan} evidence={{ trich: "một câu đã bị xoá khỏi bài" }} />
+      </div>
+    </div>
+  );
+}
+
 function TheLatThu() {
   const [lat, setLat] = useState(false);
   return (
@@ -470,6 +516,7 @@ function Preview() {
     ["/etudiant/phan-thi", "Một phần thi thử"],
     ["/etudiant/the-lat", "Thẻ ghi nhớ — lật 3D"],
     ["/etudiant/the-bo", "Thẻ ghi nhớ — danh sách bộ"],
+    ["/etudiant/neo", "Neo đáp án vào ngữ liệu"],
     ["/professeur/grille", "Soạn thang chấm"],
   ];
 
@@ -586,6 +633,7 @@ function Preview() {
           <Route path="/etudiant/phan-thi" element={<><Controls /><PhanThiThu /></>} />
           <Route path="/etudiant/the-lat" element={<><Controls /><TheLatThu /></>} />
           <Route path="/etudiant/the-bo" element={<><Controls /><TheBoThu /></>} />
+          <Route path="/etudiant/neo" element={<><Controls /><NeoThu /></>} />
           <Route path="/etudiant/danh-tinh" element={<><Controls /><DanhTinhThu /></>} />
           <Route path="/etudiant/thong-bao" element={<><Controls /><ThongBaoThu /></>} />
           <Route path="/etudiant/auto-evaluation" element={

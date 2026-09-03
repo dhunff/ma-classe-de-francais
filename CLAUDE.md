@@ -38,6 +38,7 @@ npm run check:identity     # luật @username + hồ sơ, JS ↔ SQL ↔ i18n (6
 npm run check:notifs       # gửi thông báo + chuông + luật RPC (38 ca)
 npm run check:hoatdong     # nhật ký theo ngày + chuỗi ngày học (28 ca)
 npm run check:sm2          # thẻ ghi nhớ SM-2, lời giải, thẻ tự tạo (90 ca)
+npm run check:neo          # neo đáp án vào ngữ liệu (37 ca)
 npm run check:css          # lớp Tailwind có thật sinh ra CSS không
 npm run check:db           # database THẬT có khớp giả định của mã nguồn không
 ```
@@ -764,6 +765,36 @@ Xem `docs/roadmap-delf.md` — có nhật ký quyết định ở §5.
   Độ lệch chồng thẻ phải TÍNH: `scale-90` thu quanh tâm nên mép trên tụt xuống
   5% chiều cao, và `-translate-y-4` chỉ bù được một phần — bản đầu nhô ra ≈5px
   và trên màn hình không thấy gì. Đo bằng ảnh chụp mới ra.
+- **Neo đáp án vào ngữ liệu — nền móng xong 03/09** (migration 075/076).
+  roadmap §3.2 gọi đây là "tính năng đáng giá nhất trong cả tài liệu này".
+
+  **`evidence` LÀ ĐÁP ÁN TRÁ HÌNH.** "Đoạn văn chứa câu trả lời" chính là câu
+  trả lời, nói vòng. Nên nó bị khoá y như `answer_key`: không cấp SELECT cho
+  anon lẫn authenticated, đọc qua RPC `doc_neo` và CHỈ cho những câu người đó
+  ĐÃ trả lời (đọc từ `answers`, không đọc `attempts.finished_at` — lượt bỏ dở
+  vẫn có câu đã làm và những câu ấy chữa được).
+
+  **Đường rò nguy hiểm nhất không nằm ở SQL mà ở `toRows`:** nó quét MỌI trường
+  lạ vào `payload`, mà `payload` thì anon đọc được. Không tách `evidence` đích
+  danh thì mỗi lần giáo viên bấm Lưu là neo được bày ra chỗ ai cũng đọc — đúng
+  cơ chế đã làm lộ đáp án câu `tableau` trước 022, nơi 022 dọn còn Builder bày
+  lại.
+
+  **Lưu ĐOẠN TRÍCH, không lưu offset** — khác roadmap có chủ đích. Offset trôi
+  khi giáo viên sửa một dấu phẩy và trôi IM LẶNG; `reading_text` lại là HTML
+  nên offset vào chuỗi HTML sẽ cắt giữa một thẻ. Đoạn trích thì hoặc khớp hoặc
+  không, và "không khớp" là trạng thái hiện được ra màn hình.
+
+  Dựng bằng MẢNG mảnh + React, không `dangerouslySetInnerHTML`: phải chèn
+  `<mark>` vào giữa nên chèn theo vị trí vào chuỗi HTML sẽ có ngày làm vỡ trang.
+  Đánh đổi: mất định dạng in đậm của giáo viên. Ở màn chữa bài thì tô sáng
+  quan trọng hơn in đậm.
+
+  Chỉ tô bẫy mà CHÍNH học sinh đó đã sa vào. Tô hết mọi bẫy là biến phần chữa
+  bài thành bài giảng, và thứ đáng học nhất — vì sao TÔI bị dụ — chìm trong đó.
+
+  CÒN TREO: chưa có màn cho giáo viên ĐẶT neo, và chưa nối vào màn chữa bài
+  thật. Hiện mới xem được ở /preview.html.
 - `s:mcf-submissions` vẫn giữ làm sao lưu, chưa xoá.
 
 

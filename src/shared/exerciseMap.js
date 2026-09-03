@@ -168,6 +168,18 @@ export function toRows(ex, store) {
       if (payload[k] !== undefined) { answer_key[k] = payload[k]; delete payload[k]; }
     }
 
+    /* ── `evidence` CŨNG PHẢI RỜI KHỎI payload ──
+     *
+     * "Đoạn văn chứa câu trả lời" chính là câu trả lời, chỉ nói vòng. Vòng lặp
+     * gom-mọi-trường-lạ ở trên sẽ đẩy nó vào `payload`, mà `payload` cấp
+     * SELECT cho anon — tức là mỗi lần giáo viên bấm Lưu là neo được bày ra
+     * chỗ ai cũng đọc, TRƯỚC khi học sinh làm bài.
+     *
+     * Đúng cơ chế đã làm lộ trọn bộ đáp án câu `tableau` trước migration 022:
+     * 022 dọn một lần, còn hàm này đặt lại vào chỗ cũ mỗi lượt ghi. */
+    const evidence = payload.evidence !== undefined ? payload.evidence : null;
+    delete payload.evidence;
+
     /* `ordre`: đáp án chính là THỨ TỰ của mảng, không có trường riêng để giấu.
        Client vẫn cần nội dung các mảnh để hiển thị, nên payload giữ elements đã
        XÁO, còn bản đúng thứ tự nằm ở answer_key — đúng như 022 làm, và `grade`
@@ -188,6 +200,7 @@ export function toRows(ex, store) {
       explanation: q.explanation || null,
       competence: q.competence || null,
       point_gram: q.pointGram || null,
+      evidence,
     };
   });
 
