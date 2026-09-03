@@ -38,7 +38,7 @@ npm run check:identity     # luật @username + hồ sơ, JS ↔ SQL ↔ i18n (6
 npm run check:notifs       # gửi thông báo + chuông + luật RPC (38 ca)
 npm run check:hoatdong     # nhật ký theo ngày + chuỗi ngày học (28 ca)
 npm run check:sm2          # thẻ ghi nhớ SM-2, lời giải, thẻ tự tạo (90 ca)
-npm run check:neo          # neo đáp án vào ngữ liệu (37 ca)
+npm run check:neo          # neo đáp án vào ngữ liệu (48 ca)
 npm run check:css          # lớp Tailwind có thật sinh ra CSS không
 npm run check:db           # database THẬT có khớp giả định của mã nguồn không
 ```
@@ -793,8 +793,35 @@ Xem `docs/roadmap-delf.md` — có nhật ký quyết định ở §5.
   Chỉ tô bẫy mà CHÍNH học sinh đó đã sa vào. Tô hết mọi bẫy là biến phần chữa
   bài thành bài giảng, và thứ đáng học nhất — vì sao TÔI bị dụ — chìm trong đó.
 
-  CÒN TREO: chưa có màn cho giáo viên ĐẶT neo, và chưa nối vào màn chữa bài
-  thật. Hiện mới xem được ở /preview.html.
+**Nối vào màn chữa bài — 03/09.** Và việc nối lộ ra một lỗ cũ: câu `qcm`
+  KHÔNG hề được dựng trong khối « Voir ma copie corrigée », lại còn không nằm
+  trong điều kiện mở khối đó. Nghĩa là một bài đọc hiểu toàn trắc nghiệm mở ra
+  là danh sách rỗng — đúng loại bài mà việc chữa quan trọng nhất.
+
+  Nhánh qcm KHÔNG hiện "đáp án đúng là B": `answer_key` không cấp SELECT cho
+  học sinh (022), nên phía client không có con số đó, và dựng ra một cái là
+  bịa. Neo thay thế nó — chỉ ra CHỖ chứa câu trả lời, dạy nhiều hơn một chữ
+  cái, và không lộ đáp án của câu chưa làm.
+
+  Nạp neo đặt ở component CẤP MODULE (`NeoCauHoi`), không trong `Card`: `Card`
+  được định nghĩa bên trong `Student` nên nó là component MỚI sau mỗi lần cha
+  dựng lại, và mọi state trong đó bị đặt lại theo — một `useEffect` ở đó sẽ gọi
+  mạng lại sau mỗi lần gõ phím ở chỗ khác trong trang.
+
+  `docNeo` nhớ theo BÀI và nhớ cả PROMISE, không chỉ kết quả: mười câu cùng bài
+  dựng trong một khung hình thì lời gọi thứ hai xuất phát TRƯỚC khi lời gọi thứ
+  nhất trả về, nên bộ nhớ chỉ giữ kết quả sẽ không chặn được gì. Hỏng thì quên
+  đi, để một lần mất mạng không thành mất neo tới khi tải lại trang.
+
+  Bài không có `reading_text` thì không gọi mạng — phép lọc rẻ nhất, cắt phần
+  lớn lời gọi vì bài ngữ pháp không có ngữ liệu.
+
+  **Phát hiện kèm theo, CHƯA sửa:** nhánh `vf` hiện « Bonne réponse :
+  {VF_OPTS[q.answer]} », mà `answer` đã bị chuyển sang `answer_key` từ 022 —
+  nên học sinh nhiều khả năng đang đọc `undefined` ở đó. Cần đo trên tài khoản
+  học sinh thật trước khi sửa.
+
+  CÒN TREO: chưa có màn cho giáo viên ĐẶT neo.
 - `s:mcf-submissions` vẫn giữ làm sao lưu, chưa xoá.
 
 

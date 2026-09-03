@@ -16,6 +16,7 @@ import { BookOpen, GraduationCap, MoreVertical, Pencil, Copy, Trash2, RotateCcw,
 import { BarChart, Bar, LineChart, Line, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from "recharts";
 import PracticeHub from "../../PracticeHub.jsx";
 import Taking from "./Taking.jsx";
+import NeoCauHoi from "./NeoCauHoi.jsx";
 
 
 /* ================= Student ================= */
@@ -181,7 +182,7 @@ function Student({ name, exercises, submissions, setSubmissions, accounts, setAc
             </a>
           </div>
         )}
-        {sub?.graded && ex.questions.some((q) => q.type === "open" || q.type === "vf" || q.type === "tableau" || q.type === "ordre" || q.type === "fill" || q.type === "conj") && (
+        {sub?.graded && ex.questions.some((q) => q.type === "open" || q.type === "vf" || q.type === "tableau" || q.type === "ordre" || q.type === "fill" || q.type === "conj" || q.type === "qcm") && (
           <details style={{ marginTop: 10, fontSize: 13.5 }}>
             <summary style={{ cursor: "pointer", color: C.primary, fontWeight: 700 }}>📋 Voir ma copie corrigée</summary>
             <div style={{ marginTop: 10, display: "grid", gap: 12 }}>
@@ -216,6 +217,27 @@ function Student({ name, exercises, submissions, setSubmissions, accounts, setAc
                     </div>
                   );
                 }
+                /* ── TRẮC NGHIỆM ──
+                   Nhánh này trước đây KHÔNG tồn tại: bài đọc hiểu toàn trắc
+                   nghiệm mở "copie corrigée" ra là một danh sách rỗng, đúng
+                   loại bài mà việc chữa quan trọng nhất.
+
+                   KHÔNG hiện "đáp án đúng là B": `answer_key` không cấp SELECT
+                   cho học sinh (022), nên phía này không có con số đó và bịa
+                   ra một cái là sai. Thay vào đó là NEO — nó chỉ ra chỗ chứa
+                   câu trả lời trong bài, dạy được nhiều hơn một chữ cái, và
+                   không lộ đáp án của câu chưa làm. */
+                if (q.type === "qcm") {
+                  const chon = typeof a === "number" ? a : (a?.choice ?? null);
+                  return (
+                    <div key={q.id} style={{ background: "var(--mcf-surface2)", borderRadius: 14, padding: "12px 15px", border: `1px solid ${C.line}` }}>
+                      <div style={{ fontWeight: 700, marginBottom: 6 }}>{i + 1}. {q.prompt}</div>
+                      <div>Mon choix : <strong>{chon != null ? (q.options?.[chon] ?? "—") : "—"}</strong></div>
+                      <NeoCauHoi exerciseId={ex.id} questionId={q.id}
+                        vanBan={ex.readingText} chonSai={chon} />
+                    </div>
+                  );
+                }
                 if (q.type === "tableau") return (
                   <div key={q.id} style={{ background: "var(--mcf-surface2)", borderRadius: 14, padding: "12px 15px", border: `1px solid ${C.line}` }}>
                     <div style={{ fontWeight: 700, marginBottom: 8 }}>{i + 1}. {q.prompt}</div>
@@ -234,6 +256,10 @@ function Student({ name, exercises, submissions, setSubmissions, accounts, setAc
                       {/* Lời giải thích chỉ hiện khi sai — đó là lúc nó có việc
                           để làm. Người trả lời đúng không cần đọc lại lý do. */}
                       <WrongExplanation show={!good} explanation={q.explanation || q.explication || ex?.explications} />
+                      {/* Chỉ neo khi SAI: người trả lời đúng không cần ai chỉ
+                          lại chỗ chứa đáp án. */}
+                      {!good && <NeoCauHoi exerciseId={ex.id} questionId={q.id}
+                        vanBan={ex.readingText} chonSai={null} />}
                     </div>
                   );
                 }

@@ -176,5 +176,53 @@ const t = (ten, got, want) => {
   t("đường ghi kiểm vai giáo viên", /if not public\.is_teacher\(\)/.test(sql), true);
 }
 
+/* ══ NỐI VÀO MÀN CHỮA BÀI ══
+ *
+ * Câu `qcm` TRƯỚC ĐÂY KHÔNG ĐƯỢC DỰNG trong khối "copie corrigée", và cũng
+ * không nằm trong điều kiện mở khối đó — nên một bài đọc hiểu toàn trắc
+ * nghiệm mở ra là danh sách rỗng, đúng loại bài mà việc chữa quan trọng nhất
+ * và cũng là chỗ neo có ích nhất. */
+{
+  const boChuThich = (src) => src.replace(/\/\*[\s\S]*?\*\//g, " ")
+    .replace(/\{\/\*[\s\S]*?\*\/\}/g, " ")
+    .split(/\r?\n/).map((x) => x.replace(/^\s*\/\/.*$/, "")).join("\n");
+  const st = boChuThich(readFileSync(new URL("../src/screens/student/Student.jsx", import.meta.url), "utf8"));
+  const nc = boChuThich(readFileSync(new URL("../src/screens/student/NeoCauHoi.jsx", import.meta.url), "utf8"));
+  const store = boChuThich(readFileSync(new URL("../src/shared/neoStore.js", import.meta.url), "utf8"));
+
+  t("khối chữa bài nhận câu qcm", /q\.type === "qcm"/.test(st), true);
+  t("có dựng nhánh qcm", /Mon choix/.test(st), true);
+  t("neo được nối vào màn chữa bài", /<NeoCauHoi/.test(st), true);
+
+  /* KHÔNG được hiện đáp án đúng của qcm: `answer_key` không cấp SELECT cho học
+     sinh, nên phía này không có con số đó — dựng nó ra là bịa.
+
+     Chỉ soi TRONG nhánh qcm. Bản đầu soi cả file và đỏ, nhưng mã đúng còn ca
+     kiểm sai: nó bắt trúng nhánh `vf`, nơi câu "Bonne réponse" đã có từ lâu. */
+  const iQcm = st.indexOf('if (q.type === "qcm")');
+  const nhanhQcm = iQcm >= 0 ? st.slice(iQcm, st.indexOf('if (q.type === "tableau")', iQcm)) : "";
+  t("đọc được nhánh qcm", nhanhQcm.length > 100, true);
+  t("nhánh qcm không bịa đáp án đúng", /Bonne réponse|q\.answer/.test(nhanhQcm), false);
+
+  /* Nạp phải nằm ở component CẤP MODULE. `Card` được định nghĩa bên trong
+     `Student`, nên nó là component mới sau mỗi lần cha dựng lại và mọi state
+     trong đó bị đặt lại — một useEffect đặt ở đó sẽ gọi mạng lại liên tục. */
+  t("nạp neo ở component riêng, không trong Card", /useEffect/.test(nc), true);
+  t("Student.jsx không tự gọi docNeo", /docNeo\(/.test(st), false);
+
+  /* Bỏ lượt trả về khi component đã gỡ. */
+  t("huỷ lượt nạp khi gỡ", /if \(con\) setNeo|if \(!con\) return/.test(nc), true);
+
+  /* Không có ngữ liệu thì không hỏi máy chủ — phép lọc rẻ nhất, cắt phần lớn
+     lời gọi vì bài ngữ pháp không có reading_text. */
+  t("không có ngữ liệu thì không gọi mạng", /!String\(vanBan \?\? ""\)\.trim\(\)/.test(nc), true);
+
+  /* Nhớ theo BÀI: mười câu cùng bài dựng trong một khung hình phải chỉ tốn một
+     lời gọi. Và phải nhớ PROMISE, không phải kết quả — lời gọi thứ hai xuất
+     phát trước khi lời gọi thứ nhất trả về. */
+  t("nhớ lời gọi theo bài", /daHoi\.set\(exerciseId, chay\)/.test(store), true);
+  t("hỏng thì quên đi để còn hỏi lại", /daHoi\.delete\(exerciseId\)/.test(store), true);
+}
+
 console.log(fail ? `\n${pass} đạt, ${fail} hỏng` : `\n${pass} đạt, 0 hỏng`);
 process.exit(fail ? 1 : 0);

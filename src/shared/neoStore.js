@@ -14,8 +14,37 @@ import { supabase } from "../storageShim.js";
  * Và đó là điều mong muốn: neo là đáp án nói vòng. Hàm `doc_neo` chỉ trả về
  * neo của những câu người gọi ĐÃ TRẢ LỜI. */
 
+/* Nhớ theo BÀI, không theo câu.
+ *
+ * Màn chữa bài dựng nhiều câu của cùng một bài, và mỗi câu cần neo của chính
+ * nó. Không nhớ thì mười câu là mười lời gọi giống hệt nhau, cùng lúc, cho
+ * cùng một kết quả.
+ *
+ * Nhớ cả PROMISE chứ không chỉ kết quả: mười câu dựng trong cùng một khung
+ * hình thì lời gọi thứ hai xuất phát trước khi lời gọi thứ nhất trả về, và
+ * một bộ nhớ chỉ giữ kết quả sẽ không chặn được gì.
+ *
+ * Không có hạn dùng: neo do giáo viên đặt, đổi rất thưa, và bộ nhớ này chết
+ * theo lần tải trang. */
+const daHoi = new Map();
+
+export function quenNeo(exerciseId) {
+  if (exerciseId) daHoi.delete(exerciseId); else daHoi.clear();
+}
+
 export async function docNeo(exerciseId) {
   if (!exerciseId) return {};
+  if (daHoi.has(exerciseId)) return daHoi.get(exerciseId);
+  const chay = _docNeo(exerciseId);
+  daHoi.set(exerciseId, chay);
+  /* Hỏng thì QUÊN đi, để lần sau còn hỏi lại. Giữ một promise hỏng trong bộ
+     nhớ là biến một lần mất mạng thành mất neo vĩnh viễn cho tới khi tải lại
+     trang. */
+  chay.then((r) => { if (!r || !Object.keys(r).length) daHoi.delete(exerciseId); });
+  return chay;
+}
+
+async function _docNeo(exerciseId) {
   const { data, error } = await supabase.rpc("doc_neo", { p_exercise_id: exerciseId });
   /* Trả object rỗng khi hỏng, KHÔNG trả null: chỗ gọi dùng nó để tra theo
      `question_id`, và phần chữa bài vẫn phải đọc được khi không có neo nào.
