@@ -57,6 +57,7 @@ import TheLat3D from "./screens/student/TheLat3D.jsx";
 import TheBoThe from "./screens/student/TheBoThe.jsx";
 import NeoNguLieu from "./screens/student/NeoNguLieu.jsx";
 import ChonDoanVan from "./screens/teacher/ChonDoanVan.jsx";
+import TeamSection from "./screens/public/TeamSection.jsx";
 import { Lightbulb, PenLine } from "lucide-react";
 import { Avatar, DS_AVATAR } from "./shared/avatars.jsx";
 
@@ -284,6 +285,44 @@ function TheBoThu() {
  * `ChonDoanVan` chỉ import một hàm thuần, nên được phép có mặt ở đây. Và nó
  * PHẢI có mặt: `getSelection` phụ thuộc hành vi trình duyệt chứ không phải
  * logic, nên không bộ kiểm nào thay được việc bôi đen thật một lần. */
+/* Đội ngũ chuyên môn — dữ liệu GIẢ, và nó chỉ sống ở đây.
+ *
+ * Quy tắc 1 của dự án: dữ liệu giả để xem bố cục chỉ nằm trong preview.jsx.
+ * `src/screens/public/doiNgu.js` trên nhánh thật là một mảng RỖNG, nên khối
+ * đội ngũ không hiện trên trang giới thiệu cho tới khi có người thật.
+ *
+ * Tên và bằng cấp dưới đây cố ý ghi rõ « (giả) » — để không ai chép nhầm sang
+ * tệp thật rồi quên rằng chúng chưa bao giờ được kiểm chứng. */
+const DOI_NGU_THU = [
+  { ten: "Nguyễn Thu Hà (giả)", chucDanh: "Giáo viên · DALF C1 (giả)",
+    gioiThieu: "Bảy năm luyện thi DELF B1–B2. Chuyên phần nói và phản xạ hội thoại." },
+  { ten: "Trần Minh Khoa (giả)", chucDanh: "Giáo viên · DALF C2 (giả)",
+    gioiThieu: "Chấm Production écrite theo thang chính thức. Từng ôn thi tại Grenoble." },
+  { ten: "Lê Phương Anh (giả)", chucDanh: "Trợ giảng · DELF B2 (giả)",
+    gioiThieu: "Theo sát học sinh mới bắt đầu, xây lộ trình từ A1 lên B1." },
+];
+
+function DoiNguThu() {
+  return (
+    <div className="mx-auto max-w-6xl py-6">
+      <p className="m-0 rounded-xl bg-warn-soft p-3 text-xs font-semibold text-ink">
+        Dữ liệu giả, chỉ để xem bố cục. Trên trang thật danh sách đang RỖNG nên
+        khối này không hiện ra.
+      </p>
+      <TeamSection ds={DOI_NGU_THU} />
+      <div className="mt-10">
+        <p className="m-0 text-xs font-bold uppercase tracking-wide text-soft">
+          Danh sách rỗng — đúng trạng thái đang chạy thật
+        </p>
+        <div className="mt-2 rounded-xl border border-line bg-surface p-4 text-sm text-soft">
+          <TeamSection ds={[]} />
+          (không dựng gì cả)
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function ChonDoanThu() {
   const [chon, setChon] = useState("");
   const van = "<p>En 2019, les ventes ont fortement augmenté dans toute l'Europe.</p>"
@@ -552,6 +591,7 @@ function Preview() {
     ["/etudiant/the-bo", "Thẻ ghi nhớ — danh sách bộ"],
     ["/etudiant/neo", "Neo đáp án vào ngữ liệu"],
     ["/professeur/chon-doan", "Đặt neo — bôi đen đoạn văn"],
+    ["/gioi-thieu/doi-ngu", "Đội ngũ chuyên môn"],
     ["/professeur/grille", "Soạn thang chấm"],
   ];
 
@@ -670,6 +710,7 @@ function Preview() {
           <Route path="/etudiant/the-bo" element={<><Controls /><TheBoThu /></>} />
           <Route path="/etudiant/neo" element={<><Controls /><NeoThu /></>} />
           <Route path="/professeur/chon-doan" element={<><Controls /><ChonDoanThu /></>} />
+          <Route path="/gioi-thieu/doi-ngu" element={<><Controls /><DoiNguThu /></>} />
           <Route path="/etudiant/danh-tinh" element={<><Controls /><DanhTinhThu /></>} />
           <Route path="/etudiant/thong-bao" element={<><Controls /><ThongBaoThu /></>} />
           <Route path="/etudiant/auto-evaluation" element={

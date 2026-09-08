@@ -4,6 +4,7 @@ import {
   Wand2, UserCheck, Columns2, ClipboardList, ArrowRight,
 } from "lucide-react";
 import { docSoLieu } from "../../shared/soLieuCongKhai.js";
+import TeamSection from "./TeamSection.jsx";
 
 /* Trang giới thiệu công khai — phễu marketing của FRACILE.
  *
@@ -180,6 +181,8 @@ export default function LandingPage() {
             ))}
           </div>
         </section>
+
+        <TeamSection />
 
         {/* ── CHÂN TRANG ── */}
         <footer className="mt-20 border-t border-line pt-8">
