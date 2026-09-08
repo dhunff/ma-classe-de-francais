@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
-  Wand2, UserCheck, Columns2, ClipboardList, ArrowRight,
+  Wand2, ScrollText, Columns2, ClipboardList, ArrowRight,
 } from "lucide-react";
 import { docSoLieu } from "../../shared/soLieuCongKhai.js";
 import TeamSection from "./TeamSection.jsx";
@@ -30,14 +30,26 @@ import TeamSection from "./TeamSection.jsx";
  * ══ VÀ HAI TÍNH NĂNG KHÔNG TỒN TẠI ══
  *
  * « AI chấm nhanh » — FRACILE KHÔNG có AI chấm. `evaluateEssayWithAI()` trả về
- * `connected: false`. Chính bảng so sánh của bạn cũng chấm mục này 0 điểm cho
- * Fracile và 3 cho Vivoire.
+ * `connected: false`, và KHÔNG chỗ nào trong mã gọi tới nó. Không Edge
+ * Function LLM, không thư viện nào.
  *
  * « Nhập đề từ DOCX » — chỉ có JSON. Không có dòng mã nào đọc .docx.
  *
- * Cả hai đã bị viết lại thành thứ có thật, và thứ có thật MẠNH HƠN trong đúng
- * cuộc so sánh này: đối thủ chỉ có AI, còn ở đây bài tự luận do một người thật
- * đọc và nhận xét. Đó là điều họ không mua được bằng API.
+ * ══ VÀ MỘT LỜI HỨA ĐÃ PHẢI RÚT — 03/09 ══
+ *
+ * Bản đầu của trang này viết « Luyện thi DELF cùng giáo viên thật · Bài nào
+ * cũng được chấm », và một thẻ lợi thế nói bài viết được « một giáo viên đọc,
+ * cho điểm theo thang DELF ». Chủ dự án xác nhận: KHÔNG phải vậy — anh không
+ * chấm bài, và phần đó do một công cụ AI bên ngoài xử lý.
+ *
+ * Nên cả hai câu bị gỡ, và KHÔNG thay bằng « AI chấm »: sản phẩm không làm
+ * việc đó. Người đọc trang thấy chữ AI sẽ chờ một phản hồi tự động trong app,
+ * và họ sẽ không nhận được.
+ *
+ * Thứ thay vào là thứ có thật và đo được: chấm tự động phần khách quan ở Edge
+ * Function `grade`, và thang chấm DELF sáu tiêu chí để học sinh tự đối chiếu
+ * (PESelfEvaluation + grilleRubric). Cái sau vẫn là một khác biệt thật — đối
+ * thủ trả về điểm, còn ở đây người học thấy mình mất điểm ở tiêu chí nào.
  *
  * ══ FORM ĐĂNG KÝ ĐÃ ĐƯỢC GỠ — 03/09 ══
  *
@@ -73,10 +85,11 @@ const LOI_THE = [
       + "đúng/sai có giải thích, bảng, sắp xếp câu, tự luận. Không phải bấm từng ô.",
   },
   {
-    Icon: UserCheck,
-    ten: "Bài tự luận do người thật chấm",
-    mo: "Máy chấm phần máy chấm được, và dừng lại ở đó. Bài viết và bài nói thì "
-      + "một giáo viên đọc, cho điểm theo thang DELF, và viết nhận xét cho riêng bạn.",
+    Icon: ScrollText,
+    ten: "Bài viết: tự chấm theo thang DELF chính thức",
+    mo: "Sáu tiêu chí, đúng lưới của kỳ thi thật — respect de la consigne, "
+      + "morphosyntaxe, cohérence… Bạn đọc lại bài mình cạnh thang chấm và biết "
+      + "mất điểm ở đâu, thay vì nhìn một con số.",
   },
   {
     Icon: Columns2,
@@ -112,14 +125,14 @@ export default function LandingPage() {
               DELF B1 · B2
             </span>
             <h1 className="m-0 mt-4 text-4xl font-extrabold leading-tight tracking-tight text-ink sm:text-5xl">
-              Luyện thi DELF cùng giáo viên thật.
+              Luyện thi DELF với đề thật,
               <br />
-              <span className="text-primary">Bài nào cũng được chấm.</span>
+              <span className="text-primary">đồng hồ thật.</span>
             </h1>
             <p className="m-0 mt-5 max-w-xl text-base leading-relaxed text-soft">
-              Trình soạn đề cho giáo viên, trải nghiệm sát phòng thi cho học sinh.
-              Máy chấm phần máy chấm được — phần còn lại là một người thật đọc bài
-              của bạn.
+              Trắc nghiệm, điền từ và chia động từ chấm ngay ở máy chủ. Bài viết
+              thì có thang chấm DELF chính thức để bạn tự đối chiếu từng tiêu chí,
+              thay vì nhận một con số không giải thích gì.
             </p>
 
             <div className="mt-8 flex flex-wrap gap-3">
