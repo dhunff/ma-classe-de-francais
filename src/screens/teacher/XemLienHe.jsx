@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Inbox, RefreshCw, AlertTriangle, Mail, Phone } from "lucide-react";
-import { docLienHe, VAI, MUC_TIEU } from "../../shared/lienHe.js";
+import { docLienHe, laGiaoVien, VAI, MUC_TIEU } from "../../shared/lienHe.js";
 
 /* Xem đăng ký tư vấn — màn hình của giáo viên.
  *
@@ -81,8 +81,15 @@ function TheLienHe({ r }) {
 
 export default function XemLienHe() {
   const [ds, setDs] = useState(undefined);   // undefined = đang tải, null = lỗi
+  /* Vai hỏi RIÊNG, không suy từ dữ liệu. Mảng rỗng không phân biệt được
+     "giáo viên, chưa ai gửi" với "không phải giáo viên" — xem lienHe.js. */
+  const [laGV, setLaGV] = useState(undefined);
 
-  const tai = async () => { setDs(undefined); setDs(await docLienHe(200)); };
+  const tai = async () => {
+    setDs(undefined); setLaGV(undefined);
+    const [vai, rows] = await Promise.all([laGiaoVien(), docLienHe(200)]);
+    setLaGV(vai); setDs(rows);
+  };
   useEffect(() => { tai(); }, []);
 
   const moiHomNay = useMemo(() => {
@@ -108,6 +115,16 @@ export default function XemLienHe() {
 
       {ds === undefined ? (
         <p className="mt-10 text-center text-sm text-soft">Đang tải…</p>
+      ) : laGV === false ? (
+        <div className="mt-8 rounded-2xl bg-danger-soft p-6 text-center">
+          <AlertTriangle size={20} className="mx-auto text-danger" />
+          <p className="m-0 mt-2 font-bold text-ink">Máy chủ không coi bạn là giáo viên</p>
+          <p className="m-0 mt-1 text-sm leading-relaxed text-ink">
+            Danh sách này trống KHÔNG phải vì chưa ai đăng ký, mà vì phiên hiện
+            tại không có vai giáo viên. Đăng xuất rồi đăng nhập lại; nếu vẫn vậy
+            thì báo người quản trị.
+          </p>
+        </div>
       ) : ds === null ? (
         /* "Không đọc được" KHÁC "chưa ai đăng ký". Gộp lại là báo tin vui cho
            một sự cố. */

@@ -55,6 +55,20 @@ export async function guiLienHe({ hoTen, email, dienThoai, vai, mucTieu, noiDung
  * Trả `null` khi KHÔNG đọc được, `[]` khi đọc được mà chưa ai gửi. Hai thứ đó
  * cần hai câu khác nhau: "chưa có ai đăng ký" là một sự thật, "không đọc được"
  * là việc phải xử lý. */
+/* Máy chủ có coi phiên này là giáo viên không.
+ *
+ * Cần một câu hỏi RIÊNG vì dữ liệu KHÔNG trả lời được nó: người không phải
+ * giáo viên vẫn có quyền SELECT mức bảng trên `leads`, RLS lọc sạch mọi dòng
+ * và trả về mảng RỖNG không kèm lỗi. "Giáo viên, chưa ai gửi" và "không phải
+ * giáo viên" hiện ra y hệt nhau.
+ *
+ * Tôi đã dùng chính màn hình đó làm bằng chứng rằng một phiên là giáo viên.
+ * Nó không chứng minh được điều đó, và tôi đi sai một lượt vì tin vào nó. */
+export async function laGiaoVien() {
+  const { data, error } = await supabase.rpc("la_giao_vien");
+  return error ? null : !!data;      // null = không hỏi được
+}
+
 export async function docLienHe(gioiHan = 200) {
   const { data, error } = await supabase
     .from("leads")
