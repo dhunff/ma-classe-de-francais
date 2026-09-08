@@ -1,6 +1,6 @@
 import {
   LayoutDashboard, BookOpen, Users, BarChart3, Dumbbell,
-  ClipboardList, CheckSquare, CalendarDays, Settings, Lightbulb, Timer, PenLine, Trophy, Mic, Layers, Lightbulb as Bulb, Anchor,
+  ClipboardList, CheckSquare, CalendarDays, Settings, Lightbulb, Timer, PenLine, Trophy, Mic, Layers, Lightbulb as Bulb, Anchor, Inbox,
 } from "lucide-react";
 
 /* Điều hướng của vỏ app.
@@ -40,6 +40,10 @@ export const TEACHER_NAV = [
   /* Đặt neo. Đứng cạnh « Câu cần lời giải » vì cùng một loại việc: nhìn vào
      chỗ học sinh chưa hiểu rồi làm gì đó về nó. */
   { to: "/professeur/neo", labelKey: "nav.anchors", Icon: Anchor },
+  /* Đăng ký tư vấn. Đứng cuối vì nó không phải việc dạy học — nhưng phải có
+     mặt: một người để lại số điện thoại mà không ai thấy là một người bị bỏ
+     rơi. */
+  { to: "/professeur/lien-he", labelKey: "nav.leads", Icon: Inbox },
 ];
 
 export const STUDENT_NAV = [

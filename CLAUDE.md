@@ -866,6 +866,20 @@ Xem `docs/roadmap-delf.md` — có nhật ký quyết định ở §5.
 
   IP lưu trong cột `nguon` dạng `ip:…`, không dựng cột riêng — đủ cho việc
   chặn lũ mà không mời ai đi phân tích nó.
+
+  **FORM ĐÃ GỠ KHỎI TRANG GIỚI THIỆU — 03/09.** Bảng, RPC và màn xem của giáo
+  viên (`/professeur/lien-he`) vẫn còn nguyên; chỉ ô nhập biến mất. Nên hiện
+  KHÔNG có đường nào để ai gửi thông tin vào, và màn xem nói thẳng điều đó
+  thay vì để giáo viên mở mỗi ngày rồi tưởng chưa ai quan tâm.
+
+  Đưa lại thì lấy `FormTuVan.jsx` từ commit 6cc2cd3. Trước khi làm: thu dữ
+  liệu cá nhân mà chưa có trang Chính sách bảo mật là chỗ dễ vướng nhất, và
+  trang đó vẫn chưa có.
+
+  Màn xem KHÔNG có nút xoá. Xoá một dòng liên hệ là xoá dấu vết duy nhất rằng
+  có người đã tìm tới, và một cú bấm nhầm ở đó không hoàn lại được. Cả `anon`
+  lẫn `authenticated` đều không có quyền DELETE, nên kể cả có nút cũng không
+  chạy — dọn thì dọn bằng SQL, có chủ đích.
 - `s:mcf-submissions` vẫn giữ làm sao lưu, chưa xoá.
 
 

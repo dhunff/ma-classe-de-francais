@@ -13,6 +13,7 @@ import BaiNoiGiaoVien from './screens/teacher/BaiNoiGiaoVien.jsx'
 import TheGhiNho from './screens/student/TheGhiNho.jsx'
 import LoiGiaiUuTien from './screens/teacher/LoiGiaiUuTien.jsx'
 import DatNeo from './screens/teacher/DatNeo.jsx'
+import XemLienHe from './screens/teacher/XemLienHe.jsx'
 import LandingPage from './screens/public/LandingPage.jsx'
 import ExamResults from './screens/student/ExamResults.jsx'
 
@@ -264,6 +265,7 @@ function AppInner() {
               <Route path="/professeur/oral" element={<BaiNoiGiaoVien />} />
               <Route path="/professeur/loi-giai" element={<LoiGiaiUuTien />} />
               <Route path="/professeur/neo" element={<DatNeo />} />
+              <Route path="/professeur/lien-he" element={<XemLienHe />} />
 
               <Route path="/professeur/*" element={<Navigate to="/professeur/dashboard" replace />} />
             </Route>

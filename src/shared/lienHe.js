@@ -45,3 +45,21 @@ export async function guiLienHe({ hoTen, email, dienThoai, vai, mucTieu, noiDung
   }
   return { ok: true };
 }
+
+/* Đọc danh sách liên hệ — CHỈ giáo viên.
+ *
+ * Không có RPC riêng: policy `leads_giao_vien_doc` đã làm đúng việc, và
+ * `anon` không còn quyền đọc ở mức bảng (079). Thêm một hàm security definer
+ * ở đây chỉ là một cửa nữa phải canh.
+ *
+ * Trả `null` khi KHÔNG đọc được, `[]` khi đọc được mà chưa ai gửi. Hai thứ đó
+ * cần hai câu khác nhau: "chưa có ai đăng ký" là một sự thật, "không đọc được"
+ * là việc phải xử lý. */
+export async function docLienHe(gioiHan = 200) {
+  const { data, error } = await supabase
+    .from("leads")
+    .select("id, ho_ten, email, dien_thoai, vai, muc_tieu, noi_dung, nguon, created_at")
+    .order("created_at", { ascending: false })
+    .limit(gioiHan);
+  return error ? null : (data ?? []);
+}

@@ -4,7 +4,6 @@ import {
   Wand2, UserCheck, Columns2, ClipboardList, ArrowRight,
 } from "lucide-react";
 import { docSoLieu } from "../../shared/soLieuCongKhai.js";
-import FormTuVan from "./FormTuVan.jsx";
 
 /* Trang giới thiệu công khai — phễu marketing của FRACILE.
  *
@@ -38,6 +37,17 @@ import FormTuVan from "./FormTuVan.jsx";
  * Cả hai đã bị viết lại thành thứ có thật, và thứ có thật MẠNH HƠN trong đúng
  * cuộc so sánh này: đối thủ chỉ có AI, còn ở đây bài tự luận do một người thật
  * đọc và nhận xét. Đó là điều họ không mua được bằng API.
+ *
+ * ══ FORM ĐĂNG KÝ ĐÃ ĐƯỢC GỠ — 03/09 ══
+ *
+ * Bảng `leads`, RPC `gui_lien_he` và màn xem của giáo viên vẫn còn nguyên;
+ * chỉ có ô nhập trên trang này biến mất. Nên hiện KHÔNG có đường nào để ai gửi
+ * thông tin vào hệ thống.
+ *
+ * Đưa lại thì lấy `FormTuVan.jsx` từ commit 6cc2cd3 và dựng lại một khối
+ * `<section id="tu-van">`. Trước khi làm thế, nhớ rằng thu dữ liệu cá nhân
+ * mà chưa có trang Chính sách bảo mật là chỗ dễ vướng nhất — và trang đó vẫn
+ * chưa có.
  */
 
 /* Bốn ô số liệu. Ba ô đầu ĐẾM THẬT; ô thứ tư là một sự thật không phải con số
@@ -90,8 +100,6 @@ export default function LandingPage() {
     return () => { con = false; };
   }, []);
 
-  const toiForm = () => document.getElementById("tu-van")?.scrollIntoView({ behavior: "smooth" });
-
   return (
     <div className="min-h-screen bg-bg">
       <div className="mx-auto max-w-6xl px-5 py-16 sm:py-24">
@@ -118,10 +126,10 @@ export default function LandingPage() {
                 className="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-bold text-white no-underline shadow-lg shadow-primary/30 transition-all duration-300 ease-out hover:-translate-y-0.5 hover:shadow-2xl hover:shadow-primary/40 active:scale-[0.98] motion-reduce:transition-none">
                 Xem thư viện, không cần tài khoản <ArrowRight size={16} />
               </Link>
-              <button type="button" onClick={toiForm}
-                className="rounded-full border border-line bg-transparent px-6 py-3 text-left text-sm font-bold text-ink transition-all duration-300 ease-out hover:-translate-y-0.5 hover:bg-surface2 active:scale-[0.98] motion-reduce:transition-none">
-                Đăng ký tư vấn
-              </button>
+              <Link to="/login"
+                className="rounded-full border border-line bg-transparent px-6 py-3 text-sm font-bold text-ink no-underline transition-all duration-300 ease-out hover:-translate-y-0.5 hover:bg-surface2 active:scale-[0.98] motion-reduce:transition-none">
+                Đăng nhập
+              </Link>
             </div>
           </div>
 
@@ -170,21 +178,6 @@ export default function LandingPage() {
                 <p className="m-0 mt-2 text-sm leading-relaxed text-soft">{mo}</p>
               </div>
             ))}
-          </div>
-        </section>
-
-        {/* ── FORM TƯ VẤN ── */}
-        <section id="tu-van" className="mt-20">
-          <div className="rounded-3xl border border-line bg-surface p-8 shadow-2xl">
-            <h2 className="m-0 text-2xl font-extrabold tracking-tight text-ink">
-              Để lại thông tin, giáo viên sẽ gọi lại
-            </h2>
-            <p className="m-0 mt-2 text-sm text-soft">
-              Nói cho chúng tôi biết bạn đang ở đâu trên hành trình, và định thi
-              khi nào.
-            </p>
-
-            <FormTuVan />
           </div>
         </section>
 
