@@ -57,8 +57,8 @@
 export const DOI_NGU = [
   {
     ten: "Đỗ Quốc Hùng",
-    chucDanh: "Giáo viên tiếng Pháp",
-    gioiThieu: "Người đọc và chấm mọi bài viết, bài nói trên FRACILE — "
-      + "không có bài nào đi qua một cái máy rồi ra điểm.",
+    chucDanh: "Đội ngũ phát triển",
+    gioiThieu: "Xây và vận hành FRACILE: trình soạn đề, bộ máy thi thử, "
+      + "và đường chấm bài.",
   },
 ];

@@ -1,5 +1,5 @@
 import React from "react";
-import { GraduationCap, BadgeCheck } from "lucide-react";
+import { Code2, BadgeCheck } from "lucide-react";
 import { DOI_NGU } from "./doiNgu.js";
 
 /* Khối « Đội ngũ chuyên môn » của trang giới thiệu.
@@ -112,22 +112,23 @@ export default function TeamSection({ ds = DOI_NGU }) {
   return (
     <section className="mt-20">
       <div className="flex items-center gap-2">
-        <GraduationCap size={20} className="text-primary" />
+        <Code2 size={20} className="text-primary" />
         <span className="text-xs font-bold uppercase tracking-wide text-soft">Đội ngũ</span>
       </div>
 
       <h2 className="m-0 mt-3 text-3xl font-extrabold tracking-tight text-ink">
-        Người chấm bài của bạn là ai
+        Ai đứng sau FRACILE
       </h2>
 
-      {/* Câu phụ KHÔNG mở đầu bằng "Không chỉ là AI" như bản mô tả đề nghị:
-          FRACILE không có AI chấm nào cả, nên câu đó ngụ ý một thứ không tồn
-          tại. Nói đúng thứ đang có thì mạnh hơn — và ở đây thứ đang có chính
-          là điều đối thủ không mua được bằng API. */}
+      {/* Câu phụ nói về việc XÂY sản phẩm, không về việc dạy.
+          Bản trước viết "bài của bạn được một giáo viên đọc" — đúng với một
+          khối « đội ngũ chuyên môn », nhưng khi người duy nhất trong danh sách
+          tự nhận là « đội ngũ phát triển » thì câu đó khẳng định một vai mà
+          chính danh sách không đỡ. Đổi khung, không đổi mỗi cái nhãn. */}
       <p className="m-0 mt-3 max-w-2xl text-base leading-relaxed text-soft">
         {mot
-          ? "Bài viết và bài nói của bạn không rơi vào một cái máy. Chúng được một giáo viên đọc, chấm theo thang DELF, và viết nhận xét cho riêng bạn."
-          : "Bài viết và bài nói của bạn không rơi vào một cái máy. Chúng được đọc bởi những người dạy tiếng Pháp thật, chấm theo thang DELF, và viết nhận xét cho riêng bạn."}
+          ? "FRACILE không phải một kho bài tập mua sẵn. Nó được viết, chạy và sửa mỗi ngày bởi một người — nên mỗi thứ trên đây đều có người chịu trách nhiệm."
+          : "FRACILE không phải một kho bài tập mua sẵn. Nó được viết, chạy và sửa mỗi ngày bởi một nhóm nhỏ — nên mỗi thứ trên đây đều có người chịu trách nhiệm."}
       </p>
 
       <div className={`mt-8 grid gap-4 ${mot ? "max-w-2xl" : "md:grid-cols-2 lg:grid-cols-3"}`}>
