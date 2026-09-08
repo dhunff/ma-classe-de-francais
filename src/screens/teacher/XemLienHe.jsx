@@ -115,6 +115,25 @@ export default function XemLienHe() {
 
       {ds === undefined ? (
         <p className="mt-10 text-center text-sm text-soft">Đang tải…</p>
+      ) : laGV === null ? (
+        /* KHÔNG HỎI ĐƯỢC vai — khác hẳn "không phải giáo viên", và cũng khác
+           "chưa ai đăng ký".
+
+           Bản trước của chính khối này chỉ bắt `laGV === false`, nên khi lời
+           gọi hỏi vai HỎNG thì màn hình rơi xuống nhánh cuối và hiện "Chưa có
+           ai đăng ký" — đúng cái nhập nhằng mà migration 081 sinh ra để dẹp,
+           lặp lại một tầng cao hơn, trong cùng một file, cùng một ngày.
+
+           Ba nhánh cho ba sự thật khác nhau. Không gộp. */
+        <div className="mt-8 rounded-2xl bg-warn-soft p-6 text-center">
+          <AlertTriangle size={20} className="mx-auto text-warn" />
+          <p className="m-0 mt-2 font-bold text-ink">Không hỏi được vai của bạn</p>
+          <p className="m-0 mt-1 text-sm leading-relaxed text-ink">
+            Máy chủ không trả lời câu hỏi « phiên này có phải giáo viên không ».
+            Danh sách bên dưới có thể trống vì lý do đó chứ không phải vì chưa
+            ai đăng ký — đừng kết luận gì từ nó cho tới khi tải lại được.
+          </p>
+        </div>
       ) : laGV === false ? (
         <div className="mt-8 rounded-2xl bg-danger-soft p-6 text-center">
           <AlertTriangle size={20} className="mx-auto text-danger" />
