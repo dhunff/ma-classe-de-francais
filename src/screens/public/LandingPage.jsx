@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
-  Wand2, UserCheck, Columns2, ClipboardList, ArrowRight, Check, AlertTriangle,
+  Wand2, UserCheck, Columns2, ClipboardList, ArrowRight,
 } from "lucide-react";
 import { docSoLieu } from "../../shared/soLieuCongKhai.js";
+import FormTuVan from "./FormTuVan.jsx";
 
 /* Trang giới thiệu công khai — phễu marketing của FRACILE.
  *
@@ -183,19 +184,7 @@ export default function LandingPage() {
               khi nào.
             </p>
 
-            {/* Form CHƯA nối vào đâu cả — nói thẳng thay vì dựng một cái nút
-                gửi vào hư không. Một form nhận thông tin rồi đánh rơi nó còn tệ
-                hơn không có form: người ta chờ một cuộc gọi không bao giờ tới. */}
-            <p className="m-0 mt-5 flex items-start gap-2 rounded-2xl bg-warn-soft p-4 text-sm leading-relaxed text-ink">
-              <AlertTriangle size={16} className="mt-0.5 shrink-0 text-warn" />
-              <span>
-                <strong>Form chưa nối đường nhận.</strong> Cần một bảng
-                <code className="mx-1 rounded bg-surface2 px-1.5 py-0.5 text-xs">leads</code>
-                trong Supabase, hoặc một địa chỉ email nhận. Nói tôi chọn đường nào
-                thì tôi dựng nốt — hiện tại nó chưa gửi đi đâu, và tôi không muốn
-                nó giả vờ có gửi.
-              </span>
-            </p>
+            <FormTuVan />
           </div>
         </section>
 

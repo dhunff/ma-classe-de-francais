@@ -840,6 +840,32 @@ Xem `docs/roadmap-delf.md` — có nhật ký quyết định ở §5.
   không bộ kiểm nào thay được việc bôi đen thật một lần.
 
   CÒN TREO: chưa câu nào trong thư viện có neo, nên chưa chạy được đầu-cuối.
+- **Form tư vấn + bảng `leads` — 03/09** (migration 077–080).
+
+  **Đây là bảng DUY NHẤT người chưa đăng nhập ghi được.** Mọi bảng khác đòi
+  `auth.uid()`; bảng này thì không, vì cả mục đích của nó là nhận thông tin từ
+  người chưa có tài khoản. Nên nó là bề mặt tấn công duy nhất kiểu này:
+
+  · KHÔNG policy INSERT — đường ghi duy nhất là RPC `gui_lien_he`, nơi có chỗ
+    để kiểm và chặn. Cho anon insert thẳng thì mọi phép kiểm chỉ còn là lời
+    khuyên.
+  · `anon` KHÔNG đọc được, hai lớp: không policy SELECT (077) và thu hẳn quyền
+    mức bảng (079). Một lớp đủ chặn hôm nay; không đủ cho ngày ai đó thêm một
+    policy rộng tay. Dữ liệu ở đây là tên, email, số điện thoại người thật.
+  · Giáo viên đọc qua `authenticated` — nên 079 KHÔNG thu quyền của vai đó.
+
+  **Chặn lũ có giới hạn, và giới hạn đó được ghi ra:** 3 lượt/ngày cho một
+  email, 10 lượt/giờ cho một IP (`x-forwarded-for` do cổng Supabase đặt; đọc
+  không được thì lớp này tự tắt chứ không chặn nhầm người thật). Cả hai KHÔNG
+  chặn được tấn công có chủ đích — muốn thế cần captcha. Ghi rõ để lần sau
+  không ai đọc hai câu `if` rồi tưởng đã đủ.
+
+  **Thu ít nhất có thể.** Không hỏi năm sinh như form đối thủ: không cần để
+  gọi lại, mà lại là dữ liệu cá nhân của người có thể là trẻ vị thành niên.
+  Số điện thoại để tuỳ chọn.
+
+  IP lưu trong cột `nguon` dạng `ip:…`, không dựng cột riêng — đủ cho việc
+  chặn lũ mà không mời ai đi phân tích nó.
 - `s:mcf-submissions` vẫn giữ làm sao lưu, chưa xoá.
 
 
