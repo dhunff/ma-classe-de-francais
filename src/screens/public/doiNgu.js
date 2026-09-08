@@ -38,4 +38,27 @@
  * từ dịch vụ ngoài có thể đổi hoặc biến mất, và khi đó trang chủ vỡ mặt.
  */
 
-export const DOI_NGU = [];
+/* ══ CÒN THIẾU BẰNG CẤP, VÀ TÔI KHÔNG TỰ ĐIỀN ══
+ *
+ * `chucDanh` dưới đây chỉ ghi thứ kiểm chứng được từ chính hệ thống: đây là
+ * tài khoản `prof` DUY NHẤT, và mọi bài viết / bài nói trên FRACILE đều do
+ * người này chấm.
+ *
+ * Trình độ DALF, số năm dạy, nơi học — tôi KHÔNG biết, nên không viết. Đó là
+ * chỗ mạnh nhất của cả khối này (đối thủ phải khoe giải học sinh giỏi vì họ
+ * không có ai), nhưng chỉ mạnh khi nó đúng.
+ *
+ * Điền thêm thì sửa ngay dòng dưới, ví dụ:
+ *     chucDanh: "Giáo viên · DALF C1",
+ *     gioiThieu: "Bảy năm luyện thi DELF B1–B2. Chấm toàn bộ phần viết và nói.",
+ *
+ * Và `anh`: một ảnh tự chụp đặt trong `public/` rồi trỏ `anh: "/toi.jpg"`.
+ * Thiếu ảnh thì thẻ hiện chữ cái đầu — trông vẫn gọn, và thật. */
+export const DOI_NGU = [
+  {
+    ten: "Đỗ Quốc Hùng",
+    chucDanh: "Giáo viên tiếng Pháp",
+    gioiThieu: "Người đọc và chấm mọi bài viết, bài nói trên FRACILE — "
+      + "không có bài nào đi qua một cái máy rồi ra điểm.",
+  },
+];

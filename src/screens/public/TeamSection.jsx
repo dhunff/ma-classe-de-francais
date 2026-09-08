@@ -61,16 +61,17 @@ const chuCaiDau = (ten) =>
     .join("")
     .toUpperCase() || "?";
 
-function TheNguoi({ n }) {
+function TheNguoi({ n, mot = false }) {
   return (
-    <div className="group rounded-3xl border border-line bg-surface p-6
+    <div className={`group rounded-3xl border border-line bg-surface p-6
+      ${mot ? "flex flex-col gap-5 sm:flex-row sm:items-center" : ""}
       transition-all duration-300 ease-out
       hover:-translate-y-2 hover:shadow-2xl hover:shadow-primary/20
-      motion-reduce:transition-none motion-reduce:hover:translate-y-0">
+      motion-reduce:transition-none motion-reduce:hover:translate-y-0`}>
 
       {/* `overflow-hidden` ở vỏ để ảnh phóng to không tràn khỏi góc bo. Thiếu
           nó thì lúc hover ảnh lấn ra ngoài viền và trông như lỗi dựng. */}
-      <div className="h-24 w-24 overflow-hidden rounded-2xl">
+      <div className={`overflow-hidden rounded-2xl ${mot ? "h-32 w-32 shrink-0" : "h-24 w-24"}`}>
         {n.anh ? (
           <img src={n.anh} alt=""
             className="h-full w-full object-cover transition-transform duration-300 ease-out
@@ -84,21 +85,29 @@ function TheNguoi({ n }) {
         )}
       </div>
 
-      <h3 className="m-0 mt-4 text-lg font-bold text-ink">{n.ten}</h3>
+      <div>
+        <h3 className={`m-0 font-bold text-ink ${mot ? "text-2xl" : "mt-4 text-lg"}`}>{n.ten}</h3>
 
-      <p className="m-0 mt-1 inline-flex items-center gap-1.5 text-sm font-semibold text-primary">
-        <BadgeCheck size={14} /> {n.chucDanh}
-      </p>
+        <p className="m-0 mt-1 inline-flex items-center gap-1.5 text-sm font-semibold text-primary">
+          <BadgeCheck size={14} /> {n.chucDanh}
+        </p>
 
-      {n.gioiThieu && (
-        <p className="m-0 mt-3 text-sm leading-relaxed text-soft">{n.gioiThieu}</p>
-      )}
+        {n.gioiThieu && (
+          <p className="m-0 mt-3 text-sm leading-relaxed text-soft">{n.gioiThieu}</p>
+        )}
+      </div>
     </div>
   );
 }
 
 export default function TeamSection({ ds = DOI_NGU }) {
   if (!Array.isArray(ds) || ds.length === 0) return null;
+
+  /* Một người thì câu chữ số nhiều đọc ra như đang phóng đại, và lưới ba cột
+     để lại hai ô trống — mắt đọc đó là "đội ngũ đang thiếu người". Đội ngũ một
+     người không phải điểm yếu cần giấu; nó chỉ cần được trình bày đúng như nó
+     là. */
+  const mot = ds.length === 1;
 
   return (
     <section className="mt-20">
@@ -116,13 +125,13 @@ export default function TeamSection({ ds = DOI_NGU }) {
           tại. Nói đúng thứ đang có thì mạnh hơn — và ở đây thứ đang có chính
           là điều đối thủ không mua được bằng API. */}
       <p className="m-0 mt-3 max-w-2xl text-base leading-relaxed text-soft">
-        Bài viết và bài nói của bạn không rơi vào một cái máy. Chúng được đọc bởi
-        những người dạy tiếng Pháp thật, chấm theo thang DELF, và viết nhận xét
-        cho riêng bạn.
+        {mot
+          ? "Bài viết và bài nói của bạn không rơi vào một cái máy. Chúng được một giáo viên đọc, chấm theo thang DELF, và viết nhận xét cho riêng bạn."
+          : "Bài viết và bài nói của bạn không rơi vào một cái máy. Chúng được đọc bởi những người dạy tiếng Pháp thật, chấm theo thang DELF, và viết nhận xét cho riêng bạn."}
       </p>
 
-      <div className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {ds.map((n) => <TheNguoi key={n.ten} n={n} />)}
+      <div className={`mt-8 grid gap-4 ${mot ? "max-w-2xl" : "md:grid-cols-2 lg:grid-cols-3"}`}>
+        {ds.map((n) => <TheNguoi key={n.ten} n={n} mot={mot} />)}
       </div>
     </section>
   );
