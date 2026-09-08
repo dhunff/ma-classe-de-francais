@@ -13,6 +13,7 @@ import BaiNoiGiaoVien from './screens/teacher/BaiNoiGiaoVien.jsx'
 import TheGhiNho from './screens/student/TheGhiNho.jsx'
 import LoiGiaiUuTien from './screens/teacher/LoiGiaiUuTien.jsx'
 import DatNeo from './screens/teacher/DatNeo.jsx'
+import LandingPage from './screens/public/LandingPage.jsx'
 import ExamResults from './screens/student/ExamResults.jsx'
 
 import { C } from './shared/tokens.js'
@@ -338,6 +339,12 @@ function AppInner() {
                 />
               } />
             </Route>
+
+            {/* Trang giới thiệu công khai. Chưa phải cửa trước: khách vẫn rơi
+                về /decouvrir như cũ. Muốn đổi thì sửa đúng dòng Navigate bên
+                dưới — nhưng đó là đổi đường vào của người đang dùng, nên để
+                bạn quyết. */}
+            <Route path="/gioi-thieu" element={<LandingPage />} />
 
             <Route path="*" element={
               <Navigate to={session ? (ROLE_HOME[session.role] || "/login") : "/decouvrir"} replace />
