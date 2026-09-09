@@ -163,8 +163,8 @@ const VI = {
     continue: "Học tiếp", continue_empty_title: "Không còn bài nào đang chờ",
     continue_empty_body: "Bạn đã nộp hết bài được giao.",
     questions: "{n} câu", due: "Hạn nộp", was_due: "Đã quá hạn",
-    to_grade: "Bài cần chấm", recent_submissions: "Bài nộp gần đây",
-    recent_empty_body: "Bài nộp của học sinh sẽ hiện ở đây.", awaiting: "Chờ chấm",
+    recent_submissions: "Bài nộp gần đây",
+    recent_empty_body: "Bài nộp của học sinh sẽ hiện ở đây.", awaiting: "Chưa chấm",
     nothing_assigned_title: "Chưa được giao bài nào",
   },
   home: {

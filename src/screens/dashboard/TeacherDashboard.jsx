@@ -1,22 +1,29 @@
 import React from "react";
-import { ClipboardCheck, Users, BookOpen, Inbox } from "lucide-react";
+import { Users, BookOpen, Inbox } from "lucide-react";
 import { Card, StatTile, EmptyState, Rise } from "./parts.jsx";
 import { totalScore, fmtDate } from "../../shared/exercises.js";
 
 /* Trang chủ giáo viên.
 
-   Brief chỉ đặc tả trang chủ học sinh; bản này cố ý gọn — trả lời đúng một
-   câu hỏi giáo viên hỏi mỗi khi mở máy: "có gì cần chấm?". Mọi số đều đếm
-   từ dữ liệu thật. */
+   Brief chỉ đặc tả trang chủ học sinh; bản này cố ý gọn. Mọi số đều đếm từ
+   dữ liệu thật.
+
+   ══ Ô « BÀI CẦN CHẤM » ĐÃ GỠ — 09/09/2026 ══
+
+   Bản trước mở đầu bằng đúng một câu hỏi: "có gì cần chấm?". Từ khi
+   /professeur/copies bị gỡ, giáo viên không chấm bài nữa — nên ô đó đếm một
+   việc không ai làm được, và tô màu cảnh báo cho nó.
+
+   Con số ấy KHÔNG sai: những bài đó thật sự chưa có điểm. Nhưng một ô cảnh
+   báo là một lời sai bảo — nó nói "chỗ này cần bạn xử lý", và ở đây thì
+   không có gì để xử lý, không có nút nào để bấm. Một con số đúng đặt ở chỗ
+   gợi ra một hành động không tồn tại vẫn làm người ta mất thời gian đi tìm.
+
+   Muốn biết bài nào chưa có điểm thì danh sách « Bài nộp gần đây » ngay bên
+   dưới vẫn ghi rõ từng dòng. */
 
 export default function TeacherDashboard({ exercises, submissions, accounts, t, onOpen }) {
   const exById = new Map(exercises.map((ex) => [ex.id, ex]));
-
-  const toGrade = submissions.filter((s) => {
-    const ex = exById.get(s.exerciseId);
-    if (!ex) return false;
-    return totalScore(s, ex).pending;
-  });
 
   const recent = [...submissions]
     .filter((s) => exById.has(s.exerciseId))
@@ -37,14 +44,12 @@ export default function TeacherDashboard({ exercises, submissions, accounts, t, 
           </section>
         </Rise>
 
-        <Rise delay={80} className="grid gap-4 sm:grid-cols-3">
-        <StatTile
-          Icon={ClipboardCheck}
-          label={t("dash.to_grade")}
-          value={toGrade.length}
-          tone={toGrade.length > 0 ? "warn" : "ok"}
-        />
-        <StatTile Icon={Users} label={t("nav.students")} value={accounts.length} />
+        {/* Hai ô, nên `sm:grid-cols-2`. Để nguyên `grid-cols-3` thì hai ô co
+            lại còn hai phần ba hàng và chừa một khoảng trống bên phải — mắt
+            đọc đó là "thiếu mất một ô", tức là đúng cái vừa gỡ, nhưng dưới
+            dạng một lỗi dựng. */}
+        <Rise delay={80} className="grid gap-4 sm:grid-cols-2">
+          <StatTile Icon={Users} label={t("nav.students")} value={accounts.length} />
           <StatTile Icon={BookOpen} label={t("nav.exercises")} value={exercises.length} />
         </Rise>
 
