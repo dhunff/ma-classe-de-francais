@@ -187,35 +187,44 @@ export function evaluateQuestion(q, userAnswer, options = {}) {
   };
 }
 
-/* ───────────────────── Chấm bài viết bằng AI (chưa nối) ────────────────── */
+/* ────────────────────── Chấm bài viết bằng AI — ĐÃ NỐI ─────────────────── */
 
 /**
- * CHƯA HOẠT ĐỘNG — chỗ giữ sẵn cho bước sau. Gọi vào sẽ nhận `connected:false`
- * chứ không phải điểm bịa: một hàm trả về số ngẫu nhiên trông như đã chạy sẽ
- * lặng lẽ chấm sai bài của học sinh thật.
+ * ĐÃ DỰNG XONG 09/09/2026, và KHÔNG nằm ở đây.
  *
- * Khi nối thật, KHÔNG gọi thẳng từ trình duyệt. Khoá API đặt trong mã client
- * là khoá đã lộ — ai mở DevTools cũng lấy được và tiêu tiền của bạn. Đường đi
- * đúng: một Edge Function của Supabase giữ khoá, client gọi hàm đó.
+ * Đường đi thật: `shared/chamPeAI.js` → Edge Function `cham-pe` → mô hình →
+ * bảng `pe_ai_goi_y` (migration 083). Màn dùng nó là `PESelfEvaluation.jsx`.
  *
- * Phác thảo phía server:
- *   1. Nhận { userText, rubric, level }.
- *   2. System prompt: chấm ngữ pháp, độ phong phú từ vựng, cấu trúc câu theo
- *      `rubric`; trả JSON đúng khuôn { score, max, feedback[], corrected }.
- *   3. Gọi LLM với response_format JSON để khỏi phải dò chuỗi.
- *   4. Kiểm tra khuôn trả về TRƯỚC khi ghi vào bài nộp — mô hình vẫn có lúc
- *      trả thiếu trường, mà điểm ghi hỏng thì học sinh chịu.
- *   5. Điểm AI vào `openMarks` dưới dạng ĐỀ XUẤT, giáo viên chốt. Điểm số của
- *      một con người phải do một con người ký.
+ * Hàm này giữ lại làm BIỂN CHỈ ĐƯỜNG, không làm cửa vào. Xoá hẳn thì người
+ * đọc `gradingEngine.js` — nơi tự nhiên nhất để đi tìm việc chấm bài — không
+ * có gì dẫn họ tới chỗ việc đó thật sự xảy ra.
  *
- * @param {string} userText
- * @param {object} rubric
+ * Nó vẫn trả `connected: false`, và vẫn đúng: file này là hàm THUẦN, chạy cả
+ * ở trình duyệt lẫn trong Edge Function `grade` (xem `check:parity` — hai bản
+ * phải khớp từng byte). Gọi mạng từ đây là kéo `supabase` vào một module đang
+ * cố ý không có phụ thuộc nào, và làm hỏng chính tính chất khiến nó kiểm được.
+ *
+ * Năm bước phác thảo cũ đã thi hành đủ, ở những chỗ này:
+ *   1. Nhận tham số            → cham-pe/index.ts nhận { answerId, rubric }.
+ *      KHÁC bản phác thảo: KHÔNG nhận `userText` từ client. Bài viết đọc thẳng
+ *      từ database, nếu không thì học sinh gửi một bài khác bài đã nộp.
+ *   2. System prompt theo rubric → cham-pe/index.ts, dựng từ chính rubric đang
+ *      hiển thị trên màn hình học sinh.
+ *   3. Yêu cầu JSON             → cùng chỗ, kèm `bocJSON` gỡ ```fence.
+ *   4. KIỂM KHUÔN TRƯỚC KHI GHI → `_shared/goiYPE.js`, 38 ca ở check:champe.
+ *   5. « Điểm số của một con người phải do một con người ký » — vế này giữ
+ *      nguyên, chỉ đổi người ký. Bản phác thảo viết "giáo viên chốt"; từ
+ *      09/09/2026 giáo viên không chấm bài nữa, nên người chốt là chính học
+ *      sinh. Gợi ý nằm CẠNH thanh trượt và phải bấm « dùng số này » — không
+ *      bao giờ tự điền.
+ *
+ * @deprecated Dùng `xinGoiYAI` trong `shared/chamPeAI.js`.
  * @returns {Promise<{connected: false, reason: string}>}
  */
 export async function evaluateEssayWithAI(userText, rubric) {
   return {
     connected: false,
-    reason: "not-implemented",
+    reason: "moved:shared/chamPeAI.js",
     userText: String(userText ?? "").slice(0, 0),  // giữ chữ ký, không giữ dữ liệu
     rubric: rubric ?? null,
   };

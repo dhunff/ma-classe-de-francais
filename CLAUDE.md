@@ -39,6 +39,7 @@ npm run check:notifs       # gửi thông báo + chuông + luật RPC (38 ca)
 npm run check:hoatdong     # nhật ký theo ngày + chuỗi ngày học (28 ca)
 npm run check:sm2          # thẻ ghi nhớ SM-2, lời giải, thẻ tự tạo (90 ca)
 npm run check:neo          # neo đáp án vào ngữ liệu (59 ca)
+npm run check:champe       # khuôn gợi ý chấm PE do AI trả về (38 ca)
 npm run check:css          # lớp Tailwind có thật sinh ra CSS không
 npm run check:db           # database THẬT có khớp giả định của mã nguồn không
 ```
@@ -880,6 +881,61 @@ Xem `docs/roadmap-delf.md` — có nhật ký quyết định ở §5.
   có người đã tìm tới, và một cú bấm nhầm ở đó không hoàn lại được. Cả `anon`
   lẫn `authenticated` đều không có quyền DELETE, nên kể cả có nút cũng không
   chạy — dọn thì dọn bằng SQL, có chủ đích.
+- **Chấm PE bằng AI — dựng xong 09/09** (migration 083/084, Edge Function
+  `cham-pe`). Đi sau việc gỡ `/professeur/copies` cùng ngày: giáo viên thôi
+  chấm bài thì bài viết chỉ còn một đường là học sinh tự chấm, và đây là chỗ
+  lấp lại khoảng trống đó.
+
+  **CẦN MỘT BƯỚC TAY TRƯỚC KHI CHẠY ĐƯỢC:**
+
+  ```bash
+  npx supabase secrets set ANTHROPIC_API_KEY=sk-ant-...
+  ```
+
+  Chưa đặt thì hàm trả 503 kèm mã `CHUA_CAU_HINH_KHOA`, và giao diện nói thẳng
+  "đây là việc của người quản trị, bạn thử lại bao nhiêu lần cũng vậy" — chứ
+  không phải "thử lại sau", vì thử lại sẽ không bao giờ thành công.
+
+  Model mặc định `claude-sonnet-5`, đổi được bằng biến `PE_AI_MODEL` mà không
+  cần deploy. Giá trị mặc định vẫn nằm trong git để câu hỏi "đang chạy model
+  nào" luôn trả lời được từ mã nguồn.
+
+  **AI ĐỀ XUẤT, HỌC SINH KÝ.** Gợi ý KHÔNG bao giờ tự điền vào thanh trượt —
+  nó nằm cạnh, và phải bấm « dùng số này ». Tự điền thì thao tác duy nhất còn
+  lại là bấm Lưu, và cả màn hình này (vốn tồn tại để bắt người học đọc lại bài
+  mình qua mắt người chấm) rút xuống một cú bấm: con số vẫn đúng, thứ đáng giá
+  thì mất sạch.
+
+  **Bài viết đọc từ DATABASE, không nhận từ client.** Client chỉ gửi
+  `answerId`. Nhận chữ do client gửi thì học sinh gửi được một bài khác bài đã
+  nộp, và ai đó gửi được 40 nghìn chữ để tiêu tiền token của bạn. Đọc từ DB thì
+  cả hai biến mất mà không cần một dòng kiểm nào.
+
+  **Chỗ duy nhất hỏng ÂM THẦM là khuôn mô hình trả về** — mọi thứ khác hỏng thì
+  có mã lỗi. `_shared/goiYPE.js` kiểm trước khi ghi, và luật quan trọng nhất là
+  **vượt khung thì BỎ, không kẹp về biên**: kẹp 9 về 5.5 tạo ra một điểm tuyệt
+  đối cho đúng cái tiêu chí mô hình vừa chứng minh là nó hiểu sai thang, và
+  trên màn hình nó trông y hệt một điểm được chấm cẩn thận. Thiếu cũng vậy —
+  bỏ, đừng điền 0; điền 0 là bịa ra nhận định nặng nhất đúng lúc ta biết ít
+  nhất. `check:champe` (38 ca) đã thử phá và bắt được cả hai.
+
+  **Hạn mức 6 lượt / 24 GIỜ TRƯỢT**, cố ý KHÁC `tao_the_tu_viet` vốn dùng ngày
+  địa phương. Ở đó "hôm nay" là khái niệm của người học nên phải theo giờ của
+  họ; ở đây hạn mức chỉ để chặn chi phí, và cửa sổ trượt không có nửa đêm để ai
+  đứng chờ bấm hai lượt liền, cũng không có múi giờ nào để sai.
+
+  Bảng `pe_ai_goi_y` KHÔNG ghi đè `answers.self_score` — tách ra để sau này còn
+  trả lời được "học sinh chấm mình bao nhiêu, AI chấm bao nhiêu, lệch thế nào".
+  Không policy ghi; đường ghi duy nhất là Edge Function giữ service_role, nếu
+  không thì học sinh tự chèn một "gợi ý của AI" cho 25/25 rồi chụp màn hình.
+
+  Xem thử ở /preview.html mục « Tự chấm Production écrite »: fixture cố ý
+  THIẾU hai tiêu chí để nhánh cảnh báo « 2 tiêu chí không có gợi ý » thật sự
+  được dựng ra — nhánh đó chỉ chạy khi mô hình trả sai thang, tức là lúc không
+  ai đang nhìn.
+
+  CÒN TREO: chưa chạy được đầu-cuối với khoá thật, nên chưa ai từng đọc một
+  gợi ý do mô hình sinh ra. Và 10 bài tự luận đang treo vẫn chưa được báo gì.
 - `s:mcf-submissions` vẫn giữ làm sao lưu, chưa xoá.
 
 

@@ -1,11 +1,12 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   FileText, ScrollText, Info, CheckCircle2, RotateCcw,
-  BookOpen, ChevronDown, ChevronUp, AlertTriangle,
+  BookOpen, ChevronDown, ChevronUp, AlertTriangle, Sparkles, Loader2,
 } from "lucide-react";
 import { supabase } from "../../storageShim.js";
 import { grilleToRubric, chuanHoaGrille } from "../../shared/grilleRubric.js";
 import { TEN_NHOM, THU_TU_NHOM } from "../../shared/peBareme.js";
+import { xinGoiYAI, docGoiYAI } from "../../shared/chamPeAI.js";
 
 /* Tự chấm Production écrite — bố cục chia đôi màn hình.
  *
@@ -105,7 +106,7 @@ const THANH_CUON =
  *
  * Dưới thanh luôn hiện mô tả của nấc đang chọn. Đây là chỗ thanh trượt hay thua
  * nút bấm: kéo thì nhanh, nhưng nhanh tới mức người ta không đọc mốc nào cả. */
-function ThanhTieuChi({ c, gia, onChange, nhacNho }) {
+function ThanhTieuChi({ c, gia, onChange, nhacNho, goiY }) {
   const chuaCham = gia == null;
   const v = chuaCham ? 0 : gia;
 
@@ -199,6 +200,38 @@ function ThanhTieuChi({ c, gia, onChange, nhacNho }) {
           </span>
         </p>
       )}
+
+      {/* ══ GỢI Ý CỦA AI — ĐỀ XUẤT, KHÔNG PHẢI ĐIỂM ══
+       *
+       * KHÔNG tự điền vào thanh trượt. Điền sẵn thì thao tác duy nhất còn lại
+       * là bấm Lưu, và cả màn hình này — vốn tồn tại để bắt người học đọc lại
+       * bài mình qua mắt người chấm — rút xuống thành một cú bấm. Con số vẫn
+       * ra đúng, còn thứ đáng giá thì mất sạch.
+       *
+       * Nên gợi ý nằm CẠNH thanh trượt, và muốn dùng thì phải bấm « dùng ».
+       * Một cú bấm là đủ để không phiền, và đủ để là một quyết định. */
+      goiY && (
+        <div className="m-0 mt-3 rounded-sm bg-primary-soft px-3 py-2.5">
+          <div className="flex items-center justify-between gap-3">
+            <span className="flex items-center gap-1.5 text-xs font-bold text-primary">
+              <Sparkles size={13} aria-hidden="true" />
+              AI đề xuất {goiY.diem} / {c.max_score}
+            </span>
+            {gia !== goiY.diem && (
+              <button
+                type="button"
+                onClick={() => onChange(goiY.diem)}
+                className="shrink-0 rounded-full border-0 bg-primary px-3 py-1 text-left font-sans text-[11px] font-bold text-white"
+              >
+                dùng số này
+              </button>
+            )}
+          </div>
+          {goiY.nhan_xet && (
+            <p className="m-0 mt-1.5 text-xs leading-relaxed text-ink">{goiY.nhan_xet}</p>
+          )}
+        </div>
+      )}
     </li>
   );
 }
@@ -206,6 +239,12 @@ function ThanhTieuChi({ c, gia, onChange, nhacNho }) {
 export default function PESelfEvaluation({
   answerId, questionId, level = "B2",
   deBai, boiCanh, baiLam, daCo, rubric: rubricNgoai, onXong,
+  /* Gợi ý AI giả, CHỈ cho /preview.html. Không có nó thì khối gợi ý — vốn bị
+     `!xemThu` chặn — không bao giờ hiện ở trang xem thử, và cách duy nhất để
+     nhìn thấy nó là đăng nhập bằng một tài khoản có bài đã nộp.
+     Cùng nếp với `chuoiFixture` ở StudentDashboard: dữ liệu giả sống trong
+     preview.jsx, component chỉ mở một khe để nhận. */
+  goiYThu,
 }) {
   /* Không có `answerId` → chế độ xem thử: dữ liệu mẫu, không lưu được. */
   const xemThu = !answerId;
@@ -245,6 +284,43 @@ export default function PESelfEvaluation({
   const [nhacThieu, setNhacThieu] = useState(false);
   const [baiMau, setBaiMau] = useState(null);   // null = chưa xin
   const [moMau, setMoMau] = useState(false);
+
+  /* ══ GỢI Ý CỦA AI ══
+   *
+   * BA trạng thái, không hai: `undefined` = chưa hỏi xong, `null` = đã hỏi và
+   * CHƯA có gợi ý nào, object = có. Gộp hai cái đầu thì một lần mất mạng hiện
+   * ra y hệt "chưa từng xin" — và người vừa xin gợi ý ba phút trước sẽ tưởng
+   * nó biến mất. Cùng lỗi mà màn « Đăng ký tư vấn » đã dính hai lần. */
+  const [goiY, setGoiY] = useState(goiYThu ?? undefined);
+  const [dangXin, setDangXin] = useState(false);
+  const [loiAI, setLoiAI] = useState("");
+  const [conLai, setConLai] = useState(null);
+
+  useEffect(() => {
+    if (xemThu || !answerId) { setGoiY(goiYThu ?? null); return; }
+    let con = true;
+    docGoiYAI(answerId).then((v) => {
+      if (!con) return;
+      /* `undefined` từ `docGoiYAI` nghĩa là KHÔNG ĐỌC ĐƯỢC. Giữ nguyên
+         `undefined` ở đây để giao diện nói đúng chuyện đó thay vì im lặng
+         hiện nút như thể chưa ai xin bao giờ. */
+      setGoiY(v === undefined ? undefined : (v?.goiY ?? null));
+    });
+    return () => { con = false; };
+  }, [answerId, xemThu, goiYThu]);
+
+  const xinGoiY = async () => {
+    if (xemThu || dangXin) return;
+    setDangXin(true); setLoiAI("");
+    const kq = await xinGoiYAI(answerId, rubric);
+    setDangXin(false);
+    if (!kq.ok) { setLoiAI(kq.thongBao); return; }
+    setGoiY(kq.goiY);
+    setConLai(kq.conLai);
+    /* Ghi hỏng thì nói ra. "Mở lại thấy mất" mà không ai báo trước là một bí ẩn
+       người dùng phải tự giải. */
+    if (!kq.daLuu) setLoiAI("Đã chấm xong nhưng KHÔNG lưu được — đóng màn này là mất.");
+  };
 
   const dat = (id, v) => { setDiem((cu) => ({ ...cu, [id]: v })); setDaLuu(false); };
 
@@ -411,6 +487,80 @@ export default function PESelfEvaluation({
           </p>
         )}
 
+        {/* ══ KHỐI GỢI Ý AI ══
+            Đặt TRƯỚC danh sách tiêu chí vì đây là chỗ người ta quyết định có
+            dùng nó hay không; nhét xuống cuối thì họ chấm xong mới thấy. */}
+        {(!xemThu || goiYThu) && (
+          <div className="mb-6 rounded-md bg-surface p-4 ring-1 ring-line">
+            {goiY === undefined ? (
+              /* KHÔNG ĐỌC ĐƯỢC — khác hẳn "chưa xin bao giờ". Hiện nút ở đây
+                 là mời người ta xin lại một gợi ý có thể đã tồn tại, và tiêu
+                 một lượt trong hạn mức cho việc đó. */
+              <p className="m-0 text-xs leading-relaxed text-soft">
+                Chưa hỏi được máy chủ xem bài này đã có gợi ý chưa. Tải lại trang
+                rồi thử lại — đừng xin mới vội, có thể bạn đã có một bản rồi.
+              </p>
+            ) : (
+              <>
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <h3 className="m-0 flex items-center gap-1.5 text-sm font-bold text-ink">
+                      <Sparkles size={14} className="text-primary" aria-hidden="true" />
+                      Gợi ý chấm từ AI
+                    </h3>
+                    <p className="m-0 mt-1 text-xs leading-relaxed text-soft">
+                      {goiY
+                        ? `Chấm được ${goiY.so_cham_duoc}/${goiY.so_tieu_chi} tiêu chí · đề xuất ${goiY.tong}/${goiY.tong_toi_da}. Điểm cuối vẫn do bạn chốt.`
+                        : "Một lượt đọc bài của bạn theo đúng thang bên dưới. Đây là đề xuất để đối chiếu, không phải điểm chính thức."}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={xinGoiY}
+                    disabled={dangXin}
+                    className="inline-flex shrink-0 items-center gap-1.5 rounded-full border-0 bg-primary px-4 py-2 text-left font-sans text-xs font-bold text-white disabled:opacity-60"
+                  >
+                    {dangXin
+                      ? <><Loader2 size={13} className="animate-spin" aria-hidden="true" /> Đang chấm…</>
+                      : <>{goiY ? "Xin lại" : "Xin gợi ý"}</>}
+                  </button>
+                </div>
+
+                {/* Tiêu chí AI KHÔNG chấm được thì nói ra. Im lặng ở đây thì
+                    người học tưởng mọi mục đều đã được xem, và bỏ qua đúng
+                    những mục không ai xem hộ. */}
+                {goiY && goiY.so_cham_duoc < goiY.so_tieu_chi && (
+                  <p className="m-0 mt-3 flex items-start gap-2 rounded-sm bg-warn-soft px-3 py-2 text-xs leading-relaxed text-warn">
+                    <AlertTriangle size={13} className="mt-0.5 shrink-0" aria-hidden="true" />
+                    <span>
+                      {goiY.so_tieu_chi - goiY.so_cham_duoc} tiêu chí không có gợi ý —
+                      máy chấm trả về giá trị không khớp thang nên bị bỏ. Những mục đó
+                      bạn tự chấm như bình thường.
+                    </span>
+                  </p>
+                )}
+
+                {goiY?.tong_quat && (
+                  <p className="m-0 mt-3 whitespace-pre-wrap rounded-sm bg-surface2 px-3 py-2.5 text-xs leading-relaxed text-ink">
+                    {goiY.tong_quat}
+                  </p>
+                )}
+
+                {loiAI && (
+                  <p className="m-0 mt-3 flex items-start gap-2 rounded-sm bg-danger-soft px-3 py-2 text-xs leading-relaxed text-danger">
+                    <AlertTriangle size={13} className="mt-0.5 shrink-0" aria-hidden="true" />
+                    <span>{loiAI}</span>
+                  </p>
+                )}
+
+                {conLai != null && !loiAI && (
+                  <p className="m-0 mt-2 text-[11px] text-soft">Còn {conLai} lượt trong 24 giờ tới.</p>
+                )}
+              </>
+            )}
+          </div>
+        )}
+
         {THU_TU_NHOM.map((cat) => {
           const list = rubric.criteria.filter((c) => c.category === cat);
           if (!list.length) return null;
@@ -426,7 +576,8 @@ export default function PESelfEvaluation({
               <ul className="m-0 flex list-none flex-col gap-3 p-0">
                 {list.map((c) => (
                   <ThanhTieuChi key={c.id} c={c} gia={diem[c.id]}
-                    nhacNho={nhacThieu} onChange={(v) => dat(c.id, v)} />
+                    nhacNho={nhacThieu} onChange={(v) => dat(c.id, v)}
+                    goiY={goiY?.tieu_chi?.[c.id]} />
                 ))}
               </ul>
             </div>

@@ -45,6 +45,36 @@ import TeacherDashboard from "./screens/dashboard/TeacherDashboard.jsx";
 import HomeDashboard from "./screens/dashboard/HomeDashboard.jsx";
 import CalendarView from "./screens/calendar/CalendarView.jsx";
 import PESelfEvaluation from "./screens/student/PESelfEvaluation.jsx";
+
+/* Gợi ý AI GIẢ cho màn tự chấm. Dữ liệu giả sống ở đây, không ở component —
+   quy tắc 1 của dự án.
+
+   CỐ Ý THIẾU HAI TIÊU CHÍ (`temps`, `morpho`): khối cảnh báo « 9/11 tiêu chí
+   không có gợi ý » chỉ hiện khi số chấm được nhỏ hơn tổng số, và một fixture
+   đầy đủ sẽ không bao giờ dựng ra nhánh đó. Đúng cái nhánh dễ hỏng nhất —
+   nó chạy khi mô hình trả về giá trị lệch thang, tức là lúc không ai đang
+   nhìn. Bám thang B2 (xem delfGrille.js). */
+const GOI_Y_AI_THU = {
+  tieu_chi: {
+    consigne:     { diem: 2,   nhan_xet: "Đủ cả hai việc đề yêu cầu: bày tỏ bất đồng và đề xuất phương án thay thế." },
+    sociolang:    { diem: 1.5, nhan_xet: "Giọng văn trang trọng đúng mực, nhưng « Je me permets » lặp lại hai lần." },
+    faits:        { diem: 2.5, nhan_xet: "Con số « ba phần trăm » và « bốn mươi trẻ » làm lập luận cụ thể hẳn lên." },
+    argumenter:   { diem: 3.5, nhan_xet: "Có nhượng bộ rồi phản bác — đúng cấu trúc B2. Thiếu một câu chốt lại lợi ích chung." },
+    coherence:    { diem: 2.5, nhan_xet: "Nối ý tốt bằng « Toutefois », « C'est pourquoi ». Đoạn hai và ba hơi dài." },
+    etendue_lex:  { diem: 1.5, nhan_xet: "Từ vựng hành chính khá rộng; « lieu » dùng ba lần, thử « espace », « équipement »." },
+    maitrise_lex: { diem: 2,   nhan_xet: "Không có lỗi dùng từ nào đáng kể." },
+    orthographe:  { diem: 1,   nhan_xet: "Chính tả sạch." },
+    phrases:      { diem: 1.5, nhan_xet: "Câu phức dùng đúng; vài câu dài quá 40 từ nên khó theo." },
+  },
+  tong: 17.5,
+  tong_toi_da: 25,
+  so_cham_duoc: 9,
+  so_tieu_chi: 11,
+  tong_quat:
+    "Bài viết mạnh ở phần lập luận: bạn nhượng bộ trước rồi mới phản bác, đúng "
+    + "kiểu bài B2 cần. Việc nên sửa trước tiên là độ dài câu — cắt đôi những "
+    + "câu trên 40 từ thì người đọc theo được mạch mà không mất gì.",
+};
 import { PhanThi } from "./screens/exam/ExamMode.jsx";
 import GrilleEditor from "./screens/teacher/GrilleEditor.jsx";
 import TipsEditor from "./screens/teacher/TipsEditor.jsx";
@@ -714,7 +744,7 @@ function Preview() {
           <Route path="/etudiant/danh-tinh" element={<><Controls /><DanhTinhThu /></>} />
           <Route path="/etudiant/thong-bao" element={<><Controls /><ThongBaoThu /></>} />
           <Route path="/etudiant/auto-evaluation" element={
-            <><Controls /><PESelfEvaluation /></>
+            <><Controls /><PESelfEvaluation goiYThu={GOI_Y_AI_THU} /></>
           } />
           {/* Ba route cũ ở đây trỏ tới /etudiant/bibliotheque, /progression,
               /parametres — những đường dẫn app THẬT đã đổi tên từ lâu. Kết quả:

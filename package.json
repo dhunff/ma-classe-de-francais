@@ -28,7 +28,8 @@
     "check:db": "node scripts/check-db.mjs",
     "check:hoatdong": "node scripts/check-hoatdong.mjs",
     "check:sm2": "node scripts/check-sm2.mjs",
-    "check:neo": "node scripts/check-neo.mjs"
+    "check:neo": "node scripts/check-neo.mjs",
+    "check:champe": "node scripts/check-champe.mjs"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
