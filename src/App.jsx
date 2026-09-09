@@ -10,6 +10,7 @@ import ExamMode from './screens/exam/ExamMode.jsx'
 import ExamComposer from './screens/teacher/ExamComposer.jsx'
 import BaiNoiGiaoVien from './screens/teacher/BaiNoiGiaoVien.jsx'
 import TheGhiNho from './screens/student/TheGhiNho.jsx'
+import BoTheApp from './screens/student/BoTheApp.jsx'
 import LoiGiaiUuTien from './screens/teacher/LoiGiaiUuTien.jsx'
 import DatNeo from './screens/teacher/DatNeo.jsx'
 import XemLienHe from './screens/teacher/XemLienHe.jsx'
@@ -301,6 +302,10 @@ function AppInner() {
               <Route path="/etudiant/progression" element={studentRoute("progress")} />
               <Route path="/etudiant/resultats" element={<ExamResults />} />
               <Route path="/etudiant/the-ghi-nho" element={<TheGhiNho />} />
+              {/* Bộ thẻ giáo viên soạn. Hai màn (thư viện + luyện) nằm TRONG
+                  một route: đổi route thì React Router tháo màn cũ ngay khi
+                  màn mới gắn vào, không còn gì để trượt. Xem BoTheApp.jsx. */}
+              <Route path="/etudiant/bo-the" element={<BoTheApp />} />
 
 
 

@@ -85,6 +85,25 @@ import NotificationDropdown from "./screens/student/NotificationDropdown.jsx";
    tắc ở đầu file. */
 import TheLat3D from "./screens/student/TheLat3D.jsx";
 import TheBoThe from "./screens/student/TheBoThe.jsx";
+/* ThuVienBoThe nhận `ds` qua props và import hằng số từ shared/kyNang.js —
+   không chạm storageShim, nên vào được đây. Đó là lý do KY_NANG được tách ra
+   một file riêng, cùng lối với ChonDoanVan.jsx. */
+import ThuVienBoThe from "./screens/student/ThuVienBoThe.jsx";
+
+const BO_THE_THU = [
+  { id: "1", ten: "Nghe hiểu: thông báo nhà ga", kyNang: "CO", congKhai: true, soThe: 15,
+    moTa: "Các mẫu câu thông báo thường gặp ở sân bay và nhà ga.",
+    tacGia: { ten: "Đỗ Quốc Hùng", avatar: null } },
+  { id: "2", ten: "Số đếm và giờ giấc", kyNang: "CO", congKhai: true, soThe: 22,
+    moTa: null, tacGia: { ten: "Đỗ Quốc Hùng", avatar: null } },
+  /* Một bộ NHÁP để nhánh « học sinh chưa thấy » thật sự được dựng ra. Nhánh
+     nào không có dữ liệu chạm tới thì nó chưa được kiểm chứng lần nào. */
+  { id: "3", ten: "Bộ đang soạn dở", kyNang: "CO", congKhai: false, soThe: 3,
+    moTa: "Chưa công khai.", tacGia: { ten: "Đỗ Quốc Hùng", avatar: null } },
+  { id: "4", ten: "Đọc hiểu: quảng cáo rao vặt", kyNang: "CE", congKhai: true, soThe: 18,
+    moTa: "Từ vựng nhà ở, giá cả, diện tích.",
+    tacGia: { ten: "Đỗ Quốc Hùng", avatar: null } },
+];
 import NeoNguLieu from "./screens/student/NeoNguLieu.jsx";
 import ChonDoanVan from "./screens/teacher/ChonDoanVan.jsx";
 import TeamSection from "./screens/public/TeamSection.jsx";
@@ -97,7 +116,7 @@ const VI = {
      xem thử khi đó nói dối về diện mạo thật. */
   nav: { dashboard: "Trang chủ", exercises: "Thư viện bài tập", students: "Theo dõi học sinh",
     practice: "Luyện tập", calendar: "Lịch", settings: "Cài đặt",
-    todo: "Cần làm", done: "Đã nộp", account: "Tài khoản", stats: "Thống kê", exam: "Thi thử", exams: "Đề thi thử", oral: "Bài nói", results: "Kết quả thi",
+    todo: "Cần làm", done: "Đã nộp", account: "Tài khoản", stats: "Thống kê", exam: "Thi thử", exams: "Đề thi thử", oral: "Bài nói", results: "Kết quả thi", decks: "Bộ thẻ",
     explanations: "Câu cần lời giải",
     anchors: "Neo ngữ liệu",
     leads: "Đăng ký tư vấn",
@@ -621,6 +640,7 @@ function Preview() {
     ["/etudiant/the-bo", "Thẻ ghi nhớ — danh sách bộ"],
     ["/etudiant/neo", "Neo đáp án vào ngữ liệu"],
     ["/professeur/chon-doan", "Đặt neo — bôi đen đoạn văn"],
+    ["/etudiant/bo-the", "Thư viện bộ thẻ — tab dọc"],
     ["/gioi-thieu/doi-ngu", "Đội ngũ chuyên môn"],
     ["/professeur/grille", "Soạn thang chấm"],
   ];
@@ -740,6 +760,7 @@ function Preview() {
           <Route path="/etudiant/the-bo" element={<><Controls /><TheBoThu /></>} />
           <Route path="/etudiant/neo" element={<><Controls /><NeoThu /></>} />
           <Route path="/professeur/chon-doan" element={<><Controls /><ChonDoanThu /></>} />
+          <Route path="/etudiant/bo-the" element={<><Controls /><ThuVienBoThe ds={BO_THE_THU} onMo={() => {}} /></>} />
           <Route path="/gioi-thieu/doi-ngu" element={<><Controls /><DoiNguThu /></>} />
           <Route path="/etudiant/danh-tinh" element={<><Controls /><DanhTinhThu /></>} />
           <Route path="/etudiant/thong-bao" element={<><Controls /><ThongBaoThu /></>} />

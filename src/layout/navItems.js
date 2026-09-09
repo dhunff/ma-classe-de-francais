@@ -1,6 +1,6 @@
 import {
   LayoutDashboard, BookOpen, Users, BarChart3, Dumbbell,
-  ClipboardList, CheckSquare, CalendarDays, Settings, Lightbulb, Timer, Trophy, Mic, Layers, Lightbulb as Bulb, Anchor, Inbox,
+  ClipboardList, CheckSquare, CalendarDays, Settings, Lightbulb, Timer, Trophy, Mic, Layers, LibraryBig, Lightbulb as Bulb, Anchor, Inbox,
 } from "lucide-react";
 
 /* Điều hướng của vỏ app.
@@ -74,6 +74,10 @@ export const STUDENT_NAV = [
      Đặt NGAY SAU kết quả thi vì hai thứ nối nhau — thẻ sinh ra từ câu làm
      sai, và chỗ người ta nhìn thấy mình sai là trang kết quả. */
   { to: "/etudiant/the-ghi-nho", labelKey: "nav.cards", Icon: Layers },
+  /* Bộ thẻ do GIÁO VIÊN soạn — khác hẳn mục trên, vốn là thẻ sinh từ lỗi sai
+     của chính người học. Hai khái niệm, hai mục; gộp lại thì người dùng mở ra
+     và không hiểu vì sao thẻ của mình lẫn với thẻ của lớp. */
+  { to: "/etudiant/bo-the", labelKey: "nav.decks", Icon: LibraryBig },
   /* « Ma progression » đã rời khỏi menu theo yêu cầu. Route
      /etudiant/progression VẪN sống trong App.jsx nên hành trình tới Paris và
      biểu đồ điểm không mất — chỉ là hiện không còn lối vào từ thanh bên.

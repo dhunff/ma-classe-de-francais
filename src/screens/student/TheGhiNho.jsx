@@ -1,12 +1,11 @@
 import React, { useEffect, useMemo, useState } from "react";
 import {
-  Layers, Sparkles, RefreshCw, CheckCircle2, AlertTriangle, Plus,
+  Layers, Sparkles, RefreshCw, CheckCircle2, AlertTriangle,
   BookOpen, Headphones, PenLine, Lightbulb, ArrowLeft,
 } from "lucide-react";
 import { docTheDenHan, sinhTheTuLoiSai, chamThe } from "../../shared/theGhiNho.js";
 import { MUC } from "../../shared/sm2.js";
 import TheLat3D from "./TheLat3D.jsx";
-import OTaoThe from "./OTaoThe.jsx";
 import TheBoThe from "./TheBoThe.jsx";
 
 /* Thẻ ghi nhớ — buổi ôn của học sinh.
@@ -97,7 +96,6 @@ export default function TheGhiNho() {
   const [daOn, setDaOn] = useState(0);
   const [dangSinh, setDangSinh] = useState(false);
   const [tinSinh, setTinSinh] = useState("");
-  const [moTao, setMoTao] = useState(false);
 
   const tai = async () => {
     setDs(undefined); setLoi(""); setI(0); setLat(false);
@@ -226,10 +224,6 @@ export default function TheGhiNho() {
           </p>
         </div>
         <div className="flex gap-2">
-          <button type="button" onClick={() => setMoTao(true)}
-            className="inline-flex items-center gap-2 rounded-full border-0 bg-primary px-4 py-2 text-left text-sm font-bold text-white">
-            <Plus size={14} /> Thẻ mới
-          </button>
           <button type="button" onClick={tai}
             className="inline-flex items-center gap-2 rounded-full border-0 bg-surface2 px-4 py-2 text-left text-sm font-semibold text-ink">
             <RefreshCw size={14} /> Tải lại
@@ -276,7 +270,6 @@ export default function TheGhiNho() {
         </div>
       )}
 
-      <OTaoThe mo={moTao} onDong={() => setMoTao(false)} onXong={() => { setMoTao(false); tai(); }} />
     </div>
   );
 }

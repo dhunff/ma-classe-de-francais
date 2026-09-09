@@ -17,6 +17,16 @@ const LOP = [
   "disabled:cursor-not-allowed", "hover:bg-primary-soft", "focus:ring-2",
   "min-h-[110px]", "z-[9999]", "rounded-3xl", "shadow-2xl", "hover:ring-primary/40",
 
+  /* Hai lớp của dải tab DỌC ở thư viện bộ thẻ (ThuVienBoThe.jsx). Cùng loại
+     rủi ro với thẻ lật 3D bên dưới, và tệ hơn ở một điểm: thẻ lật hỏng thì
+     nhìn phát ra ngay (bấm mà không lật), còn tab dọc hỏng thì vẫn là một nút
+     bấm được, chữ vẫn đọc được — chỉ nằm ngang. Không ai báo lỗi cho một cái
+     nút chạy tốt.
+
+     Hai lớp phải đi CÙNG NHAU: `writing-mode` một mình cho chữ chạy từ trên
+     xuống (ngược chiều gáy sách), `-rotate-180` một mình thì lộn ngược cả chữ. */
+  "[writing-mode:vertical-lr]", "-rotate-180",
+
   /* Bốn lớp của thẻ lật 3D (TheLat3D.jsx). Đây là loại RỦI RO NHẤT trong cả
      danh sách: Tailwind 3 không có tiện ích xoay theo trục Y, nên phải viết
      bằng giá trị tuỳ ý — và một dấu ngoặc sai thì lớp im lặng biến mất, thẻ

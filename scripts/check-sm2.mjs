@@ -330,7 +330,6 @@ const MOC = new Date(2026, 8, 2);      // 02/09/2026, giờ địa phương
   const sql = readFileSync(new URL("../supabase/migrations/073_the_tu_tao.sql", import.meta.url), "utf8")
     .replace(/\/\*[\s\S]*?\*\//g, " ")
     .split(/\r?\n/).map((x) => x.replace(/--.*$/, "")).join("\n");
-  const modal = readFileSync(new URL("../src/screens/student/OTaoThe.jsx", import.meta.url), "utf8");
   /* Lọc chú thích TRƯỚC khi đếm. Bản đầu đếm `aria-hidden` ra 3 thay vì 2, vì
      chính chú thích trong file giải thích "chúng aria-hidden và không nhận
      chuột". Lần thứ sáu cùng cái bẫy này trong dự án — và ở một ca ĐẾM thì nó
@@ -354,10 +353,36 @@ const MOC = new Date(2026, 8, 2);      // 02/09/2026, giờ địa phương
   t("dùng bảng cards đang có, không dựng flashcards",
     /create table[\s\S]{0,40}flashcards/i.test(sql), false);
 
-  /* Giao diện phải hiện hạn mức TRƯỚC khi người ta gõ. Bắt viết xong cả thẻ
-     rồi mới báo hết hạn mức là vứt đi công của họ. */
-  t("modal đọc số thẻ đã tạo khi mở", /demTheTuViet\(\)/.test(modal), true);
-  t("hết hạn mức có câu chữ riêng", /het_han_muc/.test(modal), true);
+  /* ══ HỌC SINH KHÔNG CÒN TẠO THẺ — 09/09/2026 ══
+   *
+   * Hai ca ở đây trước kia kiểm modal `OTaoThe.jsx`: nó có đọc hạn mức trước
+   * khi người ta gõ không, có câu chữ riêng cho "hết hạn mức" không. Modal đã
+   * bị gỡ (migration 085 thu luôn quyền gọi `tao_the_tu_viet`), nên hai ca ấy
+   * kiểm một tính năng không còn tồn tại — và bộ kiểm CHẾT hẳn vì `readFileSync`
+   * một file đã xoá, chứ không phải báo đỏ tử tế.
+   *
+   * Thay bằng hai ca canh chiều NGƯỢC LẠI. Xoá đi mà không thay thì đường tạo
+   * thẻ của học sinh có thể lặng lẽ quay lại sau một lần merge, và không gì
+   * bắt được. */
+  const man0 = readFileSync(new URL("../src/screens/student/TheGhiNho.jsx", import.meta.url), "utf8")
+    .replace(/\/\*[\s\S]*?\*\//g, " ").replace(/\{\/\*[\s\S]*?\*\/\}/g, " ");
+
+  t("màn thẻ không còn nút tạo thẻ", /OTaoThe|setMoTao/.test(man0), false);
+
+  /* Kiểm Ý ĐỊNH, không kiểm một lối viết: bất kỳ lời gọi nào tới hàm tạo thẻ
+     từ phía màn hình học sinh đều là đường cũ sống lại. */
+  t("không màn nào gọi taoTheTuViet", /taoTheTuViet\s*\(/.test(man0), false);
+
+  /* Nhưng đường SINH TỰ ĐỘNG từ lỗi sai phải còn: 35/37 thẻ đến từ đó, và cắt
+     nhầm nó là xoá sổ cả tính năng chứ không phải cấm học sinh soạn thẻ. */
+  /* `(?![A-Za-z])` chứ không phải chuỗi trần: bản đầu viết `/sinhTheTuLoiSai/`
+     và phép thử phá đã lọt — đổi tên hàm thành `sinhTheTuLoiSaiXXX` thì regex
+     vẫn khớp vì nó khớp CHUỖI CON. Bộ kiểm khi đó báo xanh cho một lời gọi
+     không còn tồn tại.
+     Dùng `(?![A-Za-z])` chứ không dùng `\b`: `\b` viết qua đường ống shell
+     thành ký tự backspace 0x08, và dự án đã mất một lượt vì đúng chuyện đó. */
+  t("thẻ vẫn sinh tự động từ câu làm sai",
+    /sinhTheTuLoiSai(?![A-Za-z0-9_])/.test(man0), true);
 
   /* Bốn mảnh của phép lật 3D. Thiếu mảnh nào cũng hỏng theo một kiểu khác
      nhau, và `check:css` chỉ biết lớp có sinh CSS chứ không biết nó có mặt
