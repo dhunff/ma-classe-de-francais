@@ -125,7 +125,7 @@ export default function ThuVienBoThe({ ds, onMo }) {
 
   return (
     <div className="mx-auto max-w-5xl py-6">
-      <h1 className="m-0 text-2xl font-extrabold tracking-tight text-ink">Bộ thẻ</h1>
+      <h1 className="m-0 text-2xl font-extrabold tracking-tight text-ink">Flashcard</h1>
       <p className="m-0 mt-1 text-sm text-soft">
         Chọn một bộ để luyện. Các bộ này do giáo viên soạn.
       </p>

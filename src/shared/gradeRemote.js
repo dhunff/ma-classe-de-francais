@@ -79,10 +79,24 @@ export async function gradeRemote(exerciseId, answers, opts = {}) {
      * phải KÉO thẻ đó về hôm nay: sai lại nghĩa là nó đang được xếp lịch quá
      * thưa. "Đã có thẻ rồi nên bỏ qua" là bỏ mất đúng tín hiệu quan trọng
      * nhất mà lần làm bài này cung cấp. */
-    const sai = Object.entries(data.results ?? {})
-      .filter(([, r]) => r && r.graded && r.correct === false)
-      .map(([id]) => id);
-    if (sai.length) { sinhTheTuLoiSai(sai.length); datLaiTheSai(sai); }
+    /* ══ TẮT TỪ 09/09/2026 ══
+     *
+     * Màn ôn thẻ sinh-từ-lỗi-sai (/etudiant/the-ghi-nho) đã gỡ; flashcard giờ
+     * là bộ do giáo viên soạn. Nếu để hai dòng dưới chạy tiếp thì mỗi lần chấm
+     * bài lại ghi thêm thẻ vào một bảng KHÔNG CÒN MÀN NÀO MỞ ĐƯỢC — dữ liệu
+     * lớn dần, không ai đọc, và không có triệu chứng nào.
+     *
+     * Đó đúng là cái bẫy CLAUDE.md ghi ở mục « Thêm cột rồi quên ghi vào nó »,
+     * chỉ lộn chiều: một đường ghi còn sống sau khi đường đọc đã chết.
+     *
+     * 37 thẻ cũ và cả bảng `cards` KHÔNG bị xoá — chúng vẫn ở đó, và bật lại
+     * chỉ là bỏ chú thích ở đây cộng với dựng lại route.
+     *
+     * const sai = Object.entries(data.results ?? {})
+     *   .filter(([, r]) => r && r.graded && r.correct === false)
+     *   .map(([id]) => id);
+     * if (sai.length) { sinhTheTuLoiSai(sai.length); datLaiTheSai(sai); }
+     */
 
     return data;
   } catch (e) {

@@ -1,6 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { ArrowLeft, Volume2, RotateCcw, Check, X, AlertTriangle } from "lucide-react";
 import { docTheTrongBo } from "../../shared/boThe.js";
+/* Dùng lại thẻ lật 3D đã có thay vì dựng bản lật tại chỗ thứ hai. Nó là thành
+   phần trình bày thuần — nhận mọi thứ qua props, không chạm storageShim — và
+   đã được check:css canh đủ bốn lớp 3D, check:sm2 canh chồng thẻ. Hai bộ kiểm
+   đó lập tức có ích cho màn này mà không phải viết thêm gì.
+
+   Đây là lý do TheLat3D.jsx sống sót đợt gỡ « Thẻ ghi nhớ » ngày 09/09: thứ
+   bị bỏ là màn ôn SM-2, không phải cách vẽ một cái thẻ. */
+import TheLat3D from "./TheLat3D.jsx";
 
 /* Màn luyện một bộ thẻ.
  *
@@ -96,42 +104,17 @@ export default function LuyenBoThe({ bo, onThoat }) {
         </div>
       ) : (
         <>
-          {/* ══ THẺ CHÍNH ══
-              Bấm cả thẻ để lật — nút riêng thì phải ngắm, mà thao tác này lặp
-              lại vài chục lần trong một buổi. `<button>` chứ không phải `<div
-              onClick>`: bàn phím và trình đọc màn hình cần một phần tử bấm
-              được thật. */}
-          <button
-            type="button"
-            onClick={() => setLat((v) => !v)}
-            aria-expanded={lat}
-            className="mt-6 w-full rounded-3xl border-0 bg-surface p-8 text-left font-sans shadow-lg ring-1 ring-line transition-shadow duration-300 hover:shadow-2xl hover:shadow-primary/10"
-          >
-            <p className="m-0 text-center text-2xl font-extrabold leading-snug text-ink">
-              {the.matTruoc}
-            </p>
-
-            {the.phienAm && (
-              <p className="m-0 mt-2 text-center text-sm italic text-soft">{the.phienAm}</p>
-            )}
-
-            {/* Mặt sau hiện tại chỗ, không đổi trang: người học phải thấy được
-                cả câu hỏi lẫn lời giải cùng lúc để đối chiếu. */}
-            {lat ? (
-              <div className="mt-6 rounded-2xl bg-surface2 p-5">
-                <p className="m-0 text-sm leading-relaxed text-ink">{the.matSau}</p>
-                {the.viDu && (
-                  <p className="m-0 mt-3 border-l-2 border-primary pl-3 text-xs italic leading-relaxed text-soft">
-                    {the.viDu}
-                  </p>
-                )}
-              </div>
-            ) : (
-              <p className="m-0 mt-6 text-center text-xs font-semibold text-soft">
-                bấm để xem nghĩa
-              </p>
-            )}
-          </button>
+          {/* Thẻ lật 3D. `conLai` vẽ chồng thẻ phía sau, và nó đọc SỐ THẺ CÒN
+              LẠI thật chứ không vẽ cứng hai cái — vẽ cứng là nói dối bằng hình
+              ảnh khi chỉ còn một thẻ. */}
+          <TheLat3D
+            mat={the.phienAm ? `${the.matTruoc}\n${the.phienAm}` : the.matTruoc}
+            sau={the.matSau}
+            viDu={the.viDu}
+            daLat={lat}
+            onLat={() => setLat((v) => !v)}
+            conLai={ds.length - i - 1}
+          />
 
           {/* Nút nghe chỉ hiện khi thẻ THẬT SỰ có file. Một nút phát luôn hiện
               rồi im lặng khi bấm là ngõ cụt — người dùng tưởng máy hỏng. */}

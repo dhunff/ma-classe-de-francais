@@ -1,6 +1,6 @@
 import {
   LayoutDashboard, BookOpen, Users, BarChart3, Dumbbell,
-  ClipboardList, CheckSquare, CalendarDays, Settings, Lightbulb, Timer, Trophy, Mic, Layers, LibraryBig, Lightbulb as Bulb, Anchor, Inbox,
+  ClipboardList, CheckSquare, CalendarDays, Settings, Lightbulb, Timer, Trophy, Mic, Layers, Lightbulb as Bulb, Anchor, Inbox,
 } from "lucide-react";
 
 /* Điều hướng của vỏ app.
@@ -52,6 +52,9 @@ export const TEACHER_NAV = [
   /* Đặt neo. Đứng cạnh « Câu cần lời giải » vì cùng một loại việc: nhìn vào
      chỗ học sinh chưa hiểu rồi làm gì đó về nó. */
   { to: "/professeur/neo", labelKey: "nav.anchors", Icon: Anchor },
+  /* Soạn Flashcard. Đặt cạnh « Neo ngữ liệu » vì cùng loại việc: chuẩn bị ngữ
+     liệu cho học sinh, khác với ba mục trên vốn là theo dõi và chấm. */
+  { to: "/professeur/bo-the", labelKey: "nav.decks", Icon: Layers },
   /* Đăng ký tư vấn. Đứng cuối vì nó không phải việc dạy học — nhưng phải có
      mặt: một người để lại số điện thoại mà không ai thấy là một người bị bỏ
      rơi. */
@@ -70,14 +73,15 @@ export const STUDENT_NAV = [
      ExamMode, không phải ở việc giấu lối vào. */
   { to: "/etudiant/examen", labelKey: "nav.exam", Icon: Timer },
   { to: "/etudiant/resultats", labelKey: "nav.results", Icon: Trophy },
-  /* Thẻ ghi nhớ. Route riêng, không có `view`: nó không nằm trong Student.jsx.
-     Đặt NGAY SAU kết quả thi vì hai thứ nối nhau — thẻ sinh ra từ câu làm
-     sai, và chỗ người ta nhìn thấy mình sai là trang kết quả. */
-  { to: "/etudiant/the-ghi-nho", labelKey: "nav.cards", Icon: Layers },
-  /* Bộ thẻ do GIÁO VIÊN soạn — khác hẳn mục trên, vốn là thẻ sinh từ lỗi sai
-     của chính người học. Hai khái niệm, hai mục; gộp lại thì người dùng mở ra
-     và không hiểu vì sao thẻ của mình lẫn với thẻ của lớp. */
-  { to: "/etudiant/bo-the", labelKey: "nav.decks", Icon: LibraryBig },
+  /* « Thẻ ghi nhớ » (/etudiant/the-ghi-nho) ĐÃ GỠ — 09/09/2026.
+     Đó là thẻ SM-2 sinh từ chính câu học sinh làm sai. Flashcard giờ là bộ do
+     GIÁO VIÊN soạn — mục ngay dưới đây.
+
+     Bảng `cards` / `reviews` và 37 thẻ đang có KHÔNG bị xoá; chỉ đường VÀO là
+     mất. Đường GHI cũng tắt cùng lúc (xem gradeRemote.js): để nguyên nó thì
+     mỗi lần chấm bài lại ghi thêm thẻ vào chỗ không màn nào mở được — một
+     đường ghi còn sống sau khi đường đọc đã chết. */
+  { to: "/etudiant/bo-the", labelKey: "nav.decks", Icon: Layers },
   /* « Ma progression » đã rời khỏi menu theo yêu cầu. Route
      /etudiant/progression VẪN sống trong App.jsx nên hành trình tới Paris và
      biểu đồ điểm không mất — chỉ là hiện không còn lối vào từ thanh bên.

@@ -9,10 +9,10 @@ import { ROLE_HOME, TEACHER_NAV, STUDENT_NAV } from './layout/navItems.js'
 import ExamMode from './screens/exam/ExamMode.jsx'
 import ExamComposer from './screens/teacher/ExamComposer.jsx'
 import BaiNoiGiaoVien from './screens/teacher/BaiNoiGiaoVien.jsx'
-import TheGhiNho from './screens/student/TheGhiNho.jsx'
 import BoTheApp from './screens/student/BoTheApp.jsx'
 import LoiGiaiUuTien from './screens/teacher/LoiGiaiUuTien.jsx'
 import DatNeo from './screens/teacher/DatNeo.jsx'
+import SoanBoThe from './screens/teacher/SoanBoThe.jsx'
 import XemLienHe from './screens/teacher/XemLienHe.jsx'
 import LandingPage from './screens/public/LandingPage.jsx'
 import ExamResults from './screens/student/ExamResults.jsx'
@@ -268,6 +268,7 @@ function AppInner() {
               <Route path="/professeur/oral" element={<BaiNoiGiaoVien />} />
               <Route path="/professeur/loi-giai" element={<LoiGiaiUuTien />} />
               <Route path="/professeur/neo" element={<DatNeo />} />
+              <Route path="/professeur/bo-the" element={<SoanBoThe />} />
               <Route path="/professeur/lien-he" element={<XemLienHe />} />
 
               <Route path="/professeur/*" element={<Navigate to="/professeur/dashboard" replace />} />
@@ -301,7 +302,6 @@ function AppInner() {
                   mục menu bị bỏ. */}
               <Route path="/etudiant/progression" element={studentRoute("progress")} />
               <Route path="/etudiant/resultats" element={<ExamResults />} />
-              <Route path="/etudiant/the-ghi-nho" element={<TheGhiNho />} />
               {/* Bộ thẻ giáo viên soạn. Hai màn (thư viện + luyện) nằm TRONG
                   một route: đổi route thì React Router tháo màn cũ ngay khi
                   màn mới gắn vào, không còn gì để trượt. Xem BoTheApp.jsx. */}

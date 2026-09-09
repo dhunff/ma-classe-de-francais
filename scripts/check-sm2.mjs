@@ -16,7 +16,7 @@
 
 import { MUC, NGUONG_NHO, EASE_SAN, EASE_TRAN, QUANG_TOI_DA, ngayCong, onLai, xepLichOn }
   from "../src/shared/sm2.js";
-import { readFileSync } from "node:fs";
+import { readFileSync, existsSync } from "node:fs";
 
 let pass = 0, fail = 0;
 const t = (ten, got, want) => {
@@ -184,48 +184,49 @@ const MOC = new Date(2026, 8, 2);      // 02/09/2026, giờ địa phương
     true);
 }
 
-/* ══ NỐI VÀO ĐƯỜNG LÀM BÀI ══
+/* ══ ĐƯỜNG GHI PHẢI TẮT CÙNG LÚC VỚI ĐƯỜNG ĐỌC ══
  *
- * Thẻ nhập tay là thứ người học không bao giờ làm — mọi app thẻ ghi nhớ đều
- * chết ở chỗ đó. Nếu việc sinh thẻ chỉ nằm sau một cái nút thì tính năng này
- * coi như không tồn tại. */
+ * Ngày 09/09/2026 màn ôn thẻ SM-2 (/etudiant/the-ghi-nho) bị gỡ; flashcard trở
+ * thành bộ do giáo viên soạn. Cả khối ca kiểm ở đây trước kia đọc
+ * TheGhiNho.jsx — nên khi file đó biến mất, bộ kiểm không báo đỏ mà VỠ HẲN ở
+ * readFileSync, và một bộ kiểm vỡ thì không ai đọc được nó đang nói gì.
+ *
+ * Đó là lần thứ HAI trong cùng một ngày (lần đầu: OTaoThe.jsx). Bài học:
+ * ĐỪNG NEO CA KIỂM VÀO SỰ TỒN TẠI CỦA MỘT FILE MÀN HÌNH. Neo vào bất biến.
+ *
+ * Bất biến ở đây: một đường GHI còn sống sau khi đường ĐỌC đã chết thì mỗi lần
+ * chấm bài lại ghi thêm thẻ vào chỗ không màn nào mở được — dữ liệu lớn dần,
+ * không ai đọc, không một triệu chứng nào. */
 {
-  const boChuThich = (src) => src.replace(/\/\*[\s\S]*?\*\//g, ' ')
-    .split(/\r?\n/).map((d) => d.replace(/^\s*\/\/.*$/, '')).join('\n');
-  const gr = boChuThich(readFileSync(new URL("../src/shared/gradeRemote.js", import.meta.url), "utf8"));
-  const kho = boChuThich(readFileSync(new URL("../src/shared/theGhiNho.js", import.meta.url), "utf8"));
-  const man = boChuThich(readFileSync(new URL("../src/screens/student/TheGhiNho.jsx", import.meta.url), "utf8"));
+  const gr = readFileSync(new URL("../src/shared/gradeRemote.js", import.meta.url), "utf8")
+    .replace(/\/\*[\s\S]*?\*\//g, " ")
+    .split(/\r?\n/).map((x) => x.replace(/^\s*\/\/.*$/, "")).join("\n");
+  const kho = readFileSync(new URL("../src/shared/theGhiNho.js", import.meta.url), "utf8");
 
-  t("chấm bài xong thì sinh thẻ", /sinhTheTuLoiSai\(/.test(gr), true);
-  t("sai lại thì kéo thẻ về hôm nay", /datLaiTheSai\(/.test(gr), true);
+  /* (?![A-Za-z0-9_]) chứ không phải chuỗi trần. Bản trước của đúng ca này viết
+     /sinhTheTuLoiSai/ và phép thử phá ĐÃ LỌT: nó khớp cả chuỗi con
+     sinhTheTuLoiSaiXXX.
 
-  /* Chỉ lấy câu ĐÃ CHẤM và SAI. Câu tự luận có correct = null; xếp nó vào
-     nhóm sai là sinh thẻ cho một bài viết, và mặt sau sẽ là lời giải thích
-     không tồn tại. */
-  t("chỉ lấy câu đã chấm và sai", /r.graded && r.correct === false/.test(gr), true);
+     Và dùng dạng này chứ KHÔNG dùng ký tự thoát chữ-b: viết nó qua đường ống
+     shell thì nó biến thành byte backspace 0x08. Chuyện đó vừa xảy ra lần nữa
+     với chính khối này — cả khối bị ăn sạch dấu chéo ngược, và câu chú thích
+     cảnh báo về nó cũng dính. Sửa file có cấu trúc thì dùng công cụ Edit hoặc
+     một script đọc từ FILE, đừng nhét mã vào node -e. */
+  t("chấm bài xong KHÔNG còn sinh thẻ",
+    /sinhTheTuLoiSai(?![A-Za-z0-9_])\s*\(/.test(gr), false);
+  t("KHÔNG còn kéo thẻ cũ về hôm nay",
+    /datLaiTheSai(?![A-Za-z0-9_])\s*\(/.test(gr), false);
 
-  /* Đọc kết quả trước khi nói đã xong. Lần thứ năm trong dự án. */
-  t("chamThe đọc kết quả trả về", /if \(error\) return { ok: false/.test(kho), true);
-  t("màn ôn không bỏ qua lỗi ghi", /if \(!kq.ok\) {/.test(man), true);
+  /* Nhưng KHÔNG xoá hàm lẫn bảng: 37 thẻ của người thật vẫn nằm đó, và bật lại
+     phải là gỡ một khối chú thích chứ không phải viết lại tính năng. */
+  t("hàm sinh thẻ vẫn còn, chỉ là không ai gọi",
+    /export async function sinhTheTuLoiSai/.test(kho), true);
+  t("phép tính SM-2 vẫn còn nguyên",
+    /export async function chamThe/.test(kho), true);
 
-  /* Bốn nút chỉ hiện SAU khi lật. Hiện sớm thì người học chọn theo cảm giác
-     trước cả khi thử nhớ — mà chính lúc cố nhớ mới là lúc trí nhớ được củng
-     cố. Toàn bộ giá trị của thẻ ghi nhớ nằm ở khoảnh khắc đó. */
-  t("bốn nút nằm sau phép lật", man.indexOf("{lat && (") < man.indexOf("THU_TU.map"), true);
-
-  /* Ba trạng thái: đang tải / không đọc được / danh sách thật. */
-  t("phân biệt đang tải", /ds === undefined/.test(man), true);
-  t("phân biệt không đọc được", /ds === null/.test(man), true);
-
-  /* Màn hình phải TỰ tìm thẻ lần đầu. Chỉ sinh thẻ sau khi chấm bài và sau
-     một cú bấm nút thì người đã làm hàng trăm câu TRƯỚC khi có tính năng
-     này mở màn ra và thấy « không có thẻ nào » — đúng chữ, sai hoàn toàn
-     về ý. Đo được 02/09: tài khoản có 111 câu trả lời, database 0 thẻ. */
-  t("lần đầu mở màn thì tự tìm thẻ", /daTuTim/.test(man), true);
-
-  /* Cờ chặn vòng lặp. Thiếu nó thì mỗi lần trả về 0 thẻ lại kích một lượt
-     tìm nữa, mãi mãi — một vòng lặp mạng vô hạn mà không có gì báo. */
-  t("có cờ chặn vòng lặp tự tìm", /if \(daTuTim \|\| /.test(man), true);
+  /* Màn hình cũ phải đi hẳn, không chỉ mất mục menu. */
+  t("màn ôn cũ đã gỡ khỏi mã nguồn",
+    existsSync(new URL("../src/screens/student/TheGhiNho.jsx", import.meta.url)), false);
 }
 /* ══ MẶT SAU KHÔNG ĐƯỢC CHỈ ĐƯỜNG TỚI CHỖ KHÔNG TỒN TẠI ══
  *
@@ -316,95 +317,6 @@ const MOC = new Date(2026, 8, 2);      // 02/09/2026, giờ địa phương
   t("danh sách ném lỗi khi không phải giáo viên",
     /if not public\.is_teacher\(\)/.test(sql071), true);
   t("màn hình có trạng thái riêng cho lỗi vai", /loiVai/.test(man), true);
-}
-/* ══ THẺ TỰ TẠO: HẠN MỨC PHẢI Ở MÁY CHỦ ══
- *
- * Hạn mức kiểm ở trình duyệt là hạn mức không tồn tại — ai mở DevTools cũng bỏ
- * qua được. Ở đây nó lại càng phải nằm ở máy chủ, vì `cards` KHÔNG cấp INSERT
- * cho `authenticated`: đường ghi duy nhất là hàm.
- *
- * Và "hôm nay" phải là ngày của NGƯỜI DÙNG. PostgREST chạy UTC, nên
- * `date(created_at) = current_date` tính học sinh ở Hà Nội tạo thẻ lúc 6 giờ
- * sáng vào hạn mức của hôm qua — họ mất một phần hạn mức vì múi giờ. */
-{
-  const sql = readFileSync(new URL("../supabase/migrations/073_the_tu_tao.sql", import.meta.url), "utf8")
-    .replace(/\/\*[\s\S]*?\*\//g, " ")
-    .split(/\r?\n/).map((x) => x.replace(/--.*$/, "")).join("\n");
-  /* Lọc chú thích TRƯỚC khi đếm. Bản đầu đếm `aria-hidden` ra 3 thay vì 2, vì
-     chính chú thích trong file giải thích "chúng aria-hidden và không nhận
-     chuột". Lần thứ sáu cùng cái bẫy này trong dự án — và ở một ca ĐẾM thì nó
-     còn kín hơn ở một ca có/không. */
-  const lat = readFileSync(new URL("../src/screens/student/TheLat3D.jsx", import.meta.url), "utf8")
-    .replace(/\/\*[\s\S]*?\*\//g, " ")
-    .replace(/\{\/\*[\s\S]*?\*\/\}/g, " ");
-
-  t("hàm tạo thẻ là security definer",
-    /create or replace function public\.tao_the_tu_viet[\s\S]{0,400}?security definer/.test(sql), true);
-  t("chặn ở mốc 10", /if da_co >= 10 then/.test(sql), true);
-  t("ném đúng mã DAILY_LIMIT_REACHED", /DAILY_LIMIT_REACHED/.test(sql), true);
-  t("ngày do client gửi, chặn khoảng ±1", /ngay < current_date - 1/.test(sql), true);
-
-  /* Thẻ tạo xong phải có lịch ôn ngay. Thiếu thì thẻ tồn tại mà không bao giờ
-     đến hạn — người học tạo xong rồi không thấy nó ở đâu nữa. */
-  t("thẻ mới được cấp lịch ôn ngay", /insert into public\.reviews \(card_id, user_id\)/.test(sql), true);
-
-  /* Không dựng bảng `flashcards` thứ hai: `reviews` khoá ngoại tới `cards`, và
-     hai bảng cho cùng một khái niệm là hai nguồn sự thật để lệch. */
-  t("dùng bảng cards đang có, không dựng flashcards",
-    /create table[\s\S]{0,40}flashcards/i.test(sql), false);
-
-  /* ══ HỌC SINH KHÔNG CÒN TẠO THẺ — 09/09/2026 ══
-   *
-   * Hai ca ở đây trước kia kiểm modal `OTaoThe.jsx`: nó có đọc hạn mức trước
-   * khi người ta gõ không, có câu chữ riêng cho "hết hạn mức" không. Modal đã
-   * bị gỡ (migration 085 thu luôn quyền gọi `tao_the_tu_viet`), nên hai ca ấy
-   * kiểm một tính năng không còn tồn tại — và bộ kiểm CHẾT hẳn vì `readFileSync`
-   * một file đã xoá, chứ không phải báo đỏ tử tế.
-   *
-   * Thay bằng hai ca canh chiều NGƯỢC LẠI. Xoá đi mà không thay thì đường tạo
-   * thẻ của học sinh có thể lặng lẽ quay lại sau một lần merge, và không gì
-   * bắt được. */
-  const man0 = readFileSync(new URL("../src/screens/student/TheGhiNho.jsx", import.meta.url), "utf8")
-    .replace(/\/\*[\s\S]*?\*\//g, " ").replace(/\{\/\*[\s\S]*?\*\/\}/g, " ");
-
-  t("màn thẻ không còn nút tạo thẻ", /OTaoThe|setMoTao/.test(man0), false);
-
-  /* Kiểm Ý ĐỊNH, không kiểm một lối viết: bất kỳ lời gọi nào tới hàm tạo thẻ
-     từ phía màn hình học sinh đều là đường cũ sống lại. */
-  t("không màn nào gọi taoTheTuViet", /taoTheTuViet\s*\(/.test(man0), false);
-
-  /* Nhưng đường SINH TỰ ĐỘNG từ lỗi sai phải còn: 35/37 thẻ đến từ đó, và cắt
-     nhầm nó là xoá sổ cả tính năng chứ không phải cấm học sinh soạn thẻ. */
-  /* `(?![A-Za-z])` chứ không phải chuỗi trần: bản đầu viết `/sinhTheTuLoiSai/`
-     và phép thử phá đã lọt — đổi tên hàm thành `sinhTheTuLoiSaiXXX` thì regex
-     vẫn khớp vì nó khớp CHUỖI CON. Bộ kiểm khi đó báo xanh cho một lời gọi
-     không còn tồn tại.
-     Dùng `(?![A-Za-z])` chứ không dùng `\b`: `\b` viết qua đường ống shell
-     thành ký tự backspace 0x08, và dự án đã mất một lượt vì đúng chuyện đó. */
-  t("thẻ vẫn sinh tự động từ câu làm sai",
-    /sinhTheTuLoiSai(?![A-Za-z0-9_])/.test(man0), true);
-
-  /* Bốn mảnh của phép lật 3D. Thiếu mảnh nào cũng hỏng theo một kiểu khác
-     nhau, và `check:css` chỉ biết lớp có sinh CSS chứ không biết nó có mặt
-     trong đúng thành phần này hay không. */
-  t("có perspective ở thẻ cha", /\[perspective:1200px\]/.test(lat), true);
-  t("có preserve-3d ở lớp quay", /\[transform-style:preserve-3d\]/.test(lat), true);
-  t("có backface-visibility ở cả hai mặt",
-    (lat.match(/\[backface-visibility:hidden\]/g) ?? []).length, 2);
-  t("mặt sau quay sẵn 180 độ",
-    (lat.match(/\[transform:rotateY\(180deg\)\]/g) ?? []).length >= 2, true);
-
-  /* Thẻ giả trong chồng phải bị ẩn khỏi trình đọc màn hình: chúng là hình vẽ,
-     không phải nội dung. */
-  t("thẻ giả trong chồng là aria-hidden", (lat.match(/aria-hidden/g) ?? []).length, 2);
-  t("thẻ giả không nhận chuột", (lat.match(/pointer-events-none/g) ?? []).length, 2);
-
-  /* Bốn nút, không phải ba. Ba nút thì nút thấp nhất vẫn là "nhớ được, hơi
-     khó" — không có cách nào nói "tôi QUÊN SẠCH", mà chính vế đó (q < 3) mới
-     đặt lại quãng và tăng lapses trong SM-2. */
-  const man = readFileSync(new URL("../src/screens/student/TheGhiNho.jsx", import.meta.url), "utf8");
-  t("giữ đủ bốn mức, không rút còn ba",
-    /THU_TU = \["lai", "kho", "tot", "de"\]/.test(man), true);
 }
 
 console.log(fail ? `\n${pass} đạt, ${fail} hỏng` : `\n${pass} đạt, 0 hỏng`);
