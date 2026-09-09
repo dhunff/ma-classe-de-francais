@@ -8,7 +8,6 @@ import LoginGate from './screens/LoginGate.jsx'
 import { ROLE_HOME, TEACHER_NAV, STUDENT_NAV } from './layout/navItems.js'
 import ExamMode from './screens/exam/ExamMode.jsx'
 import ExamComposer from './screens/teacher/ExamComposer.jsx'
-import PEGrading from './screens/teacher/PEGrading.jsx'
 import BaiNoiGiaoVien from './screens/teacher/BaiNoiGiaoVien.jsx'
 import TheGhiNho from './screens/student/TheGhiNho.jsx'
 import LoiGiaiUuTien from './screens/teacher/LoiGiaiUuTien.jsx'
@@ -261,7 +260,10 @@ function AppInner() {
                   học sinh khỏi lạc vào một trang mà mọi nút đều báo lỗi. */}
               <Route path="/professeur/carnet" element={<TipsEditor t={t} />} />
               <Route path="/professeur/examens" element={<ExamComposer t={t} />} />
-              <Route path="/professeur/copies" element={<PEGrading />} />
+              {/* /professeur/copies ĐÃ GỠ — 09/09/2026.
+                  Giáo viên không còn chấm bài; học sinh tự chấm theo grille
+                  DELF ở màn « Kết quả thi ». Xem navItems.js để biết vì sao
+                  gỡ cả mục menu chứ không chỉ giấu lối vào. */}
               <Route path="/professeur/oral" element={<BaiNoiGiaoVien />} />
               <Route path="/professeur/loi-giai" element={<LoiGiaiUuTien />} />
               <Route path="/professeur/neo" element={<DatNeo />} />

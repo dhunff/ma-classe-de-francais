@@ -67,7 +67,7 @@ const VI = {
      xem thử khi đó nói dối về diện mạo thật. */
   nav: { dashboard: "Trang chủ", exercises: "Thư viện bài tập", students: "Theo dõi học sinh",
     practice: "Luyện tập", calendar: "Lịch", settings: "Cài đặt",
-    todo: "Cần làm", done: "Đã nộp", account: "Tài khoản", stats: "Thống kê", exam: "Thi thử", exams: "Đề thi thử", grading: "Chấm bài viết", oral: "Bài nói", results: "Kết quả thi",
+    todo: "Cần làm", done: "Đã nộp", account: "Tài khoản", stats: "Thống kê", exam: "Thi thử", exams: "Đề thi thử", oral: "Bài nói", results: "Kết quả thi",
     explanations: "Câu cần lời giải",
     anchors: "Neo ngữ liệu",
     leads: "Đăng ký tư vấn",

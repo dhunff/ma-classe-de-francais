@@ -1,6 +1,6 @@
 import {
   LayoutDashboard, BookOpen, Users, BarChart3, Dumbbell,
-  ClipboardList, CheckSquare, CalendarDays, Settings, Lightbulb, Timer, PenLine, Trophy, Mic, Layers, Lightbulb as Bulb, Anchor, Inbox,
+  ClipboardList, CheckSquare, CalendarDays, Settings, Lightbulb, Timer, Trophy, Mic, Layers, Lightbulb as Bulb, Anchor, Inbox,
 } from "lucide-react";
 
 /* Điều hướng của vỏ app.
@@ -28,10 +28,22 @@ export const TEACHER_NAV = [
   { to: "/professeur/carnet", labelKey: "nav.tips", Icon: Lightbulb },
   /* Soạn đề thi thử — cũng là route riêng, không có `view`. */
   { to: "/professeur/examens", labelKey: "nav.exams", Icon: Timer },
-  { to: "/professeur/copies", labelKey: "nav.grading", Icon: PenLine },
-  /* Nghe bài nói. Mục RIENG, không gộp vào « Chấm bài viết »: hai màn hình
-     làm hai việc khác nhau — một cái cho điểm, một cái cố ý không. Gộp lại
-     thì người dùng chờ có ô điểm ở cả hai. */
+  /* « Chấm bài viết » (/professeur/copies) ĐÃ GỠ — 09/09/2026.
+     Giáo viên không còn chấm bài; bài viết do học sinh tự chấm theo grille
+     DELF chính thức ở « Kết quả thi ».
+
+     Gỡ CẢ mục menu lẫn route, không giấu lối vào rồi giữ màn hình lại. Một
+     route sống mà không có mục menu là thứ check:nav bắt lỗi đúng nghĩa —
+     và ngoại lệ duy nhất đang có (« Ma progression ») được khai tường minh
+     vì màn hình đó vẫn đúng, chỉ là không muốn hiện. Ở đây thì khác: màn
+     chấm bài không còn đúng với cách sản phẩm vận hành.
+
+     Muốn dựng lại thì lấy PEGrading.jsx từ commit trước 09/09/2026 và thêm
+     lại ba chỗ: import + route ở App.jsx, một dòng ở đây, và khoá nav.grading
+     ở i18n.jsx cùng preview.jsx. */
+  /* Nghe bài nói. Màn này KHÔNG cho điểm — chỉ nghe và nhắn nhận xét — nên
+     nó sống sót qua đợt gỡ trên. Trước đây chú thích ở đây giải thích vì sao
+     nó tách khỏi « Chấm bài viết »; giờ không còn gì để tách khỏi. */
   { to: "/professeur/oral", labelKey: "nav.oral", Icon: Mic },
   /* Viết lời giải, xếp theo số học sinh từng sai. Route riêng, không có
      `view`. Đặt cạnh hai màn chấm vì cùng một loại việc: nhìn vào chỗ học

@@ -637,11 +637,17 @@ function KetQua({ sections, blurCount, onLai }) {
         </div>
 
         {/* Chưa chấm hết thì KHÔNG đoán. Nói "bạn đạt rồi" dựa trên hai phần ba
-            bài thi là lời nói dối tử tế nhưng vẫn là nói dối. */}
+            bài thi là lời nói dối tử tế nhưng vẫn là nói dối.
+
+            Câu này TỪNG viết « chờ giáo viên chấm ». Từ 09/09/2026 không còn
+            giáo viên chấm bài — màn /professeur/copies đã gỡ — nên câu đó hứa
+            một việc sẽ không xảy ra, và người đọc nó là người vừa thi xong,
+            đang chờ. Nói thẳng ai sẽ chấm, và chấm ở đâu. */}
         {v.passed === null && (
           <p className="m-0 mt-2 text-xs text-soft">
-            Còn {v.pending.map((p) => p.code).join(", ")} chờ giáo viên chấm.
-            Máy không chấm được bài viết, và đoán thay thì con số mất hết ý nghĩa.
+            Còn {v.pending.map((p) => p.code).join(", ")} chưa có điểm. Máy không
+            chấm được bài viết, và đoán thay thì con số mất hết ý nghĩa — bạn tự
+            chấm phần đó theo thang DELF ở « Kết quả thi ».
           </p>
         )}
       </div>
@@ -686,8 +692,10 @@ function KetQua({ sections, blurCount, onLai }) {
                 )}
               </div>
               <div className="shrink-0 text-right">
+                {/* « chờ chấm » nói rằng có ai đó sắp chấm. Không còn ai —
+                    xem chú thích ở khối kết luận phía trên. */}
                 {s.score == null
-                  ? <span className="text-xs font-bold text-warn">chờ chấm</span>
+                  ? <span className="text-xs font-bold text-warn">chưa chấm</span>
                   : <span className="text-lg font-extrabold tabular-nums text-ink">
                       {s.score}<span className="text-xs text-soft">/{s.points}</span>
                     </span>}
