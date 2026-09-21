@@ -1035,8 +1035,8 @@ Xem `docs/roadmap-delf.md` — có nhật ký quyết định ở §5.
     ngày 12/09 từ `/professeur/bo-the`, `bocDong` tách đúng ba vế.
 
   **Chạy thật đầu-cuối 21/09:** bộ « Thông báo ở nhà ga » công khai, học sinh
-  mở `/etudiant/bo-the` bằng tài khoản thật và thấy đủ 8 thẻ. Bộ thử
-  « Économie » đã xoá.
+  mở `/etudiant/bo-the` bằng tài khoản thật và thấy đủ 8 thẻ; bấm vào bộ thì
+  trượt sang màn luyện và thẻ lật 3D chạy. Bộ thử « Économie » đã xoá.
 
   CÒN TREO: nút công khai trên màn soạn chưa ai bấm qua giao diện (bộ đầu tiên
   được bật bằng SQL trực tiếp); đường UPDATE mới chỉ được chứng minh qua claim giả.
