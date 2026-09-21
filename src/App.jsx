@@ -15,6 +15,7 @@ import DatNeo from './screens/teacher/DatNeo.jsx'
 import SoanBoThe from './screens/teacher/SoanBoThe.jsx'
 import XemLienHe from './screens/teacher/XemLienHe.jsx'
 import LandingPage from './screens/public/LandingPage.jsx'
+import { TrangFAQ, TrangDieuKhoan, TrangBaoMat } from './screens/public/TrangPhapLy.jsx'
 import ExamResults from './screens/student/ExamResults.jsx'
 
 import { C } from './shared/tokens.js'
@@ -354,6 +355,12 @@ function AppInner() {
                 dưới — nhưng đó là đổi đường vào của người đang dùng, nên để
                 bạn quyết. */}
             <Route path="/gioi-thieu" element={<LandingPage />} />
+            {/* Ba trang pháp lý — công khai, ngoài vỏ app, không cần đăng nhập:
+                người đọc chúng thường là người CHƯA có tài khoản và đang quyết
+                định có tạo hay không. */}
+            <Route path="/faq" element={<TrangFAQ />} />
+            <Route path="/dieu-khoan" element={<TrangDieuKhoan />} />
+            <Route path="/bao-mat" element={<TrangBaoMat />} />
 
             <Route path="*" element={
               <Navigate to={session ? (ROLE_HOME[session.role] || "/login") : "/decouvrir"} replace />

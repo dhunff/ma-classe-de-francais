@@ -203,13 +203,10 @@ export default function LandingPage() {
             <span className="font-extrabold text-ink">FRACILE</span>
             <Link to="/decouvrir" className="text-soft no-underline hover:text-ink">Thư viện bài tập</Link>
             <Link to="/login" className="text-soft no-underline hover:text-ink">Đăng nhập</Link>
+            <Link to="/faq" className="text-soft no-underline hover:text-ink">Câu hỏi thường gặp</Link>
+            <Link to="/dieu-khoan" className="text-soft no-underline hover:text-ink">Điều khoản sử dụng</Link>
+            <Link to="/bao-mat" className="text-soft no-underline hover:text-ink">Chính sách bảo mật</Link>
           </div>
-          <p className="m-0 mt-4 text-xs leading-relaxed text-soft">
-            Ba trang bắt buộc nếu thu tiền — Câu hỏi thường gặp, Điều khoản sử
-            dụng, Chính sách bảo mật — CHƯA có. Bảng so sánh của bạn cũng chấm
-            mục này 0 điểm. Chúng phải có trước lượt thanh toán đầu tiên, không
-            phải sau.
-          </p>
           <p className="m-0 mt-3 text-xs text-soft">© 2026 FRACILE</p>
         </footer>
       </div>
