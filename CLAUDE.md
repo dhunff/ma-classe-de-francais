@@ -1034,9 +1034,12 @@ Xem `docs/roadmap-delf.md` — có nhật ký quyết định ở §5.
   · Và đường INSERT qua GIAO DIỆN đã chạy thật: chủ dự án tạo bộ « Économie »
     ngày 12/09 từ `/professeur/bo-the`, `bocDong` tách đúng ba vế.
 
-  **CÒN TREO:** chưa bộ nào được công khai, nên màn thư viện học sinh chưa
-  từng đọc dữ liệu thật qua phiên thật — chỉ qua claim giả. Bộ « Économie » là
-  dữ liệu thử (chữ gõ ngẫu nhiên); xoá hoặc sửa trước khi công khai.
+  **Chạy thật đầu-cuối 21/09:** bộ « Thông báo ở nhà ga » công khai, học sinh
+  mở `/etudiant/bo-the` bằng tài khoản thật và thấy đủ 8 thẻ. Bộ thử
+  « Économie » đã xoá.
+
+  CÒN TREO: nút công khai trên màn soạn chưa ai bấm qua giao diện (bộ đầu tiên
+  được bật bằng SQL trực tiếp); đường UPDATE mới chỉ được chứng minh qua claim giả.
 
   Màn luyện CỐ Ý không có ô SCORE như bản thiết kế gốc: không có mô hình giọng
   nói nào trong dự án, và một con số 68 vẽ ra ở đó là số bịa (quy tắc 1).
