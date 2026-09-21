@@ -1038,6 +1038,10 @@ Xem `docs/roadmap-delf.md` — có nhật ký quyết định ở §5.
   mở `/etudiant/bo-the` bằng tài khoản thật và thấy đủ 8 thẻ; bấm vào bộ thì
   trượt sang màn luyện và thẻ lật 3D chạy. Bộ thử « Économie » đã xoá.
 
+  21/09 tối: đủ bốn bộ (Nghe 8 · Đọc 10 · Viết 8 · Nói 9 thẻ), cả bốn công khai;
+  học sinh mở bằng tài khoản thật thấy đủ bốn bộ. Ba bộ Đọc/Viết/Nói soạn bằng
+  SQL, phiên âm để trống có chủ ý.
+
   CÒN TREO: nút công khai trên màn soạn chưa ai bấm qua giao diện (bộ đầu tiên
   được bật bằng SQL trực tiếp); đường UPDATE mới chỉ được chứng minh qua claim giả.
 
