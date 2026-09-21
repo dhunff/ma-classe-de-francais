@@ -51,6 +51,35 @@ export async function docCacBo() {
   }));
 }
 
+/* Mở một bộ để HỌC: thẻ kèm lịch ôn SM-2 của chính người đang học.
+ *
+ * Lần đầu mở, máy chủ tạo cho người này một dòng `cards` + `reviews` cho mỗi
+ * thẻ trong bộ (migration 089). Mở lần hai không đẻ thêm — index duy nhất
+ * (user_id, bo_the_id) chặn.
+ *
+ * Chữ trên thẻ đọc từ THẺ GỐC `the_bo_the`, không từ bản chép trong `cards`:
+ * giáo viên sửa một lỗi chính tả thì học sinh thấy ngay. Bản chép đông cứng là
+ * đúng cái bẫy đã cắn `luu_loi_giai` (069/070).
+ *
+ * `null` = không đọc được, KHÁC `[]` = bộ chưa có thẻ nào. */
+export async function hocBo(boId) {
+  if (!boId) return null;
+  const { data, error } = await supabase.rpc("hoc_bo", { p_bo: boId });
+  if (error || !Array.isArray(data)) return null;
+  return data.map((t) => ({
+    card_id: t.card_id,           // tên giữ dạng snake: chamThe() và sm2.onLai() đọc đúng các khoá này
+    matTruoc: t.mat_truoc,
+    matSau: t.mat_sau,
+    phienAm: t.phien_am,
+    viDu: t.vi_du,
+    due_at: t.due_at,
+    interval_days: t.interval_days,
+    ease: t.ease,
+    lapses: t.lapses,
+    reps: t.reps,
+  }));
+}
+
 /* Thẻ trong một bộ, theo đúng thứ tự giáo viên xếp. */
 export async function docTheTrongBo(boId) {
   if (!boId) return null;

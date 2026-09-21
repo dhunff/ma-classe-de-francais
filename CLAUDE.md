@@ -1041,6 +1041,20 @@ Xem `docs/roadmap-delf.md` — có nhật ký quyết định ở §5.
   CÒN TREO: nút công khai trên màn soạn chưa ai bấm qua giao diện (bộ đầu tiên
   được bật bằng SQL trực tiếp); đường UPDATE mới chỉ được chứng minh qua claim giả.
 
+  **Lịch ôn SM-2 cho bộ giáo viên — 21/09** (migration 089/090). Trước đó hai
+  nút « Chưa nhớ / Nhớ rồi » KHÔNG GHI GÌ. Nay mở bộ lần đầu thì `hoc_bo()` tạo
+  cho người đó một dòng `cards` (`nguon='bo_giao_vien'`, `bo_the_id`) + `reviews`
+  cho mỗi thẻ; màn chỉ hiện thẻ ĐẾN HẠN, bốn nút SM-2 sau khi lật, ghi qua
+  `ghi_lan_on` có sẵn. Chữ trên thẻ đọc từ THẺ GỐC `the_bo_the`, không từ bản
+  chép trong `cards` — giáo viên sửa thì học sinh thấy ngay (bẫy luu_loi_giai).
+
+  Bẫy 059 lần hai: `cards_nguon_hop_le` là CHECK đóng chỉ nhận loi_sai|tu_tao;
+  không nới thì mọi lần mở bộ bị database từ chối. 090 kiểm NỘI DUNG CHECK.
+
+  Đo bằng claim giả: mở bộ hai lần vẫn 8 thẻ (không nhân đôi); chấm 1 thẻ →
+  còn 7 đến hạn, 1 sang mai; giáo viên sửa thẻ gốc → học sinh thấy ngay; bộ nháp
+  → 42501; học sinh khác ghi đè lịch → 42501.
+
   Màn luyện CỐ Ý không có ô SCORE như bản thiết kế gốc: không có mô hình giọng
   nói nào trong dự án, và một con số 68 vẽ ra ở đó là số bịa (quy tắc 1).
 - **FAQ · Điều khoản sử dụng — 21/09** (`/faq`, `/dieu-khoan`, file
