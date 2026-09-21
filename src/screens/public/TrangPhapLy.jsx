@@ -2,7 +2,19 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { AlertTriangle } from "lucide-react";
 
-/* Ba trang công khai: Câu hỏi thường gặp · Điều khoản sử dụng · Chính sách bảo mật.
+/* Hai trang công khai: Câu hỏi thường gặp · Điều khoản sử dụng.
+ *
+ * ══ TRANG CHÍNH SÁCH BẢO MẬT ĐÃ GỠ — 21/09/2026, theo yêu cầu chủ dự án ══
+ *
+ * Nội dung đầy đủ (đối chiếu với mã nguồn từng câu) nằm trong commit
+ * « Ba trang FAQ · Điều khoản sử dụng · Chính sách bảo mật ». Dựng lại thì
+ * lấy hàm TrangBaoMat từ đó, thêm route /bao-mat và link ở hai chân trang.
+ *
+ * Hai hệ quả phải nhớ khi trang này vắng mặt:
+ *   · Form tư vấn (FormTuVan.jsx) vẫn KHÔNG nên bật lại — thu dữ liệu cá nhân
+ *     mà không có chính sách bảo mật là chỗ dễ vướng nhất.
+ *   · Thêm tính năng thu dữ liệu mới thì không còn trang nào để cập nhật; lúc
+ *     đó là lúc cân nhắc dựng lại nó.
  *
  * ══ MỌI CÂU Ở ĐÂY PHẢI ĐÚNG VỚI MÃ NGUỒN ══
  *
@@ -72,7 +84,6 @@ function Khung({ tieuDe, children }) {
         <nav className="mt-14 flex flex-wrap gap-x-6 gap-y-2 border-0 border-t border-solid border-line pt-6 text-sm">
           <Link to="/faq" className="text-soft no-underline hover:text-ink">Câu hỏi thường gặp</Link>
           <Link to="/dieu-khoan" className="text-soft no-underline hover:text-ink">Điều khoản sử dụng</Link>
-          <Link to="/bao-mat" className="text-soft no-underline hover:text-ink">Chính sách bảo mật</Link>
         </nav>
       </div>
     </div>
@@ -111,7 +122,7 @@ const HOI_DAP = [
   ["Tôi có tự tạo Flashcard được không?",
    "Không. Các bộ Flashcard do giáo viên soạn để bảo đảm nội dung chính xác. Bạn chọn một bộ theo kỹ năng rồi luyện."],
   ["Dữ liệu của tôi được dùng vào việc gì?",
-   "Chỉ để vận hành việc học của bạn. Chúng tôi không bán dữ liệu và không dùng công cụ quảng cáo hay theo dõi nào. Chi tiết ở trang Chính sách bảo mật."],
+   "Chỉ để vận hành việc học của bạn. Chúng tôi không bán dữ liệu và không dùng công cụ quảng cáo hay theo dõi nào."],
 ];
 
 export function TrangFAQ() {
@@ -170,68 +181,6 @@ export function TrangDieuKhoan() {
       </Muc>
 
       <Muc ten="8. Liên hệ"><P><LienHe /></P></Muc>
-    </Khung>
-  );
-}
-
-/* ═══════════════════════════ BẢO MẬT ═══════════════════════════ */
-
-export function TrangBaoMat() {
-  return (
-    <Khung tieuDe="Chính sách bảo mật">
-      <Muc ten="Tóm tắt">
-        <UL>
-          <li>Chúng tôi chỉ thu những gì cần để bạn học.</li>
-          <li><strong>Không bán dữ liệu. Không có công cụ quảng cáo hay theo dõi nào.</strong></li>
-          <li>Bài viết của bạn chỉ được gửi cho dịch vụ AI khi <strong>chính bạn</strong> bấm « Xin gợi ý ».</li>
-          <li>Bạn có quyền xem, sửa và yêu cầu xoá dữ liệu của mình.</li>
-        </UL>
-      </Muc>
-
-      <Muc ten="1. Chúng tôi thu những gì">
-        <P><strong>Tài khoản:</strong> email, tên, tên hiển thị và tên người dùng, ảnh đại diện bạn chọn. Nếu đăng nhập bằng Google, chúng tôi nhận email và tên từ Google.</P>
-        <P><strong>Hồ sơ (không bắt buộc):</strong> họ tên, ngày sinh, giới tính, trường, địa chỉ, số điện thoại, trình độ và mục tiêu DELF — chỉ khi bạn tự điền.</P>
-        <P><strong>Việc học:</strong> câu trả lời, điểm, thời gian làm bài, kết quả tự chấm, và những ngày bạn học.</P>
-        <P><strong>Bản ghi âm bài nói:</strong> lưu ở kho riêng tư, chỉ bạn và giáo viên nghe được — không có đường dẫn công khai.</P>
-        <P><strong>Thanh toán:</strong> số tiền, nội dung chuyển khoản và thời điểm giao dịch. Chúng tôi <strong>không</strong> nhận và không lưu số thẻ hay thông tin tài khoản ngân hàng của bạn.</P>
-        <P><strong>Trên thiết bị của bạn:</strong> trình duyệt lưu phiên đăng nhập, ngôn ngữ và chế độ sáng/tối để bạn không phải chọn lại. Không dùng cookie quảng cáo.</P>
-      </Muc>
-
-      <Muc ten="2. Dùng vào việc gì">
-        <UL>
-          <li>Cho bạn đăng nhập và lưu tiến độ.</li>
-          <li>Chấm các câu tự động, hiện kết quả và lời giải.</li>
-          <li>Cho giáo viên theo dõi việc học và mở khoá bài đã mua.</li>
-        </UL>
-        <P>Không dùng cho quảng cáo, không bán, không chia sẻ cho bên thứ ba vì mục đích thương mại.</P>
-      </Muc>
-
-      <Muc ten="3. Những dịch vụ xử lý dữ liệu thay chúng tôi">
-        <UL>
-          <li><strong>Supabase</strong> — lưu cơ sở dữ liệu, tài khoản và bản ghi âm.</li>
-          <li><strong>Vercel</strong> — phục vụ trang web.</li>
-          <li><strong>Anthropic</strong> — chỉ khi bạn bấm « Xin gợi ý » ở màn tự chấm bài viết: đề bài và bài viết của bạn được gửi đi để nhận gợi ý chấm. Không có gì được gửi nếu bạn không bấm.</li>
-          <li><strong>SePay</strong> — báo cho hệ thống khi có giao dịch chuyển khoản.</li>
-          <li><strong>Google</strong> — chỉ khi bạn chọn đăng nhập bằng Google.</li>
-        </UL>
-        <P>Một số dịch vụ trên đặt máy chủ ở ngoài Việt Nam, nên dữ liệu có thể được lưu trữ hoặc xử lý ở nước ngoài.</P>
-      </Muc>
-
-      <Muc ten="4. Lưu trong bao lâu">
-        <P>Hiện chưa có cơ chế tự động xoá theo thời hạn: dữ liệu được giữ trong suốt thời gian tài khoản còn tồn tại, hoặc cho tới khi bạn yêu cầu xoá.</P>
-      </Muc>
-
-      <Muc ten="5. Quyền của bạn">
-        <P>Bạn có quyền xem, sửa, và yêu cầu xoá dữ liệu cá nhân của mình, cũng như rút lại sự đồng ý. Nhiều thông tin hồ sơ bạn tự sửa được ở trang Tài khoản; với các yêu cầu khác, liên hệ: <LienHe />.</P>
-      </Muc>
-
-      <Muc ten="6. Người dùng dưới 16 tuổi">
-        <P>Nhiều người học DELF là học sinh. Nếu bạn dưới 16 tuổi, cha mẹ hoặc người giám hộ cần biết và đồng ý với việc bạn sử dụng dịch vụ và với chính sách này. Bản ghi âm giọng nói được lưu ở kho riêng tư vì lý do này.</P>
-      </Muc>
-
-      <Muc ten="7. Thay đổi">
-        <P>Khi dịch vụ bắt đầu thu thêm loại dữ liệu mới hoặc dùng thêm nhà cung cấp mới, trang này sẽ được cập nhật trước. Ngày cập nhật ghi ở đầu trang.</P>
-      </Muc>
     </Khung>
   );
 }

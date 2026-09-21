@@ -1043,12 +1043,15 @@ Xem `docs/roadmap-delf.md` — có nhật ký quyết định ở §5.
 
   Màn luyện CỐ Ý không có ô SCORE như bản thiết kế gốc: không có mô hình giọng
   nói nào trong dự án, và một con số 68 vẽ ra ở đó là số bịa (quy tắc 1).
-- **FAQ · Điều khoản · Chính sách bảo mật — 21/09** (`/faq`, `/dieu-khoan`,
-  `/bao-mat`, file `screens/public/TrangPhapLy.jsx`). Mọi câu đối chiếu được
-  với mã nguồn — xem chú thích đầu file. **Thêm tính năng thu dữ liệu mới
-  (form, tracking, nhà cung cấp mới) thì PHẢI sửa trang bảo mật**, nếu không nó
-  nói sai. Bản nháp chưa qua luật sư; không tuyên bố đã tuân thủ Nghị định
-  13/2023. `EMAIL_LIEN_HE` để trống có chủ ý — trống thì trang tự hiện cảnh báo.
+- **FAQ · Điều khoản sử dụng — 21/09** (`/faq`, `/dieu-khoan`, file
+  `screens/public/TrangPhapLy.jsx`). Mọi câu đối chiếu được với mã nguồn. Bản
+  nháp chưa qua luật sư. `EMAIL_LIEN_HE` để trống có chủ ý — trống thì trang tự
+  hiện cảnh báo.
+
+  **Chính sách bảo mật: dựng xong rồi GỠ cùng ngày, theo yêu cầu chủ dự án.**
+  Nội dung đầy đủ nằm trong commit « Ba trang FAQ · Điều khoản sử dụng · Chính
+  sách bảo mật ». Khi trang này vắng mặt: form tư vấn KHÔNG nên bật lại, và
+  thêm tính năng thu dữ liệu mới là lúc cân nhắc dựng lại nó.
 - `s:mcf-submissions` vẫn giữ làm sao lưu, chưa xoá.
 
 

@@ -205,7 +205,6 @@ export default function LandingPage() {
             <Link to="/login" className="text-soft no-underline hover:text-ink">Đăng nhập</Link>
             <Link to="/faq" className="text-soft no-underline hover:text-ink">Câu hỏi thường gặp</Link>
             <Link to="/dieu-khoan" className="text-soft no-underline hover:text-ink">Điều khoản sử dụng</Link>
-            <Link to="/bao-mat" className="text-soft no-underline hover:text-ink">Chính sách bảo mật</Link>
           </div>
           <p className="m-0 mt-3 text-xs text-soft">© 2026 FRACILE</p>
         </footer>
