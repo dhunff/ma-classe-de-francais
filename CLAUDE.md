@@ -37,7 +37,7 @@ npm run check:bareme       # mốc cho điểm PE, nhãn Việt, đối chiếu 
 npm run check:identity     # luật @username + hồ sơ, JS ↔ SQL ↔ i18n (61 ca)
 npm run check:notifs       # gửi thông báo + chuông + luật RPC (38 ca)
 npm run check:hoatdong     # nhật ký theo ngày + chuỗi ngày học (28 ca)
-npm run check:sm2          # thẻ ghi nhớ SM-2, lời giải, thẻ tự tạo (90 ca)
+npm run check:sm2          # SM-2, lời giải, và đường sinh thẻ cũ PHẢI đang tắt (70 ca)
 npm run check:neo          # neo đáp án vào ngữ liệu (59 ca)
 npm run check:champe       # khuôn gợi ý chấm PE do AI trả về (38 ca)
 npm run check:css          # lớp Tailwind có thật sinh ra CSS không
@@ -78,6 +78,35 @@ npx supabase db query --linked "select …"
 cần Docker) và báo `ECONNREFUSED`, chứ không phải nối tới production. Đây là
 cách duy nhất đọc được những thứ PostgREST không phơi ra: `pg_publication_tables`,
 `pg_policy`, `pg_attribute`, quyền theo cột.
+
+**`db query` KHÔNG giữ khối `begin … commit;` tường minh.** Một câu lệnh đơn thì
+tự commit và persist. Nhưng một kịch bản có `begin; … commit;` báo chạy xong,
+không lỗi, mà `count(*)` đo ngay sau đó vẫn ra 0 — đã dính 09/09 khi tạo bộ
+thẻ thử. Cần ghi nhiều bảng thì viết thành MỘT câu lệnh (CTE ghi dữ liệu), hoặc
+nhiều câu chạy riêng. Và luôn đếm lại ở một lần chạy khác.
+
+Ngược lại, `begin; … rollback;` thì lại rất hữu ích — đó là cách thử RLS mà
+không đụng dữ liệu (xem ngay dưới).
+
+**Thử RLS bằng claim giả, không cần mật khẩu của ai.** Đi thẳng bằng `db query`
+là đi bằng vai `postgres`, BỎ QUA mọi policy — ghi được bằng đường đó không
+chứng minh gì về đường ghi của ứng dụng. Muốn thử đúng cái PostgREST sẽ làm:
+
+```sql
+begin;
+set local role authenticated;
+set local request.jwt.claims = '{"sub":"<uuid>","app_metadata":{"role":"eleve"}}';
+insert into public.<bảng> …;          -- phải ra 42501 nếu policy đúng
+rollback;
+```
+
+`is_teacher()` đọc đúng `request.jwt.claims`, nên claim giả đi qua đúng hàm mà
+JWT thật đi qua. Đổi vai giữa chừng được: `set local` lần nữa trong cùng khối.
+
+**Ca "không sửa được" chỉ có nghĩa khi vai đó NHÌN THẤY dòng.** Học sinh xoá
+được 0 thẻ lúc mọi bộ còn nháp là đúng một cách VÔ NGHĨA — họ không thấy dòng
+nào để xoá. Công khai bộ trước (bằng claim giáo viên, cùng khối), rồi mới thử:
+"thấy 8, sửa 0, xoá 0" mới là bằng chứng policy ghi đứng vững.
 
 `check:db` gọi mạng nên không chạy được khi offline, và nó là bộ duy nhất đối
 chiếu với hệ thống thật thay vì với mã nguồn. Chạy nó sau mỗi migration.
@@ -337,6 +366,34 @@ phải dấu hiệu, nó là sự trùng hợp đang chờ đánh lừa mình.
 đọc ra 374. Nhánh mới tạo sao chép nguyên dữ liệu, nên nó cũng ra 232 — dấu
 hiệu hết tác dụng từ lúc nhánh cũ bị bỏ, mà tôi vẫn dùng thêm mấy lượt nữa.
 Dùng `current_database()` và project ref trên thanh địa chỉ.
+
+**PostgREST chỉ NHÚNG được qua khoá ngoại TRỰC TIẾP giữa hai bảng trong schema
+được phơi.** `the_bo.tac_gia` ban đầu trỏ `auth.users(id)` — đúng về toàn vẹn,
+nhưng `select("…, profiles!the_bo_tac_gia_fkey(display_name)")` sẽ không bao
+giờ chạy được: `auth` không được phơi, nên không có đường nào từ `the_bo` sang
+`profiles` dù `profiles.id` cũng trỏ tới đúng `auth.users.id` đó. Màn thư viện
+học sinh khi đó hiện « Không đọc được thư viện » cho MỌI bộ, và mọi bộ kiểm đọc
+mã nguồn vẫn xanh. Migration 087 trỏ lại sang `public.profiles(id)` — không nới
+lỏng gì, vì `profiles.id` vốn đã trỏ `auth.users`.
+
+Phân biệt hai loại lỗi mất năm giây, và không cần đăng nhập:
+
+```bash
+curl "$URL/rest/v1/the_bo?select=id,profiles!the_bo_tac_gia_fkey(x)" -H "apikey: $ANON"
+#   42501 permission denied   → quan hệ GIẢI ĐƯỢC, chỉ là anon không có quyền
+#   PGRST200 Could not find a relationship → quan hệ KHÔNG tồn tại
+```
+
+PostgREST phân giải quan hệ TRƯỚC khi xét quyền, nên khoá anon — vốn bị từ chối
+đọc — vẫn đủ để hỏi câu này. Luôn chạy kèm một câu đối chứng với tên bảng bịa,
+để chắc hai mã lỗi đó thật sự khác nhau ở đây.
+
+**Bộ kiểm neo vào SỰ TỒN TẠI của một file màn hình thì VỠ, không báo đỏ.**
+`check:sm2` đọc `OTaoThe.jsx` rồi `TheGhiNho.jsx` bằng `readFileSync` — hai lần
+trong cùng ngày 09/09, mỗi lần gỡ một tính năng là bộ kiểm chết hẳn với
+`ENOENT`, và một bộ kiểm chết thì không ai đọc được nó đang nói gì. Neo ca kiểm
+vào BẤT BIẾN còn sống ("đường ghi phải tắt cùng lúc với đường đọc"), không vào
+việc một file màn hình còn đó.
 
 **curl KHÔNG kiểm được CORS.** curl gửi thẳng, không làm preflight. Hàm `grade`
 khai thiếu `x-client-info` — header mà `functions.invoke` LUÔN gửi — nên curl
@@ -680,7 +737,13 @@ Xem `docs/roadmap-delf.md` — có nhật ký quyết định ở §5.
   **Ba trạng thái trên màn hình, không hai:** chưa hỏi xong / không đọc được /
   số thật kể cả 0. Gộp "không đọc được" với "0 ngày" là nói với người vừa học
   ba ngày liền rằng họ chưa học buổi nào.
-- **Thẻ ghi nhớ SM-2 — xong 02/09** (migration 063–066). roadmap §1.3.
+- **Thẻ ghi nhớ SM-2 — xong 02/09, GỠ KHỎI GIAO DIỆN 09/09.** (migration
+  063–066). Màn `/etudiant/the-ghi-nho` và `TheGhiNho.jsx` đã đi; flashcard giờ
+  là bộ do giáo viên soạn (xem mục « Flashcard » cuối danh sách). Đường SINH
+  thẻ ở `gradeRemote.js` cũng tắt cùng lúc — để nguyên thì mỗi lần chấm bài lại
+  ghi thẻ vào chỗ không màn nào mở được. Bảng `cards`/`reviews`, 37 thẻ, và
+  `shared/theGhiNho.js` + `shared/sm2.js` VẪN CÒN; bật lại là gỡ một khối chú
+  thích và dựng lại một route. Phần dưới giữ làm lịch sử quyết định.
 
   **Thẻ SINH TỪ LỖI SAI, không nhập tay.** Thẻ nhập tay là thứ người học không
   bao giờ làm — mọi app thẻ ghi nhớ đều chết ở đó. Câu vừa sai thì đã có sẵn
@@ -733,7 +796,12 @@ Xem `docs/roadmap-delf.md` — có nhật ký quyết định ở §5.
   viên viết xong, thấy "đã lưu", và phía học sinh không đổi gì — mãi mãi, im
   lặng tuyệt đối. `luu_loi_giai` làm cả hai việc và TRẢ VỀ số thẻ vừa làm mới;
   giao diện nói ra con số đó.
-- **Thẻ tự tạo + giao diện lật 3D — xong 02/09** (migration 073/074).
+- **Thẻ tự tạo + giao diện lật 3D — xong 02/09; thẻ tự tạo GỠ 09/09**
+  (migration 073/074; 085 thu `execute` trên `tao_the_tu_viet` khỏi
+  `authenticated`). Học sinh không còn tạo thẻ nào. Hàm KHÔNG bị drop — 2 thẻ
+  `nguon='tu_tao'` còn đó và câu hỏi "thẻ này từ đâu ra" phải trả lời được.
+  `TheLat3D.jsx` SỐNG SÓT và giờ vẽ thẻ ở màn luyện Flashcard: thứ bị bỏ là
+  màn ôn SM-2, không phải cách vẽ một cái thẻ.
 
   **KHÔNG dựng bảng `flashcards` riêng.** Bản mô tả giả định có bảng đó; thứ
   đang có là `cards` + `reviews`. Hai bảng cho cùng một khái niệm nghĩa là màn
@@ -936,6 +1004,42 @@ Xem `docs/roadmap-delf.md` — có nhật ký quyết định ở §5.
 
   CÒN TREO: chưa chạy được đầu-cuối với khoá thật, nên chưa ai từng đọc một
   gợi ý do mô hình sinh ra. Và 10 bài tự luận đang treo vẫn chưa được báo gì.
+- **Flashcard do GIÁO VIÊN soạn — xong 09/09, đo đủ đường 21/09**
+  (migration 085–088). Học sinh `/etudiant/bo-the`, giáo viên `/professeur/bo-the`.
+  Nhãn menu là « Flashcard » ở cả vi/fr/en.
+
+  **KHÔNG có bảng `flashcards` / `flashcard_decks`** dù bản mô tả gọi tên như
+  vậy. `the_bo` (bộ, dùng chung) + `the_bo_the` (thẻ trong bộ) là một khái niệm
+  KHÁC `cards` (thẻ của một người học). `cards.bo_id` để sẵn cho ngày nối SM-2
+  vào bộ giáo viên; hiện chưa ai ghi vào nó.
+
+  **RLS dùng `is_teacher()`, KHÔNG dùng `profiles.role = 'prof'`** — dù bản mô
+  tả chỉ định cách sau. `profiles.role` là bản sao để hiển thị; `app_metadata`
+  mới là chỗ người dùng không tự sửa được. Cách kia không thủng hôm nay (profiles
+  chỉ có một policy ghi, teacher-only), nhưng một dòng `for update using (id =
+  auth.uid())` thêm vào sau này — dòng ai cũng có lúc viết để cho người dùng tự
+  sửa tên — là học sinh tự phong mình làm giáo viên. 086 có ca canh không policy
+  nào của hai bảng được đọc `profiles`.
+
+  Ba policy ghi KHAI RIÊNG, không `for all`: `for all` gộp cả SELECT vào chung
+  `using` nên lặng lẽ đè quyền đọc — triệu chứng là « thư viện trống » chứ
+  không phải một lỗi.
+
+  **Đã đo đủ, 21/09** (claim giả, mọi lượt `rollback`):
+  · Học sinh insert → `42501`. Giáo viên insert → được.
+  · Giáo viên bật công khai → 1 dòng. Sau đó học sinh thấy ĐÚNG 1 bộ + 8 thẻ,
+    không thấy bộ nháp lẫn thẻ của nó (policy con đi theo bộ cha).
+  · Học sinh THẤY 8 thẻ nhưng sửa 0, xoá 0, và không giấu được bộ.
+  · Giáo viên xoá bộ → thẻ đi theo (CASCADE), 0 thẻ mồ côi.
+  · Và đường INSERT qua GIAO DIỆN đã chạy thật: chủ dự án tạo bộ « Économie »
+    ngày 12/09 từ `/professeur/bo-the`, `bocDong` tách đúng ba vế.
+
+  **CÒN TREO:** chưa bộ nào được công khai, nên màn thư viện học sinh chưa
+  từng đọc dữ liệu thật qua phiên thật — chỉ qua claim giả. Bộ « Économie » là
+  dữ liệu thử (chữ gõ ngẫu nhiên); xoá hoặc sửa trước khi công khai.
+
+  Màn luyện CỐ Ý không có ô SCORE như bản thiết kế gốc: không có mô hình giọng
+  nói nào trong dự án, và một con số 68 vẽ ra ở đó là số bịa (quy tắc 1).
 - `s:mcf-submissions` vẫn giữ làm sao lưu, chưa xoá.
 
 
