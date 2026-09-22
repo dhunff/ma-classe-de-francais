@@ -395,6 +395,28 @@ trong cùng ngày 09/09, mỗi lần gỡ một tính năng là bộ kiểm ch�
 vào BẤT BIẾN còn sống ("đường ghi phải tắt cùng lúc với đường đọc"), không vào
 việc một file màn hình còn đó.
 
+**Ghi mà không trả gì về thì "không lỗi" không chứng minh đã lưu.** 21–22/09:
+học sinh bấm « Tốt » ở màn Flashcard, màn hình lật thẻ, trình duyệt báo 204 —
+và database không đổi một dòng; n_tup_upd của `reviews` đứng yên (đã hiệu
+chuẩn: một UPDATE kể cả bị rollback luôn làm nó tăng). Cùng hàm, cùng tài
+khoản chạy bằng claim giả thì lưu được; đầu dò qua PostgREST bằng khoá anon
+cũng lưu được.
+
+Migration 091 thêm `cham_the()` trả BIÊN NHẬN (uid, số dòng đã sửa, reps
+sau), và `chamThe()` đối chiếu biên nhận trước khi lật thẻ — hỏng thì chữ đỏ
+kèm nguyên biên nhận. Sau đó, tải lại bằng Ctrl+F5 rồi bấm lại: LƯU ĐƯỢC.
+
+**Nguyên nhân gốc CHƯA chứng minh.** Nghi vấn mạnh nhất: tab đã mở từ trước
+lúc deploy vẫn chạy bản JS cũ — SPA không tự tải lại mã khi điều hướng nội bộ.
+Và dòng « 204, trống » người dùng đọc trong Network có thể là preflight
+OPTIONS (cũng 204, cũng trống) chứ không phải POST. Có thể đây cũng là lời
+giải cho `luu_neo` / `luu_loi_giai` đầu tháng 9 — nhưng chưa đo.
+
+Hai bài học dùng ngay được:
+· Nhờ người dùng thử sau một lần deploy thì LUÔN bảo họ Ctrl+F5 trước.
+· Hàm ghi nên trả về thứ nó đã ghi, và client nên đối chiếu. Một hàm `void`
+  thành công trông y hệt một hàm chưa từng chạy.
+
 **curl KHÔNG kiểm được CORS.** curl gửi thẳng, không làm preflight. Hàm `grade`
 khai thiếu `x-client-info` — header mà `functions.invoke` LUÔN gửi — nên curl
 trả 200 với điểm đúng, còn ứng dụng bị trình duyệt huỷ request trước khi nó rời
