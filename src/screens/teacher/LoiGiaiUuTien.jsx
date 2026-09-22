@@ -36,7 +36,9 @@ function TheCau({ cau, onXong }) {
     if (!kq.ok) {
       setLoi(kq.loi === "khong_phai_giao_vien"
         ? "Tài khoản này không có quyền viết lời giải."
-        : "Không lưu được. Kiểm tra mạng rồi thử lại.");
+        : kq.loi === "khong_xac_nhan"
+          ? "Chưa lưu được — " + kq.chiTiet
+          : "Không lưu được. Kiểm tra mạng rồi thử lại.");
       return;
     }
     onXong(cau.question_id, kq.soTheLamMoi);

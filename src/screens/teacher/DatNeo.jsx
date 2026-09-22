@@ -71,9 +71,14 @@ function SoanNeo({ bai, cau, neoCu, onXong }) {
     setDangLuu(false);
     /* Đọc kết quả TRƯỚC khi báo xong. Lần thứ sáu trong dự án. */
     if (!kq.ok) {
+      /* `khong_xac_nhan`: máy chủ trả lời mà biên nhận không khớp — đúng lỗi
+         "báo lưu mà không lưu" đầu tháng 9. Hiện NGUYÊN biên nhận để dán lại
+         được; bảo "kiểm tra mạng" ở đây là chỉ sai chỗ. */
       setLoi(kq.loi === "khong_phai_giao_vien"
         ? "Tài khoản này không có quyền đặt neo."
-        : "Không lưu được. Kiểm tra mạng rồi thử lại.");
+        : kq.loi === "khong_xac_nhan"
+          ? "Chưa lưu được — " + kq.chiTiet
+          : "Không lưu được. Kiểm tra mạng rồi thử lại.");
       return;
     }
     /* Bộ nhớ của `docNeo` giữ theo bài — không quên thì học sinh (và chính màn

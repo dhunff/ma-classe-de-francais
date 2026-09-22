@@ -33,7 +33,11 @@ export async function docCauCanLoiGiai(gioiHan = 40) {
  * phía học sinh không có gì đổi — mãi mãi. Con số trả về ở đây tồn tại để nói
  * ra điều đó đã xảy ra thật. */
 export async function luuLoiGiai(questionId, loiGiai) {
-  const { data, error } = await supabase.rpc("luu_loi_giai", {
+  /* `luu_loi_giai_bn` (migration 092) trả BIÊN NHẬN: chuỗi thật sự đã lưu.
+     Bản trước coi "không lỗi" là "đã lưu" — và đầu tháng 9 giáo viên viết lời
+     giải, thấy dòng xanh, mà `co_loi_giai` đứng im ở 207. So chuỗi đã lưu với
+     chính thứ vừa gửi (đã trim, vì máy chủ trim) trước khi nói đã xong. */
+  const { data, error } = await supabase.rpc("luu_loi_giai_bn", {
     p_question_id: questionId, p_loi_giai: loiGiai,
   });
   if (error) {
@@ -43,5 +47,9 @@ export async function luuLoiGiai(questionId, loiGiai) {
     if (error.code === "22023") return { ok: false, loi: "trong" };
     return { ok: false, loi: "mang", chiTiet: error.message };
   }
-  return { ok: true, soTheLamMoi: Number(data) || 0 };
+  if (data?.ok !== true || data?.da_luu !== String(loiGiai ?? "").trim()) {
+    return { ok: false, loi: "khong_xac_nhan",
+      chiTiet: "máy chủ trả về nhưng không xác nhận đã lưu — " + JSON.stringify(data ?? null) };
+  }
+  return { ok: true, soTheLamMoi: Number(data.so_the) || 0 };
 }

@@ -56,14 +56,27 @@ async function _docNeo(exerciseId) {
 }
 
 /* Đặt neo cho một câu. `null` là cách xoá. */
+/* Lưu neo — và KIỂM BIÊN NHẬN trước khi nói đã lưu (migration 092).
+ *
+ * Bản trước gọi `luu_neo` (void) và coi "không lỗi" là "đã lưu". Đầu tháng 9
+ * giáo viên đặt neo, thấy dòng xanh, và database có 0 neo — nguyên nhân chưa
+ * từng được chứng minh. 22/09 lỗi y hệt tái hiện ở Flashcard, và một hàm có
+ * biên nhận là thứ đã biến nó từ im lặng thành nhìn thấy được. */
 export async function luuNeo(questionId, evidence) {
-  const { error } = await supabase.rpc("luu_neo", {
-    p_question_id: questionId, p_evidence: evidence ?? null,
+  const gui = evidence ?? null;
+  const { data, error } = await supabase.rpc("luu_neo_bn", {
+    p_question_id: questionId, p_evidence: gui,
   });
   if (error) {
     if (error.code === "42501") return { ok: false, loi: "khong_phai_giao_vien" };
     if (error.code === "22023") return { ok: false, loi: "sai_dang" };
     return { ok: false, loi: "mang", chiTiet: error.message };
   }
-  return { ok: true };
+  const khop = data?.ok === true && data?.so_dong === 1
+    && (gui === null ? data?.xoa === true : data?.trich_sau === gui.trich);
+  if (!khop) {
+    return { ok: false, loi: "khong_xac_nhan",
+      chiTiet: "máy chủ trả về nhưng không xác nhận đã lưu — " + JSON.stringify(data ?? null) };
+  }
+  return { ok: true, bienNhan: data };
 }
