@@ -66,9 +66,20 @@ export async function sinhTheTuLoiSai(gioiHan = 20) {
  * việc chưa làm. Ở đây hậu quả kín hơn mọi lần trước: thẻ biến mất khỏi màn
  * hình vì giao diện tự gỡ nó, người học tin là đã ôn xong, và ngày mai nó
  * quay lại y nguyên mà không ai hiểu vì sao. */
+/* Ghi một lần ôn — và KIỂM BIÊN NHẬN trước khi nói đã xong.
+ *
+ * Trước 22/09 hàm này gọi `ghi_lan_on`, trả `void`, và coi "không có lỗi" là
+ * "đã lưu". Đo được: ba lần bấm « Tốt » nhận 204, màn hình lật thẻ, database
+ * không đổi một dòng — n_tup_upd của reviews đứng yên. Một 204 rỗng trông y
+ * hệt nhau dù hàng có được sửa hay không, nên "không lỗi" không chứng minh gì.
+ *
+ * `cham_the` (migration 091) trả biên nhận: uid máy chủ thấy, số dòng đã sửa,
+ * reps sau khi sửa. Không khớp với thứ ta vừa gửi thì BÁO LỖI, kèm nguyên biên
+ * nhận để người dùng dán lại được. Đọc kết quả trước khi nói đã xong — lần thứ
+ * sáu trong dự án, và lần đầu tiên nó bắt được một lỗi đang sống. */
 export async function chamThe(the, q, moc = new Date()) {
   const moi = onLai(the, q, moc);
-  const { error } = await supabase.rpc("ghi_lan_on", {
+  const { data, error } = await supabase.rpc("cham_the", {
     p_card_id: the.card_id,
     p_due_at: moi.due_at,
     p_interval_days: moi.interval_days,
@@ -77,7 +88,16 @@ export async function chamThe(the, q, moc = new Date()) {
     p_lapses: moi.lapses,
   });
   if (error) return { ok: false, loi: error.message };
-  return { ok: true, moi };
+
+  const khop = data?.ok === true && data?.so_dong === 1 && data?.reps_sau === moi.reps;
+  if (!khop) {
+    return {
+      ok: false,
+      loi: "máy chủ trả về nhưng không xác nhận đã lưu — "
+        + JSON.stringify(data ?? null),
+    };
+  }
+  return { ok: true, moi, bienNhan: data };
 }
 
 /* Sai lại một câu đã có thẻ → kéo thẻ về hôm nay thay vì đẻ thẻ mới.
