@@ -406,16 +406,27 @@ Migration 091 thêm `cham_the()` trả BIÊN NHẬN (uid, số dòng đã sửa,
 sau), và `chamThe()` đối chiếu biên nhận trước khi lật thẻ — hỏng thì chữ đỏ
 kèm nguyên biên nhận. Sau đó, tải lại bằng Ctrl+F5 rồi bấm lại: LƯU ĐƯỢC.
 
-**Nguyên nhân gốc CHƯA chứng minh.** Nghi vấn mạnh nhất: tab đã mở từ trước
-lúc deploy vẫn chạy bản JS cũ — SPA không tự tải lại mã khi điều hướng nội bộ.
-Và dòng « 204, trống » người dùng đọc trong Network có thể là preflight
-OPTIONS (cũng 204, cũng trống) chứ không phải POST. Có thể đây cũng là lời
-giải cho `luu_neo` / `luu_loi_giai` đầu tháng 9 — nhưng chưa đo.
+**NGUYÊN NHÂN: TAB CHẠY BẢN JS CŨ — chứng minh 23/09.** Phép thử có đối chứng
+trên `luu_loi_giai`: đếm trước = 207 câu có lời giải.
 
-Hai bài học dùng ngay được:
-· Nhờ người dùng thử sau một lần deploy thì LUÔN bảo họ Ctrl+F5 trước.
-· Hàm ghi nên trả về thứ nó đã ghi, và client nên đối chiếu. Một hàm `void`
-  thành công trông y hệt một hàm chưa từng chạy.
+  · Viết một lời giải KHÔNG tải lại trang → dòng xanh, đếm lại vẫn 207,
+    n_tup_upd của `questions` không đổi. Ghi không tới database.
+  · Ctrl+F5 rồi viết HAI lời giải → dòng xanh, đếm lại 209, n_tup_upd +2.
+
+Cùng cơ chế giải thích cả ba triệu chứng: chấm thẻ Flashcard (22/09), và
+`luu_neo` / `luu_loi_giai` đầu tháng 9 — lần đó không ai bắt được vì cả ba
+đường đều "thành công" im lặng.
+
+VÌ SAO NÓ IM LẶNG: SPA không tự nạp lại mã khi điều hướng nội bộ, nên một tab
+mở từ trước lúc deploy giữ nguyên bản JS cũ vô thời hạn. Bản cũ gọi hàm cũ —
+và với hàm cũ, "không lỗi" được coi là "đã lưu".
+
+HAI VIỆC PHẢI LÀM TỪ NAY:
+  · Nhờ ai thử sau một lần deploy thì LUÔN bảo họ Ctrl+F5 TRƯỚC. Không có câu
+    đó thì mọi kết quả họ báo về đều có thể là kết quả của bản cũ.
+  · Hàm ghi phải TRẢ VỀ thứ nó vừa ghi, và client đối chiếu trước khi báo xong
+    (migration 091 cho chấm thẻ, 092 cho lời giải + neo). Một hàm `void` thành
+    công trông y hệt một hàm chưa từng chạy — đó là thứ đã giấu lỗi này ba tuần.
 
 **curl KHÔNG kiểm được CORS.** curl gửi thẳng, không làm preflight. Hàm `grade`
 khai thiếu `x-client-info` — header mà `functions.invoke` LUÔN gửi — nên curl
