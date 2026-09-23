@@ -100,6 +100,42 @@ for (const [tep, phep] of Object.entries(DUOC_PHEP)) {
   /* Mục « Sujet et Corrigé » chỉ giáo viên: hộp đó dựng đáp án từ q.answer. */
   t("menu Corrigé lọc theo teacher",
     /teacher \? \[\["corrige"/.test(ph), true);
+
+  /* ══ ĐIỀN TỪ · CHIA ĐỘNG TỪ ══
+     `fillAccepted` đọc `q.accepted`, cũng bị 022 gỡ (payload - 'accepted').
+     Gọi thẳng nó trong phần HIỂN THỊ thì khối « Réponse attendue : » hiện ra
+     rồi bỏ trống — một lời hứa không giữ. */
+  t("đáp án điền từ đi qua dapAnFill", /const dapAnFill = \(q\) => \{/.test(ph), true);
+
+  /* Ca này từng quá tay: nó cấm TIỆT `fillAccepted` trong phần hiển thị, và
+     báo đỏ trên dòng nằm trong khối « Sujet et Corrigé » — khối CHỈ giáo viên
+     mở được, nơi đọc đáp án là đúng. Bộ kiểm phạt một dòng hoàn toàn hợp lệ
+     thì nó dạy người ta bỏ qua chính nó. Nên ghim kèm lý do, đúng nếp
+     DUOC_PHEP ở trên. */
+  const FILL_DUOC_PHEP = [
+    { khop: /✅ <strong style=\{\{ color: C\.ok \}\}>\{String\(fillAccepted\(q\)\)/,
+      ly_do: "khối « Sujet et Corrigé », chỉ giáo viên mở được" },
+    { khop: /const cuc = fillAccepted\(q\);/,
+      ly_do: "nhánh lùi BÊN TRONG dapAnFill — chính là chỗ được phép hỏi đáp án cục bộ" },
+  ];
+  const dongFill = ph.split(/\r?\n/).filter((d) => /fillAccepted\(/.test(d));
+  const laFill = dongFill.filter((d) => !FILL_DUOC_PHEP.some((p) => p.khop.test(d)));
+  if (laFill.length === 0) pass++;
+  else no(`PracticeHub.jsx: ${laFill.length} chỗ gọi fillAccepted CHƯA khai lý do.\n`
+    + laFill.map((d) => "        " + d.trim().slice(0, 90)).join("\n")
+    + "\n      Với học sinh `q.accepted` đã bị migration 022 gỡ — dùng dapAnFill(q).");
+  t("khối « Réponse attendue » ẩn khi không có đáp án",
+    /\(q\.type === "fill" \|\| q\.type === "conj"\) && dapAnFill\(q\)/.test(ph), true);
+
+  /* ══ BẢNG OUI/NON ══
+     `q.answers` cũng bị 022 gỡ; không truyền `dapAn` thì KHÔNG Ô NÀO được
+     đánh dấu đúng, và bảng trông như học sinh sai sạch. */
+  t("bảng nhận đáp án qua prop dapAn", /dapAn=\{remote\?\.\[q\.id\]\?\.expected/.test(ph), true);
+
+  const ans = doc("src/screens/student/answers.jsx");
+  t("TableauCompare nhận prop dapAn", /correction, dapAn \}\)/.test(ans), true);
+  t("TableauCompare không đọc thẳng q.answers khi chấm",
+    (ans.match(/const good = q\.answers\?\.\[key\]/g) ?? []).length, 0);
 }
 
 console.log(fail ? `\n${pass} đạt, ${fail} hỏng` : `\n${pass} đạt, 0 hỏng`);

@@ -1065,6 +1065,19 @@ function PracticeWorkspace({ ex, back, onFinish }) {
     const score = res ? res.score : autos.reduce((n, q) => n + (isGood(q) ? 1 : 0), 0);
     onFinish(score, res ? res.max : (autos.length || 0));
   };
+  /* Đáp án của câu điền từ / chia động từ.
+   *
+   * Ưu tiên `expected` của máy chủ (chỉ có khi câu SAI — đúng thì chữ học sinh
+   * gõ chính là đáp án). Lùi về `fillAccepted(q)` cho giáo viên và cho lúc máy
+   * chủ không trả lời. Không có gì thì trả chuỗi rỗng, và nơi gọi ẩn hẳn khối
+   * đáp án — « Réponse attendue : » bỏ trống là một lời hứa không giữ. */
+  const dapAnFill = (q) => {
+    const mc = remote?.[q.id]?.expected;
+    if (mc != null && mc !== "") return String(mc);
+    const cuc = fillAccepted(q);
+    return cuc == null ? "" : String(cuc);
+  };
+
   const retry = () => {
     gradedRef.current = false; setGraded(false); setAnswers({}); setRemote(null); setDiemMayChu(null);
   };
@@ -1150,7 +1163,11 @@ function PracticeWorkspace({ ex, back, onFinish }) {
           <OrdreBlocks q={q} value={a || []} readOnly={!!graded} correction={!!graded}
             onChange={(v) => setAnswers({ ...answers, [q.id]: v })} />
         ) : q.type === "tableau" ? (
+          /* `dapAn`: bảng đáp án của máy chủ (`expected`, chỉ gửi khi câu SAI).
+             Làm đúng thì chính ô học sinh chọn là đáp án — truyền `a` vào để
+             bảng vẫn đánh dấu xanh thay vì trắng trơn. */
           <TableauCompare q={q} value={a || {}} readOnly={!!graded} correction={!!graded}
+            dapAn={remote?.[q.id]?.expected ?? (graded && isGood(q) ? a : undefined)}
             onChange={(v) => setAnswers({ ...answers, [q.id]: v })} />
         ) : q.type === "vf" ? (
           <div style={{ display: "grid", gap: 10 }}>
@@ -1223,10 +1240,13 @@ function PracticeWorkspace({ ex, back, onFinish }) {
                 textDecoration: graded && !good ? "line-through" : "none" }} />
             {graded && (good
               ? <CheckCircle2 size={18} color={C.ok} />
-              : <span style={{ fontSize: 13.5, color: C.ok, fontWeight: 700 }}>✗ → {String(fillAccepted(q)).split("|")[0]}</span>)}
-            {graded && (q.type === "fill" || q.type === "conj") && (
+              : dapAnFill(q) && <span style={{ fontSize: 13.5, color: C.ok, fontWeight: 700 }}>✗ → {String(dapAnFill(q)).split("|")[0]}</span>)}
+            {/* Chỉ hiện khi THẬT SỰ có đáp án. `fillAccepted` đọc `q.accepted`,
+                mà migration 022 gỡ trường đó khỏi payload của học sinh — khối
+                này vì thế từng hiện « Réponse attendue : » rồi bỏ trống. */}
+            {graded && (q.type === "fill" || q.type === "conj") && dapAnFill(q) && (
               <div style={{ marginTop: 8, background: C.okSoft, border: `1.5px solid ${C.ok}55`, borderRadius: 10, padding: "7px 12px", fontSize: 13, display: "inline-block" }}>
-                💡 <strong style={{ color: C.ok }}>Réponse attendue :</strong> {String(fillAccepted(q)).split("|").join(" / ")}
+                💡 <strong style={{ color: C.ok }}>Réponse attendue :</strong> {String(dapAnFill(q)).split("|").join(" / ")}
               </div>
             )}
             {/* Lời giải thích chỉ hiện khi sai — đó là lúc nó có việc để làm. */}

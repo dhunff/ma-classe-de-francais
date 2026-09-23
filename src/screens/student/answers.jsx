@@ -114,7 +114,15 @@ function OrdreBlocks({ q, value, onChange, readOnly, correction }) {
   );
 }
 
-function TableauCompare({ q, value, onChange, readOnly, correction }) {
+/* `dapAn` — bảng đáp án LẤY TỪ MÁY CHỦ.
+ *
+ * `q.answers` bị migration 022 gỡ khỏi payload gửi về trình duyệt, nên với học
+ * sinh nó là `undefined` và mọi ô hiện ra như chưa từng đúng. Edge Function
+ * `grade` trả nguyên bảng đáp án trong `expected` khi câu làm sai; truyền vào
+ * đây thay vì đọc `q.answers`. Thiếu cả hai thì không đánh dấu gì — đó là
+ * trạng thái "không biết", khác hẳn "sai". */
+function TableauCompare({ q, value, onChange, readOnly, correction, dapAn }) {
+  const bangDapAn = dapAn ?? q.answers;
   const set = (key, v) => { if (readOnly) return; onChange({ ...value, [key]: value?.[key] === v ? undefined : v }); };
   return (
     <div style={{ overflowX: "auto" }} className="mcf-scroll">
@@ -142,7 +150,7 @@ function TableauCompare({ q, value, onChange, readOnly, correction }) {
               {q.colonnes.map((co) => {
                 const key = `${cr.id}_${co.id}`;
                 const stu = value?.[key];
-                const good = q.answers?.[key];
+                const good = bangDapAn?.[key];
                 return ["OUI", "NON"].map((v) => {
                   let bg = "transparent", mark = null;
                   if (correction) {
