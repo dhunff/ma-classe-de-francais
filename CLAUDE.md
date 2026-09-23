@@ -40,7 +40,7 @@ npm run check:hoatdong     # nhật ký theo ngày + chuỗi ngày học (28 ca)
 npm run check:sm2          # SM-2, lời giải, và đường sinh thẻ cũ PHẢI đang tắt (70 ca)
 npm run check:neo          # neo đáp án vào ngữ liệu (59 ca)
 npm run check:champe       # khuôn gợi ý chấm PE do AI trả về (38 ca)
-npm run check:dapan        # đáp án phía học sinh + chốt chặn câu ordre (27 ca)
+npm run check:dapan        # đáp án phía học sinh + chốt chặn câu ordre (33 ca)
 npm run check:css          # lớp Tailwind có thật sinh ra CSS không
 npm run check:db           # database THẬT có khớp giả định của mã nguồn không
 ```
@@ -1169,6 +1169,12 @@ Xem `docs/roadmap-delf.md` — có nhật ký quyết định ở §5.
     vẫn hiện trong thống kê. Sao lưu JSON (không kèm mật khẩu) trước khi xoá,
     để ngoài git vì chứa email người thật.
   · Email liên hệ của FAQ + Điều khoản: contact.fracile@gmail.com.
+  · **LƯU BÀI TỪNG XOÁ SẠCH NEO** — `saveExercise` xoá rồi chèn lại câu hỏi,
+    mà trình duyệt giáo viên không cầm `evidence` (không cấp SELECT) nên ghi
+    `null`. 7 neo mất thật, khôi phục từ bản chụp. Sửa: RPC
+    `get_neo_giao_vien` (093/094) nạp neo lúc mở bài; tải thiếu đáp án HOẶC
+    neo thì `saveExercise` từ chối lưu. Nay 22 neo / 2 bài (thêm 15 neo + 13
+    bẫy cho « Dans le Gard… »). `check:dapan` 33 ca, đã thử phá hai lần.
   · CÒN 5 tài khoản auth KHÔNG có hồ sơ (14 auth.users, 9 profiles) — chưa ai
     xem chúng là gì.
 - `s:mcf-submissions` vẫn giữ làm sao lưu, chưa xoá.
