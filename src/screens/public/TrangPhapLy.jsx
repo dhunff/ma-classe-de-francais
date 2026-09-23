@@ -49,7 +49,7 @@ import { AlertTriangle } from "lucide-react";
    người đó, không phải của người viết mã. Điền vào đây là mọi trang tự đổi.
    Trống thì trang HIỆN RÕ là còn thiếu — một chính sách không có chỗ liên hệ
    mà trông như hoàn chỉnh còn tệ hơn một chính sách tự nói nó thiếu. */
-export const EMAIL_LIEN_HE = "";
+export const EMAIL_LIEN_HE = "contact.fracile@gmail.com";   // chủ dự án chọn 23/09/2026
 
 const CAP_NHAT = "21/09/2026";
 
