@@ -84,10 +84,14 @@ function OrdreBlocks({ q, value, onChange, readOnly, correction, dapAn, dung }) 
     if (dung === true) return "ok";
     if (thuTu) return byId[id] === thuTu[i] ? "ok" : "bad";          // so theo CHỮ
     if (dung === false) return null;   // biết là sai nhưng không biết thứ tự đúng — đừng đoán
+    /* `__daXao` (exerciseStore gắn): `elements` trong tay là bản ĐÃ XÁO, không
+       phải thứ tự đúng. Màn Devoirs rơi vào đây — nó không có kết quả chấm
+       theo câu. So với bản xáo là tô đỏ câu đúng; nên không tô gì cả. */
+    if (q.__daXao) return null;
     return elements[i] && elements[i].texte === byId[id] ? "ok" : "bad";  // giáo viên
   };
   const cauDung = thuTu ? thuTu.join(" ")
-    : dung === undefined ? elements.map((e) => e.texte).join(" ") : null;
+    : dung === undefined && !q.__daXao ? elements.map((e) => e.texte).join(" ") : null;
   const hienCauDung = correction && dung !== true && cauDung
     && (dung === false || !ordreOk(q, chosen));
 

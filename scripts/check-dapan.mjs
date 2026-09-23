@@ -80,6 +80,34 @@ for (const [tep, phep] of Object.entries(DUOC_PHEP)) {
   }
 }
 
+/* ── QUÉT MỌI MÀN HỌC SINH, không chỉ hai file ở trên ──
+   Lần đầu bộ kiểm này chỉ soi PracticeHub + Student.jsx — đúng hai chỗ đã
+   biết hỏng. Màn học sinh MỚI viết sau này sẽ đi lọt. Nay quét cả thư mục:
+   file nào ngoài danh sách GHIM mà đọc một trong năm trường migration 022 đã gỡ
+   (answer, accepted, answers, justification, model) thì đỏ. */
+{
+  const { readdirSync } = await import("node:fs");
+  const TRUONG_BI_GO = /q\.(answer|answers|accepted|justification|model)(?![A-Za-z0-9_])|fillAccepted\(/;
+  const DA_GHIM = new Set(["src/PracticeHub.jsx", "src/screens/student/Student.jsx",
+    "src/screens/student/answers.jsx"]);   // hai file đầu ghim ở trên; answers.jsx nhận dapAn qua prop, có ca riêng
+  const thuMuc = ["src/screens/student", "src/screens/exam", "src/screens/dashboard"];
+  const la = [];
+  for (const d of thuMuc) {
+    for (const f of readdirSync(new URL("../" + d, import.meta.url))) {
+      if (!/\.jsx?$/.test(f)) continue;
+      const tep = `${d}/${f}`;
+      if (DA_GHIM.has(tep)) continue;
+      doc(tep).split(/\r?\n/).forEach((dong, i) => {
+        if (TRUONG_BI_GO.test(dong)) la.push(`${tep}:${i + 1}  ${dong.trim().slice(0, 70)}`);
+      });
+    }
+  }
+  if (la.length === 0) pass++;
+  else no(`${la.length} chỗ ở màn học sinh đọc trường mà migration 022 đã gỡ khỏi trình duyệt:\n`
+    + la.map((x) => "        " + x).join("\n")
+    + "\n      Với học sinh các trường đó là undefined. Dùng kết quả máy chủ (expected), hoặc ghim kèm lý do.");
+}
+
 /* ── Những chỗ BẮT BUỘC phải dùng kết quả máy chủ ── */
 {
   const ph = doc("src/PracticeHub.jsx");
@@ -142,6 +170,12 @@ for (const [tep, phep] of Object.entries(DUOC_PHEP)) {
   t("OrdreBlocks nhận prop dapAn, dung", /correction, dapAn, dung \}\)/.test(ans), true);
   t("OrdreBlocks không so thứ tự bằng elements[i].id",
     /elements\[i\] && elements\[i\]\.id === id/.test(ans), false);
+
+  /* Màn Devoirs không có kết quả chấm theo câu → không truyền dapAn/dung.
+     Khi đó `q.elements` là bản xáo; so với nó là tô đỏ câu đúng và in « Phrase
+     correcte » là một chuỗi lộn xộn. Cờ __daXao phải chặn cả hai. */
+  t("OrdreBlocks không tô màu khi elements là bản xáo", /if \(q\.__daXao\) return null;/.test(ans), true);
+  t("OrdreBlocks không in câu đúng từ bản xáo", /dung === undefined && !q\.__daXao \?/.test(ans), true);
   t("TableauCompare nhận prop dapAn", /correction, dapAn \}\)/.test(ans), true);
   t("TableauCompare không đọc thẳng q.answers khi chấm",
     (ans.match(/const good = q\.answers\?\.\[key\]/g) ?? []).length, 0);
