@@ -105,7 +105,7 @@ const LOI_THE = [
   },
 ];
 
-export default function LandingPage() {
+export default function LandingPage({ imgSrc = "/images/hero-preview.png" }) {
   const [so, setSo] = useState(null);
 
   useEffect(() => {
@@ -116,15 +116,12 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen bg-bg">
-      <div className="mx-auto max-w-6xl px-5 py-16 sm:py-24">
+      <div className="mx-auto max-w-6xl px-5 pt-8 sm:pt-10">
 
         {/* ── HERO ── */}
         <section className="grid items-center gap-10 lg:grid-cols-2">
           <div>
-            <span className="inline-block rounded-full bg-primary-soft px-3 py-1 text-xs font-bold uppercase tracking-wide text-primary">
-              DELF B1 · B2
-            </span>
-            <h1 className="m-0 mt-4 text-4xl font-extrabold leading-tight tracking-tight text-ink sm:text-5xl">
+            <h1 className="m-0 text-4xl font-extrabold leading-tight tracking-tight text-ink sm:text-5xl">
               Luyện thi DELF với đề thật,
               <br />
               <span className="text-primary">đồng hồ thật.</span>
@@ -147,19 +144,7 @@ export default function LandingPage() {
             </div>
           </div>
 
-          {/* Khung ảnh màn hình. CHƯA có ảnh thật, và một khung xám giả vờ là
-              ảnh còn tệ hơn một khung nói thẳng rằng nó đang chờ ảnh. */}
-          <div className="rounded-3xl border border-line bg-surface p-2 shadow-2xl transition-transform duration-500 ease-out hover:rotate-0 motion-reduce:transition-none lg:rotate-2">
-            <div className="grid aspect-[4/3] place-items-center rounded-2xl bg-surface2 p-8 text-center">
-              <div>
-                <p className="m-0 text-sm font-bold text-ink">Chỗ dành cho ảnh màn hình</p>
-                <p className="m-0 mt-1 text-xs leading-relaxed text-soft">
-                  Chụp màn « Thi thử » hoặc « Chấm bài viết » rồi thay vào đây.
-                  Ảnh thật của sản phẩm thuyết phục hơn mọi hình minh hoạ.
-                </p>
-              </div>
-            </div>
-          </div>
+          <AnhHero src={imgSrc} />
         </section>
 
         {/* ── SỐ LIỆU — ĐẾM THẬT ── */}
@@ -197,18 +182,33 @@ export default function LandingPage() {
 
         <TeamSection />
 
-        {/* ── CHÂN TRANG ── */}
-        <footer className="mt-20 border-t border-line pt-8">
-          <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-soft">
-            <span className="font-extrabold text-ink">FRACILE</span>
-            <Link to="/decouvrir" className="text-soft no-underline hover:text-ink">Thư viện bài tập</Link>
-            <Link to="/login" className="text-soft no-underline hover:text-ink">Đăng nhập</Link>
-            <Link to="/faq" className="text-soft no-underline hover:text-ink">Câu hỏi thường gặp</Link>
-            <Link to="/dieu-khoan" className="text-soft no-underline hover:text-ink">Điều khoản sử dụng</Link>
-          </div>
-          <p className="m-0 mt-3 text-xs text-soft">© 2026 FRACILE</p>
-        </footer>
       </div>
+
+      {/* ── CHÂN TRANG — dải xanh thương hiệu, cùng nền với thanh bên
+          (bg-primary / dark:#0e1526 như AppLayout), chữ trắng. ── */}
+      <footer className="mt-20 bg-primary px-6 py-8 dark:bg-[#0e1526]">
+        <div className="mx-auto flex max-w-6xl flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <div className="flex flex-wrap items-center gap-x-8 gap-y-2 text-base font-medium">
+            <span className="text-lg font-extrabold text-white">FRACILE</span>
+            {[["/decouvrir", "Thư viện bài tập"], ["/login", "Đăng nhập"], ["/faq", "Câu hỏi thường gặp"], ["/dieu-khoan", "Điều khoản sử dụng"]].map(([to, ten]) => (
+              <Link key={to} to={to} className="text-white no-underline transition-colors hover:text-blue-100">{ten}</Link>
+            ))}
+          </div>
+          <p className="m-0 text-sm text-blue-100">© 2026 FRACILE</p>
+        </div>
+      </footer>
     </div>
+  );
+}
+
+/* Ảnh màn hình sản phẩm, đặt ở public/images/hero-preview.png. File chưa có
+   (hoặc hỏng) thì KHÔNG hiện gì — một biểu tượng ảnh vỡ, hay một dòng nhắn
+   cho người làm web, đều không nên lọt tới khách. */
+function AnhHero({ src }) {
+  const [hong, setHong] = useState(false);
+  if (hong) return null;
+  return (
+    <img src={src} alt="Màn hình luyện thi DELF của FRACILE" onError={() => setHong(true)}
+      className="w-full rounded-2xl border border-line object-cover shadow-2xl transition-transform duration-300 hover:scale-[1.01] motion-reduce:transition-none" />
   );
 }

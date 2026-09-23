@@ -62,6 +62,9 @@ const chuCaiDau = (ten) =>
     .toUpperCase() || "?";
 
 function TheNguoi({ n, mot = false }) {
+  // Ảnh hỏng (chưa đặt file vào public/, sai đường dẫn) thì về chữ cái đầu,
+  // không để lại biểu tượng ảnh vỡ trên trang bán hàng.
+  const [anhHong, setAnhHong] = React.useState(false);
   return (
     <div className={`group rounded-3xl border border-line bg-surface p-6
       ${mot ? "flex flex-col gap-5 sm:flex-row sm:items-center" : ""}
@@ -71,9 +74,9 @@ function TheNguoi({ n, mot = false }) {
 
       {/* `overflow-hidden` ở vỏ để ảnh phóng to không tràn khỏi góc bo. Thiếu
           nó thì lúc hover ảnh lấn ra ngoài viền và trông như lỗi dựng. */}
-      <div className={`overflow-hidden rounded-2xl ${mot ? "h-32 w-32 shrink-0" : "h-24 w-24"}`}>
-        {n.anh ? (
-          <img src={n.anh} alt=""
+      <div className={`overflow-hidden rounded-2xl ring-2 ring-primary/30 ${mot ? "h-32 w-32 shrink-0" : "h-24 w-24"}`}>
+        {n.anh && !anhHong ? (
+          <img src={n.anh} alt={n.ten} onError={() => setAnhHong(true)}
             className="h-full w-full object-cover transition-transform duration-300 ease-out
               group-hover:scale-105 motion-reduce:transition-none" />
         ) : (

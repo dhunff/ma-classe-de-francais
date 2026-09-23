@@ -58,6 +58,7 @@ export const DOI_NGU = [
   {
     ten: "Đỗ Quốc Hùng",
     chucDanh: "Đội ngũ phát triển",
+    anh: "/images/avatar-hung.jpg",
     gioiThieu: "Xây và vận hành FRACILE: trình soạn đề, bộ máy thi thử, "
       + "và đường chấm bài.",
   },
