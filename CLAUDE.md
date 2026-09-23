@@ -40,6 +40,7 @@ npm run check:hoatdong     # nhật ký theo ngày + chuỗi ngày học (28 ca)
 npm run check:sm2          # SM-2, lời giải, và đường sinh thẻ cũ PHẢI đang tắt (70 ca)
 npm run check:neo          # neo đáp án vào ngữ liệu (59 ca)
 npm run check:champe       # khuôn gợi ý chấm PE do AI trả về (38 ca)
+npm run check:dapan        # màn học sinh không được dựa vào q.answer (7 ca)
 npm run check:css          # lớp Tailwind có thật sinh ra CSS không
 npm run check:db           # database THẬT có khớp giả định của mã nguồn không
 ```
@@ -432,6 +433,34 @@ HAI VIỆC PHẢI LÀM TỪ NAY:
   · Hàm ghi phải TRẢ VỀ thứ nó vừa ghi, và client đối chiếu trước khi báo xong
     (migration 091 cho chấm thẻ, 092 cho lời giải + neo). Một hàm `void` thành
     công trông y hệt một hàm chưa từng chạy — đó là thứ đã giấu lỗi này ba tuần.
+
+**VỚI HỌC SINH, `q.answer` LÀ `undefined` — VÀ NÓ IM LẶNG.** Từ migration 022
+`answer_key` không cấp SELECT cho trình duyệt; giáo viên vẫn nhận đáp án qua RPC
+`get_answer_keys`, học sinh thì không. Mọi đoạn mã so với `q.answer` vì thế chạy
+sai mà không ném lỗi nào.
+
+Chạy trên production nhiều tuần, phát hiện 23/09/2026 nhờ chủ dự án gửi ảnh chụp:
+  · mọi câu hiện SAI HẾT, kể cả câu đúng — `j === q.answer` không bao giờ khớp,
+    còn nhánh `else if` tô đỏ ô học sinh chọn;
+  · chữ gạch ngang trên chính ô đang tô xanh;
+  · « Tu as obtenu 0/7 » cho bài làm đúng gần hết, trong khi điểm máy chủ lưu vào
+    lịch sử lại ĐÚNG — hai con số cho cùng một bài;
+  · màn Devoirs in « Bonne réponse : undefined »;
+  · mục « Sujet et Corrigé » mở ra một bảng đáp án rỗng.
+
+VÌ SAO KHÔNG BỘ KIỂM NÀO BẮT ĐƯỢC: build xanh, mọi ca đọc mã nguồn xanh, và
+/preview.html KHÔNG lộ ra — dữ liệu giả ở đó có sẵn `answer`. Chỉ một tài khoản
+học sinh THẬT mới thấy. Đây là lý do "xem thử bằng dữ liệu giả" không thay được
+một lần đăng nhập thật.
+
+NGUỒN ĐÚNG là kết quả máy chủ: Edge Function `grade` trả `correct` cho từng câu
+và `expected` (đáp án) cho câu làm sai — nó vốn đã trả từ lâu, màn hình chỉ chưa
+bao giờ dùng. Điểm hiển thị cũng phải lấy `score`/`max` của máy chủ, đừng cộng
+lại ở client.
+
+`check:dapan` ghim danh sách mọi chỗ còn đọc `q.answer` kèm lý do — thêm một chỗ
+mới mà không khai thì đỏ. Đã thử phá ba lần (trả điểm về tính tại chỗ, trả gạch
+ngang về `q.answer`, mở lại mục Corrigé cho học sinh): cả ba đều bị bắt.
 
 **curl KHÔNG kiểm được CORS.** curl gửi thẳng, không làm preflight. Hàm `grade`
 khai thiếu `x-client-info` — header mà `functions.invoke` LUÔN gửi — nên curl
