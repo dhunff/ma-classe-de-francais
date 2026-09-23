@@ -22,6 +22,7 @@ import { PAYMENT_KEY, STATUS, accessRecord, fmtPrice, loadAccess, setAccessRemot
 import { supabase } from "../../storageShim.js";
 import { setClassFor } from "../../shared/roster.js";
 import AccessPanel from "./AccessPanel.jsx";
+import ThongKe from "./ThongKe.jsx";
 
 
 /* ================= Teacher ================= */
@@ -353,7 +354,7 @@ function Teacher({ exercises, setExercises, submissions, setSubmissions, account
       )}
       {view === "students" && <Accounts accounts={accounts} setAccounts={setAccounts} classes={classes} setClasses={setClasses} exercises={exercises} submissions={submissions} />}
       {view === "practice" && <PracticeHub role="prof" accounts={accounts} />}
-      {view === "stats" && <Stats accounts={accounts} exercises={exercises} submissions={submissions} />}
+      {view === "stats" && <ThongKe accounts={accounts} />}
       {view === "list" && (
         exercises.length === 0 ? (
           <div className="mcf-card" style={{ ...S.card, textAlign: "center", padding: 40, color: C.soft }}>
