@@ -253,10 +253,8 @@ export default function Sidebar({
         </div>
 
         <NavList role={role} t={t} expanded={expanded} />
-
-        <div className="shrink-0 pt-3">
-          <PeopleCard people={people} t={t} expanded={expanded} />
-        </div>
+        {/* Khối « Lớp của bạn » gỡ 24/09 theo yêu cầu chủ dự án; PeopleCard
+            còn đó nếu cần dựng lại. */}
 
         <Footer t={t} signedIn={signedIn} expanded={expanded} />
       </aside>
@@ -300,10 +298,6 @@ export default function Sidebar({
         {/* Ngăn kéo luôn mở rộng: thu gọn một tấm đã chiếm hết màn hình thì
             chẳng tiết kiệm được gì. */}
         <NavList role={role} t={t} expanded onNavigate={onClose} onBlue={false} />
-
-        <div className="shrink-0 pt-3">
-          <PeopleCard people={people} t={t} expanded onBlue={false} />
-        </div>
 
         <Footer t={t} signedIn={signedIn} expanded onNavigate={onClose} onBlue={false} />
       </aside>

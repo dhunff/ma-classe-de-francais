@@ -523,15 +523,9 @@ function Accounts({ accounts, setAccounts, classes, setClasses, exercises = [], 
         )}
       </div>
 
-      <div className="mcf-card" style={{ ...S.card, marginBottom: 16 }}>
-        <div style={S.label}>Créer un compte élève (l'élève pourra changer son mot de passe)</div>
-        <div style={{ display: "flex", gap: 10, marginTop: 8, flexWrap: "wrap" }}>
-          <input style={{ ...S.input, flex: "1 1 160px" }} value={name} placeholder="Prénom de l'élève" onChange={(e) => setName(e.target.value)} />
-          <input style={{ ...S.input, flex: "1 1 200px" }} type="email" value={email} placeholder="Email de l'élève" onChange={(e) => setEmail(e.target.value)} />
-          <button style={S.btn(true)} onClick={add}>Créer le compte</button>
-        </div>
-        {msg && <p style={{ color: C.danger, fontSize: 13, marginTop: 10, marginBottom: 0 }}>{msg}</p>}
-      </div>
+      {/* Ô « Créer le compte » và nút « Supprimer » gỡ 24/09 theo yêu cầu chủ
+          dự án: học sinh tự đăng ký, giáo viên chỉ theo dõi. */}
+      {msg && <p style={{ color: C.danger, fontSize: 13, marginTop: 0, marginBottom: 10 }}>{msg}</p>}
       {/* Nút « Afficher les mots de passe » đã bỏ cùng với trường code — không
           còn mật khẩu nào ở đây để hiện. */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
@@ -549,8 +543,7 @@ function Accounts({ accounts, setAccounts, classes, setClasses, exercises = [], 
         <div className="mcf-card" style={{ ...S.card, textAlign: "center", color: C.soft }}>
           <div style={{ fontWeight: 700, color: C.ink, marginBottom: 6 }}>Aucun élève inscrit pour le moment.</div>
           <div style={{ fontSize: 13.5 }}>
-            Les élèves apparaissent ici dès qu'ils créent leur compte. Vous pouvez aussi les
-            pré-inscrire avec le formulaire ci-dessus.
+            Les élèves apparaissent ici dès qu'ils créent leur compte.
           </div>
         </div>
       )}
@@ -604,9 +597,7 @@ function Accounts({ accounts, setAccounts, classes, setClasses, exercises = [], 
             </span>
             <div style={{ display: "flex", gap: 8 }}>
               <button style={{ ...S.btn(false), padding: "5px 12px", fontSize: 12 }} onClick={() => reset(a.name)}
-                title="Envoie un lien de réinitialisation à l'élève">Envoyer un lien</button>
-              <button style={{ ...S.btn(false, true), padding: "5px 12px", fontSize: 12 }} onClick={() => delAcc(a)}>Supprimer</button>
-            </div>
+                title="Envoie un lien de réinitialisation à l'élève">Envoyer un lien</button>            </div>
           </div>
         ))}
         {accounts.length === 0 && <p style={{ color: C.soft }}>Aucun compte. Les élèves ne peuvent pas encore se connecter.</p>}
