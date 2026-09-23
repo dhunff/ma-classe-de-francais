@@ -1160,6 +1160,17 @@ Xem `docs/roadmap-delf.md` — có nhật ký quyết định ở §5.
   Nội dung đầy đủ nằm trong commit « Ba trang FAQ · Điều khoản sử dụng · Chính
   sách bảo mật ». Khi trang này vắng mặt: form tư vấn KHÔNG nên bật lại, và
   thêm tính năng thu dữ liệu mới là lúc cân nhắc dựng lại nó.
+- **23/09 — dọn theo quyết định chủ dự án.**
+  · Gỡ màn nghe bài nói `/professeur/oral`. Học sinh vẫn ghi âm để tự nghe lại.
+  · Xoá hai tài khoản thử `doquochung2k6@` và `doquochung8a@` (không có hồ sơ
+    học sinh). Kéo theo 41 lượt làm bài, 50 câu trả lời, 36 thẻ + 36 lịch ôn,
+    2 thông báo, 1 ngày học; và 3 bài nộp — xoá TƯỜNG MINH, vì khoá ngoại
+    `submissions.user_id` là SET NULL, để nguyên thì thành bài nộp không chủ
+    vẫn hiện trong thống kê. Sao lưu JSON (không kèm mật khẩu) trước khi xoá,
+    để ngoài git vì chứa email người thật.
+  · Email liên hệ của FAQ + Điều khoản: contact.fracile@gmail.com.
+  · CÒN 5 tài khoản auth KHÔNG có hồ sơ (14 auth.users, 9 profiles) — chưa ai
+    xem chúng là gì.
 - `s:mcf-submissions` vẫn giữ làm sao lưu, chưa xoá.
 
 
