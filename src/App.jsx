@@ -352,10 +352,9 @@ function AppInner() {
               } />
             </Route>
 
-            {/* Trang giới thiệu công khai. Chưa phải cửa trước: khách vẫn rơi
-                về /decouvrir như cũ. Muốn đổi thì sửa đúng dòng Navigate bên
-                dưới — nhưng đó là đổi đường vào của người đang dùng, nên để
-                bạn quyết. */}
+            {/* Trang giới thiệu công khai. Là CỬA TRƯỚC cho khách chưa
+                đăng nhập từ 24/09 (theo chủ dự án); /decouvrir vẫn mở được
+                bằng đường dẫn trực tiếp. */}
             <Route path="/gioi-thieu" element={<LandingPage />} />
             {/* Hai trang pháp lý — công khai, ngoài vỏ app, không cần đăng nhập:
                 người đọc chúng thường là người CHƯA có tài khoản và đang quyết
@@ -364,7 +363,7 @@ function AppInner() {
             <Route path="/dieu-khoan" element={<TrangDieuKhoan />} />
 
             <Route path="*" element={
-              <Navigate to={session ? (ROLE_HOME[session.role] || "/login") : "/decouvrir"} replace />
+              <Navigate to={session ? (ROLE_HOME[session.role] || "/login") : "/gioi-thieu"} replace />
             } />
           </Routes>
           {gate && (
