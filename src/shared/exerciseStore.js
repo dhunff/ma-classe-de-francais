@@ -83,10 +83,28 @@ export async function loadExercises(store) {
         const theoCau = new Map((data ?? []).map((r) => [r.question_id, r.answer_key]));
         for (const r of rows) {
           const ak = theoCau.get(r.id);
-          if (ak && typeof ak === "object") Object.assign(r.payload ?? (r.payload = {}), ak);
+          if (ak && typeof ak === "object") {
+            Object.assign(r.payload ?? (r.payload = {}), ak);
+            r.__coDapAn = true;
+          }
         }
       }
     }
+  }
+
+  /* ══ CÂU `ordre` TẢI VỀ MÀ KHÔNG KÈM ĐÁP ÁN THÌ ĐÁNH DẤU ══
+   *
+   * `payload.elements` của câu ordre là bản ĐÃ XÁO; thứ tự đúng chỉ nằm ở
+   * `answer_key`. Nếu giáo viên mở bài mà không nhận được đáp án — RPC hỏng,
+   * hoặc tab đang chạy bản mã cũ — thì bấm Lưu sẽ lấy bản xáo làm đáp án
+   * (exerciseMap.toRows). Đã xảy ra thật: đo 23/09, cả 4 câu ordre trên
+   * production mang đáp án bị xáo, học sinh xếp ĐÚNG sẽ bị chấm SAI.
+   *
+   * Cờ này để toRows TỪ CHỐI lưu những câu đó, thay vì im lặng xáo đè. Học
+   * sinh cũng mang cờ (họ không nhận đáp án), nhưng họ không bao giờ lưu. */
+  for (const r of rows) {
+    if (r.type === "ordre" && !r.__coDapAn) (r.payload ?? (r.payload = {})).__daXao = true;
+    delete r.__coDapAn;
   }
 
   return fromRows(exRes.rows, rows);
@@ -121,7 +139,11 @@ export const loadAssignments = () => loadExercises("assignment");
  * xong thì bài tập còn nguyên nhưng mất câu hỏi — nên nhánh lỗi trả về rõ
  * ràng để giao diện báo và người dùng bấm lưu lại. */
 export async function saveExercise(exercise, store) {
-  const { exRow, qRows } = toRows(exercise, store);
+  /* toRows có thể TỪ CHỐI (câu ordre chưa có thứ tự đúng — xem nó). Bắt ở
+     đây, TRƯỚC lệnh xoá bên dưới: ném sau khi đã xoá là mất cả bài. */
+  let exRow, qRows;
+  try { ({ exRow, qRows } = toRows(exercise, store)); }
+  catch (e) { return { ok: false, error: { message: e?.message ?? String(e) } }; }
 
   const up = await supabase.from("exercises").upsert(exRow, { onConflict: "id" });
   if (up.error) return { ok: false, error: up.error };

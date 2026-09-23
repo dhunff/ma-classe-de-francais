@@ -40,7 +40,7 @@ npm run check:hoatdong     # nhật ký theo ngày + chuỗi ngày học (28 ca)
 npm run check:sm2          # SM-2, lời giải, và đường sinh thẻ cũ PHẢI đang tắt (70 ca)
 npm run check:neo          # neo đáp án vào ngữ liệu (59 ca)
 npm run check:champe       # khuôn gợi ý chấm PE do AI trả về (38 ca)
-npm run check:dapan        # màn học sinh không được dựa vào đáp án cục bộ (13 ca)
+npm run check:dapan        # đáp án phía học sinh + chốt chặn câu ordre (24 ca)
 npm run check:css          # lớp Tailwind có thật sinh ra CSS không
 npm run check:db           # database THẬT có khớp giả định của mã nguồn không
 ```
@@ -461,6 +461,29 @@ lại ở client.
 `check:dapan` ghim danh sách mọi chỗ còn đọc `q.answer` kèm lý do — thêm một chỗ
 mới mà không khai thì đỏ. Đã thử phá ba lần (trả điểm về tính tại chỗ, trả gạch
 ngang về `q.answer`, mở lại mục Corrigé cho học sinh): cả ba đều bị bắt.
+
+**Câu `ordre`: 4/4 câu trên production mang ĐÁP ÁN BỊ XÁO — sửa 23/09.** Học
+sinh xếp ĐÚNG câu sẽ bị chấm SAI. Chưa ai làm (0 lượt) nên chưa ai bị chấm oan.
+
+Cơ chế: `toRows` lấy thứ tự ĐANG CÓ trong trình duyệt làm `answer_key.elements`
+rồi xáo bản gửi cho học sinh. Giáo viên mở bài mà KHÔNG nhận được đáp án (RPC
+hỏng, hoặc tab chạy bản mã cũ) thì trình duyệt cầm bản đã xáo — bấm Lưu là bản
+xáo thành đáp án, mỗi lần lưu thêm một lớp. Bản sao lưu blob không có các câu
+này nên không khôi phục được; chủ dự án duyệt lại 4 câu đúng rồi mới ghi.
+
+Chốt chặn: exerciseStore gắn cờ `__daXao` cho câu ordre tải về không kèm đáp
+án; `toRows` TỪ CHỐI lưu câu mang cờ; `saveExercise` bắt lỗi đó TRƯỚC lệnh
+xoá câu hỏi (ném sau lệnh xoá là mất cả bài).
+
+Kèm hai sửa:
+· `ordreOk` so theo CHỮ, không theo id — câu « Le train de nuit… chutes de
+  neige » có hai mảnh « de », đổi chỗ chúng ra đúng câu y hệt mà vẫn bị chấm sai.
+· màn Luyện tập tô màu câu ordre theo `expected` của máy chủ — với học sinh
+  `q.elements` là bản đã xáo, nên câu đúng bị tô đỏ và « Phrase correcte » in
+  ra chuỗi lộn xộn.
+
+Đo trên hàm `grade` đã deploy: xếp đúng → đúng; đổi chỗ hai « de » → đúng;
+xếp sai → sai, kèm câu đúng.
 
 **curl KHÔNG kiểm được CORS.** curl gửi thẳng, không làm preflight. Hàm `grade`
 khai thiếu `x-client-info` — header mà `functions.invoke` LUÔN gửi — nên curl

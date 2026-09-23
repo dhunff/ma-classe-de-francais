@@ -1161,6 +1161,7 @@ function PracticeWorkspace({ ex, back, onFinish }) {
           </div>
         ) : q.type === "ordre" ? (
           <OrdreBlocks q={q} value={a || []} readOnly={!!graded} correction={!!graded}
+            dapAn={remote?.[q.id]?.expected} dung={graded && remote?.[q.id] ? isGood(q) : undefined}
             onChange={(v) => setAnswers({ ...answers, [q.id]: v })} />
         ) : q.type === "tableau" ? (
           /* `dapAn`: bảng đáp án của máy chủ (`expected`, chỉ gửi khi câu SAI).

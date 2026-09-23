@@ -132,10 +132,52 @@ for (const [tep, phep] of Object.entries(DUOC_PHEP)) {
      đánh dấu đúng, và bảng trông như học sinh sai sạch. */
   t("bảng nhận đáp án qua prop dapAn", /dapAn=\{remote\?\.\[q\.id\]\?\.expected/.test(ph), true);
 
+  /* ══ SẮP XẾP CÂU ══
+     Với học sinh `q.elements` là bản ĐÃ XÁO. Tô màu theo nó thì câu xếp đúng
+     bị tô đỏ, và « Phrase correcte » in ra chính chuỗi lộn xộn đó. */
+  t("OrdreBlocks nhận đáp án + kết luận của máy chủ",
+    /dapAn=\{remote\?\.\[q\.id\]\?\.expected\} dung=/.test(ph), true);
+
   const ans = doc("src/screens/student/answers.jsx");
+  t("OrdreBlocks nhận prop dapAn, dung", /correction, dapAn, dung \}\)/.test(ans), true);
+  t("OrdreBlocks không so thứ tự bằng elements[i].id",
+    /elements\[i\] && elements\[i\]\.id === id/.test(ans), false);
   t("TableauCompare nhận prop dapAn", /correction, dapAn \}\)/.test(ans), true);
   t("TableauCompare không đọc thẳng q.answers khi chấm",
     (ans.match(/const good = q\.answers\?\.\[key\]/g) ?? []).length, 0);
+}
+
+/* ── ordreOk so theo CHỮ, không theo id ──
+   Câu « Le train de nuit… chutes de neige » có hai mảnh « de ». So theo id thì
+   đổi chỗ hai chữ « de » — ra đúng câu y hệt — vẫn bị chấm sai. */
+{
+  const { ordreOk } = await import("../src/shared/questions.js");
+  const q = { elements: [
+    { id: "a", texte: "Le" }, { id: "b", texte: "de" }, { id: "c", texte: "nuit" },
+    { id: "d", texte: "de" }, { id: "e", texte: "neige." }] };
+  t("ordre: đúng thứ tự", ordreOk(q, ["a", "b", "c", "d", "e"]), true);
+  t("ordre: đổi chỗ hai mảnh trùng chữ vẫn đúng", ordreOk(q, ["a", "d", "c", "b", "e"]), true);
+  t("ordre: sai thứ tự thật thì sai", ordreOk(q, ["a", "c", "b", "d", "e"]), false);
+  t("ordre: thiếu mảnh thì sai", ordreOk(q, ["a", "b", "c", "d"]), false);
+}
+
+/* ── Lưu câu ordre khi CHƯA có thứ tự đúng phải bị TỪ CHỐI ──
+   Nguyên nhân 4/4 câu ordre trên production mang đáp án bị xáo (đo 23/09). */
+{
+  const { toRows } = await import("../src/shared/exerciseMap.js");
+  const ex = (co) => ({ id: "x1", title: "t", level: "B1", skill: "g", questions: [{
+    id: "q1", type: "ordre", prompt: "p",
+    elements: [{ id: "a", texte: "Le" }, { id: "b", texte: "chat" }], ...(co ? { __daXao: true } : {}) }] });
+  let tuChoi = false; try { toRows(ex(true), "practice"); } catch { tuChoi = true; }
+  t("toRows từ chối câu ordre mang cờ __daXao", tuChoi, true);
+  const r = toRows(ex(false), "practice").qRows[0];
+  t("không cờ thì lưu, đáp án đúng thứ tự", r.answer_key.elements.map((e) => e.texte).join(" "), "Le chat");
+  t("cờ __daXao không lọt vào payload", "__daXao" in r.payload, false);
+
+  const st = doc("src/shared/exerciseStore.js");
+  t("saveExercise bắt lỗi toRows TRƯỚC lệnh xoá",
+    st.indexOf("try { ({ exRow, qRows } = toRows(") > -1
+      && st.indexOf("try { ({ exRow, qRows } = toRows(") < st.indexOf('.from("questions").delete()'), true);
 }
 
 console.log(fail ? `\n${pass} đạt, ${fail} hỏng` : `\n${pass} đạt, 0 hỏng`);

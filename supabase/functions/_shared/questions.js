@@ -27,7 +27,17 @@ const fillAccepted = (q) => q.accepted ?? q.answer ?? "";  // tương thích bà
    qua `exercise.strictAccents`, cho các bài luyện gõ dành cho người mới. */
 const fillOk = (q, ans, exercise) => evaluateQuestion(q, ans, { exercise }).correct;
 const autoQ = (q) => q.type === "qcm" || q.type === "fill" || q.type === "conj" || q.type === "vf" || q.type === "tableau" || q.type === "ordre";
-const ordreOk = (q, ans) => Array.isArray(ans) && ans.length === (q.elements || []).length && ans.every((id, i) => q.elements[i] && q.elements[i].id === id);
+/* So theo CHỮ của mảnh, không theo `id`.
+   Một câu có thể có hai mảnh trùng chữ — « Le train de nuit… chutes de neige »
+   có hai « de ». So theo id thì học sinh đổi chỗ hai chữ « de » cho nhau, ra
+   ĐÚNG câu y hệt, mà vẫn bị chấm sai. Người đọc chỉ thấy chữ; máy chấm cũng
+   phải chỉ thấy chữ. `ans` vẫn là mảng id — đổi id ra chữ qua `q.elements`. */
+const ordreOk = (q, ans) => {
+  const el = q.elements || [];
+  if (!Array.isArray(ans) || ans.length !== el.length || !el.length) return false;
+  const chu = Object.fromEntries(el.map((e) => [e.id, e.texte]));
+  return ans.every((id, i) => chu[id] !== undefined && chu[id] === el[i].texte);
+};
 const seedShuffle = (arr, seedStr) => {
   let sd = 0; for (const c of String(seedStr)) sd = (sd * 31 + c.charCodeAt(0)) >>> 0; sd = sd || 1;
   const rnd = () => ((sd = (sd * 1103515245 + 12345) >>> 0) / 4294967296);

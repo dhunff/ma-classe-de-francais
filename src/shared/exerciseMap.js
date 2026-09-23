@@ -184,7 +184,20 @@ export function toRows(ex, store) {
        Client vẫn cần nội dung các mảnh để hiển thị, nên payload giữ elements đã
        XÁO, còn bản đúng thứ tự nằm ở answer_key — đúng như 022 làm, và `grade`
        ưu tiên answer_key nên nó chấm theo bản đúng. */
+    /* Cờ `__daXao` do exerciseStore gắn: câu này tải về KHÔNG kèm thứ tự đúng,
+       nên `payload.elements` đang là bản xáo. Lấy nó làm đáp án là xáo đè lên
+       đáp án thật — mỗi lần lưu thêm một lớp. Từ chối, và ném TRƯỚC khi
+       saveExercise kịp xoá câu hỏi cũ. Cờ không bao giờ được lọt vào payload. */
+    const daXao = payload.__daXao === true;
+    delete payload.__daXao;
+
     if ((q.type === "ordre") && Array.isArray(payload.elements)) {
+      if (daXao) {
+        throw new Error(
+          "Chưa tải được thứ tự đúng của câu sắp xếp — lưu lúc này sẽ ghi đè đáp án "
+          + "bằng một thứ tự đã xáo. Tải lại trang (Ctrl+F5) rồi thử lại.",
+        );
+      }
       answer_key.elements = payload.elements;
       payload.elements = xaoTheoHat(payload.elements, String(q.id));
     }

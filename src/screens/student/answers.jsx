@@ -45,7 +45,15 @@ function DropZone({ id, style, overStyle, idleStyle, children }) {
   );
 }
 
-function OrdreBlocks({ q, value, onChange, readOnly, correction }) {
+/* `dapAn` — mảng CHỮ theo thứ tự đúng, lấy từ máy chủ (`expected`, chỉ khi sai).
+   `dung` — kết luận đúng/sai của máy chủ.
+
+   Với học sinh, `q.elements` là bản ĐÃ XÁO (exerciseMap.toRows xáo trước khi
+   lưu payload; thứ tự đúng nằm ở `answer_key`, trình duyệt không đọc được). So
+   tô màu theo `q.elements` thì câu xếp ĐÚNG bị tô đỏ, và « Phrase correcte »
+   in ra đúng cái chuỗi lộn xộn đó. Nên: có kết luận của máy chủ thì dùng nó;
+   không có (giáo viên, có đáp án thật) thì lùi về `q.elements`. */
+function OrdreBlocks({ q, value, onChange, readOnly, correction, dapAn, dung }) {
   const chosen = Array.isArray(value) ? value : [];
   const elements = q.elements || [];
   const byId = Object.fromEntries(elements.map((e) => [e.id, e.texte]));
@@ -70,7 +78,18 @@ function OrdreBlocks({ q, value, onChange, readOnly, correction }) {
     }
   };
 
-  const toneFor = (id, i) => !correction ? null : (elements[i] && elements[i].id === id ? "ok" : "bad");
+  const thuTu = Array.isArray(dapAn) ? dapAn : null;
+  const toneFor = (id, i) => {
+    if (!correction) return null;
+    if (dung === true) return "ok";
+    if (thuTu) return byId[id] === thuTu[i] ? "ok" : "bad";          // so theo CHỮ
+    if (dung === false) return null;   // biết là sai nhưng không biết thứ tự đúng — đừng đoán
+    return elements[i] && elements[i].texte === byId[id] ? "ok" : "bad";  // giáo viên
+  };
+  const cauDung = thuTu ? thuTu.join(" ")
+    : dung === undefined ? elements.map((e) => e.texte).join(" ") : null;
+  const hienCauDung = correction && dung !== true && cauDung
+    && (dung === false || !ordreOk(q, chosen));
 
   return (
     <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
@@ -105,9 +124,9 @@ function OrdreBlocks({ q, value, onChange, readOnly, correction }) {
           </SortableContext>
         </DropZone>
       )}
-      {correction && !ordreOk(q, chosen) && (
+      {hienCauDung && (
         <div style={{ marginTop: 6, background: C.okSoft, border: `1.5px solid ${C.ok}55`, borderRadius: 12, padding: "10px 14px", fontSize: 14 }}>
-          <strong style={{ color: C.ok }}>💡 Phrase correcte :</strong> {elements.map((e) => e.texte).join(" ")}
+          <strong style={{ color: C.ok }}>💡 Phrase correcte :</strong> {cauDung}
         </div>
       )}
     </DndContext>
