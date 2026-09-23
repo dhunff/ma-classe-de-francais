@@ -209,6 +209,26 @@ for (const [tep, phep] of Object.entries(DUOC_PHEP)) {
   t("cờ __daXao không lọt vào payload", "__daXao" in r.payload, false);
 
   const st = doc("src/shared/exerciseStore.js");
+
+  /* ══ LƯU BÀI KHÔNG ĐƯỢC XOÁ NEO (23/09) ══
+     saveExercise xoá rồi chèn lại câu hỏi; `evidence` không cấp SELECT cho
+     trình duyệt. Giáo viên không nhận neo lúc mở bài thì mỗi lần Lưu ghi
+     `evidence: null` — 7 neo đã mất đúng như thế. */
+  t("giáo viên nhận neo khi mở bài", /supabase\.rpc\("get_neo_giao_vien"/.test(st), true);
+  t("neo được đặt vào payload.evidence để toRows ghi lại",
+    /\.evidence = ev;/.test(st), true);
+  t("saveExercise TỪ CHỐI khi tải thiếu đáp án hoặc neo — và từ chối TRƯỚC lệnh xoá",
+    st.indexOf("if (thieuDuLieuAn) {") > -1
+      && st.indexOf("if (thieuDuLieuAn) {") < st.indexOf('.from("questions").delete()'), true);
+  t("cờ thiếu dữ liệu được đặt lại mỗi lần tải", /thieuDuLieuAn = null;\s*\n/.test(st), true);
+
+  const { toRows: tr } = await import("../src/shared/exerciseMap.js");
+  const dong = tr({ id: "x", title: "t", level: "B1", skill: "g", questions: [{
+    id: "q", type: "qcm", prompt: "p", options: ["a", "b"], answer: 1,
+    evidence: { trich: "doan", pieges: [] } }] }, "practice").qRows[0];
+  t("toRows ghi neo vào cột evidence", dong.evidence?.trich, "doan");
+  t("neo KHÔNG lọt vào payload (anon đọc được payload)", "evidence" in dong.payload, false);
+
   t("saveExercise bắt lỗi toRows TRƯỚC lệnh xoá",
     st.indexOf("try { ({ exRow, qRows } = toRows(") > -1
       && st.indexOf("try { ({ exRow, qRows } = toRows(") < st.indexOf('.from("questions").delete()'), true);

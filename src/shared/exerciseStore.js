@@ -36,7 +36,16 @@ async function layHet(query) {
   }
 }
 
+/* Lần tải gần nhất của GIÁO VIÊN có thiếu dữ liệu ẩn (đáp án / neo) không.
+ *
+ * Chuỗi mô tả thứ thiếu, hoặc `null` khi đủ. saveExercise đọc cờ này và TỪ
+ * CHỐI lưu khi nó bật: lưu lúc đó là xoá-rồi-chèn bằng dữ liệu thiếu, tức xoá
+ * sạch đáp án hoặc neo của bài. Trước đây chỉ có một dòng console.error nói
+ * « ĐỪNG lưu lúc này » — một lời dặn nằm ở chỗ giáo viên không bao giờ nhìn. */
+let thieuDuLieuAn = null;
+
 export async function loadExercises(store) {
+  thieuDuLieuAn = null;
   const [exRes, qRes] = await Promise.all([
     layHet(() => supabase.from("exercises").select("*").eq("store", store)
       .order("created_at", { ascending: true })),
@@ -79,6 +88,7 @@ export async function loadExercises(store) {
            lần xoá. Nói ra để còn lần theo được. */
         console.error("[exercises] không lấy được đáp án cho giáo viên:", error.message,
           "— ĐỪNG sửa và lưu bài lúc này, đáp án sẽ mất.");
+        thieuDuLieuAn = "đáp án";
       } else {
         const theoCau = new Map((data ?? []).map((r) => [r.question_id, r.answer_key]));
         for (const r of rows) {
@@ -87,6 +97,26 @@ export async function loadExercises(store) {
             Object.assign(r.payload ?? (r.payload = {}), ak);
             r.__coDapAn = true;
           }
+        }
+      }
+
+      /* ══ NEO CŨNG PHẢI VỀ TAY GIÁO VIÊN (migration 093) ══
+       *
+       * `questions.evidence` không cấp SELECT cho trình duyệt, và saveExercise
+       * xoá rồi CHÈN LẠI câu hỏi — nên giáo viên không cầm neo thì mỗi lần Lưu
+       * ghi `evidence: null` và xoá sạch neo của bài. Đã xảy ra thật 23/09: 7
+       * neo của « L'impact des locations saisonnières » về rỗng, khôi phục được
+       * chỉ nhờ một bản chụp tạm. Cùng cơ chế với answer_key ở ngay trên. */
+      const neo = await supabase.rpc("get_neo_giao_vien", { p_exercise_ids: ids });
+      if (neo.error) {
+        console.error("[exercises] không lấy được neo cho giáo viên:", neo.error.message,
+          "— ĐỪNG sửa và lưu bài lúc này, neo sẽ mất.");
+        thieuDuLieuAn = thieuDuLieuAn ? thieuDuLieuAn + " và neo" : "neo";
+      } else {
+        const theoCau = new Map((neo.data ?? []).map((r) => [r.question_id, r.evidence]));
+        for (const r of rows) {
+          const ev = theoCau.get(r.id);
+          if (ev && typeof ev === "object") (r.payload ?? (r.payload = {})).evidence = ev;
         }
       }
     }
@@ -141,6 +171,11 @@ export const loadAssignments = () => loadExercises("assignment");
 export async function saveExercise(exercise, store) {
   /* toRows có thể TỪ CHỐI (câu ordre chưa có thứ tự đúng — xem nó). Bắt ở
      đây, TRƯỚC lệnh xoá bên dưới: ném sau khi đã xoá là mất cả bài. */
+  if (thieuDuLieuAn) {
+    return { ok: false, error: { message:
+      `Chưa tải được ${thieuDuLieuAn} của thư viện — lưu lúc này sẽ XOÁ chúng khỏi bài. `
+      + "Tải lại trang (Ctrl+F5) rồi thử lại." } };
+  }
   let exRow, qRows;
   try { ({ exRow, qRows } = toRows(exercise, store)); }
   catch (e) { return { ok: false, error: { message: e?.message ?? String(e) } }; }
