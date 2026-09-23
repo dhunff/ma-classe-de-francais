@@ -220,6 +220,13 @@ for (const [tep, phep] of Object.entries(DUOC_PHEP)) {
   t("saveExercise TỪ CHỐI khi tải thiếu đáp án hoặc neo — và từ chối TRƯỚC lệnh xoá",
     st.indexOf("if (thieuDuLieuAn) {") > -1
       && st.indexOf("if (thieuDuLieuAn) {") < st.indexOf('.from("questions").delete()'), true);
+  /* answers.question_id là ON DELETE CASCADE: xoá-rồi-chèn = xoá lịch sử
+     trả lời của học sinh mỗi lần Lưu (mất 70 dòng thật trước 24/09). */
+  t("saveExercise ghi đè câu hỏi theo id (upsert), không xoá hết rồi chèn",
+    /\.from\("questions"\)\.upsert\(qRows/.test(st) && !/\.from\("questions"\)\.insert\(/.test(st), true);
+  t("lệnh xoá câu hỏi chỉ xoá câu KHÔNG còn trong bài, và chạy SAU upsert",
+    /\.not\("id", "in"/.test(st)
+      && st.indexOf('.from("questions").upsert(') < st.indexOf('.from("questions").delete()'), true);
   t("cờ thiếu dữ liệu được đặt lại mỗi lần tải", /thieuDuLieuAn = null;\s*\n/.test(st), true);
 
   const { toRows: tr } = await import("../src/shared/exerciseMap.js");

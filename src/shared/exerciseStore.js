@@ -183,13 +183,20 @@ export async function saveExercise(exercise, store) {
   const up = await supabase.from("exercises").upsert(exRow, { onConflict: "id" });
   if (up.error) return { ok: false, error: up.error };
 
-  const del = await supabase.from("questions").delete().eq("exercise_id", exRow.id);
-  if (del.error) return { ok: false, error: del.error };
-
+  /* GHI ĐÈ THEO ID, KHÔNG XOÁ-RỒI-CHÈN (sửa 24/09).
+     `answers.question_id` là ON DELETE CASCADE: bản cũ xoá mọi câu rồi chèn
+     lại cùng id, nên MỖI LẦN LƯU là xoá sạch lịch sử trả lời của học sinh cho
+     bài đó. Đo được 24/09: answers còn 57 dòng, trong khi sau lần xoá hai tài
+     khoản thử (23/09) lẽ ra phải còn 127. Nay chỉ câu bị GỠ khỏi bài mới bị xoá
+     — và mất câu trả lời của câu không còn tồn tại là đúng. */
   if (qRows.length) {
-    const ins = await supabase.from("questions").insert(qRows);
+    const ins = await supabase.from("questions").upsert(qRows, { onConflict: "id" });
     if (ins.error) return { ok: false, error: ins.error };
   }
+  let bo = supabase.from("questions").delete().eq("exercise_id", exRow.id);
+  if (qRows.length) bo = bo.not("id", "in", `(${qRows.map((r) => `"${r.id}"`).join(",")})`);
+  const del = await bo;
+  if (del.error) return { ok: false, error: del.error };
 
   /* ── ĐẾM LẠI TRƯỚC KHI BÁO THÀNH CÔNG ──
    *
