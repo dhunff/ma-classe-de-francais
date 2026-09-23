@@ -8,7 +8,6 @@ import LoginGate from './screens/LoginGate.jsx'
 import { ROLE_HOME, TEACHER_NAV, STUDENT_NAV } from './layout/navItems.js'
 import ExamMode from './screens/exam/ExamMode.jsx'
 import ExamComposer from './screens/teacher/ExamComposer.jsx'
-import BaiNoiGiaoVien from './screens/teacher/BaiNoiGiaoVien.jsx'
 import BoTheApp from './screens/student/BoTheApp.jsx'
 import LoiGiaiUuTien from './screens/teacher/LoiGiaiUuTien.jsx'
 import DatNeo from './screens/teacher/DatNeo.jsx'
@@ -266,7 +265,10 @@ function AppInner() {
                   Giáo viên không còn chấm bài; học sinh tự chấm theo grille
                   DELF ở màn « Kết quả thi ». Xem navItems.js để biết vì sao
                   gỡ cả mục menu chứ không chỉ giấu lối vào. */}
-              <Route path="/professeur/oral" element={<BaiNoiGiaoVien />} />
+              {/* /professeur/oral ĐÃ GỠ — 23/09/2026, theo quyết định chủ dự án.
+                  Giáo viên không chấm cũng không nghe bài nói nữa. Học sinh vẫn
+                  ghi âm trong bài thi thử để TỰ nghe lại; bản ghi vẫn nằm ở
+                  bucket riêng tư `bai-noi`. */}
               <Route path="/professeur/loi-giai" element={<LoiGiaiUuTien />} />
               <Route path="/professeur/neo" element={<DatNeo />} />
               <Route path="/professeur/bo-the" element={<SoanBoThe />} />

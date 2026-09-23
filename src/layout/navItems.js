@@ -1,6 +1,6 @@
 import {
   LayoutDashboard, BookOpen, Users, BarChart3, Dumbbell,
-  ClipboardList, CheckSquare, CalendarDays, Settings, Lightbulb, Timer, Trophy, Mic, Layers, Lightbulb as Bulb, Anchor, Inbox,
+  ClipboardList, CheckSquare, CalendarDays, Settings, Lightbulb, Timer, Trophy, Layers, Lightbulb as Bulb, Anchor, Inbox,
 } from "lucide-react";
 
 /* Điều hướng của vỏ app.
@@ -41,10 +41,9 @@ export const TEACHER_NAV = [
      Muốn dựng lại thì lấy PEGrading.jsx từ commit trước 09/09/2026 và thêm
      lại ba chỗ: import + route ở App.jsx, một dòng ở đây, và khoá nav.grading
      ở i18n.jsx cùng preview.jsx. */
-  /* Nghe bài nói. Màn này KHÔNG cho điểm — chỉ nghe và nhắn nhận xét — nên
-     nó sống sót qua đợt gỡ trên. Trước đây chú thích ở đây giải thích vì sao
-     nó tách khỏi « Chấm bài viết »; giờ không còn gì để tách khỏi. */
-  { to: "/professeur/oral", labelKey: "nav.oral", Icon: Mic },
+  /* « Bài nói » (/professeur/oral) ĐÃ GỠ — 23/09/2026. Cùng đợt với màn chấm
+     bài viết: giáo viên không chấm, cũng không nghe bài nói. Muốn dựng lại thì
+     lấy BaiNoiGiaoVien.jsx từ git, thêm route + dòng này + khoá nav.oral. */
   /* Viết lời giải, xếp theo số học sinh từng sai. Route riêng, không có
      `view`. Đặt cạnh hai màn chấm vì cùng một loại việc: nhìn vào chỗ học
      sinh chưa hiểu rồi làm gì đó về nó. */
