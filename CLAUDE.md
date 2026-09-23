@@ -413,6 +413,11 @@ trên `luu_loi_giai`: đếm trước = 207 câu có lời giải.
     n_tup_upd của `questions` không đổi. Ghi không tới database.
   · Ctrl+F5 rồi viết HAI lời giải → dòng xanh, đếm lại 209, n_tup_upd +2.
 
+Lặp lại y hệt trên `luu_neo` ngày 23/09: đặt neo ở một tab CHƯA tải lại →
+dòng xanh, 7 neo không đổi một ký tự; Ctrl+F5 NGAY TẠI trang đó rồi đặt lại →
+dòng xanh, và nội dung bẫy đổi đúng như vừa sửa. Mỗi TAB giữ riêng bản mã của
+nó: tải lại tab này không làm mới tab kia.
+
 Cùng cơ chế giải thích cả ba triệu chứng: chấm thẻ Flashcard (22/09), và
 `luu_neo` / `luu_loi_giai` đầu tháng 9 — lần đó không ai bắt được vì cả ba
 đường đều "thành công" im lặng.
