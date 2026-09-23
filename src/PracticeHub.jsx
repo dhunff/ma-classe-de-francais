@@ -993,6 +993,7 @@ function PracticeWorkspace({ ex, back, onFinish }) {
   const t = useT();
   const [graded, setGraded] = useState(false);
   const [remote, setRemote] = useState(null);   // kết quả chấm từ máy chủ
+  const [diemMayChu, setDiemMayChu] = useState(null);  // { score, max } — điểm THẬT, xem chú thích dưới
   const [remaining, setRemaining] = useState(null);
   const [zen, setZen] = useState(false); // 🧘 chế độ tập trung
   const [imgZoom, setImgZoom] = useState(false); // 🔍 lightbox ảnh đề bài
@@ -1057,7 +1058,7 @@ function PracticeWorkspace({ ex, back, onFinish }) {
       return;
     }
 
-    if (res) setRemote(res.results);
+    if (res) { setRemote(res.results); setDiemMayChu({ score: res.score, max: res.max }); }
 
     /* Điểm lấy từ máy chủ khi có. Tự cộng lại ở đây là mở đường cho hai con số
        lệch nhau — màn hình hiện một đằng, lịch sử lưu một nẻo. */
@@ -1065,16 +1066,28 @@ function PracticeWorkspace({ ex, back, onFinish }) {
     onFinish(score, res ? res.max : (autos.length || 0));
   };
   const retry = () => {
-    gradedRef.current = false; setGraded(false); setAnswers({}); setRemote(null);
+    gradedRef.current = false; setGraded(false); setAnswers({}); setRemote(null); setDiemMayChu(null);
   };
 
   /* Điểm hiển thị phải cộng theo ĐƠN VỊ, không theo số câu: một bảng OUI/NON
      đáng bằng số ô của nó ở máy chủ, nên cộng "mỗi câu 1 điểm" ở đây sẽ ra một
      con số khác con số đã lưu. Xem diemCau() trong shared/questions.js. */
+  /* ĐIỂM LẤY TỪ MÁY CHỦ KHI CÓ.
+   *
+   * `diemCau` chấm tại chỗ, và để chấm thì nó phải đọc `q.answer` — thứ mà từ
+   * migration 022 trình duyệt của học sinh KHÔNG có. Nên mọi câu ra sai và màn
+   * hình hiện « Tu as obtenu 0/7 » cho một bài làm đúng gần hết, trong khi
+   * điểm máy chủ lưu vào lịch sử lại đúng. Hai con số cho cùng một bài.
+   *
+   * Nhánh tự cộng giữ lại cho lúc máy chủ không trả lời và cho giáo viên (họ
+   * CÓ đáp án qua get_answer_keys) — nhưng nó là nhánh lùi, không phải nhánh
+   * chính. */
   const score = graded
-    ? autos.reduce((n, q) => n + diemCau(q, answersRef.current[q.id], ex).dung, 0)
+    ? (diemMayChu ? diemMayChu.score
+      : autos.reduce((n, q) => n + diemCau(q, answersRef.current[q.id], ex).dung, 0))
     : 0;
-  const perfect = graded && autos.length > 0 && score === autos.length;
+  const tongDiem = diemMayChu ? diemMayChu.max : autos.length;
+  const perfect = graded && tongDiem > 0 && score === tongDiem;
   const allAnswered = ex.questions.every((q) =>
     q.type === "qcm" ? answers[q.id] != null
     : q.type === "tableau" ? tableauCells(q).every((k) => answers[q.id] && answers[q.id][k])
@@ -1123,7 +1136,11 @@ function PracticeWorkspace({ ex, back, onFinish }) {
                 <button key={j} disabled={!!graded} onClick={() => setAnswers({ ...answers, [q.id]: j })}
                   style={{ display: "flex", alignItems: "center", gap: 10, textAlign: "left", padding: "10px 14px", borderRadius: 10, fontSize: 15,
                     fontFamily: "inherit", cursor: graded ? "default" : "pointer", background: bg, border: `1.5px solid ${border}`, color: C.ink,
-                    textDecoration: graded && j === a && j !== q.answer ? "line-through" : "none" }}>
+                    /* Gạch ngang CHỈ khi ô này là lựa chọn SAI. Điều kiện cũ
+                       `j !== q.answer` luôn đúng với học sinh (q.answer rỗng),
+                       nên ô họ chọn bị gạch cả khi làm đúng — chữ gạch ngang
+                       trên một ô đang tô xanh đọc ra hai nghĩa trái nhau. */
+                    textDecoration: graded && j === a && !isGood(q) ? "line-through" : "none" }}>
                   <strong>{String.fromCharCode(65 + j)}.</strong> {o}<span style={{ marginLeft: "auto" }}>{icon}</span>
                 </button>
               );
@@ -1306,7 +1323,7 @@ function PracticeWorkspace({ ex, back, onFinish }) {
           {graded === "timeout" && <div style={{ color: C.danger, fontWeight: 800, marginBottom: 6 }}>⏰ Temps écoulé — correction automatique effectuée</div>}
           <div style={{ fontSize: 30 }}>{perfect ? <PartyPopper size={34} color={C.ok} /> : "💪"}</div>
           <div style={{ fontWeight: 800, fontSize: 19, marginTop: 6, color: perfect ? C.ok : C.primary }}>
-            {autos.length > 0 ? <>Tu as obtenu {score}/{autos.length}{perfect ? " — Excellent ! 🎉" : ""}</> : "Terminé !"}
+            {autos.length > 0 ? <>Tu as obtenu {score}/{tongDiem}{perfect ? " — Excellent ! 🎉" : ""}</> : "Terminé !"}
           </div>
           {opens.length > 0 && <div style={{ fontSize: 13.5, color: C.soft, marginTop: 4 }}>({opens.length} réponse(s) libre(s) — à comparer avec le modèle ci-dessus)</div>}
           <button style={{ ...S.btn(false), marginTop: 14 }} onClick={retry}><RotateCcw size={15} /> Recommencer</button>

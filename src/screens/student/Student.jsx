@@ -202,12 +202,21 @@ function Student({ name, exercises, submissions, setSubmissions, accounts, setAc
                   </div>
                 );
                 if (q.type === "vf") {
-                  const good = vfOk(q, a);
+                  /* `vfOk` phải đọc `q.answer`, mà từ migration 022 trình duyệt
+                     của học sinh không có `answer_key`. Nên `good` luôn ra
+                     false và dòng dưới in « Bonne réponse : undefined ».
+                     Biết-đáp-án và không-biết là hai trạng thái khác nhau, và
+                     màn này nằm ở phía KHÔNG biết: không tô màu một kết luận
+                     mình không có, không in một đáp án không tồn tại. Chỗ chỉ
+                     ra câu trả lời ở màn này là NEO trong ngữ liệu — cùng lý
+                     do nhánh qcm ở đây cũng không hiện « đáp án đúng là B ». */
+                  const biet = q.answer !== undefined;
+                  const good = biet ? vfOk(q, a) : null;
                   return (
                     <div key={q.id} style={{ background: "var(--mcf-surface2)", borderRadius: 14, padding: "12px 15px", border: `1px solid ${C.line}` }}>
                       <div style={{ fontWeight: 700, marginBottom: 6 }}>{i + 1}. {q.prompt}</div>
-                      Mon choix : <strong style={{ color: good ? C.ok : C.danger }}>{a?.choice != null ? VF_OPTS[a.choice] : "—"}</strong>
-                      {!good && <span> · Bonne réponse : <strong>{VF_OPTS[q.answer]}</strong></span>}
+                      Mon choix : <strong style={{ color: good === null ? C.ink : good ? C.ok : C.danger }}>{a?.choice != null ? VF_OPTS[a.choice] : "—"}</strong>
+                      {good === false && <span> · Bonne réponse : <strong>{VF_OPTS[q.answer]}</strong></span>}
                       {a?.just && <div style={{ fontStyle: "italic", marginTop: 4 }}>Ma justification : « {a.just} »</div>}
                       {q.answer !== 2 && q.justification && (
                         <div style={{ marginTop: 8, background: C.okSoft, border: `1.5px solid ${C.ok}55`, borderRadius: 12, padding: "10px 14px" }}>
