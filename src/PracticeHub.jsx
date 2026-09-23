@@ -358,7 +358,7 @@ function PracticeHubInner({ role = "eleve", name = "", accounts = [], onRequireL
                       border: `1px solid ${C.line}`, marginBottom: 14, alignSelf: "flex-start" }} />
                     )}
                     <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 8, marginTop: "auto" }}>
-                      <SplitTrain open={trainMenu === ex.id} setOpen={(v) => setTrainMenu(v ? ex.id : null)}
+                      <SplitTrain open={trainMenu === ex.id} setOpen={(v) => setTrainMenu(v ? ex.id : null)} teacher={teacher}
                         onStart={() => { if (isGuest) return requireLogin(); setView({ page: "quiz", cat: "__autres__", exId: ex.id }); }}
                         onPick={(kind) => setMatModal({ exId: ex.id, kind })} />
                       {teacher && <HubMenu
@@ -918,12 +918,17 @@ function FloatingMenu({ anchorRef, open, onClose, children, minWidth = 180, alig
 }
 
 /* ---- Split button "S'entraîner ▾" : làm bài + tài liệu bổ trợ ---- */
-function SplitTrain({ onStart, onPick, open, setOpen }) {
+function SplitTrain({ onStart, onPick, open, setOpen, teacher = false }) {
   const ref = useRef(null);
+  /* « Sujet et Corrigé » CHỈ cho giáo viên.
+     Hộp đó dựng đáp án từ `q.answer`, mà từ migration 022 trình duyệt của học
+     sinh không đọc được `answer_key` — nên với họ nó vẽ ra một bảng đáp án
+     RỖNG. Một mục menu hứa « corrigé » rồi trả về trống còn tệ hơn là không có
+     mục đó. Học sinh thấy đáp án ở màn chấm bài, nơi máy chủ gửi kèm. */
   const ITEMS = [
     ["vocab", <BookOpen size={16} key="i" />, "Vocabulaire"],
     ["expl", <Lightbulb size={16} key="i" />, "Explications"],
-    ["corrige", <FileCheck size={16} key="i" />, "Sujet et Corrigé"],
+    ...(teacher ? [["corrige", <FileCheck size={16} key="i" />, "Sujet et Corrigé"]] : []),
   ];
   return (
     <div ref={ref} style={{ position: "relative", display: "inline-flex" }}>
@@ -1092,8 +1097,27 @@ function PracticeWorkspace({ ex, back, onFinish }) {
             {q.options.map((o, j) => {
               let bg = "var(--mcf-surface)", border = C.line, icon = null;
               if (graded) {
-                if (j === q.answer) { bg = C.okSoft; border = C.ok; icon = <CheckCircle2 size={17} color={C.ok} />; }
-                else if (j === a) { bg = C.dangerSoft; border = C.danger; icon = <XCircle size={17} color={C.danger} />; }
+                /* ══ VÌ SAO KHÔNG DÙNG `q.answer` ══
+                 *
+                 * Từ migration 022, `answer_key` KHÔNG cấp SELECT cho trình
+                 * duyệt, nên với học sinh `q.answer` là `undefined`. Khối cũ so
+                 * `j === q.answer` nên KHÔNG Ô NÀO xanh, còn nhánh `else if`
+                 * tô ĐỎ ô học sinh chọn — kể cả khi họ làm ĐÚNG. Máy chủ chấm
+                 * đúng, màn hình vẽ ngược lại: mọi câu hiện như sai hết.
+                 *
+                 * Nguồn đúng là kết quả máy chủ: `dung` cho biết đúng/sai,
+                 * `dapAn` là đáp án máy chủ gửi kèm (`expected`) và chỉ có mặt
+                 * khi học sinh làm SAI — đúng thì không cần, ô họ chọn chính là
+                 * đáp án. */
+                const dung = isGood(q);
+                const dapAn = remote?.[q.id]?.expected;
+                if (j === a) {
+                  bg = dung ? C.okSoft : C.dangerSoft;
+                  border = dung ? C.ok : C.danger;
+                  icon = dung ? <CheckCircle2 size={17} color={C.ok} /> : <XCircle size={17} color={C.danger} />;
+                } else if (!dung && dapAn != null && o === dapAn) {
+                  bg = C.okSoft; border = C.ok; icon = <CheckCircle2 size={17} color={C.ok} />;
+                }
               } else if (j === a) { bg = C.primarySoft; border = C.primary; }
               return (
                 <button key={j} disabled={!!graded} onClick={() => setAnswers({ ...answers, [q.id]: j })}
@@ -1118,8 +1142,18 @@ function PracticeWorkspace({ ex, back, onFinish }) {
                 const sel = a?.choice === j;
                 let bg = sel ? C.primarySoft : "var(--mcf-surface)", border = sel ? C.primary : C.line, col = sel ? C.primary : C.ink;
                 if (graded) {
-                  if (j === q.answer) { bg = C.okSoft; border = C.ok; col = C.ok; }
-                  else if (sel) { bg = C.dangerSoft; border = C.danger; col = C.danger; }
+                  /* Cùng lỗi, cùng cách sửa như khối qcm ở trên: với học sinh
+                     `q.answer` là undefined từ migration 022. `expected` của
+                     câu vf là CHỈ SỐ (0/1/2), không phải chữ. */
+                  const dung = isGood(q);
+                  const dapAn = remote?.[q.id]?.expected;
+                  if (sel) {
+                    bg = dung ? C.okSoft : C.dangerSoft;
+                    border = dung ? C.ok : C.danger;
+                    col = dung ? C.ok : C.danger;
+                  } else if (!dung && dapAn != null && j === Number(dapAn)) {
+                    bg = C.okSoft; border = C.ok; col = C.ok;
+                  }
                 }
                 return (
                   <button key={j} disabled={!!graded}
@@ -1127,7 +1161,10 @@ function PracticeWorkspace({ ex, back, onFinish }) {
                     style={{ padding: "10px 22px", borderRadius: 999, fontSize: 14.5, fontWeight: 700,
                       cursor: graded ? "default" : "pointer", fontFamily: "inherit",
                       border: `1.5px solid ${border}`, background: bg, color: col }}>
-                    {o}{graded && j === q.answer && " ✓"}
+                    {/* Dấu ✓ đi theo đúng ô được tô xanh ở trên, không theo
+                        `q.answer` — với học sinh nó là undefined nên dấu này
+                        trước đây không bao giờ hiện. */}
+                    {o}{graded && col === C.ok && " ✓"}
                   </button>
                 );
               })}
