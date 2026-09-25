@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useLayoutEffect } from "react";
 import { createPortal } from "react-dom";
 import { useLocation } from "react-router-dom";
 import {
-  Headphones, BookOpen, PenLine, Puzzle, BookA, Sparkles,
+  Headphones, BookOpen, PenLine, Puzzle, BookA, Sparkles, ArrowRight, Play,
   RotateCcw, CheckCircle2, XCircle, Plus, ChevronLeft, PartyPopper, Trash2, Pencil, Copy, MoreVertical, Folder, FolderPlus, Image as ImageIcon, ChevronDown, Lightbulb, FileCheck,
 } from "lucide-react";
 import { C, S, QTYPES, VF_OPTS } from "./shared/tokens.js";
@@ -829,7 +829,7 @@ function PracticeHubInner({ role = "eleve", name = "", accounts = [], onRequireL
     <div>
       {MatModal()}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20, flexWrap: "wrap", gap: 10 }}>
-        <h2 style={{ ...S.display, margin: 0 }}>🏋️ {t("practice.library_title")}</h2>
+        <h2 className="m-0 text-2xl font-extrabold tracking-tight text-ink">{t("practice.library_title")}</h2>
         {teacher && topTab === "bib" && <button style={S.btn(true)} onClick={() => { setDraft(blank()); setView({ page: "builder" }); }}><Plus size={16} /> Nouvel exercice</button>}
       </div>
       {teacher && (
@@ -841,32 +841,53 @@ function PracticeHubInner({ role = "eleve", name = "", accounts = [], onRequireL
       )}
       {teacher && topTab === "suivi" ? renderSuivi() : null}
       {teacher && topTab === "suivi" ? null : (<>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(250px,1fr))", gap: 16 }}>
+      {/* Lưới thẻ nhóm — dựng lại 25/09. Số bài và tiến độ đếm từ dữ liệu thật
+          (`exercises`, `hist`), không có danh sách giả. Màu biểu tượng lấy từ
+          CATS (ngoại lệ màu nhận dạng, chữ trắng trên nền đậm). */}
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
         {CATS.map((cat, i) => {
           const list = exercises.filter((e) => inCat(e, cat.skill));
           if (cat.skill === "__autres__" && list.length === 0 && cats.length === 0 && !teacher) return null;
           const doneCount = list.filter((e) => hist[e.id]).length;
           const pct = list.length ? Math.round((doneCount / list.length) * 100) : 0;
           return (
-            <div key={cat.skill} className="mcf-card"
+            <button key={cat.skill} type="button"
               onClick={() => setView(cat.skill === "__autres__" ? { page: "autres" } : { page: "category", cat: cat.skill })}
-              style={{ ...S.card, padding: 22, cursor: "pointer", animationDelay: `${i * 40}ms` }}>
-              <div style={{ width: 52, height: 52, borderRadius: 14, background: cat.pastel, display: "grid", placeItems: "center", marginBottom: 14 }}>
-                <cat.Icon size={26} color={cat.color} />
-              </div>
-              <div style={{ fontWeight: 800, fontSize: 16 }}>{t(`skill.${cat.key}`)}</div>
-              <div style={{ fontSize: 13, color: C.soft, margin: "3px 0 14px" }}>{t(`skill.${cat.key}_sub`)} · {t("practice.exercises_count", { n: list.length })}</div>
-              {!teacher && (
-                <>
-                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, fontWeight: 700, color: C.soft, marginBottom: 5 }}>
-                    <span>{t("practice.completed")}</span><span style={{ color: cat.color }}>{doneCount}/{list.length || 0}</span>
-                  </div>
-                  <div style={{ height: 8, borderRadius: 99, background: C.line }}>
-                    <div style={{ height: "100%", width: `${pct}%`, borderRadius: 99, background: `linear-gradient(90deg,${cat.color},${cat.color}AA)`, transition: "width .4s" }} />
-                  </div>
-                </>
+              style={{ animationDelay: `${i * 40}ms` }}
+              className="mcf-card group relative flex cursor-pointer flex-col rounded-3xl border border-solid border-line bg-surface p-6 text-left font-sans shadow-sm transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-md motion-reduce:transition-none motion-reduce:hover:translate-y-0 dark:shadow-2xl dark:hover:shadow-blue-900/20">
+              <span className="mb-4 grid h-12 w-12 place-items-center rounded-full text-white shadow-sm" style={{ background: cat.color }}>
+                <cat.Icon size={22} />
+              </span>
+              <span className="flex flex-wrap items-center gap-2">
+                <span className="text-lg font-bold text-ink">{t(`skill.${cat.key}`)}</span>
+                <span className="rounded-full bg-surface2 px-2.5 py-0.5 text-xs font-medium text-soft">
+                  {t("practice.exercises_count", { n: list.length })}
+                </span>
+              </span>
+              <span className="mb-6 mt-1 line-clamp-1 text-sm text-soft">{t(`skill.${cat.key}_sub`)}</span>
+
+              {!teacher && list.length > 0 && (
+                <span className="mb-5 block">
+                  <span className="mb-1.5 flex justify-between text-xs font-semibold text-soft">
+                    <span>{t("practice.completed")}</span>
+                    <span className="tabular-nums">{doneCount}/{list.length}</span>
+                  </span>
+                  <span className="block h-1.5 overflow-hidden rounded-full bg-surface2">
+                    <span className="block h-full rounded-full bg-primary transition-[width] duration-500" style={{ width: `${pct}%` }} />
+                  </span>
+                </span>
               )}
-            </div>
+
+              <span className="mt-auto flex items-center justify-between">
+                <span className="inline-flex items-center gap-1 text-sm font-semibold text-primary">
+                  {t("home.start")}
+                  <ArrowRight size={15} className="transition-transform duration-300 group-hover:translate-x-1" />
+                </span>
+                <span className="grid h-8 w-8 place-items-center rounded-full border border-solid border-line-strong text-soft transition-colors duration-300 group-hover:border-primary group-hover:text-primary">
+                  <Play size={13} className="ml-0.5" />
+                </span>
+              </span>
+            </button>
           );
         })}
       </div>
