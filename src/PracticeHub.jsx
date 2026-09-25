@@ -41,13 +41,15 @@ import { Lock } from "lucide-react";
    `key` chỉ dùng để tra nhãn hiển thị: t(`skill.${key}`) cho tiêu đề thẻ và
    t(`skill.${key}_sub`) cho phụ đề. Trường `vi` cũ đặt tên sai — nó chứa phụ
    đề tiếng Pháp chứ không phải bản dịch — nên đã bỏ. */
+/* `tuoi`: màu tươi CHỈ cho vòng tròn biểu tượng ở lưới thẻ (biểu tượng trắng).
+   `color` giữ tông đậm vì còn làm màu chữ/viền ở màn trong, cần đủ tương phản. */
 const CATS = [
-  { skill: "Écoute", key: "listening", Icon: Headphones, color: "#41608F", pastel: "#EAEFF7" },
-  { skill: "Lecture", key: "reading", Icon: BookOpen, color: "#327654", pastel: "#E7F3EC" },
-  { skill: "Production écrite", key: "writing", Icon: PenLine, color: "#9B3D66", pastel: "#F8EAF0" },
-  { skill: "Grammaire", key: "grammar", Icon: Puzzle, color: "#5B4B9E", pastel: "#EFECF9" },
-  { skill: "Vocabulaire", key: "vocab", Icon: BookA, color: "#8F5E22", pastel: "#F7EFE3" },
-  { skill: "__autres__", key: "others", Icon: Sparkles, color: "#626A85", pastel: "#EFF0F3" },
+  { skill: "Écoute", key: "listening", Icon: Headphones, color: "#41608F", pastel: "#EAEFF7", tuoi: "linear-gradient(135deg,#60A5FA,#2563EB)" },
+  { skill: "Lecture", key: "reading", Icon: BookOpen, color: "#327654", pastel: "#E7F3EC", tuoi: "linear-gradient(135deg,#34D399,#059669)" },
+  { skill: "Production écrite", key: "writing", Icon: PenLine, color: "#9B3D66", pastel: "#F8EAF0", tuoi: "linear-gradient(135deg,#FB7185,#E11D48)" },
+  { skill: "Grammaire", key: "grammar", Icon: Puzzle, color: "#5B4B9E", pastel: "#EFECF9", tuoi: "linear-gradient(135deg,#A78BFA,#7C3AED)" },
+  { skill: "Vocabulaire", key: "vocab", Icon: BookA, color: "#8F5E22", pastel: "#F7EFE3", tuoi: "linear-gradient(135deg,#FBBF24,#F97316)" },
+  { skill: "__autres__", key: "others", Icon: Sparkles, color: "#626A85", pastel: "#EFF0F3", tuoi: "linear-gradient(135deg,#22D3EE,#0891B2)" },
 ];
 const MAIN_SKILLS = CATS.filter((c) => !c.skill.startsWith("__")).map((c) => c.skill);
 const inCat = (ex, sk) => sk === "__autres__"
@@ -831,7 +833,7 @@ function PracticeHubInner({ role = "eleve", name = "", accounts = [], onRequireL
               onClick={() => setView(cat.skill === "__autres__" ? { page: "autres" } : { page: "category", cat: cat.skill })}
               style={{ animationDelay: `${i * 40}ms` }}
               className="mcf-card group relative flex cursor-pointer flex-col rounded-3xl border border-solid border-line bg-surface p-6 text-left font-sans shadow-sm transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-md motion-reduce:transition-none motion-reduce:hover:translate-y-0 dark:shadow-2xl dark:hover:shadow-blue-900/20">
-              <span className="mb-4 grid h-12 w-12 place-items-center rounded-full text-white shadow-sm" style={{ background: cat.color }}>
+              <span className="mb-4 grid h-12 w-12 place-items-center rounded-full text-white shadow-md transition-transform duration-300 group-hover:scale-110" style={{ background: cat.tuoi || cat.color }}>
                 <cat.Icon size={22} />
               </span>
               <span className="flex flex-wrap items-center gap-2">
