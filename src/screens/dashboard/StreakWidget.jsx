@@ -8,9 +8,10 @@ import { docChuoiTuan } from "../../shared/hoatDong.js";
  * `attempts.finished_at`, theo giờ Việt Nam — đổi đồng hồ máy không làm chuỗi
  * dài thêm.
  *
- * NGOẠI LỆ có chủ ý với quy tắc 2 (token màu): chủ dự án chọn một tấm thẻ TỐI
- * cố định ở cả bản sáng lẫn tối, cùng loại với STAT_GRADIENTS. Mọi màu chữ
- * trên thẻ vì vậy cũng cố định, không đi theo token đảo màu.
+ * Thẻ theo đúng kiểu các thẻ bên cạnh (bg-surface/80 như Card ở parts.jsx) và
+ * đổi sáng/tối qua TOKEN (surface, ink, soft, line, ok) — bản đầu là thẻ đen cố
+ * định, lạc giữa trang sáng (sửa 25/09). Riêng sắc cam của ngọn lửa dùng
+ * `dark:` vì không có token cam.
  *
  * Ba trạng thái như ô chuỗi cũ: đang tải / không hỏi được / số thật (kể cả 0).
  * `fixture` chỉ để preview.jsx bơm dữ liệu vào. */
@@ -29,30 +30,30 @@ export default function StreakWidget({ t, fixture }) {
   let tre = 0;
 
   return (
-    <div className="w-full rounded-3xl border border-solid border-[#2A2B31] bg-[#1C1D22] p-5 font-sans shadow-2xl">
+    <section className="w-full rounded-3xl bg-surface/80 p-5 font-sans shadow-[0_8px_30px_rgb(0,0,0,0.04)] backdrop-blur-md transition-colors duration-300">
       <div className="flex items-center gap-4">
-        <span className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-orange-500/10">
+        <span className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-orange-50 dark:bg-orange-500/10">
           <Flame size={32} strokeWidth={2.2}
             className={`text-orange-500 ${d?.chuoi ? "mcf-lua fill-orange-500" : "fill-orange-500/30 opacity-60"}`} />
         </span>
         <div className="min-w-0">
-          <p className="m-0 text-xs font-bold uppercase tracking-[0.14em] text-gray-400">{t("dash.streak")}</p>
+          <p className="m-0 text-xs font-bold uppercase tracking-[0.14em] text-soft">{t("dash.streak")}</p>
           {d === undefined ? (
-            <p className="m-0 mt-1 text-sm text-gray-400">{t("dash.streak_loading")}</p>
+            <p className="m-0 mt-1 text-sm text-soft">{t("dash.streak_loading")}</p>
           ) : d === null ? (
-            <p className="m-0 mt-1 text-sm text-gray-400">{t("dash.streak_error")}</p>
+            <p className="m-0 mt-1 text-sm text-soft">{t("dash.streak_error")}</p>
           ) : (
-            <p className="m-0 mt-0.5 flex items-baseline gap-2 text-white">
+            <p className="m-0 mt-0.5 flex items-baseline gap-2 text-ink">
               <span className="text-3xl font-extrabold tabular-nums">{d.chuoi}</span>
-              <span className="text-sm font-bold uppercase tracking-wide text-gray-300">{t("dash.streak_days")}</span>
+              <span className="text-sm font-bold uppercase tracking-wide text-soft">{t("dash.streak_days")}</span>
             </p>
           )}
         </div>
       </div>
 
-      {d?.chuoi === 0 && <p className="m-0 mt-3 text-xs text-gray-400">{t("dash.streak_zero")}</p>}
+      {d?.chuoi === 0 && <p className="m-0 mt-3 text-xs text-soft">{t("dash.streak_zero")}</p>}
 
-      <div className="mt-5 border-0 border-t border-solid border-[#2A2B31] pt-4">
+      <div className="mt-5 border-0 border-t border-solid border-line pt-4">
         <div className="grid grid-cols-7 gap-1.5">
           {THU.map((ten, i) => {
             const xong = !!d?.tuan?.[i];
@@ -64,19 +65,19 @@ export default function StreakWidget({ t, fixture }) {
                   style={style}
                   className={[
                     "grid aspect-square w-full max-w-[2.5rem] place-items-center rounded-full border-2 border-solid",
-                    xong ? "mcf-tich border-emerald-500 bg-emerald-500/20 text-emerald-400"
-                      : homNay ? "border-emerald-500/60 bg-gray-800/50 text-transparent"
-                      : "border-gray-700 bg-gray-800/50 text-transparent",
+                    xong ? "mcf-tich border-ok bg-ok-soft text-ok"
+                      : homNay ? "border-ok/50 bg-transparent text-transparent"
+                      : "border-line-strong bg-transparent text-transparent",
                   ].join(" ")}
                 >
                   <Check size={16} strokeWidth={3} />
                 </span>
-                <span className={`text-xs ${homNay ? "font-bold text-gray-200" : "text-gray-500"}`}>{ten}</span>
+                <span className={`text-xs ${homNay ? "font-bold text-ink" : "text-soft"}`}>{ten}</span>
               </div>
             );
           })}
         </div>
       </div>
-    </div>
+    </section>
   );
 }
