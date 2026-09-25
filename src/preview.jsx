@@ -119,7 +119,7 @@ const VI = {
     todo: "Cần làm", done: "Đã nộp", account: "Tài khoản", stats: "Thống kê", exam: "Thi thử", exams: "Đề thi thử", results: "Kết quả thi", decks: "Flashcard",
     explanations: "Câu cần lời giải",
     anchors: "Neo ngữ liệu",
-    leads: "Đăng ký tư vấn",
+    leads: "Câu hỏi liên hệ",
     cards: "Thẻ ghi nhớ",
     primary: "Điều hướng chính", collapse: "Thu gọn thanh bên", expand: "Mở rộng thanh bên",
     menu: "Menu", people: "Lớp của bạn", close: "Đóng menu", open_menu: "Mở menu", tips: "Sổ tay lớp" },
