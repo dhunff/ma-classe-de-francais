@@ -7,9 +7,11 @@ import { useT } from "../shared/i18n.jsx";
    dùng chung với cửa bật lên cho khách trong LoginGate; ở đây chỉ còn phần
    trang trí và bố cục.
 
-   Khoang trái dùng thẳng bảng slate/blue của Tailwind chứ không dùng token
-   trong tokens.css, nên nó chỉ có bản sáng — đó là chủ ý, mesh gradient này
-   không có bản tối tương ứng.
+   Khoang trái (mesh gradient) giống nhau ở cả hai chế độ — chữ trắng trên nền
+   đậm đọc được ở cả hai. Khoang phải có bản tối (`dark:`, 25/09): form bên
+   trong (EmailPasswordForm) dùng token nên VỐN đã đổi theo nền tối; vỏ ngoài
+   viết cứng màu sáng thì sau khi đăng xuất từ bản tối, nhãn trắng nằm trên
+   thẻ trắng và biến mất.
 
    Preflight bị TẮT (tailwind.config.js), nên <button> vẫn giữ viền và nền
    mặc định của trình duyệt, còn h1/h2/p vẫn còn margin. Mọi tiêu đề dưới đây
@@ -59,17 +61,17 @@ export default function LoginSplit({ accounts = [], onLogin }) {
   const changeMode = (next) => setMode(next);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#f4f7fa] p-4 font-sans">
-      <div className="grid w-full max-w-5xl gap-0 rounded-[2rem] bg-white p-2.5 shadow-xl shadow-slate-200/50 md:grid-cols-2">
+    <div className="flex min-h-screen items-center justify-center bg-[#f4f7fa] p-4 font-sans text-ink transition-colors duration-300 dark:bg-[#131417]">
+      <div className="grid w-full max-w-5xl gap-0 rounded-[2rem] border border-solid border-transparent bg-white p-2.5 shadow-xl shadow-slate-200/50 transition-colors duration-300 md:grid-cols-2 dark:border-gray-800 dark:bg-[#1C1D22] dark:shadow-2xl dark:shadow-black/40">
         <VisualPanel />
 
         <div className="flex min-h-[560px] flex-col justify-center p-8 sm:p-12">
-          <Asterisk size={30} strokeWidth={2.6} className="text-blue-600" />
+          <Asterisk size={30} strokeWidth={2.6} className="text-blue-600 dark:text-blue-400" />
 
-          <h1 className="m-0 mt-6 text-2xl font-extrabold tracking-tight text-slate-800">
+          <h1 className="m-0 mt-6 text-2xl font-extrabold tracking-tight text-slate-800 dark:text-white">
             {t(`login.title_${mode}`)}
           </h1>
-          <p className="m-0 mt-2 text-sm font-medium leading-relaxed text-gray-500">
+          <p className="m-0 mt-2 text-sm font-medium leading-relaxed text-gray-500 dark:text-gray-400">
             {t(`login.subtitle_${mode}`)}
           </p>
 
@@ -91,12 +93,12 @@ export default function LoginSplit({ accounts = [], onLogin }) {
               /auth/v1/settings trước khi chuyển hướng. */}
 
           {mode !== "reset" && (
-            <p className="m-0 mt-8 text-center text-sm font-medium text-slate-500">
+            <p className="m-0 mt-8 text-center text-sm font-medium text-slate-500 dark:text-gray-400">
               {mode === "login" ? t("login.no_account") : t("login.have_account")}{" "}
               <button
                 type="button"
                 onClick={() => changeMode(mode === "login" ? "register" : "login")}
-                className={`${RESET_BTN} bg-transparent p-0 text-sm font-bold text-blue-600 hover:underline`}
+                className={`${RESET_BTN} bg-transparent p-0 text-sm font-bold text-blue-600 hover:underline dark:text-blue-400`}
               >
                 {mode === "login" ? t("login.go_register") : t("login.go_login")}
               </button>

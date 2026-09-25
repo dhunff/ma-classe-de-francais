@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useLayoutEffect } from "react";
 import { createPortal } from "react-dom";
 import { useLocation } from "react-router-dom";
 import {
-  Headphones, BookOpen, PenLine, Puzzle, BookA, Sparkles, ArrowRight, Play,
+  Headphones, BookOpen, PenLine, Puzzle, BookA, Sparkles, ArrowRight, Play, PackageOpen, Award, Target,
   RotateCcw, CheckCircle2, XCircle, Plus, ChevronLeft, PartyPopper, Trash2, Pencil, Copy, MoreVertical, Folder, FolderPlus, Image as ImageIcon, ChevronDown, Lightbulb, FileCheck,
 } from "lucide-react";
 import { C, S, QTYPES, VF_OPTS, LEVEL_COLORS } from "./shared/tokens.js";
@@ -610,10 +610,10 @@ function PracticeHubInner({ role = "eleve", name = "", accounts = [], onRequireL
         )}
 
         {list.length === 0 ? (
-          <div className="mcf-card" style={{ ...S.card, padding: 50, textAlign: "center" }}>
-            <div style={{ fontSize: 40, marginBottom: 10 }}>📦</div>
-            <div style={{ fontWeight: 800, fontSize: 16, color: C.ink }}>Aucun exercice disponible pour ce niveau pour le moment.</div>
-            <div style={{ fontSize: 13.5, color: C.soft, marginTop: 6 }}>Essaie un autre niveau ou reviens bientôt !</div>
+          <div className="flex w-full flex-col items-center justify-center rounded-3xl border border-solid border-line bg-surface px-6 py-16 text-center shadow-sm transition-colors duration-300 dark:shadow-none">
+            <PackageOpen size={48} strokeWidth={1.5} className="mb-3 text-soft" />
+            <p className="m-0 text-lg font-semibold text-ink">{t("practice.level_empty_title")}</p>
+            <p className="m-0 mt-1 text-sm text-soft">{t("practice.level_empty_body")}</p>
           </div>
         ) : (
           /* Lưới thẻ ngang: ảnh 16:9 bên trái, nội dung bên phải.
@@ -1355,14 +1355,20 @@ function PracticeWorkspace({ ex, back, onFinish }) {
         )}
         </>
       ) : (
-        <div className="mcf-card" style={{ marginTop: 20, textAlign: "center", background: perfect ? C.okSoft : C.primarySoft, borderRadius: 14, padding: "18px 16px" }}>
-          {graded === "timeout" && <div style={{ color: C.danger, fontWeight: 800, marginBottom: 6 }}>⏰ Temps écoulé — correction automatique effectuée</div>}
-          <div style={{ fontSize: 30 }}>{perfect ? <PartyPopper size={34} color={C.ok} /> : "💪"}</div>
-          <div style={{ fontWeight: 800, fontSize: 19, marginTop: 6, color: perfect ? C.ok : C.primary }}>
-            {autos.length > 0 ? <>Tu as obtenu {score}/{tongDiem}{perfect ? " — Excellent ! 🎉" : ""}</> : "Terminé !"}
-          </div>
-          {opens.length > 0 && <div style={{ fontSize: 13.5, color: C.soft, marginTop: 4 }}>({opens.length} réponse(s) libre(s) — à comparer avec le modèle ci-dessus)</div>}
-          <button style={{ ...S.btn(false), marginTop: 14 }} onClick={retry}><RotateCcw size={15} /> Recommencer</button>
+        <div className="mcf-card mt-5 flex flex-col items-center justify-center rounded-3xl bg-surface py-8 text-center">
+          {graded === "timeout" && <p className="m-0 mb-3 text-sm font-bold text-danger">{t("exercise.timeout")}</p>}
+          {perfect
+            ? <Award size={40} className="mx-auto mb-3 text-ok drop-shadow-[0_0_8px_rgba(34,197,94,0.45)]" />
+            : <Target size={40} className="mx-auto mb-3 text-primary drop-shadow-[0_0_8px_rgba(59,130,246,0.5)]" />}
+          <p className="m-0 mb-1 text-xl font-bold text-ink">
+            {autos.length > 0 ? t("exercise.score_result", { score, total: tongDiem }) : t("exercise.finished")}
+          </p>
+          {perfect && autos.length > 0 && <p className="m-0 text-sm font-semibold text-ok">{t("exercise.perfect")}</p>}
+          {opens.length > 0 && <p className="m-0 mt-1 text-sm text-soft">{t("exercise.open_note", { n: opens.length })}</p>}
+          <button type="button" onClick={retry}
+            className="mt-5 flex cursor-pointer items-center justify-center gap-2 rounded-full border border-solid border-line bg-surface px-6 py-2.5 font-sans text-sm font-medium text-ink shadow-sm transition-all duration-200 hover:bg-surface2 hover:shadow-md active:scale-95 dark:shadow-none">
+            <RotateCcw size={16} /> {t("exercise.retry")}
+          </button>
         </div>
       )}
       </div>

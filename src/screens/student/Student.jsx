@@ -12,7 +12,7 @@ import { PROFILE_FIELDS, LEVELS_PROFILE, GOALS_PROFILE, emptyProfile, calculateP
 import { OrdreChip, OrdreBlocks, TableauCompare, ConfirmSubmitModal } from "./answers.jsx";
 import ReadingPanel from "../../editor/ReadingPanel.jsx";
 import RichTextEditor from "../../editor/RichTextEditor.jsx";
-import { BookOpen, GraduationCap, MoreVertical, Pencil, Copy, Trash2, RotateCcw, Image as ImageIcon, X, Phone, Calendar, Target, Briefcase, ChevronLeft, TrendingUp, Clock, CheckCircle } from "lucide-react";
+import { BookOpen, GraduationCap, MoreVertical, Pencil, Copy, Trash2, RotateCcw, Image as ImageIcon, X, Phone, Calendar, Target, Briefcase, ChevronLeft, TrendingUp, Clock, CheckCircle, ListChecks } from "lucide-react";
 import { BarChart, Bar, LineChart, Line, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from "recharts";
 import PracticeHub from "../../PracticeHub.jsx";
 import Taking from "./Taking.jsx";
@@ -313,7 +313,11 @@ function Student({ name, exercises, submissions, setSubmissions, accounts, setAc
 
       {tab === "todo" && (
         todo.length === 0
-          ? <div className="mcf-card" style={{ ...S.card, textAlign: "center", padding: 36, color: C.soft }}>{t("empty.all_done")}</div>
+          ? <div className="flex w-full flex-col items-center justify-center rounded-3xl border border-solid border-line bg-surface px-6 py-16 text-center shadow-sm transition-colors duration-300 dark:shadow-none">
+              <ListChecks size={48} strokeWidth={1.5} className="mb-3 text-ok" />
+              <p className="m-0 text-lg font-semibold text-ink">{t("todo.empty_title")}</p>
+              <p className="m-0 mt-1 text-sm text-soft">{t("todo.empty_body")}</p>
+            </div>
           : <div style={{ display: "grid", gap: 14 }}>{todo.map((ex) => <Card key={ex.id} ex={ex} />)}</div>
       )}
       {tab === "done" && (
