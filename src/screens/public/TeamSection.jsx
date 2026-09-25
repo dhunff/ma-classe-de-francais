@@ -123,16 +123,7 @@ export default function TeamSection({ ds = DOI_NGU }) {
         Đội ngũ xây dựng
       </h2>
 
-      {/* Câu phụ nói về việc XÂY sản phẩm, không về việc dạy.
-          Bản trước viết "bài của bạn được một giáo viên đọc" — đúng với một
-          khối « đội ngũ chuyên môn », nhưng khi người duy nhất trong danh sách
-          tự nhận là « đội ngũ phát triển » thì câu đó khẳng định một vai mà
-          chính danh sách không đỡ. Đổi khung, không đổi mỗi cái nhãn. */}
-      <p className="m-0 mt-3 max-w-2xl text-base leading-relaxed text-soft">
-        {mot
-          ? "FRACILE không phải một kho bài tập mua sẵn. Nó được viết, chạy và sửa mỗi ngày bởi một người — nên mỗi thứ trên đây đều có người chịu trách nhiệm."
-          : "FRACILE không phải một kho bài tập mua sẵn. Nó được viết, chạy và sửa mỗi ngày bởi một nhóm nhỏ — nên mỗi thứ trên đây đều có người chịu trách nhiệm."}
-      </p>
+      {/* Câu phụ dưới tiêu đề gỡ 25/09 theo yêu cầu chủ dự án. */}
 
       <div className={`mt-8 grid gap-4 ${mot ? "max-w-2xl" : "md:grid-cols-2 lg:grid-cols-3"}`}>
         {ds.map((n) => <TheNguoi key={n.ten} n={n} mot={mot} />)}

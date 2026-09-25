@@ -5,6 +5,7 @@ import {
 } from "lucide-react";
 import { docSoLieu } from "../../shared/soLieuCongKhai.js";
 import TeamSection from "./TeamSection.jsx";
+import ContactDrawer from "./ContactDrawer.jsx";
 
 /* Trang giới thiệu công khai — phễu marketing của FRACILE.
  *
@@ -51,16 +52,11 @@ import TeamSection from "./TeamSection.jsx";
  * (PESelfEvaluation + grilleRubric). Cái sau vẫn là một khác biệt thật — đối
  * thủ trả về điểm, còn ở đây người học thấy mình mất điểm ở tiêu chí nào.
  *
- * ══ FORM ĐĂNG KÝ ĐÃ ĐƯỢC GỠ — 03/09 ══
+ * ══ FORM LIÊN HỆ: GỠ 03/09, BẬT LẠI 25/09 ══
  *
- * Bảng `leads`, RPC `gui_lien_he` và màn xem của giáo viên vẫn còn nguyên;
- * chỉ có ô nhập trên trang này biến mất. Nên hiện KHÔNG có đường nào để ai gửi
- * thông tin vào hệ thống.
- *
- * Đưa lại thì lấy `FormTuVan.jsx` từ commit 6cc2cd3 và dựng lại một khối
- * `<section id="tu-van">`. Trước khi làm thế, nhớ rằng thu dữ liệu cá nhân
- * mà chưa có trang Chính sách bảo mật là chỗ dễ vướng nhất — và trang đó vẫn
- * chưa có.
+ * Nay là ngăn kéo « Gửi câu hỏi » (ContactDrawer.jsx), gửi thật qua RPC
+ * `gui_lien_he`. Trang Chính sách bảo mật vẫn CHƯA có — câu đồng ý dưới form
+ * vì thế không nhắc tới nó.
  */
 
 /* Bốn ô số liệu. Ba ô đầu ĐẾM THẬT; ô thứ tư là một sự thật không phải con số
@@ -116,13 +112,10 @@ const LOI_THE = [
   },
 ];
 
-/* Chưa có form tư vấn (đã gỡ 03/09, chưa có Chính sách bảo mật) — nút tư vấn
-   mở thư tới email liên hệ đang dùng ở FAQ + Điều khoản. */
-const EMAIL_TU_VAN = "mailto:contact.fracile@gmail.com?subject="
-  + encodeURIComponent("Tư vấn gói Trung tâm FRACILE");
 
 export default function LandingPage({ imgSrc = "/images/hero-preview.png" }) {
   const [so, setSo] = useState(null);
+  const [isContactFormOpen, setIsContactFormOpen] = useState(false);
 
   useEffect(() => {
     let con = true;
@@ -153,10 +146,10 @@ export default function LandingPage({ imgSrc = "/images/hero-preview.png" }) {
                 className="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-bold text-white no-underline shadow-lg shadow-primary/30 transition-all duration-300 ease-out hover:-translate-y-0.5 hover:shadow-2xl hover:shadow-primary/40 active:scale-[0.98] motion-reduce:transition-none">
                 Trải nghiệm học thử ngay <ArrowRight size={16} />
               </Link>
-              <a href={EMAIL_TU_VAN}
-                className="rounded-full border border-line bg-transparent px-6 py-3 text-sm font-bold text-ink no-underline transition-all duration-300 ease-out hover:-translate-y-0.5 hover:bg-surface2 active:scale-[0.98] motion-reduce:transition-none">
-                Đăng ký tư vấn gói Trung tâm
-              </a>
+              <button type="button" onClick={() => setIsContactFormOpen(true)}
+                className="cursor-pointer font-sans rounded-full border border-line bg-transparent px-6 py-3 text-sm font-bold text-ink no-underline transition-all duration-300 ease-out hover:-translate-y-0.5 hover:bg-surface2 active:scale-[0.98] motion-reduce:transition-none">
+                Gửi câu hỏi
+              </button>
             </div>
           </div>
 
@@ -213,6 +206,8 @@ export default function LandingPage({ imgSrc = "/images/hero-preview.png" }) {
           <p className="m-0 text-sm text-blue-100">© 2026 FRACILE</p>
         </div>
       </footer>
+
+      <ContactDrawer isOpen={isContactFormOpen} onClose={() => setIsContactFormOpen(false)} />
     </div>
   );
 }

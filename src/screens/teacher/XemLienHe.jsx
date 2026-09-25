@@ -159,13 +159,9 @@ export default function XemLienHe() {
         <div className="mt-8 rounded-2xl border border-line bg-surface p-8 text-center">
           <Inbox size={22} className="mx-auto text-soft" />
           <p className="m-0 mt-2 font-bold text-ink">Chưa có ai đăng ký</p>
-          {/* Nói đúng lý do đang có: form đã được gỡ khỏi trang giới thiệu,
-              nên không có đường nào để ai gửi vào đây. Im lặng ở chỗ này thì
-              giáo viên mở màn mỗi ngày và tưởng chưa ai quan tâm. */}
+          {/* Form « Gửi câu hỏi » bật lại trên trang giới thiệu 25/09. */}
           <p className="m-0 mt-1 text-sm leading-relaxed text-soft">
-            Form đăng ký hiện KHÔNG có trên trang giới thiệu, nên chưa có đường
-            nào để ai gửi thông tin vào đây. Bật lại form thì các đăng ký mới sẽ
-            hiện ở màn này.
+            Câu hỏi gửi từ nút « Gửi câu hỏi » trên trang giới thiệu sẽ hiện ở đây.
           </p>
         </div>
       ) : (
