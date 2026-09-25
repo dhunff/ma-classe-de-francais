@@ -15,7 +15,7 @@ import { guiLienHe } from "../../shared/lienHe.js";
 const VAI = [["hoc_sinh", "Học sinh"], ["phu_huynh", "Phụ huynh"], ["giao_vien", "Giáo viên"]];
 const MUC_TIEU = [["A2", "DELF A2"], ["B1", "DELF B1"], ["B2", "DELF B2"], ["C1", "DALF C1"]];
 
-const O = "w-full rounded-xl border border-line bg-bg px-3.5 py-2.5 font-sans text-sm text-ink "
+const O = "w-full rounded-xl border border-solid border-line bg-bg px-3.5 py-2.5 font-sans text-sm text-ink "
   + "placeholder:text-soft outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/30";
 const NHAN = "mb-1.5 block text-xs font-bold text-ink";
 
@@ -77,9 +77,9 @@ export default function ContactDrawer({ isOpen, onClose }) {
         className={`absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-300 motion-reduce:transition-none ${isOpen ? "opacity-100" : "opacity-0"}`} />
 
       <aside role="dialog" aria-modal="true" aria-labelledby="tieu-de-hoi"
-        className={`absolute inset-y-0 right-0 flex w-full max-w-md flex-col border-l border-line bg-surface shadow-2xl transition-transform duration-300 ease-out motion-reduce:transition-none ${isOpen ? "translate-x-0" : "translate-x-full"}`}>
+        className={`absolute inset-y-0 right-0 flex w-full max-w-md flex-col border-l border-solid border-line bg-surface shadow-2xl transition-transform duration-300 ease-out motion-reduce:transition-none ${isOpen ? "translate-x-0" : "translate-x-full"}`}>
 
-        <div className="flex items-start justify-between gap-4 border-b border-line px-6 py-5">
+        <div className="flex items-start justify-between gap-4 border-b border-solid border-line px-6 py-5">
           <div>
             <h2 id="tieu-de-hoi" className="m-0 text-xl font-extrabold text-ink">Gửi câu hỏi</h2>
             <p className="m-0 mt-1 text-sm text-soft">FRACILE trả lời qua email hoặc điện thoại bạn để lại.</p>
@@ -159,7 +159,7 @@ export default function ContactDrawer({ isOpen, onClose }) {
               {loi && <p role="alert" className="m-0 rounded-xl bg-danger-soft px-3.5 py-2.5 text-sm text-danger">{loi}</p>}
             </div>
 
-            <div className="mt-auto border-t border-line px-6 py-4">
+            <div className="mt-auto border-t border-solid border-line px-6 py-4">
               <button type="submit" disabled={dangGui}
                 className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border-0 bg-primary px-5 py-3 font-sans text-sm font-bold text-white transition-opacity hover:opacity-90 disabled:cursor-wait disabled:opacity-60">
                 {dangGui ? "Đang gửi…" : <>Gửi câu hỏi <Send size={16} /></>}

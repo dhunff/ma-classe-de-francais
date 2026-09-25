@@ -66,7 +66,7 @@ function TheNguoi({ n, mot = false }) {
   // không để lại biểu tượng ảnh vỡ trên trang bán hàng.
   const [anhHong, setAnhHong] = React.useState(false);
   return (
-    <div className={`group rounded-3xl border border-line bg-surface p-6
+    <div className={`group rounded-3xl border border-solid border-line bg-surface p-6
       ${mot ? "flex flex-col gap-5 sm:flex-row sm:items-center" : ""}
       transition-all duration-300 ease-out
       hover:-translate-y-2 hover:shadow-2xl hover:shadow-primary/20

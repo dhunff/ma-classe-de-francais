@@ -154,6 +154,10 @@ thẳng vì nền khung không đảo theo bản sáng/tối.
 Nên `<button>` còn viền xám mặc định, `<h1>`/`<p>` còn margin. Mọi nút phải có
 `border-0` và nền rõ ràng, mọi tiêu đề phải có `m-0`. Bỏ qua là giao diện vỡ.
 
+Nút/ô nhập CÓ viền thì viết `border border-solid border-line` — thiếu
+`border-solid` thì trình duyệt giữ kiểu `outset`/`inset` và vẽ viền 3D có
+cạnh đen, dù màu viền đã là xám nhạt (dính 25/09 ở trang giới thiệu).
+
 ### 4. Sửa file bằng công cụ Edit/Write, KHÔNG qua đường ống PowerShell
 
 `Get-Content` của PowerShell 5.1 đọc mặc định bằng ANSI, nên

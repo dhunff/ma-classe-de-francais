@@ -63,7 +63,7 @@ import ContactDrawer from "./ContactDrawer.jsx";
    — và nó mới là thứ phân biệt FRACILE với một cái kho bài tập. */
 function OSoLieu({ so, nhan, phu }) {
   return (
-    <div className="rounded-2xl border border-line bg-surface p-5 text-center">
+    <div className="rounded-2xl border border-solid border-line bg-surface p-5 text-center">
       <div className="text-3xl font-extrabold tabular-nums text-ink">
         {so ?? <span className="text-soft">—</span>}
       </div>
@@ -147,7 +147,7 @@ export default function LandingPage({ imgSrc = "/images/hero-preview.png" }) {
                 Trải nghiệm học thử ngay <ArrowRight size={16} />
               </Link>
               <button type="button" onClick={() => setIsContactFormOpen(true)}
-                className="cursor-pointer font-sans rounded-full border border-line bg-transparent px-6 py-3 text-sm font-bold text-ink no-underline transition-all duration-300 ease-out hover:-translate-y-0.5 hover:bg-surface2 active:scale-[0.98] motion-reduce:transition-none">
+                className="cursor-pointer font-sans rounded-full border border-solid border-line bg-transparent px-6 py-3 text-sm font-bold text-ink no-underline transition-all duration-300 ease-out hover:-translate-y-0.5 hover:bg-surface2 active:scale-[0.98] motion-reduce:transition-none">
                 Gửi câu hỏi
               </button>
             </div>
@@ -178,7 +178,7 @@ export default function LandingPage({ imgSrc = "/images/hero-preview.png" }) {
           <div className="mt-6 grid gap-4 sm:grid-cols-2">
             {LOI_THE.map(({ Icon, ten, mo }) => (
               <div key={ten}
-                className="rounded-3xl border border-line bg-surface p-6 transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-2xl motion-reduce:transition-none">
+                className="rounded-3xl border border-solid border-line bg-surface p-6 transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-2xl motion-reduce:transition-none">
                 <div className="grid h-11 w-11 place-items-center rounded-2xl bg-primary-soft">
                   <Icon size={20} className="text-primary" />
                 </div>
@@ -220,6 +220,6 @@ function AnhHero({ src }) {
   if (hong) return null;
   return (
     <img src={src} alt="Màn hình luyện thi DELF của FRACILE" onError={() => setHong(true)}
-      className="w-full rounded-2xl border border-line object-cover shadow-2xl transition-transform duration-300 hover:scale-[1.01] motion-reduce:transition-none" />
+      className="w-full rounded-2xl border border-solid border-line object-cover shadow-2xl transition-transform duration-300 hover:scale-[1.01] motion-reduce:transition-none" />
   );
 }
