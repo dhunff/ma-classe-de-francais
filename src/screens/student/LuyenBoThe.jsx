@@ -182,7 +182,7 @@ export default function LuyenBoThe({ bo, onThoat }) {
           {/* `conLai` vẽ chồng thẻ phía sau theo SỐ THẺ CÒN LẠI thật, không vẽ
               cứng hai cái — vẽ cứng là nói dối bằng hình ảnh khi chỉ còn một thẻ. */}
           <TheLat3D
-            mat={the.phienAm ? `${the.matTruoc}\n${the.phienAm}` : the.matTruoc}
+            mat={the.matTruoc /* phiên âm gỡ khỏi mặt thẻ 25/09 theo chủ dự án */}
             sau={the.matSau}
             viDu={the.viDu}
             daLat={lat}
