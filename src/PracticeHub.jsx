@@ -5,7 +5,7 @@ import {
   Headphones, BookOpen, PenLine, Puzzle, BookA, Sparkles, ArrowRight, Play,
   RotateCcw, CheckCircle2, XCircle, Plus, ChevronLeft, PartyPopper, Trash2, Pencil, Copy, MoreVertical, Folder, FolderPlus, Image as ImageIcon, ChevronDown, Lightbulb, FileCheck,
 } from "lucide-react";
-import { C, S, QTYPES, VF_OPTS } from "./shared/tokens.js";
+import { C, S, QTYPES, VF_OPTS, LEVEL_COLORS } from "./shared/tokens.js";
 import { uid, fillOk, fillAccepted, vfOk, stripHtml, autoQ, tableauOk, tableauCells, diemCau, ordreOk, getUnansweredQuestionsCount } from "./shared/questions.js";
 import { load, save } from "./shared/storage.js";
 import { loadPractice, saveExercise, deleteExercise, patchExerciseMeta, clearFolder } from "./shared/exerciseStore.js";
@@ -425,7 +425,7 @@ function PracticeHubInner({ role = "eleve", name = "", accounts = [], onRequireL
     if (view.cat === "__autres__" && view.folder) {
       all = all.filter((e) => e.customCat === view.folder);
     }
-    const NIVEAUX = ["A1", "A2", "B1", "B2", "B2+"];
+    const NIVEAUX = Object.keys(LEVEL_COLORS); // A1 → C1, cùng nguồn với Builder
     // Tab par defaut : niveau du dernier exercice pratique dans cette categorie, sinon A1
     const defaultNiveau = (() => {
       const recent = all.filter((e) => hist[e.id]).sort((a, b) => (hist[b.id].at || 0) - (hist[a.id].at || 0))[0];

@@ -13,9 +13,13 @@ const C = {
    5 màu cầu vồng rời rạc — vị trí trên dải mang thông tin, màu sắc thì không.
    Bảng cũ (xanh lá / xanh mòng két / xanh dương / tím / hồng) vừa không mã
    hoá thứ tự vừa trượt tương phản: A2 chỉ đạt 2.85:1.
-   Mọi số dưới đây là số đo WCAG thật, chữ trên nền pastel và trên surface. */
-const LEVEL_COLORS = { A1: "#476EB2", A2: "#3D62A8", B1: "#2E5296", B2: "#234181", "B2+": "#182F66" };
-const LEVEL_PASTEL = { A1: "#EFF4FC", A2: "#E8EFF9", B1: "#E1E9F6", B2: "#DAE3F3", "B2+": "#D3DDF0" };
+   Mọi số dưới đây là số đo WCAG thật, chữ trên nền pastel và trên surface.
+
+   C1 (thêm 25/09) cố ý RỜI dải xanh sang tím: đó là bước sang DALF, một kỳ
+   thi khác, không phải một nấc nữa của DELF. Thứ tự các khoá ở đây CHÍNH LÀ
+   thứ tự hiện ở Builder và dải lọc cấp độ — thêm cấp mới thì thêm ở đây. */
+const LEVEL_COLORS = { A1: "#476EB2", A2: "#3D62A8", B1: "#2E5296", B2: "#234181", "B2+": "#182F66", C1: "#6D28D9" };
+const LEVEL_PASTEL = { A1: "#EFF4FC", A2: "#E8EFF9", B1: "#E1E9F6", B2: "#DAE3F3", "B2+": "#D3DDF0", C1: "#EDE9FE" };
 
 const QTYPES = { qcm: "QCM", fill: "Texte à trous", conj: "Conjugaison", vf: "Vrai / Faux / ?", tableau: "Tableau OUI/NON", ordre: "Remettre en ordre", open: "Réponse libre / traduction" };
 const VF_OPTS = ["Vrai", "Faux", "On ne sait pas"];
