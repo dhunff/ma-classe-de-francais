@@ -1160,6 +1160,10 @@ Xem `docs/roadmap-delf.md` — có nhật ký quyết định ở §5.
   nháp chưa qua luật sư. `EMAIL_LIEN_HE` để trống có chủ ý — trống thì trang tự
   hiện cảnh báo.
 
+  **Chính sách bảo mật: DỰNG LẠI 25/09** (`/bao-mat`) khi form « Gửi câu hỏi »
+  bật lại — thêm mục dữ liệu form đó thu (tên, SĐT, năm sinh, email, IP).
+  Thêm tính năng thu dữ liệu mới thì sửa trang này TRƯỚC. Lịch sử bên dưới:
+
   **Chính sách bảo mật: dựng xong rồi GỠ cùng ngày, theo yêu cầu chủ dự án.**
   Nội dung đầy đủ nằm trong commit « Ba trang FAQ · Điều khoản sử dụng · Chính
   sách bảo mật ». Khi trang này vắng mặt: form tư vấn KHÔNG nên bật lại, và

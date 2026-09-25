@@ -65,7 +65,7 @@ export default function TheLat3D({ mat, sau, viDu, daLat, onLat, conLai = 0 }) {
 
       <button type="button" onClick={onLat}
         aria-pressed={daLat}
-        className="relative block w-full cursor-pointer border-0 bg-transparent p-0 text-left">
+        className="relative block w-full cursor-pointer border-0 bg-transparent p-0 text-left font-sans">
         <div
           className={`relative min-h-56 w-full transition-transform duration-500 [transform-style:preserve-3d] motion-reduce:transition-none ${
             daLat ? "[transform:rotateY(180deg)]" : ""}`}>

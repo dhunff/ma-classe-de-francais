@@ -14,7 +14,7 @@ import DatNeo from './screens/teacher/DatNeo.jsx'
 import SoanBoThe from './screens/teacher/SoanBoThe.jsx'
 import XemLienHe from './screens/teacher/XemLienHe.jsx'
 import LandingPage from './screens/public/LandingPage.jsx'
-import { TrangFAQ, TrangDieuKhoan } from './screens/public/TrangPhapLy.jsx'
+import { TrangFAQ, TrangDieuKhoan, TrangBaoMat } from './screens/public/TrangPhapLy.jsx'
 import ExamResults from './screens/student/ExamResults.jsx'
 
 import { C } from './shared/tokens.js'
@@ -361,6 +361,7 @@ function AppInner() {
                 định có tạo hay không. */}
             <Route path="/faq" element={<TrangFAQ />} />
             <Route path="/dieu-khoan" element={<TrangDieuKhoan />} />
+            <Route path="/bao-mat" element={<TrangBaoMat />} />
 
             <Route path="*" element={
               <Navigate to={session ? (ROLE_HOME[session.role] || "/login") : "/gioi-thieu"} replace />

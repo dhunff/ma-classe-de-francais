@@ -153,7 +153,9 @@ export default function ContactDrawer({ isOpen, onClose }) {
               </div>
 
               <p className="m-0 text-xs leading-relaxed text-soft">
-                Bằng việc gửi câu hỏi, bạn đồng ý để FRACILE dùng thông tin trên chỉ để liên hệ trả lời bạn.
+                Bằng việc gửi câu hỏi, bạn đã đồng ý với{" "}
+                <a href="/bao-mat" target="_blank" rel="noreferrer" className="text-primary underline">Chính sách bảo mật</a>{" "}
+                thông tin của FRACILE.
               </p>
 
               {loi && <p role="alert" className="m-0 rounded-xl bg-danger-soft px-3.5 py-2.5 text-sm text-danger">{loi}</p>}

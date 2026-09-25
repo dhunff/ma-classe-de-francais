@@ -55,8 +55,7 @@ import ContactDrawer from "./ContactDrawer.jsx";
  * ══ FORM LIÊN HỆ: GỠ 03/09, BẬT LẠI 25/09 ══
  *
  * Nay là ngăn kéo « Gửi câu hỏi » (ContactDrawer.jsx), gửi thật qua RPC
- * `gui_lien_he`. Trang Chính sách bảo mật vẫn CHƯA có — câu đồng ý dưới form
- * vì thế không nhắc tới nó.
+ * `gui_lien_he`. Chính sách bảo mật (/bao-mat) dựng lại cùng ngày, có mục cho form này.
  */
 
 /* Bốn ô số liệu. Ba ô đầu ĐẾM THẬT; ô thứ tư là một sự thật không phải con số
@@ -199,7 +198,7 @@ export default function LandingPage({ imgSrc = "/images/hero-preview.png" }) {
         <div className="mx-auto flex max-w-6xl flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div className="flex flex-wrap items-center gap-x-8 gap-y-2 text-base font-medium">
             <span className="text-lg font-extrabold text-white">FRACILE</span>
-            {[["/decouvrir", "Thư viện bài tập"], ["/login", "Đăng nhập"], ["/faq", "Câu hỏi thường gặp"], ["/dieu-khoan", "Điều khoản sử dụng"]].map(([to, ten]) => (
+            {[["/decouvrir", "Thư viện bài tập"], ["/login", "Đăng nhập"], ["/faq", "Câu hỏi thường gặp"], ["/dieu-khoan", "Điều khoản sử dụng"], ["/bao-mat", "Chính sách bảo mật"]].map(([to, ten]) => (
               <Link key={to} to={to} className="text-white no-underline transition-colors hover:text-blue-100">{ten}</Link>
             ))}
           </div>
