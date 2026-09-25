@@ -317,8 +317,9 @@ export default function CalendarView({
   const navBtn = "grid h-8 w-8 cursor-pointer place-items-center rounded-full border-0 bg-surface2 text-soft shadow-sm transition-all duration-200 hover:scale-105 hover:text-primary";
 
   return (
-    /* Nền tràn viền đã bỏ — tấm thẻ nội dung của AppLayout cấp nền rồi. */
-    <div className="pt-2">
+    /* Nền tràn viền đã bỏ — tấm thẻ nội dung của AppLayout cấp nền rồi.
+       preflight TẮT: button/input không kế thừa font — ép font-sans cho cả màn. */
+    <div className="pt-2 font-sans [&_button]:font-sans [&_input]:font-sans [&_select]:font-sans">
       <Rise delay={0} className="mx-auto max-w-6xl">
         <div className="flex flex-col overflow-hidden rounded-[2rem] bg-surface shadow-[0_10px_40px_rgb(0,0,0,0.07)] xl:flex-row">
 
