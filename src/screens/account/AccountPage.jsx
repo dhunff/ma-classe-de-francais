@@ -5,7 +5,7 @@ import { loadHoSo, luuHoSo } from "../../shared/profileStore.js";
 import { emptyProfile, calculateProfileCompletion, validateProfile, LEVELS_PROFILE, GOALS_PROFILE } from "../../shared/profile.js";
 import { Avatar } from "../../shared/avatars.jsx";
 import { ChonAvatar, ONhapUsername } from "./DanhTinh.jsx";
-import { loadDanhTinh, luuDanhTinh, usernameConTrong } from "../../shared/identity.js";
+import { loadDanhTinh, luuDanhTinh, usernameConTrong, baoDanhTinhDoi } from "../../shared/identity.js";
 import { chuanHoaUsername, kiemUsername, goiYUsername, TEN_HIEN_THI_TOI_DA }
   from "../../shared/identityRules.js";
 
@@ -72,6 +72,10 @@ export default function AccountPage({ name, role, email, emailVerified, onLogout
      toàn hệ thống, mà Postgres không nhìn được vào bên trong một cột JSON. */
   const [dt, setDt] = useState({ display_name: "", username: "", avatar: "" });
   const [dtGoc, setDtGoc] = useState({ username: "" });
+  /* Bản ĐÃ LƯU của tên hiển thị + username. Chọn ảnh đại diện lưu ngay, nhưng
+     phải lưu kèm bản đã lưu này chứ không phải thứ đang gõ dở trong ô — nếu
+     không thì bấm chọn một con vật cũng lưu luôn cái tên chưa gõ xong. */
+  const dtLuu = useRef({ display_name: "", username: "" });
   const [chuaCoCot, setChuaCoCot] = useState(false);
   /* Cờ riêng cho hồ sơ mở rộng: 046 và 049 là hai migration khác nhau, và
      database có thể chạy cái này mà chưa chạy cái kia. Gộp thành một cờ thì
@@ -105,6 +109,7 @@ export default function AccountPage({ name, role, email, emailVerified, onLogout
           avatar: danhTinh.avatar || "",
         });
         setDtGoc({ username: danhTinh.username || "" });
+        dtLuu.current = { display_name: danhTinh.display_name || "", username: danhTinh.username || "" };
         setChuaCoCot(!!danhTinh.chuaCoCot);
       }
       setLoading(false);
@@ -204,6 +209,8 @@ export default function AccountPage({ name, role, email, emailVerified, onLogout
     }
 
     setDtGoc({ username: chuanHoaUsername(dt.username) });
+    dtLuu.current = { display_name: dt.display_name, username: dt.username };
+    baoDanhTinhDoi({ ...dt });
     setToast(t("account.saved"));
     setTimeout(() => setToast(""), 2500);
   };
@@ -461,13 +468,20 @@ export default function AccountPage({ name, role, email, emailVerified, onLogout
         )}
       </section>
 
-      {/* Xem trước NGAY khi chọn, chưa ghi xuống database — người dùng còn phải
-          bấm Lưu. Đóng hộp lại là thấy con vật mới trong thẻ bên trái. */}
+      {/* Chọn là LƯU NGAY (25/09, theo chủ dự án) và ảnh ở góc trên đổi theo.
+          Hỏng thì trả về ảnh cũ và nói lý do. */}
       {moChonAvatar && (
         <ChonAvatar
           dangChon={dt.avatar}
           ten={tenHienThi}
-          chon={(k) => { setDtK("avatar")(k); setMoChonAvatar(false); }}
+          chon={async (k) => {
+            const cu = dt.avatar;
+            setDtK("avatar")(k); setMoChonAvatar(false); setLoiDt("");
+            const kq = await luuDanhTinh({ displayName: dtLuu.current.display_name, username: dtLuu.current.username, avatar: k });
+            if (!kq.ok) { setDtK("avatar")(cu); setLoiDt(t(`identity.err_${kq.loi}`)); return; }
+            baoDanhTinhDoi({ ...dtLuu.current, avatar: k });
+            setToast(t("account.saved")); setTimeout(() => setToast(""), 2500);
+          }}
           dong={() => setMoChonAvatar(false)}
         />
       )}

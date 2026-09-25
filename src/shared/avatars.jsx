@@ -164,10 +164,12 @@ export const tenConVat = (khoa, lang = "vi") =>
  * Không tự gán một con vật cho người chưa chọn: ảnh đại diện là thứ người khác
  * dùng để nhận ra bạn, và hệ thống tự đặt cho bạn một con gấu trúc thì lần đầu
  * mở trang bạn không biết đó có phải mình không. Chữ cái đầu thì luôn đúng. */
-function ChuCaiDau({ ten }) {
+/* Cỡ chữ tính theo `size` chứ không `%`: font-size phần trăm lấy theo cỡ
+   chữ của CHA, không theo khung — ô 56px trong khung chọn từng ra chữ 6px. */
+function ChuCaiDau({ ten, size }) {
   return (
-    <span aria-hidden className="grid h-full w-full place-items-center rounded-full bg-primary font-extrabold text-on-primary"
-          style={{ fontSize: "45%" }}>
+    <span aria-hidden className="grid h-full w-full place-items-center rounded-full bg-primary font-sans font-extrabold text-on-primary"
+          style={{ fontSize: Math.round(size * 0.42) }}>
       {(ten || "?").trim().charAt(0).toUpperCase()}
     </span>
   );
@@ -205,7 +207,7 @@ export function Avatar({ khoa, ten, size = 96, dungYen = false, className = "" }
               </g>
             </svg>
           )
-          : <ChuCaiDau ten={ten} />}
+          : <ChuCaiDau ten={ten} size={size} />}
     </span>
   );
 }

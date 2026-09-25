@@ -200,7 +200,7 @@ function NutAvatar({ khoa, ten, nhan, dangChon, chon }) {
       onClick={chon}
       aria-pressed={dangChon}
       className={[
-        "flex cursor-pointer flex-col items-center gap-2 rounded-2xl border-0 p-3 transition",
+        "flex cursor-pointer flex-col items-center gap-2 rounded-2xl border-0 p-3 font-sans transition",
         dangChon ? "bg-primary-soft ring-2 ring-primary" : "bg-surface2 hover:bg-primary-soft",
       ].join(" ")}
     >

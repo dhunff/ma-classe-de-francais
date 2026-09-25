@@ -2,6 +2,8 @@ import React, { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Settings, Moon, Sun, LogOut, ChevronRight } from "lucide-react";
+import { Avatar } from "../shared/avatars.jsx";
+import { loadDanhTinh, SU_KIEN_DANH_TINH } from "../shared/identity.js";
 
 /* Menu bật ra từ ảnh đại diện — cửa duy nhất tới cài đặt, đổi nền và đăng
    xuất, sau khi khối hồ sơ ở chân thanh bên bị gỡ.
@@ -46,7 +48,16 @@ export default function AvatarMenu({ session, t, dark, onToggleDark, onLogout })
   const btnRef = useRef(null);
 
   const name = session?.name || "";
-  const initial = (name || "?").trim().charAt(0).toUpperCase();
+  /* Ảnh đại diện đã chọn ở trang Tài khoản. Đọc một lần khi dựng, rồi nghe
+     sự kiện để đổi ngay khi người dùng chọn con vật khác. */
+  const [avatar, setAvatar] = useState("");
+  useEffect(() => {
+    let con = true;
+    loadDanhTinh().then((d) => { if (con && d) setAvatar(d.avatar || ""); }).catch(() => {});
+    const nghe = (e) => setAvatar(e.detail?.avatar || "");
+    window.addEventListener(SU_KIEN_DANH_TINH, nghe);
+    return () => { con = false; window.removeEventListener(SU_KIEN_DANH_TINH, nghe); };
+  }, []);
   const roleLabel = session?.role === "prof" ? t("header.teacher") : t("header.student");
 
   /* `mousedown` chứ không phải `click`: nút mở cũng nghe click, nghe cùng sự
@@ -72,9 +83,9 @@ export default function AvatarMenu({ session, t, dark, onToggleDark, onLogout })
         aria-haspopup="menu"
         aria-expanded={open}
         aria-label={name || t("header.student")}
-        className="grid h-10 w-10 cursor-pointer place-items-center rounded-full border-0 bg-primary p-0 text-sm font-bold text-on-primary ring-0 ring-primary/30 transition-all duration-300 hover:ring-4 focus:outline-none focus:ring-4"
+        className="grid h-10 w-10 cursor-pointer place-items-center rounded-full border-0 bg-transparent p-0 ring-0 ring-primary/30 transition-all duration-300 hover:ring-4 focus:outline-none focus:ring-4"
       >
-        {initial}
+        <Avatar khoa={avatar} ten={name} size={40} dungYen />
       </button>
 
       <AnimatePresence>
@@ -92,9 +103,7 @@ export default function AvatarMenu({ session, t, dark, onToggleDark, onLogout })
                 onClick={() => setOpen(false)}
                 className="group flex items-center gap-3 rounded-xl p-2 no-underline transition-colors duration-200 hover:bg-surface2"
               >
-                <span aria-hidden className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-primary text-lg font-bold text-on-primary">
-                  {initial}
-                </span>
+                <Avatar khoa={avatar} ten={name} size={48} dungYen />
                 <span className="min-w-0 flex-1">
                   <span className="block truncate text-sm font-bold text-ink">{name}</span>
                   <span className="block truncate text-xs text-soft">{roleLabel}</span>

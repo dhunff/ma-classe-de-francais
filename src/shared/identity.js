@@ -159,3 +159,10 @@ export async function luuDanhTinh({ displayName, username, avatar }) {
   if (data?.ok) return { ok: true };
   return { ok: false, loi: data?.error || "khong_ro" };
 }
+
+/* Báo cho ảnh đại diện ở góc trên (AvatarMenu) rằng danh tính vừa đổi. Không
+   có kho trạng thái chung nào giữa trang Tài khoản và thanh trên, nên dùng một
+   sự kiện của window — thiếu nó thì ảnh ở góc chỉ đổi sau khi tải lại trang. */
+export const SU_KIEN_DANH_TINH = "fracile:danh-tinh";
+export const baoDanhTinhDoi = (dt) =>
+  window.dispatchEvent(new CustomEvent(SU_KIEN_DANH_TINH, { detail: dt }));
