@@ -144,7 +144,7 @@ export function ONhapUsername({ giaTri, datGiaTri, usernameHienTai, tuTro, hoiCo
    Chọn ảnh đại diện
    ════════════════════════════════════════════════════════════════════════ */
 
-export function ChonAvatar({ dangChon, chon, dong, ten }) {
+export function ChonAvatar({ dangChon, chon, dong, ten, anhGoogle = null }) {
   const t = useT();
   const hop = useRef(null);
 
@@ -183,6 +183,12 @@ export function ChonAvatar({ dangChon, chon, dong, ten }) {
               phải đoán rằng xoá ô nào đó sẽ trả lại như cũ. */}
           <NutAvatar khoa="" ten={ten} nhan={t("identity.avatar_letter")}
                      dangChon={!dangChon} chon={() => chon("")} />
+          {/* Ảnh Google — chỉ có khi tài khoản đăng nhập bằng Google. Để người đã
+              đổi sang con vật còn đường quay lại ảnh của mình. */}
+          {anhGoogle && (
+            <NutAvatar khoa={anhGoogle} ten={ten} nhan={t("identity.avatar_google")}
+                       dangChon={dangChon === anhGoogle} chon={() => chon(anhGoogle)} />
+          )}
           {DS_AVATAR.map((k) => (
             <NutAvatar key={k} khoa={k} ten={ten} nhan={tenConVat(k)}
                        dangChon={dangChon === k} chon={() => chon(k)} />

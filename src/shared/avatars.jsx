@@ -185,7 +185,12 @@ function ChuCaiDau({ ten, size }) {
  * vật cùng chớp mắt là một trang không đọc nổi. */
 export function Avatar({ khoa, ten, size = 96, dungYen = false, className = "" }) {
   const con = CON_VAT[khoa];
-  const laAnh = typeof khoa === "string" && khoa.startsWith("https://");
+  /* Ảnh thật (vd. ảnh Google, migration 099). Hỏng — hết hạn, bị chặn — thì
+     lặng lẽ về chữ cái đầu thay vì để biểu tượng ảnh vỡ. Đặt lại cờ khi đổi
+     sang ảnh khác. */
+  const [anhHong, setAnhHong] = React.useState(false);
+  React.useEffect(() => { setAnhHong(false); }, [khoa]);
+  const laAnh = typeof khoa === "string" && khoa.startsWith("https://") && !anhHong;
 
   return (
     <span
@@ -193,7 +198,10 @@ export function Avatar({ khoa, ten, size = 96, dungYen = false, className = "" }
       style={{ width: size, height: size, background: con ? con.nen : undefined }}
     >
       {laAnh
-        ? <img src={khoa} alt="" width={size} height={size} className="h-full w-full object-cover" />
+        /* referrerPolicy: máy chủ ảnh của Google hay trả 403 khi trang gửi kèm
+             Referer của một tên miền lạ. */
+          ? <img src={khoa} alt="" width={size} height={size} referrerPolicy="no-referrer"
+                 onError={() => setAnhHong(true)} className="h-full w-full object-cover" />
         : con
           ? (
             <svg viewBox="0 0 64 64" width={size} height={size} role="img"

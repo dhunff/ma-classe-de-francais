@@ -139,7 +139,7 @@ const VI = {
     bad_bat_dau_so: "Không được bắt đầu bằng chữ số",
     bad_ky_tu_la: "Chỉ dùng chữ thường không dấu, số và gạch dưới",
     avatar_pick: "Chọn ảnh đại diện", avatar_help: "Tám con vật, hoặc chữ cái đầu tên bạn.",
-    avatar_letter: "Chữ cái đầu", avatar_change: "Đổi ảnh đại diện", close: "Đóng",
+    avatar_letter: "Chữ cái đầu", avatar_google: "Ảnh Google", avatar_change: "Đổi ảnh đại diện", close: "Đóng",
     identity_title: "Danh tính",
   },
   empty: { no_submission: "Hiện tại chưa có bài nộp nào." },

@@ -4,6 +4,7 @@ import { useT } from "../../shared/i18n.jsx";
 import { loadHoSo, luuHoSo } from "../../shared/profileStore.js";
 import { emptyProfile, calculateProfileCompletion, validateProfile, LEVELS_PROFILE, GOALS_PROFILE } from "../../shared/profile.js";
 import { Avatar } from "../../shared/avatars.jsx";
+import { supabase } from "../../storageShim.js";
 import { ChonAvatar, ONhapUsername } from "./DanhTinh.jsx";
 import { loadDanhTinh, luuDanhTinh, usernameConTrong, baoDanhTinhDoi } from "../../shared/identity.js";
 import { chuanHoaUsername, kiemUsername, goiYUsername, TEN_HIEN_THI_TOI_DA }
@@ -82,6 +83,15 @@ export default function AccountPage({ name, role, email, emailVerified, onLogout
      người vận hành đọc thông báo rồi đi chạy nhầm file. */
   const [chuaCoCotHoSo, setChuaCoCotHoSo] = useState(false);
   const [moChonAvatar, setMoChonAvatar] = useState(false);
+  /* Ảnh Google trong metadata của phiên — cho ô « Ảnh Google » ở khung chọn. */
+  const [anhGoogle, setAnhGoogle] = useState(null);
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      const m = data?.user?.user_metadata ?? {};
+      const u = m.avatar_url || m.picture;
+      if (typeof u === "string" && u.startsWith("https://")) setAnhGoogle(u);
+    }).catch(() => {});
+  }, []);
   const [loiDt, setLoiDt] = useState("");
   const [loiHoSo, setLoiHoSo] = useState("");
   const oUsername = useRef(null);
@@ -474,6 +484,7 @@ export default function AccountPage({ name, role, email, emailVerified, onLogout
         <ChonAvatar
           dangChon={dt.avatar}
           ten={tenHienThi}
+          anhGoogle={anhGoogle}
           chon={async (k) => {
             const cu = dt.avatar;
             setDtK("avatar")(k); setMoChonAvatar(false); setLoiDt("");
