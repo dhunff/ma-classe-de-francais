@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from "react";
+import { useLocation } from "react-router-dom";
 import { C, S, LEVEL_COLORS, LEVEL_PASTEL, QTYPES, VF_OPTS } from "../../shared/tokens.js";
 import { load, save, del } from "../../shared/storage.js";
 import { loadPractice, saveExercise, deleteExercise } from "../../shared/exerciseStore.js";
@@ -405,7 +406,10 @@ function Teacher({ exercises, setExercises, submissions, setSubmissions, account
 
 /* ================= Accounts ================= */
 function Accounts({ accounts, setAccounts, classes, setClasses, exercises = [], submissions = [] }) {
-  const [openStudent, setOpenStudent] = useState(null);   // 📂 dossier détaillé
+  /* Ô tìm kiếm ở thanh trên mở thẳng hồ sơ qua state `moHocSinh` (25/09). */
+  const viTri = useLocation();
+  const [openStudent, setOpenStudent] = useState(() => viTri.state?.moHocSinh ?? null);   // 📂 dossier détaillé
+  useEffect(() => { if (viTri.state?.moHocSinh) setOpenStudent(viTri.state.moHocSinh); }, [viTri.key]); // eslint-disable-line react-hooks/exhaustive-deps
   const [newClass, setNewClass] = useState("");
   const addClass = async () => {
     const n = newClass.trim(); if (!n) return;

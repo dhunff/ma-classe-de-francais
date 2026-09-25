@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useLayoutEffect } from "react";
 import { createPortal } from "react-dom";
+import { useLocation } from "react-router-dom";
 import {
   Headphones, BookOpen, PenLine, Puzzle, BookA, Sparkles,
   RotateCcw, CheckCircle2, XCircle, Plus, ChevronLeft, PartyPopper, Trash2, Pencil, Copy, MoreVertical, Folder, FolderPlus, Image as ImageIcon, ChevronDown, Lightbulb, FileCheck,
@@ -103,7 +104,12 @@ function PracticeHubInner({ role = "eleve", name = "", accounts = [], onRequireL
     load(PAYMENT_KEY, null).then(setPayCfg);
   }, []);
   const [loaded, setLoaded] = useState(false);
-  const [view, setView] = useState({ page: "home" });
+  /* Ô tìm kiếm ở thanh trên mở thẳng một bài qua state `moBai` (25/09). */
+  const viTri = useLocation();
+  const [view, setView] = useState(() => (viTri.state?.moBai ? { page: "quiz", exId: viTri.state.moBai, tuTimKiem: true } : { page: "home" }));
+  useEffect(() => {
+    if (viTri.state?.moBai) setView({ page: "quiz", exId: viTri.state.moBai, tuTimKiem: true });
+  }, [viTri.key]); // eslint-disable-line react-hooks/exhaustive-deps
   const [draft, setDraft] = useState(null);
 
   useEffect(() => {
@@ -259,7 +265,17 @@ function PracticeHubInner({ role = "eleve", name = "", accounts = [], onRequireL
 
   if (view.page === "quiz") {
     const ex = exercises.find((e) => e.id === view.exId);
-    const back = () => setView({ page: "category", cat: view.cat, folder: view.folder, niveau: view.niveau });
+    const back = () => setView(view.tuTimKiem ? { page: "home" } : { page: "category", cat: view.cat, folder: view.folder, niveau: view.niveau });
+    /* Bài mở từ ô tìm kiếm có thể không nằm trong kho luyện tập (giáo viên tìm
+       thấy cả bài giao). Nói thẳng thay vì dựng một màn làm bài rỗng. */
+    if (!ex) {
+      return (
+        <div style={{ ...S.card, textAlign: "center" }}>
+          <p style={{ color: C.soft, marginTop: 0 }}>Bài này không nằm trong kho luyện tập.</p>
+          <button style={S.btn(false)} onClick={() => setView({ page: "home" })}>← {t("back")}</button>
+        </div>
+      );
+    }
 
     /* Tường phí, phía giao diện.
      *

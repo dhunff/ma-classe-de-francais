@@ -1,5 +1,6 @@
 import React from "react";
-import { Search, Menu, Moon, Sun, Lightbulb } from "lucide-react";
+import { Menu, Moon, Sun, Lightbulb } from "lucide-react";
+import SearchBox from "./SearchBox.jsx";
 import LangMenu from "./LangMenu.jsx";
 import MessagesMenu from "./MessagesMenu.jsx";
 import AvatarMenu from "./AvatarMenu.jsx";
@@ -49,17 +50,7 @@ export default function Topbar({
         )}
 
         <div className="ml-auto flex items-center gap-1.5 md:gap-2">
-          <label className="relative hidden items-center lg:flex">
-            <Search size={16} className="pointer-events-none absolute left-3 text-soft" />
-            <span className="sr-only">{t("header.search")}</span>
-            <input
-              type="search"
-              value={query}
-              onChange={(e) => onQuery(e.target.value)}
-              placeholder={t("header.search")}
-              className="h-10 w-56 rounded-md border border-solid border-line bg-surface2 pl-9 pr-3 text-sm text-ink transition-colors placeholder:text-soft focus:border-primary focus:outline-none xl:w-72"
-            />
-          </label>
+          <SearchBox session={session} query={query} onQuery={onQuery} t={t} />
 
           <LangMenu lang={lang} langs={langs} onLang={onLang} t={t} />
 

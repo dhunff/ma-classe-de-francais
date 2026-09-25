@@ -12,6 +12,7 @@ const LANGS = [
 
 const I18N = {
   vi: {
+    search: { exercises: "Bài tập", students: "Học sinh", empty: "Không tìm thấy kết quả.", error: "Không tìm được — kiểm tra kết nối rồi thử lại.", need_login: "Đăng nhập để tìm kiếm." },
     header: { title: "FRACILE", subtitle: "Lộ trình học tập · bài tập & theo dõi học sinh",
       logout: "Đăng xuất", teacher: "Giáo viên", student: "Học sinh",
       search: "Tìm bài tập, học sinh…", dark_mode: "Chuyển sang nền tối", light_mode: "Chuyển sang nền sáng",
@@ -288,6 +289,7 @@ const I18N = {
     },
   },
   fr: {
+    search: { exercises: "Exercices", students: "Élèves", empty: "Aucun résultat.", error: "Recherche impossible — vérifiez votre connexion.", need_login: "Connectez-vous pour rechercher." },
     header: { title: "FRACILE", subtitle: "Parcours d'apprentissage · exercices & suivi des élèves",
       logout: "Se déconnecter", teacher: "Professeur", student: "Élève",
       search: "Rechercher un exercice, un élève…", dark_mode: "Passer en mode sombre", light_mode: "Passer en mode clair",
@@ -554,6 +556,7 @@ const I18N = {
     },
   },
   en: {
+    search: { exercises: "Exercises", students: "Students", empty: "No results.", error: "Search failed — check your connection.", need_login: "Sign in to search." },
     header: { title: "FRACILE", subtitle: "Learning path · exercises & student tracking",
       logout: "Sign out", teacher: "Teacher", student: "Student",
       search: "Search exercises, students…", dark_mode: "Switch to dark mode", light_mode: "Switch to light mode",

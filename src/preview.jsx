@@ -123,6 +123,7 @@ const VI = {
     cards: "Thẻ ghi nhớ",
     primary: "Điều hướng chính", collapse: "Thu gọn thanh bên", expand: "Mở rộng thanh bên",
     menu: "Menu", people: "Lớp của bạn", close: "Đóng menu", open_menu: "Mở menu", tips: "Sổ tay lớp" },
+  search: { exercises: "Bài tập", students: "Học sinh", empty: "Không tìm thấy kết quả.", error: "Không tìm được — kiểm tra kết nối rồi thử lại.", need_login: "Đăng nhập để tìm kiếm." },
   header: { teacher: "Giáo viên", student: "Học sinh", logout: "Đăng xuất",
     search: "Tìm bài tập, học sinh…", dark_mode: "Chuyển sang nền tối", light_mode: "Chuyển sang nền sáng",
     dark_mode_label: "Nền tối", settings: "Cài đặt" },

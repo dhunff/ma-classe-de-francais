@@ -32,7 +32,7 @@ export default function StreakWidget({ t, fixture }) {
   return (
     <section className="w-full rounded-3xl bg-surface/80 p-5 font-sans shadow-[0_8px_30px_rgb(0,0,0,0.04)] backdrop-blur-md transition-colors duration-300">
       <div className="flex items-center gap-4">
-        <span className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-orange-50 dark:bg-orange-500/10">
+        <span className="grid h-14 w-14 shrink-0 cursor-default place-items-center rounded-2xl bg-orange-50 transition-all duration-300 ease-out hover:-translate-y-1.5 hover:shadow-lg hover:shadow-orange-500/20 motion-reduce:transition-none motion-reduce:hover:translate-y-0 dark:bg-orange-500/10">
           <Flame size={32} strokeWidth={2.2}
             className={`text-orange-500 ${d?.chuoi ? "mcf-lua fill-orange-500" : "fill-orange-500/30 opacity-60"}`} />
         </span>
@@ -61,16 +61,22 @@ export default function StreakWidget({ t, fixture }) {
             const style = xong ? { "--tre": `${0.08 * tre++}s` } : undefined;
             return (
               <div key={i} className="flex flex-col items-center gap-1.5">
+                {/* Vỏ ngoài lo hiệu ứng nổi khi rê chuột (như thẻ Flashcard); ô
+                    trong lo hoạt ảnh bật vào. Tách hai lớp vì hoạt ảnh
+                    `mcf-tich` giữ `transform` ở khung cuối và sẽ nuốt mất
+                    `hover:-translate-y` nếu đặt chung một phần tử. */}
+                <span className="flex w-full cursor-default justify-center rounded-full transition-transform duration-300 ease-out hover:-translate-y-1.5 motion-reduce:transition-none motion-reduce:hover:translate-y-0">
                 <span
                   style={style}
                   className={[
                     "grid aspect-square w-full max-w-[2.5rem] place-items-center rounded-full border-2 border-solid",
-                    xong ? "mcf-tich border-ok bg-ok-soft text-ok"
-                      : homNay ? "border-ok/50 bg-transparent text-transparent"
+                    xong ? "mcf-tich border-primary bg-primary-soft text-primary shadow-[0_6px_16px_rgb(var(--mcf-primary-rgb)/0.25)]"
+                      : homNay ? "border-primary/50 bg-transparent text-transparent"
                       : "border-line-strong bg-transparent text-transparent",
                   ].join(" ")}
                 >
                   <Check size={16} strokeWidth={3} />
+                </span>
                 </span>
                 <span className={`text-xs ${homNay ? "font-bold text-ink" : "text-soft"}`}>{ten}</span>
               </div>
