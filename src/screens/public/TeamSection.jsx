@@ -120,7 +120,7 @@ export default function TeamSection({ ds = DOI_NGU }) {
       </div>
 
       <h2 className="m-0 mt-3 text-3xl font-extrabold tracking-tight text-ink">
-        Ai đứng sau FRACILE
+        Đội ngũ xây dựng
       </h2>
 
       {/* Câu phụ nói về việc XÂY sản phẩm, không về việc dạy.

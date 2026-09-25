@@ -77,33 +77,49 @@ function OSoLieu({ so, nhan, phu }) {
   );
 }
 
+/* Nội dung chủ dự án chốt 25/09. Ba chỗ được chỉnh cho khớp sản phẩm thật
+   (quy tắc 1) — xem commit « Trang giới thiệu: nội dung mới ». */
 const LOI_THE = [
   {
     Icon: Wand2,
-    ten: "Soạn 25 câu trong hai phút",
-    mo: "Dán một khối JSON là xong cả bài: trắc nghiệm, điền từ, chia động từ, "
-      + "đúng/sai có giải thích, bảng, sắp xếp câu, tự luận. Không phải bấm từng ô.",
+    ten: "Hệ thống chấm điểm tự động, trả kết quả tức thì",
+    mo: "Không còn phải chờ đợi mỏi mòn để biết mình làm đúng hay sai. Các dạng bài "
+      + "từ trắc nghiệm, điền từ cho đến chia động từ đều được hệ thống xử lý và chấm "
+      + "điểm ngay lập tức sau cú click nộp bài. Điều này giúp học viên nhanh chóng "
+      + "nhận ra lỗi sai để khắc phục, đồng thời giúp giáo viên loại bỏ hoàn toàn gánh "
+      + "nặng chấm bài thủ công.",
   },
   {
     Icon: ScrollText,
-    ten: "Bài viết: tự chấm theo thang DELF chính thức",
-    mo: "Sáu tiêu chí, đúng lưới của kỳ thi thật — respect de la consigne, "
-      + "morphosyntaxe, cohérence… Bạn đọc lại bài mình cạnh thang chấm và biết "
-      + "mất điểm ở đâu, thay vì nhìn một con số.",
+    ten: "Chữa bài Viết minh bạch, biết rõ điểm yếu",
+    mo: "Sợ nhất là nhận về một con số điểm vô hồn và không biết mình sai ở đâu. Tại "
+      + "FRACILE, học viên tự đối chiếu từng bài Viết với thang điểm DELF chính thức "
+      + "(từ vựng, ngữ pháp, độ mạch lạc, đáp ứng đề bài) — tiêu chí nào cũng có mô tả "
+      + "từng mức điểm. Học viên biết chính xác mình mất điểm ở tiêu chí nào để lập tức "
+      + "cải thiện.",
   },
   {
     Icon: Columns2,
-    ten: "Sát phòng thi, không phải gần giống",
-    mo: "Đọc hiểu chia đôi màn hình, văn bản cuộn riêng. Nghe hiểu giới hạn hai "
-      + "lượt phát, đếm ở máy chủ. Đồng hồ chạy tiếp cả khi bạn đóng tab.",
+    ten: "Rèn luyện bản lĩnh áp lực phòng thi thật",
+    mo: "Điểm số lúc luyện tập luôn cao hơn đi thi vì bạn thiếu áp lực thời gian. "
+      + "FRACILE áp dụng bộ đếm ngược nghiêm ngặt và giới hạn số lượt phát âm thanh y "
+      + "như kỳ thi thực tế. Trải nghiệm làm bài được tối ưu hóa sự tập trung, giúp học "
+      + "viên không bị bỡ ngỡ khi bước vào phòng thi chính thức.",
   },
   {
     Icon: ClipboardList,
-    ten: "Trọn một vòng lớp học",
-    mo: "Giao bài theo kỹ năng và hạn nộp, học sinh làm, giáo viên chấm và nhận "
-      + "xét, rồi cả hai nhìn thấy tiến độ theo từng kỹ năng.",
+    ten: "Quản lý tiến độ học tập sát sao, hiệu quả",
+    mo: "Cung cấp một chu trình khép kín: Giao bài tập - Hẹn giờ nộp - Chấm điểm - "
+      + "Báo cáo thống kê. Giáo viên và trung tâm dễ dàng theo dõi được sự tiến bộ của "
+      + "từng cá nhân qua từng tuần, từ đó cam kết được chất lượng đầu ra với phụ huynh "
+      + "và học viên.",
   },
 ];
+
+/* Chưa có form tư vấn (đã gỡ 03/09, chưa có Chính sách bảo mật) — nút tư vấn
+   mở thư tới email liên hệ đang dùng ở FAQ + Điều khoản. */
+const EMAIL_TU_VAN = "mailto:contact.fracile@gmail.com?subject="
+  + encodeURIComponent("Tư vấn gói Trung tâm FRACILE");
 
 export default function LandingPage({ imgSrc = "/images/hero-preview.png" }) {
   const [so, setSo] = useState(null);
@@ -122,25 +138,25 @@ export default function LandingPage({ imgSrc = "/images/hero-preview.png" }) {
         <section className="grid items-center gap-10 lg:grid-cols-2">
           <div>
             <h1 className="m-0 text-4xl font-extrabold leading-tight tracking-tight text-ink sm:text-5xl">
-              Luyện thi DELF với đề thật,
-              <br />
-              <span className="text-primary">đồng hồ thật.</span>
+              Bứt phá điểm số DELF{" "}
+              <span className="text-primary">với hệ thống luyện thi toàn diện</span>
             </h1>
             <p className="m-0 mt-5 max-w-xl text-base leading-relaxed text-soft">
-              Trắc nghiệm, điền từ và chia động từ chấm ngay ở máy chủ. Bài viết
-              thì có thang chấm DELF chính thức để bạn tự đối chiếu từng tiêu chí,
-              thay vì nhận một con số không giải thích gì.
+              Không chỉ là một kho bài tập. FRACILE mang đến lộ trình thực hành sát
+              với đề thi thật, chấm tự động và đối chiếu theo đúng thang chấm DELF
+              chính thức. Giải pháp hoàn hảo giúp học viên tự tin thi đỗ, và giúp
+              giáo viên tối ưu hóa chất lượng giảng dạy.
             </p>
 
             <div className="mt-8 flex flex-wrap gap-3">
               <Link to="/decouvrir"
                 className="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-bold text-white no-underline shadow-lg shadow-primary/30 transition-all duration-300 ease-out hover:-translate-y-0.5 hover:shadow-2xl hover:shadow-primary/40 active:scale-[0.98] motion-reduce:transition-none">
-                Xem thư viện, không cần tài khoản <ArrowRight size={16} />
+                Trải nghiệm học thử ngay <ArrowRight size={16} />
               </Link>
-              <Link to="/login"
+              <a href={EMAIL_TU_VAN}
                 className="rounded-full border border-line bg-transparent px-6 py-3 text-sm font-bold text-ink no-underline transition-all duration-300 ease-out hover:-translate-y-0.5 hover:bg-surface2 active:scale-[0.98] motion-reduce:transition-none">
-                Đăng nhập
-              </Link>
+                Đăng ký tư vấn gói Trung tâm
+              </a>
             </div>
           </div>
 
@@ -149,10 +165,10 @@ export default function LandingPage({ imgSrc = "/images/hero-preview.png" }) {
 
         {/* ── SỐ LIỆU — ĐẾM THẬT ── */}
         <section className="mt-16 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <OSoLieu so={so?.baiTap} nhan="bài tập" phu="phân theo cấp độ và kỹ năng" />
-          <OSoLieu so={so?.cauHoi} nhan="câu hỏi" phu="bảy dạng, có lời giải thích" />
-          <OSoLieu so="4" nhan="kỹ năng DELF" phu="nghe · đọc · viết · nói" />
-          <OSoLieu so="3" nhan="ngôn ngữ giao diện" phu="Việt · Pháp · Anh" />
+          <OSoLieu so={so?.baiTap} nhan="Chuyên đề trọng tâm" phu="Được phân bổ khoa học, bám sát lộ trình từ cơ bản đến nâng cao." />
+          <OSoLieu so={so?.cauHoi} nhan="Bài tập thực hành" phu="Đa dạng thể loại, phần lớn câu đi kèm lời giải thích cặn kẽ." />
+          <OSoLieu so="4" nhan="Kỹ năng toàn diện" phu="Rèn luyện đồng đều Nghe - Nói - Đọc - Viết để không có kỹ năng nào bị bỏ lại." />
+          <OSoLieu so="1" nhan="Nền tảng duy nhất" phu="Kết nối liền mạch giữa việc tự học của học sinh và công tác quản lý của giáo viên." />
         </section>
 
         {so === null && (
