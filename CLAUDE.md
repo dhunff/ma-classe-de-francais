@@ -36,7 +36,7 @@ npm run check:hmac         # chữ ký webhook SePay + bản ghim công thức (
 npm run check:bareme       # mốc cho điểm PE, nhãn Việt, đối chiếu với SQL (457 ca)
 npm run check:identity     # luật @username + hồ sơ, JS ↔ SQL ↔ i18n (61 ca)
 npm run check:notifs       # gửi thông báo + chuông + luật RPC (38 ca)
-npm run check:hoatdong     # nhật ký theo ngày + chuỗi ngày học (28 ca)
+npm run check:hoatdong     # nhật ký theo ngày + chuỗi ngày học (32 ca)
 npm run check:sm2          # SM-2, lời giải, và đường sinh thẻ cũ PHẢI đang tắt (70 ca)
 npm run check:neo          # neo đáp án vào ngữ liệu (59 ca)
 npm run check:champe       # khuôn gợi ý chấm PE do AI trả về (38 ca)

@@ -42,7 +42,11 @@ const boChuThichSql = (src) =>
 const js = doc("../src/shared/hoatDong.js");
 const jsMa = boChuThichJs(js);
 const sql = boChuThichSql(doc("../supabase/migrations/061_hoat_dong_hang_ngay.sql"));
-const dash = boChuThichJs(doc("../src/screens/dashboard/StudentDashboard.jsx"));
+/* Từ 25/09 ô chuỗi nằm trong StreakWidget, số liệu từ RPC get_student_streak
+   (095) — tính ở máy chủ từ attempts, không nhận ngày nào từ client. */
+const dash = boChuThichJs(doc("../src/screens/dashboard/StreakWidget.jsx"));
+const hd = boChuThichJs(doc("../src/shared/hoatDong.js"));
+const sql095 = doc("../supabase/migrations/095_chuoi_ngay_tu_attempts.sql");
 const grade = boChuThichJs(doc("../src/shared/gradeRemote.js"));
 
 /* ── 1. Ngày phải là ngày ĐỊA PHƯƠNG ── */
@@ -99,10 +103,17 @@ const grade = boChuThichJs(doc("../src/shared/gradeRemote.js"));
 
 /* ── 3. Giao diện phải phân biệt BA trạng thái ── */
 {
-  t("dashboard nạp chuỗi qua docChuoiNgay", /docChuoiNgay\(\)/.test(dash), true);
-  t("phân biệt chưa-hỏi-xong", /chuoi === undefined/.test(dash), true);
-  t("phân biệt không-đọc-được", /chuoi === null/.test(dash), true);
+  t("widget nạp chuỗi qua docChuoiTuan", /docChuoiTuan\(\)/.test(dash), true);
+  t("phân biệt chưa-hỏi-xong", /d === undefined/.test(dash), true);
+  t("phân biệt không-đọc-được", /d === null/.test(dash), true);
   t("phân biệt đúng 0 ngày", /chuoi === 0/.test(dash), true);
+  t("docChuoiTuan KHÔNG gửi ngày nào lên máy chủ", /rpc\("get_student_streak"\)/.test(hd), true);
+  t("095 lấy ngày theo giờ Việt Nam, không current_date (UTC)",
+    /Asia\/Ho_Chi_Minh/.test(sql095) && !/current_date/.test(sql095.replace(/--.*$/gm, "")), true);
+  t("095 neo ở hôm nay HOẶC hôm qua — chưa học hôm nay không đứt chuỗi",
+    /hom_nay - 1 = any/.test(sql095), true);
+  t("095 thu quyền anon",
+    /revoke all on function public\.get_student_streak\(\) from public, anon;/.test(sql095), true);
 
   /* Bốn khoá i18n mới phải có ở CẢ HAI từ điển — preview.jsx có từ điển riêng,
      thiếu ở đó thì trang xem thử hiện khoá thô như `dash.streak_zero`. */

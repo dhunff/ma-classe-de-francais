@@ -148,3 +148,19 @@ body {
 /* Danh sách dài (bảng lớp): ba mươi con vật cùng chớp mắt là một trang không
    đọc nổi. Tắt hết hoạt ảnh bên trong một ảnh đại diện, kể cả mắt và tai. */
 .mcf-av-still, .mcf-av-still * { animation: none !important; }
+
+/* ── Widget chuỗi ngày (StreakWidget.jsx) ──
+   Ngọn lửa "thở": phóng nhẹ + chao nhẹ, gốc ở đáy để lửa bốc lên chứ không
+   phình từ tâm. Dấu tích bật vào lần lượt theo --tre. */
+@keyframes mcfLuaTho {
+  0%, 100% { transform: scale(1) rotate(-2deg); filter: drop-shadow(0 0 10px rgb(249 115 22 / .55)); }
+  50%      { transform: scale(1.1) rotate(2deg); filter: drop-shadow(0 0 20px rgb(249 115 22 / .85)); }
+}
+.mcf-lua { transform-origin: 50% 90%; animation: mcfLuaTho 2.4s ease-in-out infinite; }
+@keyframes mcfTichBat {
+  0% { transform: scale(0); opacity: 0; }
+  70% { transform: scale(1.15); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+.mcf-tich { animation: mcfTichBat .45s cubic-bezier(.34,1.56,.64,1) both; animation-delay: var(--tre, 0s); }
+@media (prefers-reduced-motion: reduce) { .mcf-lua, .mcf-tich { animation: none; } }

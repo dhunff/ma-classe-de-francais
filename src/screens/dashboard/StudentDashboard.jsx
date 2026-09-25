@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
-  CheckCircle, Target, Clock, Flame, PartyPopper, AlertTriangle, Inbox,
+  CheckCircle, Target, Clock, PartyPopper, AlertTriangle, Inbox,
   UserCircle, ChevronRight, Sparkles,
 } from "lucide-react";
 import { Card, StatTile, EmptyState, HeroBanner, Rise, Ring } from "./parts.jsx";
@@ -10,7 +10,7 @@ import {
   studentWorkload, averageScore, skillBreakdown, nextUp, isLate, exSkills, fmtDate,
 } from "../../shared/exercises.js";
 import { calculateProfileCompletion } from "../../shared/profile.js";
-import { docChuoiNgay } from "../../shared/hoatDong.js";
+import StreakWidget from "./StreakWidget.jsx";
 
 /* Trang chủ học sinh.
 
@@ -57,17 +57,8 @@ export default function StudentDashboard({
        số        → câu trả lời thật, kể cả 0
      Gộp "không đọc được" với "0 ngày" là nói với người vừa học ba ngày liền
      rằng họ chưa học buổi nào. */
-  const [chuoi, setChuoi] = useState(undefined);
-  useEffect(() => {
-    /* `chuoiFixture` chỉ để preview.jsx bơm số vào — cùng nếp với `practice`
-       và `practiceHistory` ngay trên. Trang xem thử không có phiên đăng nhập
-       nên lời gọi thật luôn trả null, và một ô "Không đọc được" ở đó khiến
-       người xem tưởng trang hỏng trong khi nó đang đúng. */
-    if (chuoiFixture !== undefined) { setChuoi(chuoiFixture); return; }
-    let con = true;
-    docChuoiNgay().then((v) => { if (con) setChuoi(v); });
-    return () => { con = false; };
-  }, [chuoiFixture]);
+  /* Chuỗi ngày giờ nằm trong StreakWidget (tính ở máy chủ từ attempts). */
+  const chuoi = chuoiFixture;
 
   return (
     /* Nền chuyển sắc rất nhạt để thẻ nền mờ có thứ để mờ lên trên. Bản tối
@@ -117,7 +108,7 @@ export default function StudentDashboard({
             </Rise>
           )}
 
-          <Rise delay={160} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <Rise delay={160} className="grid gap-4 sm:grid-cols-3">
             {/* Bốn mảng màu, mỗi ô một sắc. `tone` không còn tác dụng ở bản
                 gradient — chữ luôn trắng — nhưng giữ lại cho ô "đang chờ làm"
                 thì thừa, nên bỏ hẳn khỏi bốn ô này. Cảnh báo quá hạn vẫn nằm
@@ -128,16 +119,6 @@ export default function StudentDashboard({
               hint={avg === null ? t("dash.avg_empty") : undefined} />
             <StatTile gradient="fuchsia" Icon={Clock} label={t("dash.pending")} value={todo.length}
               hint={overdue ? t("dash.overdue", { n: overdue }) : undefined} />
-            {/* Ba trạng thái → ba câu khác nhau. Một ô số liệu nói "0" trong
-                khi thật ra nó không hỏi được máy chủ là một lời nói dối nhỏ mà
-                người dùng không có cách nào phát hiện. */}
-            <StatTile gradient="pink" Icon={Flame} label={t("dash.streak")}
-              value={typeof chuoi === "number" && chuoi > 0 ? chuoi : null}
-              unit={typeof chuoi === "number" && chuoi > 0 ? t("dash.streak_unit") : undefined}
-              hint={chuoi === undefined ? t("dash.streak_loading")
-                : chuoi === null ? t("dash.streak_error")
-                : chuoi === 0 ? t("dash.streak_zero")
-                : undefined} />
           </Rise>
 
           {/* Biểu đồ cột thuần CSS. Không phải "hoạt động theo ngày" như bản
@@ -200,6 +181,10 @@ export default function StudentDashboard({
 
         {/* ─────────────── Cột phải ─────────────── */}
         <div className="flex flex-col gap-4">
+
+          <Rise delay={80}>
+            <StreakWidget t={t} fixture={chuoi} />
+          </Rise>
 
           <Rise delay={120}>
             <Card>

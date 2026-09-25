@@ -56,3 +56,20 @@ export async function docChuoiNgay() {
     return null;
   }
 }
+
+/* Chuỗi ngày + 7 ô trong tuần, tính HOÀN TOÀN ở máy chủ từ `attempts`
+ * (migration 095) — không gửi ngày nào lên, đổi đồng hồ máy không có tác dụng.
+ * Trả `null` khi không hỏi được máy chủ, cùng lý do như docChuoiNgay. */
+export async function docChuoiTuan() {
+  try {
+    const { data, error } = await supabase.rpc("get_student_streak");
+    if (error || !data) return null;
+    return {
+      chuoi: Number(data.current_streak) || 0,
+      tuan: Array.isArray(data.weekly_status) ? data.weekly_status.map(Boolean) : Array(7).fill(false),
+      homNay: Number.isInteger(data.today_index) ? data.today_index : -1,
+    };
+  } catch {
+    return null;
+  }
+}

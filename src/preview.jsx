@@ -198,7 +198,7 @@ const VI = {
     avg_score: "Điểm trung bình", avg_empty: "Chưa có bài nào được chốt điểm",
     pending: "Đang chờ làm", overdue: "{n} bài đã quá hạn",
     streak: "Chuỗi ngày học",
-    streak_unit: "ngày",
+    streak_unit: "ngày", streak_days: "ngày",
     streak_loading: "Đang tính…",
     streak_error: "Không đọc được — thử tải lại trang",
     streak_zero: "Làm một bài hôm nay là bắt đầu chuỗi",
@@ -739,7 +739,7 @@ function Preview() {
             <><Controls /><StudentDashboard name="Linh" exercises={exercises} submissions={submissions}
               practice={empty ? [] : mockRecentExercises}
               practiceHistory={empty ? {} : mockPracticeHistory}
-              chuoiFixture={empty ? 0 : 5}
+              chuoiFixture={empty ? { chuoi: 0, tuan: Array(7).fill(false), homNay: 4 } : { chuoi: 5, tuan: [true, true, true, true, false, false, false], homNay: 3 }}
               profile={{ goal: "DELF B1" }} t={t} /></>
           } />
           {/* Lịch: hạn nộp lấy từ EXERCISES nên có sẵn nội dung; `events`
