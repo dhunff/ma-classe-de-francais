@@ -12,7 +12,10 @@ const LANGS = [
 
 const I18N = {
   vi: {
-    tour: { skip: "Bỏ qua", next: "Tiếp theo", back: "Quay lại", finish: "Hoàn thành",
+    tour: { skip: "Bỏ qua",
+      fc1_title: "Lọc theo kỹ năng", fc1_body: "Phân loại các bộ thẻ theo từng kỹ năng Nghe, Đọc, Viết, Nói để tập trung ôn luyện hiệu quả hơn.",
+      fc2_title: "Nội dung chuẩn xác", fc2_body: "Toàn bộ flashcard trên FRACILE đều do giáo viên trực tiếp biên soạn. Bấm vào một bộ để bắt đầu ôn tập ngay!",
+      fc3_title: "Nắm rõ khối lượng", fc3_body: "Mỗi bộ hiển thị rõ số lượng thẻ. Ôn một ít mỗi ngày — lịch ôn sẽ đưa lại đúng những thẻ bạn sắp quên.", next: "Tiếp theo", back: "Quay lại", finish: "Hoàn thành",
       cal1_title: "Tự động đồng bộ hạn nộp", cal1_body: "Mọi bài tập giáo viên giao sẽ tự động xuất hiện tại đây, để bạn không bỏ lỡ hạn nộp nào.",
       cal2_title: "Chủ động lên lịch học", cal2_body: "Bạn có thể tự thêm các khung giờ tự học, ôn thi DELF hoặc nhắc nhở cá nhân để quản lý thời gian hiệu quả.",
       cal3_title: "Theo dõi tiến trình", cal3_body: "Dễ dàng chuyển đổi giữa các tuần để xem lại lịch sử học tập hoặc lên kế hoạch cho tương lai." },
@@ -296,7 +299,10 @@ const I18N = {
     },
   },
   fr: {
-    tour: { skip: "Passer", next: "Suivant", back: "Retour", finish: "Terminer",
+    tour: { skip: "Passer",
+      fc1_title: "Filtrer par compétence", fc1_body: "Les decks sont classés par compétence — écoute, lecture, écriture, oral — pour réviser de façon ciblée.",
+      fc2_title: "Un contenu fiable", fc2_body: "Tous les flashcards de FRACILE sont rédigés par des professeurs. Cliquez sur un deck pour commencer à réviser !",
+      fc3_title: "Le volume, d'un coup d'œil", fc3_body: "Chaque deck indique son nombre de cartes. Révisez un peu chaque jour — le planning vous représente les cartes que vous êtes sur le point d'oublier.", next: "Suivant", back: "Retour", finish: "Terminer",
       cal1_title: "Échéances synchronisées", cal1_body: "Chaque devoir donné par votre professeur apparaît ici automatiquement, pour ne manquer aucune échéance.",
       cal2_title: "Planifiez vos révisions", cal2_body: "Ajoutez vos propres créneaux de travail, de révision du DELF ou de rappels personnels.",
       cal3_title: "Naviguez dans le temps", cal3_body: "Passez d'une semaine à l'autre pour revoir votre historique ou préparer la suite." },
@@ -570,7 +576,10 @@ const I18N = {
     },
   },
   en: {
-    tour: { skip: "Skip", next: "Next", back: "Back", finish: "Done",
+    tour: { skip: "Skip",
+      fc1_title: "Filter by skill", fc1_body: "Decks are grouped by skill — listening, reading, writing, speaking — so you can focus your revision.",
+      fc2_title: "Reliable content", fc2_body: "Every flashcard on FRACILE is written by a teacher. Click a deck to start reviewing!",
+      fc3_title: "Know the workload", fc3_body: "Each deck shows how many cards it holds. Review a little every day — the schedule brings back the cards you're about to forget.", next: "Next", back: "Back", finish: "Done",
       cal1_title: "Deadlines, synced automatically", cal1_body: "Every assignment your teacher sets shows up here automatically, so you never miss a deadline.",
       cal2_title: "Plan your own study time", cal2_body: "Add your own study blocks, DELF revision sessions or personal reminders to manage your time.",
       cal3_title: "Move through your weeks", cal3_body: "Switch between weeks to look back at your study history or plan ahead." },

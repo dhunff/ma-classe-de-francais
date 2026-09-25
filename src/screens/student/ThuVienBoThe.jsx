@@ -1,5 +1,7 @@
 import React, { useMemo, useState } from "react";
 import { ChevronsRight, AlertTriangle, Layers } from "lucide-react";
+import TourGioiThieu from "../../shared/TourGioiThieu.jsx";
+import { useT } from "../../shared/i18n.jsx";
 import { KY_NANG } from "../../shared/kyNang.js";
 
 /* Thư viện bộ thẻ — cột tab dọc bên trái, lưới thẻ bên phải.
@@ -60,9 +62,11 @@ function ChuCaiDau({ ten, avatar }) {
   );
 }
 
-function TheBo({ b, onMo }) {
+/* `dau`: thẻ ĐẦU TIÊN trong lưới mang id cho tour giới thiệu. */
+function TheBo({ b, onMo, dau = false }) {
   return (
     <button
+      id={dau ? "tour-fc-deck" : undefined}
       type="button"
       onClick={() => onMo(b)}
       /* preflight TẮT ⇒ `border-0` + nền rõ ràng + `text-left` + `font-sans`.
@@ -107,7 +111,7 @@ function TheBo({ b, onMo }) {
         </span>
       )}
 
-      <span className="mt-4 flex w-fit items-center gap-2 rounded-full bg-surface2 px-3 py-1.5 text-xs font-bold text-ink">
+      <span id={dau ? "tour-fc-count" : undefined} className="mt-4 flex w-fit items-center gap-2 rounded-full bg-surface2 px-3 py-1.5 text-xs font-bold text-ink">
         {b.soThe} thẻ
         <ChevronsRight size={13} className="transition-transform duration-300 group-hover:translate-x-1" />
       </span>
@@ -117,6 +121,7 @@ function TheBo({ b, onMo }) {
 
 export default function ThuVienBoThe({ ds, onMo }) {
   const [kyNang, setKyNang] = useState("CO");
+  const t = useT();
 
   const hien = useMemo(
     () => (Array.isArray(ds) ? ds.filter((b) => b.kyNang === kyNang) : []),
@@ -125,6 +130,13 @@ export default function ThuVienBoThe({ ds, onMo }) {
 
   return (
     <div className="mx-auto max-w-5xl py-6">
+      {/* Tour chỉ bắt đầu khi đã có ít nhất một bộ thẻ — hai bước sau chỉ vào
+          thẻ đầu tiên, mà Joyride lặng lẽ bỏ bước không tìm thấy đích. */}
+      <TourGioiThieu khoa="hasSeenFlashcardTour" sanSang={Array.isArray(hien) && hien.length > 0} steps={[
+        { target: "#tour-fc-tabs", title: t("tour.fc1_title"), content: t("tour.fc1_body"), placement: "right-start" },
+        { target: "#tour-fc-deck", title: t("tour.fc2_title"), content: t("tour.fc2_body") },
+        { target: "#tour-fc-count", title: t("tour.fc3_title"), content: t("tour.fc3_body") },
+      ]} />
       <h1 className="m-0 text-2xl font-extrabold tracking-tight text-ink">Flashcard</h1>
       <p className="m-0 mt-1 text-sm text-soft">
         Chọn một bộ để luyện. Các bộ này do giáo viên soạn.
@@ -132,7 +144,7 @@ export default function ThuVienBoThe({ ds, onMo }) {
 
       <div className="mt-6 flex gap-4">
         {/* ══ CỘT TAB DỌC ══ */}
-        <div className="flex shrink-0 flex-col gap-2">
+        <div id="tour-fc-tabs" className="flex shrink-0 flex-col gap-2">
           {KY_NANG.map((k) => {
             const chon = k.ma === kyNang;
             return (
@@ -182,7 +194,7 @@ export default function ThuVienBoThe({ ds, onMo }) {
             </div>
           ) : (
             <div className="grid gap-4 sm:grid-cols-2">
-              {hien.map((b) => <TheBo key={b.id} b={b} onMo={onMo} />)}
+              {hien.map((b, i) => <TheBo key={b.id} b={b} onMo={onMo} dau={i === 0} />)}
             </div>
           )}
         </div>
