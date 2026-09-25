@@ -450,32 +450,8 @@ function PracticeHubInner({ role = "eleve", name = "", accounts = [], onRequireL
         <button style={{ ...S.btn(false), marginBottom: 16 }}
           onClick={() => setView(view.folder ? { page: "autres" } : { page: "home" })}><ChevronLeft size={16} /> {t("practice.back")}</button>
 
-        {/* Tabs kỹ năng: đổi kỹ năng ngay tại chỗ, không phải quay về trang
-            chủ rồi chọn lại. Cuộn ngang trên màn hình hẹp thay vì xuống dòng,
-            để dải tab luôn cao một hàng.
-            Trạng thái đang chọn dùng cả nền, chữ đậm và aria-selected — không
-            chỉ dựa vào màu. */}
-        <div role="tablist" aria-label="Compétences"
-          className="mcf-scroll -mx-1 mb-4 flex gap-1 overflow-x-auto px-1 pb-1">
-          {CATS.map((c) => {
-            const on = view.cat === c.skill && !view.folder;
-            return (
-              <button key={c.skill} role="tab" aria-selected={on}
-                onClick={() => setView(c.skill === "__autres__"
-                  ? { page: "autres" }
-                  : { page: "category", cat: c.skill, niveau: view.niveau })}
-                className={[
-                  "flex shrink-0 items-center gap-2 rounded-full border-0 px-3.5 py-2 text-sm transition-colors",
-                  on
-                    ? "bg-primary-soft font-bold text-primary"
-                    : "bg-surface2 font-medium text-soft hover:text-ink",
-                ].join(" ")}>
-                <c.Icon size={16} />
-                {t(`skill.${c.key}`)}
-              </button>
-            );
-          })}
-        </div>
+        {/* Dải tab chọn kỹ năng ở đây đã gỡ 25/09 theo yêu cầu chủ dự án —
+            đổi kỹ năng bằng nút Quay lại về lưới thẻ. */}
 
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18, flexWrap: "wrap", gap: 10 }}>
           <h2 style={{ ...S.display, margin: 0, display: "flex", alignItems: "center", gap: 10 }}>
