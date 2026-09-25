@@ -124,6 +124,7 @@ const VI = {
     primary: "Điều hướng chính", collapse: "Thu gọn thanh bên", expand: "Mở rộng thanh bên",
     menu: "Menu", people: "Lớp của bạn", close: "Đóng menu", open_menu: "Mở menu", tips: "Sổ tay lớp" },
   search: { exercises: "Bài tập", students: "Học sinh", empty: "Không tìm thấy kết quả.", error: "Không tìm được — kiểm tra kết nối rồi thử lại.", need_login: "Đăng nhập để tìm kiếm." },
+  tour: { skip: "Bỏ qua", next: "Tiếp theo", back: "Quay lại", finish: "Hoàn thành", cal1_title: "Tự động đồng bộ hạn nộp", cal1_body: "Mọi bài tập giáo viên giao sẽ tự động xuất hiện tại đây, để bạn không bỏ lỡ hạn nộp nào.", cal2_title: "Chủ động lên lịch học", cal2_body: "Bạn có thể tự thêm các khung giờ tự học, ôn thi DELF hoặc nhắc nhở cá nhân để quản lý thời gian hiệu quả.", cal3_title: "Theo dõi tiến trình", cal3_body: "Dễ dàng chuyển đổi giữa các tuần để xem lại lịch sử học tập hoặc lên kế hoạch cho tương lai." },
   header: { teacher: "Giáo viên", student: "Học sinh", logout: "Đăng xuất",
     search: "Tìm bài tập, học sinh…", dark_mode: "Chuyển sang nền tối", light_mode: "Chuyển sang nền sáng",
     dark_mode_label: "Nền tối", settings: "Cài đặt" },

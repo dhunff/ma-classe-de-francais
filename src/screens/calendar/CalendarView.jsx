@@ -3,6 +3,7 @@ import {
   ChevronLeft, ChevronRight, CalendarDays, ClipboardList, Trash2, Plus,
 } from "lucide-react";
 import { Rise } from "../dashboard/parts.jsx";
+import CalendarTour from "./CalendarTour.jsx";
 import { load, save } from "../../shared/storage.js";
 
 /* Lịch tuần — hai khoang: dòng thời gian bên trái, bảng thao tác bên phải.
@@ -201,7 +202,7 @@ function AddEventForm({ t, defaultDate, onAdd }) {
   };
 
   return (
-    <form onSubmit={submit}
+    <form id="tour-cal-form" onSubmit={submit}
       className="rounded-3xl bg-surface p-5 shadow-[0_18px_44px_rgb(0,0,0,0.20)]">
       <h3 className="m-0 text-sm font-extrabold text-ink">{t("cal.new_event")}</h3>
 
@@ -320,6 +321,7 @@ export default function CalendarView({
     /* Nền tràn viền đã bỏ — tấm thẻ nội dung của AppLayout cấp nền rồi.
        preflight TẮT: button/input không kế thừa font — ép font-sans cho cả màn. */
     <div className="pt-2 font-sans [&_button]:font-sans [&_input]:font-sans [&_select]:font-sans">
+      <CalendarTour t={t} />
       <Rise delay={0} className="mx-auto max-w-6xl">
         <div className="flex flex-col overflow-hidden rounded-[2rem] bg-surface shadow-[0_10px_40px_rgb(0,0,0,0.07)] xl:flex-row">
 
@@ -329,6 +331,7 @@ export default function CalendarView({
               <h2 className="m-0 min-w-0 flex-1 truncate text-base font-extrabold tracking-tight text-ink">
                 {t("cal.week_of", { date: fmtLong(t, weekStart) })}
               </h2>
+              <div id="tour-cal-nav" className="flex items-center gap-3">
               <button type="button"
                 onClick={() => { const n = new Date(); setWeekStart(mondayOf(n)); setSelected(n); setMonth(n); }}
                 className="cursor-pointer rounded-full border-0 bg-surface2 px-3.5 py-1.5 font-[inherit] text-xs font-bold text-ink transition-colors hover:bg-primary-soft hover:text-primary">
@@ -344,6 +347,7 @@ export default function CalendarView({
                   <ChevronRight size={16} />
                 </button>
               </div>
+              </div>
             </header>
 
             {/* Cuộn ngang trên màn hình hẹp: bảy cột giờ không bao giờ nhét
@@ -358,7 +362,7 @@ export default function CalendarView({
             <div className="no-scrollbar overflow-x-auto">
               <div className="min-w-[680px]">
                 {/* Hàng tên thứ */}
-                <div className="grid border-0 border-b border-solid border-line"
+                <div id="tour-cal-grid" className="grid border-0 border-b border-solid border-line"
                   style={{ gridTemplateColumns: `56px repeat(7, minmax(0, 1fr))` }}>
                   <span />
                   {days.map((d) => {

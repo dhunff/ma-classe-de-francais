@@ -12,6 +12,10 @@ const LANGS = [
 
 const I18N = {
   vi: {
+    tour: { skip: "Bỏ qua", next: "Tiếp theo", back: "Quay lại", finish: "Hoàn thành",
+      cal1_title: "Tự động đồng bộ hạn nộp", cal1_body: "Mọi bài tập giáo viên giao sẽ tự động xuất hiện tại đây, để bạn không bỏ lỡ hạn nộp nào.",
+      cal2_title: "Chủ động lên lịch học", cal2_body: "Bạn có thể tự thêm các khung giờ tự học, ôn thi DELF hoặc nhắc nhở cá nhân để quản lý thời gian hiệu quả.",
+      cal3_title: "Theo dõi tiến trình", cal3_body: "Dễ dàng chuyển đổi giữa các tuần để xem lại lịch sử học tập hoặc lên kế hoạch cho tương lai." },
     todo: { empty_title: "Đã nộp hết bài!", empty_body: "Không còn bài nào đang chờ." },
     exercise: { score_result: "Bạn đạt {score}/{total} điểm", retry: "Làm lại bài", finished: "Đã xong!", perfect: "Xuất sắc — đúng tất cả!", timeout: "Hết giờ — bài đã được chấm tự động.", open_note: "{n} câu tự luận — đối chiếu với bài mẫu ở trên." },
     search: { exercises: "Bài tập", students: "Học sinh", empty: "Không tìm thấy kết quả.", error: "Không tìm được — kiểm tra kết nối rồi thử lại.", need_login: "Đăng nhập để tìm kiếm." },
@@ -292,6 +296,10 @@ const I18N = {
     },
   },
   fr: {
+    tour: { skip: "Passer", next: "Suivant", back: "Retour", finish: "Terminer",
+      cal1_title: "Échéances synchronisées", cal1_body: "Chaque devoir donné par votre professeur apparaît ici automatiquement, pour ne manquer aucune échéance.",
+      cal2_title: "Planifiez vos révisions", cal2_body: "Ajoutez vos propres créneaux de travail, de révision du DELF ou de rappels personnels.",
+      cal3_title: "Naviguez dans le temps", cal3_body: "Passez d'une semaine à l'autre pour revoir votre historique ou préparer la suite." },
     todo: { empty_title: "Tout est rendu !", empty_body: "Aucun devoir en attente." },
     exercise: { score_result: "Tu as obtenu {score}/{total}", retry: "Recommencer", finished: "Terminé !", perfect: "Excellent — sans faute !", timeout: "Temps écoulé — correction automatique effectuée.", open_note: "{n} réponse(s) libre(s) — à comparer avec le modèle ci-dessus." },
     search: { exercises: "Exercices", students: "Élèves", empty: "Aucun résultat.", error: "Recherche impossible — vérifiez votre connexion.", need_login: "Connectez-vous pour rechercher." },
@@ -562,6 +570,10 @@ const I18N = {
     },
   },
   en: {
+    tour: { skip: "Skip", next: "Next", back: "Back", finish: "Done",
+      cal1_title: "Deadlines, synced automatically", cal1_body: "Every assignment your teacher sets shows up here automatically, so you never miss a deadline.",
+      cal2_title: "Plan your own study time", cal2_body: "Add your own study blocks, DELF revision sessions or personal reminders to manage your time.",
+      cal3_title: "Move through your weeks", cal3_body: "Switch between weeks to look back at your study history or plan ahead." },
     todo: { empty_title: "All submitted!", empty_body: "Nothing is waiting for you." },
     exercise: { score_result: "You scored {score}/{total}", retry: "Try again", finished: "Done!", perfect: "Excellent — all correct!", timeout: "Time's up — graded automatically.", open_note: "{n} open answer(s) — compare with the model answer above." },
     search: { exercises: "Exercises", students: "Students", empty: "No results.", error: "Search failed — check your connection.", need_login: "Sign in to search." },
