@@ -43,7 +43,7 @@ import { AlertTriangle } from "lucide-react";
    mà trông như hoàn chỉnh còn tệ hơn một chính sách tự nói nó thiếu. */
 export const EMAIL_LIEN_HE = "contact.fracile@gmail.com";   // chủ dự án chọn 23/09/2026
 
-const CAP_NHAT = "25/09/2026";
+const CAP_NHAT = "26/09/2026";
 
 function LienHe() {
   if (EMAIL_LIEN_HE) {
@@ -97,13 +97,18 @@ const UL = ({ children }) => <ul className="m-0 list-disc space-y-1.5 pl-5">{chi
 
 /* ═══════════════════════════════ FAQ ═══════════════════════════════ */
 
+/* Mỗi câu trả lời phải đúng với mã nguồn Ở THỜI ĐIỂM NÀY — cập nhật 26/09.
+   Câu về AI chấm cố ý nói "chưa bật": Edge Function cham-pe đã dựng nhưng
+   chưa có khoá API, hứa "xin được gợi ý AI" là hứa một nút trả về lỗi. */
 const HOI_DAP = [
   ["FRACILE là gì?",
    "Một nền tảng luyện thi tiếng Pháp DELF, tập trung vào trình độ B1 và B2: bài tập theo kỹ năng, đề thi thử có đồng hồ, và thẻ Flashcard do giáo viên soạn."],
+  ["Tạo tài khoản có mất phí không?",
+   "Không. Bạn tự đăng ký bằng email hoặc tài khoản Google. Phần lớn bài tập miễn phí; một số bài nâng cao là bài trả phí và có ghi rõ trên thẻ bài."],
   ["Điểm thi thử có phải điểm DELF chính thức không?",
    "Không. Đề thi thử mô phỏng cấu trúc và thời gian của kỳ thi thật, nhưng điểm ở đây chỉ để bạn tự đánh giá. Điểm DELF chính thức chỉ do các trung tâm khảo thí được công nhận cấp."],
-  ["Ai chấm bài viết của tôi?",
-   "Chính bạn — theo thang chấm DELF chính thức, từng tiêu chí một. Bạn có thể xin thêm gợi ý chấm từ AI; gợi ý đó chỉ để đối chiếu, điểm cuối cùng do bạn chốt. Máy chấm tự động các câu trắc nghiệm, điền từ và chia động từ."],
+  ["Ai chấm bài của tôi?",
+   "Trắc nghiệm, điền từ, chia động từ, đúng/sai, bảng và sắp xếp câu được máy chủ chấm ngay khi bạn nộp. Bài viết thì bạn tự chấm theo thang DELF chính thức, từng tiêu chí một. Tính năng gợi ý chấm bài viết bằng AI đã được xây dựng nhưng CHƯA bật."],
   ["Bài nói có được chấm điểm không?",
    "Không. Kỳ thi thật chấm phần nói qua hội thoại trực tiếp với giám khảo, điều một ứng dụng tự học không mô phỏng được. Bạn ghi âm để tự nghe lại; chúng tôi không đưa ra một con số không có cơ sở."],
   ["Nghe hiểu được nghe mấy lần?",
@@ -111,11 +116,21 @@ const HOI_DAP = [
   ["Đóng trình duyệt giữa giờ thi thì sao?",
    "Đồng hồ vẫn chạy. Thời điểm bắt đầu được lưu ở máy chủ, như trong phòng thi thật."],
   ["Làm sao để mở khoá bài trả phí?",
-   "Chuyển khoản theo mã QR hiện trên bài, giữ nguyên nội dung chuyển khoản. Bài được mở khi hệ thống nhận thông báo giao dịch từ ngân hàng. Nếu đã chuyển mà bài chưa mở, hãy liên hệ để được kiểm tra."],
+   "Có hai cách. Chuyển khoản theo mã QR hiện trên bài, giữ nguyên nội dung chuyển khoản — bài mở khi hệ thống nhận thông báo giao dịch từ ngân hàng. Hoặc, nếu giáo viên cho phép, đổi XP để mở bài. Đã chuyển khoản mà bài chưa mở thì hãy liên hệ để được kiểm tra."],
+  ["XP là gì và nhận XP thế nào?",
+   "XP là điểm kinh nghiệm. Lần ĐẦU hoàn thành một bài, bạn nhận 10 XP cộng 1 XP cho mỗi điểm đạt được; làm lại cùng bài không cộng thêm. XP do máy chủ cộng, nên không tự sửa được, và dùng để đổi lấy bài trả phí có ghi giá XP."],
+  ["Chuỗi ngày học được tính ra sao?",
+   "Mỗi ngày bạn nộp ít nhất một bài thì chuỗi tăng một ngày, tính theo giờ Việt Nam. Hôm nay chưa học thì chuỗi vẫn giữ tới nửa đêm. Chuỗi tính ở máy chủ, đổi đồng hồ máy không làm chuỗi dài thêm."],
+  ["Theo dõi bạn học là gì?",
+   "Bạn nhập @username của một bạn học để theo dõi, rồi thấy hôm nay bạn đó đã học chưa. Người khác chỉ thấy tên hiển thị, @username, ảnh đại diện của bạn và việc hôm nay bạn đã học hay chưa — không thấy email hay điểm số."],
   ["Tôi có tự tạo Flashcard được không?",
-   "Không. Các bộ Flashcard do giáo viên soạn để bảo đảm nội dung chính xác. Bạn chọn một bộ theo kỹ năng rồi luyện."],
+   "Không. Các bộ Flashcard do giáo viên soạn để bảo đảm nội dung chính xác. Bạn chọn một bộ theo kỹ năng rồi luyện; lịch ôn sẽ đưa lại đúng những thẻ bạn sắp quên."],
+  ["Tôi quên mật khẩu thì làm sao?",
+   "Bấm « Quên mật khẩu? » ở trang đăng nhập và nhập email; liên kết đặt lại mật khẩu sẽ được gửi tới hộp thư của bạn. Nếu bạn đăng nhập bằng Google thì không cần mật khẩu."],
   ["Dữ liệu của tôi được dùng vào việc gì?",
    "Chỉ để vận hành việc học của bạn. Chúng tôi không bán dữ liệu và không dùng công cụ quảng cáo hay theo dõi nào. Chi tiết ở trang Chính sách bảo mật."],
+  ["Tôi muốn hỏi thêm thì liên hệ ở đâu?",
+   "Bấm « Gửi câu hỏi » trên trang giới thiệu, hoặc viết thư tới địa chỉ email ở cuối trang này."],
 ];
 
 export function TrangFAQ() {
