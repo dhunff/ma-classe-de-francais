@@ -53,3 +53,12 @@ export async function docDangTheoDoi() {
     return error ? null : (Array.isArray(data) ? data : []);
   } catch { return null; }
 }
+
+/* Bảng xếp hạng XP: mình + những người mình theo dõi (migration 105).
+   → [{ hang, id, name, username, avatar, xp, la_toi }] | null */
+export async function docBangXepHang() {
+  try {
+    const { data, error } = await supabase.rpc("get_bang_xep_hang");
+    return error ? null : (Array.isArray(data) ? data : []);
+  } catch { return null; }
+}

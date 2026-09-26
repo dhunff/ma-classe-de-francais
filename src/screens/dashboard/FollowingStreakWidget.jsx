@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Flame, UserPlus, X, Loader2, Users, UserMinus } from "lucide-react";
+import { Flame, UserPlus, X, Loader2, Users, UserMinus, Trophy, Star } from "lucide-react";
 import { Avatar } from "../../shared/avatars.jsx";
-import { docDangTheoDoi, theoDoi, boTheoDoi } from "../../shared/xp.js";
+import { docDangTheoDoi, theoDoi, boTheoDoi, docBangXepHang } from "../../shared/xp.js";
 
 /* « Đang theo dõi » — trang chủ học sinh (26/09).
  *
@@ -13,9 +13,18 @@ import { docDangTheoDoi, theoDoi, boTheoDoi } from "../../shared/xp.js";
  * Thẻ theo kiểu các thẻ trang chủ (bg-surface/80, token màu) nên tự đổi
  * sáng/tối. `fixture` chỉ để preview.jsx bơm dữ liệu. */
 
-export default function FollowingStreakWidget({ t, fixture }) {
+export default function FollowingStreakWidget({ t, fixture, bxhFixture }) {
   const [ds, setDs] = useState(undefined);   // undefined = đang tải, null = lỗi
   const [mo, setMo] = useState(false);
+  /* Tab « Xếp hạng XP » (26/09): mình + người mình theo dõi, hạng tính ở máy chủ. */
+  const [tab, setTab] = useState("hom_nay");
+  const [bxh, setBxh] = useState(undefined);
+  useEffect(() => {
+    if (tab !== "xep_hang") return;
+    if (bxhFixture !== undefined) { setBxh(bxhFixture); return; }
+    setBxh(undefined);
+    docBangXepHang().then(setBxh);
+  }, [tab, ds, bxhFixture]);
 
   const nap = () => {
     if (fixture !== undefined) { setDs(fixture); return; }
@@ -38,6 +47,38 @@ export default function FollowingStreakWidget({ t, fixture }) {
         </button>
       </div>
 
+      <div role="tablist" className="mt-3 flex gap-1 rounded-full bg-surface2 p-1">
+        {[["hom_nay", t("follow.tab_today"), Flame], ["xep_hang", t("follow.tab_rank"), Trophy]].map(([k, l, Icon]) => (
+          <button key={k} type="button" role="tab" aria-selected={tab === k} onClick={() => setTab(k)}
+            className={`flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-full border-0 px-3 py-1.5 font-sans text-xs font-bold transition-colors ${tab === k ? "bg-surface text-ink shadow-sm" : "bg-transparent text-soft hover:text-ink"}`}>
+            <Icon size={13} /> {l}
+          </button>
+        ))}
+      </div>
+
+      {tab === "xep_hang" ? (
+        <div className="mt-3">
+          {bxh === undefined ? <p className="m-0 text-sm text-soft">{t("loading")}</p>
+            : bxh === null ? <p className="m-0 text-sm text-danger">{t("follow.error")}</p>
+            : (
+              <ol className="m-0 flex list-none flex-col gap-1 p-0">
+                {bxh.map((n) => (
+                  <li key={n.id} className={`flex items-center gap-3 rounded-2xl px-2 py-2 ${n.la_toi ? "bg-primary-soft" : ""}`}>
+                    <span className={`w-6 text-center text-sm font-extrabold tabular-nums ${n.hang === 1 ? "text-amber-500" : "text-soft"}`}>{n.hang}</span>
+                    <Avatar khoa={n.avatar || ""} ten={n.name} size={32} dungYen />
+                    <span className="min-w-0 flex-1 truncate text-sm font-semibold text-ink">
+                      {n.name}{n.la_toi && <span className="ml-1 text-xs font-bold text-primary">({t("follow.you")})</span>}
+                    </span>
+                    <span className="inline-flex items-center gap-1 text-sm font-bold tabular-nums text-amber-600 dark:text-amber-400">
+                      <Star size={13} className="fill-amber-500/20 text-amber-500" /> {Number(n.xp).toLocaleString("vi-VN")}
+                    </span>
+                  </li>
+                ))}
+              </ol>
+            )}
+          {Array.isArray(bxh) && bxh.length <= 1 && <p className="m-0 mt-2 text-xs text-soft">{t("follow.rank_hint")}</p>}
+        </div>
+      ) : (
       <div className="mt-4">
         {ds === undefined ? (
           <p className="m-0 text-sm text-soft">{t("loading")}</p>
@@ -73,6 +114,7 @@ export default function FollowingStreakWidget({ t, fixture }) {
           </ul>
         )}
       </div>
+      )}
 
       {mo && <HopTheoDoi t={t} dong={() => setMo(false)} xong={() => { setMo(false); nap(); }} />}
     </section>

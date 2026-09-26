@@ -33,7 +33,7 @@ import FollowingStreakWidget from "./FollowingStreakWidget.jsx";
 /* `practice` và `practiceHistory` chỉ để preview.jsx bơm fixture vào; lúc
    chạy thật bỏ trống và các khối tự nạp từ kho. */
 export default function StudentDashboard({
-  name, exercises, submissions, profile, t, onOpen, practice, practiceHistory, chuoiFixture, theoDoiFixture,
+  name, exercises, submissions, profile, t, onOpen, practice, practiceHistory, chuoiFixture, theoDoiFixture, bxhFixture,
 }) {
   const navigate = useNavigate();
   const { assigned, done, todo } = studentWorkload(exercises, submissions, name);
@@ -188,7 +188,7 @@ export default function StudentDashboard({
           </Rise>
 
           <Rise delay={100}>
-            <FollowingStreakWidget t={t} fixture={theoDoiFixture} />
+            <FollowingStreakWidget t={t} fixture={theoDoiFixture} bxhFixture={bxhFixture} />
           </Rise>
 
           <Rise delay={120}>
