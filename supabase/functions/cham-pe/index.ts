@@ -26,11 +26,13 @@
  *
  * Biến môi trường:
  *   SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY   (Supabase tự đặt)
- *   ANTHROPIC_API_KEY                          (BẠN phải đặt — xem README dưới)
+ *   OPENAI_API_KEY                             (BẠN phải đặt — model mặc định là OpenAI)
+ *   ANTHROPIC_API_KEY                          (chỉ khi PE_AI_MODEL là model claude-…)
  *   PE_AI_MODEL                                (tuỳ chọn, mặc định ở dưới)
+ *   PE_AI_EFFORT                               (tuỳ chọn, chỉ OpenAI: none|low|medium|…, mặc định low)
  *
  * Đặt khoá:
- *   npx supabase secrets set ANTHROPIC_API_KEY=sk-ant-...
+ *   npx supabase secrets set OPENAI_API_KEY=sk-...
  *   npx supabase functions deploy cham-pe
  */
 
@@ -47,7 +49,12 @@ import { kiemGoiY, bocJSON } from "../_shared/goiYPE.js";
 /* Model mặc định. Đổi được bằng biến môi trường PE_AI_MODEL để thử model khác
    mà không phải deploy lại — nhưng GIÁ TRỊ MẶC ĐỊNH vẫn nằm trong git, để
    "đang chạy model nào" luôn có một câu trả lời đọc được từ mã nguồn. */
-const MODEL_MAC_DINH = "claude-sonnet-5";
+const MODEL_MAC_DINH = "gpt-6-luna";   // chủ dự án chọn 26/09 — rẻ nhất ($0,10 / $0,50 mỗi 1M token)
+
+/* Nhà cung cấp suy ra từ TÊN model: `gpt-…` / `o…` → OpenAI (khoá
+   OPENAI_API_KEY), còn lại → Anthropic (khoá ANTHROPIC_API_KEY). Đổi model
+   bằng PE_AI_MODEL là đổi luôn nhà cung cấp, không cần sửa mã. */
+const laOpenAI = (m: string) => /^(gpt-|o\d)/.test(m);
 
 /* Hạn mức: 6 lượt / 24 giờ / người.
  *
@@ -79,7 +86,8 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
   if (req.method !== "POST") return json(405, { ok: false, ma: "SAI_PHUONG_THUC" });
 
-  const KHOA = Deno.env.get("ANTHROPIC_API_KEY");
+  const model = Deno.env.get("PE_AI_MODEL") || MODEL_MAC_DINH;
+  const KHOA = Deno.env.get(laOpenAI(model) ? "OPENAI_API_KEY" : "ANTHROPIC_API_KEY");
   if (!KHOA) return nhacKhoa();
 
   /* ── Ai đang gọi ──
@@ -184,24 +192,41 @@ Deno.serve(async (req) => {
     "", "BÀI LÀM CỦA HỌC SINH:", copie,
   ].join("\n");
 
-  const model = Deno.env.get("PE_AI_MODEL") || MODEL_MAC_DINH;
-
   let phanHoi: Response;
   try {
-    phanHoi = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-        "x-api-key": KHOA,
-        "anthropic-version": "2023-06-01",
-      },
-      body: JSON.stringify({
-        model,
-        max_tokens: 2000,
-        system: heThong,
-        messages: [{ role: "user", content: nguoiDung }],
-      }),
-    });
+    phanHoi = laOpenAI(model)
+      /* OpenAI Chat Completions. gpt-6-luna là model suy luận: dùng
+         `max_completion_tokens` (gồm cả token suy luận — để rộng, không thì
+         hết chỗ trước khi kịp viết JSON) và `reasoning_effort`. JSON mode ép
+         đầu ra là một object JSON; kiemGoiY vẫn kiểm khuôn như với Claude. */
+      ? await fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        headers: { "content-type": "application/json", authorization: `Bearer ${KHOA}` },
+        body: JSON.stringify({
+          model,
+          max_completion_tokens: 8000,
+          reasoning_effort: Deno.env.get("PE_AI_EFFORT") || "low",
+          response_format: { type: "json_object" },
+          messages: [
+            { role: "system", content: heThong },
+            { role: "user", content: nguoiDung },
+          ],
+        }),
+      })
+      : await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          "x-api-key": KHOA,
+          "anthropic-version": "2023-06-01",
+        },
+        body: JSON.stringify({
+          model,
+          max_tokens: 2000,
+          system: heThong,
+          messages: [{ role: "user", content: nguoiDung }],
+        }),
+      });
   } catch (e) {
     return json(502, { ok: false, ma: "KHONG_GOI_DUOC", chi_tiet: String(e).slice(0, 200) });
   }
@@ -217,7 +242,9 @@ Deno.serve(async (req) => {
   }
 
   const goi = await phanHoi.json().catch(() => null);
-  const chu = goi?.content?.[0]?.text ?? "";
+  const chu = laOpenAI(model)
+    ? (goi?.choices?.[0]?.message?.content ?? "")
+    : (goi?.content?.[0]?.text ?? "");
   const tho = bocJSON(chu);
   if (!tho) return json(502, { ok: false, ma: "AI_TRA_VE_KHONG_PHAI_JSON" });
 
@@ -234,8 +261,8 @@ Deno.serve(async (req) => {
     user_id: userId,
     model,
     ket_qua: kq.goiY,
-    token_vao: goi?.usage?.input_tokens ?? null,
-    token_ra: goi?.usage?.output_tokens ?? null,
+    token_vao: goi?.usage?.input_tokens ?? goi?.usage?.prompt_tokens ?? null,
+    token_ra: goi?.usage?.output_tokens ?? goi?.usage?.completion_tokens ?? null,
   });
 
   /* Ghi hỏng thì VẪN trả gợi ý về. Học sinh đã chờ xong lời gọi và tiền token

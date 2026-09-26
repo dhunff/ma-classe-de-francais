@@ -17,7 +17,7 @@ import { AlertTriangle } from "lucide-react";
  *   · Không có công cụ quảng cáo / phân tích nào: grep gtag, analytics,
  *     posthog, mixpanel, amplitude, hotjar, pixel trên src/ + index.html = 0.
  *   · Bản ghi âm ở bucket RIÊNG `bai-noi` (migration 057).
- *   · Bài viết CHỈ gửi cho Anthropic khi học sinh bấm « Xin gợi ý »
+ *   · Bài viết CHỈ gửi cho OpenAI (26/09; trước đó Anthropic) khi học sinh bấm « Xin gợi ý »
  *     (Edge Function `cham-pe`) — không tự động.
  *   · Thanh toán là CHUYỂN KHOẢN qua mã VietQR, SePay báo về; hệ thống không
  *     bao giờ thấy số thẻ.
@@ -231,7 +231,7 @@ export function TrangBaoMat() {
         <UL>
           <li><strong>Supabase</strong> — lưu cơ sở dữ liệu, tài khoản và bản ghi âm.</li>
           <li><strong>Vercel</strong> — phục vụ trang web.</li>
-          <li><strong>Anthropic</strong> — chỉ khi bạn bấm « Xin gợi ý » ở màn tự chấm bài viết: đề bài và bài viết của bạn được gửi đi để nhận gợi ý chấm. Không có gì được gửi nếu bạn không bấm.</li>
+          <li><strong>OpenAI</strong> — chỉ khi bạn bấm « Xin gợi ý » ở màn tự chấm bài viết: đề bài và bài viết của bạn được gửi đi để nhận gợi ý chấm. Không có gì được gửi nếu bạn không bấm.</li>
           <li><strong>SePay</strong> — báo cho hệ thống khi có giao dịch chuyển khoản.</li>
           <li><strong>Google</strong> — chỉ khi bạn chọn đăng nhập bằng Google.</li>
         </UL>

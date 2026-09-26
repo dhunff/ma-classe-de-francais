@@ -1060,6 +1060,16 @@ Xem `docs/roadmap-delf.md` — có nhật ký quyết định ở §5.
   **CẦN MỘT BƯỚC TAY TRƯỚC KHI CHẠY ĐƯỢC:**
 
   ```bash
+  npx supabase secrets set OPENAI_API_KEY=sk-...
+  ```
+
+  **26/09: đổi sang OpenAI gpt-6-luna** (chủ dự án chọn — rẻ nhất). Nhà cung
+  cấp suy ra từ tên model: `gpt-…` → OpenAI + OPENAI_API_KEY, `claude-…` →
+  Anthropic + ANTHROPIC_API_KEY. Đổi lại Claude: `secrets set PE_AI_MODEL=claude-haiku-4-5`.
+  Trang /bao-mat đã ghi OpenAI là nhà xử lý.
+
+  ```bash
+  # (lệnh cũ, khi dùng Claude)
   npx supabase secrets set ANTHROPIC_API_KEY=sk-ant-...
   ```
 
@@ -1067,7 +1077,7 @@ Xem `docs/roadmap-delf.md` — có nhật ký quyết định ở §5.
   "đây là việc của người quản trị, bạn thử lại bao nhiêu lần cũng vậy" — chứ
   không phải "thử lại sau", vì thử lại sẽ không bao giờ thành công.
 
-  Model mặc định `claude-sonnet-5`, đổi được bằng biến `PE_AI_MODEL` mà không
+  Model mặc định `gpt-6-luna` (trước 26/09 là `claude-sonnet-5`), đổi được bằng biến `PE_AI_MODEL` mà không
   cần deploy. Giá trị mặc định vẫn nằm trong git để câu hỏi "đang chạy model
   nào" luôn trả lời được từ mã nguồn.
 
