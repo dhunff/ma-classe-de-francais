@@ -52,6 +52,9 @@ export const EX_META = [
      đúng vào lần đầu tiên có người dùng tính năng này. `check:exercises` nay
      có ca kiểm cho đúng chỗ đó. */
   "isPremium", "price",
+  /* xpCost: số XP để đổi lấy bài trả phí (26/09). Máy chủ đọc ĐÚNG trường này
+     trong redeem_exercise_with_xp — giá không bao giờ do client gửi lên. */
+  "xpCost",
 ];
 export const Q_COLUMNS = ["id", "type", "prompt", "explanation"];
 

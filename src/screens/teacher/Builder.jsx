@@ -347,6 +347,12 @@ function Builder({ draft, setDraft, publish, cancel, accounts, classes = [] }) {
                 value={draft.price || ""} placeholder={t("pay.price")}
                 onChange={(e) => setDraft({ ...draft, price: e.target.value })} />
             )}
+            {draft.isPremium && (
+              /* Để trống = bài này KHÔNG đổi bằng XP được, chỉ mua. */
+              <input type="number" min="1" step="10" style={{ ...S.input, marginTop: 6, width: 150 }}
+                value={draft.xpCost || ""} placeholder={t("xp.cost_ph")}
+                onChange={(e) => setDraft({ ...draft, xpCost: e.target.value === "" ? undefined : Math.max(1, Math.round(Number(e.target.value))) })} />
+            )}
           </div>
         </div>
         {/* 🖼 Image d'illustration (optionnel) — URL hoặc kéo thả file */}

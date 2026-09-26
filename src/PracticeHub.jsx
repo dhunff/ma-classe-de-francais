@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useLayoutEffect } from "react";
 import { createPortal } from "react-dom";
 import { useLocation } from "react-router-dom";
 import {
-  Headphones, BookOpen, PenLine, Puzzle, BookA, Sparkles, ArrowRight, Play, PackageOpen, Award, Target,
+  Headphones, BookOpen, PenLine, Puzzle, BookA, Sparkles, ArrowRight, Play, PackageOpen, Award, Target, Star,
   RotateCcw, CheckCircle2, XCircle, Plus, ChevronLeft, PartyPopper, Trash2, Pencil, Copy, MoreVertical, Folder, FolderPlus, Image as ImageIcon, ChevronDown, Lightbulb, FileCheck,
 } from "lucide-react";
 import { C, S, QTYPES, VF_OPTS, LEVEL_COLORS } from "./shared/tokens.js";
@@ -18,6 +18,8 @@ import SplitPane from "./screens/practice/SplitPane.jsx";
 import Builder from "./screens/teacher/Builder.jsx";
 import PaymentModal from "./screens/student/PaymentModal.jsx";
 import PremiumLockCard from "./screens/student/PremiumLockCard.jsx";
+import DoiXpModal from "./screens/practice/DoiXpModal.jsx";
+import { docXp } from "./shared/xp.js";
 import { gradeRemote } from "./shared/gradeRemote.js";
 import { PAYMENT_KEY, isPremium, hasAccess, fmtPrice, loadAccess } from "./shared/access.js";
 import ExerciseCard from "./screens/practice/ExerciseCard.jsx";
@@ -87,6 +89,10 @@ function PracticeHubInner({ role = "eleve", name = "", accounts = [], onRequireL
   const [access, setAccess] = useState([]);
   const [payCfg, setPayCfg] = useState(null);
   const [payFor, setPayFor] = useState(null);
+  /* XP (migration 101): số dư đọc từ máy chủ; `doiXp` = bài đang hỏi xác nhận đổi. */
+  const [xp, setXp] = useState(null);
+  const [doiXp, setDoiXp] = useState(null);
+  useEffect(() => { if (role === "eleve") docXp().then(setXp); }, [role]);
   /* Cờ "mở toàn quyền" của chính học sinh đang đăng nhập. RLS trong 003 cho
      mỗi người đọc đúng dòng hồ sơ của mình, nên client hỏi được mà không thấy
      hồ sơ người khác — và không tự bật lên được, vì chỉ giáo viên có quyền
@@ -449,6 +455,9 @@ function PracticeHubInner({ role = "eleve", name = "", accounts = [], onRequireL
         {payFor && <PaymentModal ex={payFor} student={name} config={payCfg}
           onClose={() => setPayFor(null)}
           onUnlocked={sauKhiMoKhoa} />}
+        {doiXp && <DoiXpModal ex={doiXp} xp={xp} t={t}
+          onClose={() => setDoiXp(null)}
+          onDone={(soDu) => { setXp(soDu); setDoiXp(null); sauKhiMoKhoa(); }} />}
         <button style={{ ...S.btn(false), marginBottom: 16 }}
           onClick={() => setView(view.folder ? { page: "autres" } : { page: "home" })}><ChevronLeft size={16} /> {t("practice.back")}</button>
 
@@ -643,6 +652,7 @@ function PracticeHubInner({ role = "eleve", name = "", accounts = [], onRequireL
                   onStart={() => { if (isGuest) return requireLogin(); setView({ page: "quiz", cat: view.cat, folder: view.folder, niveau, exId: ex.id }); }}
                   onPickMaterial={(kind) => setMatModal({ exId: ex.id, kind })}
                   onBuy={() => setPayFor(ex)}
+                  onDoiXp={role === "eleve" ? () => setDoiXp(ex) : null}
                   teacherActions={!teacher ? null : [
                     { label: "Modifier", icon: <Pencil size={16} />, onClick: () => { const c = JSON.parse(JSON.stringify(ex)); if (!c.skills || !c.skills.length) c.skills = c.skill ? [c.skill] : []; if (c.consigne === undefined) c.consigne = ""; if (!c.usageType) c.usageType = "practice"; setDraft(c); setView({ page: "builder" }); } },
                     { label: "Dupliquer", icon: <Copy size={16} />, onClick: () => duplicate(ex) },
@@ -807,7 +817,15 @@ function PracticeHubInner({ role = "eleve", name = "", accounts = [], onRequireL
     <div>
       {MatModal()}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20, flexWrap: "wrap", gap: 10 }}>
-        <h2 className="m-0 text-2xl font-extrabold tracking-tight text-ink">{t("practice.library_title")}</h2>
+        <div className="flex flex-wrap items-center gap-3">
+          <h2 className="m-0 text-2xl font-extrabold tracking-tight text-ink">{t("practice.library_title")}</h2>
+          {xp !== null && (
+            <span title={t("xp.balance_hint")}
+              className="inline-flex items-center gap-1.5 rounded-full bg-primary-soft px-3 py-1 text-sm font-bold tabular-nums text-primary">
+              <Star size={15} className="fill-current" /> {xp.toLocaleString("vi-VN")} XP
+            </span>
+          )}
+        </div>
         {teacher && topTab === "bib" && <button style={S.btn(true)} onClick={() => { setDraft(blank()); setView({ page: "builder" }); }}><Plus size={16} /> Nouvel exercice</button>}
       </div>
       {teacher && (

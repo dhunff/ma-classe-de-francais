@@ -1185,6 +1185,15 @@ Xem `docs/roadmap-delf.md` — có nhật ký quyết định ở §5.
     bẫy cho « Dans le Gard… »). `check:dapan` 33 ca, đã thử phá hai lần.
   · CÒN 5 tài khoản auth KHÔNG có hồ sơ (14 auth.users, 9 profiles) — chưa ai
     xem chúng là gì.
+- **XP · theo dõi · đổi XP lấy bài — 26/09** (migration 101–103).
+  · XP chỉ máy chủ cộng: trigger `cong_xp_khi_nop` trên `attempts` (học sinh
+    không ghi được bảng đó). Chỉ LƯỢT NỘP ĐẦU TIÊN mỗi bài: 10 + điểm. Mọi
+    cộng/trừ ghi `xp_so_cai`; 103 cộng bù lịch sử theo cùng quy tắc.
+  · Giá đổi ở `exercises.meta.xpCost` (Builder, ô cạnh giá tiền). RPC
+    `redeem_exercise_with_xp(id)` KHÔNG nhận tham số giá — đừng thêm. Mở khoá
+    ghi `exercise_access` status 'XP' để đi đúng đường `can_open_exercise`.
+  · Theo dõi một chiều `follows`, ghi/xoá chỉ qua RPC; danh sách chỉ lộ tên,
+    @username, ảnh và cờ "hôm nay đã học".
 - `s:mcf-submissions` vẫn giữ làm sao lưu, chưa xoá.
 
 

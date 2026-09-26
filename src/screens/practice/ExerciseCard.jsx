@@ -1,5 +1,5 @@
 import React, { useRef, useState } from "react";
-import { Lock, ChevronDown, BookOpen, Lightbulb, FileCheck, Folder } from "lucide-react";
+import { Lock, ChevronDown, BookOpen, Lightbulb, FileCheck, Folder, Star } from "lucide-react";
 import { FloatingLayer, KebabMenu } from "../../shared/ui.jsx";
 import { S } from "../../shared/tokens.js";
 import { fmtPrice } from "../../shared/access.js";
@@ -96,13 +96,22 @@ export default function ExerciseCard({
   onStart,
   onPickMaterial,
   onBuy,
+  onDoiXp = null,
   teacherActions = null,
 }) {
+  const giaXp = Number(ex.xpCost) > 0 ? Number(ex.xpCost) : null;
   const nQ = ex.questions?.length ?? 0;
 
   return (
     <article className="flex flex-col gap-4 rounded-3xl bg-surface p-4 shadow-sm transition-shadow hover:shadow-md sm:flex-row">
-      <Thumb ex={ex} />
+      <div className={`relative ${locked ? "opacity-75" : ""}`}>
+        <Thumb ex={ex} />
+        {locked && (
+          <span className="absolute left-2 top-2 grid h-8 w-8 place-items-center rounded-full bg-black/55 text-white">
+            <Lock size={15} />
+          </span>
+        )}
+      </div>
 
       <div className="flex min-w-0 flex-1 flex-col">
         <div className="mb-2 flex flex-wrap items-center gap-2">
@@ -116,6 +125,11 @@ export default function ExerciseCard({
           ) : locked ? (
             <span className="inline-flex items-center gap-1 rounded-full bg-warn-soft px-2.5 py-0.5 text-[11px] font-bold text-warn">
               <Lock size={11} /> {fmtPrice(ex.price)}
+            </span>
+          ) : null}
+          {premium && locked && giaXp ? (
+            <span className="inline-flex items-center gap-1 rounded-full bg-primary-soft px-2.5 py-0.5 text-[11px] font-bold text-primary">
+              <Star size={11} /> {giaXp} XP
             </span>
           ) : null}
 
@@ -143,6 +157,12 @@ export default function ExerciseCard({
         )}
 
         <div className="mt-auto flex items-center justify-end gap-2 pt-4">
+          {locked && giaXp && onDoiXp && (
+            <button type="button" onClick={onDoiXp}
+              className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-solid border-primary bg-transparent px-4 py-2.5 font-[inherit] text-sm font-bold text-primary transition-colors hover:bg-primary-soft">
+              <Star size={15} /> {t("xp.unlock_btn", { n: giaXp })}
+            </button>
+          )}
           {locked ? (
             <button
               type="button"

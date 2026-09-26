@@ -11,6 +11,7 @@ import {
 } from "../../shared/exercises.js";
 import { calculateProfileCompletion } from "../../shared/profile.js";
 import StreakWidget from "./StreakWidget.jsx";
+import FollowingStreakWidget from "./FollowingStreakWidget.jsx";
 
 /* Trang chủ học sinh.
 
@@ -32,7 +33,7 @@ import StreakWidget from "./StreakWidget.jsx";
 /* `practice` và `practiceHistory` chỉ để preview.jsx bơm fixture vào; lúc
    chạy thật bỏ trống và các khối tự nạp từ kho. */
 export default function StudentDashboard({
-  name, exercises, submissions, profile, t, onOpen, practice, practiceHistory, chuoiFixture,
+  name, exercises, submissions, profile, t, onOpen, practice, practiceHistory, chuoiFixture, theoDoiFixture,
 }) {
   const navigate = useNavigate();
   const { assigned, done, todo } = studentWorkload(exercises, submissions, name);
@@ -184,6 +185,10 @@ export default function StudentDashboard({
 
           <Rise delay={80}>
             <StreakWidget t={t} fixture={chuoi} />
+          </Rise>
+
+          <Rise delay={100}>
+            <FollowingStreakWidget t={t} fixture={theoDoiFixture} />
           </Rise>
 
           <Rise delay={120}>

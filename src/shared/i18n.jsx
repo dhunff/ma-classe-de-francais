@@ -12,6 +12,8 @@ const LANGS = [
 
 const I18N = {
   vi: {
+    follow: { title: "Đang theo dõi", follow: "Theo dõi", unfollow: "Bỏ theo dõi", studied: "Đã học hôm nay", not_yet: "Chưa học", empty: "Theo dõi bạn học bằng @username để cùng giữ chuỗi ngày học.", error: "Không tải được danh sách — thử tải lại trang.", modal_title: "Theo dõi bạn học", modal_help: "Nhập @username của người bạn muốn theo dõi.", err_khong_thay: "Không tìm thấy @username này.", err_chinh_minh: "Bạn không thể tự theo dõi chính mình.", err_chua_dang_nhap: "Phiên đăng nhập đã hết hạn.", err_mang: "Không gửi được — kiểm tra kết nối." },
+    xp: { balance: "Số dư XP", balance_hint: "XP có được khi hoàn thành bài lần đầu: 10 XP + 1 XP mỗi điểm.", unlock_btn: "Đổi {n} XP", confirm_title: "Đổi {n} XP để mở khóa bài tập này?", confirm_btn: "Xác nhận đổi", cancel: "Hủy", cost_ph: "Giá XP (tuỳ chọn)", err_khong_du_xp: "Bạn có {n} XP, cần {gia} XP.", err_khong_doi_duoc: "Bài này không đổi bằng XP được.", err_khong_co_ho_so: "Chưa tìm thấy hồ sơ của bạn.", err_chua_dang_nhap: "Phiên đăng nhập đã hết hạn.", err_mang: "Không đổi được — kiểm tra kết nối rồi thử lại." },
     tour: { skip: "Bỏ qua",
       pf1_title: "Hoàn thiện hồ sơ", pf1_body: "Chào mừng bạn đến với FRACILE! Hãy dành 1 phút điền đầy đủ thông tin để có trải nghiệm học tập tốt nhất.",
       pf2_title: "Tên định danh (username)", pf2_body: "Tạo một @username duy nhất cho riêng bạn. Giáo viên dùng tên này để tìm và nhận ra bạn.",
@@ -304,6 +306,8 @@ const I18N = {
     },
   },
   fr: {
+    follow: { title: "Abonnements", follow: "Suivre", unfollow: "Ne plus suivre", studied: "A étudié aujourd'hui", not_yet: "Pas encore", empty: "Suivez vos camarades par @nom d'utilisateur pour garder votre série ensemble.", error: "Chargement impossible — rechargez la page.", modal_title: "Suivre un camarade", modal_help: "Saisissez le @nom d'utilisateur de la personne à suivre.", err_khong_thay: "Ce @nom d'utilisateur est introuvable.", err_chinh_minh: "Vous ne pouvez pas vous suivre vous-même.", err_chua_dang_nhap: "Session expirée.", err_mang: "Envoi impossible — vérifiez votre connexion." },
+    xp: { balance: "Solde XP", balance_hint: "Des XP pour chaque exercice terminé une première fois : 10 XP + 1 XP par point.", unlock_btn: "Échanger {n} XP", confirm_title: "Échanger {n} XP pour débloquer cet exercice ?", confirm_btn: "Confirmer", cancel: "Annuler", cost_ph: "Prix en XP (facultatif)", err_khong_du_xp: "Vous avez {n} XP, il en faut {gia}.", err_khong_doi_duoc: "Cet exercice ne s'échange pas contre des XP.", err_khong_co_ho_so: "Profil introuvable.", err_chua_dang_nhap: "Session expirée.", err_mang: "Échange impossible — vérifiez votre connexion." },
     tour: { skip: "Passer",
       pf1_title: "Complétez votre profil", pf1_body: "Bienvenue sur FRACILE ! Prenez une minute pour remplir vos informations.",
       pf2_title: "Votre @nom d'utilisateur", pf2_body: "Choisissez un @nom d'utilisateur unique. C'est ainsi que votre professeur vous retrouve.",
@@ -586,6 +590,8 @@ const I18N = {
     },
   },
   en: {
+    follow: { title: "Following", follow: "Follow", unfollow: "Unfollow", studied: "Studied today", not_yet: "Not yet", empty: "Follow classmates by @username to keep your streaks going together.", error: "Couldn't load — try reloading the page.", modal_title: "Follow a classmate", modal_help: "Enter the @username of the person you want to follow.", err_khong_thay: "No user with that @username.", err_chinh_minh: "You can't follow yourself.", err_chua_dang_nhap: "Your session expired.", err_mang: "Couldn't send — check your connection." },
+    xp: { balance: "XP balance", balance_hint: "You earn XP the first time you finish an exercise: 10 XP + 1 XP per point.", unlock_btn: "Spend {n} XP", confirm_title: "Spend {n} XP to unlock this exercise?", confirm_btn: "Confirm", cancel: "Cancel", cost_ph: "XP price (optional)", err_khong_du_xp: "You have {n} XP; this needs {gia}.", err_khong_doi_duoc: "This exercise can't be unlocked with XP.", err_khong_co_ho_so: "Profile not found.", err_chua_dang_nhap: "Your session expired.", err_mang: "Couldn't unlock — check your connection." },
     tour: { skip: "Skip",
       pf1_title: "Complete your profile", pf1_body: "Welcome to FRACILE! Take a minute to fill in your details.",
       pf2_title: "Your @username", pf2_body: "Pick a unique @username. This is how your teacher finds you.",
