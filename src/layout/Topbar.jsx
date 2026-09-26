@@ -1,6 +1,7 @@
 import React from "react";
 import { Menu, Moon, Sun, Lightbulb } from "lucide-react";
 import SearchBox from "./SearchBox.jsx";
+import XPBadge from "./XPBadge.jsx";
 import LangMenu from "./LangMenu.jsx";
 import MessagesMenu from "./MessagesMenu.jsx";
 import AvatarMenu from "./AvatarMenu.jsx";
@@ -82,6 +83,8 @@ export default function Topbar({
             <>
               {/* Vạch ngăn: tách nhóm "thông báo" khỏi "tài khoản". Thuần
                   trang trí nên ẩn với trình đọc màn hình. */}
+              {/* XP ngay trước ảnh đại diện — chỉ học sinh có số dư XP. */}
+              {session?.role === "eleve" && <XPBadge t={t} />}
               <span aria-hidden className="mx-1 h-6 w-px shrink-0 bg-line" />
               <AvatarMenu
                 session={session}

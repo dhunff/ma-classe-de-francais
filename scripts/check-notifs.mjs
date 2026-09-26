@@ -186,7 +186,7 @@ const lenh = sql.split("\n").map((d) => d.replace(/--.*$/, "")).join("\n");
   t("khung xương chỉ hiện khi đang tải",
     /dangTai \? \(/.test(drop), true);
   t("trạng thái rỗng nằm SAU nhánh đang tải",
-    drop.indexOf("dangTai ? (") < drop.indexOf("Aucune notification"), true);
+    drop.indexOf("dangTai ? (") < drop.indexOf("notif.empty_title") && drop.includes("notif.empty_title"), true);
 
   /* Realtime phải huỷ đăng ký khi gỡ — thiếu thì mỗi lượt điều hướng để lại
      một kênh sống, và một thông báo sinh ra nhiều bản sao. */

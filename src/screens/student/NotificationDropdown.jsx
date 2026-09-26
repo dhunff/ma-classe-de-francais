@@ -1,5 +1,6 @@
 import React from "react";
-import { Bell, Megaphone, AlarmClock, CheckCircle2, RotateCcw } from "lucide-react";
+import { BellOff, Megaphone, AlarmClock, CheckCircle2, RotateCcw } from "lucide-react";
+import { useT } from "../../shared/i18n.jsx";
 import { thoiGianTuongDoi } from "../../shared/display.js";
 
 /* Bảng thông báo thả xuống từ chuông.
@@ -94,6 +95,7 @@ function MotThongBao({ n, onClick }) {
 }
 
 export default function NotificationDropdown({ notifs, dangTai, soChuaDoc, onDocHet, onChon }) {
+  const t = useT();
   return (
     /* `overflow-hidden` để góc bo cắt được danh sách bên trong — thiếu nó thì
        mục đầu và mục cuối tràn ra khỏi bốn góc tròn. */
@@ -101,8 +103,8 @@ export default function NotificationDropdown({ notifs, dangTai, soChuaDoc, onDoc
 
       {/* ── Đầu bảng ── */}
       <div className="flex items-center justify-between gap-3 border-0 border-b border-solid border-line px-4 py-3">
-        <h2 className="m-0 text-base font-bold text-ink">
-          Thông báo
+        <h2 className="m-0 text-sm font-semibold text-ink">
+          {t("notif.title")}
           {soChuaDoc > 0 && (
             <span className="ml-2 rounded-full bg-primary-soft px-2 py-0.5 text-xs font-bold text-primary">
               {soChuaDoc}
@@ -121,7 +123,7 @@ export default function NotificationDropdown({ notifs, dangTai, soChuaDoc, onDoc
           <button type="button" onClick={onDocHet}
             className="cursor-pointer rounded-lg border-0 bg-transparent px-2 py-1 text-sm font-semibold
                        text-primary transition-colors hover:bg-primary-soft">
-            Đánh dấu đã đọc
+            {t("notif.mark_all")}
           </button>
         )}
       </div>
@@ -145,11 +147,9 @@ export default function NotificationDropdown({ notifs, dangTai, soChuaDoc, onDoc
         </div>
       ) : notifs.length === 0 ? (
         <div className="px-4 py-10 text-center">
-          <span aria-hidden className="mx-auto grid h-12 w-12 place-items-center rounded-full bg-surface2 text-soft">
-            <Bell size={22} />
-          </span>
-          <p className="m-0 mt-3 text-sm font-bold text-ink">Aucune notification</p>
-          <p className="m-0 mt-1 text-xs text-soft">Tout est à jour ! 🎉</p>
+          <BellOff aria-hidden size={40} strokeWidth={1.5} className="mx-auto mb-3 block text-gray-300 dark:text-gray-600" />
+          <p className="m-0 text-sm font-medium text-ink">{t("notif.empty_title")}</p>
+          <p className="m-0 mt-1 text-xs text-soft">{t("notif.empty_subtitle")}</p>
         </div>
       ) : (
         /* `max-h` + `mcf-scroll`: thanh cuộn mảnh, nền trong suốt, đã có sẵn

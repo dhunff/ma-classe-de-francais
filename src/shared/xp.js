@@ -9,6 +9,10 @@ import { supabase } from "../storageShim.js";
  * Quy ước trả về như các kho khác: `null` = không hỏi được máy chủ (khác với
  * 0 XP hay danh sách rỗng — hai thứ đó là sự thật về người dùng). */
 
+/* Báo cho nhãn XP ở thanh trên đọc lại số dư (vừa nộp bài, vừa đổi XP). */
+export const SU_KIEN_XP = "fracile:xp-doi";
+export const baoXpDoi = () => { try { window.dispatchEvent(new Event(SU_KIEN_XP)); } catch { /* bỏ qua */ } };
+
 export async function docXp() {
   try {
     const { data, error } = await supabase.rpc("get_my_xp");

@@ -13,12 +13,13 @@ import { PROFILE_FIELDS, LEVELS_PROFILE, GOALS_PROFILE, emptyProfile, calculateP
 import { OrdreChip, OrdreBlocks, TableauCompare, ConfirmSubmitModal } from "./answers.jsx";
 import ReadingPanel from "../../editor/ReadingPanel.jsx";
 import RichTextEditor from "../../editor/RichTextEditor.jsx";
-import { BookOpen, GraduationCap, MoreVertical, Pencil, Copy, Trash2, RotateCcw, Image as ImageIcon, X, Phone, Calendar, Target, Briefcase, ChevronLeft, TrendingUp, Clock, CheckCircle } from "lucide-react";
+import { Bell as BellIcon, BookOpen, GraduationCap, MoreVertical, Pencil, Copy, Trash2, RotateCcw, Image as ImageIcon, X, Phone, Calendar, Target, Briefcase, ChevronLeft, TrendingUp, Clock, CheckCircle } from "lucide-react";
 import { BarChart, Bar, LineChart, Line, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from "recharts";
 
 
 /* ================= Notifications bell ================= */
 function Bell({ name, exercises, submissions }) {
+  const t = useT();
   const bellRef = useRef(null);
   const [open, setOpen] = useState(false);
   const [seen, setSeen] = useState({});
@@ -186,14 +187,15 @@ function Bell({ name, exercises, submissions }) {
 
   return (
     <div ref={bellRef} style={{ position: "relative" }}>
-      <button onClick={openBell} style={{ background: "var(--mcf-surface)", border: `1.5px solid ${C.line}`, borderRadius: 999, width: 42, height: 42, cursor: "pointer", fontSize: 17, position: "relative", boxShadow: "0 4px 12px rgba(17,24,39,.06)" }}>
-        🔔
-        {/* Huy hiệu đếm mục CHƯA ĐỌC, không phải cả danh sách. Đếm cả danh sách
-            thì đọc xong con số vẫn nằm đó mãi mãi. */}
+      <button type="button" onClick={openBell}
+        aria-label={soChuaDoc > 0 ? t("notif.bell_unread", { n: soChuaDoc }) : t("notif.title")}
+        className="relative grid h-10 w-10 cursor-pointer place-items-center rounded-full border-0 bg-transparent p-2 text-gray-600 transition-colors hover:bg-surface2 dark:text-gray-300">
+        <BellIcon size={20} />
+        {/* Chấm đỏ khi còn mục CHƯA ĐỌC (không đếm cả danh sách — đọc xong mà
+            chấm vẫn nằm đó là nói dối). Số lượng nằm trong aria-label và ở đầu
+            bảng thả xuống. */}
         {soChuaDoc > 0 && (
-          <span style={{ position: "absolute", top: -3, right: -3, background: C.danger, color: "#fff", fontSize: 10, fontWeight: 800, borderRadius: 999, minWidth: 17, height: 17, display: "flex", alignItems: "center", justifyContent: "center" }}>
-            {soChuaDoc}
-          </span>
+          <span aria-hidden className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full border border-solid border-white bg-red-500 dark:border-[#131417]" />
         )}
       </button>
       {/* `bare` để bảng tự trang trí, `animate` để hiện dần/mờ dần. Cả hai

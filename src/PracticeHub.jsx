@@ -19,7 +19,7 @@ import Builder from "./screens/teacher/Builder.jsx";
 import PaymentModal from "./screens/student/PaymentModal.jsx";
 import PremiumLockCard from "./screens/student/PremiumLockCard.jsx";
 import DoiXpModal from "./screens/practice/DoiXpModal.jsx";
-import { docXp } from "./shared/xp.js";
+import { docXp, baoXpDoi } from "./shared/xp.js";
 import { gradeRemote } from "./shared/gradeRemote.js";
 import { PAYMENT_KEY, isPremium, hasAccess, fmtPrice, loadAccess } from "./shared/access.js";
 import ExerciseCard from "./screens/practice/ExerciseCard.jsx";
@@ -183,6 +183,8 @@ function PracticeHubInner({ role = "eleve", name = "", accounts = [], onRequireL
     const prev = hist[exId] || { best: -1, tries: 0 };
     const next = { ...hist, [exId]: { best: Math.max(prev.best, score), max, tries: prev.tries + 1, at: Date.now() } };
     setHist(next); if (name) await save(`mcf-ph-${name}`, next, false);
+    /* Máy chủ vừa chấm lượt này — trigger có thể đã cộng XP. Đọc lại số dư. */
+    if (role === "eleve") { docXp().then((v) => v !== null && setXp(v)); baoXpDoi(); }
   };
 
   const addFolder = async (cat) => {
@@ -457,7 +459,7 @@ function PracticeHubInner({ role = "eleve", name = "", accounts = [], onRequireL
           onUnlocked={sauKhiMoKhoa} />}
         {doiXp && <DoiXpModal ex={doiXp} xp={xp} t={t}
           onClose={() => setDoiXp(null)}
-          onDone={(soDu) => { setXp(soDu); setDoiXp(null); sauKhiMoKhoa(); }} />}
+          onDone={(soDu) => { setXp(soDu); setDoiXp(null); baoXpDoi(); sauKhiMoKhoa(); }} />}
         <button style={{ ...S.btn(false), marginBottom: 16 }}
           onClick={() => setView(view.folder ? { page: "autres" } : { page: "home" })}><ChevronLeft size={16} /> {t("practice.back")}</button>
 
