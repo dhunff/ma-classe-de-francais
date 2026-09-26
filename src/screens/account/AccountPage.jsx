@@ -6,6 +6,7 @@ import { emptyProfile, calculateProfileCompletion, validateProfile, LEVELS_PROFI
 import { Avatar } from "../../shared/avatars.jsx";
 import { supabase } from "../../storageShim.js";
 import { ChonAvatar, ONhapUsername } from "./DanhTinh.jsx";
+import TourGioiThieu from "../../shared/TourGioiThieu.jsx";
 import { loadDanhTinh, luuDanhTinh, usernameConTrong, baoDanhTinhDoi } from "../../shared/identity.js";
 import { chuanHoaUsername, kiemUsername, goiYUsername, TEN_HIEN_THI_TOI_DA }
   from "../../shared/identityRules.js";
@@ -229,6 +230,15 @@ export default function AccountPage({ name, role, email, emailVerified, onLogout
 
   return (
     <div className="mx-auto flex max-w-6xl flex-col gap-8 lg:flex-row">
+      {/* Tour hoàn thiện hồ sơ (26/09). Chờ tải xong hồ sơ — trước đó các ô
+          chưa dựng. Bước 1 chỉ có đích khi hồ sơ CHƯA đủ 100% (huy hiệu ẩn khi
+          đã đủ), và Joyride bỏ qua bước không tìm thấy đích — đúng ý. */}
+      <TourGioiThieu khoa="hasSeenProfileTour" sanSang={!loading} steps={[
+        { target: "#tour-pf-completion", title: t("tour.pf1_title"), content: t("tour.pf1_body") },
+        { target: "#tour-pf-username", title: t("tour.pf2_title"), content: t("tour.pf2_body") },
+        { target: "#tour-pf-parcours", title: t("tour.pf3_title"), content: t("tour.pf3_body") },
+        { target: "#tour-pf-save", title: t("tour.pf4_title"), content: t("tour.pf4_body") },
+      ]} />
 
       {/* ─────────────── Cột trái: nhận dạng + điều hướng ─────────────── */}
       <aside className="w-full shrink-0 lg:w-80">
@@ -261,7 +271,7 @@ export default function AccountPage({ name, role, email, emailVerified, onLogout
             <p className="m-0 mt-0.5 text-sm text-soft">{roleLabel}</p>
 
             {pct < 100 && (
-              <p className="m-0 mt-3 rounded-full bg-primary-soft px-3 py-1 text-xs font-bold text-primary">
+              <p id="tour-pf-completion" className="m-0 mt-3 rounded-full bg-primary-soft px-3 py-1 text-xs font-bold text-primary">
                 {t("account.completed", { pct })}
               </p>
             )}
@@ -334,6 +344,7 @@ export default function AccountPage({ name, role, email, emailVerified, onLogout
                       </p>
                     </div>
 
+                    <div id="tour-pf-username">
                     <ONhapUsername
                       giaTri={dt.username}
                       datGiaTri={setDtK("username")}
@@ -341,6 +352,7 @@ export default function AccountPage({ name, role, email, emailVerified, onLogout
                       tuTro={oUsername}
                       hoiConTrong={usernameConTrong}
                     />
+                    </div>
                   </div>
 
                   {loiDt && (
@@ -418,7 +430,7 @@ export default function AccountPage({ name, role, email, emailVerified, onLogout
                 {/* Phần học tập. Bản mô tả không nhắc tới, nhưng `goal` đang
                     hiện trên trang chủ và cả ba trường nuôi thanh hoàn thiện —
                     bỏ khỏi đây là không còn chỗ nào đặt chúng. */}
-                <div className="mt-8 border-0 border-t border-solid border-line pt-6">
+                <div id="tour-pf-parcours" className="mt-8 border-0 border-t border-solid border-line pt-6">
                   <h2 className="m-0 text-sm font-bold uppercase tracking-wider text-soft">{t("account.parcours")}</h2>
                   <div className="mt-4 grid gap-5 sm:grid-cols-2">
                     <Field label={t("account.level")}>
@@ -464,7 +476,7 @@ export default function AccountPage({ name, role, email, emailVerified, onLogout
                     className="cursor-pointer rounded-xl border-0 bg-transparent px-5 py-3 font-[inherit] text-sm font-semibold text-soft transition-colors hover:bg-surface2 hover:text-ink">
                     {t("account.cancel")}
                   </button>
-                  <button type="submit" disabled={saving}
+                  <button id="tour-pf-save" type="submit" disabled={saving}
                     className="flex cursor-pointer items-center gap-2 rounded-xl border-0 bg-primary px-6 py-3 font-[inherit] text-sm font-bold text-on-primary shadow-lg shadow-primary/30 transition hover:opacity-90 disabled:opacity-60">
                     {saving && <Loader2 size={15} className="mcf-spin" />}
                     {t("account.save")}

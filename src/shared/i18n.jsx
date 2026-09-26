@@ -13,6 +13,10 @@ const LANGS = [
 const I18N = {
   vi: {
     tour: { skip: "Bỏ qua",
+      pf1_title: "Hoàn thiện hồ sơ", pf1_body: "Chào mừng bạn đến với FRACILE! Hãy dành 1 phút điền đầy đủ thông tin để có trải nghiệm học tập tốt nhất.",
+      pf2_title: "Tên định danh (username)", pf2_body: "Tạo một @username duy nhất cho riêng bạn. Giáo viên dùng tên này để tìm và nhận ra bạn.",
+      pf3_title: "Lộ trình học tập", pf3_body: "Chọn trình độ hiện tại và mục tiêu DELF/DALF của bạn, để giáo viên nắm được bạn đang ở đâu và muốn đi tới đâu.",
+      pf4_title: "Lưu thông tin", pf4_body: "Điền xong thì bấm lưu lại để bắt đầu hành trình chinh phục tiếng Pháp cùng FRACILE nhé!",
       fc1_title: "Lọc theo kỹ năng", fc1_body: "Phân loại các bộ thẻ theo từng kỹ năng Nghe, Đọc, Viết, Nói để tập trung ôn luyện hiệu quả hơn.",
       fc2_title: "Nội dung chuẩn xác", fc2_body: "Toàn bộ flashcard trên FRACILE đều do giáo viên trực tiếp biên soạn. Bấm vào một bộ để bắt đầu ôn tập ngay!",
       fc3_title: "Nắm rõ khối lượng", fc3_body: "Mỗi bộ hiển thị rõ số lượng thẻ. Ôn một ít mỗi ngày — lịch ôn sẽ đưa lại đúng những thẻ bạn sắp quên.", next: "Tiếp theo", back: "Quay lại", finish: "Hoàn thành",
@@ -300,6 +304,10 @@ const I18N = {
   },
   fr: {
     tour: { skip: "Passer",
+      pf1_title: "Complétez votre profil", pf1_body: "Bienvenue sur FRACILE ! Prenez une minute pour remplir vos informations.",
+      pf2_title: "Votre @nom d'utilisateur", pf2_body: "Choisissez un @nom d'utilisateur unique. C'est ainsi que votre professeur vous retrouve.",
+      pf3_title: "Votre parcours", pf3_body: "Indiquez votre niveau actuel et votre objectif DELF/DALF, pour que votre professeur sache où vous en êtes.",
+      pf4_title: "Enregistrez", pf4_body: "Une fois terminé, enregistrez pour commencer votre parcours avec FRACILE !",
       fc1_title: "Filtrer par compétence", fc1_body: "Les decks sont classés par compétence — écoute, lecture, écriture, oral — pour réviser de façon ciblée.",
       fc2_title: "Un contenu fiable", fc2_body: "Tous les flashcards de FRACILE sont rédigés par des professeurs. Cliquez sur un deck pour commencer à réviser !",
       fc3_title: "Le volume, d'un coup d'œil", fc3_body: "Chaque deck indique son nombre de cartes. Révisez un peu chaque jour — le planning vous représente les cartes que vous êtes sur le point d'oublier.", next: "Suivant", back: "Retour", finish: "Terminer",
@@ -577,6 +585,10 @@ const I18N = {
   },
   en: {
     tour: { skip: "Skip",
+      pf1_title: "Complete your profile", pf1_body: "Welcome to FRACILE! Take a minute to fill in your details.",
+      pf2_title: "Your @username", pf2_body: "Pick a unique @username. This is how your teacher finds you.",
+      pf3_title: "Your learning path", pf3_body: "Set your current level and your DELF/DALF goal, so your teacher knows where you stand.",
+      pf4_title: "Save", pf4_body: "When you're done, save to start your French journey with FRACILE!",
       fc1_title: "Filter by skill", fc1_body: "Decks are grouped by skill — listening, reading, writing, speaking — so you can focus your revision.",
       fc2_title: "Reliable content", fc2_body: "Every flashcard on FRACILE is written by a teacher. Click a deck to start reviewing!",
       fc3_title: "Know the workload", fc3_body: "Each deck shows how many cards it holds. Review a little every day — the schedule brings back the cards you're about to forget.", next: "Next", back: "Back", finish: "Done",
