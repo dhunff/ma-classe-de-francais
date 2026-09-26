@@ -50,7 +50,7 @@ export default function XPBadge({ t }) {
 
   if (hien === null) return null;
   return (
-    <Link to="/etudiant/entrainement" title={t("xp.topbar_title")}
+    <Link id="tour-xp-badge" to="/etudiant/entrainement" title={t("xp.topbar_title")}
       className={`flex shrink-0 items-center gap-1.5 rounded-full border border-solid border-amber-200 bg-amber-50 px-3 py-1.5 no-underline transition-all duration-300 hover:bg-amber-100 dark:border-amber-500/20 dark:bg-amber-500/10 dark:hover:bg-amber-500/20 ${nay ? "scale-110" : "scale-100"}`}>
       <Star size={16} className="fill-amber-500/20 text-amber-500 dark:text-amber-400" />
       <span className="text-sm font-bold tabular-nums text-amber-600 dark:text-amber-400">

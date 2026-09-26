@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useLayoutEffect } from "react";
 import { createPortal } from "react-dom";
 import { useLocation } from "react-router-dom";
 import {
-  Headphones, BookOpen, PenLine, Puzzle, BookA, Sparkles, ArrowRight, Play, PackageOpen, Award, Target, Star,
+  Headphones, BookOpen, PenLine, Puzzle, BookA, Sparkles, ArrowRight, Play, PackageOpen, Award, Target, Star, Users, RefreshCw, ChevronRight,
   RotateCcw, CheckCircle2, XCircle, Plus, ChevronLeft, PartyPopper, Trash2, Pencil, Copy, MoreVertical, Folder, FolderPlus, Image as ImageIcon, ChevronDown, Lightbulb, FileCheck,
 } from "lucide-react";
 import { C, S, QTYPES, VF_OPTS, LEVEL_COLORS } from "./shared/tokens.js";
@@ -20,6 +20,9 @@ import PaymentModal from "./screens/student/PaymentModal.jsx";
 import PremiumLockCard from "./screens/student/PremiumLockCard.jsx";
 import DoiXpModal from "./screens/practice/DoiXpModal.jsx";
 import { docXp, baoXpDoi } from "./shared/xp.js";
+import { Avatar } from "./shared/avatars.jsx";
+import { tenVN } from "./shared/display.js";
+import TourGioiThieu from "./shared/TourGioiThieu.jsx";
 import { gradeRemote } from "./shared/gradeRemote.js";
 import { PAYMENT_KEY, isPremium, hasAccess, fmtPrice, loadAccess } from "./shared/access.js";
 import ExerciseCard from "./screens/practice/ExerciseCard.jsx";
@@ -744,72 +747,77 @@ function PracticeHubInner({ role = "eleve", name = "", accounts = [], onRequireL
   }
 
   /* -------- 📊 Suivi des élèves (prof) -------- */
-  const fmtAt = (t) => t ? new Date(t).toLocaleString("fr-FR", { dateStyle: "short", timeStyle: "short" }) : "—";
+  const fmtAt = (ms) => ms ? new Date(ms).toLocaleString("vi-VN", { dateStyle: "short", timeStyle: "short" }) : "—";
   const AVATAR_COLORS = ["#5B4B9E", "#41608F", "#2C7573", "#327654", "#8F5E22", "#9B3D66"];
   const avatarColor = (n) => AVATAR_COLORS[[...n].reduce((a, c) => a + c.charCodeAt(0), 0) % AVATAR_COLORS.length];
 
+  /* Theo dõi luyện tập của học sinh (giáo viên) — làm lại 26/09: hàng bấm được
+     (mở/đóng chi tiết), điểm tô theo phần trăm, mọi chữ qua i18n. */
+  const tenKyNang = (sk) => { const c = CATS.find((x) => x.skill === sk); return c ? t(`skill.${c.key}`) : sk; };
+  const mauDiem = (pct) => pct >= 80 ? "bg-ok-soft text-ok" : pct >= 50 ? "bg-warn-soft text-warn" : "bg-danger-soft text-danger";
   const renderSuivi = () => {
-    if (suivi === null) return <p style={{ color: C.soft, textAlign: "center", padding: 30 }}>Chargement du suivi…</p>;
+    if (suivi === null) return <p className="m-0 py-8 text-center text-sm text-soft">{t("loading")}</p>;
     if (suivi.length === 0) return (
-      <div className="mcf-card" style={{ ...S.card, padding: 50, textAlign: "center" }}>
-        <div style={{ fontSize: 44, marginBottom: 10 }}>🏋️</div>
-        <div style={{ fontWeight: 800, fontSize: 17 }}>Aucun entraînement n'a été effectué pour le moment</div>
-        <div style={{ fontSize: 13.5, color: C.soft, marginTop: 6 }}>Dès qu'un élève termine un exercice de la bibliothèque, ses résultats apparaîtront ici.</div>
+      <div className="flex flex-col items-center rounded-3xl border border-solid border-line bg-surface px-6 py-14 text-center">
+        <Users size={40} strokeWidth={1.5} className="mb-3 text-soft" />
+        <p className="m-0 text-lg font-semibold text-ink">{t("suivi.empty_title")}</p>
+        <p className="m-0 mt-1 text-sm text-soft">{t("suivi.empty_body")}</p>
       </div>
     );
+    const soHs = new Set(suivi.map((r) => r.student)).size;
     return (
-      <div style={{ display: "grid", gap: 10 }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
-          <span style={{ fontSize: 13, color: C.soft }}>{suivi.length} entraînement{suivi.length > 1 ? "s" : ""} enregistré{suivi.length > 1 ? "s" : ""} · {new Set(suivi.map((r) => r.student)).size} élève{new Set(suivi.map((r) => r.student)).size > 1 ? "s" : ""}</span>
-          <button style={{ ...S.btn(false), padding: "6px 14px", fontSize: 12.5 }} onClick={loadSuivi}>↻ Actualiser</button>
+      <div>
+        <div className="mb-3 flex items-center justify-between gap-2">
+          <span className="text-sm text-soft">{t("suivi.summary", { n: suivi.length, hs: soHs })}</span>
+          <button type="button" onClick={loadSuivi} title={t("actions.refresh")} aria-label={t("actions.refresh")}
+            className="grid h-9 w-9 cursor-pointer place-items-center rounded-full border-0 bg-transparent text-soft transition-colors hover:bg-surface2 hover:text-ink">
+            <RefreshCw size={16} />
+          </button>
         </div>
-        {suivi.map((r) => {
-          const ex = exercises.find((e) => e.id === r.exId);
-          const pct = r.max ? Math.round((r.best / r.max) * 100) : 0;
-          const open = suiviOpen === r.id;
-          return (
-            <div key={r.id} className="mcf-card" style={{ ...S.card, padding: "16px 20px" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
-                {/* Élève */}
-                <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 140 }}>
-                  <span style={{ width: 38, height: 38, borderRadius: "50%", background: avatarColor(r.student),
-                    color: "#fff", fontWeight: 800, fontSize: 15, display: "grid", placeItems: "center", flexShrink: 0 }}>
-                    {r.student.charAt(0).toUpperCase()}
+        <ul className="m-0 flex list-none flex-col gap-3 p-0">
+          {suivi.map((r) => {
+            const ex = exercises.find((e) => e.id === r.exId);
+            const pct = r.max ? Math.round((r.best / r.max) * 100) : 0;
+            const open = suiviOpen === r.id;
+            return (
+              <li key={r.id} className="rounded-2xl border border-solid border-line bg-surface shadow-sm transition-all duration-200 hover:shadow-md dark:shadow-none">
+                <button type="button" onClick={() => setSuiviOpen(open ? null : r.id)} aria-expanded={open}
+                  className="group flex w-full cursor-pointer flex-wrap items-center gap-4 border-0 bg-transparent p-4 text-left font-sans sm:flex-nowrap">
+                  <span className="flex min-w-[10rem] items-center gap-3">
+                    <Avatar khoa="" ten={tenVN(r.student)} size={38} dungYen />
+                    <span className="truncate text-sm font-semibold text-ink">{tenVN(r.student)}</span>
                   </span>
-                  <strong style={{ fontSize: 14.5 }}>{r.student}</strong>
-                </div>
-                {/* Exercice */}
-                <div style={{ flex: 1, minWidth: 180 }}>
-                  {ex ? (
-                    <>
-                      <span style={S.badge(ex.level)}>{ex.level}</span>
-                      <strong style={{ fontSize: 14 }}>{ex.title}</strong>
-                      <div style={{ fontSize: 12, color: C.soft, marginTop: 2 }}>{exSkills(ex).join(" · ") || "—"}</div>
-                    </>
-                  ) : <em style={{ color: C.soft, fontSize: 13 }}>Exercice supprimé</em>}
-                </div>
-                {/* Score */}
-                <div style={{ textAlign: "center", minWidth: 90 }}>
-                  <div style={{ fontWeight: 800, fontSize: 16, color: pct >= 80 ? C.ok : pct >= 50 ? C.warn : C.danger }}>{r.best}/{r.max}</div>
-                  <div style={{ fontSize: 11.5, color: C.soft }}>{pct} % · {r.tries} essai{r.tries > 1 ? "s" : ""}</div>
-                </div>
-                {/* Date */}
-                <div style={{ fontSize: 12.5, color: C.soft, minWidth: 110 }}>{fmtAt(r.at)}</div>
-                <button style={{ ...S.btn(false), padding: "7px 14px", fontSize: 12.5 }}
-                  onClick={() => setSuiviOpen(open ? null : r.id)}>{open ? "Fermer" : "Voir les détails"}</button>
-              </div>
-              {open && (
-                <div style={{ marginTop: 12, borderTop: `1px solid ${C.line}`, paddingTop: 12, fontSize: 13.5, display: "grid", gap: 6 }}>
-                  <div>🏆 <strong>Meilleur score :</strong> {r.best}/{r.max} ({pct} %)</div>
-                  <div>🔁 <strong>Nombre d'essais :</strong> {r.tries}</div>
-                  <div>🕐 <strong>Dernière tentative :</strong> {fmtAt(r.at)}</div>
-                  {ex && <div>📚 <strong>Compétence(s) :</strong> {exSkills(ex).join(", ") || "—"} · <strong>Niveau :</strong> {ex.level}</div>}
-                  <div style={{ fontSize: 12, color: C.soft, marginTop: 4 }}>ℹ️ L'entraînement est corrigé instantanément côté élève : seuls le meilleur score, le nombre d'essais et la date sont conservés (pas les réponses détaillées).</div>
-                </div>
-              )}
-            </div>
-          );
-        })}
+                  <span className="min-w-0 flex-1">
+                    {ex ? (
+                      <>
+                        <span className="flex min-w-0 items-center gap-2">
+                          <span style={S.badge(ex.level)}>{ex.level}</span>
+                          <span className="line-clamp-1 text-sm font-medium text-ink">{ex.title}</span>
+                        </span>
+                        <span className="mt-0.5 block text-xs text-soft">{exSkills(ex).map(tenKyNang).join(" · ") || "—"}</span>
+                      </>
+                    ) : <em className="text-sm text-soft">{t("suivi.deleted")}</em>}
+                  </span>
+                  <span className="flex flex-col items-center">
+                    <span className={`rounded-lg px-2.5 py-1 text-sm font-bold tabular-nums ${mauDiem(pct)}`}>{r.best}/{r.max}</span>
+                    <span className="mt-1 text-[10px] uppercase tracking-wider text-soft">{t("suivi.tries", { n: r.tries })}</span>
+                  </span>
+                  <span className="w-28 shrink-0 text-right text-xs tabular-nums text-soft">{fmtAt(r.at)}</span>
+                  <ChevronRight size={18} className={`shrink-0 text-soft transition-all duration-200 group-hover:translate-x-1 group-hover:text-primary ${open ? "rotate-90 text-primary" : ""}`} />
+                </button>
+                {open && (
+                  <div className="grid gap-1.5 border-0 border-t border-solid border-line px-4 py-3 text-sm text-ink">
+                    <div><strong>{t("suivi.best")}:</strong> {r.best}/{r.max} ({pct} %)</div>
+                    <div><strong>{t("suivi.tries_label")}:</strong> {r.tries}</div>
+                    <div><strong>{t("suivi.last")}:</strong> {fmtAt(r.at)}</div>
+                    {ex && <div><strong>{t("suivi.skills")}:</strong> {exSkills(ex).map(tenKyNang).join(", ") || "—"} · <strong>{t("account.level")}:</strong> {ex.level}</div>}
+                    <p className="m-0 mt-1 text-xs text-soft">{t("suivi.note")}</p>
+                  </div>
+                )}
+              </li>
+            );
+          })}
+        </ul>
       </div>
     );
   };
@@ -831,9 +839,14 @@ function PracticeHubInner({ role = "eleve", name = "", accounts = [], onRequireL
         {teacher && topTab === "bib" && <button style={S.btn(true)} onClick={() => { setDraft(blank()); setView({ page: "builder" }); }}><Plus size={16} /> Nouvel exercice</button>}
       </div>
       {teacher && (
-        <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
-          {[["bib", "📚 Bibliothèque"], ["suivi", "📊 Suivi des élèves"]].map(([k, l]) => (
-            <button key={k} onClick={() => setTopTab(k)} style={{ ...S.btn(topTab === k), padding: "8px 16px" }}>{l}</button>
+        <div role="tablist" className="mb-5 flex gap-6 border-0 border-b border-solid border-line">
+          {[["bib", BookOpen, t("suivi.tab_library")], ["suivi", Users, t("suivi.tab_tracking")]].map(([k, Icon, l]) => (
+            <button key={k} type="button" role="tab" aria-selected={topTab === k} onClick={() => setTopTab(k)}
+              className={`-mb-px flex cursor-pointer items-center gap-2 border-0 border-b-2 border-solid bg-transparent px-1 pb-3 pt-1 font-sans text-sm transition-colors ${topTab === k
+                ? "border-primary font-semibold text-primary"
+                : "border-transparent text-soft hover:text-ink"}`}>
+              <Icon size={16} /> {l}
+            </button>
           ))}
         </div>
       )}
@@ -842,7 +855,16 @@ function PracticeHubInner({ role = "eleve", name = "", accounts = [], onRequireL
       {/* Lưới thẻ nhóm — dựng lại 25/09. Số bài và tiến độ đếm từ dữ liệu thật
           (`exercises`, `hist`), không có danh sách giả. Màu biểu tượng lấy từ
           CATS (ngoại lệ màu nhận dạng, chữ trắng trên nền đậm). */}
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+      {/* Tour XP (26/09) — chỉ học sinh, sau khi đã có số dư (nhãn XP ở thanh trên
+          dựng xong) để bước 1 có đích. */}
+      {role === "eleve" && (
+        <TourGioiThieu khoa="hasSeenXPTour" giao="xp" sanSang={xp !== null} steps={[
+          { target: "#tour-xp-badge", title: t("tour.xp1_title"), content: t("tour.xp1_body"), placement: "bottom-end" },
+          { target: "#tour-xp-grid", title: t("tour.xp2_title"), content: t("tour.xp2_body"), placement: "top" },
+          { target: "#tour-xp-start", title: t("tour.xp3_title"), content: t("tour.xp3_body"), finishLabel: t("home.start") },
+        ]} />
+      )}
+      <div id="tour-xp-grid" className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
         {CATS.map((cat, i) => {
           const list = exercises.filter((e) => inCat(e, cat.skill));
           if (cat.skill === "__autres__" && list.length === 0 && cats.length === 0 && !teacher) return null;
@@ -877,7 +899,7 @@ function PracticeHubInner({ role = "eleve", name = "", accounts = [], onRequireL
               )}
 
               <span className="mt-auto flex items-center justify-between">
-                <span className="inline-flex items-center gap-1 text-sm font-semibold text-primary">
+                <span id={i === 0 ? "tour-xp-start" : undefined} className="inline-flex items-center gap-1 text-sm font-semibold text-primary">
                   {t("home.start")}
                   <ArrowRight size={15} className="transition-transform duration-300 group-hover:translate-x-1" />
                 </span>

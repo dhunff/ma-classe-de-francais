@@ -56,4 +56,19 @@ const thoiGianTuongDoi = (ts) => {
   return new Date(t).toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit" });
 };
 
-export { AVA_COLORS, avaColor, fmtDateFR, fmtDuration, targetedAccounts, fileNameFromUrl, formatLastSeen, thoiGianTuongDoi };
+/* Tên Việt đọc theo thứ tự họ trước (26/09).
+ *
+ * Tài khoản Google đặt tên theo kiểu phương Tây: « Quốc Hùng Đỗ » (tên, rồi
+ * họ). Khi từ CUỐI là một họ Việt phổ biến mà từ ĐẦU thì không, đưa họ lên
+ * đầu: « Đỗ Quốc Hùng ». Chỉ đổi khi chắc — tên nước ngoài hay tên đã đúng thứ
+ * tự đi qua nguyên vẹn. CHỈ dùng để hiển thị, không ghi ngược vào database. */
+const HO_VIET = new Set(["nguyễn","trần","lê","phạm","hoàng","huỳnh","phan","vũ","võ","đặng","bùi","đỗ","hồ","ngô","dương","lý","đinh","trịnh","đoàn","mai","trương","lâm","cao","hà","tạ","lưu","tô","châu","vương","la"]);
+const tenVN = (ten) => {
+  const tu = String(ten || "").trim().normalize("NFC").split(/\s+/);
+  if (tu.length < 2) return String(ten || "");
+  const cuoi = tu[tu.length - 1].toLowerCase(), dau = tu[0].toLowerCase();
+  if (HO_VIET.has(cuoi) && !HO_VIET.has(dau)) return [tu[tu.length - 1], ...tu.slice(0, -1)].join(" ");
+  return tu.join(" ");
+};
+
+export { AVA_COLORS, avaColor, fmtDateFR, fmtDuration, targetedAccounts, fileNameFromUrl, formatLastSeen, thoiGianTuongDoi, tenVN };

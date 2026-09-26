@@ -21,10 +21,13 @@ import { useT } from "./i18n.jsx";
 const daXem = (k) => { try { return localStorage.getItem(k) === "true"; } catch { return false; } };
 const danhDau = (k) => { try { localStorage.setItem(k, "true"); } catch { /* bỏ qua */ } };
 
-function TooltipRieng({ index, size, step, isLastStep, backProps, primaryProps, skipProps, closeProps, tooltipProps, t }) {
+/* `giao`: "xp" cho tour về XP — viền + nút hổ phách, cùng tông nhãn XP trên
+   thanh trên. Mặc định là màu thương hiệu. */
+function TooltipRieng({ index, size, step, isLastStep, backProps, primaryProps, skipProps, closeProps, tooltipProps, t, giao }) {
+  const xp = giao === "xp";
   return (
     <div {...tooltipProps}
-      className="w-[min(22rem,calc(100vw-2rem))] rounded-2xl border border-solid border-line bg-surface p-5 font-sans shadow-2xl">
+      className={`relative w-[min(22rem,calc(100vw-2rem))] overflow-hidden rounded-2xl border border-solid bg-surface p-5 font-sans shadow-2xl ${xp ? "border-amber-100 ring-1 ring-amber-500/20 dark:border-amber-900/30" : "border-line"}`}>
       <div className="flex items-start justify-between gap-3">
         <h3 className="m-0 text-lg font-bold text-ink">{step.title}</h3>
         <button {...closeProps} type="button" aria-label={t("identity.close")}
@@ -49,15 +52,17 @@ function TooltipRieng({ index, size, step, isLastStep, backProps, primaryProps, 
           </button>
         )}
         <button {...primaryProps} type="button"
-          className="cursor-pointer rounded-xl border-0 bg-primary px-4 py-2 font-sans text-sm font-medium text-white transition-opacity hover:opacity-90">
-          {isLastStep ? t("tour.finish") : t("tour.next")}
+          className={xp
+            ? "cursor-pointer rounded-xl border-0 bg-amber-500 px-4 py-2 font-sans text-sm font-bold text-white shadow-md transition-colors hover:bg-amber-600"
+            : "cursor-pointer rounded-xl border-0 bg-primary px-4 py-2 font-sans text-sm font-medium text-white transition-opacity hover:opacity-90"}>
+          {isLastStep ? (step.finishLabel ?? t("tour.finish")) : t("tour.next")}
         </button>
       </div>
     </div>
   );
 }
 
-export default function TourGioiThieu({ khoa, steps, sanSang = true }) {
+export default function TourGioiThieu({ khoa, steps, sanSang = true, giao }) {
   const t = useT();
   const [chay, setChay] = useState(false);
 
@@ -85,7 +90,7 @@ export default function TourGioiThieu({ khoa, steps, sanSang = true }) {
       showSkipButton
       disableOverlayClose
       callback={xuLy}
-      tooltipComponent={(p) => <TooltipRieng {...p} t={t} />}
+      tooltipComponent={(p) => <TooltipRieng {...p} t={t} giao={giao} />}
       styles={{
         options: { zIndex: 10000, arrowColor: "var(--mcf-surface)" },
         /* Không dùng backdrop-filter: nó làm mờ CẢ vùng được chiếu sáng. */
