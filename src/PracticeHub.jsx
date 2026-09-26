@@ -263,12 +263,16 @@ function PracticeHubInner({ role = "eleve", name = "", accounts = [], onRequireL
              hai nơi hoặc biến mất khỏi cả hai. Giờ chỉ là cột `store` đổi giá
              trị trong đúng một dòng: một lệnh ghi, không có trạng thái lửng. */
           const r = await saveExercise({ ...draft, folderId: undefined }, "assignment");
-          if (!r.ok) { alert("❌ Échec de l'enregistrement."); return; }
+          if (!r.ok) { alert(`${t("builder.save_failed")}
+
+${r.error?.message ?? ""}`); return; }
           setExercises((prev) => prev.filter((e) => e.id !== draft.id));
           setView({ page: "home" }); return;
         }
         const r = await saveExercise(draft, "practice");
-        if (!r.ok) { alert("❌ Échec de l'enregistrement."); return; }
+        if (!r.ok) { alert(`${t("builder.save_failed")}
+
+${r.error?.message ?? ""}`); return; }
         const others = exercises.filter((e) => e.id !== draft.id);
         setExercises([...others, draft].sort((a, b) => a.createdAt - b.createdAt));
         setView(draft.customCat ? { page: "category", cat: "__autres__", folder: draft.customCat } : { page: "category", cat: catOf(draft) });

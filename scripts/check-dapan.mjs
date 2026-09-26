@@ -217,16 +217,20 @@ for (const [tep, phep] of Object.entries(DUOC_PHEP)) {
   t("giáo viên nhận neo khi mở bài", /supabase\.rpc\("get_neo_giao_vien"/.test(st), true);
   t("neo được đặt vào payload.evidence để toRows ghi lại",
     /\.evidence = ev;/.test(st), true);
-  t("saveExercise TỪ CHỐI khi tải thiếu đáp án hoặc neo — và từ chối TRƯỚC lệnh xoá",
-    st.indexOf("if (thieuDuLieuAn) {") > -1
-      && st.indexOf("if (thieuDuLieuAn) {") < st.indexOf('.from("questions").delete()'), true);
+  /* Từ 26/09 câu hỏi ghi qua RPC luu_cau_hoi (104). Mốc "trước khi ghi" giờ
+     là lời gọi RPC đó. */
+  const GHI = 'supabase.rpc("luu_cau_hoi"';
+  t("saveExercise TỪ CHỐI khi tải thiếu đáp án hoặc neo — và từ chối TRƯỚC khi ghi",
+    st.indexOf("if (thieuDuLieuAn) {") > -1 && st.indexOf(GHI) > -1
+      && st.indexOf("if (thieuDuLieuAn) {") < st.indexOf(GHI), true);
   /* answers.question_id là ON DELETE CASCADE: xoá-rồi-chèn = xoá lịch sử
-     trả lời của học sinh mỗi lần Lưu (mất 70 dòng thật trước 24/09). */
-  t("saveExercise ghi đè câu hỏi theo id (upsert), không xoá hết rồi chèn",
-    /\.from\("questions"\)\.upsert\(qRows/.test(st) && !/\.from\("questions"\)\.insert\(/.test(st), true);
-  t("lệnh xoá câu hỏi chỉ xoá câu KHÔNG còn trong bài, và chạy SAU upsert",
-    /\.not\("id", "in"/.test(st)
-      && st.indexOf('.from("questions").upsert(') < st.indexOf('.from("questions").delete()'), true);
+     trả lời (mất 70 dòng thật trước 24/09). Và upsert TỪ CLIENT hỏng vì
+     answer_key/evidence không cấp SELECT (mọi lần Lưu hỏng 24–26/09). */
+  t("không còn ghi thẳng bảng questions từ client (insert/upsert/delete)",
+    /\.from\("questions"\)\.(insert|upsert|delete)\(/.test(st), false);
+  const sql104 = doc("supabase/migrations/104_luu_cau_hoi.sql");
+  t("104 ghi đè theo id và chỉ xoá câu KHÔNG còn trong bài",
+    /on conflict \(id\) do update/.test(sql104) && /not \(id = any\(ids\)\)/.test(sql104), true);
   t("cờ thiếu dữ liệu được đặt lại mỗi lần tải", /thieuDuLieuAn = null;\s*\n/.test(st), true);
 
   const { toRows: tr } = await import("../src/shared/exerciseMap.js");
@@ -236,9 +240,9 @@ for (const [tep, phep] of Object.entries(DUOC_PHEP)) {
   t("toRows ghi neo vào cột evidence", dong.evidence?.trich, "doan");
   t("neo KHÔNG lọt vào payload (anon đọc được payload)", "evidence" in dong.payload, false);
 
-  t("saveExercise bắt lỗi toRows TRƯỚC lệnh xoá",
+  t("saveExercise bắt lỗi toRows TRƯỚC khi ghi",
     st.indexOf("try { ({ exRow, qRows } = toRows(") > -1
-      && st.indexOf("try { ({ exRow, qRows } = toRows(") < st.indexOf('.from("questions").delete()'), true);
+      && st.indexOf("try { ({ exRow, qRows } = toRows(") < st.indexOf(GHI), true);
 }
 
 console.log(fail ? `\n${pass} đạt, ${fail} hỏng` : `\n${pass} đạt, 0 hỏng`);

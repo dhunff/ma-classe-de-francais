@@ -489,6 +489,15 @@ Kèm hai sửa:
 Đo trên hàm `grade` đã deploy: xếp đúng → đúng; đổi chỗ hai « de » → đúng;
 xếp sai → sai, kèm câu đúng.
 
+**`upsert` (INSERT … ON CONFLICT DO UPDATE) đòi quyền SELECT trên cột bị
+ghi.** 24/09 tôi đổi saveExercise sang `upsert` để khỏi xoá lịch sử trả lời;
+vì `answer_key`/`evidence` cố ý không cấp SELECT, MỌI lần bấm Lưu bài hỏng
+(42501) suốt 24–26/09 — chủ dự án phát hiện qua alert « Échec de
+l'enregistrement » không kèm lý do. Phép thử lúc sửa chỉ ghi các cột KHÔNG bị
+khoá nên xanh. Sửa: RPC `luu_cau_hoi` (104), một transaction. Bài học kép:
+thử quyền thì thử ĐÚNG tập cột ứng dụng gửi; và thông báo lỗi phải kèm
+`error.message`, không chỉ một câu chung.
+
 **curl KHÔNG kiểm được CORS.** curl gửi thẳng, không làm preflight. Hàm `grade`
 khai thiếu `x-client-info` — header mà `functions.invoke` LUÔN gửi — nên curl
 trả 200 với điểm đúng, còn ứng dụng bị trình duyệt huỷ request trước khi nó rời

@@ -4,7 +4,14 @@ import { SKILLS, exSkills } from "../../shared/exercises.js";
 import { uid, stripHtml, autoQ, tableauCells, fillAccepted } from "../../shared/questions.js";
 import { useT } from "../../shared/i18n.jsx";
 import RichTextEditor from "../../editor/RichTextEditor.jsx";
-import { Image as ImageIcon, X, Trash2 } from "lucide-react";
+import { Image as ImageIcon, X, Trash2, FileText, Target, Users, Check, Copy } from "lucide-react";
+
+/* Tên kỹ năng hiển thị theo ngôn ngữ giao diện. Giá trị LƯU vẫn là chuỗi Pháp
+   trong SKILLS (dữ liệu cũ + bộ chấm đọc chúng) — chỉ nhãn là dịch. */
+const SKILL_KEY = {
+  "Grammaire": "grammar", "Vocabulaire": "vocab", "Écoute": "listening", "Lecture": "reading",
+  "Production écrite": "writing", "Production orale": "speaking", "Traduction": "translation", "Communication": "communication",
+};
 
 function Builder({ draft, setDraft, publish, cancel, accounts, classes = [] }) {
   /* useT() đã được import từ lâu nhưng chưa bao giờ được gọi, trong khi t()
@@ -234,14 +241,14 @@ function Builder({ draft, setDraft, publish, cancel, accounts, classes = [] }) {
   const ready = missing.length === 0;
 
   const hint = {
-    fill: "Écrivez la phrase avec ______ pour le trou. Réponses acceptées séparées par | (ex. « vais|me rends »).",
-    conj: "Ex. de consigne : « Hier, nous (aller) ______ au cinéma. » Réponses acceptées séparées par | (ex. « sommes allés|sommes allées »).",
+    fill: t("bd.fill_hint"),
+    conj: t("bd.conj_hint"),
   };
 
   return (
     <div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 10 }}>
-        <h2 style={{ ...S.display, marginTop: 0, marginBottom: 0 }}>{draft.title ? "Modifier l'exercice" : "Nouvel exercice"}</h2>
+        <h2 style={{ ...S.display, marginTop: 0, marginBottom: 0 }}>{draft.title ? t("bd.edit_title") : t("bd.new_title")}</h2>
         <button style={{ ...S.btn(false), display: "inline-flex", alignItems: "center", gap: 8 }}
           onClick={() => { setJsonModal(true); setJsonText(""); setJsonMsg(""); }}>
           🪄 Import JSON
@@ -250,9 +257,9 @@ function Builder({ draft, setDraft, publish, cancel, accounts, classes = [] }) {
       <div className="mcf-card" style={{ ...S.card, marginBottom: 16 }}>
         {/* Type d'utilisation : Devoir vs Entraînement */}
         <div style={{ marginBottom: 16 }}>
-          <div style={S.label}>Type d'utilisation</div>
+          <div style={S.label}>{t("bd.type_label")}</div>
           <div style={{ display: "flex", gap: 10, marginTop: 8, flexWrap: "wrap" }}>
-            {[["assignment", "📝 Devoir (À faire)"], ["practice", "🏋️ Entraînement libre"]].map(([v, l]) => {
+            {[["assignment", t("bd.type_homework"), FileText], ["practice", t("bd.type_practice"), Target]].map(([v, l, Icon]) => {
               const on = (draft.usageType || "assignment") === v;
               return (
                 <label key={v} style={{ display: "flex", alignItems: "center", gap: 7, fontSize: 14, cursor: "pointer",
@@ -261,24 +268,24 @@ function Builder({ draft, setDraft, publish, cancel, accounts, classes = [] }) {
                   background: on ? C.primarySoft : "var(--mcf-surface)", color: on ? C.primary : C.ink }}>
                   <input type="radio" checked={on} style={{ display: "none" }}
                     onChange={() => setDraft({ ...draft, usageType: v, ...(v === "practice" ? { deadline: "", targeted: false } : {}) })} />
-                  {on ? "✓ " : ""}{l}
+                  <Icon size={16} /> {l}
                 </label>
               );
             })}
           </div>
           {(draft.usageType || "assignment") === "practice" && (
-            <div style={{ fontSize: 12.5, color: C.soft, marginTop: 6 }}>Cet exercice sera publié dans la Bibliothèque d'entraînement, accessible librement par tous les élèves.</div>
+            <div style={{ fontSize: 12.5, color: C.soft, marginTop: 6 }}>{t("bd.practice_note")}</div>
           )}
         {(draft.usageType || "assignment") === "practice" && (
           <div style={{ marginTop: 12, display: "grid", gap: 12, background: "var(--mcf-surface2)", border: `1px solid ${C.line}`, borderRadius: 16, padding: "14px 16px" }}>
             <div>
-              <div style={S.label}>📖 Vocabulaire (optionnel) — visible via le menu « S'entraîner ▾ »</div>
+              <div style={S.label}>{t("bd.vocab_label")}</div>
               <textarea style={{ ...S.input, marginTop: 6, minHeight: 80, resize: "vertical" }}
                 value={draft.vocabulaire || ""} placeholder={"la forêt = khu rừng\nprotéger = bảo vệ\u2026"}
                 onChange={(e) => setDraft({ ...draft, vocabulaire: e.target.value })} />
             </div>
             <div>
-              <div style={S.label}>💡 Explications / Tips (optionnel)</div>
+              <div style={S.label}>{t("bd.tips_label")}</div>
               <textarea style={{ ...S.input, marginTop: 6, minHeight: 80, resize: "vertical" }}
                 value={draft.explications || ""} placeholder={"Rappel : « grâce à » = cause positive ; « à cause de » = cause négative\u2026"}
                 onChange={(e) => setDraft({ ...draft, explications: e.target.value })} />
@@ -289,23 +296,23 @@ function Builder({ draft, setDraft, publish, cancel, accounts, classes = [] }) {
 
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
           <div style={{ flex: "2 1 240px" }}>
-            <div style={S.label}>Titre</div>
+            <div style={S.label}>{t("bd.title_label")}</div>
             <input style={{ ...S.input, marginTop: 6 }} value={draft.title} placeholder="ex. Passé composé — les transports"
               onChange={(e) => setDraft({ ...draft, title: e.target.value })} />
-            <div style={{ ...S.label, marginTop: 12 }}>Consigne / Énoncé de l'exercice (optionnel)</div>
+            <div style={{ ...S.label, marginTop: 12 }}>{t("bd.instruction_label")}</div>
             <div style={{ marginTop: 6 }}>
               <RichTextEditor minHeight={110} value={draft.consigne || ""}
                 onChange={(html) => setDraft({ ...draft, consigne: stripHtml(html) ? html : "" })} />
             </div>
           </div>
           <div>
-            <div style={S.label}>Niveau</div>
+            <div style={S.label}>{t("bd.level_label")}</div>
             <select style={{ ...S.input, marginTop: 6 }} value={draft.level} onChange={(e) => setDraft({ ...draft, level: e.target.value })}>
               {Object.keys(LEVEL_COLORS).map((l) => <option key={l}>{l}</option>)}
             </select>
           </div>
           <div style={{ flex: "1 1 100%" }}>
-            <div style={S.label}>Compétences (sélection multiple)</div>
+            <div style={S.label}>{t("bd.skills_label")}</div>
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 8 }}>
               {SKILLS.map((sk) => {
                 const on = dSkills.includes(sk);
@@ -315,7 +322,7 @@ function Builder({ draft, setDraft, publish, cancel, accounts, classes = [] }) {
                     border: `1.5px solid ${on ? C.primary : C.line}`,
                     background: on ? C.primarySoft : "var(--mcf-surface)", color: on ? C.primary : C.ink }}>
                     <input type="checkbox" checked={on} style={{ display: "none" }} onChange={() => toggleSkill(sk)} />
-                    {on ? "✓ " : ""}{sk}
+                    {on && <Check size={14} />}{t(`bd.sk_${SKILL_KEY[sk] ?? "other"}`)}
                   </label>
                 );
               })}
@@ -323,13 +330,13 @@ function Builder({ draft, setDraft, publish, cancel, accounts, classes = [] }) {
           </div>
           {(draft.usageType || "assignment") !== "practice" && (
           <div>
-            <div style={S.label}>Date limite (optionnel)</div>
+            <div style={S.label}>{t("bd.deadline_label")}</div>
             <input type="datetime-local" style={{ ...S.input, marginTop: 6 }} value={draft.deadline}
               onChange={(e) => setDraft({ ...draft, deadline: e.target.value })} />
           </div>
           )}
           <div>
-            <div style={S.label}>⏱ Temps limite (min)</div>
+            <div style={S.label}>{t("bd.time_limit_label")}</div>
             <input type="number" min="1" style={{ ...S.input, marginTop: 6, width: 110 }} value={draft.timeLimit || ""}
               placeholder="∞" onChange={(e) => setDraft({ ...draft, timeLimit: e.target.value })} />
           </div>
@@ -357,7 +364,7 @@ function Builder({ draft, setDraft, publish, cancel, accounts, classes = [] }) {
         </div>
         {/* 🖼 Image d'illustration (optionnel) — URL hoặc kéo thả file */}
         <div style={{ marginTop: 14 }}>
-          <div style={S.label}>🖼 Image d'illustration (optionnel)</div>
+          <div style={{ ...S.label, display: "flex", alignItems: "center", gap: 6 }}><ImageIcon size={14} /> {t("bd.image_label")}</div>
           <div style={{ display: "flex", gap: 12, marginTop: 8, flexWrap: "wrap", alignItems: "stretch" }}>
             <input style={{ ...S.input, flex: "1 1 260px" }} value={draft.imageUrl || ""}
               placeholder="https://…/image.jpg"
@@ -384,7 +391,7 @@ function Builder({ draft, setDraft, publish, cancel, accounts, classes = [] }) {
               <img src={draft.imageUrl} alt="aperçu"
                 onError={(e) => { e.currentTarget.style.opacity = 0.3; }}
                 style={{ maxHeight: 160, maxWidth: "100%", borderRadius: 16, boxShadow: "0 4px 14px rgba(17,24,39,.12)", objectFit: "contain", display: "block" }} />
-              <button title="Retirer l'image" onClick={() => setDraft({ ...draft, imageUrl: "" })}
+              <button title={t("bd.remove_image")} onClick={() => setDraft({ ...draft, imageUrl: "" })}
                 style={{ position: "absolute", top: -10, right: -10, width: 28, height: 28, borderRadius: "50%",
                   border: "none", background: C.danger, color: "#fff", cursor: "pointer", display: "grid",
                   placeItems: "center", boxShadow: "0 4px 10px rgba(222,75,75,.4)" }}>
@@ -396,40 +403,40 @@ function Builder({ draft, setDraft, publish, cancel, accounts, classes = [] }) {
 
         {dSkills.includes("Écoute") && (
         <div style={{ marginTop: 12 }}>
-          <div style={S.label}>Lien audio pour compréhension orale (optionnel — URL mp3)</div>
+          <div style={S.label}>{t("bd.audio_label")}</div>
           <input style={{ ...S.input, marginTop: 6 }} value={draft.audioUrl} placeholder="https://…/audio.mp3"
             onChange={(e) => setDraft({ ...draft, audioUrl: e.target.value })} />
-          <div style={{ fontSize: 12, color: C.soft, marginTop: 5 }}>💡 Astuce : téléversez votre mp3 sur Supabase Storage (bucket public) puis collez l'URL publique ici.</div>
+          <div style={{ fontSize: 12, color: C.soft, marginTop: 5 }}>{t("bd.audio_hint")}</div>
         </div>
         )}
 
         {dSkills.includes("Lecture") && (
         <div style={{ marginTop: 12 }}>
-          <div style={S.label}>📖 Texte de lecture (CE — optionnel) : l'élève verra une mise en page en 2 colonnes (texte | questions)</div>
+          <div style={S.label}>{t("bd.reading_label")}</div>
           <textarea style={{ ...S.input, marginTop: 6, minHeight: 110, resize: "vertical" }} value={draft.readingText || ""}
-            placeholder="Collez ici l'article ou le texte à lire…"
+            placeholder={t("bd.reading_ph")}
             onChange={(e) => setDraft({ ...draft, readingText: e.target.value })} />
         </div>
         )}
 
         {accounts.length > 0 && (draft.usageType || "assignment") !== "practice" && (
         <div style={{ marginTop: 14 }}>
-          <div style={S.label}>Destinataires — qui reçoit ce devoir ?</div>
+          <div style={S.label}>{t("bd.assignees_label")}</div>
 
           {/* Cấp 1 : tất cả */}
           <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 14.5, fontWeight: 700, cursor: "pointer", marginTop: 10 }}>
             <input type="checkbox" checked={!draft.targeted}
               onChange={(e) => setDraft({ ...draft, targeted: !e.target.checked })} />
-            👥 Toute la classe / Tous les élèves
+            <Users size={16} /> {t("bd.assignees_all")}
           </label>
 
           {draft.targeted && (
             <div style={{ marginTop: 12, background: "var(--mcf-surface2)", border: `1px solid ${C.line}`, borderRadius: 16, padding: "14px 16px", display: "grid", gap: 14 }}>
               {/* Cấp 2 : theo lớp */}
               <div>
-                <div style={{ ...S.label, fontSize: 10.5 }}>🏫 Par classes</div>
+                <div style={{ ...S.label, fontSize: 10.5 }}>{t("bd.by_class")}</div>
                 <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 8 }}>
-                  {classes.length === 0 && <span style={{ fontSize: 12.5, color: C.soft }}>Aucune classe — créez-en dans l'onglet Élèves.</span>}
+                  {classes.length === 0 && <span style={{ fontSize: 12.5, color: C.soft }}>{t("bd.no_class")}</span>}
                   {classes.map((cl) => {
                     const on = (draft.assignedClasses || []).includes(cl.id);
                     const n = accounts.filter((a) => a.classId === cl.id).length;
@@ -449,7 +456,7 @@ function Builder({ draft, setDraft, publish, cancel, accounts, classes = [] }) {
 
               {/* Cấp 3 : chọn đích danh */}
               <div>
-                <div style={{ ...S.label, fontSize: 10.5 }}>👤 Par élèves spécifiques</div>
+                <div style={{ ...S.label, fontSize: 10.5 }}>{t("bd.by_student")}</div>
                 <input style={{ ...S.input, marginTop: 8, maxWidth: 320 }} value={studentSearch}
                   placeholder="🔍 Rechercher un élève…" onChange={(e) => setStudentSearch(e.target.value)} />
                 <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 10, maxHeight: 180, overflowY: "auto" }} className="mcf-scroll">
@@ -459,7 +466,7 @@ function Builder({ draft, setDraft, publish, cancel, accounts, classes = [] }) {
                       const viaClass = classMembers.has(a.name);
                       const on = viaClass || (draft.assignedExtra || []).includes(a.name);
                       return (
-                        <label key={a.name} title={viaClass ? "Déjà inclus via sa classe" : ""}
+                        <label key={a.name} title={viaClass ? t("bd.via_class") : ""}
                           style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, cursor: viaClass ? "default" : "pointer",
                             padding: "7px 14px", borderRadius: 999, fontWeight: 600, opacity: viaClass ? 0.65 : 1,
                             border: `1.5px solid ${on ? C.primary : C.line}`,
@@ -489,22 +496,22 @@ function Builder({ draft, setDraft, publish, cancel, accounts, classes = [] }) {
           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
             <span style={S.label}>Question {i + 1} — {QTYPES[q.type]}{autoQ(q) && " (corrigé automatique)"}</span>
             <div style={{ display: "flex", gap: 14 }}>
-              <button style={{ background: "none", border: "none", color: C.primary, cursor: "pointer", fontWeight: 700, fontFamily: "inherit" }} onClick={() => duplicateQuestion(q.id)}>⧉ dupliquer</button>
-              <button style={{ background: "none", border: "none", color: C.danger, cursor: "pointer", fontWeight: 700, fontFamily: "inherit" }} onClick={() => delQ(q.id)}>retirer</button>
+              <button style={{ background: "none", border: "none", color: C.primary, cursor: "pointer", fontWeight: 700, fontFamily: "inherit" }} onClick={() => duplicateQuestion(q.id)}><Copy size={13} style={{ verticalAlign: -2 }} /> {t("bd.duplicate")}</button>
+              <button style={{ background: "none", border: "none", color: C.danger, cursor: "pointer", fontWeight: 700, fontFamily: "inherit" }} onClick={() => delQ(q.id)}>{t("bd.remove")}</button>
             </div>
           </div>
           <textarea style={{ ...S.input, minHeight: 54, resize: "vertical" }} value={q.prompt}
-            placeholder={q.type === "fill" || q.type === "conj" ? hint[q.type] : q.type === "qcm" ? "Énoncé de la question…" : "Consigne (ex. phrase à traduire)…"}
+            placeholder={q.type === "fill" || q.type === "conj" ? hint[q.type] : q.type === "qcm" ? t("bd.q_prompt_ph") : t("bd.q_open_ph")}
             onChange={(e) => setQ(q.id, { prompt: e.target.value })} />
           {q.type === "qcm" && (
             <div style={{ marginTop: 10, display: "grid", gap: 8 }}>
               {q.options.map((o, j) => (
                 <div key={j} style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                  <input type="radio" checked={q.answer === j} onChange={() => setQ(q.id, { answer: j })} title="Bonne réponse" />
+                  <input type="radio" checked={q.answer === j} onChange={() => setQ(q.id, { answer: j })} title={t("bd.correct")} />
                   <span style={{ fontWeight: 700, width: 20 }}>{String.fromCharCode(65 + j)}.</span>
                   <input style={S.input} value={o} placeholder={`Option ${String.fromCharCode(65 + j)}`}
                     onChange={(e) => setQ(q.id, { options: q.options.map((x, k) => (k === j ? e.target.value : x)) })} />
-                  <button type="button" title={q.options.length > 2 ? "Supprimer cette option" : "Minimum 2 options"}
+                  <button type="button" title={q.options.length > 2 ? t("bd.del_option") : t("bd.min_options")}
                     disabled={q.options.length <= 2}
                     onClick={() => {
                       const options = q.options.filter((_, k) => k !== j);
@@ -525,13 +532,13 @@ function Builder({ draft, setDraft, publish, cancel, accounts, classes = [] }) {
                   style={{ ...S.btn(false), padding: "7px 16px", fontSize: 13, opacity: q.options.length >= 6 ? 0.4 : 1 }}>
                   + Ajouter une option
                 </button>
-                <span style={{ fontSize: 12, color: C.soft }}>2-6 options · cochez la bonne réponse à gauche.</span>
+                <span style={{ fontSize: 12, color: C.soft }}>{t("bd.qcm_hint")}</span>
               </div>
             </div>
           )}
           {(q.type === "fill" || q.type === "conj") && (
             <div style={{ marginTop: 10 }}>
-              <div style={S.label}>Réponse(s) acceptée(s) — séparées par |</div>
+              <div style={S.label}>{t("bd.accepted_label")}</div>
               <input style={{ ...S.input, marginTop: 6 }} value={fillAccepted(q)} placeholder="ex. suis allé|suis allée"
                 onChange={(e) => setQ(q.id, { accepted: e.target.value })} />
             </div>
@@ -546,7 +553,7 @@ function Builder({ draft, setDraft, publish, cancel, accounts, classes = [] }) {
               câu đó. */}
           {autoQ(q) && (
             <div style={{ marginTop: 10 }}>
-              <div style={S.label}>Explication si la réponse est fausse (optionnel)</div>
+              <div style={S.label}>{t("bd.explain_label")}</div>
               <textarea
                 style={{ ...S.input, marginTop: 6, minHeight: 60, resize: "vertical", fontFamily: "inherit" }}
                 value={q.explanation || ""}
@@ -559,12 +566,12 @@ function Builder({ draft, setDraft, publish, cancel, accounts, classes = [] }) {
             <div style={{ marginTop: 10, display: "grid", gap: 10 }}>
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                 <input style={{ ...S.input, flex: "1 1 280px" }} value={q.sentence || ""}
-                  placeholder="Tapez la phrase complète, ex. Je vais à l'école tous les jours."
+                  placeholder={t("bd.ordre_ph")}
                   onChange={(e) => setQ(q.id, { sentence: e.target.value })} />
                 <button style={S.btn(false)} onClick={() => {
                   const parts = (q.sentence || "").trim().split(/\s+/).filter(Boolean);
                   if (parts.length) setQ(q.id, { elements: parts.map((t) => ({ id: uid(), texte: t })) });
-                }}>⚡ Générer les blocs</button>
+                }}>{t("bd.gen_blocks")}</button>
               </div>
               {(q.elements || []).length > 0 && (
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
@@ -577,12 +584,12 @@ function Builder({ draft, setDraft, publish, cancel, accounts, classes = [] }) {
                           width: Math.max(30, el.texte.length * 8 + 12), color: "var(--mcf-ink)", outline: "none", fontFamily: "inherit" }}
                         onChange={(e) => setQ(q.id, { elements: q.elements.map((x) => x.id === el.id ? { ...x, texte: e.target.value } : x) })} />
                       {i > 0 && (
-                        <button title="Fusionner avec le bloc précédent"
+                        <button title={t("bd.merge_block")}
                           onClick={() => { const els = [...q.elements]; els[i - 1] = { ...els[i - 1], texte: els[i - 1].texte + " " + el.texte }; els.splice(i, 1); setQ(q.id, { elements: els }); }}
                           style={{ border: "none", background: "transparent", cursor: "pointer", color: C.primary, fontWeight: 800, padding: 0 }}>⇤</button>
                       )}
                       {q.elements.length > 2 && (
-                        <button title="Supprimer ce bloc"
+                        <button title={t("bd.del_block")}
                           onClick={() => setQ(q.id, { elements: q.elements.filter((x) => x.id !== el.id) })}
                           style={{ border: "none", background: "transparent", cursor: "pointer", color: C.danger, fontWeight: 800, padding: 0 }}>✕</button>
                       )}
@@ -590,16 +597,16 @@ function Builder({ draft, setDraft, publish, cancel, accounts, classes = [] }) {
                   ))}
                 </div>
               )}
-              <div style={{ fontSize: 12, color: C.soft }}>⇤ = fusionner avec le bloc précédent (ex. « à » + « l'école »). L'ordre ci-dessus est le corrigé — les blocs seront mélangés automatiquement pour l'élève.</div>
+              <div style={{ fontSize: 12, color: C.soft }}>{t("bd.ordre_hint")}</div>
             </div>
           )}
           {q.type === "tableau" && (
             <div style={{ marginTop: 10, display: "grid", gap: 12 }}>
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                 <button style={{ ...S.btn(false), fontSize: 12.5, padding: "7px 14px" }}
-                  onClick={() => setQ(q.id, { colonnes: [...q.colonnes, { id: uid(), titre: `Élément ${q.colonnes.length + 1}` }] })}>+ Ajouter un élément à comparer</button>
+                  onClick={() => setQ(q.id, { colonnes: [...q.colonnes, { id: uid(), titre: `Élément ${q.colonnes.length + 1}` }] })}>{t("bd.add_column")}</button>
                 <button style={{ ...S.btn(false), fontSize: 12.5, padding: "7px 14px" }}
-                  onClick={() => setQ(q.id, { criteres: [...q.criteres, { id: uid(), texte: `Critère ${q.criteres.length + 1}` }] })}>+ Ajouter un critère</button>
+                  onClick={() => setQ(q.id, { criteres: [...q.criteres, { id: uid(), texte: `Critère ${q.criteres.length + 1}` }] })}>{t("bd.add_criterion")}</button>
               </div>
 
               {/* Éditer les titres de colonnes */}
@@ -622,7 +629,7 @@ function Builder({ draft, setDraft, publish, cancel, accounts, classes = [] }) {
                 <table style={{ borderCollapse: "collapse", width: "100%", minWidth: 380, fontSize: 13 }}>
                   <thead>
                     <tr>
-                      <th style={{ border: `1px solid ${C.line}`, padding: 8, textAlign: "left", background: "var(--mcf-surface2)" }}>Critère</th>
+                      <th style={{ border: `1px solid ${C.line}`, padding: 8, textAlign: "left", background: "var(--mcf-surface2)" }}>{t("bd.criterion")}</th>
                       {q.colonnes.map((co) => <th key={co.id} style={{ border: `1px solid ${C.line}`, padding: 8, background: "var(--mcf-surface2)" }}>{co.titre}</th>)}
                     </tr>
                   </thead>
@@ -661,7 +668,7 @@ function Builder({ draft, setDraft, publish, cancel, accounts, classes = [] }) {
                   </tbody>
                 </table>
               </div>
-              <div style={{ fontSize: 12, color: C.soft }}>Cochez OUI ou NON dans chaque cellule pour définir le corrigé.</div>
+              <div style={{ fontSize: 12, color: C.soft }}>{t("bd.tableau_hint")}</div>
             </div>
           )}
           {q.type === "vf" && (
@@ -677,7 +684,7 @@ function Builder({ draft, setDraft, publish, cancel, accounts, classes = [] }) {
               </div>
               {q.answer !== 2 && (
                 <div>
-                  <div style={S.label}>Justification attendue (trích dẫn từ bài đọc)</div>
+                  <div style={S.label}>{t("bd.justif_label")}</div>
                   <textarea style={{ ...S.input, marginTop: 6, minHeight: 50, resize: "vertical" }}
                     value={q.justification || ""}
                     placeholder="ex. « Le taux de fécondité a chuté de 22 % depuis 2007. »"
@@ -688,7 +695,7 @@ function Builder({ draft, setDraft, publish, cancel, accounts, classes = [] }) {
           )}
           {q.type === "open" && (
             <div style={{ marginTop: 10 }}>
-              <div style={S.label}>Corrigé type / Réponse suggérée (optionnel)</div>
+              <div style={S.label}>{t("bd.model_label")}</div>
               <textarea style={{ ...S.input, marginTop: 6, minHeight: 44, resize: "vertical" }} value={q.model}
                 onChange={(e) => setQ(q.id, { model: e.target.value })} />
             </div>
@@ -697,20 +704,20 @@ function Builder({ draft, setDraft, publish, cancel, accounts, classes = [] }) {
       ))}
 
       <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 24 }}>
-        <button style={S.btn(false)} onClick={() => addQ("qcm")}>+ QCM</button>
-        <button style={S.btn(false)} onClick={() => addQ("fill")}>+ Texte à trous</button>
-        <button style={S.btn(false)} onClick={() => addQ("conj")}>+ Conjugaison</button>
-        <button style={S.btn(false)} onClick={() => addQ("open")}>+ Réponse libre</button>
-        <button style={S.btn(false)} onClick={() => setDraft({ ...draft, questions: [...draft.questions, { id: uid(), type: "vf", prompt: "", answer: 0, justification: "" }] })}>+ Vrai / Faux / ?</button>
-        <button style={S.btn(false)} onClick={() => setDraft({ ...draft, questions: [...draft.questions, { id: uid(), type: "tableau", prompt: "Pour chaque élément, cochez OUI ou NON selon le critère.", colonnes: [{ id: uid(), titre: "Élément 1" }, { id: uid(), titre: "Élément 2" }], criteres: [{ id: uid(), texte: "Critère 1" }], answers: {} }] })}>+ Tableau OUI/NON</button>
-        <button style={S.btn(false)} onClick={() => setDraft({ ...draft, questions: [...draft.questions, { id: uid(), type: "ordre", prompt: "Mettez les mots dans le bon ordre pour former une phrase.", sentence: "", elements: [] }] })}>+ Remettre en ordre</button>
+        <button style={S.btn(false)} onClick={() => addQ("qcm")}>+ {t("bd.t_qcm")}</button>
+        <button style={S.btn(false)} onClick={() => addQ("fill")}>+ {t("bd.t_fill")}</button>
+        <button style={S.btn(false)} onClick={() => addQ("conj")}>+ {t("bd.t_conj")}</button>
+        <button style={S.btn(false)} onClick={() => addQ("open")}>+ {t("bd.t_open")}</button>
+        <button style={S.btn(false)} onClick={() => setDraft({ ...draft, questions: [...draft.questions, { id: uid(), type: "vf", prompt: "", answer: 0, justification: "" }] })}>+ {t("bd.t_vf")}</button>
+        <button style={S.btn(false)} onClick={() => setDraft({ ...draft, questions: [...draft.questions, { id: uid(), type: "tableau", prompt: "Pour chaque élément, cochez OUI ou NON selon le critère.", colonnes: [{ id: uid(), titre: "Élément 1" }, { id: uid(), titre: "Élément 2" }], criteres: [{ id: uid(), texte: "Critère 1" }], answers: {} }] })}>+ {t("bd.t_tableau")}</button>
+        <button style={S.btn(false)} onClick={() => setDraft({ ...draft, questions: [...draft.questions, { id: uid(), type: "ordre", prompt: "Mettez les mots dans le bon ordre pour former une phrase.", sentence: "", elements: [] }] })}>+ {t("bd.t_ordre")}</button>
       </div>
       {/* 🪄 Modal Import JSON */}
       {jsonModal && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(17,24,39,.55)", display: "grid", placeItems: "center", padding: 16, zIndex: 250 }}
           onClick={() => setJsonModal(false)}>
           <div className="mcf-card" style={{ ...S.card, width: "100%", maxWidth: 640, maxHeight: "88vh", overflowY: "auto" }} onClick={(e) => e.stopPropagation()}>
-            <h3 style={{ ...S.display, fontSize: 20, marginTop: 0, display: "flex", alignItems: "center", gap: 10 }}>🪄 Import JSON</h3>
+            <h3 style={{ ...S.display, fontSize: 20, marginTop: 0, display: "flex", alignItems: "center", gap: 10 }}>{t("bd.json_title")}</h3>
             <div style={{ fontSize: 13, color: C.soft, marginBottom: 10 }}>
               Collez le JSON généré par une IA, ou chargez un fichier <b>.json</b>. Champs : <code>titre, niveau, competences[], consigne_generale, texte_support, audio_url, questions[]</code> — types : <code>QCM, TEXTE_A_TROUS, CONJUGAISON, VRAI_FAUX_ONSP, REPONSE_LIBRE</code>.
             </div>
@@ -724,8 +731,8 @@ function Builder({ draft, setDraft, publish, cancel, accounts, classes = [] }) {
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 12, flexWrap: "wrap" }}>
               <input ref={jsonFileRef} type="file" accept=".json,application/json" style={{ display: "none" }}
                 onChange={(e) => onJsonFile(e.target.files?.[0])} />
-              <button style={S.btn(false)} onClick={() => jsonFileRef.current?.click()}>📂 Charger un fichier .json</button>
-              <span style={{ fontSize: 12, color: C.soft }}>ou glissez-collez le texte ci-dessus</span>
+              <button style={S.btn(false)} onClick={() => jsonFileRef.current?.click()}>{t("bd.json_load")}</button>
+              <span style={{ fontSize: 12, color: C.soft }}>{t("bd.json_or")}</span>
             </div>
 
             {jsonMsg && (
@@ -736,8 +743,8 @@ function Builder({ draft, setDraft, publish, cancel, accounts, classes = [] }) {
 
             <div style={{ display: "flex", gap: 10, marginTop: 16 }}>
               <button style={{ ...S.btn(true), opacity: jsonText.trim() ? 1 : 0.4, pointerEvents: jsonText.trim() ? "auto" : "none" }}
-                onClick={() => handleImportJSON(jsonText)}>🪄 Importer</button>
-              <button style={S.btn(false)} onClick={() => setJsonModal(false)}>Annuler</button>
+                onClick={() => handleImportJSON(jsonText)}>{t("bd.json_import")}</button>
+              <button style={S.btn(false)} onClick={() => setJsonModal(false)}>{t("bd.cancel")}</button>
             </div>
           </div>
         </div>
@@ -754,7 +761,7 @@ function Builder({ draft, setDraft, publish, cancel, accounts, classes = [] }) {
 
       <div style={{ display: "flex", gap: 10 }}>
         <button style={{ ...S.btn(true), opacity: ready ? 1 : 0.4 }} disabled={!ready}
-          aria-describedby={ready ? undefined : "builder-missing"} onClick={publish}>Publier l'exercice</button>
+          aria-describedby={ready ? undefined : "builder-missing"} onClick={publish}>{t("bd.publish")}</button>
         {!ready && (
           <p id="builder-missing" role="status"
             className="mt-2 rounded-md bg-warn-soft px-3 py-2.5 text-sm leading-relaxed text-warn">
@@ -762,7 +769,7 @@ function Builder({ draft, setDraft, publish, cancel, accounts, classes = [] }) {
             {missing.join(" · ")}
           </p>
         )}
-        <button style={S.btn(false)} onClick={cancel}>Annuler</button>
+        <button style={S.btn(false)} onClick={cancel}>{t("bd.cancel")}</button>
       </div>
     </div>
   );

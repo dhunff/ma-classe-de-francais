@@ -189,14 +189,14 @@ export async function saveExercise(exercise, store) {
      bài đó. Đo được 24/09: answers còn 57 dòng, trong khi sau lần xoá hai tài
      khoản thử (23/09) lẽ ra phải còn 127. Nay chỉ câu bị GỠ khỏi bài mới bị xoá
      — và mất câu trả lời của câu không còn tồn tại là đúng. */
-  if (qRows.length) {
-    const ins = await supabase.from("questions").upsert(qRows, { onConflict: "id" });
-    if (ins.error) return { ok: false, error: ins.error };
-  }
-  let bo = supabase.from("questions").delete().eq("exercise_id", exRow.id);
-  if (qRows.length) bo = bo.not("id", "in", `(${qRows.map((r) => `"${r.id}"`).join(",")})`);
-  const del = await bo;
-  if (del.error) return { ok: false, error: del.error };
+  /* 26/09: ghi qua RPC `luu_cau_hoi` (migration 104), KHÔNG upsert từ client.
+     `upsert` = INSERT … ON CONFLICT DO UPDATE, đòi quyền SELECT trên các cột
+     bị ghi — mà answer_key/evidence cố ý không cấp SELECT. Bản upsert của
+     24/09 vì thế làm HỎNG MỌI LẦN LƯU BÀI ("permission denied for table
+     questions"). Hàm máy chủ ghi đè theo id + xoá câu đã gỡ trong MỘT
+     transaction: đủ hết hoặc không gì cả. */
+  const luu = await supabase.rpc("luu_cau_hoi", { p_exercise_id: exRow.id, p_rows: qRows });
+  if (luu.error) return { ok: false, error: luu.error };
 
   /* ── ĐẾM LẠI TRƯỚC KHI BÁO THÀNH CÔNG ──
    *

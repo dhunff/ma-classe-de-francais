@@ -157,13 +157,17 @@ function Teacher({ exercises, setExercises, submissions, setSubmissions, account
     if (final.usageType === "practice") {
       const r = await saveExercise(
         { ...final, assignedTo: null, targeted: false, deadline: "" }, "practice");
-      if (!r.ok) { alert("❌ Échec de l'enregistrement."); return; }
+      if (!r.ok) { alert(`${t("builder.save_failed")}
+
+${r.error?.message ?? ""}`); return; }
       setExercises(exercises.filter((e) => e.id !== final.id));
       setView("list"); return;
     }
 
     const r = await saveExercise(final, "assignment");
-    if (!r.ok) { alert("❌ Échec de l'enregistrement."); return; }
+    if (!r.ok) { alert(`${t("builder.save_failed")}
+
+${r.error?.message ?? ""}`); return; }
     const others = exercises.filter((e) => e.id !== final.id);
     setExercises([...others, final].sort((a, b) => a.createdAt - b.createdAt));
     setView("list");
