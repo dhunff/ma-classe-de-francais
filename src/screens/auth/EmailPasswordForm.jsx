@@ -74,7 +74,9 @@ function PasswordToggle({ visible, onToggle, t }) {
   );
 }
 
-export default function EmailPasswordForm({ accounts = [], onLogin, mode = "login", onModeChange, autoFocus = false }) {
+/* `idTruoc`: tiền tố id cho các ô — trang đăng nhập dựng HAI form cạnh nhau
+   (khoang đăng nhập + khoang đăng ký), id trùng thì bấm nhãn nhảy nhầm ô. */
+export default function EmailPasswordForm({ accounts = [], onLogin, mode = "login", onModeChange, autoFocus = false, idTruoc = "" }) {
   const t = useT();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -203,7 +205,7 @@ export default function EmailPasswordForm({ accounts = [], onLogin, mode = "logi
     <form onSubmit={submit} className="flex flex-col gap-5">
       {isRegister && (
         <Field
-          id="auth-name"
+          id={`${idTruoc}auth-name`}
           label={t("login.name_label")}
           value={name}
           onChange={(e) => setName(e.target.value)}
@@ -214,7 +216,7 @@ export default function EmailPasswordForm({ accounts = [], onLogin, mode = "logi
       )}
 
       <Field
-        id="auth-email"
+        id={`${idTruoc}auth-email`}
         label={t("login.email_label")}
         type="email"
         value={email}
@@ -226,7 +228,7 @@ export default function EmailPasswordForm({ accounts = [], onLogin, mode = "logi
 
       {!isReset && (
         <Field
-          id="auth-password"
+          id={`${idTruoc}auth-password`}
           label={t("login.password_label")}
           type={visible ? "text" : "password"}
           value={password}
@@ -240,7 +242,7 @@ export default function EmailPasswordForm({ accounts = [], onLogin, mode = "logi
 
       {isRegister && (
         <Field
-          id="auth-confirm"
+          id={`${idTruoc}auth-confirm`}
           label={t("login.confirm_label")}
           type={visible ? "text" : "password"}
           value={confirm}

@@ -94,6 +94,7 @@ const I18N = {
     },
     login: {
       password_label: "Mật khẩu",
+      slide_login_title: "Chào mừng trở lại!", slide_login_body: "Tiếp tục luyện tập các chuyên đề và giữ vững chuỗi ngày học của bạn.", slide_register_title: "Lần đầu đến với FRACILE?", slide_register_body: "Đăng ký ngay để bắt đầu lộ trình học tiếng Pháp của riêng bạn.",
       email_label: "Email của bạn", submit: "Đăng nhập",
       show_password: "Hiện mật khẩu", hide_password: "Ẩn mật khẩu",
       title_login: "Đăng nhập vào FRACILE",
@@ -384,6 +385,7 @@ const I18N = {
     },
     login: {
       password_label: "Votre mot de passe",
+      slide_login_title: "Bon retour !", slide_login_body: "Reprenez vos entraînements et gardez votre série de jours d’étude.", slide_register_title: "Nouveau sur FRACILE ?", slide_register_body: "Inscrivez-vous pour commencer votre propre parcours de français.",
       email_label: "Votre email", submit: "Se connecter",
       show_password: "Afficher le mot de passe", hide_password: "Masquer le mot de passe",
       title_login: "Se connecter à FRACILE",
@@ -666,6 +668,7 @@ const I18N = {
     },
     login: {
       password_label: "Your password",
+      slide_login_title: "Welcome back!", slide_login_body: "Pick up your practice and keep your study streak going.", slide_register_title: "New to FRACILE?", slide_register_body: "Sign up to start your own French learning path.",
       email_label: "Your email", submit: "Sign in",
       show_password: "Show password", hide_password: "Hide password",
       title_login: "Sign in to FRACILE",
