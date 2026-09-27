@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Settings, Moon, Sun, LogOut, ChevronRight } from "lucide-react";
+import { Settings, Moon, Sun, LogOut, ChevronRight, Compass } from "lucide-react";
 import { Avatar } from "../shared/avatars.jsx";
 import { loadDanhTinh, SU_KIEN_DANH_TINH } from "../shared/identity.js";
 
@@ -133,6 +133,17 @@ export default function AvatarMenu({ session, t, dark, onToggleDark, onLogout })
                 }
               >
                 {t("header.dark_mode_label")}
+              </Row>
+
+              {/* Xem lại tour giới thiệu (27/09). Mỗi tour chỉ tự hiện MỘT lần trên
+                  mỗi trình duyệt (cờ hasSeen…Tour trong localStorage); xoá hết
+                  cờ để tour hiện lại khi vào từng màn. */}
+              <Row Icon={Compass} onClick={() => {
+                setOpen(false);
+                try { Object.keys(localStorage).filter((k) => /^hasSeen.*Tour$/.test(k)).forEach((k) => localStorage.removeItem(k)); } catch { /* bỏ qua */ }
+                window.location.reload();
+              }}>
+                {t("header.replay_tours")}
               </Row>
 
               <Row Icon={LogOut} onClick={() => { setOpen(false); onLogout?.(); }}>

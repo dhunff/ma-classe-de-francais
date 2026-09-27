@@ -40,7 +40,7 @@ const I18N = {
       /* Khác `dark_mode`: khoá kia là câu lệnh trên tooltip của nút bật/tắt
          ("Chuyển sang…"), khoá này là TÊN mục trong menu, luôn đứng yên dù
          đang ở bản nào. */
-      dark_mode_label: "Nền tối", settings: "Cài đặt" },
+      dark_mode_label: "Nền tối", settings: "Cài đặt", replay_tours: "Xem lại hướng dẫn" },
     msg: {
       title: "Tin nhắn", title_unread: "Tin nhắn, {n} chưa đọc", new: "Soạn tin mới",
       soon: "Tính năng nhắn tin chưa mở",
@@ -338,7 +338,7 @@ const I18N = {
     header: { title: "FRACILE", subtitle: "Parcours d'apprentissage · exercices & suivi des élèves",
       logout: "Se déconnecter", teacher: "Professeur", student: "Élève",
       search: "Rechercher un exercice, un élève…", dark_mode: "Passer en mode sombre", light_mode: "Passer en mode clair",
-      dark_mode_label: "Mode sombre", settings: "Paramètres" },
+      dark_mode_label: "Mode sombre", settings: "Paramètres", replay_tours: "Revoir le guide" },
     msg: {
       title: "Messages", title_unread: "Messages, {n} non lus", new: "Nouveau message",
       soon: "La messagerie n'est pas encore ouverte",
@@ -629,7 +629,7 @@ const I18N = {
     header: { title: "FRACILE", subtitle: "Learning path · exercises & student tracking",
       logout: "Sign out", teacher: "Teacher", student: "Student",
       search: "Search exercises, students…", dark_mode: "Switch to dark mode", light_mode: "Switch to light mode",
-      dark_mode_label: "Dark mode", settings: "Settings" },
+      dark_mode_label: "Dark mode", settings: "Settings", replay_tours: "Replay the tour" },
     msg: {
       title: "Messages", title_unread: "Messages, {n} unread", new: "New message",
       soon: "Messaging isn't open yet",

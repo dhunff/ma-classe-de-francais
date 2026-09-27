@@ -43,7 +43,7 @@ import { AlertTriangle } from "lucide-react";
    mà trông như hoàn chỉnh còn tệ hơn một chính sách tự nói nó thiếu. */
 export const EMAIL_LIEN_HE = "contact.fracile@gmail.com";   // chủ dự án chọn 23/09/2026
 
-const CAP_NHAT = "26/09/2026";
+const CAP_NHAT = "27/09/2026";
 
 function LienHe() {
   if (EMAIL_LIEN_HE) {
@@ -97,9 +97,8 @@ const UL = ({ children }) => <ul className="m-0 list-disc space-y-1.5 pl-5">{chi
 
 /* ═══════════════════════════════ FAQ ═══════════════════════════════ */
 
-/* Mỗi câu trả lời phải đúng với mã nguồn Ở THỜI ĐIỂM NÀY — cập nhật 26/09.
-   Câu về AI chấm cố ý nói "chưa bật": Edge Function cham-pe đã dựng nhưng
-   chưa có khoá API, hứa "xin được gợi ý AI" là hứa một nút trả về lỗi. */
+/* Mỗi câu trả lời phải đúng với mã nguồn Ở THỜI ĐIỂM NÀY. 27/09: AI chấm PE
+   đã bật (OpenAI gpt-6-luna, chủ dự án thử qua giao diện) — bỏ câu « chưa bật ». */
 const HOI_DAP = [
   ["FRACILE là gì?",
    "Một nền tảng luyện thi tiếng Pháp DELF, tập trung vào trình độ B1 và B2: bài tập theo kỹ năng, đề thi thử có đồng hồ, và thẻ Flashcard do giáo viên soạn."],
@@ -108,7 +107,7 @@ const HOI_DAP = [
   ["Điểm thi thử có phải điểm DELF chính thức không?",
    "Không. Đề thi thử mô phỏng cấu trúc và thời gian của kỳ thi thật, nhưng điểm ở đây chỉ để bạn tự đánh giá. Điểm DELF chính thức chỉ do các trung tâm khảo thí được công nhận cấp."],
   ["Ai chấm bài của tôi?",
-   "Trắc nghiệm, điền từ, chia động từ, đúng/sai, bảng và sắp xếp câu được máy chủ chấm ngay khi bạn nộp. Bài viết thì bạn tự chấm theo thang DELF chính thức, từng tiêu chí một. Tính năng gợi ý chấm bài viết bằng AI đã được xây dựng nhưng CHƯA bật."],
+   "Trắc nghiệm, điền từ, chia động từ, đúng/sai, bảng và sắp xếp câu được máy chủ chấm ngay khi bạn nộp. Bài viết thì bạn tự chấm theo thang DELF chính thức, từng tiêu chí một. Bạn có thể bấm « Xin gợi ý » để AI đề xuất điểm và nhận xét theo từng tiêu chí (tối đa 6 lượt mỗi 24 giờ). Gợi ý chỉ để đối chiếu — điểm cuối cùng do bạn chốt."],
   ["Bài nói có được chấm điểm không?",
    "Không. Kỳ thi thật chấm phần nói qua hội thoại trực tiếp với giám khảo, điều một ứng dụng tự học không mô phỏng được. Bạn ghi âm để tự nghe lại; chúng tôi không đưa ra một con số không có cơ sở."],
   ["Nghe hiểu được nghe mấy lần?",
