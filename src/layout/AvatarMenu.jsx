@@ -77,6 +77,7 @@ export default function AvatarMenu({ session, t, dark, onToggleDark, onLogout })
   return (
     <div ref={rootRef} className="relative">
       <button
+        id="tour-gd-avatar"
         ref={btnRef}
         type="button"
         onClick={() => setOpen((v) => !v)}

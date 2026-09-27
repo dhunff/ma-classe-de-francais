@@ -2,6 +2,7 @@ import React from "react";
 import { Menu, Moon, Sun, Lightbulb } from "lucide-react";
 import SearchBox from "./SearchBox.jsx";
 import XPBadge from "./XPBadge.jsx";
+import TourGioiThieu from "../shared/TourGioiThieu.jsx";
 import LangMenu from "./LangMenu.jsx";
 import MessagesMenu from "./MessagesMenu.jsx";
 import AvatarMenu from "./AvatarMenu.jsx";
@@ -64,6 +65,7 @@ export default function Topbar({
               nền để người dùng biết cái gì đang che nội dung. */}
           <button
             type="button"
+            id="tour-gd-carnet"
             onClick={onOpenCarnet}
             aria-expanded={!!carnetOpen}
             aria-label={t("carnet.open")}
@@ -83,6 +85,13 @@ export default function Topbar({
             <>
               {/* Vạch ngăn: tách nhóm "thông báo" khỏi "tài khoản". Thuần
                   trang trí nên ẩn với trình đọc màn hình. */}
+              {/* Tour giao diện (27/09): chỉ cho người mới chỗ bật NỀN TỐI — công tắc
+                  nằm trong menu ảnh đại diện nên khó tìm — và sổ tay. Một lần
+                  mỗi trình duyệt, chỉ khi đã đăng nhập (menu ảnh mới có). */}
+              <TourGioiThieu khoa="hasSeenGiaoDienTour" steps={[
+                { target: "#tour-gd-avatar", title: t("tour.gd1_title"), content: t("tour.gd1_body"), placement: "bottom-end" },
+                { target: "#tour-gd-carnet", title: t("tour.gd2_title"), content: t("tour.gd2_body"), placement: "bottom-end" },
+              ]} />
               {/* XP ngay trước ảnh đại diện — chỉ học sinh có số dư XP. */}
               {session?.role === "eleve" && <XPBadge t={t} />}
               <span aria-hidden className="mx-1 h-6 w-px shrink-0 bg-line" />
