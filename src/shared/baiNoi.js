@@ -168,3 +168,19 @@ export async function dsBaiNoiMoiNguoi({ toiDaHocSinh = 60 } = {}) {
   ra.sort((a, b) => (b.bai[0]?.luc ?? 0) - (a.bai[0]?.luc ?? 0));
   return ra;
 }
+
+/* AI nhận xét một bản ghi của CHÍNH MÌNH (Edge Function nhan-xet-noi, 27/09).
+ * Không có điểm số — chỉ bản chép lời + nhận xét tiếng Việt. Máy chủ tự kiểm
+ * đường dẫn thuộc về người gọi; bản đã nhận xét thì trả lại, không tốn lượt.
+ * → { ok, nhan_xet, chep_loi, con_lai? } | { ok:false, ma, thong_bao? } */
+export async function aiNhanXet(duongDan) {
+  try {
+    const { data, error } = await supabase.functions.invoke("nhan-xet-noi", { body: { duongDan } });
+    if (error) {
+      let chiTiet = null;
+      try { chiTiet = await error.context?.json?.(); } catch { /* bỏ qua */ }
+      return chiTiet ?? { ok: false, ma: "MANG" };
+    }
+    return data ?? { ok: false, ma: "MANG" };
+  } catch { return { ok: false, ma: "MANG" }; }
+}

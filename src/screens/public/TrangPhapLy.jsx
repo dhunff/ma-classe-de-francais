@@ -109,7 +109,7 @@ const HOI_DAP = [
   ["Ai chấm bài của tôi?",
    "Trắc nghiệm, điền từ, chia động từ, đúng/sai, bảng và sắp xếp câu được máy chủ chấm ngay khi bạn nộp. Bài viết thì bạn tự chấm theo thang DELF chính thức, từng tiêu chí một. Bạn có thể bấm « Xin gợi ý » để AI đề xuất điểm và nhận xét theo từng tiêu chí (tối đa 6 lượt mỗi 24 giờ). Gợi ý chỉ để đối chiếu — điểm cuối cùng do bạn chốt."],
   ["Bài nói có được chấm điểm không?",
-   "Không. Kỳ thi thật chấm phần nói qua hội thoại trực tiếp với giám khảo, điều một ứng dụng tự học không mô phỏng được. Bạn ghi âm để tự nghe lại; chúng tôi không đưa ra một con số không có cơ sở."],
+   "Không có điểm số. Kỳ thi thật chấm phần nói qua hội thoại trực tiếp với giám khảo, điều một ứng dụng tự học không mô phỏng được. Bạn ghi âm để tự nghe lại, và có thể bấm « AI nhận xét » để nhận góp ý về ngữ pháp, từ vựng và cách nối ý (AI đọc bản chép lời, tối đa 6 lượt mỗi 24 giờ) — nhưng không có con số nào không có cơ sở."],
   ["Nghe hiểu được nghe mấy lần?",
    "Hai lần, giống kỳ thi thật. Số lần nghe được đếm ở máy chủ nên tải lại trang không làm lại từ đầu."],
   ["Đóng trình duyệt giữa giờ thi thì sao?",
@@ -210,7 +210,7 @@ export function TrangBaoMat() {
         <P><strong>Tài khoản:</strong> email, tên, tên hiển thị và tên người dùng, ảnh đại diện bạn chọn. Nếu đăng nhập bằng Google, chúng tôi nhận email và tên từ Google.</P>
         <P><strong>Hồ sơ (không bắt buộc):</strong> họ tên, ngày sinh, giới tính, trường, địa chỉ, số điện thoại, trình độ và mục tiêu DELF — chỉ khi bạn tự điền.</P>
         <P><strong>Việc học:</strong> câu trả lời, điểm, thời gian làm bài, kết quả tự chấm, và những ngày bạn học.</P>
-        <P><strong>Bản ghi âm bài nói:</strong> lưu ở kho riêng tư, chỉ bạn và giáo viên nghe được — không có đường dẫn công khai.</P>
+        <P><strong>Bản ghi âm bài nói:</strong> lưu ở kho riêng tư, chỉ bạn và giáo viên nghe được — không có đường dẫn công khai. Khi bạn bấm « AI nhận xét », hệ thống lưu thêm bản chép lời và nhận xét của AI cho bản ghi đó.</P>
         <P><strong>Khi bạn bấm « Gửi câu hỏi » trên trang giới thiệu:</strong> họ tên, số điện thoại, năm sinh, email, bạn là ai (học sinh / phụ huynh / giáo viên), mục tiêu và nội dung câu hỏi. Chúng tôi ghi kèm địa chỉ IP để chặn gửi hàng loạt. Thông tin này chỉ dùng để trả lời bạn và chỉ giáo viên của FRACILE đọc được.</P>
         <P><strong>Thanh toán:</strong> số tiền, nội dung chuyển khoản và thời điểm giao dịch. Chúng tôi <strong>không</strong> nhận và không lưu số thẻ hay thông tin tài khoản ngân hàng của bạn.</P>
         <P><strong>Trên thiết bị của bạn:</strong> trình duyệt lưu phiên đăng nhập, ngôn ngữ và chế độ sáng/tối để bạn không phải chọn lại. Không dùng cookie quảng cáo.</P>
@@ -230,7 +230,7 @@ export function TrangBaoMat() {
         <UL>
           <li><strong>Supabase</strong> — lưu cơ sở dữ liệu, tài khoản và bản ghi âm.</li>
           <li><strong>Vercel</strong> — phục vụ trang web.</li>
-          <li><strong>OpenAI</strong> — chỉ khi bạn bấm « Xin gợi ý » ở màn tự chấm bài viết: đề bài và bài viết của bạn được gửi đi để nhận gợi ý chấm. Không có gì được gửi nếu bạn không bấm.</li>
+          <li><strong>OpenAI</strong> — chỉ khi chính bạn bấm: « Xin gợi ý » ở màn tự chấm bài viết (gửi đề bài và bài viết), hoặc « AI nhận xét » cạnh một bản ghi âm (gửi bản ghi âm giọng nói và đề bài để chép lời rồi nhận xét). Không có gì được gửi nếu bạn không bấm.</li>
           <li><strong>SePay</strong> — báo cho hệ thống khi có giao dịch chuyển khoản.</li>
           <li><strong>Google</strong> — chỉ khi bạn chọn đăng nhập bằng Google.</li>
         </UL>

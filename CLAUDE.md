@@ -1213,6 +1213,14 @@ Xem `docs/roadmap-delf.md` — có nhật ký quyết định ở §5.
     ghi `exercise_access` status 'XP' để đi đúng đường `can_open_exercise`.
   · Theo dõi một chiều `follows`, ghi/xoá chỉ qua RPC; danh sách chỉ lộ tên,
     @username, ảnh và cờ "hôm nay đã học".
+- **AI nhận xét bài nói — 27/09** (migration 107, Edge Function `nhan-xet-noi`).
+  OpenAI `gpt-transcribe` chép lời → gpt-6-luna nhận xét tiếng Việt. KHÔNG điểm
+  số. Chỉ file trong thư mục `<user_id>/` của người gọi (so tiền tố — service_role
+  bỏ qua RLS kho). 6 lượt/24 giờ; bản đã nhận xét trả lại không tốn lượt.
+  OpenAI không nhận .ogg (Firefox) → báo DINH_DANG_KHONG_HO_TRO. Chưa chạy
+  đầu-cuối: kho bai-noi đang 0 file.
+- **Giờ học — 27/09** (migration 106): `attempts.giay_lam` (mở bài → nộp, kẹp 3 giờ),
+  RPC `get_gio_hoc`. Trước đó KHÔNG đo được: bài luyện tập tạo attempt lúc nộp.
 - `s:mcf-submissions` vẫn giữ làm sao lưu, chưa xoá.
 
 
