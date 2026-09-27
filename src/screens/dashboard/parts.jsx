@@ -33,9 +33,10 @@ export const RISE_BASE = 140;
 /* Bọc để xuất hiện so le. Delay đi qua biến CSS chứ không phải class Tailwind
    động — Tailwind quét class theo chuỗi tĩnh nên `delay-[${n}ms]` sẽ không
    được sinh ra. */
-export function Rise({ delay = 0, className = "", children, as: Tag = "div", style }) {
+export function Rise({ delay = 0, className = "", children, as: Tag = "div", style, id }) {
   return (
     <Tag
+      id={id}
       className={`mcf-rise ${className}`}
       style={{ ...style, "--mcf-delay": `${RISE_BASE + delay}ms` }}
     >

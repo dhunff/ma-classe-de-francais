@@ -862,7 +862,7 @@ ${r.error?.message ?? ""}`); return; }
       {/* Tour XP (26/09) — chỉ học sinh, sau khi đã có số dư (nhãn XP ở thanh trên
           dựng xong) để bước 1 có đích. */}
       {role === "eleve" && (
-        <TourGioiThieu khoa="hasSeenXPTour" giao="xp" sanSang={xp !== null} steps={[
+        <TourGioiThieu khoa="hasSeenXPTour" choXong="hasSeenGiaoDienTour" giao="xp" sanSang={xp !== null} steps={[
           { target: "#tour-xp-badge", title: t("tour.xp1_title"), content: t("tour.xp1_body"), placement: "bottom-end" },
           { target: "#tour-xp-grid", title: t("tour.xp2_title"), content: t("tour.xp2_body"), placement: "top" },
           { target: "#tour-xp-start", title: t("tour.xp3_title"), content: t("tour.xp3_body"), finishLabel: t("home.start") },

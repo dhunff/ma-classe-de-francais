@@ -132,7 +132,7 @@ export default function ThuVienBoThe({ ds, onMo }) {
     <div className="mx-auto max-w-5xl py-6">
       {/* Tour chỉ bắt đầu khi đã có ít nhất một bộ thẻ — hai bước sau chỉ vào
           thẻ đầu tiên, mà Joyride lặng lẽ bỏ bước không tìm thấy đích. */}
-      <TourGioiThieu khoa="hasSeenFlashcardTour" sanSang={Array.isArray(hien) && hien.length > 0} steps={[
+      <TourGioiThieu khoa="hasSeenFlashcardTour" choXong="hasSeenGiaoDienTour" sanSang={Array.isArray(hien) && hien.length > 0} steps={[
         { target: "#tour-fc-tabs", title: t("tour.fc1_title"), content: t("tour.fc1_body"), placement: "right-start" },
         { target: "#tour-fc-deck", title: t("tour.fc2_title"), content: t("tour.fc2_body") },
         { target: "#tour-fc-count", title: t("tour.fc3_title"), content: t("tour.fc3_body") },

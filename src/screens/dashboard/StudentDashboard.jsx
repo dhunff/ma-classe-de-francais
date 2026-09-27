@@ -13,6 +13,7 @@ import { calculateProfileCompletion } from "../../shared/profile.js";
 import StreakWidget from "./StreakWidget.jsx";
 import FollowingStreakWidget from "./FollowingStreakWidget.jsx";
 import GioHocWidget from "./GioHocWidget.jsx";
+import TourGioiThieu from "../../shared/TourGioiThieu.jsx";
 
 /* Trang chủ học sinh.
 
@@ -67,6 +68,15 @@ export default function StudentDashboard({
        dùng token nên ăn theo nền chung của app, không phải đen thuần. */
     /* Nền tràn viền đã bỏ — tấm thẻ nội dung của AppLayout cấp nền rồi. */
     <div className="pt-2">
+      {/* Tour trang chủ (27/09) — một lần mỗi trình duyệt; « Xem lại hướng dẫn »
+          trong menu ảnh đại diện mở lại. Bỏ qua ở trang xem thử khi có fixture. */}
+      <TourGioiThieu khoa="hasSeenTrangChuTour" choXong="hasSeenGiaoDienTour" steps={[
+        { target: "#tour-tc-so-lieu", title: t("tour.tc1_title"), content: t("tour.tc1_body"), placement: "bottom" },
+        { target: "#tour-tc-chuoi", title: t("tour.tc2_title"), content: t("tour.tc2_body"), placement: "left" },
+        { target: "#tour-tc-theo-doi", title: t("tour.tc3_title"), content: t("tour.tc3_body"), placement: "left" },
+        { target: "#tour-tc-gio-hoc", title: t("tour.tc4_title"), content: t("tour.tc4_body"), placement: "left" },
+        { target: "#tour-tc-ky-nang", title: t("tour.tc5_title"), content: t("tour.tc5_body"), placement: "top" },
+      ]} />
       <div className="mx-auto grid max-w-6xl gap-4 xl:grid-cols-[1fr_340px]">
 
         {/* ─────────────── Cột chính ───────────────
@@ -110,7 +120,7 @@ export default function StudentDashboard({
             </Rise>
           )}
 
-          <Rise delay={160} className="grid gap-4 sm:grid-cols-3">
+          <Rise id="tour-tc-so-lieu" delay={160} className="grid gap-4 sm:grid-cols-3">
             {/* Bốn mảng màu, mỗi ô một sắc. `tone` không còn tác dụng ở bản
                 gradient — chữ luôn trắng — nhưng giữ lại cho ô "đang chờ làm"
                 thì thừa, nên bỏ hẳn khỏi bốn ô này. Cảnh báo quá hạn vẫn nằm
@@ -131,7 +141,7 @@ export default function StudentDashboard({
               Dòng chú thích đổi theo nguồn thật sự có dữ liệu: "tốt nhất sau
               nhiều lần thử" và "làm một lần duy nhất" không cùng thang, nên
               người đọc phải biết cột đang dựng từ cái nào. */}
-          <Rise delay={240}>
+          <Rise id="tour-tc-ky-nang" delay={240}>
             <Card title={t("dash.skills")}>
               {skills.length ? (
                 <>
@@ -184,15 +194,15 @@ export default function StudentDashboard({
         {/* ─────────────── Cột phải ─────────────── */}
         <div className="flex flex-col gap-4">
 
-          <Rise delay={80}>
+          <Rise id="tour-tc-chuoi" delay={80}>
             <StreakWidget t={t} fixture={chuoi} />
           </Rise>
 
-          <Rise delay={100}>
+          <Rise id="tour-tc-theo-doi" delay={100}>
             <FollowingStreakWidget t={t} fixture={theoDoiFixture} bxhFixture={bxhFixture} />
           </Rise>
 
-          <Rise delay={110}>
+          <Rise id="tour-tc-gio-hoc" delay={110}>
             <Card title={t("home.hours_title")}>
               <GioHocWidget t={t} fixture={gioHocFixture} />
             </Card>

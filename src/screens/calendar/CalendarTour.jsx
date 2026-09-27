@@ -10,7 +10,7 @@ import TourGioiThieu from "../../shared/TourGioiThieu.jsx";
  *   #tour-cal-nav   — cụm « Hôm nay / ‹ / › » */
 export default function CalendarTour({ t }) {
   return (
-    <TourGioiThieu khoa="hasSeenCalendarTour" steps={[
+    <TourGioiThieu khoa="hasSeenCalendarTour" choXong="hasSeenGiaoDienTour" steps={[
       { target: "#tour-cal-grid", title: t("tour.cal1_title"), content: t("tour.cal1_body") },
       { target: "#tour-cal-form", title: t("tour.cal2_title"), content: t("tour.cal2_body") },
       { target: "#tour-cal-nav", title: t("tour.cal3_title"), content: t("tour.cal3_body"), placement: "bottom-end" },

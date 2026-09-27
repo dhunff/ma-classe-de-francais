@@ -233,7 +233,7 @@ export default function AccountPage({ name, role, email, emailVerified, onLogout
       {/* Tour hoàn thiện hồ sơ (26/09). Chờ tải xong hồ sơ — trước đó các ô
           chưa dựng. Bước 1 chỉ có đích khi hồ sơ CHƯA đủ 100% (huy hiệu ẩn khi
           đã đủ), và Joyride bỏ qua bước không tìm thấy đích — đúng ý. */}
-      <TourGioiThieu khoa="hasSeenProfileTour" sanSang={!loading} steps={[
+      <TourGioiThieu khoa="hasSeenProfileTour" choXong="hasSeenGiaoDienTour" sanSang={!loading} steps={[
         { target: "#tour-pf-completion", title: t("tour.pf1_title"), content: t("tour.pf1_body") },
         { target: "#tour-pf-username", title: t("tour.pf2_title"), content: t("tour.pf2_body") },
         { target: "#tour-pf-parcours", title: t("tour.pf3_title"), content: t("tour.pf3_body") },

@@ -142,7 +142,9 @@ export default function AvatarMenu({ session, t, dark, onToggleDark, onLogout })
               <Row Icon={Compass} onClick={() => {
                 setOpen(false);
                 try { Object.keys(localStorage).filter((k) => /^hasSeen.*Tour$/.test(k)).forEach((k) => localStorage.removeItem(k)); } catch { /* bỏ qua */ }
-                window.location.reload();
+                /* Về trang chủ của vai: tour trang chủ bắt đầu ngay ở đó, các tour
+                   khác hiện khi vào từng màn. */
+                window.location.assign(session?.role === "prof" ? "/professeur/dashboard" : "/etudiant/dashboard");
               }}>
                 {t("header.replay_tours")}
               </Row>

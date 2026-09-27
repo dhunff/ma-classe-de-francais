@@ -62,22 +62,36 @@ function TooltipRieng({ index, size, step, isLastStep, backProps, primaryProps, 
   );
 }
 
-export default function TourGioiThieu({ khoa, steps, sanSang = true, giao }) {
+/* `choXong`: khoá của một tour khác phải xem xong TRƯỚC (27/09). Hai tour cùng
+   bật trên một trang thì chồng lên nhau — vd. tour thanh trên (nền tối) và tour
+   trang chủ. Tour đi sau nghe sự kiện SU_KIEN_XONG để bắt đầu ngay khi tour
+   trước kết thúc, không cần tải lại trang. */
+const SU_KIEN_XONG = "fracile:tour-xong";
+
+export default function TourGioiThieu({ khoa, steps, sanSang = true, giao, choXong }) {
   const t = useT();
   const [chay, setChay] = useState(false);
+  const [luot, setLuot] = useState(0);   // tăng khi một tour khác xong → xét lại
+
+  useEffect(() => {
+    const nghe = () => setLuot((n) => n + 1);
+    window.addEventListener(SU_KIEN_XONG, nghe);
+    return () => window.removeEventListener(SU_KIEN_XONG, nghe);
+  }, []);
 
   /* Chờ một nhịp cho hoạt ảnh vào trang xong rồi mới đo vị trí. */
   useEffect(() => {
-    if (!sanSang || daXem(khoa)) return;
+    if (!sanSang || daXem(khoa) || (choXong && !daXem(choXong))) return;
     const hen = setTimeout(() => setChay(true), 700);
     return () => clearTimeout(hen);
-  }, [khoa, sanSang]);
+  }, [khoa, sanSang, choXong, luot]);
 
   const xuLy = ({ status, action, type }) => {
     if ([STATUS.FINISHED, STATUS.SKIPPED].includes(status)
         || (action === ACTIONS.CLOSE && type === EVENTS.STEP_AFTER)) {
       danhDau(khoa);
       setChay(false);
+      try { window.dispatchEvent(new Event(SU_KIEN_XONG)); } catch { /* bỏ qua */ }
     }
   };
 
