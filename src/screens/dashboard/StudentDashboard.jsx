@@ -12,6 +12,7 @@ import {
 import { calculateProfileCompletion } from "../../shared/profile.js";
 import StreakWidget from "./StreakWidget.jsx";
 import FollowingStreakWidget from "./FollowingStreakWidget.jsx";
+import GioHocWidget from "./GioHocWidget.jsx";
 
 /* Trang chủ học sinh.
 
@@ -33,7 +34,7 @@ import FollowingStreakWidget from "./FollowingStreakWidget.jsx";
 /* `practice` và `practiceHistory` chỉ để preview.jsx bơm fixture vào; lúc
    chạy thật bỏ trống và các khối tự nạp từ kho. */
 export default function StudentDashboard({
-  name, exercises, submissions, profile, t, onOpen, practice, practiceHistory, chuoiFixture, theoDoiFixture, bxhFixture,
+  name, exercises, submissions, profile, t, onOpen, practice, practiceHistory, chuoiFixture, theoDoiFixture, bxhFixture, gioHocFixture,
 }) {
   const navigate = useNavigate();
   const { assigned, done, todo } = studentWorkload(exercises, submissions, name);
@@ -189,6 +190,12 @@ export default function StudentDashboard({
 
           <Rise delay={100}>
             <FollowingStreakWidget t={t} fixture={theoDoiFixture} bxhFixture={bxhFixture} />
+          </Rise>
+
+          <Rise delay={110}>
+            <Card title={t("home.hours_title")}>
+              <GioHocWidget t={t} fixture={gioHocFixture} />
+            </Card>
           </Rise>
 
           <Rise delay={120}>

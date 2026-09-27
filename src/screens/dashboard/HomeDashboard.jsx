@@ -4,6 +4,7 @@ import {
   ArrowRight, Clock, AlertTriangle, UserPlus, Inbox, CheckCircle,
 } from "lucide-react";
 import { Card, EmptyState, HeroBanner, Rise, Ring } from "./parts.jsx";
+import GioHocWidget from "./GioHocWidget.jsx";
 import {
   Carousel, CARD_SHELL, LevelBadge, NewestPracticeRail, iconFor,
 } from "./PracticeRail.jsx";
@@ -160,12 +161,11 @@ export default function HomeDashboard({
                 </Card>
               </Rise>
 
-              {/* Giờ học: ô rỗng có lý do, không phải biểu đồ. Hệ thống chưa
-                  ghi thời gian học, nên mọi đường cong vẽ ra ở đây đều là bịa
-                  — cùng lý do với "Chuỗi ngày học" ở StudentDashboard. */}
+              {/* Giờ học: số THẬT từ 27/09 (migration 106). Khách chưa đăng nhập
+                  thì không có gì để đo — vẫn ô rỗng có lý do. */}
               <Rise delay={200}>
                 <Card title={t("home.hours_title")}>
-                  <EmptyState Icon={Clock} title={t("home.hours_empty")} />
+                  {session ? <GioHocWidget t={t} /> : <EmptyState Icon={Clock} title={t("home.hours_empty")} />}
                 </Card>
               </Rise>
 

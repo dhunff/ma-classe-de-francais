@@ -1054,6 +1054,8 @@ function PracticeWorkspace({ ex, back, onFinish }) {
   const t = useT();
   const [graded, setGraded] = useState(false);
   const [remote, setRemote] = useState(null);   // kết quả chấm từ máy chủ
+  /* Mốc mở bài — giờ học thật (migration 106): giây từ lúc mở tới lúc nộp. */
+  const moLuc = useRef(Date.now());
   const [diemMayChu, setDiemMayChu] = useState(null);  // { score, max } — điểm THẬT, xem chú thích dưới
   const [remaining, setRemaining] = useState(null);
   const [zen, setZen] = useState(false); // 🧘 chế độ tập trung
@@ -1100,7 +1102,8 @@ function PracticeWorkspace({ ex, back, onFinish }) {
     gradedRef.current = true;
     setGraded(timedOut ? "timeout" : true);
 
-    const res = await gradeRemote(ex.id, answersRef.current);
+    const res = await gradeRemote(ex.id, answersRef.current,
+      { giayLam: Math.round((Date.now() - moLuc.current) / 1000) });
 
     /* Máy chủ không trả lời VÀ đáp án cũng không còn ở client → không ai chấm
        được. Từ migration 022, `payload` không còn `answer`/`accepted`, nên bộ
@@ -1140,6 +1143,7 @@ function PracticeWorkspace({ ex, back, onFinish }) {
   };
 
   const retry = () => {
+    moLuc.current = Date.now();
     gradedRef.current = false; setGraded(false); setAnswers({}); setRemote(null); setDiemMayChu(null);
   };
 

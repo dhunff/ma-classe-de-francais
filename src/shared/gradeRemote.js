@@ -33,6 +33,8 @@ export async function gradeRemote(exerciseId, answers, opts = {}) {
         mode: opts.mode === "exam" ? "exam" : "practice",
         blurCount: opts.blurCount ?? 0,
         msSpent: opts.msSpent ?? {},
+        /* Giây từ lúc mở bài tới lúc nộp — nuôi ô « Giờ học » (migration 106). */
+        giayLam: opts.giayLam ?? null,
         /* Thi thử mở attempt từ đầu (rpc exam_start) để đếm lượt nghe; gửi id
            lên để hàm ĐÓNG đúng dòng đó thay vì tạo dòng thứ hai. */
         attemptId: opts.attemptId ?? null,

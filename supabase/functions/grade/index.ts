@@ -232,6 +232,11 @@ Deno.serve(async (req) => {
       score: dung,
       max: tong,
       blur_count: Number(body?.blurCount) || 0,
+      /* Giờ học (migration 106): giây từ lúc MỞ bài tới lúc nộp, trình duyệt
+         đo. Kẹp 1–10800 cho khớp CHECK — giá trị lạ thì bỏ (null), không để
+         một con số hỏng làm hỏng cả lượt ghi điểm. */
+      ...(Number.isFinite(Number(body?.giayLam)) && Number(body.giayLam) >= 1
+        ? { giay_lam: Math.min(10800, Math.round(Number(body.giayLam))) } : {}),
     };
 
     /* Thi thử mở `attempt` TỪ ĐẦU (rpc `exam_start`), vì bộ đếm nghe audio cần

@@ -241,7 +241,7 @@ const VI = {
     guest_promo_body: "Không có tài khoản thì điểm và bài đã làm sẽ không được ghi lại.",
     signup: "Đăng ký",
     hours_title: "Giờ học",
-    hours_empty: "Chưa tính được — hệ thống chưa ghi thời gian học theo ngày.",
+    hours_empty: "Đăng nhập để theo dõi giờ học của bạn.", hours_none: "Chưa có giờ học nào được ghi — làm và nộp một bài để bắt đầu đếm.", hours_error: "Không đọc được giờ học — thử tải lại trang.", hours_week: "7 ngày gần nhất", hours_hm: "{h} giờ {m} phút", hours_m: "{m} phút", hours_note: "Tính từ lúc mở bài tới lúc nộp (tối đa 3 giờ mỗi lượt). Đọc bài mà chưa nộp thì chưa được tính.",
     activity_title: "Hoạt động gần đây",
     activity_empty: "Bài bạn nộp sẽ hiện ở đây.",
     scroll_prev: "Xem thẻ trước",
@@ -747,6 +747,7 @@ function Preview() {
               practice={empty ? [] : mockRecentExercises}
               practiceHistory={empty ? {} : mockPracticeHistory}
               bxhFixture={empty ? [] : [{ hang: 1, id: "a", name: "Minh Anh", avatar: "chouette", xp: 120 }, { hang: 2, id: "me", name: "Linh", avatar: "", xp: 85, la_toi: true }, { hang: 3, id: "b", name: "Tuấn", avatar: "", xp: 40 }]}
+              gioHocFixture={empty ? { co_du_lieu: false } : { co_du_lieu: true, tong_phut: 185, ngay: [["2026-09-21",20],["2026-09-22",0],["2026-09-23",45],["2026-09-24",30],["2026-09-25",0],["2026-09-26",60],["2026-09-27",30]].map(([d, phut]) => ({ d, phut })) }}
               theoDoiFixture={empty ? [] : [{ id: "a", name: "Minh Anh", username: "minh_anh", avatar: "chouette", has_studied_today: true }, { id: "b", name: "Tuấn", username: "tuan_b1", avatar: "", has_studied_today: false }]}
               chuoiFixture={empty ? { chuoi: 0, tuan: Array(7).fill(false), homNay: 4 } : { chuoi: 5, tuan: [true, true, true, true, false, false, false], homNay: 3 }}
               profile={{ goal: "DELF B1" }} t={t} /></>
