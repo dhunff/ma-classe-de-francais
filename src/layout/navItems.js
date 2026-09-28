@@ -1,6 +1,7 @@
 import {
   LayoutDashboard, BookOpen, Users, BarChart3, Dumbbell,
   ClipboardList, CheckSquare, CalendarDays, Settings, Lightbulb, Timer, Trophy, Layers, Lightbulb as Bulb, Anchor, Inbox,
+  Map,
 } from "lucide-react";
 
 /* Điều hướng của vỏ app.
@@ -62,6 +63,13 @@ export const TEACHER_NAV = [
 
 export const STUDENT_NAV = [
   { to: "/etudiant/dashboard", labelKey: "nav.dashboard", Icon: LayoutDashboard },
+  /* Lộ trình học tập — cây kỹ năng A1 → C1. Không có `view`: route riêng
+     trong App.jsx, không nằm trong Student.jsx.
+
+     Đứng ngay sau Trang chủ và TRƯỚC « Cần làm » vì nó là màn nhìn tổng thể:
+     mở ra để biết mình đang ở đâu trong cả chặng, khác với các mục bên dưới
+     vốn là chỗ làm từng việc. */
+  { to: "/etudiant/lo-trinh", labelKey: "nav.path", Icon: Map },
   { to: "/etudiant/devoirs", labelKey: "nav.todo", Icon: ClipboardList, view: "todo" },
   { to: "/etudiant/rendus", labelKey: "nav.done", Icon: CheckSquare, view: "done" },
   { to: "/etudiant/entrainement", labelKey: "nav.practice", Icon: Dumbbell, view: "practice" },

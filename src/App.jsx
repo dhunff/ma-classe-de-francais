@@ -9,6 +9,7 @@ import { ROLE_HOME, TEACHER_NAV, STUDENT_NAV } from './layout/navItems.js'
 import ExamMode from './screens/exam/ExamMode.jsx'
 import ExamComposer from './screens/teacher/ExamComposer.jsx'
 import BoTheApp from './screens/student/BoTheApp.jsx'
+import LoTrinh from './screens/student/LoTrinh.jsx'
 import LoiGiaiUuTien from './screens/teacher/LoiGiaiUuTien.jsx'
 import DatNeo from './screens/teacher/DatNeo.jsx'
 import SoanBoThe from './screens/teacher/SoanBoThe.jsx'
@@ -294,6 +295,11 @@ function AppInner() {
               {STUDENT_NAV.filter((i) => i.view).map((i) => (
                 <Route key={i.to} path={i.to} element={studentRoute(i.view)} />
               ))}
+
+              {/* Lộ trình học tập. Nằm TRONG shell (khác /etudiant/examen):
+                  đây là màn để nhìn quanh rồi đi tiếp, nên thanh bên phải có
+                  mặt. `name` dùng để lọc bài nộp của chính em đó. */}
+              <Route path="/etudiant/lo-trinh" element={<LoTrinh name={session?.name} />} />
 
               <Route path="/etudiant/calendrier"
                 element={<CalendarView name={session?.name} exercises={exercises} t={t} />} />
