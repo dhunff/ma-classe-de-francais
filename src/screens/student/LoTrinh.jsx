@@ -54,14 +54,44 @@ const ICON_KY_NANG = { CO: Headphones, CE: BookOpen, PE: PenLine, PO: Mic };
    Một cột duy nhất rộng RONG px, các nút lệch trái/phải theo chu kỳ 4 để
    thành hình rắn bò. Đường nối và nút đọc CÙNG mảng toạ độ này — tách ra hai
    nguồn là đường đi một nơi, nút nằm một nẻo. */
+/* ── VÌ SAO CÁC SỐ NÀY LÀ THẾ ──
+   Bản đầu đặt CAO_HANG = 108 cho một nút cao 60 + nhãn hai dòng, và các nút
+   ĐÈ LÊN NHAU thật. Phép tính bị bỏ sót: một mục chiếm
+
+       đường kính nút + KHE_NHAN + NHAN_CAO
+
+   chứ không phải chỉ đường kính. Với nút 60 thì mục cao 96, sát ngưỡng; nhãn
+   dài hai dòng là chạm vòng tròn hàng dưới.
+
+   Nay NHAN_CAO là chiều cao CỐ ĐỊNH (nhãn tràn thì cắt bằng line-clamp), nên
+   chiều cao một mục là hằng số tính được, và ràng buộc trở nên kiểm được:
+
+       CAO_HANG >= DK_NUT + KHE_NHAN + NHAN_CAO
+
+   Cột mốc cao hơn nút thường VÀ có thêm dòng gợi ý, nên nó tràn xuống dưới
+   đáy hàng cuối — đó là lý do có DU_CUOI. Thiếu nó thì chữ của cột mốc đâm
+   vào tiêu đề chương kế tiếp. */
 const RONG = 300;
-const CAO_HANG = 108;
-const LECH = [0, 64, 0, -64];
+const CAO_HANG = 124;
+const LECH = [0, 76, 0, -76];
+const DK_NUT = 64;      // đường kính nút bài tập
+const DK_MOC = 84;      // đường kính cột mốc — to hơn vì nó là đích của chương
+const KHE_NHAN = 8;
+const NHAN_CAO = 30;    // 2 dòng × 11px × 1.25, làm tròn lên
+const RONG_NHAN = 104;
+const MOC_CHU_CAO = 56; // nhãn + dòng gợi ý của cột mốc
+const DU_CUOI = 24;     // chừa chỗ cho nhãn của hàng cuối
+
+/* Kiểm ngay lúc tải module: một hằng số bị sửa lệch sẽ nói ra ở console,
+   không đợi tới lúc có người nhìn thấy chữ chồng lên nhau. */
+if (CAO_HANG < DK_NUT + KHE_NHAN + NHAN_CAO) {
+  console.error("[lo-trinh] CAO_HANG quá nhỏ — nhãn sẽ đè lên nút hàng dưới.");
+}
 
 const toaDo = (i, to) => ({
   x: RONG / 2 + LECH[i % LECH.length],
   y: CAO_HANG / 2 + i * CAO_HANG,
-  r: to ? 40 : 30,
+  r: (to ? DK_MOC : DK_NUT) / 2,
 });
 
 /* Đường cong nối các tâm nút. Điểm điều khiển đặt thẳng đứng nên chỗ nối luôn
@@ -243,7 +273,10 @@ function Chuong({ chuong, xp, onMo, onThi, t }) {
      toạ độ chứ không treo bên dưới. */
   const diem = [...nodes.map((_, i) => toaDo(i, false))];
   if (motCot) diem.push(toaDo(nodes.length, true));
-  const cao = diem.length * CAO_HANG;
+  /* Hàng cuối cần chỗ cho phần chữ nằm DƯỚI tâm nút, vốn không nằm trong
+     diem.length * CAO_HANG. Cột mốc có thêm dòng gợi ý nên cần nhiều hơn. */
+  const cao = diem.length * CAO_HANG
+    + (motCot ? DK_MOC / 2 + KHE_NHAN + MOC_CHU_CAO - CAO_HANG / 2 + DU_CUOI : DU_CUOI);
 
   /* Đoạn đường đã đi: tô màu tới nút "đã xong" cuối cùng. Một sợi dây xám
      suốt cả trang thì không cho biết mình đang ở đâu. */
@@ -308,7 +341,7 @@ function Nut({ node, pos, xp, onClick, t }) {
 
   return (
     <div className="absolute flex flex-col items-center"
-      style={{ left: pos.x - 44, top: pos.y - pos.r, width: 88 }}>
+      style={{ left: pos.x - RONG_NHAN / 2, top: pos.y - pos.r, width: RONG_NHAN }}>
       <button type="button" onClick={onClick}
         title={`${tieuDe} — ${t("path.q_count", { n: soCau })}`}
         aria-label={tieuDe}
@@ -329,8 +362,12 @@ function Nut({ node, pos, xp, onClick, t }) {
         )}
       </button>
 
-      <span className={`mt-2 line-clamp-2 text-center text-[11px] font-semibold leading-tight
-        ${trangThai === "khoa" ? "text-soft" : "text-ink"}`}>
+      {/* Chiều cao CỐ ĐỊNH, không để nội dung quyết định: phép tính CAO_HANG
+          ở đầu file dựa vào con số này. Tiêu đề dài thì cắt, chứ không đẩy
+          nhãn tràn xuống nút hàng dưới. */}
+      <span className={`line-clamp-2 overflow-hidden text-center text-[11px] font-semibold leading-tight
+        ${trangThai === "khoa" ? "text-soft" : "text-ink"}`}
+        style={{ marginTop: KHE_NHAN, height: NHAN_CAO }}>
         {tieuDe}
       </span>
     </div>
@@ -343,7 +380,7 @@ function Nut({ node, pos, xp, onClick, t }) {
 function CotMoc({ moc, pos, onClick, t }) {
   return (
     <div className="absolute flex flex-col items-center"
-      style={{ left: pos.x - 60, top: pos.y - pos.r, width: 120 }}>
+      style={{ left: pos.x - RONG_NHAN / 2 - 16, top: pos.y - pos.r, width: RONG_NHAN + 32 }}>
       <button type="button" onClick={onClick} aria-label={moc.tieuDe}
         className={`flex items-center justify-center rounded-full border-0 shadow-md transition
           hover:brightness-105 active:scale-95
@@ -351,9 +388,14 @@ function CotMoc({ moc, pos, onClick, t }) {
         style={{ width: pos.r * 2, height: pos.r * 2 }}>
         <Trophy size={34} />
       </button>
-      <span className="mt-2 text-center text-xs font-extrabold text-ink">{moc.tieuDe}</span>
+      {/* Cũng cố định chiều cao, vì MOC_CHU_CAO nằm trong phép tính `cao`. */}
+      <span className="line-clamp-2 overflow-hidden text-center text-xs font-extrabold leading-tight text-ink"
+        style={{ marginTop: KHE_NHAN, height: 30 }}>
+        {moc.tieuDe}
+      </span>
       {!moc.moDuoc && (
-        <span className="mt-0.5 text-center text-[10px] font-semibold text-soft">
+        <span className="line-clamp-2 overflow-hidden text-center text-[10px] font-semibold leading-tight text-soft"
+          style={{ height: 26 }}>
           {t("path.milestone_hint")}
         </span>
       )}
