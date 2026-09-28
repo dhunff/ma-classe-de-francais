@@ -1,8 +1,7 @@
 import {
   LayoutDashboard, BookOpen, Users, BarChart3, Dumbbell,
   ClipboardList, CheckSquare, CalendarDays, Settings, Lightbulb, Timer, Trophy, Layers, Lightbulb as Bulb, Anchor, Inbox,
-  Map,
-} from "lucide-react";
+  Map, BookA } from "lucide-react";
 
 /* Điều hướng của vỏ app.
 
@@ -70,6 +69,8 @@ export const STUDENT_NAV = [
      mở ra để biết mình đang ở đâu trong cả chặng, khác với các mục bên dưới
      vốn là chỗ làm từng việc. */
   { to: "/etudiant/lo-trinh", labelKey: "nav.path", Icon: Map },
+  /* Từ điển tra nhanh — nguồn là thẻ flashcard công khai (TuDien.jsx). */
+  { to: "/etudiant/tu-dien", labelKey: "nav.dict", Icon: BookA },
   { to: "/etudiant/devoirs", labelKey: "nav.todo", Icon: ClipboardList, view: "todo" },
   { to: "/etudiant/rendus", labelKey: "nav.done", Icon: CheckSquare, view: "done" },
   { to: "/etudiant/entrainement", labelKey: "nav.practice", Icon: Dumbbell, view: "practice" },

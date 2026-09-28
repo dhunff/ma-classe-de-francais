@@ -5,6 +5,14 @@
     <link rel="icon" type="image/png" href="/favicon.png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- PWA (29/09): cài được lên màn hình chính điện thoại/máy tính.
+         CỐ Ý KHÔNG có service worker lưu đệm: SW cache mã JS là đúng cơ chế
+         « tab chạy bản cũ » đã giấu lỗi lưu ba tuần (CLAUDE.md). Chrome không
+         còn đòi SW để cài, nên ta không trả giá đó. Không dùng được offline. -->
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="theme-color" content="#2563EB" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="FRACILE" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link

@@ -17,5 +17,5 @@ export async function ghiKetQua(maMan, sao) {
   if (error) return { loi: error.message };
   const r = Array.isArray(data) ? data[0] : data;
   if (!r || r.r_ma_man !== maMan) return { loi: "Máy chủ không trả biên nhận." };
-  return { sao: r.r_sao };
+  return { sao: r.r_sao, xp: r.r_xp ?? 0 };
 }

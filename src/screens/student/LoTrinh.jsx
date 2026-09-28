@@ -15,8 +15,8 @@ import TroChoiMan from "./TroChoiMan.jsx";
  *   trùm    ← câu hỏi trộn từ MỌI bộ của chương
  *   sao     ← lo_trinh_ket_qua (migration 108/109), máy chủ giữ sao cao nhất
  *
- * Không có dữ liệu giả, không có XP: kết quả do client báo lên nên cho nó
- * sinh XP là mời cày điểm (xem chú thích 108).
+ * Không có dữ liệu giả. XP (migration 110): máy chủ cộng MỘT lần mỗi màn khi
+ * lần đầu đạt ≥1 sao — 5 XP màn thường, 15 XP thử thách — nên không cày được.
  *
  * ══ KHOÁ TUẦN TỰ ══
  * Màn kế mở khi màn trước có ≥1 sao; trùm mở khi mọi màn của chương có sao.

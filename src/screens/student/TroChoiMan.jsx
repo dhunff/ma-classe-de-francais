@@ -230,7 +230,8 @@ function KetQua({ ketThuc, luu, sai, tieuDe, onLai, onDong, t }) {
         <p className={`m-0 text-xs font-semibold ${luu?.loi ? "text-danger" : "text-soft"}`}>
           {luu === "dang" ? t("path.g_saving")
             : luu?.loi ? t("path.g_save_err", { msg: luu.loi })
-              : <span className="inline-flex items-center gap-1"><Check size={13} className="text-ok" />{t("path.g_saved")}</span>}
+              : <span className="inline-flex items-center gap-1"><Check size={13} className="text-ok" />{t("path.g_saved")}
+                  {luu?.xp > 0 && <strong className="ml-1 rounded-full bg-warn-soft px-2 py-0.5 text-ink">+{luu.xp} XP</strong>}</span>}
         </p>
       )}
       <div className="flex w-full flex-col gap-2">
