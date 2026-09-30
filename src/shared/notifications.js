@@ -150,7 +150,7 @@ export async function docThongBao(ten) {
 
   const { data, error } = await supabase
     .from("notifications")
-    .select("id, message, is_read, created_at")
+    .select("id, message, is_read, created_at, type, actor_id")
     .eq("user_id", uid)
     .order("created_at", { ascending: false })
     .limit(50);
@@ -161,7 +161,19 @@ export async function docThongBao(ten) {
     message: n.message,
     createdAt: new Date(n.created_at).getTime(),
     daDoc: n.is_read,
+    loai: n.type || "announcement",
+    actorId: n.actor_id || null,
   }));
+}
+
+/* Tên + ảnh của người gửi (vd. người vừa theo dõi mình), migration 112.
+   Máy chủ chỉ trả những người đang có thông báo gửi tới chính mình.
+   → { [uuid]: { name, username, avatar } } — {} khi không đọc được. */
+export async function docNguoiGui() {
+  try {
+    const { data, error } = await supabase.rpc("nguoi_gui_thong_bao");
+    return error || !data ? {} : data;
+  } catch { return {}; }
 }
 
 /* ── Đánh dấu đã đọc ──

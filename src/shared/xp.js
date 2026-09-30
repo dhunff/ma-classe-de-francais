@@ -62,3 +62,23 @@ export async function docBangXepHang() {
     return error ? null : (Array.isArray(data) ? data : []);
   } catch { return null; }
 }
+
+/* Những người đang theo dõi MÌNH (migration 112).
+   → [{ id, name, username, avatar, theo_doi_lai }] | null */
+export async function docNguoiTheoDoiToi() {
+  try {
+    const { data, error } = await supabase.rpc("get_nguoi_theo_doi_toi");
+    return error ? null : (Array.isArray(data) ? data : []);
+  } catch { return null; }
+}
+
+/* Theo dõi lại một người đang theo dõi mình — theo ID, vì họ có thể chưa đặt
+   @username. Máy chủ từ chối nếu người đó không theo dõi mình.
+   → { ok, loi? } */
+export async function theoDoiLai(id) {
+  try {
+    const { data, error } = await supabase.rpc("theo_doi_lai", { p_id: id });
+    if (error) return { ok: false, loi: "mang" };
+    return data ?? { ok: false, loi: "mang" };
+  } catch { return { ok: false, loi: "mang" }; }
+}

@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { Flame, UserPlus, X, Loader2, Users, UserMinus, Trophy, Star } from "lucide-react";
 import { Avatar } from "../../shared/avatars.jsx";
 import { docDangTheoDoi, theoDoi, boTheoDoi, docBangXepHang } from "../../shared/xp.js";
+import NetworkManager from "./NetworkManager.jsx";
 
 /* « Đang theo dõi » — trang chủ học sinh (26/09).
  *
@@ -16,6 +17,7 @@ import { docDangTheoDoi, theoDoi, boTheoDoi, docBangXepHang } from "../../shared
 export default function FollowingStreakWidget({ t, fixture, bxhFixture }) {
   const [ds, setDs] = useState(undefined);   // undefined = đang tải, null = lỗi
   const [mo, setMo] = useState(false);
+  const [moMang, setMoMang] = useState(false);
   /* Tab « Xếp hạng XP » (26/09): mình + người mình theo dõi, hạng tính ở máy chủ. */
   const [tab, setTab] = useState("hom_nay");
   const [bxh, setBxh] = useState(undefined);
@@ -41,6 +43,13 @@ export default function FollowingStreakWidget({ t, fixture, bxhFixture }) {
     <section className="w-full rounded-3xl bg-surface/80 p-5 font-sans shadow-[0_8px_30px_rgb(0,0,0,0.04)] backdrop-blur-md transition-colors duration-300">
       <div className="flex items-center justify-between gap-3">
         <p className="m-0 text-xs font-bold uppercase tracking-[0.14em] text-soft">{t("follow.title")}</p>
+        <span className="flex-1" />
+        {fixture === undefined && (
+          <button type="button" onClick={() => setMoMang(true)} title={t("network.title")}
+            className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border-0 bg-surface2 px-3 py-1.5 font-sans text-xs font-bold text-ink transition-colors hover:bg-primary-soft hover:text-primary">
+            <Users size={14} /> {t("network.open")}
+          </button>
+        )}
         <button type="button" onClick={() => setMo(true)}
           className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border-0 bg-primary-soft px-3 py-1.5 font-sans text-xs font-bold text-primary transition-colors hover:bg-primary hover:text-white">
           <UserPlus size={14} /> {t("follow.follow")}
@@ -116,6 +125,7 @@ export default function FollowingStreakWidget({ t, fixture, bxhFixture }) {
       </div>
       )}
 
+      {moMang && <NetworkManager t={t} dong={() => setMoMang(false)} onDoi={nap} />}
       {mo && <HopTheoDoi t={t} dong={() => setMo(false)} xong={() => { setMo(false); nap(); }} />}
     </section>
   );

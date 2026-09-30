@@ -1,5 +1,6 @@
 import React from "react";
-import { BellOff, Megaphone, AlarmClock, CheckCircle2, RotateCcw } from "lucide-react";
+import { BellOff, Megaphone, AlarmClock, CheckCircle2, RotateCcw, UserPlus } from "lucide-react";
+import { Avatar } from "../../shared/avatars.jsx";
 import { useT } from "../../shared/i18n.jsx";
 import { thoiGianTuongDoi } from "../../shared/display.js";
 
@@ -38,6 +39,7 @@ const LOAI = {
   due:     { Icon: AlarmClock,  nen: "bg-warn-soft",    chu: "text-warn",    ten: "Sắp đến hạn nộp" },
   graded:  { Icon: CheckCircle2, nen: "bg-ok-soft",     chu: "text-ok",      ten: "Bài đã được chấm" },
   redo:    { Icon: RotateCcw,   nen: "bg-danger-soft",  chu: "text-danger",  ten: "Cần làm lại" },
+  follow:  { Icon: UserPlus,    nen: "bg-primary-soft", chu: "text-primary", ten: "Người theo dõi mới" },
 };
 
 function MotThongBao({ n, onClick }) {
@@ -55,10 +57,21 @@ function MotThongBao({ n, onClick }) {
         className="flex w-full cursor-pointer items-start gap-3 rounded-xl border-0 bg-transparent p-3
                    text-left transition-colors hover:bg-surface2"
       >
-        <span aria-hidden
-              className={`grid h-9 w-9 shrink-0 place-items-center rounded-full ${kieu.nen} ${kieu.chu}`}>
-          <Icon size={17} />
-        </span>
+        {/* Thông báo « theo dõi »: ảnh người gửi, kèm huy hiệu UserPlus nhỏ ở góc
+            để vẫn đọc được LOẠI thông báo bằng mắt như các loại khác. */}
+        {n.loai === "follow" && n.actor ? (
+          <span aria-hidden className="relative shrink-0">
+            <Avatar khoa={n.actor.avatar || ""} ten={n.actor.name} size={36} dungYen />
+            <span className={`absolute -bottom-1 -right-1 grid h-5 w-5 place-items-center rounded-full ring-2 ring-surface ${kieu.nen} ${kieu.chu}`}>
+              <Icon size={11} />
+            </span>
+          </span>
+        ) : (
+          <span aria-hidden
+                className={`grid h-9 w-9 shrink-0 place-items-center rounded-full ${kieu.nen} ${kieu.chu}`}>
+            <Icon size={17} />
+          </span>
+        )}
 
         <span className="min-w-0 flex-1">
           <span className="block text-sm font-bold text-ink">{n.title ?? kieu.ten}</span>
@@ -74,7 +87,13 @@ function MotThongBao({ n, onClick }) {
               Biến thể mới của bẫy Tailwind trong CLAUDE.md: lần trước là class
               KHÔNG sinh ra CSS, lần này class có sinh ra nhưng bị class khác
               đè. `check:css` bắt được cái thứ nhất, không bắt được cái này. */}
-          <span className="mt-0.5 line-clamp-2 text-sm text-soft">{n.text}</span>
+          {n.loai === "follow" && n.actor ? (
+            <span className="mt-0.5 line-clamp-2 text-sm text-soft">
+              <span className="font-semibold text-ink">{n.actor.name}</span> đã bắt đầu theo dõi bạn.
+            </span>
+          ) : (
+            <span className="mt-0.5 line-clamp-2 text-sm text-soft">{n.text}</span>
+          )}
           {n.ts && (
             <span className="mt-1 block text-xs text-soft/80">{thoiGianTuongDoi(n.ts)}</span>
           )}

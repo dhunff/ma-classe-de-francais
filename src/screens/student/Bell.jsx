@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { C, S, LEVEL_COLORS, LEVEL_PASTEL, QTYPES, VF_OPTS } from "../../shared/tokens.js";
 import { load, save, del } from "../../shared/storage.js";
-import { docThongBao, danhDauDaDoc } from "../../shared/notifications.js";
+import { docThongBao, danhDauDaDoc, docNguoiGui } from "../../shared/notifications.js";
 import NotificationDropdown from "./NotificationDropdown.jsx";
 import { supabase } from "../../storageShim.js";
 import { useT } from "../../shared/i18n.jsx";
@@ -24,6 +24,13 @@ function Bell({ name, exercises, submissions }) {
   const [open, setOpen] = useState(false);
   const [seen, setSeen] = useState({});
   const [annonces, setAnnonces] = useState([]);
+  /* Tên + ảnh người gửi cho thông báo « theo dõi » (migration 112). Hỏi lại
+     mỗi khi xuất hiện một người gửi chưa biết. */
+  const [nguoiGui, setNguoiGui] = useState({});
+  useEffect(() => {
+    if (annonces.some((n) => n.actorId && !nguoiGui[n.actorId])) docNguoiGui().then(setNguoiGui);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [annonces]);
   /* Bắt đầu bằng `true`: lượt đọc đầu tiên chưa xong, và trong quãng đó danh
      sách rỗng KHÔNG có nghĩa là "không có thông báo nào". Hiện "Aucune
      notification" lúc ấy là nói một điều ta chưa biết. */
@@ -94,6 +101,7 @@ function Bell({ name, exercises, submissions }) {
               return [{
                 id: n.id, message: n.message, daDoc: !!n.is_read,
                 createdAt: new Date(n.created_at).getTime(),
+                loai: n.type || "announcement", actorId: n.actor_id || null,
               }, ...cu];
             });
           })
@@ -125,7 +133,8 @@ function Bell({ name, exercises, submissions }) {
     const list = [];
     annonces.forEach((n) => {
       list.push({
-        id: "ann-" + n.id, loai: "annonce", text: n.message, ts: n.createdAt,
+        id: "ann-" + n.id, loai: n.loai === "follow" ? "follow" : "annonce", text: n.message, ts: n.createdAt,
+        actor: n.actorId ? nguoiGui[n.actorId] || null : null,
         /* Hai nguồn "đã đọc", và phải xét CẢ HAI:
            · `n.daDoc` — cột `is_read` trên server, theo TÀI KHOẢN
            · `seen`    — khoá `mcf-seen-<tên>`, theo MÁY
