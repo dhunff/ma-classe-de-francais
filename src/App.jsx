@@ -11,6 +11,7 @@ import ExamComposer from './screens/teacher/ExamComposer.jsx'
 import BoTheApp from './screens/student/BoTheApp.jsx'
 import LoTrinh from './screens/student/LoTrinh.jsx'
 import TuDien from './screens/student/TuDien.jsx'
+import ThachDau from './screens/student/ThachDau.jsx'
 import LoiGiaiUuTien from './screens/teacher/LoiGiaiUuTien.jsx'
 import DatNeo from './screens/teacher/DatNeo.jsx'
 import SoanBoThe from './screens/teacher/SoanBoThe.jsx'
@@ -302,6 +303,7 @@ function AppInner() {
                   mặt. `name` dùng để lọc bài nộp của chính em đó. */}
               <Route path="/etudiant/lo-trinh" element={<LoTrinh name={session?.name} />} />
               <Route path="/etudiant/tu-dien" element={<TuDien />} />
+              <Route path="/etudiant/thach-dau" element={<ThachDau />} />
 
               <Route path="/etudiant/calendrier"
                 element={<CalendarView name={session?.name} exercises={exercises} t={t} />} />
