@@ -1,5 +1,9 @@
 # Kịch bản bài nghe tự sản xuất — lô 1 (02/10/2026)
 
+**ĐÃ THU (02/10):** cả 9 bài bằng giọng tổng hợp OpenAI (Edge Function `tao-audio`,
+kho `nghe`), thành 9 bài nháp « Écoute » — `scripts/nhap/lo5_bai_nghe.mjs`. Đề bài
+mỗi bài ghi rõ « voix de synthèse ».
+
 Nguồn audio sạch bản quyền cho A1–B1 theo chủ đề xã hội **không có** (xem phần
 cuối). Nên FRACILE tự viết kịch bản rồi thu âm — FRACILE giữ toàn quyền.
 
@@ -144,9 +148,9 @@ Ký hiệu đáp án: **✔** là đáp án đúng.
 
 | Chủ đề | Nguồn | Giấy phép | Ghi chú |
 |---|---|---|---|
-| Biến đổi khí hậu | Wikipédia parlée « Changement climatique », Wikimedia Commons, Category:Spoken French Wikipedia | CC BY-SA 4.0 — ghi tên người đọc + giấy phép | Giọng đọc bách khoa, C1 |
-| Hoài nghi khí hậu | Wikipédia parlée « Déni du changement climatique » | CC BY-SA 4.0 | C1 |
-| Bình đẳng giới | Wikipédia parlée « Histoire du féminisme » | CC BY-SA 4.0 | C1 |
+| Biến đổi khí hậu | Wikipédia parlée « Changement climatique » (File:Changement climatique.ogg, người đọc Jfade2c, 2024) | **CC0** — tự do hoàn toàn | 89 phút, 86 MB — phải cắt đoạn 2–4 phút. C1 |
+| Hoài nghi khí hậu | Wikipédia parlée « Déni du changement climatique » (người đọc Jfade2c, 2024) | **Phạm vi công cộng** | 59 phút, 58 MB — phải cắt đoạn. C1 |
+| Bình đẳng giới | Wikipédia parlée « Histoire du féminisme » (người đọc Arctara, 2015) | **GFDL** — ghi người đọc + đường dẫn giấy phép GFDL | 81 phút, 69 MB — phải cắt đoạn. C1 |
 | ~400 chủ đề đời sống (khí hậu, ô nhiễm không khí, tin giả, việc làm, giáo dục, gia đình…) | « Ce que l'Europe fait pour moi » — what-europe-does-for-me.europarl.europa.eu/fr | © Union européenne, dùng lại kể cả thương mại khi ghi nguồn và không bóp méo | **Chỉ có chữ, không còn audio** — dùng làm KỊCH BẢN thu âm B2 (đọc lại nguyên văn hoặc trích) |
 
 Đã LOẠI: Audio-Lingua (cấm đăng lại trên website khác), RFI, TV5Monde, France
