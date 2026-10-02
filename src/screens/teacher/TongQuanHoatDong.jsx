@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis } from "recharts";
-import { Activity, Clock, Award, CheckCircle2, TrendingUp, TrendingDown, Minus, FileSpreadsheet, Check, Loader2 } from "lucide-react";
+import { Activity, Clock, Award, CheckCircle2, TrendingUp, TrendingDown, Minus, FileSpreadsheet, Check, Loader2, Download } from "lucide-react";
 import { C, S } from "../../shared/tokens.js";
 import { supabase } from "../../storageShim.js";
 import { useT } from "../../shared/i18n.jsx";
@@ -131,7 +131,7 @@ export default function TongQuanHoatDong({ accounts = [] }) {
    * Cách 2 cần chủ dự án tạo tài khoản dịch vụ trên Google Cloud — việc không
    * làm thay được. Nút này vì thế đi đường 1, và chữ trên nút nói đúng điều nó
    * làm (« Xuất cho Google Sheets »), không hứa « đồng bộ » tự động. */
-  const xuatSheets = () => {
+  const bangDuLieu = () => {
     const khoi = [];
     khoi.push([t("analytics.csv_title"), new Date().toLocaleString("vi-VN")]);
     khoi.push([]);
@@ -152,6 +152,33 @@ export default function TongQuanHoatDong({ accounts = [] }) {
       r.max > 0 ? Math.round((r.score / r.max) * 100) : "",
       r.giay_lam > 0 ? Math.round(r.giay_lam / 60) : "",
     ]));
+    return khoi;
+  };
+
+  /* Mở Google Sheets (02/10, sau phản hồi « chỉ thấy tải file, không thấy
+     Google Sheets »). Không cần khoá API: mở https://sheets.new — địa chỉ
+     chính thức của Google để tạo bảng tính trống trong tài khoản Google ĐANG
+     đăng nhập trên trình duyệt — và chép dữ liệu dạng TSV vào clipboard. Dán
+     (Ctrl+V) vào ô A1 thì Sheets tự tách cột theo tab.
+
+     Mở tab TRƯỚC, đồng bộ trong cú bấm: gọi window.open sau một lệnh await thì
+     trình chặn cửa sổ bật lên sẽ chặn nó. Clipboard hỏng (trình duyệt không cho
+     phép) thì rơi về tải CSV và nói rõ. */
+  const moSheets = async () => {
+    const w = window.open("https://sheets.new", "_blank", "noopener");
+    const tsv = bangDuLieu().map((h) => h.map((c) => String(c ?? "").replace(/[\t\r\n]/g, " ")).join("\t")).join("\n");
+    try {
+      await navigator.clipboard.writeText(tsv);
+      setToast(w ? t("analytics.sheets_opened") : t("analytics.sheets_blocked"));
+    } catch {
+      xuatCsv();
+      setToast(t("analytics.clip_failed"));
+    }
+    setTimeout(() => setToast(""), 8000);
+  };
+
+  const xuatCsv = () => {
+    const khoi = bangDuLieu();
     /* Dấu phẩy làm phân cách: Google Sheets tự nhận khi nhập. BOM ở đầu để
        Excel cũng đọc đúng tiếng Việt. */
     const csv = khoi.map((h) => h.map((c) => `"${String(c ?? "").replace(/"/g, '""')}"`).join(",")).join("\n");
@@ -160,9 +187,8 @@ export default function TongQuanHoatDong({ accounts = [] }) {
     a.download = `fracile_thong_ke_${new Date().toISOString().slice(0, 10)}.csv`;
     a.click();
     setTimeout(() => URL.revokeObjectURL(a.href), 2000);
-    setToast(t("analytics.exported"));
-    setTimeout(() => setToast(""), 3500);
   };
+  const taiCsv = () => { xuatCsv(); setToast(t("analytics.exported")); setTimeout(() => setToast(""), 3500); };
 
   if (!tk) {
     return (
@@ -182,10 +208,16 @@ export default function TongQuanHoatDong({ accounts = [] }) {
           <div style={{ fontSize: 18, fontWeight: 800, color: C.ink }}>{t("analytics.title")}</div>
           <div style={{ fontSize: 13, color: C.soft }}>{t("analytics.subtitle")}</div>
         </div>
-        <button type="button" onClick={xuatSheets}
-          className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-solid border-ok/40 bg-ok-soft px-4 py-2 font-sans text-sm font-semibold text-ok transition-all hover:brightness-95">
-          <FileSpreadsheet size={17} /> {t("analytics.sync_sheets")}
-        </button>
+        <span style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+          <button type="button" onClick={moSheets}
+            className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-solid border-ok/40 bg-ok-soft px-4 py-2 font-sans text-sm font-semibold text-ok transition-all hover:brightness-95">
+            <FileSpreadsheet size={17} /> {t("analytics.sync_sheets")}
+          </button>
+          <button type="button" onClick={taiCsv}
+            className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-solid border-line bg-surface px-4 py-2 font-sans text-sm font-semibold text-ink transition-all hover:bg-surface2">
+            <Download size={16} /> {t("analytics.download_csv")}
+          </button>
+        </span>
       </div>
       {loi && <div style={{ ...S.card, color: C.danger, background: C.dangerSoft }}>{t("analytics.load_error", { msg: loi })}</div>}
 
@@ -256,7 +288,7 @@ export default function TongQuanHoatDong({ accounts = [] }) {
       </div>
 
       {toast && (
-        <div role="status" className="fixed bottom-6 right-6 z-50 inline-flex items-center gap-2 rounded-xl bg-surface px-4 py-3 text-sm font-semibold text-ink shadow-2xl"
+        <div role="status" className="fixed bottom-6 right-6 z-50 inline-flex max-w-sm items-start gap-2 rounded-xl bg-surface px-4 py-3 text-sm font-semibold text-ink shadow-2xl"
           style={{ border: `1px solid ${C.line}` }}>
           <Check size={16} style={{ color: C.ok }} /> {toast}
         </div>
