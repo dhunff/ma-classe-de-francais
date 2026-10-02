@@ -83,11 +83,12 @@ Deno.serve(async (req) => {
 
   // ── Tổng hợp từng đoạn ──
   const model = Deno.env.get("TTS_MODEL") || "gpt-4o-mini-tts";
-  const manh: Uint8Array[] = [];
-  for (const d of doan) {
+  /* Gọi SONG SONG, giữ thứ tự bằng chỉ số: gọi lần lượt thì 6 đoạn đã vượt giới
+     hạn chờ 150 giây của Edge Function (02/10, bài « six annonces »). */
+  const ketQua = await Promise.all(doan.map(async (d: any) => {
     const giong = GIONG.has(d?.giong) ? d.giong : "alloy";
     const chu = String(d?.chu ?? "").trim();
-    if (!chu) continue;
+    if (!chu) return null;
     const r = await fetch("https://api.openai.com/v1/audio/speech", {
       method: "POST",
       headers: { Authorization: `Bearer ${KHOA}`, "Content-Type": "application/json" },
@@ -96,9 +97,12 @@ Deno.serve(async (req) => {
         instructions: String(d?.cach ?? "Parle en français de France, ton naturel, débit clair."),
       }),
     });
-    if (!r.ok) return json(502, { ok: false, ma: "TTS_LOI", chi_tiet: (await r.text()).slice(0, 300) });
-    manh.push(new Uint8Array(await r.arrayBuffer()));
-  }
+    if (!r.ok) return { loi: (await r.text()).slice(0, 300) };
+    return { bin: new Uint8Array(await r.arrayBuffer()) };
+  }));
+  const hong = ketQua.find((k) => k && "loi" in k);
+  if (hong) return json(502, { ok: false, ma: "TTS_LOI", chi_tiet: (hong as any).loi });
+  const manh = ketQua.filter((k): k is { bin: Uint8Array } => !!k && "bin" in k).map((k) => k.bin);
   const tong = manh.reduce((n, m) => n + m.length, 0);
   const tep = new Uint8Array(tong);
   let o = 0;
