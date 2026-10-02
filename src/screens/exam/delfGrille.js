@@ -200,6 +200,50 @@ export const GRILLE = {
         aide_vi: "Kiểm soát ngữ pháp tốt; lỗi thưa và không gây hiểu nhầm." },
     ],
   },
+  /* ⚠️ C1 (02/10) — PHỎNG THEO, quy về thang 25. C1 thuộc DALF, không phải
+     DELF: bài viết thật gồm TỔNG HỢP tài liệu + ESSAI lập luận, thang riêng.
+     Hệ thống coi mỗi phần là một khối 25 điểm, nên đây là bản rút gọn cho
+     việc TỰ CHẤM một bài essai — đúng tinh thần A1/A2 ở trên, không phải bản
+     sao grille chính thức. Trước khi có bản này, đề C1 rơi về thang B1. */
+  C1: {
+    minWords: 250,
+    adapted: true,
+    consigne: "Essai argumenté d'environ 250 mots sur une question de société.",
+    criteres: [
+      { id: "consigne",     max: 2, label: "Respect de la consigne",
+        label_vi: "Bám sát đề bài",
+        aide: "Traite la question posée, respecte le type d'écrit et la longueur.",
+        aide_vi: "Trả lời ĐÚNG câu hỏi đề đặt ra (không lạc sang chủ đề gần), đúng thể loại, đủ độ dài." },
+      { id: "sociolang",    max: 2, label: "Correction sociolinguistique",
+        label_vi: "Chọn đúng giọng văn",
+        aide: "Registre soutenu, adapté au lecteur, maintenu sur tout le texte.",
+        aide_vi: "Giọng văn trang trọng, hợp người đọc, giữ đều từ đầu đến cuối." },
+      { id: "argumenter",   max: 5, label: "Capacité à argumenter",
+        label_vi: "Lập luận",
+        aide: "Prend position, développe des arguments nuancés, réfute les objections, illustre.",
+        aide_vi: "Có lập trường rõ; luận điểm có sắc thái, phản bác được ý kiến ngược lại, có ví dụ cụ thể." },
+      { id: "coherence",    max: 4, label: "Cohérence et structure",
+        label_vi: "Mạch lạc và liên kết",
+        aide: "Introduction avec problématique, plan visible, conclusion qui répond à la question.",
+        aide_vi: "Mở bài nêu vấn đề, thân bài có dàn ý rõ, kết bài trả lời đúng câu hỏi." },
+      { id: "etendue_lex",  max: 3, label: "Étendue et précision du vocabulaire",
+        label_vi: "Vốn từ rộng",
+        aide: "Lexique riche et précis, y compris abstrait ; reformulations.",
+        aide_vi: "Từ vựng phong phú, chính xác, kể cả từ trừu tượng; biết diễn đạt lại để tránh lặp." },
+      { id: "orthographe",  max: 2, label: "Orthographe et ponctuation",
+        label_vi: "Chính tả và dấu câu",
+        aide: "Orthographe et ponctuation exactes, quelques lapsus tolérés.",
+        aide_vi: "Chính tả và dấu câu chuẩn; chỉ vài lỗi sơ suất." },
+      { id: "phrases",      max: 3, label: "Complexité des phrases",
+        label_vi: "Cấu trúc câu",
+        aide: "Structures complexes variées, maîtrisées.",
+        aide_vi: "Nhiều cấu trúc phức (mệnh đề quan hệ ghép, nominalisation, participe) và dùng đúng." },
+      { id: "morpho",       max: 4, label: "Correction grammaticale",
+        label_vi: "Hợp giống–số và chia động từ",
+        aide: "Haut niveau de correction ; erreurs rares et difficiles à repérer.",
+        aide_vi: "Ngữ pháp chuẩn ở mức cao; lỗi hiếm và khó nhận ra — subjonctif, concordance, accords." },
+    ],
+  },
 };
 
 export const tongDiem = (level) =>

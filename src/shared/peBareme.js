@@ -281,6 +281,61 @@ export const BAREME = {
       [0, "Không kiểm soát được"],
     ],
   },
+  /* C1 (02/10) — mốc cho thang PHỎNG THEO ở delfGrille.js. Bài essai DALF C1. */
+  C1: {
+    consigne: [
+      [2, "Trả lời đúng câu hỏi đề đặt ra, đúng thể loại essai, đủ độ dài"],
+      [1, "Đúng chủ đề nhưng trượt sang câu hỏi gần, hoặc thiếu độ dài rõ rệt"],
+      [0.5, "Chỉ chạm vào chủ đề, không trả lời câu hỏi"],
+      [0, "Lạc đề hoặc quá ngắn để đánh giá"],
+    ],
+    sociolang: [
+      [2, "Giọng trang trọng, khách quan, giữ đều cả bài"],
+      [1, "Trang trọng về cơ bản, lẫn vài chỗ khẩu ngữ"],
+      [0.5, "Giọng thân mật hoặc cảm tính ở nhiều đoạn"],
+      [0, "Sai hẳn giọng văn"],
+    ],
+    argumenter: [
+      [5, "Lập trường rõ; luận điểm có sắc thái, phản bác thuyết phục, ví dụ chính xác"],
+      [4, "Lập luận chặt, có phản bác, ví dụ đôi chỗ chung chung"],
+      [3, "Lập luận rõ nhưng một chiều, không xử lý ý kiến ngược"],
+      [2, "Có luận điểm nhưng nông, ví dụ thiếu hoặc sáo"],
+      [1, "Chủ yếu liệt kê ý"],
+      [0, "Không có lập luận"],
+    ],
+    coherence: [
+      [4, "Mở bài có vấn đề rõ, dàn ý hiện ra, chuyển đoạn mượt, kết bài trả lời câu hỏi"],
+      [3, "Bố cục rõ, chuyển đoạn đôi chỗ gượng"],
+      [2, "Có bố cục nhưng mở hoặc kết yếu"],
+      [1, "Đoạn văn rời rạc, khó thấy dàn ý"],
+      [0, "Không có bố cục"],
+    ],
+    etendue_lex: [
+      [3, "Từ vựng phong phú, chính xác, cả từ trừu tượng; diễn đạt lại khéo"],
+      [2, "Từ vựng rộng, đôi chỗ thiếu chính xác hoặc lặp"],
+      [1, "Từ vựng đủ dùng nhưng đơn giản so với C1"],
+      [0, "Từ vựng không đủ cho chủ đề"],
+    ],
+    orthographe: [
+      [2, "Chính tả và dấu câu chuẩn, chỉ vài lỗi sơ suất"],
+      [1, "Lỗi rải rác nhưng đọc vẫn trôi"],
+      [0.5, "Lỗi khá dày"],
+      [0, "Lỗi cản việc đọc"],
+    ],
+    phrases: [
+      [3, "Nhiều cấu trúc phức, đa dạng và kiểm soát tốt"],
+      [2, "Có câu phức, đôi chỗ nặng nề hoặc lặp kiểu"],
+      [1, "Chủ yếu câu đơn hoặc ghép đơn giản"],
+      [0, "Cấu trúc câu không kiểm soát được"],
+    ],
+    morpho: [
+      [4, "Ngữ pháp chuẩn ở mức cao; lỗi hiếm và khó nhận ra"],
+      [3, "Vài lỗi không hệ thống (subjonctif, concordance, accords)"],
+      [2, "Lỗi đều đặn nhưng không gây hiểu nhầm"],
+      [1, "Lỗi thường xuyên, đôi khi gây hiểu nhầm"],
+      [0, "Không kiểm soát được"],
+    ],
+  },
 };
 
 /* Xếp tiêu chí vào ba khối của grille chính thức.

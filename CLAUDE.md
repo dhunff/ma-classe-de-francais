@@ -86,6 +86,11 @@ không lỗi, mà `count(*)` đo ngay sau đó vẫn ra 0 — đã dính 09/09 k
 thẻ thử. Cần ghi nhiều bảng thì viết thành MỘT câu lệnh (CTE ghi dữ liệu), hoặc
 nhiều câu chạy riêng. Và luôn đếm lại ở một lần chạy khác.
 
+**Câu SQL dài thì chạy bằng `-f <tệp>`, đừng truyền làm tham số.** Trên Windows, chuỗi
+quá ~8 nghìn ký tự làm CLI in « The command line is too long » rồi THOÁT KHÔNG LỖI
+— vòng lặp `grep ERROR` không bắt được, bài đọc C1 (02/10) lặng lẽ không vào database
+và đề thi tham chiếu tới nó hỏng khoá ngoại. Luôn đếm lại sau khi ghi.
+
 Ngược lại, `begin; … rollback;` thì lại rất hữu ích — đó là cách thử RLS mà
 không đụng dữ liệu (xem ngay dưới).
 
