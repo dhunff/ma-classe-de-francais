@@ -40,6 +40,7 @@ export async function docCacBo() {
     kyNang: b.ky_nang,
     moTa: b.mo_ta,
     congKhai: b.cong_khai,
+    ord: b.ord ?? 0,
     /* PostgREST trả phép đếm lồng dưới dạng [{count: n}]. Không có thẻ nào thì
        nó là mảng rỗng chứ không phải 0 — đọc thẳng `[0].count` sẽ ra undefined
        và giao diện hiện "undefined thẻ". */

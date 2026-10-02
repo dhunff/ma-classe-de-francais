@@ -14,6 +14,8 @@ import TuDien from './screens/student/TuDien.jsx'
 import ThachDau from './screens/student/ThachDau.jsx'
 import LoiGiaiUuTien from './screens/teacher/LoiGiaiUuTien.jsx'
 import DatNeo from './screens/teacher/DatNeo.jsx'
+import DuyetNhap from './screens/teacher/DuyetNhap.jsx'
+import LoTrinhGiaoVien from './screens/teacher/LoTrinhGiaoVien.jsx'
 import SoanBoThe from './screens/teacher/SoanBoThe.jsx'
 import XemLienHe from './screens/teacher/XemLienHe.jsx'
 import LandingPage from './screens/public/LandingPage.jsx'
@@ -275,6 +277,8 @@ function AppInner() {
               <Route path="/professeur/loi-giai" element={<LoiGiaiUuTien />} />
               <Route path="/professeur/neo" element={<DatNeo />} />
               <Route path="/professeur/bo-the" element={<SoanBoThe />} />
+              <Route path="/professeur/duyet-nhap" element={<DuyetNhap />} />
+              <Route path="/professeur/lo-trinh" element={<LoTrinhGiaoVien />} />
               <Route path="/professeur/lien-he" element={<XemLienHe />} />
 
               <Route path="/professeur/*" element={<Navigate to="/professeur/dashboard" replace />} />

@@ -1,7 +1,7 @@
 import {
   LayoutDashboard, BookOpen, Users, BarChart3, Dumbbell,
   ClipboardList, CheckSquare, CalendarDays, Settings, Lightbulb, Timer, Trophy, Layers, Lightbulb as Bulb, Anchor, Inbox,
-  Map, BookA, Swords } from "lucide-react";
+  Map, BookA, Swords, FileCheck2 } from "lucide-react";
 
 /* Điều hướng của vỏ app.
 
@@ -54,6 +54,11 @@ export const TEACHER_NAV = [
   /* Soạn Flashcard. Đặt cạnh « Neo ngữ liệu » vì cùng loại việc: chuẩn bị ngữ
      liệu cho học sinh, khác với ba mục trên vốn là theo dõi và chấm. */
   { to: "/professeur/bo-the", labelKey: "nav.decks", Icon: Layers },
+  /* Lộ trình (bật/tắt màn, thứ tự, số câu, tiến độ) — đứng sau Flashcard vì
+     mỗi màn lộ trình CHÍNH LÀ một bộ flashcard. */
+  { to: "/professeur/lo-trinh", labelKey: "nav.path", Icon: Map },
+  /* Duyệt bài nháp do scripts/nhap soạn sẵn, xuất bản một cú bấm. */
+  { to: "/professeur/duyet-nhap", labelKey: "nav.drafts", Icon: FileCheck2 },
   /* Đăng ký tư vấn. Đứng cuối vì nó không phải việc dạy học — nhưng phải có
      mặt: một người để lại số điện thoại mà không ai thấy là một người bị bỏ
      rơi. */

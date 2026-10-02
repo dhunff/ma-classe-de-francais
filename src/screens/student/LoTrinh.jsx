@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { Check, Lock, Play, Crown, Star, Headphones, BookOpen, PenLine, Mic } from "lucide-react";
 import { docCacBo, docTheTrongBo } from "../../shared/boThe.js";
 import { KY_NANG } from "../../shared/kyNang.js";
-import { docKetQua, ghiKetQua } from "../../shared/loTrinhStore.js";
+import { docKetQua, ghiKetQua, docCauHinh } from "../../shared/loTrinhStore.js";
 import { useT } from "../../shared/i18n.jsx";
 import TroChoiMan from "./TroChoiMan.jsx";
 
@@ -68,10 +68,14 @@ export default function LoTrinh() {
 
   useEffect(() => {
     let huy = false;
-    Promise.all([docCacBo(), docKetQua()]).then(([b, k]) => {
+    Promise.all([docCacBo(), docKetQua(), docCauHinh()]).then(([b, k, ch]) => {
       if (huy) return;
       if (b === null) { setBo(false); return; }
-      setBo(b.filter((x) => x.congKhai && x.soThe >= 4));
+      /* Cấu hình của giáo viên (113): bộ bị tắt thì rời lộ trình, thứ tự và số
+         câu theo giáo viên đặt. Bộ chưa có dòng cấu hình → mặc định. */
+      setBo(b.filter((x) => x.congKhai && x.soThe >= 4 && ch.get(x.id)?.bat !== false)
+        .map((x) => ({ ...x, thuTu: ch.get(x.id)?.ord ?? 1000 + (x.ord ?? 0), soCau: ch.get(x.id)?.soCau ?? 8 }))
+        .sort((a, z) => a.thuTu - z.thuTu));
       if (k) setKetQua(k);
     });
     return () => { huy = true; };
@@ -94,7 +98,7 @@ export default function LoTrinh() {
       if (!ds.length) return null;
       const man = ds.map((b) => {
         const sao = ketQua.get(`bo:${b.id}`) || 0;
-        return { maMan: `bo:${b.id}`, boId: b.id, tieuDe: b.ten, soThe: b.soThe, sao, trangThai: trangThai(sao) };
+        return { maMan: `bo:${b.id}`, boId: b.id, tieuDe: b.ten, soThe: b.soThe, soCau: b.soCau, sao, trangThai: trangThai(sao) };
       });
       const saoTrum = ketQua.get(`trum:${ma}`) || 0;
       const trum = { maMan: `trum:${ma}`, sao: saoTrum, trangThai: trangThai(saoTrum), boIds: ds.map((b) => b.id) };
@@ -115,7 +119,7 @@ export default function LoTrinh() {
       maMan: m.maMan,
       tieuDe: laTrum ? t("path.boss_of", { ky: t(`path.sk_${ma}`) }) : m.tieuDe,
       the: ds.flat(),
-      soCau: laTrum ? 12 : 8,
+      soCau: laTrum ? 12 : (m.soCau || 8),
       ghep: !laTrum,
     });
   };
