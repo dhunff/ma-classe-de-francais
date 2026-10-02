@@ -164,6 +164,21 @@ export default function TongQuanHoatDong({ accounts = [] }) {
      Mở tab TRƯỚC, đồng bộ trong cú bấm: gọi window.open sau một lệnh await thì
      trình chặn cửa sổ bật lên sẽ chặn nó. Clipboard hỏng (trình duyệt không cho
      phép) thì rơi về tải CSV và nói rõ. */
+  /* ĐỒNG BỘ THẬT (02/10): máy chủ tự ghi vào bảng tính cố định qua Edge
+     Function dong-bo-sheets → Apps Script (docs/google-sheets/HUONG-DAN.md).
+     Số liệu do MÁY CHỦ đọc và tính, không gửi từ trình duyệt. « Đã đồng bộ »
+     chỉ hiện khi Google trả biên nhận số dòng. */
+  const [dongBo, setDongBo] = useState(null);   // null | "dang" | {ok, so_dong, url} | {loi}
+  const dongBoSheets = async () => {
+    setDongBo("dang");
+    const { data, error } = await supabase.functions.invoke("dong-bo-sheets", { body: {} });
+    let kq = data;
+    if (error) {
+      try { kq = await error.context.json(); } catch { kq = { ok: false, ma: "MANG" }; }
+    }
+    setDongBo(kq?.ok ? kq : { loi: kq?.ma || "MANG", chiTiet: kq?.chi_tiet });
+  };
+
   const moSheets = async () => {
     const w = window.open("https://sheets.new", "_blank", "noopener");
     const tsv = bangDuLieu().map((h) => h.map((c) => String(c ?? "").replace(/[\t\r\n]/g, " ")).join("\t")).join("\n");
@@ -209,9 +224,13 @@ export default function TongQuanHoatDong({ accounts = [] }) {
           <div style={{ fontSize: 13, color: C.soft }}>{t("analytics.subtitle")}</div>
         </div>
         <span style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-          <button type="button" onClick={moSheets}
-            className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-solid border-ok/40 bg-ok-soft px-4 py-2 font-sans text-sm font-semibold text-ok transition-all hover:brightness-95">
-            <FileSpreadsheet size={17} /> {t("analytics.sync_sheets")}
+          <button type="button" onClick={dongBoSheets} disabled={dongBo === "dang"}
+            className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-solid border-ok/40 bg-ok-soft px-4 py-2 font-sans text-sm font-semibold text-ok transition-all hover:brightness-95 disabled:cursor-wait disabled:opacity-70">
+            {dongBo === "dang" ? <Loader2 size={17} className="animate-spin" /> : <FileSpreadsheet size={17} />} {t("analytics.sync_auto")}
+          </button>
+          <button type="button" onClick={moSheets} title={t("analytics.sync_sheets")}
+            className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-solid border-line bg-surface px-4 py-2 font-sans text-sm font-semibold text-ink transition-all hover:bg-surface2">
+            {t("analytics.sync_sheets")}
           </button>
           <button type="button" onClick={taiCsv}
             className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-solid border-line bg-surface px-4 py-2 font-sans text-sm font-semibold text-ink transition-all hover:bg-surface2">
@@ -220,6 +239,23 @@ export default function TongQuanHoatDong({ accounts = [] }) {
         </span>
       </div>
       {loi && <div style={{ ...S.card, color: C.danger, background: C.dangerSoft }}>{t("analytics.load_error", { msg: loi })}</div>}
+      {dongBo && dongBo !== "dang" && (
+        <div role="status" style={{ ...S.card, background: dongBo.ok ? C.okSoft : C.dangerSoft, color: C.ink, display: "flex", flexWrap: "wrap", alignItems: "center", gap: 10 }}>
+          {dongBo.ok ? (
+            <>
+              <Check size={18} style={{ color: C.ok }} />
+              <span style={{ flex: 1, minWidth: 200 }}>
+                {t("analytics.sync_ok", { ds: Object.entries(dongBo.so_dong || {}).map(([k, v]) => `${k}: ${v}`).join(" · "), luc: dongBo.cap_nhat || "" })}
+              </span>
+              {dongBo.url && <a href={dongBo.url} target="_blank" rel="noopener noreferrer" style={{ color: C.primary, fontWeight: 700 }}>{t("analytics.open_sheet")}</a>}
+            </>
+          ) : (
+            <span>{t(`analytics.sync_err_${dongBo.loi}`) === `analytics.sync_err_${dongBo.loi}`
+              ? t("analytics.sync_err", { ma: dongBo.loi + (dongBo.chiTiet ? " — " + String(dongBo.chiTiet).slice(0, 160) : "") })
+              : t(`analytics.sync_err_${dongBo.loi}`)}</span>
+          )}
+        </div>
+      )}
 
       {/* ── 4 thẻ ── */}
       <div style={{ display: "grid", gap: 16, gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))" }}>

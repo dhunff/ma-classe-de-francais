@@ -43,7 +43,7 @@ import { AlertTriangle } from "lucide-react";
    mà trông như hoàn chỉnh còn tệ hơn một chính sách tự nói nó thiếu. */
 export const EMAIL_LIEN_HE = "contact.fracile@gmail.com";   // chủ dự án chọn 23/09/2026
 
-const CAP_NHAT = "27/09/2026";
+const CAP_NHAT = "02/10/2026";
 
 function LienHe() {
   if (EMAIL_LIEN_HE) {
@@ -231,6 +231,7 @@ export function TrangBaoMat() {
           <li><strong>Supabase</strong> — lưu cơ sở dữ liệu, tài khoản và bản ghi âm.</li>
           <li><strong>Vercel</strong> — phục vụ trang web.</li>
           <li><strong>OpenAI</strong> — chỉ khi chính bạn bấm: « Xin gợi ý » ở màn tự chấm bài viết (gửi đề bài và bài viết), hoặc « AI nhận xét » cạnh một bản ghi âm (gửi bản ghi âm giọng nói và đề bài để chép lời rồi nhận xét). Không có gì được gửi nếu bạn không bấm.</li>
+          <li><strong>Google (Google Sheets)</strong> — chỉ khi giáo viên bấm « Đồng bộ Google Sheets » ở trang Thống kê: tên hiển thị, @username và kết quả học tập 30 ngày gần nhất (số lượt làm bài, điểm, thời gian học, sao lộ trình, XP) được ghi vào một bảng tính Google do FRACILE quản lý, chỉ người quản trị xem được. Không gửi email, số điện thoại hay bài làm.</li>
           <li><strong>SePay</strong> — báo cho hệ thống khi có giao dịch chuyển khoản.</li>
           <li><strong>Google</strong> — chỉ khi bạn chọn đăng nhập bằng Google.</li>
         </UL>

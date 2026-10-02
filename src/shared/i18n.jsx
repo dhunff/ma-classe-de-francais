@@ -62,6 +62,7 @@ const I18N = {
       open_menu: "Mở menu", close: "Đóng menu" },
     /* Lộ trình học tập (screens/student/LoTrinh.jsx). */
     analytics: {
+      sync_auto: "Đồng bộ Google Sheets", sync_ok: "Đã ghi vào Google Sheets — {ds} dòng (cập nhật {luc}).", open_sheet: "Mở bảng tính", sync_err: "Chưa đồng bộ được: {ma}", sync_err_CHUA_CAU_HINH_SHEETS: "Chưa nối Google Sheets. Làm theo docs/google-sheets/HUONG-DAN.md (khoảng 5 phút, một lần) rồi bấm lại.", sync_err_SAI_KHOA: "Google Sheets từ chối: khoá bí mật không khớp. Chạy lại taoKhoa trong Apps Script và đặt lại SHEETS_TOKEN.", sync_err_CHI_GIAO_VIEN: "Chỉ tài khoản giáo viên đồng bộ được.", sync_err_MANG: "Không gọi được máy chủ — kiểm tra kết nối rồi thử lại.", 
       title: "Tổng quan 7 ngày qua",
       subtitle: "Số liệu thật từ các lượt làm bài, so với 7 ngày trước đó.",
       sync_sheets: "Mở trong Google Sheets", download_csv: "Tải CSV", sheets_opened: "Đã mở Google Sheets ở tab mới và chép sẵn dữ liệu — bấm vào ô A1 rồi nhấn Ctrl+V.", sheets_blocked: "Đã chép dữ liệu, nhưng trình duyệt chặn tab mới. Cho phép cửa sổ bật lên, hoặc tự mở sheets.new rồi nhấn Ctrl+V.", clip_failed: "Trình duyệt không cho chép dữ liệu, nên đã tải tệp CSV thay thế — trong Google Sheets chọn Tệp → Nhập.",
@@ -520,6 +521,7 @@ const I18N = {
       primary: "Navigation principale", collapse: "Réduire le menu", expand: "Déployer le menu", menu: "Menu", people: "Votre classe",
       open_menu: "Ouvrir le menu", close: "Fermer le menu" },
     analytics: {
+      sync_auto: "Synchroniser Google Sheets", sync_ok: "Écrit dans Google Sheets — {ds} lignes (mise à jour {luc}).", open_sheet: "Ouvrir la feuille", sync_err: "Synchronisation impossible : {ma}", sync_err_CHUA_CAU_HINH_SHEETS: "Google Sheets n'est pas encore connecté. Suivez docs/google-sheets/HUONG-DAN.md (5 minutes, une fois).", sync_err_SAI_KHOA: "Google Sheets a refusé : clé secrète incorrecte.", sync_err_CHI_GIAO_VIEN: "Réservé aux enseignants.", sync_err_MANG: "Serveur injoignable — vérifiez la connexion.", 
       title: "Aperçu des 7 derniers jours",
       subtitle: "Données réelles issues des tentatives, comparées aux 7 jours précédents.",
       sync_sheets: "Ouvrir dans Google Sheets", download_csv: "Télécharger CSV", sheets_opened: "Google Sheets est ouvert dans un nouvel onglet et les données sont copiées — cliquez sur A1 puis Ctrl+V.", sheets_blocked: "Données copiées, mais le navigateur a bloqué le nouvel onglet. Autorisez les fenêtres ou ouvrez sheets.new puis Ctrl+V.", clip_failed: "Le navigateur refuse la copie : le CSV a été téléchargé — dans Google Sheets, Fichier → Importer.",
@@ -972,6 +974,7 @@ const I18N = {
       menu: "Menu", people: "Your class",
       open_menu: "Open menu", close: "Close menu" },
     analytics: {
+      sync_auto: "Sync Google Sheets", sync_ok: "Written to Google Sheets — {ds} rows (updated {luc}).", open_sheet: "Open sheet", sync_err: "Couldn't sync: {ma}", sync_err_CHUA_CAU_HINH_SHEETS: "Google Sheets isn't connected yet. Follow docs/google-sheets/HUONG-DAN.md (5 minutes, once).", sync_err_SAI_KHOA: "Google Sheets refused: wrong secret key.", sync_err_CHI_GIAO_VIEN: "Teachers only.", sync_err_MANG: "Couldn't reach the server — check your connection.", 
       title: "Last 7 days",
       subtitle: "Real data from attempts, compared with the previous 7 days.",
       sync_sheets: "Open in Google Sheets", download_csv: "Download CSV", sheets_opened: "Google Sheets opened in a new tab and the data is copied — click cell A1 and press Ctrl+V.", sheets_blocked: "Data copied, but the browser blocked the new tab. Allow pop-ups, or open sheets.new and press Ctrl+V.", clip_failed: "The browser blocked copying, so the CSV was downloaded instead — in Google Sheets use File → Import.",
