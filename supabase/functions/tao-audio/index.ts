@@ -40,6 +40,40 @@ Deno.serve(async (req) => {
 
   let than: any = null;
   try { than = await req.json(); } catch { /* kiểm dưới */ }
+
+  /* ── Hai chế độ CHỈ cho quản trị (02/10), dùng khi cắt đoạn Wikipédia parlée:
+     · taiLen: { ten, base64 } — đưa một mp3 đã cắt sẵn lên kho `nghe`.
+     · chepLoi: { ten } — chép lời mp3 trong kho, kèm mốc thời gian từng đoạn,
+       để chọn điểm cắt và viết câu hỏi theo đúng lời đã đọc. */
+  if (than?.taiLen || than?.chepLoi || than?.xoa) {
+    if (!laQt) return json(403, { ok: false, ma: "CHI_QUAN_TRI" });
+    const tenTep = String(than.ten ?? "");
+    if (!TEN.test(tenTep)) return json(400, { ok: false, ma: "TEN_KHONG_HOP_LE" });
+    // xoa: dọn tệp thử / bản cắt tạm. Không xoá được bằng SQL (Storage chặn).
+    if (than.xoa) {
+      const { data, error } = await admin.storage.from("nghe").remove([`${tenTep}.mp3`]);
+      return error ? json(500, { ok: false, ma: "XOA_LOI", chi_tiet: error.message }) : json(200, { ok: true, da_xoa: (data ?? []).length });
+    }
+    if (than.taiLen) {
+      const bin = Uint8Array.from(atob(String(than.base64 ?? "")), (c) => c.charCodeAt(0));
+      if (bin.length < 1000 || bin.length > 12 * 1024 * 1024) return json(400, { ok: false, ma: "KICH_THUOC" });
+      const { error } = await admin.storage.from("nghe").upload(`${tenTep}.mp3`, bin, { contentType: "audio/mpeg", upsert: true });
+      if (error) return json(500, { ok: false, ma: "LUU_LOI", chi_tiet: error.message });
+      return json(200, { ok: true, url: admin.storage.from("nghe").getPublicUrl(`${tenTep}.mp3`).data.publicUrl, so_byte: bin.length });
+    }
+    const { data: tep, error } = await admin.storage.from("nghe").download(`${tenTep}.mp3`);
+    if (error || !tep) return json(404, { ok: false, ma: "KHONG_THAY_TEP" });
+    const fd = new FormData();
+    fd.append("file", new File([tep], `${tenTep}.mp3`, { type: "audio/mpeg" }));
+    fd.append("model", "whisper-1");
+    fd.append("language", "fr");
+    fd.append("response_format", "verbose_json");
+    const r = await fetch("https://api.openai.com/v1/audio/transcriptions", { method: "POST", headers: { Authorization: `Bearer ${KHOA}` }, body: fd });
+    if (!r.ok) return json(502, { ok: false, ma: "CHEP_LOI_LOI", chi_tiet: (await r.text()).slice(0, 300) });
+    const kq = await r.json();
+    return json(200, { ok: true, doan: (kq.segments ?? []).map((s: any) => [Math.round(s.start * 10) / 10, Math.round(s.end * 10) / 10, s.text]) });
+  }
+
   const ten = String(than?.ten ?? "");
   const doan = Array.isArray(than?.doan) ? than.doan : [];
   if (!TEN.test(ten)) return json(400, { ok: false, ma: "TEN_KHONG_HOP_LE" });
