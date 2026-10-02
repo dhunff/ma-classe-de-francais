@@ -14,6 +14,7 @@ import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveCo
 import { Users, ClipboardCheck, Gauge, Award, UserX, Download, Loader2 } from "lucide-react";
 import { C, S } from "../../shared/tokens.js";
 import { supabase } from "../../storageShim.js";
+import TongQuanHoatDong from "./TongQuanHoatDong.jsx";
 
 const NGUONG_DAT = 50; // % — cùng ngưỡng bảng điểm cũ dùng để tô xanh/đỏ
 const NGAY = 86400000;
@@ -129,6 +130,10 @@ export default function ThongKe({ accounts = [] }) {
 
   return (
     <div style={{ display: "grid", gap: 16 }}>
+      {/* Tổng quan 7 ngày + xuất Google Sheets (02/10). Phần dưới là số liệu
+          từ đầu tới nay, giữ nguyên như bản 24/09. */}
+      <TongQuanHoatDong accounts={accounts} />
+      <div style={{ ...S.label, margin: "8px 0 0" }}>Từ đầu tới nay</div>
       {loi && (
         <div style={{ ...the, color: C.danger, background: C.dangerSoft }}>
           Không đọc được lượt làm bài: {loi}. Các số dưới đây có thể thiếu.
