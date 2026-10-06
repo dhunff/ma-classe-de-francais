@@ -3,6 +3,7 @@ import { Lock, ChevronDown, BookOpen, Lightbulb, FileCheck, Folder, Star } from 
 import { FloatingLayer, KebabMenu } from "../../shared/ui.jsx";
 import { S } from "../../shared/tokens.js";
 import { fmtPrice } from "../../shared/access.js";
+import { giaXp as tinhGiaXp } from "../../shared/premium.js";
 import { anhMacDinh } from "../../shared/anhMacDinh.js";
 
 /* Thẻ bài tập trong Thư viện luyện tập.
@@ -106,7 +107,7 @@ export default function ExerciseCard({
   onDoiXp = null,
   teacherActions = null,
 }) {
-  const giaXp = Number(ex.xpCost) > 0 ? Number(ex.xpCost) : null;
+  const giaXp = tinhGiaXp(ex);
   const nQ = ex.questions?.length ?? 0;
 
   return (

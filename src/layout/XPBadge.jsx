@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { Star } from "lucide-react";
-import { docXp, SU_KIEN_XP } from "../shared/xp.js";
+import { docXp, docXpTongQuan, SU_KIEN_XP } from "../shared/xp.js";
 
 /* Nhãn số dư XP ở thanh trên (26/09) — chỉ học sinh.
  *
@@ -22,9 +22,16 @@ export default function XPBadge({ t }) {
   const [hien, setHien] = useState(null);   // số đang vẽ (đếm dần tới `that`)
   const [nay, setNay] = useState(false);    // nảy nhẹ khi vừa tăng
   const khung = useRef(0);
+  /* Hạn mức ngày/tuần (migration 117). Vạch nhỏ dưới số cho biết hôm nay đã
+     kiếm được bao nhiêu trên trần 60: đầy thì « mai quay lại » — đó là cái móc
+     kéo người học trở lại mỗi ngày. */
+  const [tq, setTq] = useState(null);
 
   useEffect(() => {
-    const nap = () => docXp().then((v) => { if (v !== null) setThat(v); });
+    const nap = () => {
+      docXp().then((v) => { if (v !== null) setThat(v); });
+      docXpTongQuan().then((d) => { if (d) setTq(d); });
+    };
     nap();
     window.addEventListener(SU_KIEN_XP, nap);
     window.addEventListener("focus", nap);
@@ -50,13 +57,19 @@ export default function XPBadge({ t }) {
 
   if (hien === null) return null;
   return (
-    <Link id="tour-xp-badge" to="/etudiant/entrainement" title={t("xp.topbar_title")}
+    <Link id="tour-xp-badge" to="/etudiant/entrainement"
+      title={tq ? (tq.hom_nay >= tq.tran_ngay ? t("xp.han_muc_day") + " " : "") + t("xp.han_muc", { d: tq.hom_nay, td: tq.tran_ngay, w: tq.tuan, tw: tq.tran_tuan }) : t("xp.topbar_title")}
       className={`flex shrink-0 items-center gap-1.5 rounded-full border border-solid border-amber-200 bg-amber-50 px-3 py-1.5 no-underline transition-all duration-300 hover:bg-amber-100 dark:border-amber-500/20 dark:bg-amber-500/10 dark:hover:bg-amber-500/20 ${nay ? "scale-110" : "scale-100"}`}>
       <Star size={16} className="fill-amber-500/20 text-amber-500 dark:text-amber-400" />
       <span className="text-sm font-bold tabular-nums text-amber-600 dark:text-amber-400">
         {hien.toLocaleString("vi-VN")}
       </span>
       <span className="sr-only">XP</span>
+      {tq && (
+        <span aria-hidden className="h-1.5 w-8 overflow-hidden rounded-full bg-amber-200/70 dark:bg-amber-500/20">
+          <span className="block h-full rounded-full bg-amber-500" style={{ width: Math.min(100, Math.round((tq.hom_nay / tq.tran_ngay) * 100)) + "%" }} />
+        </span>
+      )}
     </Link>
   );
 }

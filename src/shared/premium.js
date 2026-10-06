@@ -30,3 +30,16 @@ export const hasPrice = (ex) => Number(ex?.price) > 0;
 /* Cấu hình lỗi: đã khoá nhưng chưa có giá. Học sinh không mua được, giáo viên
  * cần biết. Giao diện dùng hàm này để hiện cảnh báo đúng chỗ. */
 export const premiumThieuGia = (ex) => isPremium(ex) && !hasPrice(ex);
+
+/* Giá đổi XP của một bài trả phí (06/10). PHẢI khớp hàm SQL public.gia_xp
+   (migration 117) — máy chủ mới là bên trừ XP; số ở đây chỉ để hiển thị.
+   Giáo viên đặt xpCost ≥ 50 thì dùng số đó; dưới 50 coi là số thử. Không có
+   thì theo giá tiền: giá ÷ 100, làm tròn chục, kẹp 100–600. */
+export const TRAN_XP = { ngay: 60, tuan: 300 };
+export const giaXp = (ex) => {
+  const dat = Number(ex?.xpCost);
+  if (dat >= 50) return dat;
+  const tien = Number(ex?.price);
+  if (tien > 0) return Math.max(100, Math.min(600, Math.round(tien / 1000) * 10));
+  return null;
+};

@@ -466,6 +466,7 @@ ${r.error?.message ?? ""}`); return; }
           onUnlocked={sauKhiMoKhoa} />}
         {doiXp && <DoiXpModal ex={doiXp} xp={xp} t={t}
           onClose={() => setDoiXp(null)}
+          onBuy={() => { const e = doiXp; setDoiXp(null); setPayFor(e); }}
           onDone={(soDu) => { setXp(soDu); setDoiXp(null); baoXpDoi(); sauKhiMoKhoa(); }} />}
         <button style={{ ...S.btn(false), marginBottom: 16 }}
           onClick={() => setView(view.folder ? { page: "autres" } : { page: "home" })}><ChevronLeft size={16} /> {t("practice.back")}</button>

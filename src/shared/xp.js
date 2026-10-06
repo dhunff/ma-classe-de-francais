@@ -82,3 +82,12 @@ export async function theoDoiLai(id) {
     return data ?? { ok: false, loi: "mang" };
   } catch { return { ok: false, loi: "mang" }; }
 }
+
+/* Tổng quan XP (migration 117): số dư, đã nhận hôm nay / tuần này, trần, chuỗi.
+   → { so_du, hom_nay, tuan, tran_ngay, tran_tuan, chuoi, da_diem_danh } | null */
+export async function docXpTongQuan() {
+  try {
+    const { data, error } = await supabase.rpc("get_xp_tong_quan");
+    return error ? null : data;
+  } catch { return null; }
+}

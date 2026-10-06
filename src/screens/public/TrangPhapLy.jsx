@@ -117,7 +117,7 @@ const HOI_DAP = [
   ["Làm sao để mở khoá bài trả phí?",
    "Có hai cách. Chuyển khoản theo mã QR hiện trên bài, giữ nguyên nội dung chuyển khoản — bài mở khi hệ thống nhận thông báo giao dịch từ ngân hàng. Hoặc, nếu giáo viên cho phép, đổi XP để mở bài. Đã chuyển khoản mà bài chưa mở thì hãy liên hệ để được kiểm tra."],
   ["XP là gì và nhận XP thế nào?",
-   "XP là điểm kinh nghiệm. Lần ĐẦU hoàn thành một bài, bạn nhận 10 XP cộng 1 XP cho mỗi điểm đạt được; làm lại cùng bài không cộng thêm. XP do máy chủ cộng, nên không tự sửa được, và dùng để đổi lấy bài trả phí có ghi giá XP."],
+   "XP là điểm kinh nghiệm, do máy chủ cộng nên không tự sửa được. Bạn nhận XP khi: hoàn thành một bài LẦN ĐẦU (10 XP cộng 1 XP mỗi điểm), qua một màn Lộ trình lần đầu (5 XP, thử thách cuối chủ đề 15 XP), và điểm danh mỗi ngày bằng bài nộp đầu tiên (5 XP). Mỗi ngày nhận tối đa 60 XP, mỗi tuần tối đa 300 XP; phần vượt không được cộng. Giữ chuỗi học 7, 30, 100 ngày liên tiếp được thưởng thêm 30, 100, 300 XP (không tính vào giới hạn). XP dùng để đổi lấy bài trả phí: giá XP mặc định bằng giá tiền chia 100 (bài 20.000 đ = 200 XP)."],
   ["Chuỗi ngày học được tính ra sao?",
    "Mỗi ngày bạn nộp ít nhất một bài thì chuỗi tăng một ngày, tính theo giờ Việt Nam. Hôm nay chưa học thì chuỗi vẫn giữ tới nửa đêm. Chuỗi tính ở máy chủ, đổi đồng hồ máy không làm chuỗi dài thêm."],
   ["Theo dõi bạn học là gì?",
