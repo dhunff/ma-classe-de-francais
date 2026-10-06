@@ -51,18 +51,37 @@ export default function PaymentModal({ ex, student, config, onClose, onUnlocked 
 
      Dừng hẳn khi thấy đã trả — để nguyên thì modal đóng rồi mà bộ đếm vẫn gọi
      mạng mãi. `cancelled` chặn setState sau khi component đã tháo. */
+  /* Gói VIP (06/10): không có dòng exercise_access nào để chờ. Chờ `vip_den`
+     LỚN HƠN giá trị lúc mở hộp — người đang còn hạn mà gia hạn thì hạn vẫn
+     « còn » ngay từ đầu, so với hiện tại sẽ báo xong khi chưa trả. */
+  const [vipLucMo, setVipLucMo] = useState(undefined);
+  useEffect(() => {
+    if (!ex.laVip) return;
+    supabase.from("profiles").select("vip_den").limit(1).maybeSingle()
+      .then(({ data }) => setVipLucMo(data?.vip_den ?? null)).catch(() => setVipLucMo(null));
+  }, [ex.laVip]);
+
   useEffect(() => {
     if (paid) return;
+    if (ex.laVip && vipLucMo === undefined) return;
     let cancelled = false;
 
     const check = async () => {
-      const { data } = await supabase
-        .from("exercise_access")
-        .select("id")
-        .eq("student", student)
-        .eq("exercise_id", ex.id)
-        .limit(1);
-      if (cancelled || !data?.length) return;
+      let xong = false;
+      if (ex.laVip) {
+        const { data } = await supabase.from("profiles").select("vip_den").limit(1).maybeSingle();
+        const moi = data?.vip_den ? new Date(data.vip_den).getTime() : 0;
+        xong = moi > (vipLucMo ? new Date(vipLucMo).getTime() : 0) && moi > Date.now();
+      } else {
+        const { data } = await supabase
+          .from("exercise_access")
+          .select("id")
+          .eq("student", student)
+          .eq("exercise_id", ex.id)
+          .limit(1);
+        xong = !!data?.length;
+      }
+      if (cancelled || !xong) return;
       setPaid(true);
       /* Chờ một nhịp để học sinh kịp thấy dấu tích, rồi mới đóng. Đóng ngay
          thì họ không biết vì sao modal biến mất. */
@@ -72,7 +91,7 @@ export default function PaymentModal({ ex, student, config, onClose, onUnlocked 
     check();
     const id = setInterval(check, 4000);
     return () => { cancelled = true; clearInterval(id); };
-  }, [paid, student, ex.id, onUnlocked, onClose, ex]);
+  }, [paid, student, ex.id, onUnlocked, onClose, ex, vipLucMo]);
 
   return createPortal(
     <div className="mcf-float fixed inset-0 z-[9999] flex items-start justify-center overflow-y-auto bg-ink/50 p-4 sm:items-center"
@@ -117,7 +136,7 @@ export default function PaymentModal({ ex, student, config, onClose, onUnlocked 
           {paid ? (
             <p role="status" className="flex items-center gap-2 rounded-md bg-ok-soft px-3 py-3 text-sm font-bold text-ok">
               <CheckCircle2 size={18} className="shrink-0" />
-              {t("pay.unlocked")}
+              {ex.laVip ? t("vip.unlocked") : t("pay.unlocked")}
             </p>
           ) : (
             <p role="status" className="flex items-center gap-2 rounded-md bg-primary-soft px-3 py-3 text-sm font-semibold text-primary">

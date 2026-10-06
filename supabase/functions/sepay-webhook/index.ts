@@ -54,6 +54,11 @@ const normalize = (s: string) =>
     .toUpperCase()
     .replace(/[^A-Z0-9]/g, "");
 
+/* Gói VIP (migration 118). PHẢI khớp src/shared/vip.js. */
+const VIP_MA = "VIP1TH";
+const VIP_GIA = 99000;
+const VIP_NGAY = 30;
+
 /* Memo do client sinh: `LMS <tên đã bỏ khoảng trắng, tối đa 12> <6 ký tự cuối id>` */
 const parseMemo = (content: string) => {
   const m = normalize(content).match(/LMS([A-Z0-9]{1,12})([A-Z0-9]{6})$/);
@@ -195,6 +200,21 @@ Deno.serve(async (req) => {
     } catch (e) {
       console.warn("[webhook] webhook_diag ném lỗi:", (e as Error)?.message);
     }
+  }
+
+  /* ── GÓI VIP 1 THÁNG (06/10, migration 118) ──
+     Nội dung `LMS <tên> VIP1TH`: mã VIP1TH đứng ở chỗ 6 ký tự cuối id bài.
+     Giá ở ĐÂY và ở src/shared/vip.js phải khớp; thiếu tiền thì không cấp. */
+  if (parsed.exSuffix === VIP_MA) {
+    if (amount < VIP_GIA) return json(200, { auth: cach, ignored: "vip_amount_too_low", amount, price: VIP_GIA });
+    const { data: ps } = await supabase.from("profiles").select("id, name").eq("role", "eleve");
+    const hop = (ps ?? []).filter((p: any) => normalize(String(p.name ?? "")).slice(0, 12) === parsed.student);
+    /* Hai học sinh trùng 12 ký tự đầu tên thì không đoán: cấp nhầm là người
+       này trả tiền, người kia được VIP. Giáo viên xử lý tay qua sao kê. */
+    if (hop.length !== 1) return json(200, { auth: cach, ignored: hop.length ? "vip_student_ambiguous" : "student_not_found", memo: parsed });
+    const { data: kq, error: vipErr } = await supabase.rpc("gia_han_vip", { p_user: hop[0].id, p_ref: ref, p_so_tien: amount, p_so_ngay: VIP_NGAY });
+    if (vipErr) return json(500, { error: "vip_write_failed", detail: vipErr.message });
+    return json(200, { ok: true, auth: cach, vip: kq, student: hop[0].name, amount });
   }
 
   // 2. Tìm bài tập. Giá lấy từ máy chủ, KHÔNG lấy từ bất cứ thứ gì client gửi.

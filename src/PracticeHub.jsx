@@ -17,6 +17,8 @@ import RichTextEditor from "./editor/RichTextEditor.jsx";
 import SplitPane from "./screens/practice/SplitPane.jsx";
 import Builder from "./screens/teacher/Builder.jsx";
 import PaymentModal from "./screens/student/PaymentModal.jsx";
+import VipBanner from "./screens/practice/VipBanner.jsx";
+import { goiVip, vipConHan } from "./shared/vip.js";
 import PremiumLockCard from "./screens/student/PremiumLockCard.jsx";
 import DoiXpModal from "./screens/practice/DoiXpModal.jsx";
 import { docXp, baoXpDoi } from "./shared/xp.js";
@@ -102,14 +104,16 @@ function PracticeHubInner({ role = "eleve", name = "", accounts = [], onRequireL
      hồ sơ người khác — và không tự bật lên được, vì chỉ giáo viên có quyền
      ghi. Bảng chưa tồn tại thì lỗi bị nuốt và cờ ở lại false, tức khoá vẫn
      hoạt động như cũ. */
-  const [fullAccess, setFullAccess] = useState(false);
-  useEffect(() => {
-    let off = false;
-    supabase.from("profiles").select("has_premium_access").limit(1).maybeSingle()
-      .then(({ data }) => { if (!off) setFullAccess(!!data?.has_premium_access); })
-      .catch(() => {});
-    return () => { off = true; };
-  }, [name]);
+  /* Gói VIP (06/10, migration 118): `vip_den` còn hạn thì mở như toàn quyền.
+     Máy chủ (can_open_exercise) mới là hàng rào thật; cờ ở đây chỉ quyết định
+     vẽ ổ khoá hay không. */
+  const [toanQuyen, setToanQuyen] = useState(false);
+  const [vipDen, setVipDen] = useState(null);
+  const fullAccess = toanQuyen || vipConHan(vipDen);
+  const napHoSo = () => supabase.from("profiles").select("has_premium_access, vip_den").limit(1).maybeSingle()
+    .then(({ data }) => { setToanQuyen(!!data?.has_premium_access); setVipDen(data?.vip_den ?? null); })
+    .catch(() => {});
+  useEffect(() => { napHoSo(); }, [name]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     loadAccess().then(setAccess);
@@ -230,6 +234,7 @@ function PracticeHubInner({ role = "eleve", name = "", accounts = [], onRequireL
    * `loadPractice()` là lúc server mới chịu trả câu hỏi về, vì RLS giờ đã thấy
    * dòng quyền của em đó. */
   const sauKhiMoKhoa = async () => {
+    napHoSo();
     const [acc, kho] = await Promise.all([loadAccess(), loadPractice()]);
     setAccess(acc);
     setExercises(kho);
@@ -467,6 +472,7 @@ ${r.error?.message ?? ""}`); return; }
         {doiXp && <DoiXpModal ex={doiXp} xp={xp} t={t}
           onClose={() => setDoiXp(null)}
           onBuy={() => { const e = doiXp; setDoiXp(null); setPayFor(e); }}
+          onVip={() => { setDoiXp(null); setPayFor(goiVip(t("vip.pay_title"))); }}
           onDone={(soDu) => { setXp(soDu); setDoiXp(null); baoXpDoi(); sauKhiMoKhoa(); }} />}
         <button style={{ ...S.btn(false), marginBottom: 16 }}
           onClick={() => setView(view.folder ? { page: "autres" } : { page: "home" })}><ChevronLeft size={16} /> {t("practice.back")}</button>
@@ -856,6 +862,12 @@ ${r.error?.message ?? ""}`); return; }
         </div>
       )}
       {teacher && topTab === "suivi" ? renderSuivi() : null}
+      {role === "eleve" && (
+        <VipBanner vipDen={vipDen} toanQuyen={toanQuyen} t={t}
+          onMua={() => { if (isGuest) return requireLogin(); setPayFor(goiVip(t("vip.pay_title"))); }} />
+      )}
+      {payFor && <PaymentModal ex={payFor} student={name} config={payCfg}
+        onClose={() => setPayFor(null)} onUnlocked={sauKhiMoKhoa} />}
       {teacher && topTab === "suivi" ? null : (<>
       {/* Lưới thẻ nhóm — dựng lại 25/09. Số bài và tiến độ đếm từ dữ liệu thật
           (`exercises`, `hist`), không có danh sách giả. Màu biểu tượng lấy từ

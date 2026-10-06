@@ -9,7 +9,7 @@ import { fmtPrice } from "../../shared/access.js";
  * Giá hiển thị lấy từ `ex.xpCost`, nhưng máy chủ KHÔNG tin con số đó: RPC
  * redeem_exercise_with_xp đọc lại giá trong exercises.meta rồi mới trừ. Nếu
  * giáo viên vừa đổi giá, số trừ là giá mới và hộp này báo lại số dư thật. */
-export default function DoiXpModal({ ex, xp, t, onClose, onDone, onBuy }) {
+export default function DoiXpModal({ ex, xp, t, onClose, onDone, onBuy, onVip }) {
   const [dang, setDang] = useState(false);
   const [loi, setLoi] = useState("");
   const gia = giaXp(ex) || 0;
@@ -64,6 +64,12 @@ export default function DoiXpModal({ ex, xp, t, onClose, onDone, onBuy }) {
             </div>
             <p className="m-0 mt-2 font-semibold">{t("xp.con_thieu", { n: gia - xp, ngay: Math.ceil((gia - xp) / TRAN_XP.ngay) })}</p>
             <p className="m-0 mt-1 text-xs text-soft">{t("xp.cach_kiem")}</p>
+            {onVip && (
+              <button type="button" onClick={onVip}
+                className="mt-2 cursor-pointer border-0 bg-transparent p-0 font-sans text-xs font-bold text-primary underline">
+                {t("vip.from_xp")}
+              </button>
+            )}
           </div>
         )}
         {loi && <p className="m-0 mt-3 text-sm text-danger">{loi}</p>}
