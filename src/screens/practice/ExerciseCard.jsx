@@ -3,6 +3,7 @@ import { Lock, ChevronDown, BookOpen, Lightbulb, FileCheck, Folder, Star } from 
 import { FloatingLayer, KebabMenu } from "../../shared/ui.jsx";
 import { S } from "../../shared/tokens.js";
 import { fmtPrice } from "../../shared/access.js";
+import { anhMacDinh } from "../../shared/anhMacDinh.js";
 
 /* Thẻ bài tập trong Thư viện luyện tập.
 
@@ -70,13 +71,19 @@ function TrainButton({ onStart, onPickMaterial }) {
   );
 }
 
-/* Ảnh 16:9. Bài chưa có ảnh thì dựng ô trung tính mang ký hiệu kỹ năng —
-   cố tình không sinh ảnh giả, vì ảnh giả trông như dữ liệu thật. */
+/* Ảnh 16:9. Bài chưa có ảnh thì dùng ẢNH MẶC ĐỊNH THEO KỸ NĂNG (bucket
+   `Default`, 06/10) — hình minh hoạ chung, không phải ngữ liệu. Ảnh mặc định
+   tải hỏng thì lùi về ô trung tính mang ký hiệu kỹ năng như trước. */
 function Thumb({ ex }) {
   const base = "aspect-video w-full shrink-0 overflow-hidden rounded-xl sm:w-56 lg:w-64";
+  const [hong, setHong] = useState(false);
 
   if (ex.imageUrl) {
     return <img src={ex.imageUrl} alt="" loading="lazy" className={`${base} border-0 object-cover`} />;
+  }
+  if (!hong) {
+    return <img src={anhMacDinh(ex)} alt="" loading="lazy" onError={() => setHong(true)}
+      className={`${base} border-0 object-cover`} />;
   }
   return (
     <div aria-hidden className={`${base} grid place-items-center bg-surface2 text-3xl text-soft`}>

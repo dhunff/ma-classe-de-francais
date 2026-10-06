@@ -28,6 +28,7 @@ import { PAYMENT_KEY, isPremium, hasAccess, fmtPrice, loadAccess } from "./share
 import ExerciseCard from "./screens/practice/ExerciseCard.jsx";
 import { supabase } from "./storageShim.js";
 import { Lock } from "lucide-react";
+import { anhMacDinh } from "./shared/anhMacDinh.js";
 
 /* ============================================================
    PRACTICE HUB v3 — Tự luyện tập
@@ -373,7 +374,7 @@ ${r.error?.message ?? ""}`); return; }
                 return (
                   <div key={ex.id} className="mcf-card" style={{ ...S.card, padding: "18px 20px", display: "flex", flexDirection: "column", width: "100%",
                     position: "relative" }}>
-                    <div style={{ display: "flex", flexDirection: "column", gap: 4, marginBottom: ex.imageUrl ? 14 : 10 }}>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 4, marginBottom: 14 }}>
                     <div>
                     <span style={S.badge(ex.level)}>{ex.level}</span>
                     <div style={{ flex: 1, minWidth: 160 }}>
@@ -385,11 +386,10 @@ ${r.error?.message ?? ""}`); return; }
                     </div>
     </div>
                     </div>
-                    {ex.imageUrl && (
-                      <img src={ex.imageUrl} alt="" loading="lazy"
-                        style={{ width: 240, maxWidth: "100%", aspectRatio: "16/9", objectFit: "cover", borderRadius: 12,
+                    {/* Bài không có ảnh → ảnh mặc định theo kỹ năng (06/10, shared/anhMacDinh.js). */}
+                    <img src={ex.imageUrl || anhMacDinh(ex)} alt="" loading="lazy"
+                      style={{ width: 240, maxWidth: "100%", aspectRatio: "16/9", objectFit: "cover", borderRadius: 12,
                       border: `1px solid ${C.line}`, marginBottom: 14, alignSelf: "flex-start" }} />
-                    )}
                     <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 8, marginTop: "auto" }}>
                       <SplitTrain open={trainMenu === ex.id} setOpen={(v) => setTrainMenu(v ? ex.id : null)} teacher={teacher}
                         onStart={() => { if (isGuest) return requireLogin(); setView({ page: "quiz", cat: "__autres__", exId: ex.id }); }}

@@ -186,6 +186,14 @@ Vẫn phải **nói rõ những gì chưa kiểm chứng được**.
 Vẫn dừng lại hỏi khi: xoá dữ liệu, đổi cấu hình hạ tầng, hoặc làm hỏng đường vào
 hiện có của người dùng.
 
+### 7. Nội dung học KHÔNG dùng dấu gạch dài « — »
+
+Tiêu đề, đề bài, ngữ liệu, câu hỏi, phương án, lời giải, flashcard, tên đề thi:
+dùng « : » (tiếng Pháp có khoảng trắng trước), dấu phẩy, ngoặc đơn cho ý chen,
+« • » cho gạch đầu dòng. Chủ dự án yêu cầu 06/10; đã dọn toàn bộ database (sao
+lưu trước khi sửa ở bảng `_sao_luu_gach_0610`, khoá kín với anon/authenticated).
+Chú thích mã nguồn không thuộc quy tắc này.
+
 ---
 
 ## Kiến trúc
