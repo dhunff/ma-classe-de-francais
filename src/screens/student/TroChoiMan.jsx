@@ -9,9 +9,9 @@ import { sinhLuot, tinhSao, SO_TIM } from "../../shared/troChoiThe.js";
  *
  * `onXong(sao)` phải trả Promise<{sao}|{loi}> — màn kết quả chờ biên nhận
  * của máy chủ rồi mới nói « đã lưu ». */
-export default function TroChoiMan({ tieuDe, the, soCau = 8, ghep = true, onXong, onDong, t }) {
+export default function TroChoiMan({ tieuDe, the, kho, soCau = 8, ghep = true, onXong, onDong, t }) {
   const [hat, setHat] = useState(0);                 // đổi để chơi lại → xáo mới
-  const luot = useMemo(() => sinhLuot(the, { soCau, ghep }), [the, soCau, ghep, hat]);
+  const luot = useMemo(() => sinhLuot(the, { soCau, ghep, kho }), [the, kho, soCau, ghep, hat]);
   const [i, setI] = useState(0);
   const [tim, setTim] = useState(SO_TIM);
   const [sai, setSai] = useState(0);

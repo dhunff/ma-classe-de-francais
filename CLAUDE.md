@@ -1234,6 +1234,14 @@ Xem `docs/roadmap-delf.md` — có nhật ký quyết định ở §5.
   đầu-cuối: kho bai-noi đang 0 file.
 - **Giờ học — 27/09** (migration 106): `attempts.giay_lam` (mở bài → nộp, kẹp 3 giờ),
   RPC `get_gio_hoc`. Trước đó KHÔNG đo được: bài luyện tập tạo attempt lúc nộp.
+- **Lộ trình theo CHỦ ĐỀ — 06/10** (migration 115/116). 16 chủ đề xã hội, 100 màn,
+  800 mục từ có LOẠI TỪ, soạn ở `scripts/lo-trinh/chu-de.mjs` rồi sinh 116 bằng
+  `scripts/lo-trinh/sinh-sql.mjs` (chạy lại không đè `bat`/`so_cau` giáo viên đã chỉnh).
+  Phương án nhiễu (`shared/troChoiThe.js`) BẮT BUỘC cùng loại từ, ưu tiên cùng chủ
+  đề + độ dài gần + cùng số/phản thân; thiếu nhiễu cùng loại thì BỎ câu chứ không
+  chèn nhiễu khác loại. Lộ trình cũ theo kỹ năng (108–113, khoá `bo:`/`trum:CO`)
+  ngừng nhận kết quả mới nhưng dữ liệu cũ GIỮ NGUYÊN. Thách đấu vẫn rút từ bộ
+  flashcard, nhiễu chưa theo loại từ.
 - `s:mcf-submissions` vẫn giữ làm sao lưu, chưa xoá.
 
 

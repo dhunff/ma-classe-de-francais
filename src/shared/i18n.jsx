@@ -118,6 +118,7 @@ const I18N = {
       err: "Chưa xuất bản được: {msg}",
     },
     tpath: {
+      subtitle_topics: "100 màn trong 16 chủ đề xã hội. Bật/tắt màn, đặt số câu, xem trước mục từ, và theo dõi tiến độ học sinh.",
       subtitle: "Mỗi màn là một bộ flashcard công khai. Bật/tắt, sắp thứ tự và đặt số câu cho từng màn, rồi theo dõi tiến độ của học sinh.",
       tab_structure: "Cấu trúc",
       tab_progress: "Tiến độ học sinh",
@@ -182,6 +183,8 @@ const I18N = {
       none_hint: "Từ điển chỉ gồm các cụm trong bộ flashcard của lớp, nên còn nhỏ.",
     },
     path: {
+      subtitle_topics: "{n} màn trong {c} chủ đề xã hội. Chọn một chủ đề, qua từng màn để mở màn tiếp theo.",
+      topics: "Chủ đề",
       subtitle: "Mỗi màn là một bộ flashcard. Qua màn để mở màn tiếp theo.",
       stars: "{sao}/{tong} sao",
       chapter: "Chương {ky}",
@@ -577,6 +580,7 @@ const I18N = {
       err: "Publication impossible : {msg}",
     },
     tpath: {
+      subtitle_topics: "100 niveaux répartis en 16 thèmes de société. Activez ou masquez un niveau, réglez le nombre de questions, consultez le vocabulaire et suivez la progression.",
       subtitle: "Chaque niveau est un paquet de flashcards public. Activez, ordonnez et réglez le nombre de questions, puis suivez la progression des élèves.",
       tab_structure: "Structure",
       tab_progress: "Progression des élèves",
@@ -641,6 +645,8 @@ const I18N = {
       none_hint: "Le dictionnaire ne contient que les expressions des flashcards de la classe.",
     },
     path: {
+      subtitle_topics: "{n} niveaux dans {c} thèmes de société. Choisissez un thème et réussissez chaque niveau pour débloquer le suivant.",
+      topics: "Thèmes",
       subtitle: "Chaque niveau est un paquet de flashcards. Réussissez-le pour débloquer le suivant.",
       stars: "{sao}/{tong} étoiles",
       chapter: "Chapitre {ky}",
@@ -1030,6 +1036,7 @@ const I18N = {
       err: "Couldn't publish: {msg}",
     },
     tpath: {
+      subtitle_topics: "100 levels across 16 social topics. Turn levels on or off, set questions per level, preview the vocabulary and follow student progress.",
       subtitle: "Each level is a public flashcard deck. Turn levels on or off, reorder them, set questions per level, and follow student progress.",
       tab_structure: "Structure",
       tab_progress: "Student progress",
@@ -1094,6 +1101,8 @@ const I18N = {
       none_hint: "The dictionary only holds expressions from the class flashcard decks.",
     },
     path: {
+      subtitle_topics: "{n} levels across {c} social topics. Pick a topic and clear each level to unlock the next.",
+      topics: "Topics",
       subtitle: "Each level is a flashcard deck. Clear it to unlock the next one.",
       stars: "{sao}/{tong} stars",
       chapter: "Chapter: {ky}",

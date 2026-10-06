@@ -1,30 +1,25 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Check, Lock, Play, Crown, Star, Headphones, BookOpen, PenLine, Mic } from "lucide-react";
-import { docCacBo, docTheTrongBo } from "../../shared/boThe.js";
-import { KY_NANG } from "../../shared/kyNang.js";
-import { docKetQua, ghiKetQua, docCauHinh } from "../../shared/loTrinhStore.js";
+import { Check, Lock, Play, Crown, Star, BookOpen } from "lucide-react";
+import { docKetQua, ghiKetQua, docLoTrinh } from "../../shared/loTrinhStore.js";
 import { useT } from "../../shared/i18n.jsx";
 import TroChoiMan from "./TroChoiMan.jsx";
 
-/* Lộ trình học tập — DẠNG GAME (28/09), không còn dẫn sang thư viện luyện tập.
+/* Lộ trình học tập — THEO CHỦ ĐỀ XÃ HỘI (06/10), không theo kỹ năng nữa.
  *
- * ══ NGUỒN DỮ LIỆU ══
- *   chương  ← bốn kỹ năng DELF (KY_NANG), chỉ hiện kỹ năng có bộ thẻ
- *   màn     ← một bộ flashcard công khai giáo viên soạn (the_bo)
- *   câu hỏi ← thẻ thật trong bộ (the_bo_the), xem shared/troChoiThe.js
- *   trùm    ← câu hỏi trộn từ MỌI bộ của chương
- *   sao     ← lo_trinh_ket_qua (migration 108/109), máy chủ giữ sao cao nhất
+ * ══ NGUỒN DỮ LIỆU ══ (migration 115/116, soạn ở scripts/lo-trinh/chu-de.mjs)
+ *   chương  ← 16 chủ đề nghị luận xã hội (lo_trinh_chu_de)
+ *   màn     ← 100 màn, mỗi màn 8 mục từ có LOẠI TỪ (lo_trinh_man, lo_trinh_tu)
+ *   câu hỏi ← shared/troChoiThe.js: nhiễu CÙNG LOẠI TỪ, cùng chủ đề, độ dài gần
+ *             đáp án, để không đoán được đáp án qua hình thức
+ *   trùm    ← thử thách 12 câu trộn mọi mục của chủ đề
+ *   sao/XP  ← lo_trinh_ket_qua + ghi_ket_qua_man (5 XP màn, 15 XP thử thách,
+ *             một lần mỗi màn, máy chủ cộng)
  *
- * Không có dữ liệu giả. XP (migration 110): máy chủ cộng MỘT lần mỗi màn khi
- * lần đầu đạt ≥1 sao — 5 XP màn thường, 15 XP thử thách — nên không cày được.
- *
- * ══ KHOÁ TUẦN TỰ ══
- * Màn kế mở khi màn trước có ≥1 sao; trùm mở khi mọi màn của chương có sao.
- * Khoá chỉ ở giao diện — thẻ trong bộ vẫn luyện tự do ở màn Flashcard.
- */
-
-const ICON = { CO: Headphones, CE: BookOpen, PE: PenLine, PO: Mic };
-const MAU = { CO: "#0EA5E9", CE: "#10B981", PE: "#8B5CF6", PO: "#F97316" };  // ngoại lệ có chủ ý như LEVEL_COLORS: dải màu kỹ năng
+ * ══ TIẾN TRÌNH RIÊNG TỪNG CHỦ ĐỀ ══
+ * 100 màn mà khoá xuyên suốt thì phải xong chủ đề 1 mới thấy chủ đề 2. Nên mỗi
+ * chủ đề tự mở tuần tự (màn sau mở khi màn trước có ≥1 sao, thử thách mở khi
+ * xong mọi màn), và học sinh chọn chủ đề ở dãy nút đầu trang. Màn giáo viên tắt
+ * (bat = false) không hiện. Khoá chỉ là giao diện. */
 
 /* Hình học: cột rộng RONG, nút lệch theo chu kỳ để thành đường rắn bò.
    CAO_HANG >= DK_NUT + KHE + NHAN_CAO + SAO_CAO — kiểm ngay dưới. */
@@ -61,64 +56,54 @@ function duong(diem) {
 
 export default function LoTrinh() {
   const t = useT();
-  const [bo, setBo] = useState(null);          // null = đang tải, false = lỗi
+  const [lt, setLt] = useState(null);           // null = đang tải, false = lỗi
   const [ketQua, setKetQua] = useState(new Map());
-  const [dangChoi, setDangChoi] = useState(null);   // { maMan, tieuDe, the, soCau, ghep }
-  const [dangMo, setDangMo] = useState(null);
+  const [chon, setChon] = useState(null);       // id chủ đề đang xem
+  const [dangChoi, setDangChoi] = useState(null);
 
   useEffect(() => {
     let huy = false;
-    Promise.all([docCacBo(), docKetQua(), docCauHinh()]).then(([b, k, ch]) => {
+    Promise.all([docLoTrinh(), docKetQua()]).then(([d, k]) => {
       if (huy) return;
-      if (b === null) { setBo(false); return; }
-      /* Cấu hình của giáo viên (113): bộ bị tắt thì rời lộ trình, thứ tự và số
-         câu theo giáo viên đặt. Bộ chưa có dòng cấu hình → mặc định. */
-      setBo(b.filter((x) => x.congKhai && x.soThe >= 4 && ch.get(x.id)?.bat !== false)
-        .map((x) => ({ ...x, thuTu: ch.get(x.id)?.ord ?? 1000 + (x.ord ?? 0), soCau: ch.get(x.id)?.soCau ?? 8 }))
-        .sort((a, z) => a.thuTu - z.thuTu));
+      if (!d) { setLt(false); return; }
+      setLt(d);
       if (k) setKetQua(k);
     });
     return () => { huy = true; };
   }, []);
 
-  /* Dựng chương + trạng thái. Khoá tuần tự chạy XUYÊN chương: chương Đọc chỉ
-     mở khi trùm chương Nghe đã hạ — một lộ trình, không phải bốn. */
+  /* Mỗi chủ đề: màn đang bật + trạng thái tuần tự riêng. */
   const chuongs = useMemo(() => {
-    if (!bo) return [];
-    let truocDaQua = true;
-    let daGapHienTai = false;
-    const trangThai = (sao) => {
-      if (sao > 0) { truocDaQua = true; return "xong"; }
-      if (truocDaQua && !daGapHienTai) { daGapHienTai = true; truocDaQua = false; return "hienTai"; }
-      truocDaQua = false;
-      return "khoa";
-    };
-    return KY_NANG.map(({ ma }) => {
-      const ds = bo.filter((b) => b.kyNang === ma);
-      if (!ds.length) return null;
-      const man = ds.map((b) => {
-        const sao = ketQua.get(`bo:${b.id}`) || 0;
-        return { maMan: `bo:${b.id}`, boId: b.id, tieuDe: b.ten, soThe: b.soThe, soCau: b.soCau, sao, trangThai: trangThai(sao) };
+    if (!lt) return [];
+    return lt.chuDe.map((c) => {
+      let truocDaQua = true, daGapHienTai = false;
+      const trangThai = (sao) => {
+        if (sao > 0) { truocDaQua = true; return "xong"; }
+        if (truocDaQua && !daGapHienTai) { daGapHienTai = true; truocDaQua = false; return "hienTai"; }
+        truocDaQua = false;
+        return "khoa";
+      };
+      const man = c.man.filter((m) => m.bat && m.tu.length >= 4).map((m) => {
+        const sao = ketQua.get("man:" + m.id) || 0;
+        return { maMan: "man:" + m.id, tieuDe: m.ten, cap: m.cap, the: m.tu, soCau: m.soCau, soThe: m.tu.length, sao, trangThai: trangThai(sao) };
       });
-      const saoTrum = ketQua.get(`trum:${ma}`) || 0;
-      const trum = { maMan: `trum:${ma}`, sao: saoTrum, trangThai: trangThai(saoTrum), boIds: ds.map((b) => b.id) };
-      return { ma, man, trum };
-    }).filter(Boolean);
-  }, [bo, ketQua]);
+      const saoTrum = ketQua.get("trum:" + c.id) || 0;
+      const trum = { maMan: "trum:" + c.id, sao: saoTrum, trangThai: trangThai(saoTrum), the: man.flatMap((m) => m.the) };
+      return { ma: c.id, ten: c.tenVi, tenFr: c.tenFr, mau: c.mau, man, trum };
+    }).filter((c) => c.man.length);
+  }, [lt, ketQua]);
 
-  const tongSao = [...ketQua.values()].reduce((a, b) => a + b, 0);
+  /* Mặc định mở chủ đề đầu tiên chưa hạ thử thách. */
+  const dangXem = chuongs.find((c) => c.ma === chon) || chuongs.find((c) => !(c.trum.sao > 0)) || chuongs[0];
+  const tongSao = chuongs.reduce((n, c) => n + c.man.reduce((a, m) => a + m.sao, 0) + c.trum.sao, 0);
   const tongMan = chuongs.reduce((n, c) => n + c.man.length + 1, 0);
 
-  const mo = async (m, laTrum, ma) => {
-    if (m.trangThai === "khoa" || dangMo) return;
-    setDangMo(m.maMan);
-    const ds = await Promise.all((laTrum ? m.boIds : [m.boId]).map(docTheTrongBo));
-    setDangMo(null);
-    if (ds.some((x) => x === null)) { alert(t("path.load_error")); return; }
+  const mo = (m, laTrum, c) => {
+    if (m.trangThai === "khoa") return;
     setDangChoi({
       maMan: m.maMan,
-      tieuDe: laTrum ? t("path.boss_of", { ky: t(`path.sk_${ma}`) }) : m.tieuDe,
-      the: ds.flat(),
+      tieuDe: laTrum ? t("path.boss_of", { ky: c.ten }) : m.tieuDe,
+      the: m.the, kho: lt.kho,
       soCau: laTrum ? 12 : (m.soCau || 8),
       ghep: !laTrum,
     });
@@ -130,37 +115,33 @@ export default function LoTrinh() {
     return r;
   };
 
-  if (bo === null) {
+  if (lt === null) {
     return (
       <div className="mx-auto max-w-3xl px-4 py-10">
         <div className="h-8 w-48 animate-pulse rounded-full bg-surface2" />
         <div className="mt-8 space-y-6">
-          {[0, 1, 2, 3].map((i) => (
-            <div key={i} className="mx-auto h-16 w-16 animate-pulse rounded-full bg-surface2" />
-          ))}
+          {[0, 1, 2, 3].map((i) => <div key={i} className="mx-auto h-16 w-16 animate-pulse rounded-full bg-surface2" />)}
         </div>
       </div>
     );
   }
 
-  if (bo === false || !chuongs.length) {
+  if (lt === false || !chuongs.length) {
     return (
       <div className="mx-auto max-w-lg px-4 py-16 text-center">
-        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-surface2">
-          <Crown size={28} className="text-soft" />
-        </div>
+        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-surface2"><Crown size={28} className="text-soft" /></div>
         <h2 className="m-0 mt-4 text-lg font-extrabold text-ink">{t("path.empty_title")}</h2>
-        <p className="mt-2 text-sm text-soft">{bo === false ? t("path.load_error") : t("path.empty_body")}</p>
+        <p className="mt-2 text-sm text-soft">{lt === false ? t("path.load_error") : t("path.empty_body")}</p>
       </div>
     );
   }
 
   return (
     <div className="mx-auto max-w-3xl px-4 pb-24 pt-6">
-      <header className="mb-6 flex flex-wrap items-end justify-between gap-3">
+      <header className="mb-4 flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="m-0 text-2xl font-extrabold tracking-tight text-ink">{t("nav.path")}</h1>
-          <p className="m-0 mt-1 text-sm text-soft">{t("path.subtitle")}</p>
+          <p className="m-0 mt-1 text-sm text-soft">{t("path.subtitle_topics", { n: tongMan - chuongs.length, c: chuongs.length })}</p>
         </div>
         <span className="inline-flex items-center gap-1.5 rounded-full bg-warn-soft px-3 py-1.5 text-sm font-extrabold text-ink">
           <Star size={16} className="text-warn" fill="currentColor" />
@@ -168,21 +149,32 @@ export default function LoTrinh() {
         </span>
       </header>
 
-      {chuongs.map((c) => (
-        <Chuong key={c.ma} chuong={c} dangMo={dangMo} onMo={mo} t={t} />
-      ))}
+      {/* Dãy chọn chủ đề — mỗi nút hiện số màn đã qua / tổng. */}
+      <nav aria-label={t("path.topics")} className="no-scrollbar -mx-4 mb-4 flex gap-2 overflow-x-auto px-4 pb-2">
+        {chuongs.map((c) => {
+          const xong = c.man.filter((m) => m.sao > 0).length;
+          const dang = c.ma === dangXem.ma;
+          return (
+            <button key={c.ma} type="button" onClick={() => setChon(c.ma)} aria-pressed={dang}
+              className={"shrink-0 cursor-pointer rounded-2xl border-2 border-solid px-3 py-2 text-left font-sans transition " + (dang ? "text-white" : "border-line bg-surface text-ink hover:bg-surface2")}
+              style={dang ? { backgroundColor: c.mau, borderColor: c.mau } : undefined}>
+              <span className="block max-w-[11rem] truncate text-xs font-extrabold">{c.ten}</span>
+              <span className={"block text-[11px] font-semibold " + (dang ? "opacity-90" : "text-soft")}>{xong}/{c.man.length}{c.trum.sao > 0 ? " · ★" : ""}</span>
+            </button>
+          );
+        })}
+      </nav>
 
-      {dangChoi && (
-        <TroChoiMan {...dangChoi} t={t} onXong={luuKetQua} onDong={() => setDangChoi(null)} />
-      )}
+      <Chuong key={dangXem.ma} chuong={dangXem} onMo={(m, laTrum) => mo(m, laTrum, dangXem)} t={t} />
+
+      {dangChoi && <TroChoiMan {...dangChoi} t={t} onXong={luuKetQua} onDong={() => setDangChoi(null)} />}
     </div>
   );
 }
 
-function Chuong({ chuong, dangMo, onMo, t }) {
-  const { ma, man, trum } = chuong;
-  const mau = MAU[ma];
-  const Icon = ICON[ma];
+function Chuong({ chuong, onMo, t }) {
+  const { man, trum, mau } = chuong;
+  const Icon = BookOpen;
   const diem = [...man.map((_, i) => toaDo(i, false)), toaDo(man.length, true)];
   const cao = diem.length * CAO_HANG + DU_CUOI;
   const soXong = man.filter((m) => m.sao > 0).length + (trum.sao > 0 ? 1 : 0);
@@ -194,7 +186,8 @@ function Chuong({ chuong, dangMo, onMo, t }) {
         <div className="flex items-center gap-3 rounded-2xl px-4 py-3 text-white shadow-sm" style={{ backgroundColor: mau }}>
           <Icon size={22} />
           <div className="min-w-0 flex-1">
-            <p className="m-0 text-xs font-bold uppercase tracking-wider opacity-80">{t("path.chapter", { ky: t(`path.sk_${ma}`) })}</p>
+            <p className="m-0 text-xs font-bold uppercase tracking-wider opacity-80">{chuong.tenFr}</p>
+            <p className="m-0 text-base font-extrabold">{chuong.ten}</p>
             <p className="m-0 text-sm font-extrabold">{t("path.chapter_count", { xong: Math.min(soXong, man.length), n: man.length })}</p>
           </div>
         </div>
@@ -210,16 +203,17 @@ function Chuong({ chuong, dangMo, onMo, t }) {
 
         {man.map((m, i) => (
           <Nut key={m.maMan} m={m} pos={toaDo(i, false)} mau={mau} Icon={Icon}
-            dangMo={dangMo === m.maMan} onClick={() => onMo(m, false, ma)} t={t} />
+            onClick={() => onMo(m, false)} t={t} />
         ))}
         <Nut m={{ ...trum, tieuDe: t("path.boss") }} pos={toaDo(man.length, true)} mau={mau} trum
-          dangMo={dangMo === trum.maMan} onClick={() => onMo(trum, true, ma)} t={t} />
+          onClick={() => onMo(trum, true)} t={t} />
       </div>
     </section>
   );
 }
 
-function Nut({ m, pos, mau, Icon, trum, dangMo, onClick, t }) {
+function Nut({ m, pos, mau, Icon, trum, onClick, t }) {
+  const dangMo = false;
   const { trangThai, sao, tieuDe, soThe } = m;
   const khoa = trangThai === "khoa";
   const hienTai = trangThai === "hienTai";
@@ -238,7 +232,7 @@ function Nut({ m, pos, mau, Icon, trum, dangMo, onClick, t }) {
         </span>
       )}
       <button type="button" onClick={onClick} disabled={khoa}
-        title={khoa ? t(trum ? "path.boss_hint" : "path.locked") : trum ? tieuDe : `${tieuDe} — ${t("path.cards_n", { n: soThe })}`}
+        title={khoa ? t(trum ? "path.boss_hint" : "path.locked") : trum ? tieuDe : `${tieuDe} (${m.cap}) · ${t("path.cards_n", { n: soThe })}`}
         aria-label={tieuDe}
         className={`relative flex items-center justify-center rounded-full border-0 transition
           ${khoa ? "cursor-not-allowed text-soft" : "cursor-pointer text-white hover:brightness-110 active:translate-y-1"}

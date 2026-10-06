@@ -1,14 +1,20 @@
-/* Sinh lượt chơi từ thẻ của một bộ flashcard — hàm THUẦN, không import gì,
- * để kiểm được bằng node và xem thử được ở /preview.html.
+/* Sinh lượt chơi Lộ trình — hàm THUẦN, không import gì (kiểm được bằng node).
  *
- * Mọi câu hỏi dựng từ thẻ THẬT giáo viên soạn (the_bo_the); phương án nhiễu
- * lấy từ các thẻ khác CÙNG lượt chơi, không bịa từ nào.
+ * Mục: { id, matTruoc (tiếng Pháp), matSau (tiếng Việt), loai, chuDe }.
+ * loai: n danh từ (có mạo từ) · v động từ · a tính từ · x cụm từ · d trạng từ.
  *
- * Ba kiểu câu:
- *   nghia  — hiện mặt trước (tiếng Pháp), chọn nghĩa đúng trong 4
- *   phap   — hiện mặt sau (tiếng Việt), chọn cụm tiếng Pháp đúng trong 4
- *   ghep   — ghép 4 cặp Pháp ↔ Việt (một câu, cuối lượt)
- */
+ * ══ PHƯƠNG ÁN NHIỄU KHÔNG ĐƯỢC NHÌN KHÁC ĐÁP ÁN ══ (yêu cầu chủ dự án 06/10)
+ * Bản cũ lấy nhiễu ngẫu nhiên trong cùng bộ thẻ, nên hay ra « 12 giờ 30 trưa »
+ * giữa ba câu dài có gạch giải thích: đoán được đáp án mà không cần biết nghĩa.
+ * Nay nhiễu được chấm điểm, điểm THẤP được chọn:
+ *   · BẮT BUỘC cùng loại từ (động từ chỉ đứng cạnh động từ…);
+ *   · ưu tiên cùng chủ đề (+20 nếu khác chủ đề);
+ *   · độ dài gần đáp án (chênh bao nhiêu ký tự thì cộng bấy nhiêu);
+ *   · khi hỏi bằng tiếng Pháp: danh từ cùng số (les … với les …, +8 nếu lệch),
+ *     động từ cùng dạng phản thân (se …, +6 nếu lệch);
+ *   · không trùng nghĩa/chữ với đáp án.
+ * Thiếu nhiễu cùng loại trong chủ đề thì lấy cùng loại ở chủ đề khác — vẫn
+ * KHÔNG bao giờ lấy khác loại. */
 
 export const SO_TIM = 3;
 
@@ -20,57 +26,62 @@ function xao(mang, rand) {
   }
   return a;
 }
-
-/* Hai thẻ trùng nội dung một mặt thì không dùng được làm nhiễu cho nhau —
-   học sinh chọn « sai » mà thật ra đúng. Lọc theo chữ đã chuẩn hoá. */
 const chuan = (s) => String(s || "").trim().toLowerCase();
+const soNhieu = (fr) => /^(les|des)\s/i.test(String(fr).trim());
+const phanThan = (fr) => /^(se |s')/i.test(String(fr).trim());
 
-function phuongAn(the, tatCa, mat, rand) {
-  const dung = the[mat];
-  const nhieu = xao(tatCa.filter((x) => x.id !== the.id && chuan(x[mat]) !== chuan(dung)), rand);
-  const daCo = new Set([chuan(dung)]);
-  const chon = [];
-  for (const x of nhieu) {
-    if (chon.length >= 3) break;
-    if (daCo.has(chuan(x[mat]))) continue;
-    daCo.add(chuan(x[mat]));
-    chon.push(x[mat]);
+/* Chọn 3 phương án nhiễu cho `dung` ở mặt `mat` ("matSau" = hỏi nghĩa Việt,
+   "matTruoc" = hỏi tiếng Pháp). */
+export function chonNhieu(dung, kho, mat, rand = Math.random) {
+  const giaTri = chuan(dung[mat]);
+  const daCo = new Set([giaTri]);
+  const ungVien = kho
+    .filter((x) => x.id !== dung.id && x.loai === dung.loai && chuan(x[mat]) && chuan(x[mat]) !== giaTri
+      && chuan(x.matTruoc) !== chuan(dung.matTruoc) && chuan(x.matSau) !== chuan(dung.matSau))
+    .map((x) => {
+      let diem = Math.abs(String(x[mat]).length - String(dung[mat]).length);
+      if (x.chuDe !== dung.chuDe) diem += 20;
+      if (mat === "matTruoc" && dung.loai === "n" && soNhieu(x.matTruoc) !== soNhieu(dung.matTruoc)) diem += 8;
+      if (mat === "matTruoc" && dung.loai === "v" && phanThan(x.matTruoc) !== phanThan(dung.matTruoc)) diem += 6;
+      return { x, diem: diem + rand() * 3 };   // chút ngẫu nhiên để lượt sau khác lượt trước
+    })
+    .sort((a, b) => a.diem - b.diem);
+  const ra = [];
+  for (const { x } of ungVien) {
+    if (ra.length >= 3) break;
+    const k = chuan(x[mat]);
+    if (daCo.has(k)) continue;
+    daCo.add(k);
+    ra.push(x[mat]);
   }
-  return xao([dung, ...chon], rand);
+  return ra;
 }
 
-/* `soCau`: số câu trắc nghiệm (chưa tính câu ghép). Bộ ít thẻ thì lặp lại
-   thẻ theo chiều hỏi ngược lại chứ không bịa thêm. */
-export function sinhLuot(tatCaThe, { soCau = 8, ghep = true, rand = Math.random } = {}) {
-  const the = tatCaThe.filter((x) => chuan(x.matTruoc) && chuan(x.matSau));
-  if (the.length < 4) return [];
-  const thu = xao(the, rand);
+/* `the`: mục của màn (hoặc của cả chủ đề với thử thách).
+   `kho`: mọi mục có thể làm nhiễu (cả lộ trình). Thiếu `kho` thì dùng `the`. */
+export function sinhLuot(the, { soCau = 8, ghep = true, kho, rand = Math.random } = {}) {
+  const hopLe = the.filter((x) => chuan(x.matTruoc) && chuan(x.matSau));
+  if (hopLe.length < 4) return [];
+  const nguon = (kho && kho.length ? kho : hopLe);
+  const thu = xao(hopLe, rand);
   const cau = [];
   for (let i = 0; i < soCau; i++) {
     const x = thu[i % thu.length];
     const kieu = (i + Math.floor(i / thu.length)) % 2 === 0 ? "nghia" : "phap";
     const mat = kieu === "nghia" ? "matSau" : "matTruoc";
-    cau.push({
-      kieu,
-      de: kieu === "nghia" ? x.matTruoc : x.matSau,
-      viDu: x.viDu || null,
-      dung: x[mat],
-      luaChon: phuongAn(x, the, mat, rand),
-    });
+    const nhieu = chonNhieu(x, nguon, mat, rand);
+    if (nhieu.length < 3) continue;   // không đủ nhiễu cùng loại: bỏ câu, KHÔNG chèn nhiễu khác loại
+    cau.push({ kieu, de: kieu === "nghia" ? x.matTruoc : x.matSau, viDu: x.viDu || null,
+      dung: x[mat], luaChon: xao([x[mat], ...nhieu], rand) });
   }
   if (ghep) {
-    const cap = xao(the, rand).slice(0, 4);
-    cau.push({
-      kieu: "ghep",
-      trai: cap.map((x) => ({ id: x.id, chu: x.matTruoc })),
-      phai: xao(cap.map((x) => ({ id: x.id, chu: x.matSau })), rand),
-    });
+    const cap = xao(hopLe, rand).slice(0, 4);
+    cau.push({ kieu: "ghep", trai: cap.map((x) => ({ id: x.id, chu: x.matTruoc })), phai: xao(cap.map((x) => ({ id: x.id, chu: x.matSau })), rand) });
   }
   return cau;
 }
 
-/* Sao: xong lượt mà không sai câu nào = 3, sai tối đa 1 = 2, còn lại = 1.
-   Hết tim = 0 (chưa qua màn). */
+/* Sao: không sai câu nào = 3, sai tối đa 1 = 2, còn lại = 1. Hết tim = 0. */
 export function tinhSao(soSai, conTim) {
   if (conTim <= 0) return 0;
   if (soSai === 0) return 3;
