@@ -24,23 +24,8 @@ import NeoCauHoi from "./NeoCauHoi.jsx";
 function Student({ name, exercises, submissions, setSubmissions, accounts, setAccounts, refresh, routeView }) {
   const [taking, setTaking] = useState(null);
 
-  // 🟢 Presence heartbeat : cập nhật last_active_at (debounce 90s) khi có tương tác
-  useEffect(() => {
-    let lastBeat = 0;
-    const beat = async () => {
-      lastBeat = Date.now();
-      try {
-        const p = await load("mcf-presence", {});
-        p[name] = Date.now();
-        await save("mcf-presence", p);
-      } catch {}
-    };
-    const onActivity = () => { if (Date.now() - lastBeat > 90_000) beat(); };
-    beat(); // đánh dấu online ngay khi vào
-    const events = ["mousemove", "keydown", "scroll", "touchstart", "click"];
-    events.forEach((ev) => window.addEventListener(ev, onActivity, { passive: true }));
-    return () => events.forEach((ev) => window.removeEventListener(ev, onActivity));
-  }, [name]);
+  /* Nhịp tim online đã chuyển lên App.jsx (useNhipTim, migration 123) — chạy
+     trên mọi trang của học sinh, ghi vào profiles thay vì blob mcf-presence. */
   /* `routeView` đến từ URL; xem chú thích tương ứng trong Teacher. */
   const [tab, setTab] = useState(routeView || "todo");
   useEffect(() => { if (routeView) setTab(routeView); }, [routeView]);

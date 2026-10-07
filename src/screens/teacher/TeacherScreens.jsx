@@ -440,7 +440,10 @@ function Accounts({ accounts, setAccounts, classes, setClasses, exercises = [], 
 
   // Nạp presence + tự làm mới mỗi 60 giây
   useEffect(() => {
-    const fetchP = () => load("mcf-presence", {}).then(setPresence);
+    /* 123: đọc cột profiles.lan_cuoi_online (giáo viên đọc được profiles),
+       không đọc blob mcf-presence nữa. Khoá theo tên như cũ. */
+    const fetchP = () => supabase.from("profiles").select("name, lan_cuoi_online").eq("role", "eleve")
+      .then(({ data }) => setPresence(Object.fromEntries((data ?? []).filter((r) => r.lan_cuoi_online).map((r) => [r.name, Date.parse(r.lan_cuoi_online)]))));
     fetchP();
     const t = setInterval(() => { fetchP(); forceTick((x) => x + 1); }, 60_000);
     return () => clearInterval(t);

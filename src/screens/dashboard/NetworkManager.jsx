@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { X, Loader2, Users, UserPlus, UserMinus, Check } from "lucide-react";
-import { Avatar } from "../../shared/avatars.jsx";
+import { AvatarOnline, NhanOnline } from "./ChamOnline.jsx";
+import { datAnTrangThai, docAnTrangThai } from "../../shared/hienDien.js";
 import { docDangTheoDoi, docNguoiTheoDoiToi, theoDoiLai, boTheoDoi } from "../../shared/xp.js";
 
 /* « Mạng lưới học tập » — hai tab Người theo dõi / Đang theo dõi (01/10).
@@ -27,6 +28,10 @@ export default function NetworkManager({ t, dong, onDoi }) {
     docDangTheoDoi().then((x) => setDs((d) => ({ ...d, following: x })));
   };
   useEffect(nap, []);
+  /* Ẩn trạng thái online của chính mình (123). null = chưa đọc được. */
+  const [an, setAn] = useState(null);
+  useEffect(() => { docAnTrangThai().then(setAn); }, []);
+  const doiAn = async () => { const moi = !an; setAn(moi); if (!(await datAnTrangThai(moi))) setAn(!moi); };
 
   useEffect(() => {
     const esc = (e) => { if (e.key === "Escape") dong(); };
@@ -79,10 +84,10 @@ export default function NetworkManager({ t, dong, onDoi }) {
               {hienTai.map((n) => (
                 <li key={n.id} className="flex items-center justify-between gap-3 rounded-xl p-3 transition-colors hover:bg-surface2">
                   <span className="flex min-w-0 items-center gap-3">
-                    <Avatar khoa={n.avatar || ""} ten={n.name} size={40} dungYen />
+                    <AvatarOnline n={n} size={40} />
                     <span className="min-w-0">
                       <span className="block truncate font-medium text-ink">{n.name}</span>
-                      {n.username && <span className="block truncate text-sm text-soft">@{n.username}</span>}
+                      <NhanOnline n={n} />
                     </span>
                   </span>
                   {tab === "followers" ? (
@@ -106,6 +111,13 @@ export default function NetworkManager({ t, dong, onDoi }) {
           )}
           {loi && <p className="m-0 px-3 pt-2 text-sm font-semibold text-danger" role="alert">{loi}</p>}
         </div>
+        {an !== null && (
+          <label className="flex cursor-pointer items-center gap-2.5 border-0 border-t border-solid border-line px-5 py-3 text-sm text-ink">
+            <input type="checkbox" checked={an} onChange={doiAn} className="h-4 w-4 cursor-pointer" />
+            Ẩn trạng thái online của tôi
+            <span className="ml-auto text-xs text-soft">{an ? "Người khác không thấy" : "Người theo dõi bạn thấy"}</span>
+          </label>
+        )}
       </div>
     </div>
   );

@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Flame, UserPlus, X, Loader2, Users, UserMinus, Trophy, Star } from "lucide-react";
+import { AvatarOnline, NhanOnline } from "./ChamOnline.jsx";
 import { Avatar } from "../../shared/avatars.jsx";
 import { docDangTheoDoi, theoDoi, boTheoDoi, docBangXepHang } from "../../shared/xp.js";
 import NetworkManager from "./NetworkManager.jsx";
@@ -102,10 +103,10 @@ export default function FollowingStreakWidget({ t, fixture, bxhFixture }) {
           <ul className="m-0 flex list-none flex-col gap-1 p-0">
             {ds.map((n) => (
               <li key={n.id} className="group flex items-center gap-3 rounded-2xl px-2 py-2 transition-colors hover:bg-surface2">
-                <Avatar khoa={n.avatar || ""} ten={n.name} size={36} dungYen />
+                <AvatarOnline n={n} size={36} />
                 <span className="min-w-0 flex-1">
                   <span className="block truncate text-sm font-semibold text-ink">{n.name}</span>
-                  {n.username && <span className="block truncate text-xs text-soft">@{n.username}</span>}
+                  <NhanOnline n={n} />
                 </span>
                 <span className={`inline-flex shrink-0 items-center gap-1 text-xs font-semibold ${n.has_studied_today ? "text-orange-500" : "text-soft"}`}>
                   <Flame size={18}
