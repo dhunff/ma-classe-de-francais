@@ -18,7 +18,9 @@ const veChu = (html) => {
   d.innerHTML = String(html)
     .replace(/<br\s*\/?>/gi, "\n")
     .replace(/<\/(p|div|li|h\d)>/gi, "\n");
-  return (d.textContent || "").replace(/\n+$/, "");
+  /* KHÔNG cắt xuống dòng cuối: textarea gửi lại giá trị sau mỗi phím, cắt ở
+     đây thì bấm Enter ở cuối bài sẽ không bao giờ xuống được dòng. */
+  return d.textContent || "";
 };
 
 export default function KhungViet({ value, onChange, readOnly }) {
