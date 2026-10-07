@@ -9,6 +9,7 @@ import { AVA_COLORS, avaColor, fmtDateFR, fmtDuration, targetedAccounts, fileNam
 import { FloatingLayer, KebabMenu } from "../../shared/ui.jsx";
 import { PROFILE_FIELDS, LEVELS_PROFILE, GOALS_PROFILE, emptyProfile, calculateProfileCompletion, validateProfile } from "../../shared/profile.js";
 import { OrdreChip, OrdreBlocks, TableauCompare, ConfirmSubmitModal } from "./answers.jsx";
+import KhungViet from "../practice/KhungViet.jsx";
 import SplitPane from "../practice/SplitPane.jsx";
 import FocusShell, { FOCUS_TOP } from "../practice/FocusShell.jsx";
 import RichTextEditor from "../../editor/RichTextEditor.jsx";
@@ -184,7 +185,7 @@ function Taking({ ex, name, setSubmissions, done }) {
           )}
         </div>
       ) : q.type === "open" ? (
-        <RichTextEditor value={answers[q.id] || ""} readOnly={locked} onChange={(html) => setAnswers({ ...answers, [q.id]: html })} />
+        <KhungViet value={answers[q.id] || ""} readOnly={locked} onChange={(html) => setAnswers({ ...answers, [q.id]: html })} />
       ) : (
         <input style={S.input} disabled={locked} placeholder="Ta réponse…" value={answers[q.id] || ""}
           onChange={(e) => setAnswers({ ...answers, [q.id]: e.target.value })} />

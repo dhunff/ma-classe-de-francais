@@ -14,6 +14,7 @@ import { WrongExplanation } from "./shared/ui.jsx";
 import { useT } from "./shared/i18n.jsx";
 import { TableauCompare, OrdreBlocks, ConfirmSubmitModal } from "./screens/student/answers.jsx";
 import RichTextEditor from "./editor/RichTextEditor.jsx";
+import KhungViet from "./screens/practice/KhungViet.jsx";
 import SplitPane from "./screens/practice/SplitPane.jsx";
 import FocusShell, { FOCUS_TOP } from "./screens/practice/FocusShell.jsx";
 import Builder from "./screens/teacher/Builder.jsx";
@@ -1302,7 +1303,7 @@ function PracticeWorkspace({ ex, back, onFinish }) {
           </div>
         ) : q.type === "open" ? (
           <>
-            <RichTextEditor value={a || ""} readOnly={!!graded} onChange={(html) => setAnswers({ ...answers, [q.id]: html })} />
+            <KhungViet value={a || ""} readOnly={!!graded} onChange={(html) => setAnswers({ ...answers, [q.id]: html })} />
             {graded && q.model && (
               <div style={{ marginTop: 12, background: C.okSoft, border: `1.5px solid ${C.ok}55`, borderRadius: 12, padding: "12px 15px" }}>
                 <strong>Réponse suggérée :</strong>
