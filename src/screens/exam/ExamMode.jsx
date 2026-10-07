@@ -490,7 +490,9 @@ export function PhanThi({ section, attemptId, answers, setAnswers, onDone, onBlu
              dangerouslySetInnerHTML={{ __html: ex.consigne }} />
       )}
       {ex.audioUrl && (
-        <AudioGioiHan src={ex.audioUrl} attemptId={attemptId} questionId={`ex:${ex.id}`} luot={ex.ngheKieuThi ? 1 : 2} />
+        /* `key` theo bài (07/10): không có nó thì sang bài 2 React giữ nguyên
+           component của bài 1, kèm `conLai = 0` → mọi bài sau báo hết lượt. */
+        <AudioGioiHan key={ex.id} src={ex.audioUrl} attemptId={attemptId} questionId={`ex:${ex.id}`} luot={ex.ngheKieuThi ? 1 : 2} />
       )}
 
       {/* Ảnh đề bài — màn thi trước đây KHÔNG dựng nó.
