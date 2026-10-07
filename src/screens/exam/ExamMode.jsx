@@ -7,6 +7,7 @@ import { gradeRemote } from "../../shared/gradeRemote.js";
 import { EXAM_STRUCTURE, sectionScore, verdict, ghiPhan, gomTheoKyNang, NGUONG_PHAN, NGUONG_TONG, khongCham }
   from "./examPaper.js";
 import GhiAmBaiNoi from "./GhiAmBaiNoi.jsx";
+import { nhomTheoTrinhDo } from "../../shared/trinhDoDe.js";
 import { coPhienMayChu } from "../../shared/phienMayChu.js";
 
 /* Mode Examen — thi thử có tính giờ.
@@ -47,6 +48,11 @@ function ManCho({ dsDe, chon, paper, onStart, dangTai, lamPhanNoi, setLamPhanNoi
   const tongPhut = cauTruc.reduce(
     (n, p) => n + (p.code === "PO" && (!coPhanNoi || !lamPhanNoi) ? 0 : p.minutes), 0);
   const [sanSang, setSanSang] = useState(false);
+  const nhom = useMemo(() => nhomTheoTrinhDo(dsDe), [dsDe]);
+  const [tabChon, setTab] = useState(null);
+  /* Mặc định: trình độ của đề đang chọn, không thì trình độ đầu tiên có đề. */
+  const tab = tabChon ?? paper?.level ?? nhom.find((g) => g.de.length)?.level ?? "A1";
+  const deTab = nhom.find((g) => g.level === tab)?.de ?? [];
 
   /* Chưa có đề nào thì nói rõ NGUYÊN NHÂN, đừng hiện một màn hình trống.
      Trạng thái này có thật và hay gặp lúc mới dựng lớp: giáo viên đã soạn bài
@@ -84,8 +90,23 @@ function ManCho({ dsDe, chon, paper, onStart, dangTai, lamPhanNoi, setLamPhanNoi
       {/* Chọn ĐỀ, không chọn trình độ. Trước đây học sinh chọn B1/B2 rồi máy
           bốc ngẫu nhiên ba bài — chạy được, nhưng không phải một đề thi. Giờ
           mỗi dòng ở đây là một vật phẩm giáo viên đã cân nhắc và phát hành. */}
-      <div className="mt-6 space-y-2">
-        {dsDe.map((e) => (
+      <div role="tablist" aria-label="Trình độ" className="mt-6 flex flex-wrap gap-2">
+        {nhom.map((g) => (
+          <button key={g.level} type="button" role="tab" aria-selected={g.level === tab} onClick={() => setTab(g.level)}
+            className={`cursor-pointer rounded-full border border-solid px-4 py-1.5 font-sans text-sm font-bold transition-colors ${
+              g.level === tab ? "border-primary bg-primary text-white" : "border-line bg-surface text-ink hover:border-primary"}`}>
+            {g.level} <span className={g.level === tab ? "text-white/75" : "text-soft"}>· {g.de.length}</span>
+          </button>
+        ))}
+      </div>
+
+      <div className="mt-4 space-y-2">
+        {deTab.length === 0 && (
+          <p className="m-0 rounded-2xl bg-surface2 px-5 py-4 text-sm text-soft">
+            Chưa có đề {tab} nào được phát hành.
+          </p>
+        )}
+        {deTab.map((e) => (
           <button key={e.id} type="button" onClick={() => chon(e.id)}
             className={`block w-full rounded-2xl border-0 px-5 py-3 text-left transition ${
               paper?.id === e.id ? "bg-primary text-white" : "bg-surface2 text-ink hover:brightness-95"}`}>

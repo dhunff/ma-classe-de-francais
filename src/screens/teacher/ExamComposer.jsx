@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Plus, Trash2, Eye, EyeOff, Save, AlertTriangle, Headphones, BookOpen, PenLine, Mic, ChevronUp, ChevronDown } from "lucide-react";
 import { loadPractice } from "../../shared/exerciseStore.js";
+import { nhomTheoTrinhDo } from "../../shared/trinhDoDe.js";
 import { loadExams, saveExam, deleteExam, cotGrilleSanSang } from "../../shared/examStore.js";
 import { EXAM_STRUCTURE, khongCham } from "../exam/examPaper.js";
 import GrilleEditor, { grilleLuuDuoc } from "./GrilleEditor.jsx";
@@ -161,8 +162,15 @@ export default function ExamComposer({ t }) {
             </p>
           </div>
         ) : (
-          <ul className="m-0 mt-6 list-none space-y-3 p-0">
-            {dsDe.map((e) => (
+          nhomTheoTrinhDo(dsDe).map((g) => (
+          <section key={g.level} className="mt-6">
+            <h3 className="m-0 mb-2 flex items-baseline gap-2 text-sm font-extrabold text-ink">
+              DELF {g.level}
+              <span className="text-xs font-semibold text-soft">{g.de.length} đề · {g.de.filter((e) => e.is_published).length} đã phát hành</span>
+            </h3>
+            {g.de.length === 0 && <p className="m-0 rounded-2xl bg-surface2 px-4 py-3 text-xs text-soft">Chưa có đề {g.level}.</p>}
+          <ul className="m-0 list-none space-y-3 p-0">
+            {g.de.map((e) => (
               <li key={e.id} className="flex items-center justify-between gap-3 rounded-2xl border border-line bg-surface p-4">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
@@ -219,6 +227,8 @@ export default function ExamComposer({ t }) {
               </li>
             ))}
           </ul>
+          </section>
+          ))
         )}
       </div>
     );
