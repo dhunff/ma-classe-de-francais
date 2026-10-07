@@ -299,12 +299,7 @@ function Student({ name, exercises, submissions, setSubmissions, accounts, setAc
       {/* Hàng tab ngang đã bỏ: nhãn của nó trùng khít với thanh bên, và mỗi
           tab đều đã có route riêng nên không mất lối vào nào. Nút làm mới vốn
           nằm trong prop `trailing` của cụm tab đó, nên được tách ra đây. */}
-      <div className="mb-5 flex flex-wrap items-center gap-2">
-        <button type="button" onClick={refresh}
-          className="cursor-pointer rounded-md border-0 bg-transparent px-3 py-1.5 font-[inherit] text-sm font-medium text-soft transition-colors hover:bg-surface2 hover:text-ink">
-          ↻ {t("actions.refresh")}
-        </button>
-      </div>
+      {/* Nút « Làm mới » gỡ 08/10 theo chủ dự án: dữ liệu tự nạp khi vào trang. */}
 
       {/* « Bài tập được giao » (08/10): Cần làm + Đã nộp là hai tab của một mục. */}
       {(tab === "todo" || tab === "done") && (
