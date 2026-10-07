@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { useLocation } from "react-router-dom";
+import QuanLyVip from "./QuanLyVip.jsx";
 import { C, S, LEVEL_COLORS, LEVEL_PASTEL, QTYPES, VF_OPTS } from "../../shared/tokens.js";
 import { load, save, del } from "../../shared/storage.js";
 import { loadPractice, saveExercise, deleteExercise } from "../../shared/exerciseStore.js";
@@ -51,6 +52,9 @@ function Teacher({ exercises, setExercises, submissions, setSubmissions, account
      mở chồng lên rồi đóng lại. URL đổi thì kéo state theo; các bước tạm thì
      tự quản. */
   const [view, setView] = useState(routeView || "list");
+  /* 07/10: « Thư viện luyện tập » không còn mục menu riêng mà là tab thứ hai
+     của trang Bài tập — một chỗ quản lý mọi bài. */
+  const [khoBai, setKhoBai] = useState("giao");
   useEffect(() => { if (routeView) setView(routeView); }, [routeView]);
   // 📣 Annonces
   const [annModal, setAnnModal] = useState(false);
@@ -222,6 +226,17 @@ ${r.error?.message ?? ""}`); return; }
           bên, và mỗi tab đều có route riêng trong TEACHER_NAV nên không mất
           lối vào nào. `view` vẫn giữ vì nó còn điều khiển hai màn con không
           có URL riêng: soạn bài mới và chấm bài. */}
+      {view === "list" && (
+        <div role="tablist" className="mb-4 inline-flex gap-1 rounded-full bg-surface2 p-1">
+          {[["giao", "Bài được giao"], ["luyen", "Thư viện luyện tập"]].map(([k, nhan]) => (
+            <button key={k} type="button" role="tab" aria-selected={khoBai === k} onClick={() => setKhoBai(k)}
+              className={`h-9 cursor-pointer rounded-full border-0 px-4 font-sans text-sm font-bold ${khoBai === k ? "bg-surface text-ink shadow-sm" : "bg-transparent text-soft hover:text-ink"}`}>
+              {nhan}
+            </button>
+          ))}
+        </div>
+      )}
+      {view === "list" && khoBai === "luyen" ? <PracticeHub role="prof" accounts={accounts} /> : <>
       <div className="mb-5 flex flex-wrap items-center gap-2">
         <button type="button" onClick={refresh}
           className={NUT_PILL}>
@@ -280,25 +295,6 @@ ${r.error?.message ?? ""}`); return; }
 
             {!annAll && (
               <div style={{ marginTop: 10, background: "var(--mcf-surface2)", border: `1px solid ${C.line}`, borderRadius: 14, padding: "12px 14px", display: "grid", gap: 12 }}>
-                <div>
-                  <div style={{ ...S.label, fontSize: 10.5 }}>🏫 Par classes</div>
-                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 8 }}>
-                    {classes.length === 0 && <span style={{ fontSize: 12.5, color: C.soft }}>Aucune classe créée.</span>}
-                    {classes.map((cl) => {
-                      const on = annClasses.includes(cl.id);
-                      return (
-                        <label key={cl.id} style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, cursor: "pointer",
-                          padding: "6px 13px", borderRadius: 999, fontWeight: 700,
-                          border: `1.5px solid ${on ? C.primary : C.line}`,
-                          background: on ? C.primarySoft : "var(--mcf-surface)", color: on ? C.primary : C.ink }}>
-                          <input type="checkbox" checked={on} style={{ display: "none" }}
-                            onChange={() => setAnnClasses(on ? annClasses.filter((x) => x !== cl.id) : [...annClasses, cl.id])} />
-                          {on ? "✓ " : ""}{cl.name}
-                        </label>
-                      );
-                    })}
-                  </div>
-                </div>
                 <div>
                   <div style={{ ...S.label, fontSize: 10.5 }}>👤 Par élèves</div>
                   <input style={{ ...S.input, marginTop: 8, maxWidth: 280 }} value={annSearch}
@@ -360,7 +356,6 @@ ${r.error?.message ?? ""}`); return; }
           boxShadow: "0 10px 30px rgba(17,24,39,.35)" }}>{annToast}</div>
       )}
       {view === "students" && <Accounts accounts={accounts} setAccounts={setAccounts} classes={classes} setClasses={setClasses} exercises={exercises} submissions={submissions} />}
-      {view === "practice" && <PracticeHub role="prof" accounts={accounts} />}
       {view === "stats" && <ThongKe accounts={accounts} />}
       {view === "list" && (
         exercises.length === 0 ? (
@@ -406,6 +401,7 @@ ${r.error?.message ?? ""}`); return; }
           </div>
         )
       )}
+      </>}
     </div>
   );
 }
@@ -513,27 +509,8 @@ function Accounts({ accounts, setAccounts, classes, setClasses, exercises = [], 
 
   return (
     <div>
-      <div className="mcf-card" style={{ ...S.card, marginBottom: 16 }}>
-        <div style={S.label}>🏫 Classes</div>
-        <div style={{ display: "flex", gap: 10, marginTop: 8, flexWrap: "wrap" }}>
-          <input style={{ ...S.input, flex: "1 1 200px", maxWidth: 280 }} value={newClass}
-            placeholder="ex. B1-Matin, A1-K1…" onChange={(e) => setNewClass(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && addClass()} />
-          <button style={S.btn(true)} onClick={addClass}>Créer la classe</button>
-        </div>
-        {classes.length > 0 && (
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 12 }}>
-            {classes.map((cl) => (
-              <span key={cl.id} style={{ ...S.chip(C.primarySoft, C.primary), display: "inline-flex", alignItems: "center", gap: 8, padding: "6px 14px" }}>
-                🏫 {cl.name} ({accounts.filter((a) => a.classId === cl.id).length})
-                <button title="Supprimer la classe" onClick={() => delClass(cl.id)}
-                  style={{ border: "none", background: "transparent", color: C.danger, cursor: "pointer", fontWeight: 800, padding: 0 }}>✕</button>
-              </span>
-            ))}
-          </div>
-        )}
-      </div>
-
+      {/* Khung « Classes » (tạo/xoá lớp) đã gỡ 07/10 theo chủ dự án. */}
+      <QuanLyVip />
       {/* Ô « Créer le compte » và nút « Supprimer » gỡ 24/09 theo yêu cầu chủ
           dự án: học sinh tự đăng ký, giáo viên chỉ theo dõi. */}
       {msg && <p style={{ color: C.danger, fontSize: 13, marginTop: 0, marginBottom: 10 }}>{msg}</p>}
@@ -600,11 +577,6 @@ function Accounts({ accounts, setAccounts, classes, setClasses, exercises = [], 
                 </span>
               )}
 
-              <select value={a.classId || ""} onChange={(e) => setStudentClass(a, e.target.value)}
-                style={{ ...S.input, width: "auto", padding: "5px 10px", fontSize: 12.5 }}>
-                <option value="">— Sans classe —</option>
-                {classes.map((cl) => <option key={cl.id} value={cl.id}>{cl.name}</option>)}
-              </select>
             </span>
             <div style={{ display: "flex", gap: 8 }}>
               <button style={{ ...S.btn(false), padding: "5px 12px", fontSize: 12 }} onClick={() => reset(a.name)}
@@ -870,7 +842,6 @@ function StudentDossier({ acc, classes, exercises, submissions, presence, back }
             <span className={st.online ? "mcf-pulse" : ""} style={{ width: 9, height: 9, borderRadius: "50%", background: st.online ? "#22C55E" : "#9CA3AF" }} />
             {st.label}
           </div>
-          {cls && <div><span style={S.chip(C.primarySoft, C.primary)}>🏫 {cls.name}</span></div>}
           <div style={{ marginTop: 16, textAlign: "left" }}>
             <div style={{ fontSize: 11.5, color: C.soft, fontWeight: 700, marginBottom: 6 }}>PROFIL COMPLÉTÉ À {pct} %</div>
             <div style={{ width: "100%", height: 8, borderRadius: 999, background: "var(--mcf-surface2)", border: `1px solid ${C.line}`, overflow: "hidden" }}>

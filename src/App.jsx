@@ -13,12 +13,9 @@ import BoTheApp from './screens/student/BoTheApp.jsx'
 import LoTrinh from './screens/student/LoTrinh.jsx'
 import TuDien from './screens/student/TuDien.jsx'
 import ThachDau from './screens/student/ThachDau.jsx'
-import LoiGiaiUuTien from './screens/teacher/LoiGiaiUuTien.jsx'
 import DatNeo from './screens/teacher/DatNeo.jsx'
 import DuyetNhap from './screens/teacher/DuyetNhap.jsx'
-import LoTrinhGiaoVien from './screens/teacher/LoTrinhGiaoVien.jsx'
 import SoanBoThe from './screens/teacher/SoanBoThe.jsx'
-import XemLienHe from './screens/teacher/XemLienHe.jsx'
 import LandingPage from './screens/public/LandingPage.jsx'
 import { TrangFAQ, TrangDieuKhoan, TrangBaoMat } from './screens/public/TrangPhapLy.jsx'
 import ExamResults from './screens/student/ExamResults.jsx'
@@ -42,7 +39,6 @@ import TeacherDashboard from './screens/dashboard/TeacherDashboard.jsx'
 import SoftDashboard from './screens/dashboard/SoftDashboard.jsx'
 import HomeDashboard from './screens/dashboard/HomeDashboard.jsx'
 import CalendarView from './screens/calendar/CalendarView.jsx'
-import TipsEditor from './screens/teacher/TipsEditor.jsx'
 import LoginSplit from './screens/LoginSplit.jsx'
 import SetNewPassword from './screens/auth/SetNewPassword.jsx'
 
@@ -266,7 +262,6 @@ function AppInner() {
                   nên không sinh ra từ vòng lặp trên. RLS mới là hàng rào thật
                   (policy tips_write dùng is_teacher); RequireRole ở đây chỉ để
                   học sinh khỏi lạc vào một trang mà mọi nút đều báo lỗi. */}
-              <Route path="/professeur/carnet" element={<TipsEditor t={t} />} />
               <Route path="/professeur/examens" element={<ExamComposer t={t} />} />
               {/* /professeur/copies ĐÃ GỠ — 09/09/2026.
                   Giáo viên không còn chấm bài; học sinh tự chấm theo grille
@@ -276,12 +271,9 @@ function AppInner() {
                   Giáo viên không chấm cũng không nghe bài nói nữa. Học sinh vẫn
                   ghi âm trong bài thi thử để TỰ nghe lại; bản ghi vẫn nằm ở
                   bucket riêng tư `bai-noi`. */}
-              <Route path="/professeur/loi-giai" element={<LoiGiaiUuTien />} />
               <Route path="/professeur/neo" element={<DatNeo />} />
               <Route path="/professeur/bo-the" element={<SoanBoThe />} />
               <Route path="/professeur/duyet-nhap" element={<DuyetNhap />} />
-              <Route path="/professeur/lo-trinh" element={<LoTrinhGiaoVien />} />
-              <Route path="/professeur/lien-he" element={<XemLienHe />} />
 
               <Route path="/professeur/*" element={<Navigate to="/professeur/dashboard" replace />} />
             </Route>

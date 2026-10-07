@@ -458,28 +458,7 @@ function Builder({ draft, setDraft, publish, cancel, accounts, classes = [] }) {
 
           {draft.targeted && (
             <div style={{ marginTop: 12, background: "var(--mcf-surface2)", border: `1px solid ${C.line}`, borderRadius: 16, padding: "14px 16px", display: "grid", gap: 14 }}>
-              {/* Cấp 2 : theo lớp */}
-              <div>
-                <div style={{ ...S.label, fontSize: 10.5 }}>{t("bd.by_class")}</div>
-                <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 8 }}>
-                  {classes.length === 0 && <span style={{ fontSize: 12.5, color: C.soft }}>{t("bd.no_class")}</span>}
-                  {classes.map((cl) => {
-                    const on = (draft.assignedClasses || []).includes(cl.id);
-                    const n = accounts.filter((a) => a.classId === cl.id).length;
-                    return (
-                      <label key={cl.id} style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, cursor: "pointer",
-                        padding: "7px 14px", borderRadius: 999, fontWeight: 700,
-                        border: `1.5px solid ${on ? C.primary : C.line}`,
-                        background: on ? C.primarySoft : "var(--mcf-surface)", color: on ? C.primary : C.ink }}>
-                        <input type="checkbox" checked={on} style={{ display: "none" }}
-                          onChange={() => setDraft({ ...draft, assignedClasses: on ? draft.assignedClasses.filter((x) => x !== cl.id) : [...(draft.assignedClasses || []), cl.id] })} />
-                        {on ? "✓ " : ""}{cl.name} ({n})
-                      </label>
-                    );
-                  })}
-                </div>
-              </div>
-
+              {/* Cấp « theo lớp » đã gỡ 07/10: không còn tạo lớp. */}
               {/* Cấp 3 : chọn đích danh */}
               <div>
                 <div style={{ ...S.label, fontSize: 10.5 }}>{t("bd.by_student")}</div>

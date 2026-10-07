@@ -22,10 +22,12 @@ export const TEACHER_NAV = [
   { to: "/professeur/exercices", labelKey: "nav.exercises", Icon: BookOpen, view: "list" },
   { to: "/professeur/eleves", labelKey: "nav.students", Icon: Users, view: "students" },
   { to: "/professeur/statistiques", labelKey: "nav.stats", Icon: BarChart3, view: "stats" },
-  { to: "/professeur/entrainement", labelKey: "nav.practice", Icon: Dumbbell, view: "practice" },
-  /* Không có `view`: màn hình này không nằm trong Teacher.jsx mà là route
-     riêng, nên App.jsx khai báo tay. */
-  { to: "/professeur/carnet", labelKey: "nav.tips", Icon: Lightbulb },
+  /* 07/10, theo chủ dự án: giáo viên chỉ còn quản lý học sinh, cấp quyền bài,
+     gói VIP và giao bài (cùng soạn bài, đề thi, flashcard, neo, duyệt nháp).
+     ĐÃ GỠ: « Thư viện luyện tập » riêng (gộp thành tab trong « Bài tập »),
+     « Sổ tay lớp », « Câu cần lời giải » (AI chấm thay), « Lộ trình » (chạy
+     theo mặc định), « Đăng ký tư vấn », và chức năng tạo lớp. Các bảng dữ
+     liệu đứng sau vẫn còn nguyên. */
   /* Soạn đề thi thử — cũng là route riêng, không có `view`. */
   { to: "/professeur/examens", labelKey: "nav.exams", Icon: Timer },
   /* « Chấm bài viết » (/professeur/copies) ĐÃ GỠ — 09/09/2026.
@@ -44,25 +46,14 @@ export const TEACHER_NAV = [
   /* « Bài nói » (/professeur/oral) ĐÃ GỠ — 23/09/2026. Cùng đợt với màn chấm
      bài viết: giáo viên không chấm, cũng không nghe bài nói. Muốn dựng lại thì
      lấy BaiNoiGiaoVien.jsx từ git, thêm route + dòng này + khoá nav.oral. */
-  /* Viết lời giải, xếp theo số học sinh từng sai. Route riêng, không có
-     `view`. Đặt cạnh hai màn chấm vì cùng một loại việc: nhìn vào chỗ học
-     sinh chưa hiểu rồi làm gì đó về nó. */
-  { to: "/professeur/loi-giai", labelKey: "nav.explanations", Icon: Bulb },
   /* Đặt neo. Đứng cạnh « Câu cần lời giải » vì cùng một loại việc: nhìn vào
      chỗ học sinh chưa hiểu rồi làm gì đó về nó. */
   { to: "/professeur/neo", labelKey: "nav.anchors", Icon: Anchor },
   /* Soạn Flashcard. Đặt cạnh « Neo ngữ liệu » vì cùng loại việc: chuẩn bị ngữ
      liệu cho học sinh, khác với ba mục trên vốn là theo dõi và chấm. */
   { to: "/professeur/bo-the", labelKey: "nav.decks", Icon: Layers },
-  /* Lộ trình (bật/tắt màn, thứ tự, số câu, tiến độ) — đứng sau Flashcard vì
-     mỗi màn lộ trình CHÍNH LÀ một bộ flashcard. */
-  { to: "/professeur/lo-trinh", labelKey: "nav.path", Icon: Map },
   /* Duyệt bài nháp do scripts/nhap soạn sẵn, xuất bản một cú bấm. */
   { to: "/professeur/duyet-nhap", labelKey: "nav.drafts", Icon: FileCheck2 },
-  /* Đăng ký tư vấn. Đứng cuối vì nó không phải việc dạy học — nhưng phải có
-     mặt: một người để lại số điện thoại mà không ai thấy là một người bị bỏ
-     rơi. */
-  { to: "/professeur/lien-he", labelKey: "nav.leads", Icon: Inbox },
 ];
 
 export const STUDENT_NAV = [
