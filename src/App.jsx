@@ -319,6 +319,8 @@ function AppInner() {
                   mục menu bị bỏ. */}
               <Route path="/etudiant/progression" element={studentRoute("progress")} />
               <Route path="/etudiant/resultats" element={<ExamResults />} />
+              {/* Đường cũ của tab « Đã nộp » — giữ cho liên kết đã lưu. */}
+              <Route path="/etudiant/rendus" element={studentRoute("done")} />
               {/* Bộ thẻ giáo viên soạn. Hai màn (thư viện + luyện) nằm TRONG
                   một route: đổi route thì React Router tháo màn cũ ngay khi
                   màn mới gắn vào, không còn gì để trượt. Xem BoTheApp.jsx. */}

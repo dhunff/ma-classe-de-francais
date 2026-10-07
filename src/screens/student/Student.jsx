@@ -306,6 +306,17 @@ function Student({ name, exercises, submissions, setSubmissions, accounts, setAc
         </button>
       </div>
 
+      {/* « Bài tập được giao » (08/10): Cần làm + Đã nộp là hai tab của một mục. */}
+      {(tab === "todo" || tab === "done") && (
+        <div role="tablist" className="mb-5 inline-flex gap-1 rounded-full bg-surface2 p-1">
+          {[["todo", t("nav.todo"), todo.length], ["done", t("nav.done"), doneList.length]].map(([k, nhan, n]) => (
+            <button key={k} type="button" role="tab" aria-selected={tab === k} onClick={() => setTab(k)}
+              className={`h-9 cursor-pointer rounded-full border-0 px-4 font-sans text-sm font-bold ${tab === k ? "bg-surface text-ink shadow-sm" : "bg-transparent text-soft hover:text-ink"}`}>
+              {nhan} <span className={tab === k ? "text-primary" : "text-soft"}>· {n}</span>
+            </button>
+          ))}
+        </div>
+      )}
       {tab === "todo" && (
         todo.length === 0
           ? <div className="flex w-full flex-col items-center justify-center rounded-3xl border border-solid border-line bg-surface px-6 py-16 text-center shadow-sm transition-colors duration-300 dark:shadow-none">

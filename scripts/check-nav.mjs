@@ -90,6 +90,10 @@ for (const m of muc) {
 const CO_Y_KHONG_CO_MUC = {
   "/etudiant/progression":
     "« Ma progression » đã rời menu theo yêu cầu; route giữ lại để không mất màn hình.",
+  "/etudiant/resultats":
+    "« Kết quả thi » vào bằng nút trong màn Thi thử (08/10), không nằm ở menu.",
+  "/etudiant/rendus":
+    "Đường cũ của « Đã nộp », nay là tab trong « Bài tập được giao » (08/10).",
 };
 
 const routeNguoiDung = appTayRoutes.filter(

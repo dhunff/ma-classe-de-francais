@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Timer, ShieldCheck, AlertTriangle, Clock, Volume2, ArrowLeft } from "lucide-react";
+import { Timer, ShieldCheck, AlertTriangle, Clock, Volume2, ArrowLeft, Trophy } from "lucide-react";
 import { supabase } from "../../storageShim.js";
 import { loadExams, loadExam } from "../../shared/examStore.js";
 import { gradeRemote } from "../../shared/gradeRemote.js";
@@ -83,6 +83,9 @@ function ManCho({ dsDe, chon, paper, onStart, dangTai, lamPhanNoi, setLamPhanNoi
             Đề thi thử do giáo viên soạn và phát hành. Khi có đề, nó sẽ hiện ở đây.
           </p>
         </div>
+        <Link to="/etudiant/resultats" className="mt-4 inline-flex items-center gap-2 text-sm font-bold text-primary no-underline">
+          <Trophy size={15} /> Xem kết quả các lần thi trước
+        </Link>
       </div>
     );
   }
@@ -93,10 +96,17 @@ function ManCho({ dsDe, chon, paper, onStart, dangTai, lamPhanNoi, setLamPhanNoi
           phòng thi không có menu. Nhưng "không có menu" khác "không có lối ra":
           thiếu link này thì cách duy nhất rời trang là bấm Back của trình
           duyệt, và người dùng sẽ nghĩ mình bị nhốt. */}
-      <Link to="/etudiant/dashboard"
-        className="inline-flex items-center gap-1.5 text-sm font-semibold text-soft no-underline hover:text-ink">
-        <ArrowLeft size={15} /> Về trang chủ
-      </Link>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <Link to="/etudiant/dashboard"
+          className="inline-flex items-center gap-1.5 text-sm font-semibold text-soft no-underline hover:text-ink">
+          <ArrowLeft size={15} /> Về trang chủ
+        </Link>
+        {/* « Kết quả thi » không còn ở menu (08/10): vào từ đây. */}
+        <Link to="/etudiant/resultats"
+          className="inline-flex items-center gap-2 rounded-full border border-solid border-line bg-surface px-4 py-2 text-sm font-bold text-ink no-underline hover:border-primary hover:text-primary">
+          <Trophy size={15} /> Kết quả thi của tôi
+        </Link>
+      </div>
 
       <h1 className="m-0 mt-4 text-2xl font-extrabold text-ink">Thi thử DELF</h1>
       <p className="m-0 mt-2 text-sm text-soft">

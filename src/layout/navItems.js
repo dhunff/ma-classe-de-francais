@@ -71,8 +71,6 @@ export const STUDENT_NAV = [
   /* Thách đấu bạn bè — đứng ngay sau Lộ trình vì cùng là phần game. */
   { to: "/etudiant/thach-dau", labelKey: "nav.duel", Icon: Swords },
   { to: "/etudiant/tu-dien", labelKey: "nav.dict", Icon: BookA },
-  { to: "/etudiant/devoirs", labelKey: "nav.todo", Icon: ClipboardList, view: "todo" },
-  { to: "/etudiant/rendus", labelKey: "nav.done", Icon: CheckSquare, view: "done" },
   { to: "/etudiant/entrainement", labelKey: "nav.practice", Icon: Dumbbell, view: "practice" },
   /* Không có `view`: là route riêng trong App.jsx, giống « Sổ tay » bên giáo viên.
      Ban đầu tôi cố ý KHÔNG đưa vào đây với lý do "vào là bắt đầu tính giờ, không
@@ -80,7 +78,7 @@ export const STUDENT_NAV = [
      là chưa làm xong. Chỗ cảnh báo trước khi tính giờ nằm ở màn chờ của chính
      ExamMode, không phải ở việc giấu lối vào. */
   { to: "/etudiant/examen", labelKey: "nav.exam", Icon: Timer },
-  { to: "/etudiant/resultats", labelKey: "nav.results", Icon: Trophy },
+  /* « Kết quả thi » rời menu 08/10: vào bằng nút trong màn Thi thử. */
   /* « Thẻ ghi nhớ » (/etudiant/the-ghi-nho) ĐÃ GỠ — 09/09/2026.
      Đó là thẻ SM-2 sinh từ chính câu học sinh làm sai. Flashcard giờ là bộ do
      GIÁO VIÊN soạn — mục ngay dưới đây.
@@ -95,6 +93,9 @@ export const STUDENT_NAV = [
      biểu đồ điểm không mất — chỉ là hiện không còn lối vào từ thanh bên.
      Muốn dựng lại thì thêm một dòng ở đây, không phải viết lại màn hình. */
   { to: "/etudiant/calendrier", labelKey: "nav.calendar", Icon: CalendarDays },
+  /* « Bài tập được giao » (08/10): gộp « Cần làm » + « Đã nộp » thành hai tab
+     của một mục, đặt ngay dưới Lịch theo yêu cầu chủ dự án. */
+  { to: "/etudiant/devoirs", labelKey: "nav.assigned", Icon: ClipboardList, view: "todo" },
   { to: "/etudiant/compte", labelKey: "nav.account", Icon: Settings, view: "settings" },
 ];
 
