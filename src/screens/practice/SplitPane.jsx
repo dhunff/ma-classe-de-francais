@@ -1,6 +1,7 @@
 import React from "react";
 import { Headphones } from "lucide-react";
 import ReadingPanel from "../../editor/ReadingPanel.jsx";
+import AudioBar from "./AudioBar.jsx";
 
 /* Bố cục hai khoang khi làm bài: tư liệu bên trái, câu hỏi bên phải.
 
@@ -40,6 +41,19 @@ export default function SplitPane({ audioUrl, readingText, stickyTop = 8, childr
 
   if (!hasMaterial) {
     return <div className="mx-auto grid max-w-3xl gap-4">{children}</div>;
+  }
+
+  /* Chỉ có audio (07/10): không chia cột. Khoang trái chỉ chứa một trình phát
+     thì phí nửa màn hình và nhốt câu hỏi vào khung cuộn hẹp. Thanh nghe dính
+     trên đầu, câu hỏi chảy theo trang, hai cột khi màn đủ rộng để đọc trước
+     được nhiều câu cùng lúc. */
+  if (!readingText) {
+    return (
+      <div>
+        <AudioBar src={audioUrl} stickyTop={stickyTop} />
+        <div className="grid items-start gap-4 xl:grid-cols-2">{children}</div>
+      </div>
+    );
   }
 
   return (
