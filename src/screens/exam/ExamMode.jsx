@@ -281,7 +281,10 @@ function ManCho({ dsDe, chon, paper, onStart, dangTai, lamPhanNoi, setLamPhanNoi
  * Ở đây chỉ còn một việc: hỏi máy chủ trước khi phát, và nếu bị từ chối thì
  * NÓI RÕ VÌ SAO. Nút chết lặng không giải thích là thứ khiến người dùng tưởng
  * trang hỏng. */
-function AudioGioiHan({ src, attemptId, questionId }) {
+/* `luot`: 2 như kỳ thi (024), hoặc 1 với bài « nghe kiểu thi » (119) vì file
+   đã chứa sẵn cả hai lượt nghe và khoảng nghỉ. Máy chủ quyết định thật; số ở
+   đây chỉ để hiện chữ cho khớp. */
+function AudioGioiHan({ src, attemptId, questionId, luot = 2 }) {
   const [conLai, setConLai] = useState(null);   // null = chưa hỏi lần nào
   const [dangXin, setDangXin] = useState(false);
   const [loi, setLoi] = useState("");
@@ -303,10 +306,10 @@ function AudioGioiHan({ src, attemptId, questionId }) {
       .then(({ data }) => {
         if (huy || !data) return;
         const daNghe = Number(data.audio_plays?.[questionId] ?? 0);
-        if (daNghe > 0) setConLai(Math.max(0, 2 - daNghe));
+        if (daNghe > 0) setConLai(Math.max(0, luot - daNghe));
       });
     return () => { huy = true; };
-  }, [attemptId, questionId]);
+  }, [attemptId, questionId, luot]);
 
   const phat = async () => {
     if (het || dangXin || chuaSanSang) return;
@@ -322,7 +325,7 @@ function AudioGioiHan({ src, attemptId, questionId }) {
       } else {
         setConLai(0);
         setLoi(data?.reason === "limit"
-          ? "Bạn đã dùng hết 2 lượt nghe cho phần này."
+          ? (luot === 1 ? "Bạn đã phát bài nghe này rồi." : "Bạn đã dùng hết 2 lượt nghe cho phần này.")
           : "Không ghi nhận được lượt nghe.");
       }
     } catch (e) {
@@ -347,9 +350,17 @@ function AudioGioiHan({ src, attemptId, questionId }) {
           <Volume2 size={15} /> {chuaSanSang ? "Đang mở bài thi…" : dangXin ? "…" : het ? "Hết lượt nghe" : "Phát"}
         </button>
         <span className="text-xs text-soft">
-          {conLai === null ? "2 lượt nghe" : `Còn ${conLai} lượt`}
+          {luot === 1
+            ? (conLai === 0 ? "Đã phát" : "Phát một lần duy nhất")
+            : conLai === null ? "2 lượt nghe" : `Còn ${conLai} lượt`}
         </span>
       </div>
+      {luot === 1 && (
+        <p className="m-0 mt-2 text-xs leading-relaxed text-soft">
+          Như phòng thi thật: file gồm thời gian đọc câu hỏi, lượt nghe 1, khoảng nghỉ, lượt nghe 2 và thời gian
+          hoàn thành câu trả lời. Bấm phát một lần rồi để chạy hết, không tạm dừng được.
+        </p>
+      )}
       {loi && <p className="m-0 mt-2 text-xs font-semibold text-danger">{loi}</p>}
     </div>
   );
@@ -449,7 +460,7 @@ export function PhanThi({ section, attemptId, answers, setAnswers, onDone, onBlu
              dangerouslySetInnerHTML={{ __html: ex.consigne }} />
       )}
       {ex.audioUrl && (
-        <AudioGioiHan src={ex.audioUrl} attemptId={attemptId} questionId={`ex:${ex.id}`} />
+        <AudioGioiHan src={ex.audioUrl} attemptId={attemptId} questionId={`ex:${ex.id}`} luot={ex.ngheKieuThi ? 1 : 2} />
       )}
 
       {/* Ảnh đề bài — màn thi trước đây KHÔNG dựng nó.

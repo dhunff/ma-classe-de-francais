@@ -1247,6 +1247,11 @@ Xem `docs/roadmap-delf.md` — có nhật ký quyết định ở §5.
   cộng qua `cong_xp` — thêm nguồn XP mới thì gọi hàm này, đừng `update xp_balance`
   thẳng. Giá đổi `gia_xp(meta)` = giá tiền ÷ 100 (100–600), xpCost < 50 coi là số
   thử; `giaXp()` ở `shared/premium.js` PHẢI khớp.
+- **Nghe kiểu phòng thi — 07/10** (migration 119, `scripts/nhap/lo11_de_a2.mjs`).
+  File nghe CHỨA SẴN cả trình tự thi: giới thiệu → 30 s đọc câu hỏi → lượt 1 →
+  30 s nghỉ → lượt 2 → 30 s hoàn thành. Ghép bằng ffmpeg-static, tải lên qua
+  `taiLen`. Bài mang cờ `meta.ngheKieuThi` thì `exam_play_audio` chỉ cho phát
+  MỘT lần (không có cờ vẫn 2). Đề A2 · Đề 2 dùng cách này; A1 · Đề 1 chưa.
 - `s:mcf-submissions` vẫn giữ làm sao lưu, chưa xoá.
 
 

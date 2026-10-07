@@ -55,6 +55,10 @@ export const EX_META = [
   /* xpCost: số XP để đổi lấy bài trả phí (26/09). Máy chủ đọc ĐÚNG trường này
      trong redeem_exercise_with_xp — giá không bao giờ do client gửi lên. */
   "xpCost",
+  /* ngheKieuThi (07/10): file nghe ĐÃ chứa sẵn cả hai lượt nghe + khoảng nghỉ như
+     phòng thi thật. Màn thi thử khi đó chỉ cho bấm phát MỘT lần (máy chủ đọc
+     đúng cờ này trong exam_play_audio, migration 119). */
+  "ngheKieuThi",
 ];
 export const Q_COLUMNS = ["id", "type", "prompt", "explanation"];
 
