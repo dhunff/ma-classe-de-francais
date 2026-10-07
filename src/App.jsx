@@ -7,6 +7,7 @@ import RequireRole from './routes/RequireRole.jsx'
 import LoginGate from './screens/LoginGate.jsx'
 import { ROLE_HOME, TEACHER_NAV, STUDENT_NAV } from './layout/navItems.js'
 import ExamMode from './screens/exam/ExamMode.jsx'
+import BanMoi from './layout/BanMoi.jsx'
 import ExamComposer from './screens/teacher/ExamComposer.jsx'
 import BoTheApp from './screens/student/BoTheApp.jsx'
 import LoTrinh from './screens/student/LoTrinh.jsx'
@@ -230,6 +231,7 @@ function AppInner() {
   return (
     <LangCtx.Provider value={lang}>
       <div className={"mcf-root" + (dark ? " mcf-dark" : "")}>
+        <BanMoi />
         <BrowserRouter>
           <Routes>
             {/* Bản thiết kế Soft UI — màn hình độc lập, tự dựng sidebar và
