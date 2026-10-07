@@ -10,6 +10,7 @@ import { AVA_COLORS, avaColor, fmtDateFR, fmtDuration, targetedAccounts, fileNam
 import { FloatingLayer, KebabMenu, WrongExplanation } from "../../shared/ui.jsx";
 import { PROFILE_FIELDS, LEVELS_PROFILE, GOALS_PROFILE, emptyProfile, calculateProfileCompletion, validateProfile } from "../../shared/profile.js";
 import { OrdreChip, OrdreBlocks, TableauCompare, ConfirmSubmitModal } from "./answers.jsx";
+import { DienPhieu, tomTatDangMoi } from "./dangMoi.jsx";
 import ReadingPanel from "../../editor/ReadingPanel.jsx";
 import RichTextEditor from "../../editor/RichTextEditor.jsx";
 import { BookOpen, GraduationCap, MoreVertical, Pencil, Copy, Trash2, RotateCcw, Image as ImageIcon, X, Phone, Calendar, Target, Briefcase, ChevronLeft, TrendingUp, Clock, CheckCircle, ListChecks } from "lucide-react";
@@ -182,7 +183,7 @@ function Student({ name, exercises, submissions, setSubmissions, accounts, setAc
             </a>
           </div>
         )}
-        {sub?.graded && ex.questions.some((q) => q.type === "open" || q.type === "vf" || q.type === "tableau" || q.type === "ordre" || q.type === "fill" || q.type === "conj" || q.type === "qcm") && (
+        {sub?.graded && ex.questions.some((q) => q.type === "open" || q.type === "vf" || q.type === "tableau" || q.type === "ordre" || q.type === "fill" || q.type === "conj" || q.type === "qcm" || q.type === "apparier" || q.type === "formulaire") && (
           <details style={{ marginTop: 10, fontSize: 13.5 }}>
             <summary style={{ cursor: "pointer", color: C.primary, fontWeight: 700 }}>📋 Voir ma copie corrigée</summary>
             <div style={{ marginTop: 10, display: "grid", gap: 12 }}>
@@ -276,6 +277,15 @@ function Student({ name, exercises, submissions, setSubmissions, accounts, setAc
                   <div key={q.id} style={{ background: "var(--mcf-surface2)", borderRadius: 14, padding: "12px 15px", border: `1px solid ${C.line}` }}>
                     <div style={{ fontWeight: 700, marginBottom: 8 }}>{i + 1}. {q.prompt}</div>
                     <OrdreBlocks q={q} value={a || []} readOnly correction />
+                  </div>
+                );
+                /* Ghép cặp: học sinh không có đáp án (022) nên chỉ in lại lựa
+                   chọn của mình, không tô đúng/sai — cùng lý do nhánh qcm. */
+                if (q.type === "apparier" || q.type === "formulaire") return (
+                  <div key={q.id} style={{ background: "var(--mcf-surface2)", borderRadius: 14, padding: "12px 15px", border: `1px solid ${C.line}` }}>
+                    <div style={{ fontWeight: 700, marginBottom: 8 }}>{i + 1}. {q.prompt}</div>
+                    {q.type === "formulaire" ? <DienPhieu q={q} value={a || {}} readOnly />
+                      : <div>Mon choix : <strong>{tomTatDangMoi(q, a)}</strong></div>}
                   </div>
                 );
                 return null;

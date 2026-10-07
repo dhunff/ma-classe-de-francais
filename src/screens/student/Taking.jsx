@@ -9,6 +9,7 @@ import { AVA_COLORS, avaColor, fmtDateFR, fmtDuration, targetedAccounts, fileNam
 import { FloatingLayer, KebabMenu } from "../../shared/ui.jsx";
 import { PROFILE_FIELDS, LEVELS_PROFILE, GOALS_PROFILE, emptyProfile, calculateProfileCompletion, validateProfile } from "../../shared/profile.js";
 import { OrdreChip, OrdreBlocks, TableauCompare, ConfirmSubmitModal } from "./answers.jsx";
+import { GhepCap, DienPhieu, AnhLuaChon } from "./dangMoi.jsx";
 import KhungViet from "../practice/KhungViet.jsx";
 import SplitPane from "../practice/SplitPane.jsx";
 import FocusShell, { FOCUS_TOP } from "../practice/FocusShell.jsx";
@@ -107,6 +108,7 @@ function Taking({ ex, name, setSubmissions, done }) {
     : q.type === "ordre" ? (Array.isArray(answers[q.id]) && answers[q.id].length === (q.elements || []).length)
     : q.type === "vf" ? (answers[q.id]?.choice != null && (answers[q.id].choice === 2 || (answers[q.id].just || "").trim() !== ""))
     : q.type === "open" ? stripHtml(answers[q.id]) !== ""
+    : q.type === "apparier" || q.type === "formulaire" ? isQuestionAnswered(q, answers)
     : (answers[q.id] || "").trim() !== "");
 
   const answeredCount = ex.questions.length - getUnansweredQuestionsCount(answers, ex.questions);
@@ -151,13 +153,17 @@ function Taking({ ex, name, setSubmissions, done }) {
               background: answers[q.id] === j ? C.primarySoft : "var(--mcf-surface)",
               color: answers[q.id] === j ? C.primary : C.ink }}>
               <input type="radio" name={q.id} disabled={locked} checked={answers[q.id] === j} onChange={() => setAnswers({ ...answers, [q.id]: j })} />
-              <strong>{String.fromCharCode(65 + j)}.</strong> {o}
+              <strong>{String.fromCharCode(65 + j)}.</strong> <AnhLuaChon q={q} j={j} /> {o}
             </label>
           ))}
         </div>
       ) : q.type === "ordre" ? (
         <OrdreBlocks q={q} value={answers[q.id] || []} readOnly={locked}
           onChange={(v) => setAnswers({ ...answers, [q.id]: v })} />
+      ) : q.type === "apparier" ? (
+        <GhepCap q={q} value={answers[q.id] || {}} readOnly={locked} onChange={(v) => setAnswers({ ...answers, [q.id]: v })} />
+      ) : q.type === "formulaire" ? (
+        <DienPhieu q={q} value={answers[q.id] || {}} readOnly={locked} onChange={(v) => setAnswers({ ...answers, [q.id]: v })} />
       ) : q.type === "tableau" ? (
         <TableauCompare q={q} value={answers[q.id] || {}} readOnly={locked}
           onChange={(v) => setAnswers({ ...answers, [q.id]: v })} />

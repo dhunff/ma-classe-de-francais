@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect, useMemo } from "react";
 import { C, S, QTYPES, VF_OPTS, LEVEL_COLORS } from "../../shared/tokens.js";
+import { SoanGhepCap, SoanPhieu, AnhPhuongAn, moiGhepCap, moiPhieu } from "./SoanDangMoi.jsx";
 import { SKILLS, exSkills } from "../../shared/exercises.js";
 import { uid, stripHtml, autoQ, tableauCells, fillAccepted } from "../../shared/questions.js";
 import { useT } from "../../shared/i18n.jsx";
@@ -81,7 +82,9 @@ function Builder({ draft, setDraft, publish, cancel, accounts, classes = [] }) {
               if (typeof answer === "string") answer = Math.max(0, options.indexOf(answer));
             }
             if (options.length < 2) return null;
-            return { id: uid(), type: "qcm", prompt, options, answer: Math.min(answer, options.length - 1) };
+            const imgs = it.images || it.optionImages;
+            return { id: uid(), type: "qcm", prompt, options, answer: Math.min(answer, options.length - 1),
+              ...(Array.isArray(imgs) ? { optionImages: options.map((_, k) => String(imgs[k] ?? "")) } : {}) };
           }
           case "TEXTE_A_TROUS": case "FILL": {
             let fa = it.reponse ?? it.reponse_attendue ?? it.answer ?? it.accepted ?? "";
@@ -114,6 +117,24 @@ function Builder({ draft, setDraft, publish, cancel, accounts, classes = [] }) {
             const elements = (it.elements_corrects || it.elements || []).map((e) => ({ id: uid(), texte: String(e.texte ?? e.text ?? e) }));
             if (elements.length < 2) return null;
             return { id: uid(), type: "ordre", prompt, elements };
+          }
+          case "APPARIEMENT": case "APPARIER": case "MATCHING": {
+            /* { items: ["Dialogue 1",…], choix: ["Situation A",…], reponses: [indexChoix pour chaque item] } */
+            const items = (it.items || it.documents || []).map((x) => ({ id: uid(), texte: String(x.texte ?? x.text ?? x) }));
+            const choix = (it.choix || it.situations || []).map((x) => ({ id: uid(), texte: String(x.texte ?? x.text ?? x) }));
+            if (!items.length || choix.length < 2) return null;
+            const rep = it.reponses || it.answers || [];
+            const answers = {};
+            items.forEach((x, k) => {
+              let r = rep[k];
+              if (typeof r === "string" && /^[A-Za-z]$/.test(r)) r = r.toUpperCase().charCodeAt(0) - 65;
+              if (Number.isInteger(r) && choix[r]) answers[x.id] = choix[r].id;
+            });
+            return { id: uid(), type: "apparier", prompt, items, choix, answers };
+          }
+          case "FORMULAIRE": case "FORM": {
+            const champs = (it.champs || it.fields || []).map((x) => ({ id: uid(), nhan: String(x.nhan ?? x.label ?? x) }));
+            return champs.length ? { id: uid(), type: "formulaire", prompt, champs } : null;
           }
           case "REPONSE_LIBRE": case "OPEN":
             return { id: uid(), type: "open", prompt, model: String(it.corrige_type ?? it.reponse_suggeree ?? it.model ?? "") };
@@ -237,6 +258,11 @@ function Builder({ draft, setDraft, publish, cancel, accounts, classes = [] }) {
       missing.push(t("builder.need_options", { n }));
     if ((q.type === "fill" || q.type === "conj") && !String(fillAccepted(q)).trim())
       missing.push(t("builder.need_answer", { n }));
+    if (q.type === "apparier" && ((q.choix || []).filter((c) => c.texte.trim()).length < 2
+      || !(q.items || []).length || (q.items || []).some((it) => !q.answers?.[it.id])))
+      missing.push(`Câu ${n} : ghép cặp cần ≥ 2 phương án và đáp án cho mọi mục`);
+    if (q.type === "formulaire" && !(q.champs || []).some((c) => c.nhan.trim()))
+      missing.push(`Câu ${n} : phiếu cần ít nhất một ô`);
   });
   const ready = missing.length === 0;
 
@@ -506,7 +532,8 @@ function Builder({ draft, setDraft, publish, cancel, accounts, classes = [] }) {
           {q.type === "qcm" && (
             <div style={{ marginTop: 10, display: "grid", gap: 8 }}>
               {q.options.map((o, j) => (
-                <div key={j} style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                <React.Fragment key={j}>
+                <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
                   <input type="radio" checked={q.answer === j} onChange={() => setQ(q.id, { answer: j })} title={t("bd.correct")} />
                   <span style={{ fontWeight: 700, width: 20 }}>{String.fromCharCode(65 + j)}.</span>
                   <input style={S.input} value={o} placeholder={`Option ${String.fromCharCode(65 + j)}`}
@@ -516,7 +543,9 @@ function Builder({ draft, setDraft, publish, cancel, accounts, classes = [] }) {
                     onClick={() => {
                       const options = q.options.filter((_, k) => k !== j);
                       const answer = q.answer === j ? 0 : q.answer > j ? q.answer - 1 : q.answer;
-                      setQ(q.id, { options, answer });
+                      setQ(q.id, Array.isArray(q.optionImages)
+                        ? { options, answer, optionImages: q.optionImages.filter((_, k) => k !== j) }
+                        : { options, answer });
                     }}
                     style={{ border: "none", background: "transparent", cursor: q.options.length > 2 ? "pointer" : "not-allowed",
                       opacity: q.options.length > 2 ? 0.55 : 0.18, padding: 6, display: "grid", placeItems: "center" }}
@@ -525,12 +554,18 @@ function Builder({ draft, setDraft, publish, cancel, accounts, classes = [] }) {
                     <Trash2 size={17} color={C.danger} />
                   </button>
                 </div>
+                <AnhPhuongAn q={q} j={j} setQ={setQ} />
+                </React.Fragment>
               ))}
               <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
                 <button type="button" disabled={q.options.length >= 6}
                   onClick={() => setQ(q.id, { options: [...q.options, ""] })}
                   style={{ ...S.btn(false), padding: "7px 16px", fontSize: 13, opacity: q.options.length >= 6 ? 0.4 : 1 }}>
                   + Ajouter une option
+                </button>
+                <button type="button" onClick={() => setQ(q.id, { optionImages: Array.isArray(q.optionImages) ? undefined : q.options.map(() => "") })}
+                  style={{ ...S.btn(false), padding: "7px 16px", fontSize: 13 }}>
+                  {Array.isArray(q.optionImages) ? "Bỏ hình phương án" : "Phương án có hình"}
                 </button>
                 <span style={{ fontSize: 12, color: C.soft }}>{t("bd.qcm_hint")}</span>
               </div>
@@ -600,6 +635,8 @@ function Builder({ draft, setDraft, publish, cancel, accounts, classes = [] }) {
               <div style={{ fontSize: 12, color: C.soft }}>{t("bd.ordre_hint")}</div>
             </div>
           )}
+          {q.type === "apparier" && <SoanGhepCap q={q} setQ={setQ} />}
+          {q.type === "formulaire" && <SoanPhieu q={q} setQ={setQ} />}
           {q.type === "tableau" && (
             <div style={{ marginTop: 10, display: "grid", gap: 12 }}>
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
@@ -711,6 +748,8 @@ function Builder({ draft, setDraft, publish, cancel, accounts, classes = [] }) {
         <button style={S.btn(false)} onClick={() => setDraft({ ...draft, questions: [...draft.questions, { id: uid(), type: "vf", prompt: "", answer: 0, justification: "" }] })}>+ {t("bd.t_vf")}</button>
         <button style={S.btn(false)} onClick={() => setDraft({ ...draft, questions: [...draft.questions, { id: uid(), type: "tableau", prompt: "Pour chaque élément, cochez OUI ou NON selon le critère.", colonnes: [{ id: uid(), titre: "Élément 1" }, { id: uid(), titre: "Élément 2" }], criteres: [{ id: uid(), texte: "Critère 1" }], answers: {} }] })}>+ {t("bd.t_tableau")}</button>
         <button style={S.btn(false)} onClick={() => setDraft({ ...draft, questions: [...draft.questions, { id: uid(), type: "ordre", prompt: "Mettez les mots dans le bon ordre pour former une phrase.", sentence: "", elements: [] }] })}>+ {t("bd.t_ordre")}</button>
+        <button style={S.btn(false)} onClick={() => setDraft({ ...draft, questions: [...draft.questions, moiGhepCap()] })}>+ {QTYPES.apparier}</button>
+        <button style={S.btn(false)} onClick={() => setDraft({ ...draft, questions: [...draft.questions, moiPhieu()] })}>+ {QTYPES.formulaire}</button>
       </div>
       {/* 🪄 Modal Import JSON */}
       {jsonModal && (

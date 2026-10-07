@@ -26,7 +26,7 @@ const fillAccepted = (q) => q.accepted ?? q.answer ?? "";  // tương thích bà
    `exercise` là tuỳ chọn — truyền vào thì bài đó đặt được mức chặt riêng
    qua `exercise.strictAccents`, cho các bài luyện gõ dành cho người mới. */
 const fillOk = (q, ans, exercise) => evaluateQuestion(q, ans, { exercise }).correct;
-const autoQ = (q) => q.type === "qcm" || q.type === "fill" || q.type === "conj" || q.type === "vf" || q.type === "tableau" || q.type === "ordre";
+const autoQ = (q) => q.type === "qcm" || q.type === "fill" || q.type === "conj" || q.type === "vf" || q.type === "tableau" || q.type === "ordre" || q.type === "apparier";
 /* So theo CHỮ của mảnh, không theo `id`.
    Một câu có thể có hai mảnh trùng chữ — « Le train de nuit… chutes de neige »
    có hai « de ». So theo id thì học sinh đổi chỗ hai chữ « de » cho nhau, ra
@@ -108,12 +108,30 @@ const tableauDiem = (q, ans) => {
 const diemCau = (q, ans, exercise) => {
   if (!autoQ(q)) return { dung: 0, tong: 0 };          // câu tự luận: người chấm
   if (q.type === "tableau") return tableauDiem(q, ans);
+  if (q.type === "apparier") return apparierDiem(q, ans);
   const ok = q.type === "qcm" ? (ans != null && ans === q.answer)
     : q.type === "vf" ? vfOk(q, ans)
       : q.type === "ordre" ? ordreOk(q, ans)
         : fillOk(q, ans, exercise);
   return { dung: ok ? 1 : 0, tong: 1 };
 };
+
+/* GHÉP CẶP (« apparier », 07/10): DELF A2 nghe bài 4, đọc A1/A2.
+ * payload: `items` [{id, texte}] (hội thoại, người…), `choix` [{id, texte}]
+ * (tình huống, quảng cáo… thường NHIỀU hơn items); đáp án `answers`
+ * {itemId: choixId} nằm ở answer_key — cùng trường với tableau nên đã có sẵn
+ * trong danh sách giấu của toRows/022.
+ *
+ * Chấm theo TỪNG MỤC như tableau: 4 hội thoại là 4 quyết định độc lập, đúng
+ * như DELF đếm. Mục giáo viên chưa ghi đáp án không tính (cùng lý do với
+ * tableauCellsChamDuoc). */
+const apparierChamDuoc = (q) => (q.items || []).map((it) => it.id)
+  .filter((k) => q.answers?.[k] !== undefined && q.answers?.[k] !== "");
+const apparierDiem = (q, ans) => {
+  const ks = apparierChamDuoc(q);
+  return { dung: ks.filter((k) => ans && ans[k] === q.answers[k]).length, tong: ks.length };
+};
+const apparierOk = (q, ans) => { const d = apparierDiem(q, ans); return d.tong > 0 && d.dung === d.tong; };
 
 const isQuestionAnswered = (q, answers) => {
   const a = answers ? answers[q.id] : undefined;
@@ -127,10 +145,14 @@ const isQuestionAnswered = (q, answers) => {
     case "ordre": return Array.isArray(a) && a.length === (q.elements || []).length && a.length > 0;
     case "vf": return a?.choice != null && (a.choice === 2 || String(a.just || "").trim() !== "");
     case "open": return stripHtml(a) !== "";
+    case "apparier": { const it = q.items || []; return it.length > 0 && it.every((x) => a && a[x.id]); }
+    /* PHIẾU (« formulaire », A1 viết bài 1): thông tin cá nhân, không có đáp án
+       đúng nên KHÔNG chấm tự động (autoQ false), chỉ đếm là đã làm khi đủ ô. */
+    case "formulaire": { const c = q.champs || []; return c.length > 0 && c.every((x) => String(a?.[x.id] || "").trim() !== ""); }
     default: return String(a || "").trim() !== "";   // fill / conj
   }
 };
 const getUnansweredQuestionsCount = (answers, questions) =>
   (Array.isArray(questions) ? questions : []).filter((q) => !isQuestionAnswered(q, answers)).length;
 
-export { uid, norm, stripHtml, wordCount, vfOk, fillAccepted, fillOk, autoQ, ordreOk, seedShuffle, tableauCells, tableauOk, tableauDiem, diemCau, isQuestionAnswered, getUnansweredQuestionsCount };
+export { uid, norm, stripHtml, wordCount, vfOk, fillAccepted, fillOk, autoQ, ordreOk, seedShuffle, tableauCells, tableauOk, tableauDiem, apparierDiem, apparierOk, diemCau, isQuestionAnswered, getUnansweredQuestionsCount };

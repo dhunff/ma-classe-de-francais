@@ -49,7 +49,7 @@
  * ra sau lưng. */
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.112.4";
 // @ts-ignore — JS thuần, cố ý không có khai báo kiểu
-import { fillOk, vfOk, ordreOk, tableauOk, autoQ, diemCau, isQuestionAnswered }
+import { fillOk, vfOk, ordreOk, tableauOk, apparierOk, autoQ, diemCau, isQuestionAnswered }
   from "../_shared/questions.js";
 
 /* CORS dùng chung — xem _shared/cors.ts. Bản khai tại chỗ trước đây thiếu
@@ -66,6 +66,7 @@ function chamMotCau(q: any, traLoi: unknown, exercise: any) {
     case "vf":      return vfOk(q, traLoi);
     case "ordre":   return ordreOk(q, traLoi);
     case "tableau": return tableauOk(q, traLoi);
+    case "apparier": return apparierOk(q, traLoi);
     default:        return fillOk(q, traLoi, exercise);   // fill / conj
   }
 }
@@ -340,6 +341,7 @@ function dapAnHienThi(q: any): unknown {
     case "vf":      return q.answer;
     case "ordre":   return (q.elements ?? []).map((e: any) => e.texte);
     case "tableau": return q.answers ?? null;
+    case "apparier": return q.answers ?? null;
     default:        return String(q.accepted ?? q.answer ?? "").split("|")[0];
   }
 }

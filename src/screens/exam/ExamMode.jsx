@@ -7,6 +7,7 @@ import { gradeRemote } from "../../shared/gradeRemote.js";
 import { EXAM_STRUCTURE, sectionScore, verdict, ghiPhan, gomTheoKyNang, NGUONG_PHAN, NGUONG_TONG, khongCham }
   from "./examPaper.js";
 import GhiAmBaiNoi from "./GhiAmBaiNoi.jsx";
+import { GhepCap, DienPhieu, AnhLuaChon } from "../student/dangMoi.jsx";
 import { nhomTheoTrinhDo } from "../../shared/trinhDoDe.js";
 import { coPhienMayChu } from "../../shared/phienMayChu.js";
 
@@ -491,7 +492,7 @@ export function PhanThi({ section, attemptId, answers, setAnswers, onDone, onBlu
                   <button key={j} type="button" onClick={() => dat(q.id, j)}
                     className={`block w-full rounded-xl border-0 px-4 py-2.5 text-left text-sm transition ${
                       answers[q.id] === j ? "bg-primary text-white" : "bg-surface2 text-ink hover:brightness-95"}`}>
-                    {o}
+                    <span className="flex items-center gap-3"><AnhLuaChon q={q} j={j} />{o}</span>
                   </button>
                 ))}
               </div>
@@ -526,6 +527,14 @@ export function PhanThi({ section, attemptId, answers, setAnswers, onDone, onBlu
                   {String(answers[q.id] ?? "").trim().split(/\s+/).filter(Boolean).length} mots
                 </div>
               </>
+            )}
+
+            {/* Ghép cặp + phiếu: dùng chung component, KHÔNG truyền correction. */}
+            {q.type === "apparier" && (
+              <div className="mt-3"><GhepCap q={q} value={answers[q.id] ?? {}} onChange={(v) => dat(q.id, v)} /></div>
+            )}
+            {q.type === "formulaire" && (
+              <div className="mt-3"><DienPhieu q={q} value={answers[q.id] ?? {}} onChange={(v) => dat(q.id, v)} /></div>
             )}
 
             {q.type === "tableau" && (

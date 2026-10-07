@@ -21,7 +21,7 @@ const C = {
 const LEVEL_COLORS = { A1: "#476EB2", A2: "#3D62A8", B1: "#2E5296", B2: "#234181", "B2+": "#182F66", C1: "#6D28D9" };
 const LEVEL_PASTEL = { A1: "#EFF4FC", A2: "#E8EFF9", B1: "#E1E9F6", B2: "#DAE3F3", "B2+": "#D3DDF0", C1: "#EDE9FE" };
 
-const QTYPES = { qcm: "QCM", fill: "Texte à trous", conj: "Conjugaison", vf: "Vrai / Faux / ?", tableau: "Tableau OUI/NON", ordre: "Remettre en ordre", open: "Réponse libre / traduction" };
+const QTYPES = { qcm: "QCM", fill: "Texte à trous", conj: "Conjugaison", vf: "Vrai / Faux / ?", tableau: "Tableau OUI/NON", ordre: "Remettre en ordre", open: "Réponse libre / traduction", apparier: "Appariement", formulaire: "Formulaire" };
 const VF_OPTS = ["Vrai", "Faux", "On ne sait pas"];
 
 const S = {

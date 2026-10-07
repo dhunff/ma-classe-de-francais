@@ -13,6 +13,8 @@ import { FloatingLayer, KebabMenu } from "../../shared/ui.jsx";
 import { loadHoSoHocSinh } from "../../shared/profileStore.js";
 import { PROFILE_FIELDS, LEVELS_PROFILE, GOALS_PROFILE, emptyProfile, calculateProfileCompletion, validateProfile } from "../../shared/profile.js";
 import { OrdreChip, OrdreBlocks, TableauCompare, ConfirmSubmitModal } from "../student/answers.jsx";
+import { GhepCap, DienPhieu } from "../student/dangMoi.jsx";
+import { apparierOk } from "../../shared/questions.js";
 import ReadingPanel from "../../editor/ReadingPanel.jsx";
 import RichTextEditor from "../../editor/RichTextEditor.jsx";
 import { BookOpen, GraduationCap, MoreVertical, Pencil, Copy, Trash2, RotateCcw, RotateCw, Bell, Loader2, Send, AlertTriangle, Image as ImageIcon, X, Phone, Calendar, Target, Briefcase, ChevronLeft, TrendingUp, Clock, CheckCircle } from "lucide-react";
@@ -1173,6 +1175,7 @@ function Progress({ ex, submissions, setSubmissions, accounts, back }) {
                     const good = q.type === "qcm" ? a === q.answer
                       : q.type === "vf" ? vfOk(q, a)
                       : q.type === "tableau" ? tableauOk(q, a)
+                      : q.type === "apparier" ? apparierOk(q, a)
                       : q.type === "ordre" ? ordreOk(q, a)
                       : (q.type === "fill" || q.type === "conj") ? fillOk(q, a) : null;
                     return (
@@ -1181,7 +1184,9 @@ function Progress({ ex, submissions, setSubmissions, accounts, back }) {
                         <div style={{ fontSize: 14 }}>
                           {q.type === "tableau" && <div style={{ marginTop: 6 }}><TableauCompare q={q} value={a || {}} readOnly correction /></div>}
                           {q.type === "ordre" && <div style={{ marginTop: 6 }}><OrdreBlocks q={q} value={a || []} readOnly correction /></div>}
-                          {q.type !== "vf" && q.type !== "tableau" && q.type !== "ordre" && <>Réponse : </>}{q.type === "vf" || q.type === "tableau" || q.type === "ordre" ? null : q.type === "qcm"
+                          {q.type === "apparier" && <div style={{ marginTop: 6 }}><GhepCap q={q} value={a || {}} readOnly correction dapAn={q.answers} /></div>}
+                          {q.type === "formulaire" && <div style={{ marginTop: 6 }}><DienPhieu q={q} value={a || {}} readOnly /></div>}
+                          {!["vf", "tableau", "ordre", "apparier", "formulaire"].includes(q.type) && <>Réponse : </>}{["vf", "tableau", "ordre", "apparier", "formulaire"].includes(q.type) ? null : q.type === "qcm"
                             ? <strong style={{ color: good ? C.ok : C.danger }}>{a != null ? String.fromCharCode(65 + a) + ". " + q.options[a] : "—"}</strong>
                             : q.type === "open"
                             ? <div style={{ marginTop: 6, background: "var(--mcf-surface)", border: `1px solid ${C.line}`, borderRadius: 10, padding: "10px 14px", lineHeight: 1.7 }} dangerouslySetInnerHTML={{ __html: a || "—" }} />

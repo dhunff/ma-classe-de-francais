@@ -6,7 +6,7 @@ import {
   RotateCcw, CheckCircle2, XCircle, Plus, ChevronLeft, PartyPopper, Trash2, Pencil, Copy, MoreVertical, Folder, FolderPlus, Image as ImageIcon, ChevronDown, Lightbulb, FileCheck,
 } from "lucide-react";
 import { C, S, QTYPES, VF_OPTS, LEVEL_COLORS } from "./shared/tokens.js";
-import { uid, fillOk, fillAccepted, vfOk, stripHtml, autoQ, tableauOk, tableauCells, diemCau, ordreOk, getUnansweredQuestionsCount } from "./shared/questions.js";
+import { uid, fillOk, fillAccepted, vfOk, stripHtml, autoQ, tableauOk, tableauCells, diemCau, ordreOk, apparierOk, isQuestionAnswered, getUnansweredQuestionsCount } from "./shared/questions.js";
 import { load, save } from "./shared/storage.js";
 import { loadPractice, saveExercise, deleteExercise, patchExerciseMeta, clearFolder } from "./shared/exerciseStore.js";
 import { exSkills } from "./shared/exercises.js";
@@ -14,6 +14,7 @@ import { WrongExplanation } from "./shared/ui.jsx";
 import { useT } from "./shared/i18n.jsx";
 import { TableauCompare, OrdreBlocks, ConfirmSubmitModal } from "./screens/student/answers.jsx";
 import RichTextEditor from "./editor/RichTextEditor.jsx";
+import { GhepCap, DienPhieu, AnhLuaChon } from "./screens/student/dangMoi.jsx";
 import KhungViet from "./screens/practice/KhungViet.jsx";
 import SplitPane from "./screens/practice/SplitPane.jsx";
 import FocusShell, { FOCUS_TOP } from "./screens/practice/FocusShell.jsx";
@@ -745,6 +746,7 @@ ${r.error?.message ?? ""}`); return; }
                     <div style={{ fontSize: 14 }}>✅ <strong style={{ color: C.ok }}>{(q.elements || []).map((e) => e.texte).join(" ")}</strong></div>
                   )}
                   {q.type === "tableau" && <TableauCompare q={q} value={q.answers || {}} readOnly correction />}
+                  {q.type === "apparier" && <GhepCap q={q} value={q.answers || {}} readOnly correction dapAn={q.answers} />}
                   {q.type === "open" && (
                     q.model ? <div style={{ fontSize: 14, fontStyle: "italic", lineHeight: 1.7 }}>💡 {q.model}</div>
                       : <div style={{ fontSize: 13, color: C.soft }}>Réponse libre — pas de corrigé type fourni.</div>
@@ -1109,6 +1111,7 @@ function PracticeWorkspace({ ex, back, onFinish }) {
     return q.type === "qcm" ? answersRef.current[q.id] === q.answer
       : q.type === "vf" ? vfOk(q, answersRef.current[q.id])
       : q.type === "tableau" ? tableauOk(q, answersRef.current[q.id])
+      : q.type === "apparier" ? apparierOk(q, answersRef.current[q.id])
       : q.type === "ordre" ? ordreOk(q, answersRef.current[q.id])
       : fillOk(q, answersRef.current[q.id]);
   };
@@ -1186,7 +1189,9 @@ function PracticeWorkspace({ ex, back, onFinish }) {
     : q.type === "tableau" ? tableauCells(q).every((k) => answers[q.id] && answers[q.id][k])
     : q.type === "ordre" ? (Array.isArray(answers[q.id]) && answers[q.id].length === (q.elements || []).length)
     : q.type === "vf" ? (answers[q.id]?.choice != null && (answers[q.id].choice === 2 || (answers[q.id].just || "").trim() !== ""))
-    : q.type === "open" ? stripHtml(answers[q.id]) !== "" : (answers[q.id] || "").trim() !== "");
+    : q.type === "open" ? stripHtml(answers[q.id]) !== ""
+    : q.type === "apparier" || q.type === "formulaire" ? isQuestionAnswered(q, answers)
+    : (answers[q.id] || "").trim() !== "");
   const fmtLeft = (s) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
 
   const questionCards = ex.questions.map((q, i) => {
@@ -1234,7 +1239,7 @@ function PracticeWorkspace({ ex, back, onFinish }) {
                        nên ô họ chọn bị gạch cả khi làm đúng — chữ gạch ngang
                        trên một ô đang tô xanh đọc ra hai nghĩa trái nhau. */
                     textDecoration: graded && j === a && !isGood(q) ? "line-through" : "none" }}>
-                  <strong>{String.fromCharCode(65 + j)}.</strong> {o}<span style={{ marginLeft: "auto" }}>{icon}</span>
+                  <strong>{String.fromCharCode(65 + j)}.</strong> <AnhLuaChon q={q} j={j} /> {o}<span style={{ marginLeft: "auto" }}>{icon}</span>
                 </button>
               );
             })}
@@ -1243,6 +1248,12 @@ function PracticeWorkspace({ ex, back, onFinish }) {
           <OrdreBlocks q={q} value={a || []} readOnly={!!graded} correction={!!graded}
             dapAn={remote?.[q.id]?.expected} dung={graded && remote?.[q.id] ? isGood(q) : undefined}
             onChange={(v) => setAnswers({ ...answers, [q.id]: v })} />
+        ) : q.type === "apparier" ? (
+          <GhepCap q={q} value={a || {}} readOnly={!!graded} correction={!!graded}
+            dapAn={remote?.[q.id]?.expected ?? (graded && isGood(q) ? a : undefined)}
+            onChange={(v) => setAnswers({ ...answers, [q.id]: v })} />
+        ) : q.type === "formulaire" ? (
+          <DienPhieu q={q} value={a || {}} readOnly={!!graded} onChange={(v) => setAnswers({ ...answers, [q.id]: v })} />
         ) : q.type === "tableau" ? (
           /* `dapAn`: bảng đáp án của máy chủ (`expected`, chỉ gửi khi câu SAI).
              Làm đúng thì chính ô học sinh chọn là đáp án — truyền `a` vào để
