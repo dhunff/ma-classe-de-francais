@@ -15,6 +15,7 @@ import { useT } from "./shared/i18n.jsx";
 import { TableauCompare, OrdreBlocks, ConfirmSubmitModal } from "./screens/student/answers.jsx";
 import RichTextEditor from "./editor/RichTextEditor.jsx";
 import SplitPane from "./screens/practice/SplitPane.jsx";
+import FocusShell, { FOCUS_TOP } from "./screens/practice/FocusShell.jsx";
 import Builder from "./screens/teacher/Builder.jsx";
 import PaymentModal from "./screens/student/PaymentModal.jsx";
 import VipBanner from "./screens/practice/VipBanner.jsx";
@@ -1277,7 +1278,7 @@ function PracticeWorkspace({ ex, back, onFinish }) {
                     {/* Dấu ✓ đi theo đúng ô được tô xanh ở trên, không theo
                         `q.answer` — với học sinh nó là undefined nên dấu này
                         trước đây không bao giờ hiện. */}
-                    {o}{graded && col === C.ok && " ✓"}
+                    {o}
                   </button>
                 );
               })}
@@ -1293,7 +1294,7 @@ function PracticeWorkspace({ ex, back, onFinish }) {
                 {a?.just && <div style={{ fontStyle: "italic" }}>Ma justification : « {a.just} »</div>}
                 {q.answer !== 2 && q.justification && (
                   <div style={{ marginTop: 8, background: C.okSoft, border: `1.5px solid ${C.ok}55`, borderRadius: 12, padding: "10px 14px" }}>
-                    💡 <strong>Justification attendue :</strong> <em>{q.justification}</em>
+                    <strong>Justification attendue :</strong> <em>{q.justification}</em>
                   </div>
                 )}
               </div>
@@ -1304,7 +1305,7 @@ function PracticeWorkspace({ ex, back, onFinish }) {
             <RichTextEditor value={a || ""} readOnly={!!graded} onChange={(html) => setAnswers({ ...answers, [q.id]: html })} />
             {graded && q.model && (
               <div style={{ marginTop: 12, background: C.okSoft, border: `1.5px solid ${C.ok}55`, borderRadius: 12, padding: "12px 15px" }}>
-                💡 <strong>Réponse suggérée :</strong>
+                <strong>Réponse suggérée :</strong>
                 <div style={{ marginTop: 4, fontSize: 14.5, fontStyle: "italic", lineHeight: 1.7 }}>{q.model}</div>
               </div>
             )}
@@ -1319,13 +1320,13 @@ function PracticeWorkspace({ ex, back, onFinish }) {
                 textDecoration: graded && !good ? "line-through" : "none" }} />
             {graded && (good
               ? <CheckCircle2 size={18} color={C.ok} />
-              : dapAnFill(q) && <span style={{ fontSize: 13.5, color: C.ok, fontWeight: 700 }}>✗ → {String(dapAnFill(q)).split("|")[0]}</span>)}
+              : dapAnFill(q) && <XCircle size={18} color={C.danger} />)}
             {/* Chỉ hiện khi THẬT SỰ có đáp án. `fillAccepted` đọc `q.accepted`,
                 mà migration 022 gỡ trường đó khỏi payload của học sinh — khối
                 này vì thế từng hiện « Réponse attendue : » rồi bỏ trống. */}
             {graded && (q.type === "fill" || q.type === "conj") && dapAnFill(q) && (
               <div style={{ marginTop: 8, background: C.okSoft, border: `1.5px solid ${C.ok}55`, borderRadius: 10, padding: "7px 12px", fontSize: 13, display: "inline-block" }}>
-                💡 <strong style={{ color: C.ok }}>Réponse attendue :</strong> {String(dapAnFill(q)).split("|").join(" / ")}
+                <strong style={{ color: C.ok }}>Réponse attendue :</strong> {String(dapAnFill(q)).split("|").join(" / ")}
               </div>
             )}
             {/* Lời giải thích chỉ hiện khi sai — đó là lúc nó có việc để làm. */}
@@ -1337,52 +1338,37 @@ function PracticeWorkspace({ ex, back, onFinish }) {
   });
 
   return (
-    <div style={zen ? { position: "fixed", inset: 0, zIndex: 90, background: "var(--mcf-bg)", overflowY: "auto", padding: "28px 16px 80px" } : undefined}>
-      {zen && (
-        <button onClick={() => setZen(false)} title="Quitter le mode Focus"
-          style={{ position: "fixed", top: 16, right: 16, zIndex: 120, display: "flex", alignItems: "center", gap: 8,
-            padding: "10px 18px", borderRadius: 999, border: "none", cursor: "pointer", fontFamily: "inherit",
-            background: C.ink, color: "var(--mcf-bg)", fontWeight: 700, fontSize: 13.5,
-            boxShadow: "0 8px 22px rgba(17,24,39,.3)" }}>
-          ⤡ Quitter le Focus
-        </button>
-      )}
-      <div style={zen ? { maxWidth: 920, margin: "0 auto" } : undefined}>
-      {remaining != null && !graded && (
+    <>
+      {!zen && <button style={{ ...S.btn(false), marginBottom: 16 }} onClick={back}><ChevronLeft size={16} /> {t("practice.back")}</button>}
+    <FocusShell zen={zen} setZen={setZen} title={ex.title}
+      meta={[ex.level, exSkills(ex).join(" + "), `${ex.questions.length} questions`, ex.timeLimit && !graded ? `Temps limite : ${ex.timeLimit} min` : null]}
+      answered={ex.questions.length - getUnansweredQuestionsCount(answers, ex.questions)} total={ex.questions.length}
+      remaining={!graded ? remaining : null}>
+      {!zen && remaining != null && !graded && (
         <div style={{ position: "fixed", bottom: 20, right: 20, zIndex: 100, display: "flex", alignItems: "center", gap: 8,
           padding: "10px 18px", borderRadius: 999, background: remaining <= 60 ? C.danger : "#111827", color: "#fff", border: "1px solid var(--mcf-line)",
           fontWeight: 800, fontSize: 17, boxShadow: "0 8px 22px rgba(27,37,89,.35)", fontVariantNumeric: "tabular-nums" }}>
-          ⏱ {fmtLeft(remaining)}
+          {fmtLeft(remaining)}
         </div>
       )}
 
-      <button style={{ ...S.btn(false), marginBottom: 16 }} onClick={back}><ChevronLeft size={16} /> {t("practice.back")}</button>
-      <h2 style={{ ...S.display, marginTop: 0 }}>{ex.title} <span style={{ fontSize: 13, color: C.soft, fontFamily: "'Be Vietnam Pro',sans-serif" }}>({ex.level} · {exSkills(ex).join(" + ")})</span></h2>
-      <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap", marginBottom: 8 }}>
-        {!zen && (
-          <button onClick={() => setZen(true)}
-            style={{ ...S.btn(false), padding: "7px 16px", fontSize: 13 }}>🎯 Focus</button>
-        )}
-        {ex.timeLimit && !graded && <span style={{ fontSize: 13, color: C.primary, fontWeight: 700 }}>⏱ Temps limite : {ex.timeLimit} minutes</span>}
-      </div>
-
       {ex.consigne && (
-        <div className="mcf-card" style={{ ...S.card, marginBottom: 16, borderLeft: `4px solid var(--mcf-primary)` }}>
-          <div style={S.label}>📋 Consigne</div>
+        <div className="mcf-card" style={{ ...S.card, marginBottom: 16, borderLeft: "3px solid var(--mcf-primary)" }}>
+          <div style={S.label}>Consigne</div>
           <div style={{ fontSize: 15.5, lineHeight: 1.75, marginTop: 6, fontWeight: 500 }} dangerouslySetInnerHTML={{ __html: ex.consigne }} />
         </div>
       )}
 
       {ex.imageUrl && (
         <div style={{ marginBottom: 16 }}>
-          <img src={ex.imageUrl} alt="illustration — cliquez pour agrandir" title="Cliquez pour agrandir 🔍"
+          <img src={ex.imageUrl} alt="illustration — cliquez pour agrandir" title="Cliquez pour agrandir"
             onClick={() => setImgZoom(true)}
             onMouseEnter={(e) => (e.currentTarget.style.opacity = 0.9)}
             onMouseLeave={(e) => (e.currentTarget.style.opacity = 1)}
             style={{ display: "block", width: "100%", maxWidth: 900, margin: "0 auto", objectFit: "contain",
               borderRadius: 16, border: `1px solid ${C.line}`, boxShadow: "0 3px 12px rgba(17,24,39,.08)",
               cursor: "zoom-in", transition: "opacity .15s ease" }} />
-          <div style={{ textAlign: "center", fontSize: 12, color: C.soft, marginTop: 6 }}>🔍 Cliquez sur l'image pour l'agrandir</div>
+          <div style={{ textAlign: "center", fontSize: 12, color: C.soft, marginTop: 6 }}>Cliquez sur l'image pour l'agrandir</div>
         </div>
       )}
       {imgZoom && (
@@ -1398,7 +1384,7 @@ function PracticeWorkspace({ ex, back, onFinish }) {
         </div>
       )}
 
-      <SplitPane audioUrl={ex.audioUrl} readingText={ex.readingText}>
+      <SplitPane audioUrl={ex.audioUrl} readingText={ex.readingText} stickyTop={zen ? FOCUS_TOP : 8}>
         {questionCards}
       </SplitPane>
 
@@ -1434,8 +1420,8 @@ function PracticeWorkspace({ ex, back, onFinish }) {
           </button>
         </div>
       )}
-      </div>
-    </div>
+    </FocusShell>
+    </>
   );
 }
 

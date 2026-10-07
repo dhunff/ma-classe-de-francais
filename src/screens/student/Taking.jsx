@@ -10,6 +10,7 @@ import { FloatingLayer, KebabMenu } from "../../shared/ui.jsx";
 import { PROFILE_FIELDS, LEVELS_PROFILE, GOALS_PROFILE, emptyProfile, calculateProfileCompletion, validateProfile } from "../../shared/profile.js";
 import { OrdreChip, OrdreBlocks, TableauCompare, ConfirmSubmitModal } from "./answers.jsx";
 import SplitPane from "../practice/SplitPane.jsx";
+import FocusShell, { FOCUS_TOP } from "../practice/FocusShell.jsx";
 import RichTextEditor from "../../editor/RichTextEditor.jsx";
 import { BookOpen, GraduationCap, MoreVertical, Pencil, Copy, Trash2, RotateCcw, Image as ImageIcon, X, Phone, Calendar, Target, Briefcase, ChevronLeft, TrendingUp, Clock, CheckCircle } from "lucide-react";
 import { BarChart, Bar, LineChart, Line, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from "recharts";
@@ -192,18 +193,12 @@ function Taking({ ex, name, setSubmissions, done }) {
   ));
 
   return (
-    <div style={zen ? { position: "fixed", inset: 0, zIndex: 90, background: "var(--mcf-bg)", overflowY: "auto", padding: "28px 16px 80px" } : undefined}>
-      {/* 🧘 Nút thoát Zen nổi */}
-      {zen && (
-        <button onClick={() => setZen(false)} title="Quitter le mode Focus"
-          style={{ position: "fixed", top: 16, right: 16, zIndex: 120, display: "flex", alignItems: "center", gap: 8,
-            padding: "10px 18px", borderRadius: 999, border: "none", cursor: "pointer", fontFamily: "inherit",
-            background: C.ink, color: "var(--mcf-bg)", fontWeight: 700, fontSize: 13.5,
-            boxShadow: "0 8px 22px rgba(17,24,39,.3)" }}>
-          ⤡ Quitter le Focus
-        </button>
-      )}
-      <div style={zen ? { maxWidth: 920, margin: "0 auto" } : undefined}>
+    <FocusShell zen={zen} setZen={setZen} title={ex.title}
+      meta={[ex.level, exSkills(ex).join(" + "), `${ex.questions.length} questions`,
+        ex.timeLimit && !locked ? `Temps limite : ${ex.timeLimit} min` : null,
+        ex.deadline ? (isLate(ex) ? "Date limite dépassée, copie marquée en retard" : `À rendre avant le ${fmtDate(ex.deadline)}`) : null,
+        savedAt ? `Brouillon enregistré à ${savedAt.toLocaleTimeString("fr-FR")}` : "Enregistrement automatique"]}
+      answered={answeredCount} total={0} remaining={null}>{/* tiến độ + đồng hồ đã có ở thanh đáy */}
       {/* Thanh trạng thái nổi: tiến độ trả lời · đồng hồ · nút nộp.
 
           Gộp ba thứ vào một chỗ cố định đáy màn hình vì hết giờ là TỰ NỘP.
@@ -233,7 +228,6 @@ function Taking({ ex, name, setSubmissions, done }) {
                 "flex items-center gap-1.5 rounded-md px-3 py-1.5 text-base font-extrabold tabular-nums",
                 remaining <= 300 ? "bg-danger-soft text-danger" : "bg-surface2 text-ink",
               ].join(" ")} aria-live={remaining <= 60 ? "polite" : "off"}>
-                <span aria-hidden>⏱</span>
                 <span>{fmtLeft(remaining)}</span>
                 {remaining <= 300 && <span className="text-xs font-bold">{t("taking.hurry")}</span>}
               </div>
@@ -254,42 +248,26 @@ function Taking({ ex, name, setSubmissions, done }) {
       )}
       {locked && (
         <div className="mcf-card" style={{ ...S.card, marginBottom: 16, borderLeft: `3px solid ${C.danger}`, fontWeight: 700, color: C.danger }}>
-          ⏰ Temps écoulé ! Ta copie a été rendue automatiquement.
+          Temps écoulé : ta copie a été rendue automatiquement.
         </div>
       )}
-      <h2 style={{ ...S.display, marginTop: 0 }}>{ex.title} <span style={{ fontSize: 13, color: C.soft, fontFamily: "'Be Vietnam Pro',sans-serif" }}>({ex.level} · {exSkills(ex).join(" + ")})</span></h2>
-      <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap", marginBottom: 12 }}>
-        {!zen && (
-          <button onClick={() => setZen(true)}
-            style={{ ...S.btn(false), padding: "7px 16px", fontSize: 13, display: "inline-flex", alignItems: "center", gap: 7 }}>
-            🎯 Focus
-          </button>
-        )}
-        {ex.timeLimit && !locked && <span style={{ fontSize: 13, color: C.primary, fontWeight: 700 }}>⏱ Temps limite : {ex.timeLimit} minutes</span>}
-        {ex.deadline && <span style={{ fontSize: 13, color: isLate(ex) ? C.danger : C.warn, fontWeight: 700 }}>
-          ⏰ {isLate(ex) ? "Date limite dépassée — la copie sera marquée en retard" : `À rendre avant le ${fmtDate(ex.deadline)}`}
-        </span>}
-        <span style={{ fontSize: 12, color: C.soft }}>{savedAt ? `💾 Brouillon enregistré à ${savedAt.toLocaleTimeString("fr-FR")}` : "💾 Enregistrement automatique activé"}</span>
-      </div>
-
-      {/* 🎧 Audio player cố định (sticky) — cuộn trang vẫn thấy */}
       {ex.consigne && (
-        <div className="mcf-card" style={{ ...S.card, marginBottom: 16, borderLeft: `4px solid ${C.primary}` }}>
-          <div style={S.label}>📋 Consigne</div>
+        <div className="mcf-card" style={{ ...S.card, marginBottom: 16, borderLeft: "3px solid var(--mcf-primary)" }}>
+          <div style={S.label}>Consigne</div>
           <div style={{ fontSize: 15.5, lineHeight: 1.75, marginTop: 6, fontWeight: 500 }} dangerouslySetInnerHTML={{ __html: ex.consigne }} />
         </div>
       )}
 
       {ex.imageUrl && (
         <div style={{ marginBottom: 16 }}>
-          <img src={ex.imageUrl} alt="illustration — cliquez pour agrandir" title="Cliquez pour agrandir 🔍"
+          <img src={ex.imageUrl} alt="illustration — cliquez pour agrandir" title="Cliquez pour agrandir"
             onClick={() => setImgZoom(true)}
             onMouseEnter={(e) => (e.currentTarget.style.opacity = 0.9)}
             onMouseLeave={(e) => (e.currentTarget.style.opacity = 1)}
             style={{ display: "block", width: "100%", maxWidth: 900, margin: "0 auto", objectFit: "contain",
               borderRadius: 16, border: `1px solid ${C.line}`, boxShadow: "0 3px 12px rgba(17,24,39,.08)",
               cursor: "zoom-in", transition: "opacity .15s ease" }} />
-          <div style={{ textAlign: "center", fontSize: 12, color: C.soft, marginTop: 6 }}>🔍 Cliquez sur l'image pour l'agrandir</div>
+          <div style={{ textAlign: "center", fontSize: 12, color: C.soft, marginTop: 6 }}>Cliquez sur l'image pour l'agrandir</div>
         </div>
       )}
       {imgZoom && (
@@ -305,7 +283,7 @@ function Taking({ ex, name, setSubmissions, done }) {
         </div>
       )}
 
-      <SplitPane audioUrl={ex.audioUrl} readingText={ex.readingText}>
+      <SplitPane audioUrl={ex.audioUrl} readingText={ex.readingText} stickyTop={zen ? FOCUS_TOP : 8}>
         {questionCards}
       </SplitPane>
 
@@ -320,8 +298,7 @@ function Taking({ ex, name, setSubmissions, done }) {
           onCancel={() => setConfirmCount(null)}
           onConfirm={() => { setConfirmCount(null); submit(); }} />
       )}
-      </div>
-    </div>
+    </FocusShell>
   );
 }
 
