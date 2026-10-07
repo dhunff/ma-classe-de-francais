@@ -100,6 +100,17 @@ export async function themThe(boId, the, ord) {
   return error ? { ok: false, loi: dichLoi(error) } : { ok: true };
 }
 
+/* Sửa một thẻ tại chỗ (07/10, màn soạn mới). Chỉ ghi các trường được truyền. */
+export async function suaThe(id, the) {
+  const co = {};
+  if (the.matTruoc !== undefined) co.mat_truoc = String(the.matTruoc).trim();
+  if (the.matSau !== undefined) co.mat_sau = String(the.matSau).trim();
+  if (the.phienAm !== undefined) co.phien_am = the.phienAm?.trim() || null;
+  if (the.viDu !== undefined) co.vi_du = the.viDu?.trim() || null;
+  const { error } = await supabase.from("the_bo_the").update(co).eq("id", id);
+  return error ? { ok: false, loi: dichLoi(error) } : { ok: true };
+}
+
 export async function xoaThe(id) {
   const { error } = await supabase.from("the_bo_the").delete().eq("id", id);
   return error ? { ok: false, loi: dichLoi(error) } : { ok: true };

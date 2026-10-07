@@ -1252,6 +1252,13 @@ Xem `docs/roadmap-delf.md` — có nhật ký quyết định ở §5.
   30 s nghỉ → lượt 2 → 30 s hoàn thành. Ghép bằng ffmpeg-static, tải lên qua
   `taiLen`. Bài mang cờ `meta.ngheKieuThi` thì `exam_play_audio` chỉ cho phát
   MỘT lần (không có cờ vẫn 2). Đề A2 · Đề 2 dùng cách này; A1 · Đề 1 chưa.
+- **Thu gọn vai giáo viên — 07/10** (theo chủ dự án): giáo viên quản lý học
+  sinh, cấp quyền bài, gói VIP (`QuanLyVip.jsx`, RPC 122), giao bài; vẫn soạn
+  bài, đề thi thử, Flashcard, neo, duyệt nháp, xem thống kê. ĐÃ GỠ màn « Câu
+  cần lời giải », « Sổ tay lớp », « Lộ trình » giáo viên, « Đăng ký tư vấn »,
+  và chức năng tạo lớp (dữ liệu `mcf-classes`, `tips`, `leads`, `lo_trinh_*`
+  vẫn nguyên). « Thư viện luyện tập » thành tab thứ hai trong « Bài tập ».
+  Lấy lại màn nào thì lấy file từ git trước commit 35759f3.
 - `s:mcf-submissions` vẫn giữ làm sao lưu, chưa xoá.
 
 

@@ -1,104 +1,154 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
-  Plus, Trash2, ArrowLeft, Eye, EyeOff, AlertTriangle, RefreshCw, Layers,
+  Plus, Trash2, ArrowLeft, Eye, EyeOff, AlertTriangle, RefreshCw, Layers, Pencil, Check, X, Search,
 } from "lucide-react";
 import { KY_NANG } from "../../shared/kyNang.js";
 import { laGiaoVien } from "../../shared/lienHe.js";
 import {
   docBoDeSoan, taoBo, suaBo, xoaBo,
-  docTheDeSoan, themThe, xoaThe, bocDong,
+  docTheDeSoan, themThe, suaThe, xoaThe, bocDong,
 } from "../../shared/boTheGiaoVien.js";
 
-/* Soạn bộ thẻ — màn của giáo viên.
+/* Soạn Flashcard — màn của giáo viên. Làm lại giao diện 07/10.
  *
- * ══ BA TRẠNG THÁI, KHÔNG HAI ══
+ *   Danh sách: lưới thẻ bộ, lọc theo kỹ năng, nút « Bộ mới » mở khung tạo.
+ *   Soạn một bộ: trái là khung thêm (từng thẻ hoặc dán nhiều dòng), phải là
+ *   lưới thẻ sửa/xoá TẠI CHỖ, có ô tìm. Tên, mô tả, kỹ năng của bộ sửa được
+ *   ngay ở đầu trang.
  *
- * Danh sách rỗng KHÔNG phân biệt được "chưa soạn bộ nào" với "không phải giáo
- * viên" hay "mất mạng". Dự án đã dính cái nhập nhằng này BỐN lần trong một
- * ngày (cau_can_loi_giai, docLienHe, rồi hai lần ở màn xem liên hệ), nên vai
- * được hỏi RIÊNG bằng `laGiaoVien()` chứ không suy ra từ dữ liệu.
- *
- * ══ HAI TẦNG TRONG MỘT ROUTE ══
- *
- * Danh sách bộ → soạn một bộ. Giữ trong state như bên học sinh, cùng lý do:
- * hai tầng phải cùng tồn tại một khoảnh khắc thì mới chuyển mượt được. Đánh
- * đổi cũng y hệt — nút Back của trình duyệt không quay lại danh sách, nên có
- * nút Back rõ ràng ở đây.
+ * ══ BA TRẠNG THÁI, KHÔNG HAI ══ (giữ từ bản cũ)
+ * Danh sách rỗng không phân biệt được "chưa soạn bộ nào" với "không phải giáo
+ * viên" hay "mất mạng", nên vai được hỏi RIÊNG bằng `laGiaoVien()`.
  */
 
-function OTaoBo({ onXong }) {
+const o = "w-full rounded-xl border border-solid border-line bg-surface2 px-3 py-2 font-sans text-sm text-ink outline-none focus:border-primary";
+const nutChinh = "inline-flex cursor-pointer items-center gap-2 rounded-full border-0 bg-primary px-4 py-2 font-sans text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-60";
+const nutPhu = "inline-flex cursor-pointer items-center gap-2 rounded-full border border-solid border-line bg-surface px-4 py-2 font-sans text-sm font-semibold text-ink hover:border-primary";
+const tenKN = (ma) => KY_NANG.find((k) => k.ma === ma)?.ten ?? ma;
+
+/* ─────────────── Tạo bộ mới ─────────────── */
+function KhungTaoBo({ onXong, onHuy }) {
   const [ten, setTen] = useState("");
   const [kyNang, setKyNang] = useState("CO");
   const [moTa, setMoTa] = useState("");
   const [dangLuu, setDangLuu] = useState(false);
   const [loi, setLoi] = useState("");
-
   const luu = async () => {
     if (!ten.trim()) { setLoi("Bộ Flashcard cần một cái tên."); return; }
     setDangLuu(true); setLoi("");
     const kq = await taoBo({ ten, kyNang, moTa });
     setDangLuu(false);
     if (!kq.ok) { setLoi(kq.loi); return; }
-    setTen(""); setMoTa("");
     onXong();
   };
-
   return (
-    <div className="rounded-2xl border border-line bg-surface p-5">
-      <h2 className="m-0 text-sm font-bold text-ink">Bộ Flashcard mới</h2>
-      <div className="mt-3 grid gap-3 sm:grid-cols-[1fr_auto]">
-        <input
-          value={ten}
-          onChange={(e) => setTen(e.target.value)}
-          placeholder="Tên bộ — ví dụ: Thông báo ở nhà ga"
-          className="rounded-xl border border-line bg-surface2 px-3 py-2 text-sm text-ink"
-        />
-        <select
-          value={kyNang}
-          onChange={(e) => setKyNang(e.target.value)}
-          className="rounded-xl border border-line bg-surface2 px-3 py-2 text-sm font-semibold text-ink"
-        >
+    <div className="mt-5 rounded-3xl border border-solid border-primary/40 bg-surface p-5 shadow-sm">
+      <h2 className="m-0 text-base font-extrabold text-ink">Bộ Flashcard mới</h2>
+      <div className="mt-4 grid gap-3 sm:grid-cols-[1fr_160px]">
+        <input autoFocus value={ten} onChange={(e) => setTen(e.target.value)} placeholder="Tên bộ, ví dụ: Thông báo ở nhà ga" className={o} />
+        <select value={kyNang} onChange={(e) => setKyNang(e.target.value)} className={`${o} font-semibold`}>
           {KY_NANG.map((k) => <option key={k.ma} value={k.ma}>{k.ten}</option>)}
         </select>
       </div>
-      <input
-        value={moTa}
-        onChange={(e) => setMoTa(e.target.value)}
-        placeholder="Mô tả ngắn (tuỳ chọn)"
-        className="mt-3 w-full rounded-xl border border-line bg-surface2 px-3 py-2 text-sm text-ink"
-      />
+      <input value={moTa} onChange={(e) => setMoTa(e.target.value)} placeholder="Mô tả ngắn (tuỳ chọn)" className={`${o} mt-3`} />
       {loi && <p className="m-0 mt-2 text-xs font-semibold text-danger">{loi}</p>}
-      <button
-        type="button" onClick={luu} disabled={dangLuu}
-        className="mt-3 inline-flex items-center gap-2 rounded-full border-0 bg-primary px-4 py-2 text-left font-sans text-sm font-bold text-white disabled:opacity-60"
-      >
-        <Plus size={14} /> {dangLuu ? "Đang tạo…" : "Tạo bộ"}
-      </button>
+      <div className="mt-4 flex justify-end gap-2">
+        <button type="button" onClick={onHuy} className={nutPhu}>Huỷ</button>
+        <button type="button" onClick={luu} disabled={dangLuu} className={nutChinh}><Plus size={14} /> {dangLuu ? "Đang tạo…" : "Tạo bộ"}</button>
+      </div>
     </div>
   );
 }
 
-function SoanMotBo({ bo, onQuay, onDoi }) {
+/* ─────────────── Một thẻ trong lưới (xem / sửa tại chỗ) ─────────────── */
+function OThe({ t, so, onDoi, onLoi }) {
+  const [sua, setSua] = useState(false);
+  const [b, setB] = useState(t);
+  const [dang, setDang] = useState(false);
+  useEffect(() => setB(t), [t]);
+  const luu = async () => {
+    if (!b.matTruoc.trim() || !b.matSau.trim()) { onLoi("Thẻ cần đủ mặt trước và mặt sau."); return; }
+    setDang(true);
+    const kq = await suaThe(t.id, b);
+    setDang(false);
+    if (!kq.ok) { onLoi(kq.loi); return; }
+    setSua(false); onDoi();
+  };
+  const xoa = async () => {
+    if (!window.confirm(`Xoá thẻ « ${t.matTruoc} »?`)) return;
+    const kq = await xoaThe(t.id);
+    if (!kq.ok) { onLoi(kq.loi); return; }
+    onDoi();
+  };
+  if (sua) {
+    return (
+      <li className="grid gap-2 rounded-2xl border border-solid border-primary bg-surface p-3">
+        <input value={b.matTruoc} onChange={(e) => setB({ ...b, matTruoc: e.target.value })} className={o} placeholder="Mặt trước" />
+        <input value={b.phienAm ?? ""} onChange={(e) => setB({ ...b, phienAm: e.target.value })} className={o} placeholder="Phiên âm (tuỳ chọn)" />
+        <input value={b.matSau} onChange={(e) => setB({ ...b, matSau: e.target.value })} className={o} placeholder="Mặt sau" />
+        <input value={b.viDu ?? ""} onChange={(e) => setB({ ...b, viDu: e.target.value })} className={o} placeholder="Câu ví dụ (tuỳ chọn)" />
+        <div className="flex justify-end gap-2">
+          <button type="button" onClick={() => { setB(t); setSua(false); }} className="grid h-8 w-8 cursor-pointer place-items-center rounded-full border-0 bg-surface2 text-soft" aria-label="Huỷ"><X size={14} /></button>
+          <button type="button" onClick={luu} disabled={dang} className="grid h-8 w-8 cursor-pointer place-items-center rounded-full border-0 bg-primary text-white" aria-label="Lưu"><Check size={14} /></button>
+        </div>
+      </li>
+    );
+  }
+  return (
+    <li className="group relative flex min-h-[112px] flex-col rounded-2xl border border-solid border-line bg-surface p-4 transition-shadow hover:shadow-md">
+      <span className="text-[11px] font-bold tabular-nums text-soft">#{so}</span>
+      <p className="m-0 mt-1 text-[15px] font-extrabold leading-snug text-ink">{t.matTruoc}</p>
+      {t.phienAm && <p className="m-0 text-xs italic text-soft">{t.phienAm}</p>}
+      <div className="my-2 h-px bg-line" />
+      <p className="m-0 text-sm leading-relaxed text-ink">{t.matSau}</p>
+      {t.viDu && <p className="m-0 mt-1 text-xs italic leading-relaxed text-soft">{t.viDu}</p>}
+      <div className="absolute right-2 top-2 flex gap-1 opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100">
+        <button type="button" onClick={() => setSua(true)} aria-label="Sửa thẻ" className="grid h-8 w-8 cursor-pointer place-items-center rounded-full border-0 bg-surface2 text-ink"><Pencil size={13} /></button>
+        <button type="button" onClick={xoa} aria-label="Xoá thẻ" className="grid h-8 w-8 cursor-pointer place-items-center rounded-full border-0 bg-surface2 text-danger"><Trash2 size={13} /></button>
+      </div>
+    </li>
+  );
+}
+
+/* ─────────────── Soạn một bộ ─────────────── */
+function SoanMotBo({ bo: boGoc, onQuay, onDoi }) {
+  const [bo, setBo] = useState(boGoc);
   const [ds, setDs] = useState(undefined);
+  const [che, setChe] = useState("mot");          // mot | lo
+  const [moi, setMoi] = useState({ matTruoc: "", matSau: "", phienAm: "", viDu: "" });
   const [van, setVan] = useState("");
+  const [hong, setHong] = useState([]);
   const [dangLuu, setDangLuu] = useState(false);
   const [loi, setLoi] = useState("");
-  const [hong, setHong] = useState([]);
+  const [tb, setTb] = useState("");
+  const [tim, setTim] = useState("");
+  const [suaTT, setSuaTT] = useState(false);
+  const [tt, setTT] = useState({ ten: boGoc.ten, moTa: boGoc.moTa ?? "", kyNang: boGoc.kyNang });
+  const oDau = useRef(null);
 
   const tai = async () => setDs(await docTheDeSoan(bo.id));
   useEffect(() => { let c = true; docTheDeSoan(bo.id).then((v) => { if (c) setDs(v); }); return () => { c = false; }; }, [bo.id]);
+  const bao = (s) => { setTb(s); setTimeout(() => setTb(""), 2500); };
+
+  const them1 = async () => {
+    if (!moi.matTruoc.trim() || !moi.matSau.trim()) { setLoi("Cần đủ mặt trước và mặt sau."); return; }
+    setDangLuu(true); setLoi("");
+    const kq = await themThe(bo.id, moi, ds?.length ?? 0);
+    setDangLuu(false);
+    if (!kq.ok) { setLoi(kq.loi); return; }
+    setMoi({ matTruoc: "", matSau: "", phienAm: "", viDu: "" });
+    oDau.current?.focus();
+    await tai(); onDoi(); bao("Đã thêm 1 thẻ");
+  };
 
   const themLo = async () => {
     const { duoc, hong: h } = bocDong(van);
     setHong(h);
     if (!duoc.length) { setLoi("Không có dòng nào hợp lệ."); return; }
     setDangLuu(true); setLoi("");
-
-    /* Chèn TUẦN TỰ và dừng ở lỗi đầu tiên. PostgREST không có transaction, nên
-       một lô chèn hỏng giữa chừng để lại trạng thái nửa vời — đúng cái đã cắn
-       `saveExam` một lần. Dừng sớm thì ít nhất số thẻ vào được là con số nói
-       ra được. */
-    const batDau = (ds?.length ?? 0);
+    /* Chèn TUẦN TỰ và dừng ở lỗi đầu tiên: PostgREST không có transaction,
+       dừng sớm thì số thẻ vào được là con số nói ra được. */
+    const batDau = ds?.length ?? 0;
     let vao = 0;
     for (const t of duoc) {
       const kq = await themThe(bo.id, t, batDau + vao);
@@ -106,117 +156,154 @@ function SoanMotBo({ bo, onQuay, onDoi }) {
       vao += 1;
     }
     setDangLuu(false);
-    if (vao) { setVan(""); await tai(); onDoi(); }
+    if (vao) { setVan(""); await tai(); onDoi(); bao(`Đã thêm ${vao} thẻ`); }
   };
 
-  const bo1The = async (id) => {
-    const kq = await xoaThe(id);
+  const luuTT = async () => {
+    if (!tt.ten.trim()) { setLoi("Bộ cần một cái tên."); return; }
+    const kq = await suaBo(bo.id, tt);
     if (!kq.ok) { setLoi(kq.loi); return; }
-    await tai(); onDoi();
+    setBo({ ...bo, ...tt }); setSuaTT(false); onDoi(); bao("Đã lưu thông tin bộ");
   };
+  const doiCongKhai = async () => {
+    const kq = await suaBo(bo.id, { congKhai: !bo.congKhai });
+    if (!kq.ok) { setLoi(kq.loi); return; }
+    setBo({ ...bo, congKhai: !bo.congKhai }); onDoi();
+  };
+
+  const loc = useMemo(() => {
+    const k = tim.trim().toLowerCase();
+    return (ds ?? []).map((t, i) => ({ t, so: i + 1 }))
+      .filter(({ t }) => !k || `${t.matTruoc} ${t.matSau} ${t.phienAm ?? ""}`.toLowerCase().includes(k));
+  }, [ds, tim]);
+  const xemLo = useMemo(() => bocDong(van), [van]);
 
   return (
     <div>
-      <button
-        type="button" onClick={onQuay}
-        className="inline-flex items-center gap-1.5 rounded-full border-0 bg-surface2 px-3 py-1.5 text-left font-sans text-xs font-bold text-ink"
-      >
+      <button type="button" onClick={onQuay} className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border-0 bg-surface2 px-3 py-1.5 font-sans text-xs font-bold text-ink">
         <ArrowLeft size={13} /> Tất cả Flashcard
       </button>
 
-      <h2 className="m-0 mt-4 text-xl font-extrabold tracking-tight text-ink">{bo.ten}</h2>
-      <p className="m-0 mt-1 text-xs text-soft">
-        {KY_NANG.find((k) => k.ma === bo.kyNang)?.ten} · {ds?.length ?? "…"} thẻ
-        {!bo.congKhai && " · nháp, học sinh chưa thấy"}
-      </p>
-
-      {/* ══ NHẬP HÀNG LOẠT ══
-          Gõ từng thẻ qua form là việc không ai làm quá mười lần — cùng lý do
-          Builder nhận cả khối JSON thay vì bắt bấm từng ô. */}
-      <div className="mt-5 rounded-2xl border border-line bg-surface p-5">
-        <h3 className="m-0 text-sm font-bold text-ink">Thêm thẻ</h3>
-        <p className="m-0 mt-1 text-xs leading-relaxed text-soft">
-          Mỗi dòng một thẻ, ngăn bằng dấu <code className="font-bold text-ink">|</code>:{" "}
-          <span className="font-semibold text-ink">mặt trước | mặt sau | phiên âm</span>.
-          Phiên âm để trống được.
-        </p>
-        <textarea
-          value={van}
-          onChange={(e) => setVan(e.target.value)}
-          rows={5}
-          placeholder={"Le train entre en gare | Tàu đang vào ga | lə tʁɛ̃ ɑ̃tʁ ɑ̃ ɡaʁ\nVoie 12 | Đường ray số 12"}
-          className="mt-3 w-full rounded-xl border border-line bg-surface2 px-3 py-2 font-mono text-xs leading-relaxed text-ink"
-        />
-
-        {/* Dòng hỏng phải được GỌI TÊN kèm số dòng. Dán 30 dòng mà vào 28 thẻ,
-            không ai nói gì, là hai thẻ mất tích không dấu vết. */}
-        {hong.length > 0 && (
-          <div className="mt-2 rounded-xl bg-warn-soft px-3 py-2">
-            <p className="m-0 text-xs font-bold text-warn">
-              {hong.length} dòng bị bỏ qua vì thiếu dấu | hoặc thiếu một vế:
-            </p>
-            <ul className="m-0 mt-1 list-none p-0">
-              {hong.slice(0, 5).map((h) => (
-                <li key={h.dong} className="text-[11px] text-warn">dòng {h.dong}: {h.van}</li>
-              ))}
-            </ul>
+      {/* Đầu trang: thông tin bộ, sửa tại chỗ */}
+      <div className="mt-4 flex flex-wrap items-start gap-4">
+        {suaTT ? (
+          <div className="grid min-w-0 flex-1 gap-2 sm:grid-cols-[1fr_140px]">
+            <input value={tt.ten} onChange={(e) => setTT({ ...tt, ten: e.target.value })} className={`${o} text-base font-bold`} />
+            <select value={tt.kyNang} onChange={(e) => setTT({ ...tt, kyNang: e.target.value })} className={o}>
+              {KY_NANG.map((k) => <option key={k.ma} value={k.ma}>{k.ten}</option>)}
+            </select>
+            <input value={tt.moTa} onChange={(e) => setTT({ ...tt, moTa: e.target.value })} placeholder="Mô tả ngắn" className={`${o} sm:col-span-2`} />
+            <div className="flex gap-2 sm:col-span-2">
+              <button type="button" onClick={luuTT} className={nutChinh}><Check size={14} /> Lưu</button>
+              <button type="button" onClick={() => { setTT({ ten: bo.ten, moTa: bo.moTa ?? "", kyNang: bo.kyNang }); setSuaTT(false); }} className={nutPhu}>Huỷ</button>
+            </div>
+          </div>
+        ) : (
+          <div className="min-w-0 flex-1">
+            <h2 className="m-0 flex items-center gap-2 text-2xl font-extrabold tracking-tight text-ink">
+              {bo.ten}
+              <button type="button" onClick={() => setSuaTT(true)} aria-label="Sửa thông tin bộ" className="grid h-8 w-8 cursor-pointer place-items-center rounded-full border-0 bg-surface2 text-soft hover:text-ink"><Pencil size={14} /></button>
+            </h2>
+            <p className="m-0 mt-1 text-sm text-soft">{tenKN(bo.kyNang)} · {ds?.length ?? "…"} thẻ{bo.moTa ? ` · ${bo.moTa}` : ""}</p>
           </div>
         )}
-        {loi && <p className="m-0 mt-2 text-xs font-semibold text-danger">{loi}</p>}
-
-        <button
-          type="button" onClick={themLo} disabled={dangLuu}
-          className="mt-3 inline-flex items-center gap-2 rounded-full border-0 bg-primary px-4 py-2 text-left font-sans text-sm font-bold text-white disabled:opacity-60"
-        >
-          <Plus size={14} /> {dangLuu ? "Đang thêm…" : "Thêm vào bộ"}
+        <button type="button" onClick={doiCongKhai}
+          className={`inline-flex shrink-0 cursor-pointer items-center gap-1.5 rounded-full border-0 px-4 py-2 font-sans text-sm font-bold ${bo.congKhai ? "bg-ok-soft text-ok" : "bg-warn-soft text-warn"}`}>
+          {bo.congKhai ? <><Eye size={14} /> Học sinh đang thấy</> : <><EyeOff size={14} /> Nháp · bấm để công khai</>}
         </button>
       </div>
 
-      {/* ══ DANH SÁCH THẺ ══ */}
-      {ds === undefined ? (
-        <p className="m-0 mt-6 text-center text-sm text-soft">Đang tải…</p>
-      ) : ds === null ? (
-        <div className="mt-6 rounded-2xl bg-danger-soft p-5 text-center">
-          <AlertTriangle size={18} className="mx-auto text-danger" />
-          <p className="m-0 mt-2 text-sm font-bold text-ink">Không đọc được thẻ của bộ này</p>
-        </div>
-      ) : ds.length === 0 ? (
-        <p className="m-0 mt-6 rounded-2xl border border-line bg-surface p-6 text-center text-sm text-soft">
-          Bộ này chưa có thẻ nào. Dán vài dòng ở ô trên.
-        </p>
-      ) : (
-        <ul className="m-0 mt-6 list-none space-y-2 p-0">
-          {ds.map((t, i) => (
-            <li key={t.id} className="flex items-start gap-3 rounded-xl border border-line bg-surface p-3">
-              <span className="mt-0.5 w-5 shrink-0 text-right text-xs font-bold tabular-nums text-soft">{i + 1}</span>
-              <div className="min-w-0 flex-1">
-                <p className="m-0 text-sm font-bold text-ink">{t.matTruoc}</p>
-                {t.phienAm && <p className="m-0 text-xs italic text-soft">{t.phienAm}</p>}
-                <p className="m-0 mt-0.5 text-xs leading-relaxed text-soft">{t.matSau}</p>
-              </div>
-              <button
-                type="button" onClick={() => bo1The(t.id)}
-                aria-label={`Xoá thẻ ${i + 1}`}
-                className="shrink-0 rounded-full border-0 bg-surface2 p-2 text-left text-danger"
-              >
-                <Trash2 size={13} />
+      {loi && <p className="m-0 mt-4 rounded-xl bg-danger-soft px-4 py-2.5 text-sm font-semibold text-danger">{loi}</p>}
+
+      <div className="mt-6 grid items-start gap-6 lg:grid-cols-[340px_1fr]">
+        {/* ── Thêm thẻ ── */}
+        <section className="rounded-3xl border border-solid border-line bg-surface p-5 lg:sticky lg:top-4">
+          <div role="tablist" className="inline-flex gap-1 rounded-full bg-surface2 p-1">
+            {[["mot", "Từng thẻ"], ["lo", "Dán nhiều dòng"]].map(([k, n]) => (
+              <button key={k} type="button" role="tab" aria-selected={che === k} onClick={() => setChe(k)}
+                className={`h-8 cursor-pointer rounded-full border-0 px-3 font-sans text-xs font-bold ${che === k ? "bg-surface text-ink shadow-sm" : "bg-transparent text-soft"}`}>{n}</button>
+            ))}
+          </div>
+          {che === "mot" ? (
+            <form className="mt-4 grid gap-2.5" onSubmit={(e) => { e.preventDefault(); them1(); }}>
+              <label className="grid gap-1 text-xs font-bold text-soft">Mặt trước
+                <input ref={oDau} value={moi.matTruoc} onChange={(e) => setMoi({ ...moi, matTruoc: e.target.value })} className={o} placeholder="Le train entre en gare" /></label>
+              <label className="grid gap-1 text-xs font-bold text-soft">Phiên âm <span className="font-normal">(tuỳ chọn)</span>
+                <input value={moi.phienAm} onChange={(e) => setMoi({ ...moi, phienAm: e.target.value })} className={o} placeholder="lə tʁɛ̃ ɑ̃tʁ ɑ̃ ɡaʁ" /></label>
+              <label className="grid gap-1 text-xs font-bold text-soft">Mặt sau
+                <input value={moi.matSau} onChange={(e) => setMoi({ ...moi, matSau: e.target.value })} className={o} placeholder="Tàu đang vào ga" /></label>
+              <label className="grid gap-1 text-xs font-bold text-soft">Câu ví dụ <span className="font-normal">(tuỳ chọn)</span>
+                <input value={moi.viDu} onChange={(e) => setMoi({ ...moi, viDu: e.target.value })} className={o} /></label>
+              <button type="submit" disabled={dangLuu} className={`${nutChinh} mt-1 justify-center`}><Plus size={14} /> {dangLuu ? "Đang thêm…" : "Thêm thẻ"}</button>
+              <p className="m-0 text-[11px] text-soft">Nhấn Enter để thêm nhanh; con trỏ quay về ô đầu.</p>
+            </form>
+          ) : (
+            <div className="mt-4">
+              <p className="m-0 text-xs leading-relaxed text-soft">
+                Mỗi dòng một thẻ: <span className="font-semibold text-ink">mặt trước | mặt sau | phiên âm</span>. Phiên âm để trống được.
+              </p>
+              <textarea value={van} onChange={(e) => setVan(e.target.value)} rows={8}
+                placeholder={"Le train entre en gare | Tàu đang vào ga\nVoie 12 | Đường ray số 12"}
+                className={`${o} mt-2 font-mono text-xs leading-relaxed`} />
+              <p className="m-0 mt-1 text-xs text-soft">
+                {xemLo.duoc.length} thẻ hợp lệ{xemLo.hong.length ? ` · ${xemLo.hong.length} dòng lỗi` : ""}
+              </p>
+              {hong.length > 0 && (
+                <ul className="m-0 mt-2 list-none rounded-xl bg-warn-soft p-2.5 text-[11px] text-warn">
+                  {hong.slice(0, 5).map((h) => <li key={h.dong}>dòng {h.dong}: {h.van}</li>)}
+                </ul>
+              )}
+              <button type="button" onClick={themLo} disabled={dangLuu || !xemLo.duoc.length} className={`${nutChinh} mt-3 w-full justify-center`}>
+                <Plus size={14} /> {dangLuu ? "Đang thêm…" : `Thêm ${xemLo.duoc.length || ""} thẻ`}
               </button>
-            </li>
-          ))}
-        </ul>
-      )}
+            </div>
+          )}
+          {tb && <p role="status" className="m-0 mt-3 text-center text-xs font-bold text-ok">{tb}</p>}
+        </section>
+
+        {/* ── Lưới thẻ ── */}
+        <section className="min-w-0">
+          <div className="mb-3 flex items-center gap-2">
+            <div className="relative min-w-0 flex-1">
+              <Search size={14} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-soft" />
+              <input value={tim} onChange={(e) => setTim(e.target.value)} placeholder="Tìm trong bộ…" className={`${o} pl-9`} />
+            </div>
+          </div>
+          {ds === undefined ? (
+            <p className="m-0 py-10 text-center text-sm text-soft">Đang tải…</p>
+          ) : ds === null ? (
+            <div className="rounded-2xl bg-danger-soft p-5 text-center">
+              <AlertTriangle size={18} className="mx-auto text-danger" />
+              <p className="m-0 mt-2 text-sm font-bold text-ink">Không đọc được thẻ của bộ này</p>
+            </div>
+          ) : ds.length === 0 ? (
+            <div className="rounded-3xl border border-dashed border-line p-10 text-center">
+              <Layers size={22} className="mx-auto text-soft" />
+              <p className="m-0 mt-2 font-bold text-ink">Bộ này chưa có thẻ nào</p>
+              <p className="m-0 mt-1 text-sm text-soft">Thêm thẻ ở khung bên trái.</p>
+            </div>
+          ) : (
+            <ul className="m-0 grid list-none gap-3 p-0 sm:grid-cols-2">
+              {loc.map(({ t, so }) => <OThe key={t.id} t={t} so={so} onDoi={tai} onLoi={setLoi} />)}
+              {!loc.length && <p className="m-0 text-sm text-soft">Không có thẻ nào khớp « {tim} ».</p>}
+            </ul>
+          )}
+        </section>
+      </div>
     </div>
   );
 }
 
+/* ─────────────── Danh sách bộ ─────────────── */
 export default function SoanBoThe() {
-  const [laGV, setLaGV] = useState(undefined);   // undefined tải · null không hỏi được
+  const [laGV, setLaGV] = useState(undefined);
   const [ds, setDs] = useState(undefined);
   const [dangMo, setDangMo] = useState(null);
+  const [tao, setTao] = useState(false);
+  const [loc, setLoc] = useState("tat");
   const [loi, setLoi] = useState("");
 
   const tai = async () => {
-    setDs(undefined); setLaGV(undefined);
     const [vai, rows] = await Promise.all([laGiaoVien(), docBoDeSoan()]);
     setLaGV(vai); setDs(rows);
   };
@@ -227,66 +314,52 @@ export default function SoanBoThe() {
     if (!kq.ok) { setLoi(kq.loi); return; }
     setLoi(""); tai();
   };
-
   const bo1Bo = async (b) => {
-    /* Xoá bộ là xoá cả thẻ trong nó (CASCADE). Hỏi lại — và nói ra con số,
-       không hỏi chung chung: « xoá 30 thẻ » đọc khác hẳn « bạn có chắc? ». */
+    /* Xoá bộ là xoá cả thẻ (CASCADE): hỏi lại và NÓI RA con số. */
     if (!window.confirm(`Xoá bộ « ${b.ten} » và ${b.soThe} thẻ trong đó? Không hoàn lại được.`)) return;
     const kq = await xoaBo(b.id);
     if (!kq.ok) { setLoi(kq.loi); return; }
-    setLoi(""); setDangMo(null); tai();
+    setLoi(""); tai();
   };
 
   if (dangMo) {
     return (
-      <div className="mx-auto max-w-3xl py-6">
+      <div className="mx-auto max-w-6xl py-6">
         <SoanMotBo bo={dangMo} onQuay={() => { setDangMo(null); tai(); }} onDoi={tai} />
       </div>
     );
   }
 
+  const hien = (ds ?? []).filter((b) => loc === "tat" || b.kyNang === loc);
   return (
-    <div className="mx-auto max-w-3xl py-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+    <div className="mx-auto max-w-6xl py-6">
+      <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="m-0 text-2xl font-extrabold tracking-tight text-ink">Soạn Flashcard</h1>
-          <p className="m-0 mt-1 text-sm text-soft">
-            Bộ thẻ bạn soạn ở đây là thứ học sinh thấy ở mục Flashcard.
-          </p>
+          <p className="m-0 mt-1 text-sm text-soft">Bộ đang công khai hiện ở mục Flashcard của học sinh.</p>
         </div>
-        <button
-          type="button" onClick={tai}
-          className="inline-flex items-center gap-2 rounded-full border-0 bg-surface2 px-4 py-2 text-left font-sans text-sm font-semibold text-ink"
-        >
-          <RefreshCw size={14} /> Tải lại
-        </button>
+        <div className="flex gap-2">
+          <button type="button" onClick={tai} className={nutPhu}><RefreshCw size={14} /> Tải lại</button>
+          <button type="button" onClick={() => setTao(true)} className={nutChinh}><Plus size={14} /> Bộ mới</button>
+        </div>
       </div>
 
-      {loi && (
-        <p className="m-0 mt-4 rounded-xl bg-danger-soft px-4 py-3 text-sm font-semibold text-danger">{loi}</p>
-      )}
+      {tao && <KhungTaoBo onHuy={() => setTao(false)} onXong={() => { setTao(false); tai(); }} />}
+      {loi && <p className="m-0 mt-4 rounded-xl bg-danger-soft px-4 py-3 text-sm font-semibold text-danger">{loi}</p>}
 
       {ds === undefined ? (
         <p className="mt-10 text-center text-sm text-soft">Đang tải…</p>
       ) : laGV === null ? (
-        /* KHÔNG HỎI ĐƯỢC vai — khác cả "không phải giáo viên" lẫn "chưa có bộ
-           nào". Ba sự thật, ba nhánh; gộp là nói sai với hai trong ba. */
         <div className="mt-8 rounded-2xl bg-warn-soft p-6 text-center">
           <AlertTriangle size={20} className="mx-auto text-warn" />
           <p className="m-0 mt-2 font-bold text-ink">Không hỏi được vai của bạn</p>
-          <p className="m-0 mt-1 text-sm leading-relaxed text-ink">
-            Danh sách bên dưới có thể trống vì lý do đó chứ không phải vì bạn chưa
-            soạn bộ nào. Đừng kết luận gì cho tới khi tải lại được.
-          </p>
+          <p className="m-0 mt-1 text-sm text-ink">Danh sách có thể trống vì lý do đó. Đừng kết luận gì cho tới khi tải lại được.</p>
         </div>
       ) : laGV === false ? (
         <div className="mt-8 rounded-2xl bg-danger-soft p-6 text-center">
           <AlertTriangle size={20} className="mx-auto text-danger" />
           <p className="m-0 mt-2 font-bold text-ink">Máy chủ không coi bạn là giáo viên</p>
-          <p className="m-0 mt-1 text-sm leading-relaxed text-ink">
-            Bạn xem được nhưng mọi lệnh ghi sẽ bị từ chối. Đăng xuất rồi đăng nhập
-            lại; nếu vẫn vậy thì báo người quản trị.
-          </p>
+          <p className="m-0 mt-1 text-sm text-ink">Mọi lệnh ghi sẽ bị từ chối. Đăng xuất rồi đăng nhập lại.</p>
         </div>
       ) : ds === null ? (
         <div className="mt-8 rounded-2xl bg-danger-soft p-6 text-center">
@@ -295,51 +368,44 @@ export default function SoanBoThe() {
         </div>
       ) : (
         <>
-          <div className="mt-5"><OTaoBo onXong={tai} /></div>
-
-          {ds.length === 0 ? (
-            <div className="mt-5 rounded-2xl border border-line bg-surface p-8 text-center">
+          <div role="tablist" className="mt-6 flex flex-wrap gap-2">
+            {[{ ma: "tat", ten: "Tất cả" }, ...KY_NANG].map((k) => {
+              const n = k.ma === "tat" ? ds.length : ds.filter((b) => b.kyNang === k.ma).length;
+              return (
+                <button key={k.ma} type="button" role="tab" aria-selected={loc === k.ma} onClick={() => setLoc(k.ma)}
+                  className={`cursor-pointer rounded-full border border-solid px-4 py-1.5 font-sans text-sm font-bold ${loc === k.ma ? "border-primary bg-primary text-white" : "border-line bg-surface text-ink hover:border-primary"}`}>
+                  {k.ten} <span className={loc === k.ma ? "text-white/75" : "text-soft"}>· {n}</span>
+                </button>
+              );
+            })}
+          </div>
+          {hien.length === 0 ? (
+            <div className="mt-5 rounded-3xl border border-dashed border-line p-10 text-center">
               <Layers size={22} className="mx-auto text-soft" />
-              <p className="m-0 mt-2 font-bold text-ink">Chưa có bộ thẻ nào</p>
-              <p className="m-0 mt-1 text-sm leading-relaxed text-soft">
-                Học sinh đang mở mục Flashcard và thấy trống. Tạo bộ đầu tiên ở ô trên.
-              </p>
+              <p className="m-0 mt-2 font-bold text-ink">Chưa có bộ thẻ nào ở đây</p>
+              <p className="m-0 mt-1 text-sm text-soft">Bấm « Bộ mới » để tạo.</p>
             </div>
           ) : (
-            <ul className="m-0 mt-5 list-none space-y-3 p-0">
-              {ds.map((b) => (
-                <li key={b.id} className="rounded-2xl border border-line bg-surface p-4">
-                  <div className="flex flex-wrap items-center gap-3">
-                    <button
-                      type="button" onClick={() => setDangMo(b)}
-                      className="min-w-0 flex-1 border-0 bg-transparent p-0 text-left font-sans"
-                    >
-                      <span className="block truncate text-sm font-bold text-ink">{b.ten}</span>
-                      <span className="block text-xs text-soft">
-                        {KY_NANG.find((k) => k.ma === b.kyNang)?.ten} · {b.soThe} thẻ
-                      </span>
-                    </button>
-
-                    {/* Công khai / nháp: nhãn nói TRẠNG THÁI ĐANG CÓ, nút nói
-                        VIỆC SẼ XẢY RA. Trộn hai thứ là chỗ người ta bấm nhầm. */}
-                    <button
-                      type="button" onClick={() => doiCongKhai(b)}
-                      className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border-0 px-3 py-1.5 text-left font-sans text-xs font-bold ${
-                        b.congKhai ? "bg-ok-soft text-ok" : "bg-warn-soft text-warn"
-                      }`}
-                    >
-                      {b.congKhai ? <><Eye size={12} /> đang hiện</> : <><EyeOff size={12} /> nháp</>}
-                    </button>
-
-                    <button
-                      type="button" onClick={() => bo1Bo(b)}
-                      aria-label={`Xoá bộ ${b.ten}`}
-                      className="shrink-0 rounded-full border-0 bg-surface2 p-2 text-left text-danger"
-                    >
-                      <Trash2 size={14} />
+            <ul className="m-0 mt-5 grid list-none gap-4 p-0 sm:grid-cols-2 lg:grid-cols-3">
+              {hien.map((b) => (
+                <li key={b.id} className="flex flex-col rounded-3xl border border-solid border-line bg-surface p-5 transition-shadow hover:shadow-md">
+                  <div className="flex items-center gap-2">
+                    <span className="rounded-full bg-primary-soft px-2.5 py-0.5 text-xs font-bold text-primary">{tenKN(b.kyNang)}</span>
+                    <button type="button" onClick={() => doiCongKhai(b)} title={b.congKhai ? "Bấm để chuyển về nháp" : "Bấm để công khai"}
+                      className={`ml-auto inline-flex cursor-pointer items-center gap-1 rounded-full border-0 px-2.5 py-1 font-sans text-xs font-bold ${b.congKhai ? "bg-ok-soft text-ok" : "bg-warn-soft text-warn"}`}>
+                      {b.congKhai ? <><Eye size={12} /> Công khai</> : <><EyeOff size={12} /> Nháp</>}
                     </button>
                   </div>
-                  {b.moTa && <p className="m-0 mt-2 text-xs leading-relaxed text-soft">{b.moTa}</p>}
+                  <button type="button" onClick={() => setDangMo(b)} className="mt-3 flex-1 cursor-pointer border-0 bg-transparent p-0 text-left font-sans">
+                    <span className="block text-lg font-extrabold leading-snug text-ink">{b.ten}</span>
+                    {b.moTa && <span className="mt-1 block text-sm leading-relaxed text-soft">{b.moTa}</span>}
+                  </button>
+                  <div className="mt-4 flex items-center gap-2">
+                    <span className="text-sm font-bold tabular-nums text-ink">{b.soThe} thẻ</span>
+                    <button type="button" onClick={() => bo1Bo(b)} aria-label={`Xoá bộ ${b.ten}`}
+                      className="ml-auto grid h-8 w-8 cursor-pointer place-items-center rounded-full border-0 bg-surface2 text-danger"><Trash2 size={14} /></button>
+                    <button type="button" onClick={() => setDangMo(b)} className={nutChinh}>Mở</button>
+                  </div>
                 </li>
               ))}
             </ul>

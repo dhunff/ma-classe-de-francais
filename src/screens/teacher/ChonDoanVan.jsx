@@ -31,7 +31,7 @@ export default function ChonDoanVan({ vanBan, onChon }) {
 
   return (
     <div ref={oRef} onMouseUp={() => onChon(layChon())} onKeyUp={() => onChon(layChon())}
-      className="max-h-96 select-text overflow-y-auto whitespace-pre-wrap rounded-2xl border border-line bg-surface p-5 text-sm leading-relaxed text-ink">
+      className="mcf-scroll max-h-[65vh] select-text overflow-y-auto whitespace-pre-wrap rounded-2xl border border-solid border-line bg-surface p-5 text-[15px] leading-7 text-ink selection:bg-primary-soft">
       {chuThuan(vanBan)}
     </div>
   );
