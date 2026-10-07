@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import QuanLyVip from "./QuanLyVip.jsx";
 import { C, S, LEVEL_COLORS, LEVEL_PASTEL, QTYPES, VF_OPTS } from "../../shared/tokens.js";
 import { load, save, del } from "../../shared/storage.js";
@@ -55,6 +55,7 @@ function Teacher({ exercises, setExercises, submissions, setSubmissions, account
   /* 07/10: « Thư viện luyện tập » không còn mục menu riêng mà là tab thứ hai
      của trang Bài tập — một chỗ quản lý mọi bài. */
   const [khoBai, setKhoBai] = useState("giao");
+  const navigate = useNavigate();
   useEffect(() => { if (routeView) setView(routeView); }, [routeView]);
   // 📣 Annonces
   const [annModal, setAnnModal] = useState(false);
@@ -244,7 +245,7 @@ ${r.error?.message ?? ""}`); return; }
         </button>
         {view === "list" && (
           <button type="button"
-            onClick={() => { setAnnModal(true); setAnnMsg(""); setAnnAll(true); setAnnClasses([]); setAnnStudents([]); setAnnSearch(""); setAnnLoi(""); }}
+            onClick={() => navigate("/professeur/thong-bao")}
             className={NUT_PILL}>
             <Bell size={15} aria-hidden /> {t("actions.announce")}
           </button>

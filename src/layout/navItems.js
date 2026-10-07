@@ -1,7 +1,7 @@
 import {
   LayoutDashboard, BookOpen, Users, BarChart3, Dumbbell,
   ClipboardList, CheckSquare, CalendarDays, Settings, Lightbulb, Timer, Trophy, Layers, Lightbulb as Bulb, Anchor, Inbox,
-  Map, BookA, Swords, FileCheck2 } from "lucide-react";
+  Map, BookA, Swords, FileCheck2, Megaphone } from "lucide-react";
 
 /* Điều hướng của vỏ app.
 
@@ -22,6 +22,8 @@ export const TEACHER_NAV = [
   { to: "/professeur/exercices", labelKey: "nav.exercises", Icon: BookOpen, view: "list" },
   { to: "/professeur/eleves", labelKey: "nav.students", Icon: Users, view: "students" },
   { to: "/professeur/statistiques", labelKey: "nav.stats", Icon: BarChart3, view: "stats" },
+  /* Gửi thông báo (08/10): trang riêng thay hộp nổi ở trang Bài tập. */
+  { to: "/professeur/thong-bao", labelKey: "nav.notify", Icon: Megaphone },
   /* 07/10, theo chủ dự án: giáo viên chỉ còn quản lý học sinh, cấp quyền bài,
      gói VIP và giao bài (cùng soạn bài, đề thi, flashcard, neo, duyệt nháp).
      ĐÃ GỠ: « Thư viện luyện tập » riêng (gộp thành tab trong « Bài tập »),

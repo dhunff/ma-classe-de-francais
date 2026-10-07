@@ -8,6 +8,7 @@ import LoginGate from './screens/LoginGate.jsx'
 import { ROLE_HOME, TEACHER_NAV, STUDENT_NAV } from './layout/navItems.js'
 import ExamMode from './screens/exam/ExamMode.jsx'
 import BanMoi from './layout/BanMoi.jsx'
+import GuiThongBao from './screens/teacher/GuiThongBao.jsx'
 import { useNhipTim } from './shared/hienDien.js'
 /* Nhịp tim online (123) cho học sinh, trên MỌI trang, không riêng Student. */
 function NhipTim({ bat }) { useNhipTim(bat); return null }
@@ -276,6 +277,7 @@ function AppInner() {
                   ghi âm trong bài thi thử để TỰ nghe lại; bản ghi vẫn nằm ở
                   bucket riêng tư `bai-noi`. */}
               <Route path="/professeur/neo" element={<DatNeo />} />
+              <Route path="/professeur/thong-bao" element={<GuiThongBao />} />
               <Route path="/professeur/bo-the" element={<SoanBoThe />} />
               <Route path="/professeur/duyet-nhap" element={<DuyetNhap />} />
 
