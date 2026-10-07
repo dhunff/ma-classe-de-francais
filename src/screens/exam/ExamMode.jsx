@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Timer, ShieldCheck, AlertTriangle, Clock, Volume2, ArrowLeft } from "lucide-react";
 import { supabase } from "../../storageShim.js";
 import { loadExams, loadExam } from "../../shared/examStore.js";
@@ -9,6 +9,7 @@ import { EXAM_STRUCTURE, sectionScore, verdict, ghiPhan, gomTheoKyNang, NGUONG_P
 import GhiAmBaiNoi from "./GhiAmBaiNoi.jsx";
 import { GhepCap, DienPhieu, AnhLuaChon } from "../student/dangMoi.jsx";
 import { nhomTheoTrinhDo } from "../../shared/trinhDoDe.js";
+import { HopBatDau, HopThoat, useGiuPhongThi } from "./LuotThi.jsx";
 import { coPhienMayChu } from "../../shared/phienMayChu.js";
 
 /* Mode Examen — thi thử có tính giờ.
@@ -49,6 +50,20 @@ function ManCho({ dsDe, chon, paper, onStart, dangTai, lamPhanNoi, setLamPhanNoi
   const tongPhut = cauTruc.reduce(
     (n, p) => n + (p.code === "PO" && (!coPhanNoi || !lamPhanNoi) ? 0 : p.minutes), 0);
   const [sanSang, setSanSang] = useState(false);
+  /* Lượt thi hôm nay (120) + hộp cảnh báo trước khi vào thi. */
+  const [luot, setLuot] = useState(null);
+  const [moHop, setMoHop] = useState(false);
+  const [dangMo, setDangMo] = useState(false);
+  const [loiMo, setLoiMo] = useState("");
+  useEffect(() => {
+    supabase.rpc("luot_thi_hom_nay").then(({ data }) => { if (data) setLuot(data); });
+  }, [moHop]);
+  const dongY = async () => {
+    setDangMo(true); setLoiMo("");
+    const loi = await onStart();
+    setDangMo(false);
+    if (loi) setLoiMo(loi);
+  };
   const nhom = useMemo(() => nhomTheoTrinhDo(dsDe), [dsDe]);
   const [tabChon, setTab] = useState(null);
   /* Mặc định: trình độ của đề đang chọn, không thì trình độ đầu tiên có đề. */
@@ -256,7 +271,7 @@ function ManCho({ dsDe, chon, paper, onStart, dangTai, lamPhanNoi, setLamPhanNoi
 
       <button type="button"
         disabled={!sanSang || dangTai || !paper?.sections.length || phienThuc !== true}
-        onClick={onStart}
+        onClick={() => { setLoiMo(""); setMoHop(true); }}
         className="mt-6 inline-flex items-center gap-2 rounded-full border-0 bg-primary px-6 py-3 text-sm font-bold text-white shadow-lg transition enabled:hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-40">
         {/* Nút mờ đi mà không nói vì sao là một cánh cửa khoá không biển
             báo. Ba lý do khoá, ba câu khác nhau. */}
@@ -265,6 +280,15 @@ function ManCho({ dsDe, chon, paper, onStart, dangTai, lamPhanNoi, setLamPhanNoi
           : phienThuc === false ? "Cần đăng nhập lại"
           : "Bắt đầu thi"}
       </button>
+      {luot && !luot.khong_gioi_han && (
+        <p className="m-0 mt-3 text-xs text-soft">
+          Hôm nay còn {Math.max(0, luot.gioi_han - luot.da_dung)}/{luot.gioi_han} lượt thi. Lượt mới vào 0 giờ (giờ Việt Nam).
+        </p>
+      )}
+      {moHop && (
+        <HopBatDau tongPhut={tongPhut} luot={luot} dangMo={dangMo} loi={loiMo}
+          onHuy={() => setMoHop(false)} onDongY={dongY} />
+      )}
     </div>
   );
 }
@@ -371,7 +395,7 @@ function AudioGioiHan({ src, attemptId, questionId, luot = 2 }) {
 /* Xuất tên để `preview.html` dựng được ĐÚNG component này với dữ liệu thật.
    Màn thi nằm sau đăng nhập và sau một lượt thi đang mở, nên không có đường nào
    khác để nhìn thấy nó — mà đúng ở đây thì mới có ảnh đề bài và consigne. */
-export function PhanThi({ section, attemptId, answers, setAnswers, onDone, onBlur, onDoiBai, examId }) {
+export function PhanThi({ section, attemptId, answers, setAnswers, onDone, onBlur, onDoiBai, examId, onThoat }) {
   const [conLai, setConLai] = useState(section.minutes * 60);
   const doneRef = useRef(false);
 
@@ -439,6 +463,12 @@ export function PhanThi({ section, attemptId, answers, setAnswers, onDone, onBlu
             </div>
           )}
         </div>
+        {onThoat && (
+          <button type="button" onClick={onThoat}
+            className="ml-auto h-9 shrink-0 cursor-pointer rounded-full border border-solid border-line bg-surface px-4 font-sans text-xs font-bold text-soft hover:text-danger">
+            Thoát
+          </button>
+        )}
         {/* Không nhấp nháy: gây hoảng, không giúp gì thêm. */}
         <div className={`flex shrink-0 items-center gap-2 rounded-full bg-surface2 px-4 py-2 font-bold tabular-nums ${gap}`}>
           <Clock size={15} /> {dongHo(Math.max(0, conLai))}
@@ -797,6 +827,24 @@ export default function ExamMode() {
      giá trị này chỉ để đọc lúc chấm, và đưa vào state sẽ khiến mỗi lần đổi bài
      render lại cả cây. */
   const attemptTheoBai = useRef({});
+  /* Lượt thi đang dùng (120). */
+  const luotId = useRef(null);
+  const [hopThoat, setHopThoat] = useState(false);
+  const navigate = useNavigate();
+  useGiuPhongThi(buoc === "thi", () => setHopThoat(true));
+  useEffect(() => {
+    if (buoc === "xong" && luotId.current) {
+      supabase.rpc("ket_thuc_thi", { p_luot: luotId.current, p_xong: true }).then(() => {});
+      luotId.current = null;
+    }
+  }, [buoc]);
+  const thoatThi = async () => {
+    setHopThoat(false);
+    if (luotId.current) await supabase.rpc("ket_thuc_thi", { p_luot: luotId.current, p_xong: false });
+    luotId.current = null;
+    setBuoc("cho"); // gỡ chặn Back/đóng tab TRƯỚC khi rời trang
+    setTimeout(() => navigate("/etudiant/dashboard"), 0);
+  };
 
   /* Gom các dòng exam_sections thành KHỐI theo kỹ năng — một khối, một đồng hồ,
      nhiều bài bên trong. Xem gomTheoKyNang() trong examPaper.js. */
@@ -837,7 +885,15 @@ export default function ExamMode() {
     setPaper(de);
   };
 
-  const batDau = () => {
+  /* Trả về CHUỖI LỖI nếu không mở được, để hộp cảnh báo hiện tại chỗ. Lượt
+     bị trừ ở máy chủ ngay đây; không có lượt thì không vào được bài. */
+  const batDau = async () => {
+    const { data, error } = await supabase.rpc("bat_dau_thi", { p_exam_id: paper?.id ?? null });
+    if (error) return "Không kết nối được máy chủ, chưa mở được bài thi. Thử lại sau giây lát.";
+    if (!data?.ok) return data?.ma === "HET_LUOT"
+      ? "Bạn đã dùng hết 2 lượt thi hôm nay. Hãy quay lại vào ngày mai."
+      : "Không mở được bài thi. Hãy đăng nhập lại.";
+    luotId.current = data.luot_id;
     setAnswers({}); setKetQua([]); setBlurCount(0); setIdx(0);
     setBaiHienTai(null); attemptTheoBai.current = {};
     setBuoc("thi");
@@ -976,11 +1032,15 @@ export default function ExamMode() {
     /* `key` theo code: đổi phần thì PhanThi được dựng lại từ đầu, nên đồng hồ
        và chỉ số bài đều reset. Đổi BÀI trong cùng phần thì không — key không
        đổi, component sống tiếp, đồng hồ chạy tiếp. */
-    return <PhanThi key={khoi[idx].code} section={khoi[idx]} examId={paper?.id}
+    return <>
+      <PhanThi key={khoi[idx].code} section={khoi[idx]} examId={paper?.id}
       attemptId={attemptId}
       answers={answers} setAnswers={setAnswers} onDone={xongPhan}
       onDoiBai={setBaiHienTai}
-      onBlur={() => setBlurCount((n) => n + 1)} />;
+      onThoat={() => setHopThoat(true)}
+      onBlur={() => setBlurCount((n) => n + 1)} />
+      {hopThoat && <HopThoat onO={() => setHopThoat(false)} onThoat={thoatThi} />}
+    </>;
   }
   return <KetQua sections={ketQua} blurCount={blurCount}
     onLai={() => { setPaper(null); setBuoc("cho"); }} />;
