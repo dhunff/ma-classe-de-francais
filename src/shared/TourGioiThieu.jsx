@@ -111,6 +111,11 @@ export default function TourGioiThieu({ khoa, steps, sanSang = true, giao, choXo
       continuous
       showSkipButton
       disableOverlayClose
+      /* 09/10: KHÔNG để Joyride « sửa » cha cuộn. Khi <main> chưa đủ dài để cuộn,
+         nó đặt main.style.overflow = "initial" và không bao giờ trả lại: trang
+         khoá cuộn ở body nên từ đó không cuộn được nữa (lỗi « nhiều lúc không
+         scroll được »). */
+      disableScrollParentFix
       callback={xuLy}
       tooltipComponent={(p) => <TooltipRieng {...p} t={t} giao={giao} />}
       styles={{

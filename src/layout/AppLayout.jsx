@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import Sidebar from "./Sidebar.jsx";
 import Topbar from "./Topbar.jsx";
@@ -46,6 +46,10 @@ export default function AppLayout({
 
   // Đổi trang thì đóng ngăn kéo — nếu không nó che mất trang vừa mở.
   useEffect(() => { setMenuOpen(false); setCarnetOpen(false); }, [location.pathname]);
+  /* Chốt chặn (09/10): thư viện nào đặt overflow nội tuyến lên <main> (Joyride
+     từng làm vậy) thì gỡ ra khi đổi trang, để trang không bị khoá cuộn mãi. */
+  const mainRef = useRef(null);
+  useEffect(() => { if (mainRef.current?.style.overflow) mainRef.current.style.overflow = ""; }, [location.pathname]);
 
   const titleKey = titleKeyFor(location.pathname);
 
@@ -97,7 +101,7 @@ export default function AppLayout({
           carnetOpen={carnetOpen}
         />
 
-        <main className="min-w-0 flex-1 overflow-y-auto px-4 pb-8 md:px-8">
+        <main ref={mainRef} className="min-w-0 flex-1 overflow-y-auto px-4 pb-8 md:px-8">
           <LeonTheoTrang path={location.pathname} className="mt-1 mb-4" />
           <Outlet context={{ query }} />
         </main>

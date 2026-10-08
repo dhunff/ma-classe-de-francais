@@ -29,6 +29,7 @@ import { Avatar } from "./shared/avatars.jsx";
 import { tenVN } from "./shared/display.js";
 import TourGioiThieu from "./shared/TourGioiThieu.jsx";
 import { gradeRemote } from "./shared/gradeRemote.js";
+import { phat } from "./shared/amThanh.js";
 import { PAYMENT_KEY, isPremium, hasAccess, fmtPrice, loadAccess } from "./shared/access.js";
 import ExerciseCard from "./screens/practice/ExerciseCard.jsx";
 import { supabase } from "./storageShim.js";
@@ -1107,6 +1108,15 @@ function PracticeWorkspace({ ex, back, onFinish }) {
   const answersRef = useRef(answers); answersRef.current = answers;
   const gradedRef = useRef(false);
 
+  /* Âm thanh (09/10): mở bài, mỗi câu vừa trả lời thêm, còn 1 phút, hết giờ,
+     nộp, kết quả. Đếm SỐ CÂU đã trả lời chứ không theo từng phím gõ, để ô
+     điền từ không kêu lách cách theo mỗi chữ. */
+  useEffect(() => { phat("tiep"); }, [ex?.id]);
+  const soDaLam = Object.values(answers).filter((v) => v !== undefined && v !== null && v !== "").length;
+  const soTruoc = useRef(0);
+  useEffect(() => { if (soDaLam > soTruoc.current && !gradedRef.current) phat("bam"); soTruoc.current = soDaLam; }, [soDaLam]);
+  useEffect(() => { if (remaining === 60) phat("sapHet"); }, [remaining]);
+
   // ⏱ Đếm ngược (nếu có giới hạn thời gian) — tự chấm khi hết giờ
   useEffect(() => {
     if (!ex?.timeLimit) return;
@@ -1145,6 +1155,7 @@ function PracticeWorkspace({ ex, back, onFinish }) {
 
   const grade = async (timedOut = false) => {
     gradedRef.current = true;
+    phat(timedOut ? "hetGio" : "nop");
     setGraded(timedOut ? "timeout" : true);
 
     const res = await gradeRemote(ex.id, answersRef.current,
@@ -1168,6 +1179,11 @@ function PracticeWorkspace({ ex, back, onFinish }) {
     }
 
     if (res) { setRemote(res.results); setDiemMayChu({ score: res.score, max: res.max }); }
+    if (!res) phat("sai");
+    else if (res.max) {
+      const tl = res.score / res.max;
+      setTimeout(() => phat(tl >= 0.8 ? "thang" : tl >= 0.5 ? "dung" : "thua"), 450);
+    }
 
     /* Điểm lấy từ máy chủ khi có. Tự cộng lại ở đây là mở đường cho hai con số
        lệch nhau — màn hình hiện một đằng, lịch sử lưu một nẻo. */
@@ -1188,6 +1204,7 @@ function PracticeWorkspace({ ex, back, onFinish }) {
   };
 
   const retry = () => {
+    phat("tiep");
     moLuc.current = Date.now();
     gradedRef.current = false; setGraded(false); setAnswers({}); setRemote(null); setDiemMayChu(null);
   };
