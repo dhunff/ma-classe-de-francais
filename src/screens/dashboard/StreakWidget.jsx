@@ -69,13 +69,14 @@ export default function StreakWidget({ t, fixture }) {
                 <span
                   style={style}
                   className={[
-                    "grid aspect-square w-full max-w-[2.5rem] place-items-center rounded-full border-2 border-solid",
-                    xong ? "mcf-tich border-primary bg-primary-soft text-primary shadow-[0_6px_16px_rgb(var(--mcf-primary-rgb)/0.25)]"
-                      : homNay ? "border-primary/50 bg-transparent text-transparent"
+                    /* 08/10: màu cam cùng tông ngọn lửa, viền 3px, ô đã học tô đặc. */
+                    "grid aspect-square w-full max-w-[2.5rem] place-items-center rounded-full border-[3px] border-solid",
+                    xong ? "mcf-tich border-orange-500 bg-orange-500 text-white shadow-[0_6px_16px_rgba(249,115,22,0.35)]"
+                      : homNay ? "border-orange-400 bg-orange-500/10 text-transparent"
                       : "border-line-strong bg-transparent text-transparent",
                   ].join(" ")}
                 >
-                  <Check size={16} strokeWidth={3} />
+                  <Check size={18} strokeWidth={3.5} />
                 </span>
                 </span>
                 <span className={`text-xs ${homNay ? "font-bold text-ink" : "text-soft"}`}>{ten}</span>
