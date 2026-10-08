@@ -125,7 +125,7 @@ export default function HoiLeon() {
         <section role="dialog" aria-label={tr("Hỏi Leon", "Demande à Leon", "Ask Leon")}
           className="fixed bottom-24 right-4 z-[55] flex h-[min(560px,calc(100vh-8rem))] w-[min(380px,calc(100vw-2rem))] flex-col overflow-hidden rounded-3xl bg-surface shadow-[0_20px_60px_rgb(0,0,0,0.25)]">
           <header className="flex items-center gap-3 bg-primary px-4 py-3 text-on-primary">
-            <Leon cam="dau" size={40} className="rounded-full bg-white" />
+            <Leon cam="dau" size={40} />
             <div className="min-w-0 flex-1">
               <p className="m-0 text-sm font-extrabold">Leon</p>
               <p className="m-0 text-[11px] text-on-primary/80">
@@ -189,8 +189,8 @@ export default function HoiLeon() {
         </section>
       )}
       <button type="button" onClick={() => setMo(!mo)} aria-label={tr("Hỏi Leon", "Demande à Leon", "Ask Leon")} title={tr("Hỏi Leon", "Demande à Leon", "Ask Leon")}
-        className="mcf-leon-nut fixed bottom-5 right-4 z-[55] grid h-16 w-16 cursor-pointer place-items-center rounded-full border-0 bg-surface p-0 shadow-[0_10px_30px_rgb(0,0,0,0.2)] transition-transform hover:-translate-y-1">
-        <Leon cam="dau" size={56} />
+        className="mcf-leon-nut fixed bottom-5 right-4 z-[55] grid h-16 w-16 cursor-pointer place-items-center rounded-full border-0 bg-transparent p-0 drop-shadow-[0_8px_16px_rgb(0,0,0,0.25)] transition-transform hover:-translate-y-1">
+        <Leon cam="dau" size={64} />
       </button>
     </>
   );
