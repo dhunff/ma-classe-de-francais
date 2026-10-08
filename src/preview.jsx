@@ -295,6 +295,15 @@ const PHAN_THI_MAU = {
     ],
   },
 };
+/* Phần có HAI bài: để xem thanh chuyển bài và hộp « chưa làm xong » (08/10). */
+PHAN_THI_MAU.exercises = [PHAN_THI_MAU.exercise, {
+  id: "xem-thu-2", title: "Activité 2", level: "B1", consigne: "<p>Lisez le document puis répondez.</p>",
+  imageUrl: "", readingText: "", audioUrl: "",
+  questions: [
+    { id: "q2", ord: 0, type: "qcm", prompt: "Le musée ouvre à quelle heure ?", options: ["9 h", "10 h", "11 h"] },
+    { id: "q3", ord: 1, type: "vf", prompt: "Le musée est gratuit le dimanche." },
+  ],
+}];
 
 /* Thẻ lật 3D — chỉ dựng phần TRÌNH BÀY.
  *

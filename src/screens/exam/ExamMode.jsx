@@ -10,6 +10,11 @@ import GhiAmBaiNoi from "./GhiAmBaiNoi.jsx";
 import { GhepCap, DienPhieu, AnhLuaChon } from "../student/dangMoi.jsx";
 import { nhomTheoTrinhDo } from "../../shared/trinhDoDe.js";
 import { HopBatDau, HopThoat, useGiuPhongThi } from "./LuotThi.jsx";
+import { isQuestionAnswered } from "../../shared/questions.js";
+
+/* Màn thi KHÔNG có ô căn cứ cho câu vf, nên chọn Đúng/Sai/? là đã làm.
+   isQuestionAnswered chung đòi căn cứ, dùng thẳng sẽ báo thiếu mọi câu vf. */
+const daLamCau = (q, answers) => (q.type === "vf" ? answers?.[q.id]?.choice != null : isQuestionAnswered(q, answers));
 import { coPhienMayChu } from "../../shared/phienMayChu.js";
 
 /* Mode Examen — thi thử có tính giờ.
@@ -425,6 +430,19 @@ export function PhanThi({ section, attemptId, answers, setAnswers, onDone, onBlu
   const [baiIdx, setBaiIdx] = useState(0);
   const dsBai = section.exercises ?? (section.exercise ? [section.exercise] : []);
   const ex = dsBai[Math.min(baiIdx, dsBai.length - 1)];
+  /* Câu chưa làm theo từng bài (08/10, theo chủ dự án): hiện trên thanh chuyển
+     bài và cảnh báo trước khi nộp phần. Phần nói (PO) không có câu để đếm. */
+  const thieuTheoBai = dsBai.map((b) => (b.questions ?? [])
+    .map((q, i) => (daLamCau(q, answers) ? null : i + 1)).filter(Boolean));
+  const tongThieu = section.code === "PO" ? 0 : thieuTheoBai.reduce((n, a) => n + a.length, 0);
+  const [hoiNop, setHoiNop] = useState(false);
+  const nopNgay = () => {
+    if (doneRef.current) return;
+    doneRef.current = true;
+    setHoiNop(false);
+    setDangNop(true);
+    onDone(false);
+  };
 
   /* Đổi bài thì báo lên cha để nó mở `attempt` cho bài mới — bộ đếm lượt nghe
      audio gắn vào từng bài, không gắn vào cả phần. */
@@ -468,9 +486,7 @@ export function PhanThi({ section, attemptId, answers, setAnswers, onDone, onBlu
           <div className="text-xs font-bold uppercase tracking-wide text-primary">{section.code}</div>
           <div className="truncate text-sm font-bold text-ink">{section.label}</div>
           {dsBai.length > 1 && (
-            <div className="mt-0.5 text-xs text-soft">
-              Bài {baiIdx + 1}/{dsBai.length} · dùng chung {section.minutes} phút của phần này
-            </div>
+            <div className="mt-0.5 text-xs text-soft">{dsBai.length} bài · dùng chung {section.minutes} phút</div>
           )}
         </div>
         {onThoat && (
@@ -484,6 +500,34 @@ export function PhanThi({ section, attemptId, answers, setAnswers, onDone, onBlu
           <Clock size={15} /> {dongHo(Math.max(0, conLai))}
         </div>
       </div>
+
+      {/* ── Thanh chuyển bài (làm lại 08/10) ──
+         Mỗi bài một ô: số thứ tự, tên ngắn, « đã làm x/y câu » và thanh tiến độ.
+         Chỉ đi lại TRONG phần này; câu trả lời khoá theo question.id nên chuyển
+         qua lại không mất gì. */}
+      {dsBai.length > 1 && (
+        <nav aria-label="Bài trong phần thi" className="mb-6 grid gap-2" style={{ gridTemplateColumns: `repeat(${Math.min(dsBai.length, 4)}, minmax(0, 1fr))` }}>
+          {dsBai.map((b, j) => {
+            const tong = (b.questions ?? []).length;
+            const lam = tong - thieuTheoBai[j].length;
+            const dang = j === baiIdx;
+            const du = tong > 0 && lam === tong;
+            return (
+              <button key={b.id} type="button" onClick={() => setBaiIdx(j)} aria-current={dang ? "step" : undefined}
+                className={`cursor-pointer rounded-2xl border border-solid p-3 text-left font-sans transition-colors ${dang ? "border-primary bg-primary-soft" : "border-line bg-surface hover:border-primary"}`}>
+                <span className="flex items-center gap-2">
+                  <span className={`grid h-6 w-6 shrink-0 place-items-center rounded-full text-xs font-extrabold ${dang ? "bg-primary text-white" : du ? "bg-ok text-white" : "bg-surface2 text-ink"}`}>{j + 1}</span>
+                  <span className="text-xs font-bold text-ink">Bài {j + 1}</span>
+                  <span className={`ml-auto text-xs font-bold tabular-nums ${du ? "text-ok" : "text-soft"}`}>{tong ? `${lam}/${tong}` : "—"}</span>
+                </span>
+                <span className="mt-2 block h-1.5 overflow-hidden rounded-full bg-surface2">
+                  <span className={`block h-full rounded-full ${du ? "bg-ok" : "bg-primary"}`} style={{ width: tong ? `${(lam / tong) * 100}%` : "0%" }} />
+                </span>
+              </button>
+            );
+          })}
+        </nav>
+      )}
 
       {/* Consigne là HTML, không phải chữ thuần.
          Trình soạn bài (RichTextEditor) sinh ra thẻ — căn giữa, in nghiêng, tô
@@ -639,28 +683,12 @@ export function PhanThi({ section, attemptId, answers, setAnswers, onDone, onBlu
          Câu trả lời nằm ở `answers` của cả buổi thi, khoá theo `question.id`,
          nên đi qua đi lại không mất gì — kể cả khi bài kia đã rời khỏi DOM. */}
       {dsBai.length > 1 && (
-        <div className="mt-8 flex flex-wrap items-center gap-2 rounded-2xl bg-surface2 p-3">
-          <span className="mr-1 text-xs font-bold uppercase tracking-wide text-soft">
-            Bài trong phần này
-          </span>
-          {dsBai.map((b, j) => {
-            /* Đánh dấu bài ĐÃ TRẢ LỜI ÍT NHẤT MỘT CÂU — không đánh dấu "đã xong",
-               vì ta không nói cho học sinh biết họ đã đủ hay chưa: đếm câu còn
-               thiếu trong lúc thi là một dạng gợi ý. */
-            const daDung = (b.questions ?? []).some((q) => answers[q.id] !== undefined);
-            return (
-              <button key={b.id} type="button" onClick={() => setBaiIdx(j)}
-                className={`rounded-full border-0 px-3.5 py-1.5 text-xs font-bold transition ${
-                  j === baiIdx ? "bg-primary text-white"
-                    : daDung ? "bg-surface text-ink" : "bg-surface text-soft"}`}>
-                {j + 1}
-                {daDung && j !== baiIdx && <span className="ml-1 text-ok">•</span>}
-              </button>
-            );
-          })}
-          <span className="ml-auto text-xs text-soft">
-            Nộp một lần cho cả {dsBai.length} bài
-          </span>
+        <div className="mt-8 flex items-center gap-2">
+          <button type="button" disabled={baiIdx === 0} onClick={() => { setBaiIdx(baiIdx - 1); window.scrollTo({ top: 0 }); }}
+            className="h-10 cursor-pointer rounded-full border border-solid border-line bg-surface px-4 font-sans text-sm font-bold text-ink disabled:cursor-not-allowed disabled:opacity-40">← Bài trước</button>
+          <span className="flex-1 text-center text-xs text-soft">Bài {baiIdx + 1}/{dsBai.length}</span>
+          <button type="button" disabled={baiIdx === dsBai.length - 1} onClick={() => { setBaiIdx(baiIdx + 1); window.scrollTo({ top: 0 }); }}
+            className="h-10 cursor-pointer rounded-full border-0 bg-primary-soft px-4 font-sans text-sm font-bold text-primary disabled:cursor-not-allowed disabled:opacity-40">Bài tiếp →</button>
         </div>
       )}
 
@@ -677,16 +705,37 @@ export function PhanThi({ section, attemptId, answers, setAnswers, onDone, onBlu
        * `doneRef` trước đây chỉ được ĐẶT ở đây chứ không được ĐỌC — nó chỉ chặn
        * đồng hồ bắn `onDone` lần nữa, không chặn ngón tay. */}
       <button type="button" disabled={doneRef.current}
-        onClick={() => {
-          if (doneRef.current) return;
-          doneRef.current = true;
-          setDangNop(true);
-          onDone(false);
-        }}
+        onClick={() => { if (doneRef.current) return; if (tongThieu > 0) setHoiNop(true); else nopNgay(); }}
         className="mt-8 rounded-full border-0 bg-primary px-6 py-3 text-sm font-bold text-white shadow-lg
                    disabled:cursor-not-allowed disabled:bg-surface2 disabled:text-soft disabled:shadow-none">
         {dangNop ? "Đang nộp…" : "Terminer cette partie"}
       </button>
+
+      {hoiNop && (
+        <div role="dialog" aria-modal="true" className="fixed inset-0 z-[300] grid place-items-center bg-black/55 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-3xl bg-surface p-6 shadow-2xl">
+            <h2 className="m-0 flex items-center gap-2 text-lg font-extrabold text-ink"><AlertTriangle size={20} className="text-warn" /> Bạn chưa làm xong phần này</h2>
+            <p className="m-0 mt-2 text-sm text-ink">Còn <strong>{tongThieu} câu</strong> chưa trả lời. Nộp rồi thì không quay lại phần này được.</p>
+            <ul className="m-0 mt-3 grid list-none gap-1.5 p-0">
+              {thieuTheoBai.map((ds, j) => ds.length ? (
+                <li key={j}>
+                  <button type="button" onClick={() => { setBaiIdx(j); setHoiNop(false); window.scrollTo({ top: 0 }); }}
+                    className="flex w-full cursor-pointer items-center gap-2 rounded-xl border-0 bg-surface2 px-3 py-2 text-left font-sans text-sm text-ink hover:bg-primary-soft">
+                    <strong>{dsBai.length > 1 ? `Bài ${j + 1}` : "Câu"}</strong>
+                    <span className="min-w-0 flex-1 truncate text-soft">{dsBai.length > 1 ? "câu " : ""}{ds.join(", ")}</span>
+                    <span className="text-xs font-bold text-primary">Đến làm →</span>
+                  </button>
+                </li>
+              ) : null)}
+            </ul>
+            <div className="mt-5 flex flex-wrap justify-end gap-2">
+              <button type="button" onClick={nopNgay} className="h-10 cursor-pointer rounded-full border border-solid border-line bg-surface px-5 font-sans text-sm font-bold text-soft">Vẫn nộp</button>
+              <button type="button" onClick={() => { const k = thieuTheoBai.findIndex((d) => d.length); if (k >= 0) setBaiIdx(k); setHoiNop(false); window.scrollTo({ top: 0 }); }}
+                className="h-10 cursor-pointer rounded-full border-0 bg-primary px-5 font-sans text-sm font-bold text-white">Quay lại làm tiếp</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
