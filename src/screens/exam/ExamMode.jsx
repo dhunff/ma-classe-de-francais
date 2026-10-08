@@ -16,6 +16,7 @@ import { isQuestionAnswered } from "../../shared/questions.js";
    isQuestionAnswered chung đòi căn cứ, dùng thẳng sẽ báo thiếu mọi câu vf. */
 const daLamCau = (q, answers) => (q.type === "vf" ? answers?.[q.id]?.choice != null : isQuestionAnswered(q, answers));
 import { coPhienMayChu } from "../../shared/phienMayChu.js";
+import { tr } from "../../shared/i18n.jsx";
 
 /* Mode Examen — thi thử có tính giờ.
  *
@@ -81,15 +82,15 @@ function ManCho({ dsDe, chon, paper, onStart, dangTai, lamPhanNoi, setLamPhanNoi
   if (!dangTai && dsDe.length === 0) {
     return (
       <div className="mx-auto max-w-2xl py-10">
-        <h1 className="m-0 text-2xl font-extrabold text-ink">Thi thử DELF</h1>
+        <h1 className="m-0 text-2xl font-extrabold text-ink">{tr("Thi thử DELF", "Examen blanc DELF", "DELF mock exam")}</h1>
         <div className="mt-6 rounded-3xl border border-line bg-surface p-8 text-center">
-          <p className="m-0 font-bold text-ink">Chưa có đề thi nào</p>
+          <p className="m-0 font-bold text-ink">{tr("Chưa có đề thi nào", "Aucun sujet pour l'instant", "No exams yet")}</p>
           <p className="m-0 mt-2 text-sm text-soft">
-            Đề thi thử do giáo viên soạn và phát hành. Khi có đề, nó sẽ hiện ở đây.
+            {tr("Đề thi thử do giáo viên soạn và phát hành. Khi có đề, nó sẽ hiện ở đây.", "Les sujets sont préparés et publiés par l'enseignant. Ils apparaîtront ici.", "Mock exams are prepared and published by the teacher. They will show up here.")}
           </p>
         </div>
         <Link to="/etudiant/resultats" className="mt-4 inline-flex items-center gap-2 text-sm font-bold text-primary no-underline">
-          <Trophy size={15} /> Xem kết quả các lần thi trước
+          <Trophy size={15} /> {tr("Xem kết quả các lần thi trước", "Voir mes résultats précédents", "See previous results")}
         </Link>
       </div>
     );
@@ -104,24 +105,24 @@ function ManCho({ dsDe, chon, paper, onStart, dangTai, lamPhanNoi, setLamPhanNoi
       <div className="flex flex-wrap items-center justify-between gap-3">
         <Link to="/etudiant/dashboard"
           className="inline-flex items-center gap-1.5 text-sm font-semibold text-soft no-underline hover:text-ink">
-          <ArrowLeft size={15} /> Về trang chủ
+          <ArrowLeft size={15} /> {tr("Về trang chủ", "Accueil", "Home")}
         </Link>
         {/* « Kết quả thi » không còn ở menu (08/10): vào từ đây. */}
         <Link to="/etudiant/resultats"
           className="inline-flex items-center gap-2 rounded-full border border-solid border-line bg-surface px-4 py-2 text-sm font-bold text-ink no-underline hover:border-primary hover:text-primary">
-          <Trophy size={15} /> Kết quả thi của tôi
+          <Trophy size={15} /> {tr("Kết quả thi của tôi", "Mes résultats", "My results")}
         </Link>
       </div>
 
-      <h1 className="m-0 mt-4 text-2xl font-extrabold text-ink">Thi thử DELF</h1>
+      <h1 className="m-0 mt-4 text-2xl font-extrabold text-ink">{tr("Thi thử DELF", "Examen blanc DELF", "DELF mock exam")}</h1>
       <p className="m-0 mt-2 text-sm text-soft">
-        Một lần duy nhất, có tính giờ, không xem đáp án giữa chừng.
+        {tr("Một lần duy nhất, có tính giờ, không xem đáp án giữa chừng.", "Une seule fois, chronométré, sans voir les réponses en cours.", "One sitting, timed, no answers shown along the way.")}
       </p>
 
       {/* Chọn ĐỀ, không chọn trình độ. Trước đây học sinh chọn B1/B2 rồi máy
           bốc ngẫu nhiên ba bài — chạy được, nhưng không phải một đề thi. Giờ
           mỗi dòng ở đây là một vật phẩm giáo viên đã cân nhắc và phát hành. */}
-      <div role="tablist" aria-label="Trình độ" className="mt-6 flex flex-wrap gap-2">
+      <div role="tablist" aria-label={tr("Trình độ", "Niveau", "Level")} className="mt-6 flex flex-wrap gap-2">
         {nhom.map((g) => (
           <button key={g.level} type="button" role="tab" aria-selected={g.level === tab} onClick={() => setTab(g.level)}
             className={`cursor-pointer rounded-full border border-solid px-4 py-1.5 font-sans text-sm font-bold transition-colors ${
@@ -134,7 +135,7 @@ function ManCho({ dsDe, chon, paper, onStart, dangTai, lamPhanNoi, setLamPhanNoi
       <div className="mt-4 space-y-2">
         {deTab.length === 0 && (
           <p className="m-0 rounded-2xl bg-surface2 px-5 py-4 text-sm text-soft">
-            Chưa có đề {tab} nào được phát hành.
+            {tr("Chưa có đề", "Aucun sujet", "No exam at level")} {tab} {tr("nào được phát hành.", "publié pour ce niveau.", "published yet.")}
           </p>
         )}
         {deTab.map((e) => (
@@ -144,7 +145,7 @@ function ManCho({ dsDe, chon, paper, onStart, dangTai, lamPhanNoi, setLamPhanNoi
             <span className="text-sm font-bold">{e.title}</span>
             <span className={`ml-2 text-xs ${paper?.id === e.id ? "text-white/75" : "text-soft"}`}>
               {/* Đếm KỸ NĂNG, không đếm dòng — một đề 6 bài vẫn là 3 phần. */}
-              {e.level} · {new Set(e.sections.map((s) => s.code)).size} phần
+              {e.level} · {new Set(e.sections.map((s) => s.code)).size} {tr("phần", "parties", "parts")}
               {e.sections.length > 3 ? ` · ${e.sections.length} bài` : ""}
               {` · ${e.duration_min ?? 0}′`}
             </span>
@@ -156,9 +157,9 @@ function ManCho({ dsDe, chon, paper, onStart, dangTai, lamPhanNoi, setLamPhanNoi
         <table className="w-full border-collapse text-sm">
           <thead>
             <tr className="bg-surface2 text-left text-xs uppercase tracking-wide text-soft">
-              <th className="p-3 font-bold">Phần</th>
-              <th className="p-3 font-bold">Thời gian</th>
-              <th className="p-3 font-bold">Điểm</th>
+              <th className="p-3 font-bold">{tr("Phần", "Partie", "Part")}</th>
+              <th className="p-3 font-bold">{tr("Thời gian", "Durée", "Time")}</th>
+              <th className="p-3 font-bold">{tr("Điểm", "Points", "Points")}</th>
               <th className="p-3 font-bold">Bài</th>
             </tr>
           </thead>
@@ -178,13 +179,13 @@ function ManCho({ dsDe, chon, paper, onStart, dangTai, lamPhanNoi, setLamPhanNoi
                       y hệt đề một bài. */}
                   <td className="p-3">
                     {co.length === 0
-                      ? <span className="font-bold text-danger">chưa có bài</span>
+                      ? <span className="font-bold text-danger">{tr("chưa có bài", "pas d'exercice", "no exercise")}</span>
                       : (
                         <span className="text-soft">
                           {co.length > 1 && (
                             <strong className="text-ink">{co.length} bài · </strong>
                           )}
-                          {co.map((s) => s.exercise?.title ?? "(không mở được)")
+                          {co.map((s) => s.exercise?.title ?? tr("(không mở được)", "(inaccessible)", "(unavailable)"))
                             .join(" · ").slice(0, 46)}
                         </span>
                       )}
@@ -208,8 +209,7 @@ function ManCho({ dsDe, chon, paper, onStart, dangTai, lamPhanNoi, setLamPhanNoi
         <p className="m-0 mt-4 flex items-start gap-2 rounded-xl bg-surface2 p-3 text-xs text-soft">
           <AlertTriangle size={14} className="mt-0.5 shrink-0" />
           <span>
-            Đề này <strong className="text-ink">không có phần thi nói (PO)</strong>, vốn chiếm
-            25/100 điểm kỳ thi thật. Kết quả dưới đây chỉ phản ánh ba phần còn lại.
+            {tr("Đề này", "Ce sujet", "This exam")} <strong className="text-ink">{tr("không có phần thi nói (PO)", "n'a pas de production orale (PO)", "has no speaking part (PO)")}</strong>{tr(", vốn chiếm 25/100 điểm kỳ thi thật. Kết quả dưới đây chỉ phản ánh ba phần còn lại.", ", qui vaut 25/100 à l'examen réel. Le résultat ne reflète que les trois autres parties.", ", worth 25/100 in the real exam. The result only reflects the other three parts.")}
           </span>
         </p>
       )}
@@ -223,9 +223,7 @@ function ManCho({ dsDe, chon, paper, onStart, dangTai, lamPhanNoi, setLamPhanNoi
               câu hỏi), hoặc bài vừa bị xoá. Nói đúng nguyên nhân, vì hai
               trường hợp đó cần hai hành động khác nhau. */}
           <span>
-            Không mở được phần <strong>{paper.missing.map((m) => m.code).join(", ")}</strong> của đề
-            này — bài tương ứng có thể là bài trả phí bạn chưa có quyền, hoặc đã bị gỡ.
-            Báo giáo viên; điểm phần đó sẽ không tính được.
+            {tr("Không mở được phần", "Impossible d'ouvrir la partie", "Couldn't open part")} <strong>{paper.missing.map((m) => m.code).join(", ")}</strong> {tr("của đề này — bài tương ứng có thể là bài trả phí bạn chưa có quyền, hoặc đã bị gỡ. Báo giáo viên; điểm phần đó sẽ không tính được.", "de ce sujet : l'exercice est peut-être payant ou a été retiré. Prévenez l'enseignant ; cette partie ne pourra pas être notée.", "of this exam: the exercise may be paid or removed. Tell your teacher; this part can't be scored.")}
           </span>
         </p>
       )}
@@ -241,10 +239,9 @@ function ManCho({ dsDe, chon, paper, onStart, dangTai, lamPhanNoi, setLamPhanNoi
           <input type="checkbox" checked={lamPhanNoi}
             onChange={(e) => setLamPhanNoi(e.target.checked)} className="mt-1" />
           <span>
-            <strong>Làm cả phần thi nói (PO)</strong> — thêm {phutPhanNoi} phút.
+            <strong>{tr("Làm cả phần thi nói (PO)", "Faire aussi la production orale (PO)", "Also do the speaking part (PO)")}</strong> {tr("— thêm", "— en plus", "— adds")} {phutPhanNoi} phút.
             <span className="mt-1 block text-xs text-soft">
-              Phần này không được chấm điểm: bạn ghi âm để tự nghe lại. Bỏ chọn
-              thì buổi thi chỉ còn ba phần, và tổng điểm không đổi.
+              {tr("Phần này không được chấm điểm: bạn ghi âm để tự nghe lại. Bỏ chọn thì buổi thi chỉ còn ba phần, và tổng điểm không đổi.", "Cette partie n'est pas notée : vous vous enregistrez pour vous réécouter. Sans elle, l'examen a trois parties et le total ne change pas.", "This part isn't scored: you record yourself to listen back. Without it the exam has three parts and the total doesn't change.")}
             </span>
           </span>
         </label>
@@ -261,16 +258,14 @@ function ManCho({ dsDe, chon, paper, onStart, dangTai, lamPhanNoi, setLamPhanNoi
         <div className="mt-6 rounded-2xl bg-danger-soft p-4">
           <p className="m-0 flex items-start gap-2 text-sm font-bold text-ink">
             <AlertTriangle size={16} className="mt-0.5 shrink-0 text-danger" />
-            Phiên đăng nhập không còn hiệu lực với máy chủ.
+            {tr("Phiên đăng nhập không còn hiệu lực với máy chủ.", "Votre session n'est plus valide sur le serveur.", "Your session is no longer valid on the server.")}
           </p>
           <p className="m-0 mt-2 text-xs leading-relaxed text-ink">
-            Trình duyệt vẫn nhớ tên bạn, nhưng máy chủ thì không — nên bài làm và
-            bản ghi âm sẽ KHÔNG được lưu, dù màn hình vẫn hiện điểm. Đăng nhập
-            lại rồi quay lại đây; đề vẫn còn nguyên.
+            {tr("Trình duyệt vẫn nhớ tên bạn, nhưng máy chủ thì không — nên bài làm và bản ghi âm sẽ KHÔNG được lưu, dù màn hình vẫn hiện điểm. Đăng nhập lại rồi quay lại đây; đề vẫn còn nguyên.", "Le navigateur se souvient de vous, mais pas le serveur : vos réponses et enregistrements NE seront PAS sauvegardés. Reconnectez-vous puis revenez ; le sujet est toujours là.", "Your browser remembers you but the server doesn't, so answers and recordings will NOT be saved. Sign in again and come back; the exam is still here.")}
           </p>
           <a href="/login"
             className="mt-3 inline-block rounded-full bg-primary px-5 py-2 text-sm font-bold text-white no-underline">
-            Đăng nhập lại
+            {tr("Đăng nhập lại", "Se reconnecter", "Sign in again")}
           </a>
         </div>
       )}
@@ -279,8 +274,7 @@ function ManCho({ dsDe, chon, paper, onStart, dangTai, lamPhanNoi, setLamPhanNoi
         <input type="checkbox" checked={sanSang} onChange={(e) => setSanSang(e.target.checked)}
           className="mt-1" />
         <span>
-          Tôi có <strong>{tongPhut} phút liên tục</strong> và sẽ không rời khỏi bài thi.
-          Đồng hồ chạy liên tục kể cả khi đóng tab.
+          {tr("Tôi có", "J'ai", "I have")} <strong>{tongPhut} {tr("phút liên tục", "minutes sans interruption", "uninterrupted minutes")}</strong> {tr("và sẽ không rời khỏi bài thi. Đồng hồ chạy liên tục kể cả khi đóng tab.", "et je ne quitterai pas l'examen. Le chronomètre continue même si l'onglet est fermé.", "and will not leave the exam. The timer keeps running even if the tab is closed.")}
         </span>
       </label>
 
@@ -290,17 +284,17 @@ function ManCho({ dsDe, chon, paper, onStart, dangTai, lamPhanNoi, setLamPhanNoi
         className="mt-6 inline-flex items-center gap-2 rounded-full border-0 bg-primary px-6 py-3 text-sm font-bold text-white shadow-lg transition enabled:hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-40">
         {/* Nút mờ đi mà không nói vì sao là một cánh cửa khoá không biển
             báo. Ba lý do khoá, ba câu khác nhau. */}
-        <Timer size={16} /> {dangTai ? "Đang tải đề…"
-          : phienThuc === null ? "Đang kiểm phiên đăng nhập…"
-          : phienThuc === false ? "Cần đăng nhập lại"
-          : "Bắt đầu thi"}
+        <Timer size={16} /> {dangTai ? tr("Đang tải đề…", "Chargement du sujet…", "Loading exam…")
+          : phienThuc === null ? tr("Đang kiểm phiên đăng nhập…", "Vérification de la session…", "Checking your session…")
+          : phienThuc === false ? tr("Cần đăng nhập lại", "Reconnexion nécessaire", "Sign-in required")
+          : tr("Bắt đầu thi", "Commencer l'examen", "Start the exam")}
       </button>
       {luot?.vip && (
-        <p className="m-0 mt-3 text-xs font-bold text-warn">VIP: không giới hạn lượt thi thử.</p>
+        <p className="m-0 mt-3 text-xs font-bold text-warn">{tr("VIP: không giới hạn lượt thi thử.", "VIP : examens blancs illimités.", "VIP: unlimited mock exams.")}</p>
       )}
       {luot && !luot.khong_gioi_han && (
         <p className="m-0 mt-3 text-xs text-soft">
-          Hôm nay còn {Math.max(0, luot.gioi_han - luot.da_dung)}/{luot.gioi_han} lượt thi. Lượt mới vào 0 giờ (giờ Việt Nam).
+          {tr("Hôm nay còn", "Il reste aujourd'hui", "Left today:")} {Math.max(0, luot.gioi_han - luot.da_dung)}/{luot.gioi_han} {tr("lượt thi. Lượt mới vào 0 giờ (giờ Việt Nam).", "essai(s). Nouveaux essais à minuit (heure du Vietnam).", "attempts. New attempts at midnight (Vietnam time).")}
         </p>
       )}
       {moHop && (
@@ -367,14 +361,14 @@ function AudioGioiHan({ src, attemptId, questionId, luot = 2 }) {
       } else {
         setConLai(0);
         setLoi(data?.reason === "limit"
-          ? (luot === 1 ? "Bạn đã phát bài nghe này rồi." : "Bạn đã dùng hết 2 lượt nghe cho phần này.")
-          : "Không ghi nhận được lượt nghe.");
+          ? (luot === 1 ? tr("Bạn đã phát bài nghe này rồi.", "Vous avez déjà écouté ce document.", "You've already played this audio.") : tr("Bạn đã dùng hết 2 lượt nghe cho phần này.", "Vous avez utilisé vos 2 écoutes.", "You've used both plays."))
+          : tr("Không ghi nhận được lượt nghe.", "Écoute non enregistrée.", "Play wasn't recorded."));
       }
     } catch (e) {
       /* Không đếm được thì KHÔNG cho phát. Hướng an toàn ở đây là chặn: cho
          phát khi mất kết nối là mở đúng đường vòng mà cả migration 024 sinh ra
          để bịt — ngắt mạng một giây là nghe không giới hạn. */
-      setLoi("Không kết nối được máy chủ, chưa phát được. Thử lại sau giây lát.");
+      setLoi(tr("Không kết nối được máy chủ, chưa phát được. Thử lại sau giây lát.", "Serveur injoignable, lecture impossible. Réessayez dans un instant.", "Can't reach the server, can't play. Try again shortly."));
       console.warn("[exam] exam_play_audio hỏng:", e?.message ?? e);
     } finally {
       setDangXin(false);
@@ -389,18 +383,17 @@ function AudioGioiHan({ src, attemptId, questionId, luot = 2 }) {
       <div className="flex flex-wrap items-center gap-3">
         <button type="button" onClick={phat} disabled={het || dangXin || chuaSanSang}
           className="inline-flex items-center gap-2 rounded-full border-0 bg-primary px-5 py-2.5 text-sm font-bold text-white transition enabled:hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-40">
-          <Volume2 size={15} /> {chuaSanSang ? "Đang mở bài thi…" : dangXin ? "…" : het ? "Hết lượt nghe" : "Phát"}
+          <Volume2 size={15} /> {chuaSanSang ? "Đang mở bài thi…" : dangXin ? "…" : het ? tr("Hết lượt nghe", "Plus d'écoute", "No plays left") : "Phát"}
         </button>
         <span className="text-xs text-soft">
           {luot === 1
-            ? (conLai === 0 ? "Đã phát" : "Phát một lần duy nhất")
-            : conLai === null ? "2 lượt nghe" : `Còn ${conLai} lượt`}
+            ? (conLai === 0 ? tr("Đã phát", "Écouté", "Played") : tr("Phát một lần duy nhất", "Une seule lecture", "Plays once only"))
+            : conLai === null ? tr("2 lượt nghe", "2 écoutes", "2 plays") : `Còn ${conLai} lượt`}
         </span>
       </div>
       {luot === 1 && (
         <p className="m-0 mt-2 text-xs leading-relaxed text-soft">
-          Như phòng thi thật: file gồm thời gian đọc câu hỏi, lượt nghe 1, khoảng nghỉ, lượt nghe 2 và thời gian
-          hoàn thành câu trả lời. Bấm phát một lần rồi để chạy hết, không tạm dừng được.
+          {tr("Như phòng thi thật: file gồm thời gian đọc câu hỏi, lượt nghe 1, khoảng nghỉ, lượt nghe 2 và thời gian hoàn thành câu trả lời. Bấm phát một lần rồi để chạy hết, không tạm dừng được.", "Comme à l'examen : l'enregistrement contient le temps de lecture des questions, la 1re écoute, une pause, la 2e écoute et le temps pour compléter. Lancez-le une fois et laissez-le jusqu'au bout, sans pause.", "Like the real exam: the recording includes question-reading time, 1st listening, a pause, 2nd listening and time to finish. Play it once and let it run, no pausing.")}
         </p>
       )}
       {loi && <p className="m-0 mt-2 text-xs font-semibold text-danger">{loi}</p>}
@@ -509,7 +502,7 @@ export function PhanThi({ section, attemptId, answers, setAnswers, onDone, onBlu
          Chỉ đi lại TRONG phần này; câu trả lời khoá theo question.id nên chuyển
          qua lại không mất gì. */}
       {dsBai.length > 1 && (
-        <nav aria-label="Bài trong phần thi" className="mb-6 grid gap-2" style={{ gridTemplateColumns: `repeat(${Math.min(dsBai.length, 4)}, minmax(0, 1fr))` }}>
+        <nav aria-label={tr("Bài trong phần thi", "Exercices de la partie", "Exercises in this part")} className="mb-6 grid gap-2" style={{ gridTemplateColumns: `repeat(${Math.min(dsBai.length, 4)}, minmax(0, 1fr))` }}>
           {dsBai.map((b, j) => {
             const tong = (b.questions ?? []).length;
             const lam = tong - thieuTheoBai[j].length;
@@ -558,7 +551,7 @@ export function PhanThi({ section, attemptId, answers, setAnswers, onDone, onBlu
          sinh mất điểm vì một thứ không phải lỗi của họ. */}
       {ex.imageUrl && (
         <figure className="m-0 mb-6">
-          <img src={ex.imageUrl} alt="Document de l'exercice" loading="lazy"
+          <img src={ex.imageUrl} alt={tr("Tài liệu của bài", "Document de l'exercice", "Exercise document")} loading="lazy"
             className="mx-auto block w-full max-w-3xl rounded-2xl border border-line object-contain" />
         </figure>
       )}
@@ -600,7 +593,7 @@ export function PhanThi({ section, attemptId, answers, setAnswers, onDone, onBlu
 
             {(q.type === "fill" || q.type === "conj") && (
               <input value={answers[q.id] ?? ""} onChange={(e) => dat(q.id, e.target.value)}
-                placeholder="Réponse…"
+                placeholder={tr("Câu trả lời…", "Réponse…", "Answer…")}
                 className="mt-3 w-full max-w-sm rounded-xl border border-line bg-surface2 px-4 py-2.5 text-sm text-ink" />
             )}
 
@@ -621,7 +614,7 @@ export function PhanThi({ section, attemptId, answers, setAnswers, onDone, onBlu
               <>
                 <textarea rows={10} value={answers[q.id] ?? ""}
                   onChange={(e) => dat(q.id, e.target.value)}
-                  placeholder="Votre texte…"
+                  placeholder={tr("Bài viết của bạn…", "Votre texte…", "Your text…")}
                   className="mt-3 w-full rounded-xl border border-line bg-surface2 p-4 text-sm leading-relaxed text-ink" />
                 <div className="mt-1 text-xs text-soft">
                   {String(answers[q.id] ?? "").trim().split(/\s+/).filter(Boolean).length} mots
@@ -688,10 +681,10 @@ export function PhanThi({ section, attemptId, answers, setAnswers, onDone, onBlu
       {dsBai.length > 1 && (
         <div className="mt-8 flex items-center gap-2">
           <button type="button" disabled={baiIdx === 0} onClick={() => { setBaiIdx(baiIdx - 1); window.scrollTo({ top: 0 }); }}
-            className="h-10 cursor-pointer rounded-full border border-solid border-line bg-surface px-4 font-sans text-sm font-bold text-ink disabled:cursor-not-allowed disabled:opacity-40">← Bài trước</button>
+            className="h-10 cursor-pointer rounded-full border border-solid border-line bg-surface px-4 font-sans text-sm font-bold text-ink disabled:cursor-not-allowed disabled:opacity-40">{tr("← Bài trước", "← Exercice précédent", "← Previous exercise")}</button>
           <span className="flex-1 text-center text-xs text-soft">Bài {baiIdx + 1}/{dsBai.length}</span>
           <button type="button" disabled={baiIdx === dsBai.length - 1} onClick={() => { setBaiIdx(baiIdx + 1); window.scrollTo({ top: 0 }); }}
-            className="h-10 cursor-pointer rounded-full border-0 bg-primary-soft px-4 font-sans text-sm font-bold text-primary disabled:cursor-not-allowed disabled:opacity-40">Bài tiếp →</button>
+            className="h-10 cursor-pointer rounded-full border-0 bg-primary-soft px-4 font-sans text-sm font-bold text-primary disabled:cursor-not-allowed disabled:opacity-40">{tr("Bài tiếp →", "Exercice suivant →", "Next exercise →")}</button>
         </div>
       )}
 
@@ -711,30 +704,30 @@ export function PhanThi({ section, attemptId, answers, setAnswers, onDone, onBlu
         onClick={() => { if (doneRef.current) return; if (tongThieu > 0) setHoiNop(true); else nopNgay(); }}
         className="mt-8 rounded-full border-0 bg-primary px-6 py-3 text-sm font-bold text-white shadow-lg
                    disabled:cursor-not-allowed disabled:bg-surface2 disabled:text-soft disabled:shadow-none">
-        {dangNop ? "Đang nộp…" : "Terminer cette partie"}
+        {dangNop ? tr("Đang nộp…", "Envoi…", "Submitting…") : tr("Nộp phần này", "Terminer cette partie", "Finish this part")}
       </button>
 
       {hoiNop && (
         <div role="dialog" aria-modal="true" className="fixed inset-0 z-[300] grid place-items-center bg-black/55 p-4 backdrop-blur-sm">
           <div className="w-full max-w-md rounded-3xl bg-surface p-6 shadow-2xl">
-            <h2 className="m-0 flex items-center gap-2 text-lg font-extrabold text-ink"><AlertTriangle size={20} className="text-warn" /> Bạn chưa làm xong phần này</h2>
-            <p className="m-0 mt-2 text-sm text-ink">Còn <strong>{tongThieu} câu</strong> chưa trả lời. Nộp rồi thì không quay lại phần này được.</p>
+            <h2 className="m-0 flex items-center gap-2 text-lg font-extrabold text-ink"><AlertTriangle size={20} className="text-warn" /> {tr("Bạn chưa làm xong phần này", "Vous n'avez pas terminé cette partie", "You haven't finished this part")}</h2>
+            <p className="m-0 mt-2 text-sm text-ink">Còn <strong>{tongThieu} {tr("câu", "question(s)", "question(s)")}</strong> {tr("chưa trả lời. Nộp rồi thì không quay lại phần này được.", "sans réponse. Une fois rendue, vous ne pourrez plus revenir.", "unanswered. Once submitted you can't come back.")}</p>
             <ul className="m-0 mt-3 grid list-none gap-1.5 p-0">
               {thieuTheoBai.map((ds, j) => ds.length ? (
                 <li key={j}>
                   <button type="button" onClick={() => { setBaiIdx(j); setHoiNop(false); window.scrollTo({ top: 0 }); }}
                     className="flex w-full cursor-pointer items-center gap-2 rounded-xl border-0 bg-surface2 px-3 py-2 text-left font-sans text-sm text-ink hover:bg-primary-soft">
-                    <strong>{dsBai.length > 1 ? `Bài ${j + 1}` : "Câu"}</strong>
-                    <span className="min-w-0 flex-1 truncate text-soft">{dsBai.length > 1 ? "câu " : ""}{ds.join(", ")}</span>
-                    <span className="text-xs font-bold text-primary">Đến làm →</span>
+                    <strong>{dsBai.length > 1 ? `Bài ${j + 1}` : tr("Câu", "Question", "Question")}</strong>
+                    <span className="min-w-0 flex-1 truncate text-soft">{dsBai.length > 1 ? tr("câu ", "questions ", "questions ") : ""}{ds.join(", ")}</span>
+                    <span className="text-xs font-bold text-primary">{tr("Đến làm →", "Y aller →", "Go →")}</span>
                   </button>
                 </li>
               ) : null)}
             </ul>
             <div className="mt-5 flex flex-wrap justify-end gap-2">
-              <button type="button" onClick={nopNgay} className="h-10 cursor-pointer rounded-full border border-solid border-line bg-surface px-5 font-sans text-sm font-bold text-soft">Vẫn nộp</button>
+              <button type="button" onClick={nopNgay} className="h-10 cursor-pointer rounded-full border border-solid border-line bg-surface px-5 font-sans text-sm font-bold text-soft">{tr("Vẫn nộp", "Rendre quand même", "Submit anyway")}</button>
               <button type="button" onClick={() => { const k = thieuTheoBai.findIndex((d) => d.length); if (k >= 0) setBaiIdx(k); setHoiNop(false); window.scrollTo({ top: 0 }); }}
-                className="h-10 cursor-pointer rounded-full border-0 bg-primary px-5 font-sans text-sm font-bold text-white">Quay lại làm tiếp</button>
+                className="h-10 cursor-pointer rounded-full border-0 bg-primary px-5 font-sans text-sm font-bold text-white">{tr("Quay lại làm tiếp", "Reprendre", "Go back")}</button>
             </div>
           </div>
         </div>
@@ -768,7 +761,7 @@ function KetQua({ sections, blurCount, onLai }) {
         <div className="mt-2 text-sm font-bold text-ink">
           {v.passed === true && "Đạt"}
           {v.passed === false && "Chưa đạt"}
-          {v.passed === null && "Chưa kết luận được"}
+          {v.passed === null && tr("Chưa kết luận được", "Résultat non conclu", "No verdict yet")}
         </div>
 
         {/* Chưa chấm hết thì KHÔNG đoán. Nói "bạn đạt rồi" dựa trên hai phần ba
@@ -780,9 +773,7 @@ function KetQua({ sections, blurCount, onLai }) {
             đang chờ. Nói thẳng ai sẽ chấm, và chấm ở đâu. */}
         {v.passed === null && (
           <p className="m-0 mt-2 text-xs text-soft">
-            Còn {v.pending.map((p) => p.code).join(", ")} chưa có điểm. Máy không
-            chấm được bài viết, và đoán thay thì con số mất hết ý nghĩa — bạn tự
-            chấm phần đó theo thang DELF ở « Kết quả thi ».
+            Còn {v.pending.map((p) => p.code).join(", ")} {tr("chưa có điểm. Máy không chấm được bài viết, và đoán thay thì con số mất hết ý nghĩa — bạn tự chấm phần đó theo thang DELF ở « Kết quả thi ».", "n'a pas de note. La correction s'affiche dans « Mes résultats ».", "has no score yet. Grading appears in « My results ».")}
           </p>
         )}
       </div>
@@ -790,16 +781,13 @@ function KetQua({ sections, blurCount, onLai }) {
       {mat && (
         <div className="mt-5 rounded-2xl border border-solid border-danger bg-danger-soft p-4">
           <p className="m-0 text-sm font-bold text-danger">
-            ⚠️ Kết quả này CHƯA được lưu lên máy chủ.
+            {tr("⚠️ Kết quả này CHƯA được lưu lên máy chủ.", "⚠️ Ce résultat N'EST PAS enregistré sur le serveur.", "⚠️ This result is NOT saved on the server.")}
           </p>
           <p className="m-0 mt-1 text-xs font-semibold text-danger">
-            Máy chủ không nhận ra bạn là ai — nhiều khả năng phiên đăng nhập đã
-            hết hạn. Điểm ở đây chỉ nằm trong trình duyệt và sẽ mất khi bạn tải
-            lại trang; buổi thi này cũng sẽ không hiện ở « Kết quả thi ».
+            {tr("Máy chủ không nhận ra bạn là ai — nhiều khả năng phiên đăng nhập đã hết hạn. Điểm ở đây chỉ nằm trong trình duyệt và sẽ mất khi bạn tải lại trang; buổi thi này cũng sẽ không hiện ở « Kết quả thi ».", "Le serveur ne vous reconnaît pas, votre session a sans doute expiré. Ces notes ne sont que dans le navigateur et disparaîtront au rechargement.", "The server doesn't recognise you; your session probably expired. These scores live only in the browser and vanish on reload.")}
           </p>
           <p className="m-0 mt-1 text-xs text-danger">
-            Đăng nhập lại rồi thi lại. Đừng đóng tab trước khi chép lại điểm nếu
-            bạn cần.
+            {tr("Đăng nhập lại rồi thi lại. Đừng đóng tab trước khi chép lại điểm nếu bạn cần.", "Reconnectez-vous et recommencez. Notez vos résultats avant de fermer l'onglet.", "Sign in again and retake it. Note your scores before closing the tab.")}
           </p>
         </div>
       )}
@@ -822,7 +810,7 @@ function KetQua({ sections, blurCount, onLai }) {
                 </div>
                 {yeu && (
                   <div className="mt-1 text-xs font-bold text-danger">
-                    Dưới {NGUONG_PHAN}/25 — riêng phần này đã đủ làm trượt cả bài.
+                    Dưới {NGUONG_PHAN}{tr("/25 — riêng phần này đã đủ làm trượt cả bài.", "/25 — cette partie suffit à faire échouer l'examen.", "/25 — this part alone fails the exam.")}
                   </div>
                 )}
               </div>
@@ -830,7 +818,7 @@ function KetQua({ sections, blurCount, onLai }) {
                 {/* « chờ chấm » nói rằng có ai đó sắp chấm. Không còn ai —
                     xem chú thích ở khối kết luận phía trên. */}
                 {s.score == null
-                  ? <span className="text-xs font-bold text-warn">chưa chấm</span>
+                  ? <span className="text-xs font-bold text-warn">{tr("chưa chấm", "non noté", "not graded")}</span>
                   : <span className="text-lg font-extrabold tabular-nums text-ink">
                       {s.score}<span className="text-xs text-soft">/{s.points}</span>
                     </span>}
@@ -845,26 +833,24 @@ function KetQua({ sections, blurCount, onLai }) {
         <ShieldCheck size={13} className="mt-0.5 shrink-0" />
         <span>
           Đạt DELF cần <strong className="text-ink">≥ {NGUONG_TONG}/100 toàn bài</strong> VÀ{" "}
-          <strong className="text-ink">≥ {NGUONG_PHAN}/25 ở mỗi phần</strong>. Người ta thường
-          trượt vì một kỹ năng yếu hẳn, chứ hiếm khi vì tổng điểm.
+          <strong className="text-ink">≥ {NGUONG_PHAN}{tr("/25 ở mỗi phần", "/25 dans chaque partie", "/25 in each part")}</strong>{tr(". Người ta thường trượt vì một kỹ năng yếu hẳn, chứ hiếm khi vì tổng điểm.", ". On échoue souvent à cause d'une compétence faible, rarement à cause du total.", ". People usually fail because of one weak skill, rarely because of the total.")}
         </span>
       </p>
 
       {blurCount > 0 && (
         <p className="m-0 mt-3 text-xs text-soft">
-          Bạn rời khỏi tab {blurCount} lần trong lúc thi. Không bị trừ điểm — chỉ để bạn biết,
-          vì phòng thi thật thì không rời được.
+          {tr("Bạn rời khỏi tab", "Vous avez quitté l'onglet", "You left the tab")} {blurCount} {tr("lần trong lúc thi. Không bị trừ điểm — chỉ để bạn biết, vì phòng thi thật thì không rời được.", "fois pendant l'examen. Pas de pénalité, c'est pour information : en vrai, on ne peut pas sortir.", "times during the exam. No penalty — just so you know; in a real exam room you can't leave.")}
         </p>
       )}
 
       <div className="mt-7 flex flex-wrap gap-3">
         <button type="button" onClick={onLai}
           className="rounded-full border-0 bg-primary px-6 py-3 text-sm font-bold text-white shadow-lg">
-          Thi đề khác
+          {tr("Thi đề khác", "Passer un autre sujet", "Take another exam")}
         </button>
         <Link to="/etudiant/dashboard"
           className="rounded-full px-5 py-3 text-sm font-semibold text-soft no-underline hover:text-ink">
-          Về trang chủ
+          {tr("Về trang chủ", "Accueil", "Home")}
         </Link>
       </div>
     </div>
@@ -945,7 +931,7 @@ export default function ExamMode() {
     setDangTai(true);
     const de = await loadExam(id);
     setDangTai(false);
-    if (!de) { alert("Không mở được đề này."); return; }
+    if (!de) { alert(tr("Không mở được đề này.", "Impossible d'ouvrir ce sujet.", "Couldn't open this exam.")); return; }
     setPaper(de);
   };
 
@@ -953,10 +939,10 @@ export default function ExamMode() {
      bị trừ ở máy chủ ngay đây; không có lượt thì không vào được bài. */
   const batDau = async () => {
     const { data, error } = await supabase.rpc("bat_dau_thi", { p_exam_id: paper?.id ?? null });
-    if (error) return "Không kết nối được máy chủ, chưa mở được bài thi. Thử lại sau giây lát.";
+    if (error) return tr("Không kết nối được máy chủ, chưa mở được bài thi. Thử lại sau giây lát.", "Serveur injoignable, examen non ouvert. Réessayez dans un instant.", "Can't reach the server; exam not opened. Try again shortly.");
     if (!data?.ok) return data?.ma === "HET_LUOT"
-      ? "Bạn đã dùng hết 2 lượt thi hôm nay. Hãy quay lại vào ngày mai."
-      : "Không mở được bài thi. Hãy đăng nhập lại.";
+      ? tr("Bạn đã dùng hết 2 lượt thi hôm nay. Hãy quay lại vào ngày mai.", "Vous avez utilisé vos 2 essais d'aujourd'hui. Revenez demain.", "You've used today's 2 attempts. Come back tomorrow.")
+      : tr("Không mở được bài thi. Hãy đăng nhập lại.", "Impossible d'ouvrir l'examen. Reconnectez-vous.", "Couldn't open the exam. Please sign in again.");
     luotId.current = data.luot_id;
     setAnswers({}); setKetQua([]); setBlurCount(0); setIdx(0);
     setBaiHienTai(null); attemptTheoBai.current = {};

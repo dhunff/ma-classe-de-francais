@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Award, CheckCircle2, AlertCircle, Quote, ListChecks, PenLine, ChevronDown } from "lucide-react";
 import { docGoiYAI } from "../../shared/chamPeAI.js";
+import { tr } from "../../shared/i18n.jsx";
 
 /* Phiếu nhận xét của giám khảo AI (08/10).
  *
@@ -39,8 +40,8 @@ function TieuChi({ c, t }) {
       {mo && (
         <div className="grid gap-2 border-0 border-t border-solid border-line px-3 py-3 text-[13px] leading-relaxed">
           {t.nhan_xet && <p className="m-0 text-ink">{t.nhan_xet}</p>}
-          {t.diem_manh && <p className="m-0 flex gap-2 text-ink"><CheckCircle2 size={14} className="mt-0.5 shrink-0 text-ok" /><span><strong className="text-ok">Điểm mạnh.</strong> {t.diem_manh}</span></p>}
-          {t.can_cai_thien && <p className="m-0 flex gap-2 text-ink"><AlertCircle size={14} className="mt-0.5 shrink-0 text-warn" /><span><strong className="text-warn">Cần cải thiện.</strong> {t.can_cai_thien}</span></p>}
+          {t.diem_manh && <p className="m-0 flex gap-2 text-ink"><CheckCircle2 size={14} className="mt-0.5 shrink-0 text-ok" /><span><strong className="text-ok">{tr("Điểm mạnh.", "Points forts.", "Strengths.")}</strong> {t.diem_manh}</span></p>}
+          {t.can_cai_thien && <p className="m-0 flex gap-2 text-ink"><AlertCircle size={14} className="mt-0.5 shrink-0 text-warn" /><span><strong className="text-warn">{tr("Cần cải thiện.", "À améliorer.", "To improve.")}</strong> {t.can_cai_thien}</span></p>}
           {t.trich_dan && <p className="m-0 flex gap-2 rounded-lg bg-surface2 px-2.5 py-2 italic text-soft"><Quote size={13} className="mt-0.5 shrink-0" />« {t.trich_dan} »</p>}
         </div>
       )}
@@ -57,7 +58,7 @@ export default function NhanXetAI({ answerId, rubric, level, feedback, mau }) {
   }, [answerId, mau]);
 
   const g = d?.goiY;
-  if (d === undefined) return <p className="m-0 text-xs text-soft">Đang tải nhận xét…</p>;
+  if (d === undefined) return <p className="m-0 text-xs text-soft">{tr("Đang tải nhận xét…", "Chargement de l'évaluation…", "Loading feedback…")}</p>;
   if (!g) {
     return feedback ? <p className="m-0 whitespace-pre-line rounded-lg bg-surface p-3 text-xs leading-relaxed text-ink">{feedback}</p> : null;
   }
@@ -67,8 +68,8 @@ export default function NhanXetAI({ answerId, rubric, level, feedback, mau }) {
       <header className="flex items-center gap-3 border-0 border-b border-solid border-line bg-primary-soft/50 px-4 py-3">
         <span className="grid h-9 w-9 place-items-center rounded-xl bg-primary text-white"><Award size={18} /></span>
         <div className="min-w-0 flex-1">
-          <p className="m-0 text-sm font-extrabold text-ink">Phiếu nhận xét · DELF {level}</p>
-          <p className="m-0 text-[11px] text-soft">Giám khảo AI chấm theo grille chính thức · {d.model}</p>
+          <p className="m-0 text-sm font-extrabold text-ink">{tr("Phiếu nhận xét · DELF", "Fiche d'évaluation · DELF", "Assessment sheet · DELF")} {level}</p>
+          <p className="m-0 text-[11px] text-soft">{tr("Giám khảo AI chấm theo grille chính thức ·", "Correcteur IA, grille officielle ·", "AI examiner, official grid ·")} {d.model}</p>
         </div>
         <span className="text-xl font-extrabold tabular-nums text-ink">{g.tong}<span className="text-sm text-soft">/{g.tong_toi_da}</span></span>
       </header>
@@ -82,18 +83,18 @@ export default function NhanXetAI({ answerId, rubric, level, feedback, mau }) {
         )}
 
         <div>
-          <p className="m-0 mb-2 text-[11px] font-bold uppercase tracking-wide text-soft">Điểm theo tiêu chí · bấm để xem chi tiết</p>
+          <p className="m-0 mb-2 text-[11px] font-bold uppercase tracking-wide text-soft">{tr("Điểm theo tiêu chí · bấm để xem chi tiết", "Note par critère · cliquez pour le détail", "Score per criterion · click for details")}</p>
           <ul className="m-0 grid list-none gap-1.5 p-0">
             {tc.map((c) => <TieuChi key={c.id} c={c} t={g.tieu_chi[c.id]} />)}
           </ul>
           {g.so_cham_duoc < g.so_tieu_chi && (
-            <p className="m-0 mt-2 text-xs text-warn">{g.so_tieu_chi - g.so_cham_duoc} tiêu chí AI không chấm được.</p>
+            <p className="m-0 mt-2 text-xs text-warn">{g.so_tieu_chi - g.so_cham_duoc} {tr("tiêu chí AI không chấm được.", "critère(s) non évalué(s) par l'IA.", "criteria the AI could not score.")}</p>
           )}
         </div>
 
         {g.uu_tien?.length > 0 && (
           <div className="rounded-xl bg-warn-soft p-3">
-            <p className="m-0 mb-1.5 flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-wide text-warn"><ListChecks size={14} /> Ưu tiên sửa để lên điểm</p>
+            <p className="m-0 mb-1.5 flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-wide text-warn"><ListChecks size={14} /> {tr("Ưu tiên sửa để lên điểm", "Priorités pour gagner des points", "Priorities to gain points")}</p>
             <ol className="m-0 grid gap-1 pl-5 text-[13px] leading-relaxed text-ink">
               {g.uu_tien.map((x, i) => <li key={i}>{x}</li>)}
             </ol>
@@ -102,7 +103,7 @@ export default function NhanXetAI({ answerId, rubric, level, feedback, mau }) {
 
         {g.cau_mau?.length > 0 && (
           <div>
-            <p className="m-0 mb-2 flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wide text-soft"><PenLine size={13} /> Viết lại cho đúng</p>
+            <p className="m-0 mb-2 flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wide text-soft"><PenLine size={13} /> {tr("Viết lại cho đúng", "Version corrigée", "Corrected version")}</p>
             <ul className="m-0 grid list-none gap-2 p-0">
               {g.cau_mau.map((x, i) => (
                 <li key={i} className="rounded-xl border border-solid border-line p-3 text-[13px] leading-relaxed">
@@ -114,7 +115,7 @@ export default function NhanXetAI({ answerId, rubric, level, feedback, mau }) {
             </ul>
           </div>
         )}
-        <p className="m-0 text-[11px] text-soft">Điểm do AI chấm có thể sai và không phải điểm DELF chính thức.</p>
+        <p className="m-0 text-[11px] text-soft">{tr("Điểm do AI chấm có thể sai và không phải điểm DELF chính thức.", "La note de l'IA peut se tromper et n'est pas une note officielle du DELF.", "AI scores can be wrong and are not official DELF scores.")}</p>
       </div>
     </section>
   );

@@ -7,6 +7,7 @@ import { supabase } from "../../storageShim.js";
 import { grilleToRubric, chuanHoaGrille } from "../../shared/grilleRubric.js";
 import { TEN_NHOM, THU_TU_NHOM } from "../../shared/peBareme.js";
 import { xinGoiYAI, docGoiYAI } from "../../shared/chamPeAI.js";
+import { tr } from "../../shared/i18n.jsx";
 
 /* Tự chấm Production écrite — bố cục chia đôi màn hình.
  *
@@ -193,9 +194,9 @@ function ThanhTieuChi({ c, gia, onChange, nhacNho, goiY }) {
           <Info size={13} className="mt-0.5 shrink-0" aria-hidden="true" />
           <span>
             {chuaCham ? (
-              <>Kéo thanh trượt để chấm. Mốc cao nhất: <strong className="text-ink">{c.bareme[0][1]}</strong>.</>
+              <>{tr("Kéo thanh trượt để chấm. Mốc cao nhất:", "Faites glisser pour noter. Niveau le plus haut :", "Drag to score. Top band:")} <strong className="text-ink">{c.bareme[0][1]}</strong>.</>
             ) : (
-              <><strong className="text-ink">{nac[0]} điểm</strong> — {nac[1]}</>
+              <><strong className="text-ink">{nac[0]} {tr("điểm", "points", "points")}</strong> — {nac[1]}</>
             )}
           </span>
         </p>
@@ -215,7 +216,7 @@ function ThanhTieuChi({ c, gia, onChange, nhacNho, goiY }) {
           <div className="flex items-center justify-between gap-3">
             <span className="flex items-center gap-1.5 text-xs font-bold text-primary">
               <Sparkles size={13} aria-hidden="true" />
-              AI đề xuất {goiY.diem} / {c.max_score}
+              {tr("AI đề xuất", "Proposition IA", "AI suggests")} {goiY.diem} / {c.max_score}
             </span>
             {gia !== goiY.diem && (
               <button
@@ -223,7 +224,7 @@ function ThanhTieuChi({ c, gia, onChange, nhacNho, goiY }) {
                 onClick={() => onChange(goiY.diem)}
                 className="shrink-0 rounded-full border-0 bg-primary px-3 py-1 text-left font-sans text-[11px] font-bold text-white"
               >
-                dùng số này
+                {tr("dùng số này", "utiliser", "use this")}
               </button>
             )}
           </div>
@@ -261,7 +262,7 @@ export default function PESelfEvaluation({
      là consigne của BÀI ("Depuis une dizaine d'années, vous êtes membre…").
      Hai thứ giờ cùng có mặt trên màn, nên không được đặt trùng tên.
      Đã đo: 0 trong 433 câu có HTML ở `prompt`, nên chữ thuần ở đây là đúng. */
-  const cauLenh = (xemThu ? SUJET_MAU : deBai) || "(đề bài không còn trong hệ thống)";
+  const cauLenh = (xemThu ? SUJET_MAU : deBai) || tr("(đề bài không còn trong hệ thống)", "(consigne introuvable)", "(prompt no longer available)");
   const copie = String((xemThu ? COPIE_MAU : baiLam) ?? "");
 
   /* Khoá theo `id` của tiêu chí, KHÔNG theo chỉ số mảng. Giáo viên sửa thang
@@ -319,7 +320,7 @@ export default function PESelfEvaluation({
     setConLai(kq.conLai);
     /* Ghi hỏng thì nói ra. "Mở lại thấy mất" mà không ai báo trước là một bí ẩn
        người dùng phải tự giải. */
-    if (!kq.daLuu) setLoiAI("Đã chấm xong nhưng KHÔNG lưu được — đóng màn này là mất.");
+    if (!kq.daLuu) setLoiAI(tr("Đã chấm xong nhưng KHÔNG lưu được — đóng màn này là mất.", "Noté mais NON enregistré : fermer cet écran perdra la note.", "Scored but NOT saved — closing this screen loses it."));
   };
 
   const dat = (id, v) => { setDiem((cu) => ({ ...cu, [id]: v })); setDaLuu(false); };
@@ -361,7 +362,7 @@ export default function PESelfEvaluation({
     });
     setDangLuu(false);
     if (error || !data?.ok) {
-      setLoi("Không lưu được: " + (data?.reason ?? error?.message ?? "lỗi không rõ"));
+      setLoi(tr("Không lưu được: ", "Enregistrement impossible : ", "Couldn't save: ") + (data?.reason ?? error?.message ?? tr("lỗi không rõ", "erreur inconnue", "unknown error")));
       return;
     }
     setDaLuu(true);
@@ -381,7 +382,7 @@ export default function PESelfEvaluation({
         <div className="rounded-md bg-surface ring-1 ring-line">
           <header className="flex items-center gap-2.5 border-b border-line px-5 py-4">
             <ScrollText size={16} className="text-primary" aria-hidden="true" />
-            <h2 className="m-0 text-sm font-bold text-ink">Đề bài</h2>
+            <h2 className="m-0 text-sm font-bold text-ink">{tr("Đề bài", "Consigne", "Prompt")}</h2>
             <span className="ml-auto rounded-full bg-surface2 px-2.5 py-1 text-[11px] font-bold text-soft">
               {rubric.level}
               {rubric.min_words ? ` · tối thiểu ${rubric.min_words} từ` : ""}
@@ -402,7 +403,7 @@ export default function PESelfEvaluation({
         <div className="mt-4 flex flex-col rounded-md bg-surface ring-1 ring-line">
           <header className="flex items-center gap-2.5 border-b border-line px-5 py-4">
             <FileText size={16} className="text-primary" aria-hidden="true" />
-            <h2 className="m-0 text-sm font-bold text-ink">Bài làm của bạn</h2>
+            <h2 className="m-0 text-sm font-bold text-ink">{tr("Bài làm của bạn", "Votre copie", "Your writing")}</h2>
             {soTu > 0 && (
               <span
                 className={`ml-auto rounded-full px-2.5 py-1 text-[11px] font-bold tabular-nums ${
@@ -411,7 +412,7 @@ export default function PESelfEvaluation({
                     : "bg-warn-soft text-warn"
                 }`}
               >
-                {soTu} từ
+                {soTu} {tr("từ", "mots", "words")}
               </span>
             )}
           </header>
@@ -423,7 +424,7 @@ export default function PESelfEvaluation({
             {copie.trim() ? (
               <pre className="m-0 whitespace-pre-wrap font-sans text-sm leading-7 text-ink">{copie}</pre>
             ) : (
-              <p className="m-0 text-sm italic text-soft">(bạn nộp bài trống)</p>
+              <p className="m-0 text-sm italic text-soft">{tr("(bạn nộp bài trống)", "(copie vide)", "(blank submission)")}</p>
             )}
           </div>
         </div>
@@ -439,7 +440,7 @@ export default function PESelfEvaluation({
                          text-sm font-bold text-ink ring-1 ring-line transition hover:bg-surface2"
             >
               <BookOpen size={15} className="text-primary" aria-hidden="true" />
-              {moMau ? "Ẩn bài mẫu" : "Xem bài mẫu tham khảo"}
+              {moMau ? tr("Ẩn bài mẫu", "Masquer le modèle", "Hide model answer") : tr("Xem bài mẫu tham khảo", "Voir un modèle de copie", "See a model answer")}
               {moMau
                 ? <ChevronUp size={15} className="ml-auto text-soft" aria-hidden="true" />
                 : <ChevronDown size={15} className="ml-auto text-soft" aria-hidden="true" />}
@@ -448,12 +449,12 @@ export default function PESelfEvaluation({
             {moMau && (
               <div className={`mt-2 max-h-[40vh] overflow-y-auto rounded-md bg-surface px-5 py-4 ring-1 ring-line ${THANH_CUON}`}>
                 {baiMau === null ? (
-                  <p className="m-0 text-sm text-soft">Đang tải…</p>
+                  <p className="m-0 text-sm text-soft">{tr("Đang tải…", "Chargement…", "Loading…")}</p>
                 ) : baiMau.trim() ? (
                   <pre className="m-0 whitespace-pre-wrap font-sans text-sm leading-7 text-ink">{baiMau}</pre>
                 ) : (
                   <p className="m-0 text-sm italic text-soft">
-                    Đề này chưa có bài mẫu. Hãy hỏi giáo viên.
+                    {tr("Đề này chưa có bài mẫu. Hãy hỏi giáo viên.", "Pas de modèle pour ce sujet. Demandez à l'enseignant.", "No model answer for this prompt. Ask your teacher.")}
                   </p>
                 )}
               </div>
@@ -466,11 +467,10 @@ export default function PESelfEvaluation({
       <section className="flex min-h-0 flex-col">
         <div className="mb-4">
           <h2 className="m-0 text-base font-bold text-ink">
-            Tự chấm theo tiêu chí DELF {rubric.level}
+            {tr("Tự chấm theo tiêu chí DELF", "Auto-évaluation selon la grille DELF", "Self-assess with the DELF grid")} {rubric.level}
           </h2>
           <p className="m-0 mt-1 text-xs leading-relaxed text-soft">
-            Đọc lại bài bên trái theo từng tiêu chí một. Giá trị không nằm ở con số cuối —
-            nó nằm ở chỗ bạn đọc bài mình một lần nữa qua mắt người chấm.
+            {tr("Đọc lại bài bên trái theo từng tiêu chí một. Giá trị không nằm ở con số cuối — nó nằm ở chỗ bạn đọc bài mình một lần nữa qua mắt người chấm.", "Relisez votre copie critère par critère. L'intérêt n'est pas la note finale, mais de vous relire avec l'œil du correcteur.", "Reread your writing one criterion at a time. The value isn't the final number — it's rereading through an examiner's eyes.")}
           </p>
         </div>
 
@@ -482,7 +482,7 @@ export default function PESelfEvaluation({
             <span>
               {rubric.adapted
                 ? `Thang ${rubric.level} ở đây là bản phỏng theo, quy về ${rubric.total} điểm. Đề thi thật chia phần viết thành hai bài tập với thang riêng.`
-                : "Thang này do giáo viên tuỳ chỉnh, không phải thang DELF chính thức."}
+                : tr("Thang này do giáo viên tuỳ chỉnh, không phải thang DELF chính thức.", "Grille personnalisée par l'enseignant, pas la grille officielle du DELF.", "Grid customised by the teacher, not the official DELF grid.")}
             </span>
           </p>
         )}
@@ -497,8 +497,7 @@ export default function PESelfEvaluation({
                  là mời người ta xin lại một gợi ý có thể đã tồn tại, và tiêu
                  một lượt trong hạn mức cho việc đó. */
               <p className="m-0 text-xs leading-relaxed text-soft">
-                Chưa hỏi được máy chủ xem bài này đã có gợi ý chưa. Tải lại trang
-                rồi thử lại — đừng xin mới vội, có thể bạn đã có một bản rồi.
+                {tr("Chưa hỏi được máy chủ xem bài này đã có gợi ý chưa. Tải lại trang rồi thử lại — đừng xin mới vội, có thể bạn đã có một bản rồi.", "Impossible de vérifier si une proposition existe déjà. Rechargez la page avant d'en demander une nouvelle.", "Couldn't check whether a suggestion already exists. Reload the page before asking for a new one.")}
               </p>
             ) : (
               <>
@@ -506,12 +505,12 @@ export default function PESelfEvaluation({
                   <div className="min-w-0">
                     <h3 className="m-0 flex items-center gap-1.5 text-sm font-bold text-ink">
                       <Sparkles size={14} className="text-primary" aria-hidden="true" />
-                      Gợi ý chấm từ AI
+                      {tr("Gợi ý chấm từ AI", "Proposition de note de l'IA", "AI grading suggestion")}
                     </h3>
                     <p className="m-0 mt-1 text-xs leading-relaxed text-soft">
                       {goiY
                         ? `Chấm được ${goiY.so_cham_duoc}/${goiY.so_tieu_chi} tiêu chí · đề xuất ${goiY.tong}/${goiY.tong_toi_da}. Điểm cuối vẫn do bạn chốt.`
-                        : "Một lượt đọc bài của bạn theo đúng thang bên dưới. Đây là đề xuất để đối chiếu, không phải điểm chính thức."}
+                        : tr("Một lượt đọc bài của bạn theo đúng thang bên dưới. Đây là đề xuất để đối chiếu, không phải điểm chính thức.", "Une lecture de votre copie selon la grille ci-dessous. C'est une proposition à comparer, pas une note officielle.", "A read of your writing against the grid below. It's a suggestion to compare, not an official score.")}
                     </p>
                   </div>
                   <button
@@ -521,8 +520,8 @@ export default function PESelfEvaluation({
                     className="inline-flex shrink-0 items-center gap-1.5 rounded-full border-0 bg-primary px-4 py-2 text-left font-sans text-xs font-bold text-white disabled:opacity-60"
                   >
                     {dangXin
-                      ? <><Loader2 size={13} className="animate-spin" aria-hidden="true" /> Đang chấm…</>
-                      : <>{goiY ? "Xin lại" : "Xin gợi ý"}</>}
+                      ? <><Loader2 size={13} className="animate-spin" aria-hidden="true" /> {tr("Đang chấm…", "Correction…", "Grading…")}</>
+                      : <>{goiY ? tr("Xin lại", "Redemander", "Ask again") : tr("Xin gợi ý", "Demander une proposition", "Ask for a suggestion")}</>}
                   </button>
                 </div>
 
@@ -533,9 +532,7 @@ export default function PESelfEvaluation({
                   <p className="m-0 mt-3 flex items-start gap-2 rounded-sm bg-warn-soft px-3 py-2 text-xs leading-relaxed text-warn">
                     <AlertTriangle size={13} className="mt-0.5 shrink-0" aria-hidden="true" />
                     <span>
-                      {goiY.so_tieu_chi - goiY.so_cham_duoc} tiêu chí không có gợi ý —
-                      máy chấm trả về giá trị không khớp thang nên bị bỏ. Những mục đó
-                      bạn tự chấm như bình thường.
+                      {goiY.so_tieu_chi - goiY.so_cham_duoc} {tr("tiêu chí không có gợi ý — máy chấm trả về giá trị không khớp thang nên bị bỏ. Những mục đó bạn tự chấm như bình thường.", "critère(s) sans proposition (valeur hors grille). Notez-les vous-même.", "criteria without a suggestion (value outside the grid). Score them yourself.")}
                     </span>
                   </p>
                 )}
@@ -554,7 +551,7 @@ export default function PESelfEvaluation({
                 )}
 
                 {conLai != null && !loiAI && (
-                  <p className="m-0 mt-2 text-[11px] text-soft">Còn {conLai} lượt trong 24 giờ tới.</p>
+                  <p className="m-0 mt-2 text-[11px] text-soft">Còn {conLai} {tr("lượt trong 24 giờ tới.", "essai(s) aujourd'hui.", "attempts left today.")}</p>
                 )}
               </>
             )}
@@ -571,7 +568,7 @@ export default function PESelfEvaluation({
                 <h3 className="m-0 text-[11px] font-bold uppercase tracking-widest text-soft">
                   {TEN_NHOM[cat]}
                 </h3>
-                <span className="text-[11px] font-bold tabular-nums text-soft">{sum} điểm</span>
+                <span className="text-[11px] font-bold tabular-nums text-soft">{sum} {tr("điểm", "points", "points")}</span>
               </div>
               <ul className="m-0 flex list-none flex-col gap-3 p-0">
                 {list.map((c) => (
@@ -597,7 +594,7 @@ export default function PESelfEvaluation({
             <div className="flex items-center justify-between gap-4">
               <div className="min-w-0">
                 <span className="text-[11px] font-bold uppercase tracking-widest text-soft">
-                  Tổng điểm
+                  {tr("Tổng điểm", "Total", "Total")}
                 </span>
                 <p className="m-0 mt-0.5 text-2xl font-extrabold tabular-nums leading-none text-ink">
                   {daCham === 0 ? "—" : tong}
@@ -614,7 +611,7 @@ export default function PESelfEvaluation({
                                text-xs font-bold text-soft transition hover:text-ink"
                   >
                     <RotateCcw size={13} aria-hidden="true" />
-                    Chấm lại
+                    {tr("Chấm lại", "Renoter", "Rescore")}
                   </button>
                 )}
                 <button
@@ -642,7 +639,7 @@ export default function PESelfEvaluation({
                              disabled:cursor-not-allowed disabled:bg-surface2 disabled:text-soft"
                 >
                   <CheckCircle2 size={14} aria-hidden="true" />
-                  {dangLuu ? "Đang lưu…" : daLuu ? "Đã lưu" : "Lưu bản tự chấm"}
+                  {dangLuu ? tr("Đang lưu…", "Enregistrement…", "Saving…") : daLuu ? tr("Đã lưu", "Enregistré", "Saved") : tr("Lưu bản tự chấm", "Enregistrer mon auto-évaluation", "Save my self-assessment")}
                 </button>
               </div>
             </div>
@@ -658,9 +655,9 @@ export default function PESelfEvaluation({
 
             <p className="m-0 mt-2 text-[11px] font-semibold text-soft">
               {xemThu
-                ? "Chế độ xem thử — dữ liệu mẫu, không lưu được."
+                ? tr("Chế độ xem thử — dữ liệu mẫu, không lưu được.", "Mode aperçu : données d'exemple, non enregistrables.", "Preview mode — sample data, can't be saved.")
                 : xong
-                  ? "Đã chấm đủ tiêu chí."
+                  ? tr("Đã chấm đủ tiêu chí.", "Tous les critères sont notés.", "All criteria scored.")
                   : `Còn ${conThieu.length} tiêu chí chưa chấm: ${
                       conThieu.slice(0, 3).map((c) => c.name).join(", ")}${
                       conThieu.length > 3 ? "…" : ""}`}

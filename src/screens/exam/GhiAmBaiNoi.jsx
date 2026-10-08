@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Mic, Square, Loader2, AlertTriangle, CheckCircle2, Sparkles } from "lucide-react";
 import { luuBaiNoi, duongNghe, dsBaiNoi, aiNhanXet } from "../../shared/baiNoi.js";
+import { tr } from "../../shared/i18n.jsx";
 
 /* Ghi âm phần nói.
  *
@@ -57,7 +58,7 @@ export default function GhiAmBaiNoi({ examId, exerciseId, gioiHanGiay = 900 }) {
        làm gì. */
     if (!navigator.mediaDevices?.getUserMedia) {
       setTrangThai("loi");
-      setLoi("Trình duyệt này không cho ghi âm. Cần HTTPS và một trình duyệt hiện đại.");
+      setLoi(tr("Trình duyệt này không cho ghi âm. Cần HTTPS và một trình duyệt hiện đại.", "Ce navigateur ne permet pas l'enregistrement. HTTPS et un navigateur récent sont nécessaires.", "This browser can't record. HTTPS and a modern browser are required."));
       return;
     }
     try {
@@ -74,11 +75,11 @@ export default function GhiAmBaiNoi({ examId, exerciseId, gioiHanGiay = 900 }) {
         if (!kq.ok) {
           setTrangThai("loi");
           setLoi({
-            trong: "Không thu được âm thanh nào. Kiểm tra micro rồi thử lại.",
-            dinh_dang: "Trình duyệt ghi ra định dạng máy chủ không nhận: " + (kq.chiTiet ?? ""),
-            chua_dang_nhap: "Phiên đăng nhập đã hết hạn. Đăng nhập lại rồi thử lại.",
-            mang: "Không tải lên được. Kiểm tra kết nối rồi thử lại.",
-          }[kq.loi] ?? "Không lưu được, chưa rõ lý do.");
+            trong: tr("Không thu được âm thanh nào. Kiểm tra micro rồi thử lại.", "Aucun son capté. Vérifiez le micro et réessayez.", "No sound captured. Check your microphone and try again."),
+            dinh_dang: tr("Trình duyệt ghi ra định dạng máy chủ không nhận: ", "Format d'enregistrement refusé par le serveur : ", "The server doesn't accept this recording format: ") + (kq.chiTiet ?? ""),
+            chua_dang_nhap: tr("Phiên đăng nhập đã hết hạn. Đăng nhập lại rồi thử lại.", "Session expirée. Reconnectez-vous et réessayez.", "Session expired. Sign in again and retry."),
+            mang: tr("Không tải lên được. Kiểm tra kết nối rồi thử lại.", "Envoi impossible. Vérifiez la connexion et réessayez.", "Upload failed. Check your connection and retry."),
+          }[kq.loi] ?? tr("Không lưu được, chưa rõ lý do.", "Enregistrement impossible, raison inconnue.", "Couldn't save, unknown reason."));
           return;
         }
         setTrangThai("xong");
@@ -100,8 +101,8 @@ export default function GhiAmBaiNoi({ examId, exerciseId, gioiHanGiay = 900 }) {
     } catch (e) {
       setTrangThai("loi");
       setLoi(e?.name === "NotAllowedError"
-        ? "Bạn đã từ chối quyền dùng micro. Bật lại trong cài đặt trang của trình duyệt."
-        : "Không mở được micro: " + (e?.message ?? e));
+        ? tr("Bạn đã từ chối quyền dùng micro. Bật lại trong cài đặt trang của trình duyệt.", "Vous avez refusé l'accès au micro. Réactivez-le dans les réglages du site.", "You denied microphone access. Re-enable it in the site settings.")
+        : tr("Không mở được micro: ", "Impossible d'ouvrir le micro : ", "Couldn't open the microphone: ") + (e?.message ?? e));
     }
   };
 
@@ -113,15 +114,13 @@ export default function GhiAmBaiNoi({ examId, exerciseId, gioiHanGiay = 900 }) {
     <div className="rounded-2xl border border-solid border-line bg-surface p-5">
       <div className="flex items-center gap-2">
         <Mic size={18} className="text-primary" aria-hidden />
-        <h3 className="m-0 text-base font-bold text-ink">Ghi âm bài nói</h3>
+        <h3 className="m-0 text-base font-bold text-ink">{tr("Ghi âm bài nói", "Enregistrer la production orale", "Record your speaking")}</h3>
       </div>
 
       {/* Nói thẳng là KHÔNG chấm. Im lặng ở đây thì người học chờ một con số
           không bao giờ tới, và nghĩ hệ thống hỏng. */}
       <p className="m-0 mt-2 text-sm text-soft">
-        Phần này <strong className="text-ink">không được chấm điểm</strong>. DELF chấm phần nói
-        qua đối thoại với giám khảo. Bạn tự nghe lại bản ghi, hoặc bấm « AI nhận xét » để
-        nhận góp ý về ngữ pháp, từ vựng và cách nối ý — AI đọc bản chép lời, không cho điểm.
+        {tr("Phần này", "Cette partie", "This part")} <strong className="text-ink">{tr("không được chấm điểm", "n'est pas notée", "is not scored")}</strong>{tr(". DELF chấm phần nói qua đối thoại với giám khảo. Bạn tự nghe lại bản ghi, hoặc bấm « AI nhận xét » để nhận góp ý về ngữ pháp, từ vựng và cách nối ý — AI đọc bản chép lời, không cho điểm.", ". Au DELF, l'oral est évalué face à un examinateur. Réécoutez-vous, ou cliquez sur « Avis de l'IA » pour des conseils sur la grammaire, le vocabulaire et l'enchaînement — sans note.", ". DELF assesses speaking with a live examiner. Listen back, or click « AI feedback » for advice on grammar, vocabulary and flow — no score.")}
       </p>
 
       <div className="mt-4 flex flex-wrap items-center gap-3">
@@ -131,14 +130,14 @@ export default function GhiAmBaiNoi({ examId, exerciseId, gioiHanGiay = 900 }) {
                        text-sm font-bold text-on-primary transition hover:opacity-90
                        disabled:cursor-not-allowed disabled:opacity-60">
             {trangThai === "dangLuu"
-              ? <><Loader2 size={15} className="mcf-spin" aria-hidden /> Đang lưu…</>
-              : <><Mic size={15} aria-hidden /> {dsCu.length ? "Ghi lại" : "Bắt đầu ghi"}</>}
+              ? <><Loader2 size={15} className="mcf-spin" aria-hidden /> {tr("Đang lưu…", "Enregistrement…", "Saving…")}</>
+              : <><Mic size={15} aria-hidden /> {dsCu.length ? tr("Ghi lại", "Réenregistrer", "Record again") : tr("Bắt đầu ghi", "Commencer l'enregistrement", "Start recording")}</>}
           </button>
         ) : (
           <button type="button" onClick={dung}
             className="flex cursor-pointer items-center gap-2 rounded-full border-0 bg-danger px-5 py-2.5
                        text-sm font-bold text-white transition hover:opacity-90">
-            <Square size={15} aria-hidden /> Dừng
+            <Square size={15} aria-hidden /> {tr("Dừng", "Arrêter", "Stop")}
           </button>
         )}
 
@@ -151,7 +150,7 @@ export default function GhiAmBaiNoi({ examId, exerciseId, gioiHanGiay = 900 }) {
 
         {trangThai === "xong" && (
           <span className="flex items-center gap-1.5 text-sm font-bold text-ok">
-            <CheckCircle2 size={15} aria-hidden /> Đã lưu
+            <CheckCircle2 size={15} aria-hidden /> {tr("Đã lưu", "Enregistré", "Saved")}
           </span>
         )}
       </div>
@@ -167,7 +166,7 @@ export default function GhiAmBaiNoi({ examId, exerciseId, gioiHanGiay = 900 }) {
       {dsCu.length > 0 && (
         <div className="mt-4 border-0 border-t border-solid border-line pt-4">
           <p className="m-0 text-xs font-bold uppercase tracking-wider text-soft">
-            Bản đã ghi ({dsCu.length})
+            {tr("Bản đã ghi (", "Enregistrements (", "Recordings (")}{dsCu.length})
           </p>
           <ul className="m-0 mt-2 list-none space-y-2 p-0">
             {dsCu.map((b) => (
@@ -175,13 +174,13 @@ export default function GhiAmBaiNoi({ examId, exerciseId, gioiHanGiay = 900 }) {
                 <button type="button" onClick={() => moNghe(b.duongDan)}
                   className="cursor-pointer rounded-lg border-0 bg-surface2 px-3 py-1.5 text-xs
                              font-semibold text-ink transition-colors hover:bg-primary-soft hover:text-primary">
-                  Nghe lại
+                  {tr("Nghe lại", "Réécouter", "Listen again")}
                 </button>
                 <button type="button" onClick={() => xinNhanXet(b.duongDan)} disabled={nx[b.duongDan]?.dang}
                   className="flex cursor-pointer items-center gap-1.5 rounded-lg border-0 bg-primary-soft px-3 py-1.5 font-sans text-xs
                              font-semibold text-primary transition-colors hover:bg-primary hover:text-white disabled:cursor-wait disabled:opacity-60">
                   {nx[b.duongDan]?.dang ? <Loader2 size={13} className="mcf-spin" aria-hidden /> : <Sparkles size={13} aria-hidden />}
-                  AI nhận xét
+                  {tr("AI nhận xét", "Avis de l'IA", "AI feedback")}
                 </button>
                 <span className="text-xs text-soft">
                   {b.luc ? new Date(b.luc).toLocaleString("vi-VN") : b.ten}
@@ -203,19 +202,20 @@ export default function GhiAmBaiNoi({ examId, exerciseId, gioiHanGiay = 900 }) {
 }
 
 /* Khung hiện nhận xét của AI cho một bản ghi. Không có điểm số — cố ý. */
-const LOI = {
-  HET_LUOT: "Bạn đã dùng hết 6 lượt AI nhận xét trong 24 giờ. Gói VIP không giới hạn.",
-  DINH_DANG_KHONG_HO_TRO: "Định dạng ghi âm này (thường từ Firefox) chưa nhận xét được — hãy ghi lại bằng Chrome hoặc Edge.",
-  KHONG_NGHE_RO: "AI không nghe được lời nói nào trong bản ghi. Kiểm tra micro rồi ghi lại.",
-  CHUA_CAU_HINH_KHOA: "Máy chủ chưa bật AI nhận xét — đây là việc của người quản trị.",
-  BAN_GHI_QUA_LON: "Bản ghi quá dài để AI nhận xét (tối đa 25 MB).",
-};
+/* Hàm, không phải hằng: phải đọc ngôn ngữ lúc HIỂN THỊ, không lúc nạp file. */
+const LOI = () => ({
+  HET_LUOT: tr("Bạn đã dùng hết 6 lượt AI nhận xét trong 24 giờ. Gói VIP không giới hạn.", "Vous avez utilisé vos 6 avis IA des dernières 24 h. Illimité en VIP.", "You've used 6 AI feedbacks in 24 h. Unlimited with VIP."),
+  DINH_DANG_KHONG_HO_TRO: tr("Định dạng ghi âm này (thường từ Firefox) chưa nhận xét được, hãy ghi lại bằng Chrome hoặc Edge.", "Ce format (souvent Firefox) n'est pas pris en charge : réenregistrez avec Chrome ou Edge.", "This format (usually Firefox) isn't supported: record again with Chrome or Edge."),
+  KHONG_NGHE_RO: tr("AI không nghe được lời nói nào trong bản ghi. Kiểm tra micro rồi ghi lại.", "L'IA n'entend aucune parole. Vérifiez le micro et réenregistrez.", "The AI heard no speech. Check your microphone and record again."),
+  CHUA_CAU_HINH_KHOA: tr("Máy chủ chưa bật AI nhận xét, đây là việc của người quản trị.", "L'avis IA n'est pas activé sur le serveur (administrateur).", "AI feedback isn't enabled on the server (admin task)."),
+  BAN_GHI_QUA_LON: tr("Bản ghi quá dài để AI nhận xét (tối đa 25 MB).", "Enregistrement trop long pour l'IA (25 Mo max).", "Recording too long for AI feedback (25 MB max)."),
+});
 function KhungNhanXet({ kq }) {
   if (!kq.ok) {
     return (
       <p className="m-0 flex w-full items-start gap-2 rounded-xl bg-danger-soft p-3 text-xs font-semibold text-danger">
         <AlertTriangle size={14} className="mt-px shrink-0" aria-hidden />
-        {LOI[kq.ma] ?? kq.thong_bao ?? `Không nhận xét được (${kq.ma ?? "lỗi"}${kq.trang_thai ? " · " + kq.trang_thai : ""}).`}
+        {LOI()[kq.ma] ?? kq.thong_bao ?? `Không nhận xét được (${kq.ma ?? tr("lỗi", "erreur", "error")}${kq.trang_thai ? " · " + kq.trang_thai : ""}).`}
       </p>
     );
   }
@@ -223,18 +223,18 @@ function KhungNhanXet({ kq }) {
   return (
     <div className="w-full rounded-xl border border-solid border-line bg-surface2 p-4 text-sm text-ink">
       <p className="m-0 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-primary">
-        <Sparkles size={13} aria-hidden /> AI nhận xét · không phải điểm DELF
+        <Sparkles size={13} aria-hidden /> {tr("AI nhận xét · không phải điểm DELF", "Avis de l'IA · pas une note DELF", "AI feedback · not a DELF score")}
       </p>
       <p className="m-0 mt-2 leading-relaxed">{n.tong_quat}</p>
       {n.diem_manh?.length > 0 && (
         <div className="mt-3">
-          <p className="m-0 text-xs font-bold text-ok">Điểm mạnh</p>
+          <p className="m-0 text-xs font-bold text-ok">{tr("Điểm mạnh", "Points forts", "Strengths")}</p>
           <ul className="m-0 mt-1 pl-5 leading-relaxed">{n.diem_manh.map((x, i) => <li key={i}>{x}</li>)}</ul>
         </div>
       )}
       {n.can_sua?.length > 0 && (
         <div className="mt-3">
-          <p className="m-0 text-xs font-bold text-warn">Nên sửa</p>
+          <p className="m-0 text-xs font-bold text-warn">{tr("Nên sửa", "À corriger", "To fix")}</p>
           <ul className="m-0 mt-1 space-y-1.5 pl-5 leading-relaxed">
             {n.can_sua.map((x, i) => (
               <li key={i}>{x.trich && <em className="text-soft">« {x.trich} » → </em>}{x.goi_y}</li>
@@ -242,11 +242,11 @@ function KhungNhanXet({ kq }) {
           </ul>
         </div>
       )}
-      {n.phat_am && <p className="m-0 mt-3"><strong className="text-xs">Phát âm (phỏng đoán từ bản chép lời):</strong> {n.phat_am}</p>}
-      {n.luyen_tiep && <p className="m-0 mt-2"><strong className="text-xs">Luyện tiếp:</strong> {n.luyen_tiep}</p>}
+      {n.phat_am && <p className="m-0 mt-3"><strong className="text-xs">{tr("Phát âm (phỏng đoán từ bản chép lời):", "Prononciation (déduite de la transcription) :", "Pronunciation (inferred from the transcript):")}</strong> {n.phat_am}</p>}
+      {n.luyen_tiep && <p className="m-0 mt-2"><strong className="text-xs">{tr("Luyện tiếp:", "Pour progresser :", "Practice next:")}</strong> {n.luyen_tiep}</p>}
       {kq.chep_loi && (
         <details className="mt-3">
-          <summary className="cursor-pointer text-xs font-semibold text-soft">Bản chép lời của AI</summary>
+          <summary className="cursor-pointer text-xs font-semibold text-soft">{tr("Bản chép lời của AI", "Transcription de l'IA", "AI transcript")}</summary>
           <p className="m-0 mt-1 whitespace-pre-wrap text-xs italic text-soft">{kq.chep_loi}</p>
         </details>
       )}

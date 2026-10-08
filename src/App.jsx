@@ -31,7 +31,7 @@ import { loadAssignments } from './shared/exerciseStore.js'
 import { supabase } from './storageShim.js'
 import { resolveRole } from './shared/authRole.js'
 import { loadRoster } from './shared/roster.js'
-import { LANG_KEY, LANGS, I18N, getLang, LangCtx, digKey } from './shared/i18n.jsx'
+import { LANG_KEY, LANGS, I18N, getLang, LangCtx, digKey , datLangHienTai } from './shared/i18n.jsx'
 
 import PracticeHub from './PracticeHub.jsx'
 import Bell from './screens/student/Bell.jsx'
@@ -55,6 +55,7 @@ function AppInner() {
   const [dark, setDark] = useState(() => { try { return localStorage.getItem(THEME_KEY) === "dark"; } catch { return false; } });
   const toggleTheme = () => setDark((d) => { const n = !d; try { localStorage.setItem(THEME_KEY, n ? "dark" : "light"); } catch {} return n; });
   const [lang, setLang] = useState(getLang);
+  datLangHienTai(lang);   // cho tr() — đặt TRƯỚC khi con render
   const t = React.useCallback((key, vars) => {
     let str = digKey(I18N[lang], key);
     if (typeof str !== "string") str = digKey(I18N.vi, key);

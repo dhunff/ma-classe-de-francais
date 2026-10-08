@@ -6,6 +6,7 @@ import { NGUONG_PHAN, NGUONG_TONG } from "../exam/examPaper.js";
 import { chamChinhThuc } from "../../shared/chamPeAI.js";
 import NhanXetAI from "./NhanXetAI.jsx";
 import { grilleToRubric, chuanHoaGrille } from "../../shared/grilleRubric.js";
+import { tr } from "../../shared/i18n.jsx";
 
 /* Kết quả thi thử — màn hình của học sinh.
  *
@@ -38,7 +39,7 @@ function Phan({ s, onTuCham }) {
         <span className="text-right">
           {s.score == null
             ? <span className="inline-flex items-center gap-1 text-xs font-bold text-warn">
-                <Clock size={12} /> {s.choCham ? (s.aiLoi === "HET_LUOT" ? "Hết 3 lượt AI chấm hôm nay · mai mở lại trang (VIP không giới hạn)" : s.aiLoi ? "AI chưa chấm được, mở lại trang để thử lại" : "AI đang chấm…") : "chưa có điểm"}
+                <Clock size={12} /> {s.choCham ? (s.aiLoi === "HET_LUOT" ? tr("Hết 3 lượt AI chấm hôm nay · mai mở lại trang (VIP không giới hạn)", "Plus de correction IA aujourd'hui (3 par jour) · revenez demain (VIP illimité)", "No AI grading left today (3 per day) · come back tomorrow (VIP unlimited)") : s.aiLoi ? tr("AI chưa chấm được, mở lại trang để thử lại", "L'IA n'a pas pu corriger, rouvrez la page pour réessayer", "The AI couldn't grade it, reopen the page to retry") : tr("AI đang chấm…", "Correction IA en cours…", "AI grading…")) : tr("chưa có điểm", "pas encore de note", "no score yet")}
               </span>
             : <span className="text-base font-extrabold tabular-nums text-ink">
                 {s.score}<span className="text-xs text-soft">/{s.points}</span>
@@ -48,7 +49,7 @@ function Phan({ s, onTuCham }) {
 
       {yeu && (
         <p className="m-0 mt-1 text-xs font-bold text-danger">
-          Dưới {NGUONG_PHAN}/{s.points} — riêng phần này đã đủ làm trượt cả bài.
+          {tr("Dưới", "Moins de", "Below")} {NGUONG_PHAN}/{s.points} {tr("— riêng phần này đã đủ làm trượt cả bài.", "— cette partie suffit à faire échouer l'examen.", "— this part alone fails the exam.")}
         </p>
       )}
 
@@ -64,8 +65,8 @@ function Phan({ s, onTuCham }) {
             <p className="m-0 flex items-start gap-2 rounded-lg bg-surface p-2.5 text-xs text-soft">
               <ClipboardCheck size={13} className="mt-0.5 shrink-0 text-primary" />
               <span>
-                Bạn tự chấm: <strong className="text-ink">{p.selfScore}/{p.max}</strong>.
-                {p.score == null && " Đây là ước lượng của chính bạn, chưa phải điểm chính thức."}
+                {tr("Bạn tự chấm:", "Votre auto-évaluation :", "Your self-assessment:")} <strong className="text-ink">{p.selfScore}/{p.max}</strong>.
+                {p.score == null && tr(" Đây là ước lượng của chính bạn, chưa phải điểm chính thức.", " C'est votre propre estimation, pas une note officielle.", " This is your own estimate, not an official score.")}
               </span>
             </p>
           )}
@@ -95,9 +96,9 @@ function Phan({ s, onTuCham }) {
                          text-left text-xs font-bold text-ink transition hover:bg-primary-soft"
             >
               <PenLine size={13} className="shrink-0 text-primary" aria-hidden="true" />
-              {p.selfScore != null ? "Xem lại bản tự chấm" : "Tự chấm bài viết này"}
+              {p.selfScore != null ? tr("Xem lại bản tự chấm", "Revoir mon auto-évaluation", "Review my self-assessment") : tr("Tự chấm bài viết này", "M'auto-évaluer sur cette production", "Self-assess this writing")}
               <span className="ml-auto font-normal text-soft">
-                {p.selfScore != null ? "sửa được" : `${s.level} · ${p.max} điểm`}
+                {p.selfScore != null ? tr("sửa được", "modifiable", "editable") : `${s.level} · ${p.max} điểm`}
               </span>
             </button>
           )}
@@ -148,9 +149,9 @@ function Luot({ s, onTuCham }) {
             {s.total}<span className="text-sm text-soft">/{s.maxScored}</span>
           </div>
           <div className={`text-xs font-bold ${mau}`}>
-            {s.passed === true && "Đạt"}
-            {s.passed === false && "Chưa đạt"}
-            {s.passed === null && "Chưa kết luận"}
+            {s.passed === true && tr("Đạt", "Réussi", "Pass")}
+            {s.passed === false && tr("Chưa đạt", "Non réussi", "Fail")}
+            {s.passed === null && tr("Chưa kết luận", "Non conclu", "Pending")}
           </div>
         </div>
       </div>
@@ -159,7 +160,7 @@ function Luot({ s, onTuCham }) {
           hai phần ba bài thi là lời nói dối tử tế nhưng vẫn là nói dối. */}
       {s.passed === null && s.pending.length > 0 && (
         <p className="m-0 mt-2 text-xs text-soft">
-          Còn {s.pending.map((p) => p.code).join(", ")} chưa có điểm, nên chưa kết luận được.
+          Còn {s.pending.map((p) => p.code).join(", ")} {tr("chưa có điểm, nên chưa kết luận được.", "n'a pas encore de note, résultat impossible à conclure.", "has no score yet, so no verdict.")}
         </p>
       )}
 
@@ -206,7 +207,7 @@ export default function ExamResults() {
       if (error) {
         /* Lỗi ĐỌC khác "chưa thi lần nào" — hai thứ trông giống nhau trên màn
            hình trống mà cần hai hành động khác hẳn. */
-        setLoi("Không đọc được kết quả. Kiểm tra mạng rồi thử lại.");
+        setLoi(tr("Không đọc được kết quả. Kiểm tra mạng rồi thử lại.", "Impossible de lire les résultats. Vérifiez la connexion et réessayez.", "Couldn't load results. Check your connection and try again."));
         setSittings([]);
         return;
       }
@@ -229,7 +230,7 @@ export default function ExamResults() {
                      text-xs font-bold text-soft transition hover:text-ink"
         >
           <ArrowLeft size={14} aria-hidden="true" />
-          Về kết quả thi
+          {tr("Về kết quả thi", "Retour aux résultats", "Back to results")}
         </button>
 
         <PESelfEvaluation
@@ -249,9 +250,9 @@ export default function ExamResults() {
 
   return (
     <div className="mx-auto max-w-2xl py-6">
-      <h1 className="m-0 text-2xl font-extrabold text-ink">Kết quả thi thử</h1>
+      <h1 className="m-0 text-2xl font-extrabold text-ink">{tr("Kết quả thi thử", "Résultats des examens blancs", "Mock exam results")}</h1>
       <p className="m-0 mt-1 text-sm text-soft">
-        Điểm từng phần, và nhận xét của giáo viên cho bài viết.
+        {tr("Điểm từng phần, và nhận xét của giáo viên cho bài viết.", "Notes par partie et évaluation de la production écrite.", "Scores per part and feedback on your writing.")}
       </p>
 
       {/* Thang điểm nói ngay từ đầu, vì luật đạt có hai vế và vế thứ hai mới
@@ -259,21 +260,20 @@ export default function ExamResults() {
       <p className="m-0 mt-4 flex items-start gap-2 rounded-xl bg-surface2 p-3 text-xs text-soft">
         <ShieldCheck size={13} className="mt-0.5 shrink-0" />
         <span>
-          Đạt DELF cần <strong className="text-ink">≥ {NGUONG_TONG}/100 toàn bài</strong> VÀ{" "}
-          <strong className="text-ink">≥ {NGUONG_PHAN}/25 mỗi phần</strong>. Các đề ở đây không
-          có phần thi nói, nên tổng điểm chỉ tính trên những phần đã làm.
+          {tr("Đạt DELF cần", "Pour réussir le DELF :", "To pass DELF you need")} <strong className="text-ink">≥ {NGUONG_TONG}/100 toàn bài</strong> VÀ{" "}
+          <strong className="text-ink">≥ {NGUONG_PHAN}{tr("/25 mỗi phần", "/25 par partie", "/25 per part")}</strong>{tr(". Các đề ở đây không có phần thi nói, nên tổng điểm chỉ tính trên những phần đã làm.", ". La production orale n'est pas notée ici : le total ne compte que les parties faites.", ". Speaking isn't scored here, so the total only counts the parts you took.")}
         </span>
       </p>
 
       {loi && <p className="m-0 mt-5 rounded-xl bg-danger-soft p-4 text-sm font-semibold text-ink">{loi}</p>}
 
       {sittings === null ? (
-        <p className="mt-8 text-center text-sm text-soft">Đang tải…</p>
+        <p className="mt-8 text-center text-sm text-soft">{tr("Đang tải…", "Chargement…", "Loading…")}</p>
       ) : sittings.length === 0 && !loi ? (
         <div className="mt-8 rounded-2xl border border-line bg-surface p-8 text-center">
-          <p className="m-0 font-bold text-ink">Bạn chưa thi thử lần nào</p>
+          <p className="m-0 font-bold text-ink">{tr("Bạn chưa thi thử lần nào", "Vous n'avez passé aucun examen blanc", "You haven't taken a mock exam yet")}</p>
           <p className="m-0 mt-1 text-sm text-soft">
-            Vào mục « Thi thử » để làm một đề. Kết quả sẽ lưu lại ở đây.
+            {tr("Vào mục « Thi thử » để làm một đề. Kết quả sẽ lưu lại ở đây.", "Allez dans « Examen blanc » pour passer un sujet. Les résultats s'afficheront ici.", "Go to « Mock exam » to take one. Results will appear here.")}
           </p>
         </div>
       ) : (

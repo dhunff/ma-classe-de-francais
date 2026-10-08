@@ -1408,4 +1408,18 @@ function useT() {
 }
 
 
-export { LANG_KEY, LANGS, I18N, getLang, LangCtx, digKey, useT };
+/* tr(vi, fr, en) — chữ giao diện viết THẲNG cạnh chỗ dùng, đủ ba thứ tiếng
+   (08/10). Dùng cho các màn mới thay vì để chữ tiếng Việt/Pháp viết cứng —
+   đó là thứ làm giao diện « lẫn ngôn ngữ ». Ngôn ngữ đọc từ biến module do
+   App đặt mỗi lần render (datLangHienTai), nên gọi được cả ngoài component.
+   CHÚ Ý: đừng gọi tr() ở cấp module (hằng số tính một lần lúc nạp file) —
+   giá trị sẽ đứng yên ở ngôn ngữ lúc nạp trang. */
+let LANG_HIEN_TAI = getLang();
+function datLangHienTai(l) { LANG_HIEN_TAI = l || "vi"; }
+function tr(vi, fr, en) {
+  if (LANG_HIEN_TAI === "fr") return fr ?? vi;
+  if (LANG_HIEN_TAI === "en") return en ?? vi;
+  return vi;
+}
+
+export { LANG_KEY, LANGS, I18N, getLang, LangCtx, digKey, useT, tr, datLangHienTai };

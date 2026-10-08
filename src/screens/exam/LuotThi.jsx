@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from "react";
 import { AlertTriangle, ShieldCheck } from "lucide-react";
+import { tr } from "../../shared/i18n.jsx";
 
 /* Lượt thi thử (07/10, migration 120): 2 lượt/ngày, bấm « Bắt đầu » là tiêu
  * một lượt, thoát giữa chừng KHÔNG hoàn lại. Ba mảnh giao diện:
@@ -26,28 +27,28 @@ export function HopBatDau({ tongPhut, luot, dangMo, loi, onHuy, onDongY }) {
     <Nen>
       <div className="flex items-center gap-3">
         <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-warn-soft text-warn"><ShieldCheck size={22} /></span>
-        <h2 className="m-0 text-lg font-extrabold text-ink">Mô phỏng phòng thi DELF thật</h2>
+        <h2 className="m-0 text-lg font-extrabold text-ink">{tr("Mô phỏng phòng thi DELF thật", "Simulation d'une vraie salle d'examen DELF", "A real DELF exam room simulation")}</h2>
       </div>
       <ul className="m-0 mt-4 grid list-disc gap-2 pl-5 text-sm leading-relaxed text-ink">
-        <li>Thời gian từng phần giống kỳ thi thật, tổng <strong>{tongPhut} phút</strong>. Đồng hồ không dừng lại.</li>
-        <li>Bài nghe chỉ phát theo số lượt của đề thi, không tua lại được.</li>
-        <li>Hãy làm bài nghiêm túc và có trách nhiệm như đang ở phòng thi: chuẩn bị chỗ yên tĩnh, tắt thông báo.</li>
+        <li>{tr("Thời gian từng phần giống kỳ thi thật, tổng", "La durée de chaque partie est celle de l'examen réel, au total", "Each part is timed like the real exam, in total")} <strong>{tongPhut} phút</strong>{tr(". Đồng hồ không dừng lại.", ". Le chronomètre ne s'arrête pas.", ". The timer never stops.")}</li>
+        <li>{tr("Bài nghe chỉ phát theo số lượt của đề thi, không tua lại được.", "Les documents audio ne passent que le nombre de fois prévu, sans retour en arrière.", "Audio plays only the number of times the exam allows, with no rewinding.")}</li>
+        <li>{tr("Hãy làm bài nghiêm túc và có trách nhiệm như đang ở phòng thi: chuẩn bị chỗ yên tĩnh, tắt thông báo.", "Travaillez sérieusement, comme en salle d'examen : installez-vous au calme et coupez les notifications.", "Take it seriously, as in a real exam room: find a quiet place and turn off notifications.")}</li>
         {luot?.vip
-          ? <li>Bạn đang là <strong>VIP</strong>: không giới hạn số lượt thi. Thoát giữa chừng thì bài thi dừng lại.</li>
-          : <li><strong>Mỗi ngày chỉ có 2 lượt thi.</strong> Bấm bắt đầu là dùng một lượt; thoát ra giữa chừng sẽ <strong>mất lượt đó</strong>.</li>}
+          ? <li>{tr("Bạn đang là", "Vous êtes", "You are a")} <strong>VIP</strong>{tr(": không giới hạn số lượt thi. Thoát giữa chừng thì bài thi dừng lại.", " : nombre d'examens illimité. Si vous quittez en cours, l'examen s'arrête.", " member: unlimited mock exams. Leaving midway stops the exam.")}</li>
+          : <li><strong>{tr("Mỗi ngày chỉ có 2 lượt thi.", "Seulement 2 examens par jour.", "Only 2 exams per day.")}</strong> {tr("Bấm bắt đầu là dùng một lượt; thoát ra giữa chừng sẽ", "Commencer utilise un essai ; quitter en cours fait", "Starting uses one attempt; leaving midway means you")} <strong>{tr("mất lượt đó", "perdre cet essai", "lose that attempt")}</strong>.</li>}
       </ul>
       {conLai != null && (
         <p className="m-0 mt-4 rounded-xl bg-surface2 px-4 py-2.5 text-sm font-bold text-ink">
-          Hôm nay bạn còn {conLai}/{luot.gioi_han} lượt.
+          {tr("Hôm nay bạn còn", "Il vous reste aujourd'hui", "Attempts left today:")} {conLai}/{luot.gioi_han} {tr("lượt.", "essai(s).", "")}
         </p>
       )}
       {loi && <p className="m-0 mt-3 text-sm font-semibold text-danger">{loi}</p>}
       <div className="mt-5 flex flex-wrap justify-end gap-2">
         <button type="button" onClick={onHuy}
-          className="h-10 cursor-pointer rounded-full border border-solid border-line bg-surface px-5 font-sans text-sm font-bold text-ink">Để sau</button>
+          className="h-10 cursor-pointer rounded-full border border-solid border-line bg-surface px-5 font-sans text-sm font-bold text-ink">{tr("Để sau", "Plus tard", "Later")}</button>
         <button type="button" onClick={onDongY} disabled={dangMo || conLai === 0}
           className="h-10 cursor-pointer rounded-full border-0 bg-primary px-5 font-sans text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-50">
-          {dangMo ? "Đang mở bài thi…" : conLai === 0 ? "Hết lượt hôm nay" : "Tôi hiểu, bắt đầu thi"}
+          {dangMo ? tr("Đang mở bài thi…", "Ouverture de l'examen…", "Opening the exam…") : conLai === 0 ? tr("Hết lượt hôm nay", "Plus d'essai aujourd'hui", "No attempts left today") : tr("Tôi hiểu, bắt đầu thi", "J'ai compris, commencer", "I understand, start")}
         </button>
       </div>
     </Nen>
@@ -59,17 +60,16 @@ export function HopThoat({ onO, onThoat }) {
     <Nen>
       <div className="flex items-center gap-3">
         <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-danger-soft text-danger"><AlertTriangle size={22} /></span>
-        <h2 className="m-0 text-lg font-extrabold text-ink">Bạn vẫn chưa làm xong bài thi</h2>
+        <h2 className="m-0 text-lg font-extrabold text-ink">{tr("Bạn vẫn chưa làm xong bài thi", "Vous n'avez pas terminé l'examen", "You haven't finished the exam")}</h2>
       </div>
       <p className="m-0 mt-3 text-sm leading-relaxed text-ink">
-        Nếu thoát bây giờ, bài thi sẽ dừng lại và <strong>bạn mất lượt thi này trong ngày</strong>.
-        Phần đã nộp vẫn được lưu, phần đang làm thì không.
+        {tr("Nếu thoát bây giờ, bài thi sẽ dừng lại và", "Si vous quittez maintenant, l'examen s'arrête et", "If you leave now, the exam stops and")} <strong>{tr("bạn mất lượt thi này trong ngày", "vous perdez cet essai pour aujourd'hui", "you lose today's attempt")}</strong>{tr(". Phần đã nộp vẫn được lưu, phần đang làm thì không.", ". Les parties déjà rendues sont enregistrées, pas celle en cours.", ". Parts already submitted are saved; the current one is not.")}
       </p>
       <div className="mt-5 flex flex-wrap justify-end gap-2">
         <button type="button" onClick={onThoat}
-          className="h-10 cursor-pointer rounded-full border border-solid border-danger bg-surface px-5 font-sans text-sm font-bold text-danger">Vẫn thoát</button>
+          className="h-10 cursor-pointer rounded-full border border-solid border-danger bg-surface px-5 font-sans text-sm font-bold text-danger">{tr("Vẫn thoát", "Quitter quand même", "Leave anyway")}</button>
         <button type="button" onClick={onO}
-          className="h-10 cursor-pointer rounded-full border-0 bg-primary px-5 font-sans text-sm font-bold text-white">Tiếp tục làm bài</button>
+          className="h-10 cursor-pointer rounded-full border-0 bg-primary px-5 font-sans text-sm font-bold text-white">{tr("Tiếp tục làm bài", "Continuer l'examen", "Keep going")}</button>
       </div>
     </Nen>
   );
