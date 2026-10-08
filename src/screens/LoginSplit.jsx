@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { Asterisk } from "lucide-react";
 import EmailPasswordForm from "./auth/EmailPasswordForm.jsx";
 import { useT } from "../shared/i18n.jsx";
 
@@ -38,7 +37,7 @@ function useManRong() {
 function TieuDe({ t, mode }) {
   return (
     <>
-      <Asterisk size={28} strokeWidth={2.6} className="text-blue-600 dark:text-blue-400" />
+      <img src="/leon/dau.webp" alt="Leon" width={56} height={56} className="h-14 w-14 object-contain" />
       <h1 className="m-0 mt-5 text-2xl font-extrabold tracking-tight text-slate-800 dark:text-white">
         {t(`login.title_${mode}`)}
       </h1>
@@ -121,6 +120,7 @@ export default function LoginSplit({ accounts = [], onLogin }) {
             {/* Nửa trái của dải — hiện khi đang ở ĐĂNG KÝ: mời quay lại đăng nhập */}
             <div className={`absolute inset-y-0 left-0 flex w-1/2 flex-col items-center justify-center px-14 text-center ${chuyen}
               ${dangKy ? "translate-x-0" : "-translate-x-[20%]"}`}>
+              <img src="/leon/tam-biet.webp" alt="" width={160} height={160} className="mcf-leon-bay mb-4 h-40 w-40 object-contain drop-shadow-[0_14px_20px_rgb(0,0,0,0.25)]" />
               <h2 className="m-0 text-3xl font-extrabold tracking-tight">{t("login.slide_login_title")}</h2>
               <p className="m-0 mb-8 mt-4 text-sm leading-relaxed text-white/85">{t("login.slide_login_body")}</p>
               <button type="button" className={NUT_MA} onClick={() => setMode("login")}>{t("login.go_login")}</button>
@@ -129,6 +129,7 @@ export default function LoginSplit({ accounts = [], onLogin }) {
             {/* Nửa phải của dải — hiện khi đang ở ĐĂNG NHẬP: mời đăng ký */}
             <div className={`absolute inset-y-0 right-0 flex w-1/2 flex-col items-center justify-center px-14 text-center ${chuyen}
               ${dangKy ? "translate-x-[20%]" : "translate-x-0"}`}>
+              <img src="/leon/leon-lon.webp" alt="Leon" width={170} height={270} className="mcf-leon-bay mb-4 h-56 w-auto object-contain drop-shadow-[0_14px_20px_rgb(0,0,0,0.25)]" />
               <h2 className="m-0 text-3xl font-extrabold tracking-tight">{t("login.slide_register_title")}</h2>
               <p className="m-0 mb-8 mt-4 text-sm leading-relaxed text-white/85">{t("login.slide_register_body")}</p>
               <button type="button" className={NUT_MA} onClick={() => setMode("register")}>{t("login.go_register")}</button>
