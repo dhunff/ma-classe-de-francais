@@ -238,6 +238,7 @@ function PracticeHubInner({ role = "eleve", name = "", accounts = [], onRequireL
    * dòng quyền của em đó. */
   const sauKhiMoKhoa = async () => {
     napHoSo();
+    window.dispatchEvent(new Event("fracile:vip-doi"));   // huy hiệu VIP ở ảnh đại diện
     const [acc, kho] = await Promise.all([loadAccess(), loadPractice()]);
     setAccess(acc);
     setExercises(kho);

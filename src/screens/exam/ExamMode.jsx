@@ -295,6 +295,9 @@ function ManCho({ dsDe, chon, paper, onStart, dangTai, lamPhanNoi, setLamPhanNoi
           : phienThuc === false ? "Cần đăng nhập lại"
           : "Bắt đầu thi"}
       </button>
+      {luot?.vip && (
+        <p className="m-0 mt-3 text-xs font-bold text-warn">VIP: không giới hạn lượt thi thử.</p>
+      )}
       {luot && !luot.khong_gioi_han && (
         <p className="m-0 mt-3 text-xs text-soft">
           Hôm nay còn {Math.max(0, luot.gioi_han - luot.da_dung)}/{luot.gioi_han} lượt thi. Lượt mới vào 0 giờ (giờ Việt Nam).

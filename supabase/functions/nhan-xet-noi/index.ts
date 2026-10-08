@@ -68,9 +68,12 @@ Deno.serve(async (req) => {
   if (cu) return json(200, { ok: true, nhan_xet: cu.ket_qua, chep_loi: cu.chep_loi, model: cu.model, da_co: true });
 
   const tuLuc = new Date(Date.now() - CUA_SO_GIO * 3600_000).toISOString();
+  /* VIP còn hạn: không giới hạn lượt (124). Đọc thẳng profiles bằng service_role. */
+  const { data: hs } = await admin.from("profiles").select("vip_den").eq("id", userId).maybeSingle();
+  const laVip = !!hs?.vip_den && new Date(hs.vip_den).getTime() > Date.now();
   const { count: daDung } = await admin.from("po_ai_nhan_xet")
     .select("id", { count: "exact", head: true }).eq("user_id", userId).gte("created_at", tuLuc);
-  if ((daDung ?? 0) >= HAN_MUC) {
+  if (!laVip && (daDung ?? 0) >= HAN_MUC) {
     return json(429, { ok: false, ma: "HET_LUOT", han_muc: HAN_MUC, cua_so_gio: CUA_SO_GIO,
       thong_bao: `Hết lượt AI nhận xét (${HAN_MUC} lượt mỗi ${CUA_SO_GIO} giờ).` });
   }

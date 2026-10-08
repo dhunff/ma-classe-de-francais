@@ -1,7 +1,22 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Settings, Moon, Sun, LogOut, ChevronRight, Compass } from "lucide-react";
+import { Settings, Moon, Sun, LogOut, ChevronRight, Compass, Crown } from "lucide-react";
+import { supabase } from "../storageShim.js";
+
+/* Huy hiệu VIP trên ảnh đại diện (08/10). Nghe sự kiện SU_KIEN_VIP để hiện
+   ngay sau khi thanh toán xong, không đợi tải lại trang. */
+export const SU_KIEN_VIP = "fracile:vip-doi";
+function HuyHieuVip({ size }) {
+  const n = Math.round(size * 0.45);
+  return (
+    <span aria-label="VIP" title="Thành viên VIP"
+      className="absolute -right-1 -top-1 grid place-items-center rounded-full border-2 border-solid border-surface bg-amber-500 text-white shadow"
+      style={{ width: n, height: n }}>
+      <Crown size={Math.round(n * 0.6)} strokeWidth={2.5} />
+    </span>
+  );
+}
 import { Avatar } from "../shared/avatars.jsx";
 import { loadDanhTinh, SU_KIEN_DANH_TINH } from "../shared/identity.js";
 
@@ -58,7 +73,19 @@ export default function AvatarMenu({ session, t, dark, onToggleDark, onLogout })
     window.addEventListener(SU_KIEN_DANH_TINH, nghe);
     return () => { con = false; window.removeEventListener(SU_KIEN_DANH_TINH, nghe); };
   }, []);
-  const roleLabel = session?.role === "prof" ? t("header.teacher") : t("header.student");
+  const [vip, setVip] = useState(null);   // { vip, vip_den } | null
+  useEffect(() => {
+    if (session?.role !== "eleve") return;
+    let con = true;
+    const doc = () => supabase.rpc("toi_la_vip").then(({ data }) => { if (con && data) setVip(data); }, () => {});
+    doc();
+    window.addEventListener(SU_KIEN_VIP, doc);
+    return () => { con = false; window.removeEventListener(SU_KIEN_VIP, doc); };
+  }, [session?.role]);
+  const laVip = !!vip?.vip;
+  const roleLabel = laVip
+    ? `VIP đến ${new Date(vip.vip_den).toLocaleDateString("vi-VN")}`
+    : session?.role === "prof" ? t("header.teacher") : t("header.student");
 
   /* `mousedown` chứ không phải `click`: nút mở cũng nghe click, nghe cùng sự
      kiện sẽ thành đóng rồi mở lại ngay trong một nhịp bấm. */
@@ -86,7 +113,10 @@ export default function AvatarMenu({ session, t, dark, onToggleDark, onLogout })
         aria-label={name || t("header.student")}
         className="grid h-10 w-10 cursor-pointer place-items-center rounded-full border-0 bg-transparent p-0 ring-0 ring-primary/30 transition-all duration-300 hover:ring-4 focus:outline-none focus:ring-4"
       >
-        <Avatar khoa={avatar} ten={name} size={40} dungYen />
+        <span className="relative inline-flex">
+          <Avatar khoa={avatar} ten={name} size={40} dungYen />
+          {laVip && <HuyHieuVip size={40} />}
+        </span>
       </button>
 
       <AnimatePresence>
@@ -104,10 +134,13 @@ export default function AvatarMenu({ session, t, dark, onToggleDark, onLogout })
                 onClick={() => setOpen(false)}
                 className="group flex items-center gap-3 rounded-xl p-2 no-underline transition-colors duration-200 hover:bg-surface2"
               >
-                <Avatar khoa={avatar} ten={name} size={48} dungYen />
+                <span className="relative inline-flex">
+                  <Avatar khoa={avatar} ten={name} size={48} dungYen />
+                  {laVip && <HuyHieuVip size={48} />}
+                </span>
                 <span className="min-w-0 flex-1">
                   <span className="block truncate text-sm font-bold text-ink">{name}</span>
-                  <span className="block truncate text-xs text-soft">{roleLabel}</span>
+                  <span className={`block truncate text-xs ${laVip ? "font-bold text-warn" : "text-soft"}`}>{roleLabel}</span>
                 </span>
                 <ChevronRight size={16} className="shrink-0 text-soft transition-transform duration-200 group-hover:translate-x-0.5" />
               </Link>

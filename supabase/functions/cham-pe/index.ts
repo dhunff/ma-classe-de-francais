@@ -119,6 +119,9 @@ Deno.serve(async (req) => {
     return json(400, { ok: false, ma: "THIEU_THAM_SO" });
   }
 
+  /* VIP còn hạn: không giới hạn lượt (124). Đọc thẳng profiles bằng service_role. */
+  const { data: hs } = await admin.from("profiles").select("vip_den").eq("id", userId).maybeSingle();
+  const laVip = !!hs?.vip_den && new Date(hs.vip_den).getTime() > Date.now();
   /* ── Hạn mức, đo TRƯỚC khi tiêu tiền ── */
   const tuLuc = new Date(Date.now() - CUA_SO_GIO * 3600_000).toISOString();
   const { count: daDung } = await admin
@@ -127,7 +130,7 @@ Deno.serve(async (req) => {
     .eq("user_id", userId)
     .gte("created_at", tuLuc);
 
-  if (!chinhThuc && (daDung ?? 0) >= HAN_MUC) {
+  if (!chinhThuc && !laVip && (daDung ?? 0) >= HAN_MUC) {
     /* Mã lỗi RIÊNG, không gộp vào "thử lại sau".
        "Thử lại sau" mời người ta bấm lại ngay, và lần bấm đó cũng hỏng. Giao
        diện cần nói được "hết lượt, "+giờ+" nữa có lại" — cùng bài học với

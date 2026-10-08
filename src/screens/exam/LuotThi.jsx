@@ -32,7 +32,9 @@ export function HopBatDau({ tongPhut, luot, dangMo, loi, onHuy, onDongY }) {
         <li>Thời gian từng phần giống kỳ thi thật, tổng <strong>{tongPhut} phút</strong>. Đồng hồ không dừng lại.</li>
         <li>Bài nghe chỉ phát theo số lượt của đề thi, không tua lại được.</li>
         <li>Hãy làm bài nghiêm túc và có trách nhiệm như đang ở phòng thi: chuẩn bị chỗ yên tĩnh, tắt thông báo.</li>
-        <li><strong>Mỗi ngày chỉ có 2 lượt thi.</strong> Bấm bắt đầu là dùng một lượt; thoát ra giữa chừng sẽ <strong>mất lượt đó</strong>.</li>
+        {luot?.vip
+          ? <li>Bạn đang là <strong>VIP</strong>: không giới hạn số lượt thi. Thoát giữa chừng thì bài thi dừng lại.</li>
+          : <li><strong>Mỗi ngày chỉ có 2 lượt thi.</strong> Bấm bắt đầu là dùng một lượt; thoát ra giữa chừng sẽ <strong>mất lượt đó</strong>.</li>}
       </ul>
       {conLai != null && (
         <p className="m-0 mt-4 rounded-xl bg-surface2 px-4 py-2.5 text-sm font-bold text-ink">
