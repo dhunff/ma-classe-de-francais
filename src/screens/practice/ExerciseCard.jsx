@@ -23,10 +23,10 @@ import { tr } from "../../shared/i18n.jsx";
    phải vậy: thẻ có transition + shadow nên tự tạo stacking context, menu render
    tại chỗ sẽ bị thẻ hàng dưới đè lên. */
 
-const MATERIALS = [
-  ["vocab", BookOpen, "Vocabulaire"],
-  ["expl", Lightbulb, "Explications"],
-  ["corrige", FileCheck, "Sujet et Corrigé"],
+const MATERIALS = () => [
+  ["vocab", BookOpen, tr("Từ vựng", "Vocabulaire", "Vocabulary")],
+  ["expl", Lightbulb, tr("Giải thích", "Explications", "Explanations")],
+  ["corrige", FileCheck, tr("Đề và đáp án", "Sujet et corrigé", "Task and answer key")],
 ];
 
 /* Nút ghép "S'entraîner ▾": nửa trái vào thẳng bài, nửa phải mở tài liệu. */
@@ -42,7 +42,7 @@ function TrainButton({ onStart, onPickMaterial }) {
         className="cursor-pointer border-0 bg-primary py-2.5 pl-5 pr-4 font-[inherit] text-sm font-bold text-on-primary transition-opacity hover:opacity-90"
         style={{ borderRadius: "999px 0 0 999px" }}
       >
-        S'entraîner
+        {tr("Luyện tập", "S'entraîner", "Practice")}
       </button>
       <button
         type="button"
@@ -57,7 +57,7 @@ function TrainButton({ onStart, onPickMaterial }) {
       </button>
 
       <FloatingLayer anchorRef={ref} open={open} onClose={() => setOpen(false)} width={210} radius={20} padding={6}>
-        {MATERIALS.map(([kind, Icon, label]) => (
+        {MATERIALS().map(([kind, Icon, label]) => (
           <button
             key={kind}
             type="button"

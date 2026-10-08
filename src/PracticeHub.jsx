@@ -694,7 +694,7 @@ ${r.error?.message ?? ""}`); return; }
     const ex = exercises.find((e) => e.id === matModal.exId);
     if (!ex) return null;
     const kind = matModal.kind;
-    const TITLES = { vocab: [tr("📖 Từ vựng của bài", "📖 Vocabulaire de l'exercice", "📖 Exercise vocabulary")], expl: ["💡 Explications et Astuces"], corrige: ["📝 Sujet et Corrigé détaillé"] };
+    const TITLES = { vocab: [tr("📖 Từ vựng của bài", "📖 Vocabulaire de l'exercice", "📖 Exercise vocabulary")], expl: [tr("💡 Giải thích và mẹo", "💡 Explications et astuces", "💡 Explanations and tips")], corrige: [tr("📝 Đề và đáp án chi tiết", "📝 Sujet et corrigé détaillé", "📝 Task and detailed answer key")] };
     const [title] = TITLES[kind] || ["", null];
     const content = kind === "vocab" ? (ex.vocabulaire || "") : kind === "expl" ? (ex.explications || "") : null;
     if (typeof document === "undefined") return null;
@@ -707,7 +707,7 @@ ${r.error?.message ?? ""}`); return; }
           border: "1px solid var(--mcf-line, #EEF0F4)", boxShadow: "0 24px 60px rgba(15,23,42,.35)" }} onClick={(e) => e.stopPropagation()}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, marginBottom: 4 }}>
             <h3 style={{ ...S.display, fontSize: 20, margin: 0 }}>{title}</h3>
-            <button onClick={() => setMatModal(null)} title="Fermer"
+            <button onClick={() => setMatModal(null)} title={tr("Đóng", "Fermer", "Close")}
               style={{ width: 34, height: 34, borderRadius: 999, border: `1.5px solid ${C.line}`, background: "var(--mcf-surface)", cursor: "pointer", fontWeight: 800, color: C.ink }}>✕</button>
           </div>
           <div style={{ fontSize: 13, color: C.soft, marginBottom: 14 }}>
@@ -720,13 +720,14 @@ ${r.error?.message ?? ""}`); return; }
             ) : (
               <div style={{ textAlign: "center", padding: "34px 16px", color: C.soft }}>
                 <div style={{ fontSize: 38, marginBottom: 8 }}>{kind === "vocab" ? "📖" : "💡"}</div>
-                <div style={{ fontWeight: 700, fontSize: 15, color: C.ink }}>Le contenu est en cours de mise à jour. Revenez plus tard !</div>
-                <div style={{ fontSize: 13, marginTop: 6 }}>{tr("Giáo viên có thể thêm khi sửa bài (ô «", "Le professeur peut l'ajouter en modifiant l'exercice (champ «", "The teacher can add it by editing the exercise (field «")} {kind === "vocab" ? "Vocabulaire" : "Explications"} »).</div>
+                <div style={{ fontWeight: 700, fontSize: 15, color: C.ink }}>{tr("Nội dung đang được cập nhật. Bạn quay lại sau nhé!", "Le contenu est en cours de mise à jour. Revenez plus tard !", "This content is being updated. Check back later!")}</div>
+                <div style={{ fontSize: 13, marginTop: 6 }}>{tr("Giáo viên có thể thêm khi sửa bài (ô «", "Le professeur peut l'ajouter en modifiant l'exercice (champ «", "The teacher can add it by editing the exercise (field «")} {kind === "vocab" ? tr("Từ vựng", "Vocabulaire", "Vocabulary") : tr("Giải thích", "Explications", "Explanations")} »).</div>
               </div>
             )
           ) : (
+            <CorrigeTai ex={ex} teacher={teacher}>{(dsCau) => (
             <div style={{ display: "grid", gap: 12 }}>
-              {ex.questions.map((q, i) => (
+              {dsCau.map((q, i) => (
                 <div key={q.id} style={{ background: "var(--mcf-surface2)", borderRadius: 14, padding: "12px 15px", border: `1px solid ${C.line}` }}>
                   <div style={{ fontWeight: 700, marginBottom: 6 }}>
                     <span style={S.chip(C.primarySoft, C.primary)}>{QTYPES[q.type]}</span> {i + 1}. {q.prompt}
@@ -755,6 +756,7 @@ ${r.error?.message ?? ""}`); return; }
                 </div>
               ))}
             </div>
+            )}</CorrigeTai>
           )}
         </div>
       </div>,
@@ -996,23 +998,47 @@ function FloatingMenu({ anchorRef, open, onClose, children, minWidth = 180, alig
   );
 }
 
+/* Đáp án cho mục « Đề và đáp án » (09/10). Giáo viên đã có đáp án trong
+   q.answer. Học sinh lấy qua RPC corrige_bai (126): chỉ trả khi đã nộp bài
+   này ít nhất một lần; chưa làm thì mời làm trước. */
+function CorrigeTai({ ex, teacher, children }) {
+  const [ds, setDs] = useState(teacher ? ex.questions : undefined);
+  useEffect(() => {
+    if (teacher) return undefined;
+    let con = true;
+    supabase.rpc("corrige_bai", { p_exercise_id: ex.id }).then(({ data }) => {
+      if (!con) return;
+      if (!data?.length) { setDs(null); return; }
+      const m = new Map(data.map((r) => [r.question_id, r.answer_key]));
+      setDs(ex.questions.map((q) => ({ ...q, ...(m.get(q.id) || {}) })));
+    });
+    return () => { con = false; };
+  }, [ex, teacher]);
+  if (ds === undefined) return <div style={{ color: C.soft, fontSize: 14 }}>{tr("Đang tải…", "Chargement…", "Loading…")}</div>;
+  if (ds === null) return (
+    <div style={{ textAlign: "center", padding: "30px 16px", color: C.soft }}>
+      <img src="/leon/hoc.webp" alt="" width={96} height={96} style={{ objectFit: "contain" }} />
+      <div style={{ fontWeight: 700, fontSize: 15, color: C.ink, marginTop: 6 }}>{tr("Làm bài trước rồi xem đáp án nhé!", "Fais l'exercice d'abord, puis consulte le corrigé !", "Do the exercise first, then check the answers!")}</div>
+      <div style={{ fontSize: 13, marginTop: 6 }}>{tr("Đáp án mở ra sau khi bạn nộp bài này lần đầu.", "Le corrigé s'ouvre après ta première soumission.", "The answer key unlocks after your first submission.")}</div>
+    </div>
+  );
+  return children(ds);
+}
+
 /* ---- Split button "S'entraîner ▾" : làm bài + tài liệu bổ trợ ---- */
 function SplitTrain({ onStart, onPick, open, setOpen, teacher = false }) {
   const ref = useRef(null);
-  /* « Sujet et Corrigé » CHỈ cho giáo viên.
-     Hộp đó dựng đáp án từ `q.answer`, mà từ migration 022 trình duyệt của học
-     sinh không đọc được `answer_key` — nên với họ nó vẽ ra một bảng đáp án
-     RỖNG. Một mục menu hứa « corrigé » rồi trả về trống còn tệ hơn là không có
-     mục đó. Học sinh thấy đáp án ở màn chấm bài, nơi máy chủ gửi kèm. */
+  /* « Đề và đáp án » (09/10): học sinh cũng có, đáp án qua RPC corrige_bai và
+     chỉ mở sau khi đã nộp bài (xem CorrigeTai). */
   const ITEMS = [
-    ["vocab", <BookOpen size={16} key="i" />, "Vocabulaire"],
-    ["expl", <Lightbulb size={16} key="i" />, "Explications"],
-    ...(teacher ? [["corrige", <FileCheck size={16} key="i" />, "Sujet et Corrigé"]] : []),
+    ["vocab", <BookOpen size={16} key="i" />, tr("Từ vựng", "Vocabulaire", "Vocabulary")],
+    ["expl", <Lightbulb size={16} key="i" />, tr("Giải thích", "Explications", "Explanations")],
+    ["corrige", <FileCheck size={16} key="i" />, tr("Đề và đáp án", "Sujet et corrigé", "Task and answer key")],
   ];
   return (
     <div ref={ref} style={{ position: "relative", display: "inline-flex" }}>
       <button onClick={onStart}
-        style={{ ...S.btn(true), borderRadius: "999px 0 0 999px", paddingRight: 14 }}>S'entraîner</button>
+        style={{ ...S.btn(true), borderRadius: "999px 0 0 999px", paddingRight: 14 }}>{tr("Luyện tập", "S'entraîner", "Practice")}</button>
       <button onClick={() => setOpen(!open)} title={tr("Tài liệu của bài", "Ressources de l'exercice", "Exercise resources")} aria-haspopup="menu" aria-expanded={open}
         style={{ ...S.btn(true), borderRadius: "0 999px 999px 0", padding: "11px 12px", marginLeft: 1,
           display: "inline-flex", alignItems: "center" }}>
@@ -1388,7 +1414,7 @@ function PracticeWorkspace({ ex, back, onFinish }) {
         <div onClick={() => setImgZoom(false)}
           style={{ position: "fixed", inset: 0, zIndex: 400, background: "rgba(0,0,0,.9)", backdropFilter: "blur(4px)",
             display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
-          <button onClick={() => setImgZoom(false)} title="Fermer"
+          <button onClick={() => setImgZoom(false)} title={tr("Đóng", "Fermer", "Close")}
             style={{ position: "fixed", top: 16, right: 16, zIndex: 401, width: 44, height: 44, borderRadius: 999,
               border: "none", background: "rgba(255,255,255,.15)", color: "#fff", fontSize: 22, fontWeight: 800,
               cursor: "pointer", display: "grid", placeItems: "center" }}>✕</button>

@@ -125,9 +125,10 @@ for (const [tep, phep] of Object.entries(DUOC_PHEP)) {
   t("gạch ngang theo isGood, không theo q.answer",
     /textDecoration: graded && j === a && !isGood\(q\)/.test(ph), true);
 
-  /* Mục « Sujet et Corrigé » chỉ giáo viên: hộp đó dựng đáp án từ q.answer. */
-  t("menu Corrigé lọc theo teacher",
-    /teacher \? \[\["corrige"/.test(ph), true);
+  /* 09/10: học sinh cũng mở « Đề và đáp án », nhưng đáp án PHẢI đi qua RPC
+     corrige_bai (126, chỉ trả sau khi đã nộp), không đọc q.answer trần. */
+  t("Corrigé học sinh lấy đáp án qua corrige_bai",
+    /rpc\("corrige_bai"/.test(ph) && /<CorrigeTai ex=\{ex\} teacher=\{teacher\}>\{\(dsCau\) =>/.test(ph) && /dsCau\.map/.test(ph), true);
 
   /* ══ ĐIỀN TỪ · CHIA ĐỘNG TỪ ══
      `fillAccepted` đọc `q.accepted`, cũng bị 022 gỡ (payload - 'accepted').
