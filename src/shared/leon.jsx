@@ -115,3 +115,37 @@ export function LeonChucMung() {
     </div>
   );
 }
+
+/* Leon theo từng thẻ (09/10, chủ dự án: « mỗi thẻ phải có Leon ít nhất một
+   lần »). AppLayout dựng dải này trên đầu mọi trang trong vỏ app; trang chủ
+   học sinh đã có Leon riêng nên bỏ qua. Màn chọn đề thi thử nằm ngoài vỏ app
+   nên tự gọi <LeonTheoTrang path="/etudiant/examen" />. */
+const LOI_TRANG = () => [
+  ["/etudiant/lo-trinh", "phap", tr("Từng màn một, từng chủ đề một. Leon đi cùng bạn tới DELF!", "Étape par étape, thème par thème. Leon t'accompagne jusqu'au DELF !", "Step by step, topic by topic. Leon walks with you to the DELF!")],
+  ["/etudiant/thach-dau", "gian", tr("Vào trận thôi! Leon cược bạn thắng đấy, allez !", "En piste ! Leon parie sur toi, allez !", "Game on! Leon is betting on you, allez!")],
+  ["/etudiant/entrainement", "lam-viec", tr("Chọn một bài vừa sức, làm đều mỗi ngày là lên trình nhanh nhất.", "Choisis un exercice à ta mesure : un peu chaque jour, c'est le plus efficace.", "Pick an exercise at your level: a little every day works best.")],
+  ["/etudiant/examen", "co-len", tr("Thi thử như thi thật: hít thở sâu, đọc kỹ đề. Allez, courage !", "Comme le jour J : respire, lis bien la consigne. Allez, courage !", "Just like exam day: breathe, read the instructions. Allez, courage!")],
+  ["/etudiant/resultats", "suy-nghi", tr("Xem lại chỗ mất điểm là cách lên điểm nhanh nhất.", "Revoir où tu perds des points, c'est le moyen le plus rapide de progresser.", "Reviewing where you lost points is the fastest way to improve.")],
+  ["/etudiant/bo-the", "hoc", tr("Lật thẻ mỗi ngày một chút, từ vựng sẽ tự ở lại.", "Un peu de cartes chaque jour, et le vocabulaire reste.", "A few cards a day and the vocabulary sticks.")],
+  ["/etudiant/calendrier", "ok", tr("Lên lịch học đều đặn, Leon nhắc bạn đúng hẹn.", "Planifie tes séances, Leon te le rappellera.", "Plan your sessions, Leon will remind you.")],
+  ["/etudiant/devoirs", "duoc-do", tr("Bài giáo viên giao ở đây. Làm sớm cho nhẹ đầu nhé!", "Les devoirs de ton professeur sont ici. Fais-les tôt !", "Your teacher's assignments are here. Do them early!")],
+  ["/etudiant/compte", "nhay-mat", tr("Điền đủ hồ sơ để Leon gợi ý bài sát với bạn hơn.", "Complète ton profil pour que Leon te conseille mieux.", "Complete your profile so Leon can suggest better.")],
+  ["/etudiant/thong-bao", "ngac-nhien", tr("Có tin mới nè! Leon đánh hơi thấy rồi.", "Du nouveau ! Leon l'a flairé.", "Something new! Leon sniffed it out.")],
+  ["/etudiant", "chao", tr("Bonjour ! Leon ở đây nếu bạn cần.", "Bonjour ! Leon est là si tu as besoin.", "Bonjour! Leon is here if you need him.")],
+  ["/professeur/dashboard", "chao", tr("Bonjour ! Hôm nay lớp mình học thế nào, Leon xem cùng nhé.", "Bonjour ! Voyons ensemble comment avance la classe.", "Bonjour! Let's see how the class is doing.")],
+  ["/professeur/exercices", "lam-viec", tr("Soạn bài xong nhớ giao cho học sinh nhé!", "Une fois l'exercice prêt, pensez à l'assigner !", "Once it's ready, remember to assign it!")],
+  ["/professeur/eleves", "yeu-qua", tr("Học sinh của bạn đây. Leon thương cả lớp!", "Voici vos élèves. Leon les adore tous !", "Here are your students. Leon loves them all!")],
+  ["/professeur/statistiques", "suy-nghi", tr("Số liệu cho thấy học sinh vấp ở đâu.", "Les chiffres montrent où les élèves bloquent.", "The numbers show where students struggle.")],
+  ["/professeur/thong-bao", "ngac-nhien", tr("Một thông báo ngắn, rõ ràng là học sinh đọc ngay.", "Un message court et clair, les élèves le lisent tout de suite.", "A short, clear message gets read right away.")],
+  ["/professeur/examens", "co-len", tr("Đề thi thử chuẩn format là món quà lớn cho học sinh.", "Un examen blanc au bon format, c'est un beau cadeau.", "A properly formatted mock exam is a great gift.")],
+  ["/professeur/neo", "hum", tr("Neo đáp án giúp học sinh thấy vì sao mình sai.", "Les ancres montrent aux élèves pourquoi ils se trompent.", "Anchors show students why they got it wrong.")],
+  ["/professeur/bo-the", "hoc", tr("Mỗi bộ thẻ gọn một chủ đề là dễ nhớ nhất.", "Un paquet par thème, c'est le plus facile à retenir.", "One deck per topic is easiest to remember.")],
+  ["/professeur/duyet-nhap", "ok", tr("Duyệt xong là học sinh thấy bài ngay.", "Une fois validé, l'exercice est visible.", "Once approved, students see it right away.")],
+  ["/professeur", "chao", tr("Bonjour ! Leon hỗ trợ bạn quản lý lớp.", "Bonjour ! Leon vous aide à gérer la classe.", "Bonjour! Leon helps you run the class.")],
+];
+export function LeonTheoTrang({ path, className = "" }) {
+  if (path === "/etudiant/dashboard") return null;
+  const hit = LOI_TRANG().find(([p]) => path === p || path.startsWith(p + "/") || path.startsWith(p));
+  if (!hit) return null;
+  return <LeonNoi cam={hit[1]} size={56} className={className}>{hit[2]}</LeonNoi>;
+}

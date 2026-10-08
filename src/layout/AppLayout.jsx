@@ -4,6 +4,7 @@ import Sidebar from "./Sidebar.jsx";
 import Topbar from "./Topbar.jsx";
 import CheatSheetPanel from "./CheatSheetPanel.jsx";
 import { titleKeyFor } from "./navItems.js";
+import { LeonTheoTrang } from "../shared/leon.jsx";
 
 /* Vỏ ứng dụng — kiểu "thẻ lồng": nền xanh đặc làm khung, nội dung là một tấm
    thẻ trắng lớn đặt lên trên, thanh bên nằm thẳng trên nền xanh.
@@ -97,6 +98,7 @@ export default function AppLayout({
         />
 
         <main className="min-w-0 flex-1 overflow-y-auto px-4 pb-8 md:px-8">
+          <LeonTheoTrang path={location.pathname} className="mt-1 mb-4" />
           <Outlet context={{ query }} />
         </main>
 

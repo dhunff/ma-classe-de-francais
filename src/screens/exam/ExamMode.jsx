@@ -17,6 +17,7 @@ import { isQuestionAnswered } from "../../shared/questions.js";
 const daLamCau = (q, answers) => (q.type === "vf" ? answers?.[q.id]?.choice != null : isQuestionAnswered(q, answers));
 import { coPhienMayChu } from "../../shared/phienMayChu.js";
 import { tr } from "../../shared/i18n.jsx";
+import { LeonTheoTrang } from "../../shared/leon.jsx";
 
 /* Mode Examen — thi thử có tính giờ.
  *
@@ -113,6 +114,8 @@ function ManCho({ dsDe, chon, paper, onStart, dangTai, lamPhanNoi, setLamPhanNoi
           <Trophy size={15} /> {tr("Kết quả thi của tôi", "Mes résultats", "My results")}
         </Link>
       </div>
+
+      <LeonTheoTrang path="/etudiant/examen" className="mt-5" />
 
       <h1 className="m-0 mt-4 text-2xl font-extrabold text-ink">{tr("Thi thử DELF", "Examen blanc DELF", "DELF mock exam")}</h1>
       <p className="m-0 mt-2 text-sm text-soft">
