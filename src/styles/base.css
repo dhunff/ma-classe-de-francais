@@ -205,3 +205,14 @@ body {
   .mcf-cau-vao, .mcf-nay, .mcf-rung, .mcf-dai-len, .mcf-tim-mat, .mcf-anh-sang, .mcf-phao, .mcf-sao-no, .mcf-lua-nhun { animation: none; }
   .mcf-phao { display: none; }
 }
+/* Bản đồ Lộ trình (09/10): đường tự vẽ, nút nảy vào, vòng sáng màn hiện tại. */
+@keyframes mcfVeDuong { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+.mcf-ve-duong { stroke-dasharray: 1; stroke-dashoffset: 1; animation: mcfVeDuong 1.2s .2s ease-out forwards; }
+@keyframes mcfNutVao { 0% { opacity: 0; transform: scale(.4); } 70% { opacity: 1; transform: scale(1.08); } 100% { opacity: 1; transform: scale(1); } }
+.mcf-nut-vao { animation: mcfNutVao .5s cubic-bezier(.34,1.56,.64,1) both; }
+@keyframes mcfVongSang { 0% { box-shadow: 0 0 0 0 var(--vong); } 100% { box-shadow: 0 0 0 22px transparent; } }
+.mcf-vong-sang { animation: mcfVongSang 1.6s ease-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .mcf-ve-duong { animation: none; stroke-dashoffset: 0; }
+  .mcf-nut-vao, .mcf-vong-sang { animation: none; }
+}

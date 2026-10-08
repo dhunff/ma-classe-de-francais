@@ -45,6 +45,7 @@ const BO = {
   thang: (c) => [523, 659, 784, 1047].forEach((f, k) => not(c, f, k * 0.12, k === 3 ? 0.55 : 0.18, "triangle", 0.18)),
   sao: (c) => not(c, 1319, 0, 0.18, "sine", 0.12, 1760),
   batDau: (c) => { [440, 440, 440].forEach((fr, k) => not(c, fr, k * 0.35, 0.12, "square", 0.06)); not(c, 880, 1.05, 0.4, "square", 0.08); },
+  lat: (c) => { not(c, 300, 0, 0.16, "sine", 0.1, 720); not(c, 1200, 0.05, 0.08, "triangle", 0.03, 1600); },
   nop: (c) => [659, 784].forEach((fr, k) => not(c, fr, k * 0.1, 0.2, "triangle", 0.15)),
   thua: (c) => [392, 349, 311, 262].forEach((f, k) => not(c, f, k * 0.16, 0.24, "triangle", 0.14)),
 };

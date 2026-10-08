@@ -1,7 +1,9 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Check, Lock, Play, Crown, Star, BookOpen } from "lucide-react";
 import { docKetQua, ghiKetQua, docLoTrinh } from "../../shared/loTrinhStore.js";
-import { useT } from "../../shared/i18n.jsx";
+import { useT, tr } from "../../shared/i18n.jsx";
+import { Leon } from "../../shared/leon.jsx";
+import { phat } from "../../shared/amThanh.js";
 import TroChoiMan from "./TroChoiMan.jsx";
 
 /* Lộ trình học tập — THEO CHỦ ĐỀ XÃ HỘI (06/10), không theo kỹ năng nữa.
@@ -99,7 +101,8 @@ export default function LoTrinh() {
   const tongMan = chuongs.reduce((n, c) => n + c.man.length + 1, 0);
 
   const mo = (m, laTrum, c) => {
-    if (m.trangThai === "khoa") return;
+    if (m.trangThai === "khoa") { phat("sai"); return; }
+    phat("batDau");
     setDangChoi({
       maMan: m.maMan,
       tieuDe: laTrum ? t("path.boss_of", { ky: c.ten }) : m.tieuDe,
@@ -138,15 +141,27 @@ export default function LoTrinh() {
 
   return (
     <div className="mx-auto max-w-3xl px-4 pb-24 pt-6">
-      <header className="mb-4 flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className="m-0 text-2xl font-extrabold tracking-tight text-ink">{t("nav.path")}</h1>
-          <p className="m-0 mt-1 text-sm text-soft">{t("path.subtitle_topics", { n: tongMan - chuongs.length, c: chuongs.length })}</p>
+      {/* Khung đầu trang (09/10): Leon + tổng sao + thanh tiến độ. */}
+      <header className="mcf-cau-vao relative mb-5 overflow-hidden rounded-3xl bg-gradient-to-br from-blue-600 via-primary to-indigo-600 p-6 text-white shadow-[0_20px_50px_rgba(37,99,235,0.3)]">
+        <span aria-hidden className="absolute -right-12 -top-12 h-48 w-48 rounded-full bg-white/10" />
+        <span aria-hidden className="absolute -bottom-20 left-10 h-44 w-44 rounded-full bg-sky-300/20 blur-2xl" />
+        <div className="relative flex items-center gap-4">
+          <Leon cam="phap" size={112} className="mcf-leon-bay shrink-0 drop-shadow-[0_12px_18px_rgba(0,0,0,0.3)] max-sm:h-20 max-sm:w-20" />
+          <div className="min-w-0 flex-1">
+            <h1 className="m-0 text-3xl font-extrabold tracking-tight">{t("nav.path")}</h1>
+            <p className="m-0 mt-1 text-sm text-white/85">{t("path.subtitle_topics", { n: tongMan - chuongs.length, c: chuongs.length })}</p>
+            <div className="mt-3 flex items-center gap-3">
+              <div className="h-3 flex-1 overflow-hidden rounded-full bg-white/20">
+                <div className="relative h-full overflow-hidden rounded-full bg-gradient-to-r from-amber-300 to-amber-400 transition-[width] duration-1000 ease-out" style={{ width: `${Math.max(3, (tongSao / (tongMan * 3)) * 100)}%` }}>
+                  <span aria-hidden className="mcf-anh-sang absolute inset-y-0 left-0 w-1/3 bg-gradient-to-r from-transparent via-white/60 to-transparent" />
+                </div>
+              </div>
+              <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-white/20 px-3 py-1 text-sm font-extrabold">
+                <Star size={15} className="text-amber-300" fill="currentColor" />{tongSao}<span className="text-white/70">/{tongMan * 3}</span>
+              </span>
+            </div>
+          </div>
         </div>
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-warn-soft px-3 py-1.5 text-sm font-extrabold text-ink">
-          <Star size={16} className="text-warn" fill="currentColor" />
-          {t("path.stars", { sao: tongSao, tong: tongMan * 3 })}
-        </span>
       </header>
 
       {/* Dãy chọn chủ đề — mỗi nút hiện số màn đã qua / tổng. */}
@@ -155,11 +170,14 @@ export default function LoTrinh() {
           const xong = c.man.filter((m) => m.sao > 0).length;
           const dang = c.ma === dangXem.ma;
           return (
-            <button key={c.ma} type="button" onClick={() => setChon(c.ma)} aria-pressed={dang}
-              className={"shrink-0 cursor-pointer rounded-2xl border-2 border-solid px-3 py-2 text-left font-sans transition " + (dang ? "text-white" : "border-line bg-surface text-ink hover:bg-surface2")}
+            <button key={c.ma} type="button" onClick={() => { if (!dang) phat("tiep"); setChon(c.ma); }} aria-pressed={dang}
+              className={"shrink-0 cursor-pointer rounded-2xl border-2 border-solid px-3 py-2 text-left font-sans transition-all duration-200 " + (dang ? "-translate-y-0.5 text-white shadow-lg" : "border-line bg-surface text-ink hover:-translate-y-0.5 hover:bg-surface2")}
               style={dang ? { backgroundColor: c.mau, borderColor: c.mau } : undefined}>
               <span className="block max-w-[11rem] truncate text-xs font-extrabold">{c.ten}</span>
               <span className={"block text-[11px] font-semibold " + (dang ? "opacity-90" : "text-soft")}>{xong}/{c.man.length}{c.trum.sao > 0 ? " · ★" : ""}</span>
+              <span className={"mt-1 block h-1 w-full overflow-hidden rounded-full " + (dang ? "bg-white/30" : "bg-surface2")}>
+                <span className="block h-full rounded-full" style={{ width: `${(xong / c.man.length) * 100}%`, backgroundColor: dang ? "#fff" : c.mau }} />
+              </span>
             </button>
           );
         })}
@@ -183,12 +201,16 @@ function Chuong({ chuong, onMo, t }) {
   return (
     <section className="mb-6">
       <div className="sticky top-0 z-10 -mx-4 mb-2 bg-surface/90 px-4 py-2 backdrop-blur">
-        <div className="flex items-center gap-3 rounded-2xl px-4 py-3 text-white shadow-sm" style={{ backgroundColor: mau }}>
-          <Icon size={22} />
+        <div className="mcf-cau-vao relative flex items-center gap-3 overflow-hidden rounded-2xl px-4 py-3 text-white shadow-md" style={{ backgroundImage: `linear-gradient(135deg, ${mau}, color-mix(in srgb, ${mau} 70%, black))` }}>
+          <span aria-hidden className="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-white/10" />
+          <Leon cam={soXong >= man.length + 1 ? "yeah" : soXong > 0 ? "hoc" : "chao"} size={56} className="relative shrink-0" />
           <div className="min-w-0 flex-1">
             <p className="m-0 text-xs font-bold uppercase tracking-wider opacity-80">{chuong.tenFr}</p>
             <p className="m-0 text-base font-extrabold">{chuong.ten}</p>
             <p className="m-0 text-sm font-extrabold">{t("path.chapter_count", { xong: Math.min(soXong, man.length), n: man.length })}</p>
+            <span className="mt-1 block h-1.5 w-full max-w-xs overflow-hidden rounded-full bg-white/25">
+              <span className="block h-full rounded-full bg-white transition-[width] duration-700" style={{ width: `${(Math.min(soXong, man.length) / man.length) * 100}%` }} />
+            </span>
           </div>
         </div>
       </div>
@@ -197,23 +219,24 @@ function Chuong({ chuong, onMo, t }) {
         <svg width={RONG} height={cao} className="absolute inset-0" aria-hidden="true">
           <path d={duong(diem)} fill="none" strokeWidth="8" strokeLinecap="round" className="stroke-line" strokeDasharray="2 16" />
           {diemXong.length > 1 && (
-            <path d={duong(diemXong)} fill="none" strokeWidth="8" strokeLinecap="round" stroke={mau} />
+            <path d={duong(diemXong)} fill="none" strokeWidth="10" strokeLinecap="round" stroke={mau} pathLength="1" className="mcf-ve-duong" />
           )}
         </svg>
 
         {man.map((m, i) => (
-          <Nut key={m.maMan} m={m} pos={toaDo(i, false)} mau={mau} Icon={Icon}
+          <Nut key={m.maMan} m={m} pos={toaDo(i, false)} mau={mau} Icon={Icon} thuTu={i}
             onClick={() => onMo(m, false)} t={t} />
         ))}
-        <Nut m={{ ...trum, tieuDe: t("path.boss") }} pos={toaDo(man.length, true)} mau={mau} trum
+        <Nut m={{ ...trum, tieuDe: t("path.boss") }} pos={toaDo(man.length, true)} mau={mau} trum thuTu={man.length}
           onClick={() => onMo(trum, true)} t={t} />
       </div>
     </section>
   );
 }
 
-function Nut({ m, pos, mau, Icon, trum, onClick, t }) {
+function Nut({ m, pos, mau, Icon, trum, onClick, t, thuTu = 0 }) {
   const dangMo = false;
+  const [rung, setRung] = useState(0);
   const { trangThai, sao, tieuDe, soThe } = m;
   const khoa = trangThai === "khoa";
   const hienTai = trangThai === "hienTai";
@@ -223,21 +246,26 @@ function Nut({ m, pos, mau, Icon, trum, onClick, t }) {
       : { backgroundColor: mau, boxShadow: `0 6px 0 color-mix(in srgb, ${mau} 65%, black)` };
 
   return (
-    <div className="absolute flex flex-col items-center"
-      style={{ left: pos.x - RONG_NHAN / 2, top: pos.y - pos.r, width: RONG_NHAN }}>
+    <div className="mcf-nut-vao absolute flex flex-col items-center"
+      style={{ left: pos.x - RONG_NHAN / 2, top: pos.y - pos.r, width: RONG_NHAN, animationDelay: `${120 + thuTu * 70}ms` }}>
+      {hienTai && (
+        <Leon cam={trum ? "gian" : "chao"} size={64}
+          className={`mcf-leon-bay pointer-events-none absolute top-0 z-10 ${pos.x > RONG / 2 ? "-left-12" : "-right-12"}`} />
+      )}
       {hienTai && (
         <span className="absolute -top-9 z-10 animate-bounce whitespace-nowrap rounded-xl border-2 border-solid border-line bg-surface px-3 py-1 text-xs font-extrabold uppercase tracking-wide"
           style={{ color: trum ? "#B45309" : mau }}>
           {t("path.start")}
         </span>
       )}
-      <button type="button" onClick={onClick} disabled={khoa}
+      <button key={rung} type="button" onClick={() => { if (khoa) setRung((n) => n + 1); onClick(); }} aria-disabled={khoa}
         title={khoa ? t(trum ? "path.boss_hint" : "path.locked") : trum ? tieuDe : `${tieuDe} (${m.cap}) · ${t("path.cards_n", { n: soThe })}`}
         aria-label={tieuDe}
         className={`relative flex items-center justify-center rounded-full border-0 transition
-          ${khoa ? "cursor-not-allowed text-soft" : "cursor-pointer text-white hover:brightness-110 active:translate-y-1"}
+          ${khoa ? `cursor-not-allowed text-soft ${rung ? "mcf-rung" : ""}` : "cursor-pointer text-white hover:-translate-y-0.5 hover:brightness-110 active:translate-y-1"}
           ${hienTai ? "ring-8 ring-primary-soft" : ""} ${dangMo ? "animate-pulse" : ""}`}
-        style={{ width: pos.r * 2, height: pos.r * 2, ...kieu }}>
+        style={{ width: pos.r * 2, height: pos.r * 2, ...kieu, "--vong": trum ? "rgba(245,158,11,0.55)" : `color-mix(in srgb, ${mau} 55%, transparent)` }}>
+        {hienTai && <span aria-hidden className="mcf-vong-sang pointer-events-none absolute inset-0 rounded-full" />}
         {khoa ? <Lock size={trum ? 30 : 24} />
           : trum ? <Crown size={38} strokeWidth={2.2} />
             : trangThai === "xong" ? <Check size={30} strokeWidth={3.5} />

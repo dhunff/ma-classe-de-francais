@@ -11,6 +11,11 @@ import { MUC, xepLichOn, ngayCong } from "../../shared/sm2.js";
    bị bỏ là màn ôn SM-2 cũ, không phải cách vẽ một cái thẻ. */
 import TheLat3D from "./TheLat3D.jsx";
 import { tr } from "../../shared/i18n.jsx";
+import { phat } from "../../shared/amThanh.js";
+import { Leon } from "../../shared/leon.jsx";
+
+/* Âm thanh khi chấm thẻ (09/10). */
+const TIENG_CHAM = { lai: "timMat", kho: "bam", tot: "dung", de: "combo" };
 
 /* Màn luyện một bộ Flashcard — CÓ LỊCH ÔN từ 21/09 (migration 089).
  *
@@ -120,10 +125,12 @@ export default function LuyenBoThe({ bo, onThoat }) {
        với người học rằng lần ôn đã được ghi — và ngày mai thẻ đó vẫn đến hạn
        mà không ai hiểu vì sao. Đọc kết quả trước khi nói đã xong: lần thứ năm
        trong dự án. */
-    if (!kq.ok) { setLoi(tr("Không lưu được lần ôn này: ", "Révision non enregistrée : ", "Couldn't save this review: ") + kq.loi); return; }
+    if (!kq.ok) { phat("sai"); setLoi(tr("Không lưu được lần ôn này: ", "Révision non enregistrée : ", "Couldn't save this review: ") + kq.loi); return; }
 
     /* Cập nhật lịch trong bộ nhớ luôn, để màn « hết thẻ » tính được lần ôn tới
        mà không phải gọi lại máy chủ. */
+    phat(TIENG_CHAM[khoa] ?? "bam");
+    if (khoa !== "lai" && hang.length === 1) setTimeout(() => phat("thang"), 350);
     setTatCa((ds) => ds.map((x) => (x.card_id === the.card_id ? { ...x, ...kq.moi } : x)));
     /* "Quên rồi" đưa thẻ về CUỐI hàng trong buổi này — gặp lại trước khi rời
        màn, lúc vừa kịp quên. Ba nút kia đưa thẻ ra khỏi buổi hôm nay. */
@@ -167,9 +174,7 @@ export default function LuyenBoThe({ bo, onThoat }) {
         /* Hết thẻ đến hạn. Nói NGÀY quay lại — "xong" mà không nói bao giờ
            quay lại thì người ta hoặc mở lại liên tục, hoặc quên luôn bộ này. */
         <div className="mt-8 rounded-3xl border border-line bg-surface p-10 text-center">
-          {tongPhien > 0
-            ? <Check size={26} className="mx-auto text-ok" />
-            : <CalendarClock size={26} className="mx-auto text-primary" />}
+          <Leon cam={tongPhien > 0 ? "yeah" : "buon-ngu"} size={120} className="mcf-nay mx-auto block" />
           <p className="m-0 mt-3 text-lg font-extrabold text-ink">
             {tongPhien > 0 ? tr("Xong phần hôm nay", "Terminé pour aujourd'hui", "Done for today") : tr("Hôm nay không có thẻ nào đến hạn", "Aucune carte à réviser aujourd'hui", "No cards due today")}
           </p>
@@ -187,7 +192,7 @@ export default function LuyenBoThe({ bo, onThoat }) {
             sau={the.matSau}
             viDu={the.viDu}
             daLat={lat}
-            onLat={() => setLat((v) => !v)}
+            onLat={() => { phat("lat"); setLat((v) => !v); }}
             conLai={hang.length - 1}
           />
 
