@@ -66,8 +66,16 @@ const laOpenAI = (m: string) => /^(gpt-|o\d)/.test(m);
  * Sáu là đủ cho việc học thật: viết một bài, xin gợi ý, sửa, xin lại. Ai cần
  * lượt thứ bảy trong một ngày thì gần như chắc chắn đang thử nghịch hệ thống
  * chứ không đang luyện thi. */
-const HAN_MUC = 6;
+/* 08/10, theo chủ dự án: 3 lượt AI chấm mỗi NGÀY (theo giờ Việt Nam) cho tài
+   khoản thường, TÍNH CẢ lượt chấm bài thi thử; VIP không giới hạn (124).
+   Đổi từ cửa sổ trượt 24 giờ sang ngày lịch vì « 3 lần/ngày » là thứ học sinh
+   hiểu và đếm được; lượt mới mở lúc 0 giờ. */
+const HAN_MUC = 3;
 const CUA_SO_GIO = 24;
+const dauNgayVN = () => {
+  const vn = new Date(Date.now() + 7 * 3600_000);
+  return new Date(Date.UTC(vn.getUTCFullYear(), vn.getUTCMonth(), vn.getUTCDate()) - 7 * 3600_000).toISOString();
+};
 
 /* Trần độ dài bài viết gửi cho mô hình. Bài DELF B2 dài nhất cũng chỉ quanh
    250 từ; 12 nghìn ký tự là rộng rãi gấp nhiều lần. Trần này không để chặn học
@@ -123,21 +131,21 @@ Deno.serve(async (req) => {
   const { data: hs } = await admin.from("profiles").select("vip_den").eq("id", userId).maybeSingle();
   const laVip = !!hs?.vip_den && new Date(hs.vip_den).getTime() > Date.now();
   /* ── Hạn mức, đo TRƯỚC khi tiêu tiền ── */
-  const tuLuc = new Date(Date.now() - CUA_SO_GIO * 3600_000).toISOString();
+  const tuLuc = dauNgayVN();
   const { count: daDung } = await admin
     .from("pe_ai_goi_y")
     .select("id", { count: "exact", head: true })
     .eq("user_id", userId)
     .gte("created_at", tuLuc);
 
-  if (!chinhThuc && !laVip && (daDung ?? 0) >= HAN_MUC) {
+  if (!laVip && (daDung ?? 0) >= HAN_MUC) {
     /* Mã lỗi RIÊNG, không gộp vào "thử lại sau".
        "Thử lại sau" mời người ta bấm lại ngay, và lần bấm đó cũng hỏng. Giao
        diện cần nói được "hết lượt, "+giờ+" nữa có lại" — cùng bài học với
        DAILY_LIMIT_REACHED ở tao_the_tu_viet. */
     return json(429, {
       ok: false, ma: "HET_LUOT", han_muc: HAN_MUC, cua_so_gio: CUA_SO_GIO,
-      thong_bao: `Hết lượt xin gợi ý (${HAN_MUC} lượt mỗi ${CUA_SO_GIO} giờ).`,
+      thong_bao: `Bạn đã dùng hết ${HAN_MUC} lượt AI chấm hôm nay. Lượt mới mở lúc 0 giờ; gói VIP không giới hạn.`,
     });
   }
 
@@ -198,29 +206,56 @@ Deno.serve(async (req) => {
      Liệt kê TỪNG tiêu chí kèm thang điểm và mô tả lấy thẳng từ rubric đang
      hiển thị cho học sinh. Không tóm tắt lại: nếu mô hình chấm theo một thang
      khác với thang trên màn hình thì gợi ý và ô điểm cạnh nó nói hai chuyện. */
-  const bangTieuChi = rubric.criteria.map((c: any) =>
-    `- id: "${c.id}" | ${c.name_fr ?? c.name} | tối đa ${c.max_score} điểm, bước ${c.step ?? 0.5}`
-    + (c.description ? `\n  Mô tả: ${String(c.description).slice(0, 300)}` : ""),
-  ).join("\n");
+  /* ── Lời dặn giám khảo (làm lại 08/10) ──
+     Mỗi tiêu chí kèm: tên CHÍNH THỨC (tiếng Pháp), mô tả của grille DELF, và
+     các MỐC ĐIỂM (barème) đúng trình độ — AI phải xếp bài vào một mốc rồi mới
+     cho điểm, thay vì đoán một con số. Thang lấy thẳng từ rubric đang hiện cho
+     học sinh, nên điểm AI và thang trên màn hình nói cùng một chuyện. */
+  const capDo = String(rubric.level ?? "B1");
+  const KY_VONG: Record<string, string> = {
+    A1: "A1 : phrases simples et isolées, vocabulaire élémentaire du quotidien, informations personnelles. Ne pas exiger de connecteurs complexes ; valoriser la communication réussie.",
+    A2: "A2 : phrases simples reliées par et, mais, parce que ; décrire, raconter un événement au passé composé, inviter, remercier, s'excuser.",
+    B1: "B1 : texte articulé, exprimer et justifier une opinion, raconter une expérience ; passé composé / imparfait, connecteurs courants.",
+    B2: "B2 : argumentation structurée et nuancée (introduction, arguments illustrés, conclusion), registre adapté, phrases complexes, vocabulaire précis.",
+    C1: "C1 : texte clair, bien structuré, argumentation développée, registre soutenu maîtrisé, grande précision lexicale et syntaxique.",
+  };
+  const bangTieuChi = rubric.criteria.map((c: any) => {
+    const moc = Array.isArray(c.bareme) && c.bareme.length
+      ? "\n  Barème : " + c.bareme.map((b: any) => `${b[0]} = ${String(b[1]).slice(0, 120)}`).join(" | ")
+      : "";
+    return `- id: "${c.id}" | ${c.name_fr ?? c.name} (« ${c.name} ») | sur ${c.max_score}, pas de ${c.step ?? 0.5}`
+      + (c.description_fr || c.description ? `\n  Descripteur : ${String(c.description_fr ?? c.description).slice(0, 300)}` : "")
+      + moc;
+  }).join("\n");
 
   const heThong = [
-    "Bạn là giám khảo DELF chấm phần Production écrite.",
-    `Trình độ của đề: ${rubric.level ?? "B1"}.`,
+    `Tu es examinateur-correcteur habilité DELF/DALF. Tu corriges l'épreuve de production écrite du niveau ${capDo}, avec la grille officielle ci-dessous.`,
+    KY_VONG[capDo] ?? "",
     "",
-    "Chấm theo ĐÚNG các tiêu chí dưới đây, không thêm không bớt:",
+    "GRILLE (ne rien ajouter, ne rien retirer) :",
     bangTieuChi,
     "",
-    "Quy tắc:",
-    "- Cho điểm trong khoảng từ 0 tới mức tối đa của TỪNG tiêu chí. Không vượt.",
-    "- Nhận xét viết bằng TIẾNG VIỆT, xưng hô với người học là « bạn ».",
-    "- Mỗi nhận xét phải TRÍCH một đoạn cụ thể trong bài rồi nói vì sao, thay vì",
-    "  nhận định chung chung. Người học phải biết sửa ở đâu.",
-    "- Không bịa lỗi. Tiêu chí nào bài làm tốt thì nói là tốt.",
+    "MÉTHODE :",
+    "1. Pour chaque critère, situe la copie dans UNE ligne du barème, puis attribue la note correspondante (dans les bornes, au pas indiqué).",
+    "2. Juge la copie par rapport aux attentes du niveau ${capDo}, ni plus ni moins exigeant.",
+    "3. Ne jamais inventer d'erreur. Si un critère est réussi, dis-le.",
+    "4. Si la consigne n'est pas respectée (hors sujet, nombre de mots insuffisant), applique-le au critère concerné.",
     "",
-    "Trả lời CHỈ bằng một khối JSON, không thêm chữ nào ngoài nó:",
-    '{ "tieu_chi": { "<id>": { "diem": <số>, "nhan_xet": "<tiếng Việt>" } },',
-    '  "tong_quat": "<2-3 câu tiếng Việt: điểm mạnh nhất và việc cần sửa trước tiên>" }',
-  ].join("\n");
+    "RÉDACTION DES COMMENTAIRES (en VIETNAMIEN, ton professionnel d'examinateur, vouvoiement « bạn ») :",
+    "- diem_manh : ce qui est réussi pour ce critère, concret.",
+    "- can_cai_thien : ce qui fait perdre des points et comment progresser.",
+    "- trich_dan : un extrait EXACT de la copie (en français) qui illustre le commentaire, ou chaîne vide.",
+    "- nhan_xet : une phrase de synthèse pour le critère.",
+    "- tong_quat : 2 à 3 phrases, appréciation globale d'examinateur.",
+    "- nhan_dinh_trinh_do : une phrase situant la copie par rapport au niveau ${capDo} (atteint, presque atteint, non atteint) et pourquoi.",
+    "- uu_tien : les 3 actions prioritaires pour gagner des points, formulées en verbes d'action.",
+    "- cau_mau : jusqu'à 3 phrases de la copie réécrites correctement (goc = original exact, sua = version corrigée en français, vi_sao = raison en vietnamien).",
+    "",
+    "Réponds UNIQUEMENT avec ce JSON :",
+    '{ "tieu_chi": { "<id>": { "diem": <nombre>, "nhan_xet": "...", "diem_manh": "...", "can_cai_thien": "...", "trich_dan": "..." } },',
+    '  "tong_quat": "...", "nhan_dinh_trinh_do": "...", "uu_tien": ["...", "...", "..."],',
+    '  "cau_mau": [ { "goc": "...", "sua": "...", "vi_sao": "..." } ] }',
+  ].join("\n").replaceAll("${capDo}", capDo);
 
   const deBai = String((ans as any).questions?.prompt ?? "").slice(0, 2000);
   const nguoiDung = [
@@ -308,11 +343,16 @@ Deno.serve(async (req) => {
     const g: any = kq.goiY;
     const chiTiet = rubric.criteria.map((c: any) => {
       const t = g.tieu_chi?.[c.id];
-      return t ? `• ${c.name ?? c.id}: ${t.diem}/${c.max_score}${t.nhan_xet ? " · " + t.nhan_xet : ""}` : "";
+      if (!t) return "";
+      return [`▸ ${c.name ?? c.id} (${c.name_fr ?? ""}) : ${t.diem}/${c.max_score}`,
+        t.diem_manh ? `  Điểm mạnh: ${t.diem_manh}` : "",
+        t.can_cai_thien ? `  Cần cải thiện: ${t.can_cai_thien}` : "",
+        t.trich_dan ? `  Trích bài: « ${t.trich_dan} »` : ""].filter(Boolean).join("\n");
     }).filter(Boolean).join("\n");
+    const uuTien = (g.uu_tien ?? []).map((x: string, k: number) => `${k + 1}. ${x}`).join("\n");
     const { error: loiD } = await admin.from("answers").update({
       score: g.tong, max_score: g.tong_toi_da || tongToiDa,
-      feedback: `AI chấm: ${g.tong_quat}\n${chiTiet}`.slice(0, 4000),
+      feedback: [`NHẬN XÉT CỦA GIÁM KHẢO AI · DELF ${capDo}`, g.tong_quat, g.nhan_dinh_trinh_do, chiTiet, uuTien ? `Ưu tiên sửa:\n${uuTien}` : ""].filter(Boolean).join("\n\n").slice(0, 6000),
       graded_at: new Date().toISOString(),
     }).eq("id", answerId).is("score", null);
     daGhiDiem = !loiD;

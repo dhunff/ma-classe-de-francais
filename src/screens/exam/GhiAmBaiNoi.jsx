@@ -204,7 +204,7 @@ export default function GhiAmBaiNoi({ examId, exerciseId, gioiHanGiay = 900 }) {
 
 /* Khung hiện nhận xét của AI cho một bản ghi. Không có điểm số — cố ý. */
 const LOI = {
-  HET_LUOT: "Bạn đã dùng hết 6 lượt AI nhận xét trong 24 giờ. Thử lại sau.",
+  HET_LUOT: "Bạn đã dùng hết 6 lượt AI nhận xét trong 24 giờ. Gói VIP không giới hạn.",
   DINH_DANG_KHONG_HO_TRO: "Định dạng ghi âm này (thường từ Firefox) chưa nhận xét được — hãy ghi lại bằng Chrome hoặc Edge.",
   KHONG_NGHE_RO: "AI không nghe được lời nói nào trong bản ghi. Kiểm tra micro rồi ghi lại.",
   CHUA_CAU_HINH_KHOA: "Máy chủ chưa bật AI nhận xét — đây là việc của người quản trị.",

@@ -78,7 +78,13 @@ export function kiemGoiY(tho, rubric) {
     const diem = lamTronBuoc(d, c.step ?? 0.5);
     const nx = (typeof o === "object") ? (o.nhan_xet ?? o.comment ?? o.feedback) : null;
 
+    /* Trường nhận xét mở rộng (08/10): điểm mạnh, cần cải thiện, trích dẫn.
+       Tuỳ chọn — thiếu thì để chuỗi rỗng, KHÔNG làm hỏng tiêu chí. */
+    const chu = (k, n) => (typeof o === "object" && o[k] != null ? String(o[k]).trim().slice(0, n) : "");
     tieu_chi[c.id] = {
+      diem_manh: chu("diem_manh", 400),
+      can_cai_thien: chu("can_cai_thien", 400),
+      trich_dan: chu("trich_dan", 300),
       diem,
       /* Cắt ở 600 ký tự. Không phải để tiết kiệm chỗ mà vì một nhận xét dài
          hơn cả bài viết thì không ai đọc, và nó đẩy thang chấm ra khỏi màn. */
@@ -106,6 +112,13 @@ export function kiemGoiY(tho, rubric) {
       so_cham_duoc: soChamDuoc,
       so_tieu_chi: rubric.criteria.length,
       tong_quat: String(tho.tong_quat ?? tho.overall ?? "").trim().slice(0, 1500),
+      /* Mở rộng 08/10, đều tuỳ chọn và bị cắt độ dài. */
+      nhan_dinh_trinh_do: String(tho.nhan_dinh_trinh_do ?? "").trim().slice(0, 400),
+      uu_tien: (Array.isArray(tho.uu_tien) ? tho.uu_tien : []).map((x) => String(x).trim().slice(0, 300)).filter(Boolean).slice(0, 3),
+      cau_mau: (Array.isArray(tho.cau_mau) ? tho.cau_mau : [])
+        .filter((x) => x && typeof x === "object" && x.goc && x.sua)
+        .map((x) => ({ goc: String(x.goc).trim().slice(0, 300), sua: String(x.sua).trim().slice(0, 300), vi_sao: String(x.vi_sao ?? "").trim().slice(0, 200) }))
+        .slice(0, 3),
     },
   };
 }

@@ -76,6 +76,8 @@ const GOI_Y_AI_THU = {
     + "câu trên 40 từ thì người đọc theo được mạch mà không mất gì.",
 };
 import { PhanThi } from "./screens/exam/ExamMode.jsx";
+import NhanXetAI from "./screens/student/NhanXetAI.jsx";
+import { grilleToRubric } from "./shared/grilleRubric.js";
 import GrilleEditor from "./screens/teacher/GrilleEditor.jsx";
 import TipsEditor from "./screens/teacher/TipsEditor.jsx";
 import { ChonAvatar, ONhapUsername } from "./screens/account/DanhTinh.jsx";
@@ -281,6 +283,22 @@ const ANH_MAU =
              fill="#6E7280" text-anchor="middle">affiche · ticket · annonce</text>
      </svg>`);
 
+/* Phiếu nhận xét AI mẫu (08/10): dữ liệu GIẢ chỉ để xem bố cục. */
+const NHAN_XET_MAU = { model: "gpt-6-luna", goiY: {
+  tong: 15.5, tong_toi_da: 25, so_cham_duoc: 6, so_tieu_chi: 6,
+  tong_quat: "Bài viết đáp ứng được yêu cầu cơ bản của đề: bạn mời bạn sang chơi và nêu được hoạt động. Câu ngắn, dễ hiểu nhưng còn lỗi chia động từ và thiếu từ nối.",
+  nhan_dinh_trinh_do: "Gần đạt trình độ A1: giao tiếp được ý chính, cần chắc hơn về chia động từ ở thì hiện tại.",
+  tieu_chi: {
+    consigne: { diem: 2.5, nhan_xet: "Đúng loại văn bản và đủ số từ.", diem_manh: "Bạn viết đúng thể loại thư mời, có người nhận rõ ràng.", can_cai_thien: "Thiếu ngày hẹn cụ thể mà đề yêu cầu.", trich_dan: "Viens chez moi en juillet !" },
+    fiche: { diem: 2, nhan_xet: "Phiếu điền gần đủ.", diem_manh: "Các ô tên, quốc tịch, nghề nghiệp đúng.", can_cai_thien: "Ô ngày sinh viết sai định dạng.", trich_dan: "" },
+    informer: { diem: 3.5, nhan_xet: "Nêu được hoạt động nhưng còn sơ sài.", diem_manh: "Có ba hoạt động cụ thể.", can_cai_thien: "Mỗi hoạt động nên thêm một chi tiết (nơi, giờ).", trich_dan: "On va à la plage et au musée." },
+    lexique: { diem: 3, nhan_xet: "Từ vựng đủ dùng ở A1.", diem_manh: "Dùng đúng từ chỉ địa điểm.", can_cai_thien: "Lặp lại « aller » nhiều lần.", trich_dan: "" },
+    morpho: { diem: 2.5, nhan_xet: "Còn lỗi chia động từ.", diem_manh: "Mạo từ dùng đúng.", can_cai_thien: "Chia sai động từ với « nous ».", trich_dan: "Nous visiter le musée" },
+    coherence: { diem: 2, nhan_xet: "Ý rời rạc.", diem_manh: "Có lời chào đầu thư.", can_cai_thien: "Thiếu từ nối giữa các câu.", trich_dan: "" },
+  },
+  uu_tien: ["Chia đúng động từ nhóm 1 ở ngôi « nous »", "Thêm lời chào và kết thư đúng kiểu thư thân mật", "Dùng « et », « mais » để nối hai câu ngắn"],
+  cau_mau: [{ goc: "Nous visiter le musée", sua: "Nous visitons le musée.", vi_sao: "Động từ phải chia theo ngôi « nous »." }],
+} };
 const PHAN_THI_MAU = {
   code: "CE", label: "Activité 1 — les musées de Paris", minutes: 45, points: 25,
   exercise: {
@@ -654,6 +672,7 @@ function Preview() {
     ["/etudiant/thong-bao", "Bảng thông báo"],
     ["/etudiant/auto-evaluation", "Tự chấm Production écrite"],
     ["/etudiant/phan-thi", "Một phần thi thử"],
+    ["/etudiant/nhan-xet-ai", "Phiếu nhận xét AI"],
     ["/etudiant/the-lat", "Thẻ ghi nhớ — lật 3D"],
     ["/etudiant/the-bo", "Thẻ ghi nhớ — danh sách bộ"],
     ["/etudiant/neo", "Neo đáp án vào ngữ liệu"],
@@ -777,6 +796,7 @@ function Preview() {
               chia đôi mà không cần đăng nhập và không cần thi thử trước. */}
           <Route path="/professeur/grille" element={<><Controls /><GrilleThu /></>} />
           <Route path="/etudiant/phan-thi" element={<><Controls /><PhanThiThu /></>} />
+          <Route path="/etudiant/nhan-xet-ai" element={<><Controls /><div className="mx-auto max-w-2xl py-6"><NhanXetAI level="A1" rubric={grilleToRubric("A1")} mau={NHAN_XET_MAU} /></div></>} />
           <Route path="/etudiant/the-lat" element={<><Controls /><TheLatThu /></>} />
           <Route path="/etudiant/the-bo" element={<><Controls /><TheBoThu /></>} />
           <Route path="/etudiant/neo" element={<><Controls /><NeoThu /></>} />

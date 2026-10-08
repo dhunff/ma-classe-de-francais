@@ -4,6 +4,7 @@ import PESelfEvaluation from "./PESelfEvaluation.jsx";
 import { loadMyExamResults } from "../../shared/examResults.js";
 import { NGUONG_PHAN, NGUONG_TONG } from "../exam/examPaper.js";
 import { chamChinhThuc } from "../../shared/chamPeAI.js";
+import NhanXetAI from "./NhanXetAI.jsx";
 import { grilleToRubric, chuanHoaGrille } from "../../shared/grilleRubric.js";
 
 /* Kết quả thi thử — màn hình của học sinh.
@@ -37,7 +38,7 @@ function Phan({ s, onTuCham }) {
         <span className="text-right">
           {s.score == null
             ? <span className="inline-flex items-center gap-1 text-xs font-bold text-warn">
-                <Clock size={12} /> {s.choCham ? (s.aiLoi ? "AI chưa chấm được, mở lại trang để thử lại" : "AI đang chấm…") : "chưa có điểm"}
+                <Clock size={12} /> {s.choCham ? (s.aiLoi === "HET_LUOT" ? "Hết 3 lượt AI chấm hôm nay · mai mở lại trang (VIP không giới hạn)" : s.aiLoi ? "AI chưa chấm được, mở lại trang để thử lại" : "AI đang chấm…") : "chưa có điểm"}
               </span>
             : <span className="text-base font-extrabold tabular-nums text-ink">
                 {s.score}<span className="text-xs text-soft">/{s.points}</span>
@@ -101,11 +102,9 @@ function Phan({ s, onTuCham }) {
             </button>
           )}
 
-          {p.feedback && (
-            <p className="m-0 flex items-start gap-2 rounded-lg bg-surface p-2.5 text-xs leading-relaxed text-ink">
-              <MessageSquare size={13} className="mt-0.5 shrink-0 text-primary" />
-              <span><strong className="text-soft">Nhận xét:</strong> {p.feedback}</span>
-            </p>
+          {p.score != null && p.answerId && (
+            <NhanXetAI answerId={p.answerId} level={s.level} feedback={p.feedback}
+              rubric={s.grille ? chuanHoaGrille(s.grille, s.level) : grilleToRubric(s.level)} />
           )}
 
           {p.selfBreakdown && typeof p.selfBreakdown === "object" && (
@@ -195,7 +194,9 @@ export default function ExamResults() {
     }
     if (!viec.length) return;
     Promise.all(viec).then((kq) => {
-      if (kq.some((k) => !k.ok || !k.daGhi)) setAiLoi(true);
+      const het = kq.find((k) => k.ma === "HET_LUOT");
+      if (het) setAiLoi("HET_LUOT");
+      else if (kq.some((k) => !k.ok || !k.daGhi)) setAiLoi(true);
       loadMyExamResults().then(({ sittings: s }) => { if (s) setSittings(s); });
     });
   }, [sittings]);

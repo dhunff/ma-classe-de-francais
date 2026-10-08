@@ -42,8 +42,8 @@ const CAU = {
    chưa được. */
 const noiHetLuot = (d) => {
   const gio = Number(d?.cua_so_gio) || 24;
-  return `Bạn đã dùng hết ${d?.han_muc ?? "số"} lượt gợi ý trong ${gio} giờ qua. `
-    + "Lượt mới mở lại dần khi các lượt cũ quá hạn.";
+  void gio;
+  return `Bạn đã dùng hết ${d?.han_muc ?? 3} lượt AI chấm hôm nay. Lượt mới mở lúc 0 giờ; gói VIP không giới hạn.`;
 };
 
 /**
