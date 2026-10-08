@@ -214,15 +214,15 @@ export default function HomeDashboard({
                 </Link>
               </section>
               {/* Leon mời đăng nhập / đăng ký (09/10): nằm ở khoảng trống DƯỚI thẻ đăng ký;
-                  bong bóng đặt bên trái, không che mặt Leon. */}
-              <div className="relative mt-4 flex items-end justify-end gap-1">
-                <span aria-hidden className="absolute bottom-2 right-0 h-[72%] w-[70%] rounded-full bg-primary-soft" />
-                <div className="mcf-leon-vao-bong relative z-10 mb-44 max-w-[10rem] shrink-0 rounded-3xl rounded-br-md bg-surface px-4 py-3 text-ink shadow-[0_18px_40px_rgb(0,0,0,0.12)]">
+                  bong bóng đặt PHÍA TRÊN đầu, không che mặt Leon. */}
+              <div className="relative mt-4 flex flex-col items-center">
+                <span aria-hidden className="absolute bottom-2 left-1/2 h-[62%] w-[95%] -translate-x-1/2 rounded-full bg-primary-soft" />
+                <div className="mcf-leon-vao-bong relative z-10 -mb-2 max-w-[16rem] self-start rounded-3xl rounded-bl-md bg-surface px-4 py-3 text-ink shadow-[0_18px_40px_rgb(0,0,0,0.12)]">
                   <span className="block text-base font-extrabold"><em>Bonjour !</em> 🐾</span>
                   <span className="mt-0.5 block text-[13px] leading-snug text-soft">{tr("Vào lớp cùng Leon nhé, mình giữ tiến độ cho bạn!", "Rejoins Leon, je garde ta progression !", "Join Leon, I'll keep your progress!")}</span>
                 </div>
                 <img src="/leon/leon-lon.webp" alt={tr("Leon mời bạn tham gia FRACILE", "Leon t'invite à rejoindre FRACILE", "Leon invites you to join FRACILE")}
-                  width={240} height={340} className="mcf-leon-bay relative h-[320px] w-auto min-w-0 object-contain drop-shadow-[0_16px_24px_rgb(0,0,0,0.15)]" />
+                  width={300} height={460} className="mcf-leon-bay relative h-[460px] w-auto max-w-full object-contain drop-shadow-[0_16px_24px_rgb(0,0,0,0.15)]" />
               </div>
             </Rise>
           )}

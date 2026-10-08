@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 import Joyride, { STATUS, ACTIONS, EVENTS } from "react-joyride";
+import { Leon } from "./leon.jsx";
+const CAM_TOUR = ["nhay-mat", "duoc-do", "hoc", "ok", "lam-viec", "co-len"];
 import { X } from "lucide-react";
 import { useT } from "./i18n.jsx";
 
@@ -27,15 +29,21 @@ function TooltipRieng({ index, size, step, isLastStep, backProps, primaryProps, 
   const xp = giao === "xp";
   return (
     <div {...tooltipProps}
-      className={`relative w-[min(22rem,calc(100vw-2rem))] overflow-hidden rounded-2xl border border-solid bg-surface p-5 font-sans shadow-2xl ${xp ? "border-amber-100 ring-1 ring-amber-500/20 dark:border-amber-900/30" : "border-line"}`}>
-      <div className="flex items-start justify-between gap-3">
-        <h3 className="m-0 text-lg font-bold text-ink">{step.title}</h3>
-        <button {...closeProps} type="button" aria-label={t("identity.close")}
-          className="grid h-8 w-8 shrink-0 cursor-pointer place-items-center rounded-full border-0 bg-surface2 text-soft transition-colors hover:text-ink">
-          <X size={16} />
-        </button>
+      className={`relative w-[min(26rem,calc(100vw-2rem))] overflow-hidden rounded-2xl border border-solid bg-surface p-5 font-sans shadow-2xl ${xp ? "border-amber-100 ring-1 ring-amber-500/20 dark:border-amber-900/30" : "border-line"}`}>
+      {/* Leon dẫn tour (09/10): bước đầu chào, bước cuối reo, giữa đổi cảm xúc. */}
+      <div className="flex items-start gap-3">
+        <Leon cam={index === 0 ? "chao" : isLastStep ? "yeah" : CAM_TOUR[index % CAM_TOUR.length]} size={76} className="-ml-1 shrink-0" />
+        <div className="min-w-0 flex-1">
+          <div className="flex items-start justify-between gap-3">
+            <h3 className="m-0 text-lg font-bold text-ink">{step.title}</h3>
+            <button {...closeProps} type="button" aria-label={t("identity.close")}
+              className="grid h-8 w-8 shrink-0 cursor-pointer place-items-center rounded-full border-0 bg-surface2 text-soft transition-colors hover:text-ink">
+              <X size={16} />
+            </button>
+          </div>
+          <p className="m-0 mb-6 mt-2 text-sm leading-relaxed text-soft">{step.content}</p>
+        </div>
       </div>
-      <p className="m-0 mb-6 mt-2 text-sm leading-relaxed text-soft">{step.content}</p>
       <div className="flex items-center gap-2">
         <span className="text-xs font-semibold tabular-nums text-soft">{index + 1} / {size}</span>
         <span className="flex-1" />
