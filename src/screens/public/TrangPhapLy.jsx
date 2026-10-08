@@ -269,32 +269,8 @@ export function TrangBaoMat() {
         <P>{tr("Không dùng cho quảng cáo, không bán, không chia sẻ cho bên thứ ba vì mục đích thương mại.", "Jamais pour la publicité, ni vendu, ni partagé à des fins commerciales.", "Never used for advertising, sold, or shared for commercial purposes.")}</P>
       </Muc>
 
-      <Muc ten={tr("3. Những dịch vụ xử lý dữ liệu thay chúng tôi", "3. Sous-traitants", "3. Service providers")}>
-        <UL>
-          <li>{tr(<><strong>Supabase</strong>: lưu cơ sở dữ liệu, tài khoản và bản ghi âm.</>, <><strong>Supabase</strong> : base de données, comptes et enregistrements.</>, <><strong>Supabase</strong>: database, accounts and recordings.</>)}</li>
-          <li>{tr(<><strong>Vercel</strong>: phục vụ trang web.</>, <><strong>Vercel</strong> : hébergement du site.</>, <><strong>Vercel</strong>: hosts the website.</>)}</li>
-          <li>{tr(<><strong>OpenAI</strong>: khi bạn bấm « Xin gợi ý » hoặc « AI nhận xét », và tự động với phần viết của bài thi thử (đề bài, bài viết, phiếu đã điền).</>, <><strong>OpenAI</strong> : quand vous demandez une proposition ou un avis, et automatiquement pour l'écrit des examens blancs (consigne, texte, formulaire).</>, <><strong>OpenAI</strong>: when you ask for a suggestion or feedback, and automatically for mock exam writing (prompt, text, filled form).</>)}</li>
-          <li>{tr(<><strong>Google (Google Sheets)</strong>: chỉ khi giáo viên bấm « Đồng bộ Google Sheets »: tên hiển thị, @username và kết quả học tập 30 ngày gần nhất. Không gửi email, số điện thoại hay bài làm.</>, <><strong>Google (Google Sheets)</strong> : seulement si l'enseignant synchronise : nom affiché, @username et résultats des 30 derniers jours. Ni e-mail, ni téléphone, ni copies.</>, <><strong>Google (Google Sheets)</strong>: only when the teacher syncs: display name, @username and the last 30 days of results. No email, phone or answers.</>)}</li>
-          <li>{tr(<><strong>SePay</strong>: báo cho hệ thống khi có giao dịch chuyển khoản.</>, <><strong>SePay</strong> : notifie les virements.</>, <><strong>SePay</strong>: notifies the system of bank transfers.</>)}</li>
-          <li>{tr(<><strong>Google</strong>: chỉ khi bạn chọn đăng nhập bằng Google.</>, <><strong>Google</strong> : seulement si vous vous connectez avec Google.</>, <><strong>Google</strong>: only if you sign in with Google.</>)}</li>
-        </UL>
-        <P>{tr("Một số dịch vụ trên đặt máy chủ ở ngoài Việt Nam, nên dữ liệu có thể được lưu trữ hoặc xử lý ở nước ngoài.", "Certains de ces services sont hébergés hors du Vietnam ; vos données peuvent donc être traitées à l'étranger.", "Some of these services are hosted outside Vietnam, so data may be stored or processed abroad.")}</P>
-      </Muc>
-
-      <Muc ten={tr("4. Lưu trong bao lâu", "4. Durée de conservation", "4. How long we keep it")}>
-        <P>{tr("Chưa có cơ chế tự động xoá theo thời hạn: dữ liệu được giữ trong suốt thời gian tài khoản còn tồn tại, hoặc cho tới khi bạn yêu cầu xoá.", "Pas de suppression automatique : les données sont conservées tant que le compte existe ou jusqu'à votre demande de suppression.", "There's no automatic deletion: data is kept while the account exists or until you ask for deletion.")}</P>
-      </Muc>
-
-      <Muc ten={tr("5. Quyền của bạn", "5. Vos droits", "5. Your rights")}>
+      <Muc ten={tr("3. Quyền của bạn", "3. Vos droits", "3. Your rights")}>
         <P>{tr("Bạn có quyền xem, sửa, yêu cầu xoá dữ liệu cá nhân và rút lại sự đồng ý. Nhiều thông tin bạn tự sửa được ở trang Tài khoản; với yêu cầu khác, liên hệ", "Vous pouvez consulter, corriger, faire supprimer vos données et retirer votre consentement. Beaucoup se modifient dans « Mon compte » ; sinon, contactez", "You can view, correct and delete your personal data and withdraw consent. Much of it can be edited in your Account page; otherwise contact")}: <LienHe />.</P>
-      </Muc>
-
-      <Muc ten={tr("6. Người dùng dưới 16 tuổi", "6. Utilisateurs de moins de 16 ans", "6. Users under 16")}>
-        <P>{tr("Nhiều người học DELF là học sinh. Nếu bạn dưới 16 tuổi, cha mẹ hoặc người giám hộ cần biết và đồng ý với việc bạn sử dụng dịch vụ và với chính sách này. Bản ghi âm giọng nói được lưu ở kho riêng tư vì lý do này.", "Beaucoup de candidats au DELF sont élèves. Avant 16 ans, un parent ou tuteur doit être informé et accepter l'utilisation du service et cette politique. C'est pourquoi les enregistrements sont privés.", "Many DELF learners are school students. If you're under 16, a parent or guardian must know about and agree to your use of the service and this policy. That's why voice recordings are kept private.")}</P>
-      </Muc>
-
-      <Muc ten={tr("7. Thay đổi", "7. Modifications", "7. Changes")}>
-        <P>{tr("Khi dịch vụ thu thêm loại dữ liệu mới hoặc dùng thêm nhà cung cấp mới, trang này sẽ được cập nhật trước. Ngày cập nhật ghi ở đầu trang.", "Toute nouvelle donnée collectée ou nouveau prestataire sera ajouté ici au préalable. La date figure en haut de page.", "If we start collecting new data or using a new provider, this page is updated first. The date is shown at the top.")}</P>
       </Muc>
     </Khung>
   );
