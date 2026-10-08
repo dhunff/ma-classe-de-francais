@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
 import { tr } from "../../shared/i18n.jsx";
+import NutTieng from "../../shared/NutTieng.jsx";
 
 /* Khung làm bài dùng chung cho Luyện tập (PracticeHub) và Bài được giao
    (Taking) — 07/10. Chủ dự án muốn chế độ Focus trông chuyên nghiệp, không
@@ -46,10 +47,13 @@ export default function FocusShell({ zen, setZen, title, meta = [], answered, to
             <h2 className="m-0 font-display text-2xl font-extrabold text-ink" style={{ textWrap: "balance" }}>{title}</h2>
             <div className="mt-1.5"><MetaLine items={meta} /></div>
           </div>
+          <div className="flex shrink-0 items-center gap-2">
+          <NutTieng />
           <button type="button" onClick={() => setZen(true)}
             className="h-9 shrink-0 cursor-pointer rounded-full border border-solid border-line bg-surface px-4 font-sans text-sm font-bold text-ink transition-colors hover:border-primary hover:text-primary">
             {tr("Chế độ tập trung", "Mode focus", "Focus mode")}
           </button>
+          </div>
         </div>
         {children}
       </div>
@@ -83,6 +87,7 @@ export default function FocusShell({ zen, setZen, title, meta = [], answered, to
               {fmtLeft(remaining)}
             </span>
           )}
+          <NutTieng />
           <button type="button" onClick={() => setZen(false)} title="Échap"
             className="h-9 shrink-0 cursor-pointer rounded-full border-0 bg-ink px-4 font-sans text-sm font-bold text-bg transition-opacity hover:opacity-85">
             {tr("Thoát", "Quitter", "Exit")}
