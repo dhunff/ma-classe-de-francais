@@ -5,6 +5,7 @@ import {
 import { Rise } from "../dashboard/parts.jsx";
 import CalendarTour from "./CalendarTour.jsx";
 import { load, save } from "../../shared/storage.js";
+import ChonNgay from "../../shared/ChonNgay.jsx";
 
 /* Lịch tuần — hai khoang: dòng thời gian bên trái, bảng thao tác bên phải.
 
@@ -216,7 +217,7 @@ function AddEventForm({ t, defaultDate, onAdd }) {
         <div className="flex gap-2.5">
           <label className="min-w-0 flex-1">
             <span className="sr-only">{t("cal.f_date")}</span>
-            <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className={field} />
+            <ChonNgay value={date} onChange={setDate} className={field} />
           </label>
           <label className="w-[104px] shrink-0">
             <span className="sr-only">{t("cal.f_time")}</span>

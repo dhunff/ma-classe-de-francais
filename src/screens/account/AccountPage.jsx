@@ -10,6 +10,7 @@ import TourGioiThieu from "../../shared/TourGioiThieu.jsx";
 import { loadDanhTinh, luuDanhTinh, usernameConTrong, baoDanhTinhDoi } from "../../shared/identity.js";
 import { chuanHoaUsername, kiemUsername, goiYUsername, TEN_HIEN_THI_TOI_DA }
   from "../../shared/identityRules.js";
+import ChonNgay from "../../shared/ChonNgay.jsx";
 
 /* Trang "Mon Compte" — hai cột: thẻ nhận dạng bên trái, biểu mẫu bên phải.
 
@@ -418,11 +419,9 @@ export default function AccountPage({ name, role, email, emailVerified, onLogout
                     {errs.phone && <p className="m-0 mt-1 text-xs font-semibold text-danger">{errs.phone}</p>}
                   </Field>
                   <Field label={t("account.dob")}>
-                    <span className="relative block">
-                      <input type="date" className={`${INPUT} pr-10`} value={p.dob || ""} onChange={set("dob")} />
-                      <Calendar size={16} aria-hidden
-                        className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-soft" />
-                    </span>
+                    {/* Bộ chọn ngày cùng kiểu lịch nhỏ của thẻ Lịch (09/10). */}
+                    <ChonNgay className={INPUT} value={p.dob || ""} max={new Date().toISOString().slice(0, 10)}
+                      onChange={(v) => setP({ ...p, dob: v })} />
                     {errs.dob && <p className="m-0 mt-1 text-xs font-semibold text-danger">{errs.dob}</p>}
                   </Field>
                 </div>
