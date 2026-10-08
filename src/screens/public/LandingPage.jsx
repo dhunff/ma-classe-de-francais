@@ -6,6 +6,7 @@ import {
 import { docSoLieu } from "../../shared/soLieuCongKhai.js";
 import TeamSection from "./TeamSection.jsx";
 import ContactDrawer from "./ContactDrawer.jsx";
+import { tr } from "../../shared/i18n.jsx";
 
 /* Trang giới thiệu công khai — phễu marketing của FRACILE.
  *
@@ -74,41 +75,24 @@ function OSoLieu({ so, nhan, phu }) {
 
 /* Nội dung chủ dự án chốt 25/09. Ba chỗ được chỉnh cho khớp sản phẩm thật
    (quy tắc 1) — xem commit « Trang giới thiệu: nội dung mới ». */
-const LOI_THE = [
-  {
-    Icon: Wand2,
-    ten: "Hệ thống chấm điểm tự động, trả kết quả tức thì",
-    mo: "Không còn phải chờ đợi mỏi mòn để biết mình làm đúng hay sai. Các dạng bài "
-      + "từ trắc nghiệm, điền từ cho đến chia động từ đều được hệ thống xử lý và chấm "
-      + "điểm ngay lập tức sau cú click nộp bài. Điều này giúp học viên nhanh chóng "
-      + "nhận ra lỗi sai để khắc phục, đồng thời giúp giáo viên loại bỏ hoàn toàn gánh "
-      + "nặng chấm bài thủ công.",
-  },
-  {
-    Icon: ScrollText,
-    ten: "Chữa bài Viết minh bạch, biết rõ điểm yếu",
-    mo: "Sợ nhất là nhận về một con số điểm vô hồn và không biết mình sai ở đâu. Tại "
-      + "FRACILE, học viên tự đối chiếu từng bài Viết với thang điểm DELF chính thức "
-      + "(từ vựng, ngữ pháp, độ mạch lạc, đáp ứng đề bài) — tiêu chí nào cũng có mô tả "
-      + "từng mức điểm. Học viên biết chính xác mình mất điểm ở tiêu chí nào để lập tức "
-      + "cải thiện.",
-  },
-  {
-    Icon: Columns2,
-    ten: "Rèn luyện bản lĩnh áp lực phòng thi thật",
-    mo: "Điểm số lúc luyện tập luôn cao hơn đi thi vì bạn thiếu áp lực thời gian. "
-      + "FRACILE áp dụng bộ đếm ngược nghiêm ngặt và giới hạn số lượt phát âm thanh y "
-      + "như kỳ thi thực tế. Trải nghiệm làm bài được tối ưu hóa sự tập trung, giúp học "
-      + "viên không bị bỡ ngỡ khi bước vào phòng thi chính thức.",
-  },
-  {
-    Icon: ClipboardList,
-    ten: "Quản lý tiến độ học tập sát sao, hiệu quả",
-    mo: "Cung cấp một chu trình khép kín: Giao bài tập - Hẹn giờ nộp - Chấm điểm - "
-      + "Báo cáo thống kê. Giáo viên và trung tâm dễ dàng theo dõi được sự tiến bộ của "
-      + "từng cá nhân qua từng tuần, từ đó cam kết được chất lượng đầu ra với phụ huynh "
-      + "và học viên.",
-  },
+/* Hàm chứ không hằng: chữ phải đổi theo ngôn ngữ đang chọn (08/10). */
+const LOI_THE = () => [
+  { Icon: Wand2, ten: tr("Hệ thống chấm điểm tự động, trả kết quả tức thì", "Correction automatique, résultats immédiats", "Automatic grading, instant results"),
+    mo: tr("Không còn phải chờ đợi mỏi mòn để biết mình làm đúng hay sai. Các dạng bài từ trắc nghiệm, điền từ cho đến chia động từ đều được hệ thống xử lý và chấm điểm ngay lập tức sau cú click nộp bài. Điều này giúp học viên nhanh chóng nhận ra lỗi sai để khắc phục, đồng thời giúp giáo viên loại bỏ hoàn toàn gánh nặng chấm bài thủ công.",
+      "Plus besoin d'attendre pour savoir si vous avez juste. QCM, textes à trous, conjugaison : tout est corrigé dès que vous cliquez sur « Rendre ». Les apprenants repèrent vite leurs erreurs, et les enseignants n'ont plus à corriger à la main.",
+      "No more waiting to find out if you got it right. Multiple choice, gap fills and conjugation are graded the moment you submit. Learners spot their mistakes fast, and teachers no longer grade by hand.") },
+  { Icon: ScrollText, ten: tr("Chữa bài Viết minh bạch, biết rõ điểm yếu", "Une correction de l'écrit transparente", "Transparent writing feedback"),
+    mo: tr("Sợ nhất là nhận về một con số điểm vô hồn và không biết mình sai ở đâu. Tại FRACILE, bài Viết được chấm theo thang điểm DELF chính thức (từ vựng, ngữ pháp, độ mạch lạc, đáp ứng đề bài), tiêu chí nào cũng có mô tả từng mức điểm. Học viên biết chính xác mình mất điểm ở tiêu chí nào để lập tức cải thiện.",
+      "Rien de pire qu'une note sans explication. Sur FRACILE, la production écrite est évaluée avec la grille officielle du DELF (lexique, grammaire, cohérence, respect de la consigne), avec un descriptif pour chaque niveau. L'apprenant sait exactement où il perd des points.",
+      "Nothing is worse than a bare score with no explanation. On FRACILE, writing is assessed against the official DELF grid (vocabulary, grammar, coherence, task completion), with a description for every band. Learners know exactly where they lose points.") },
+  { Icon: Columns2, ten: tr("Rèn luyện bản lĩnh áp lực phòng thi thật", "S'entraîner dans les conditions de l'examen", "Train under real exam pressure"),
+    mo: tr("Điểm số lúc luyện tập luôn cao hơn đi thi vì bạn thiếu áp lực thời gian. FRACILE áp dụng bộ đếm ngược nghiêm ngặt và giới hạn số lượt phát âm thanh y như kỳ thi thực tế. Trải nghiệm làm bài được tối ưu hóa sự tập trung, giúp học viên không bị bỡ ngỡ khi bước vào phòng thi chính thức.",
+      "On a toujours de meilleures notes à l'entraînement, faute de pression du temps. FRACILE applique un chronomètre strict et limite les écoutes comme à l'examen. Rien ne surprend le jour J.",
+      "Practice scores are always higher than exam scores because there's no time pressure. FRACILE uses a strict countdown and limits audio plays just like the real exam, so nothing surprises you on the day.") },
+  { Icon: ClipboardList, ten: tr("Quản lý tiến độ học tập sát sao, hiệu quả", "Un suivi des progrès rigoureux", "Close, effective progress tracking"),
+    mo: tr("Cung cấp một chu trình khép kín: Giao bài tập, Hẹn giờ nộp, Chấm điểm, Báo cáo thống kê. Giáo viên và trung tâm dễ dàng theo dõi được sự tiến bộ của từng cá nhân qua từng tuần, từ đó cam kết được chất lượng đầu ra với phụ huynh và học viên.",
+      "Un cycle complet : devoirs, échéances, correction, statistiques. Enseignants et centres suivent les progrès de chacun semaine après semaine.",
+      "A complete loop: assignments, deadlines, grading, statistics. Teachers and schools follow each learner's progress week by week.") },
 ];
 
 
@@ -130,24 +114,21 @@ export default function LandingPage({ imgSrc = "/images/hero-preview.png" }) {
         <section className="grid items-center gap-10 lg:grid-cols-2">
           <div>
             <h1 className="m-0 text-4xl font-extrabold leading-tight tracking-tight text-ink sm:text-5xl">
-              Bứt phá điểm số DELF{" "}
-              <span className="text-primary">với hệ thống luyện thi toàn diện</span>
+              {tr("Bứt phá điểm số DELF", "Boostez votre score au DELF", "Boost your DELF score")}{" "}
+              <span className="text-primary">{tr("với hệ thống luyện thi toàn diện", "avec une préparation complète", "with complete exam preparation")}</span>
             </h1>
             <p className="m-0 mt-5 max-w-xl text-base leading-relaxed text-soft">
-              Không chỉ là một kho bài tập. FRACILE mang đến lộ trình thực hành sát
-              với đề thi thật, chấm tự động và đối chiếu theo đúng thang chấm DELF
-              chính thức. Giải pháp hoàn hảo giúp học viên tự tin thi đỗ, và giúp
-              giáo viên tối ưu hóa chất lượng giảng dạy.
+              {tr("Không chỉ là một kho bài tập. FRACILE mang đến lộ trình thực hành sát với đề thi thật, chấm tự động và đối chiếu theo đúng thang chấm DELF chính thức. Giải pháp hoàn hảo giúp học viên tự tin thi đỗ, và giúp giáo viên tối ưu hóa chất lượng giảng dạy.", "Bien plus qu'une banque d'exercices : FRACILE propose un parcours proche du vrai examen, corrigé automatiquement selon la grille officielle du DELF. Pour réussir sereinement, et pour mieux enseigner.", "More than an exercise bank: FRACILE offers practice that mirrors the real exam, graded automatically against the official DELF grid. Pass with confidence, and teach better.")}
             </p>
 
             <div className="mt-8 flex flex-wrap gap-3">
               <Link to="/decouvrir"
                 className="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-bold text-white no-underline shadow-lg shadow-primary/30 transition-all duration-300 ease-out hover:-translate-y-0.5 hover:shadow-2xl hover:shadow-primary/40 active:scale-[0.98] motion-reduce:transition-none">
-                Trải nghiệm học thử ngay <ArrowRight size={16} />
+                {tr("Trải nghiệm học thử ngay", "Essayer maintenant", "Try it now")} <ArrowRight size={16} />
               </Link>
               <button type="button" onClick={() => setIsContactFormOpen(true)}
                 className="cursor-pointer font-sans rounded-full border border-solid border-line bg-transparent px-6 py-3 text-sm font-bold text-ink no-underline transition-all duration-300 ease-out hover:-translate-y-0.5 hover:bg-surface2 active:scale-[0.98] motion-reduce:transition-none">
-                Gửi câu hỏi
+                {tr("Gửi câu hỏi", "Poser une question", "Ask a question")}
               </button>
             </div>
           </div>
@@ -157,25 +138,25 @@ export default function LandingPage({ imgSrc = "/images/hero-preview.png" }) {
 
         {/* ── SỐ LIỆU — ĐẾM THẬT ── */}
         <section className="mt-16 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <OSoLieu so={so?.baiTap} nhan="Chuyên đề trọng tâm" phu="Được phân bổ khoa học, bám sát lộ trình từ cơ bản đến nâng cao." />
-          <OSoLieu so={so?.cauHoi} nhan="Bài tập thực hành" phu="Đa dạng thể loại, phần lớn câu đi kèm lời giải thích cặn kẽ." />
-          <OSoLieu so="4" nhan="Kỹ năng toàn diện" phu="Rèn luyện đồng đều Nghe - Nói - Đọc - Viết để không có kỹ năng nào bị bỏ lại." />
-          <OSoLieu so="1" nhan="Nền tảng duy nhất" phu="Kết nối liền mạch giữa việc tự học của học sinh và công tác quản lý của giáo viên." />
+          <OSoLieu so={so?.baiTap} nhan={tr("Chuyên đề trọng tâm", "Thèmes clés", "Key topics")} phu={tr("Được phân bổ khoa học, bám sát lộ trình từ cơ bản đến nâng cao.", "Organisés progressivement, du niveau débutant au niveau avancé.", "Organised step by step, from beginner to advanced.")} />
+          <OSoLieu so={so?.cauHoi} nhan={tr("Bài tập thực hành", "Exercices", "Practice exercises")} phu={tr("Đa dạng thể loại, phần lớn câu đi kèm lời giải thích cặn kẽ.", "Formats variés, la plupart avec une explication détaillée.", "Varied formats, most with a detailed explanation.")} />
+          <OSoLieu so="4" nhan={tr("Kỹ năng toàn diện", "Toutes les compétences", "All skills")} phu={tr("Rèn luyện đồng đều Nghe - Nói - Đọc - Viết để không có kỹ năng nào bị bỏ lại.", "Compréhension orale, écrite, production orale et écrite : aucune compétence oubliée.", "Listening, speaking, reading and writing: no skill left behind.")} />
+          <OSoLieu so="1" nhan={tr("Nền tảng duy nhất", "Une seule plateforme", "One platform")} phu={tr("Kết nối liền mạch giữa việc tự học của học sinh và công tác quản lý của giáo viên.", "Le travail des élèves et le suivi des enseignants au même endroit.", "Student self-study and teacher management in one place.")} />
         </section>
 
         {so === null && (
           <p className="m-0 mt-3 text-center text-xs text-soft">
-            Số liệu đọc trực tiếp từ hệ thống, không phải con số quảng cáo.
+            {tr("Số liệu đọc trực tiếp từ hệ thống, không phải con số quảng cáo.", "Chiffres lus en direct dans le système, pas des chiffres marketing.", "Figures read live from the system, not marketing numbers.")}
           </p>
         )}
 
         {/* ── LỢI THẾ ── */}
         <section className="mt-20">
           <h2 className="m-0 text-2xl font-extrabold tracking-tight text-ink">
-            Bốn thứ khó tìm ở chỗ khác
+            {tr("Bốn thứ khó tìm ở chỗ khác", "Quatre atouts difficiles à trouver ailleurs", "Four things that are hard to find elsewhere")}
           </h2>
           <div className="mt-6 grid gap-4 sm:grid-cols-2">
-            {LOI_THE.map(({ Icon, ten, mo }) => (
+            {LOI_THE().map(({ Icon, ten, mo }) => (
               <div key={ten}
                 className="rounded-3xl border border-solid border-line bg-surface p-6 transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-2xl motion-reduce:transition-none">
                 <div className="grid h-11 w-11 place-items-center rounded-2xl bg-primary-soft">
@@ -198,7 +179,7 @@ export default function LandingPage({ imgSrc = "/images/hero-preview.png" }) {
         <div className="mx-auto flex max-w-6xl flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div className="flex flex-wrap items-center gap-x-8 gap-y-2 text-base font-medium">
             <span className="text-lg font-extrabold text-white">FRACILE</span>
-            {[["/decouvrir", "Thư viện bài tập"], ["/login", "Đăng nhập"], ["/faq", "Câu hỏi thường gặp"], ["/dieu-khoan", "Điều khoản sử dụng"], ["/bao-mat", "Chính sách bảo mật"]].map(([to, ten]) => (
+            {[["/decouvrir", tr("Thư viện bài tập", "Bibliothèque d'exercices", "Exercise library")], ["/login", tr("Đăng nhập", "Connexion", "Sign in")], ["/faq", tr("Câu hỏi thường gặp", "Questions fréquentes", "FAQ")], ["/dieu-khoan", tr("Điều khoản sử dụng", "Conditions d'utilisation", "Terms of use")], ["/bao-mat", tr("Chính sách bảo mật", "Politique de confidentialité", "Privacy policy")]].map(([to, ten]) => (
               <Link key={to} to={to} className="text-white no-underline transition-colors hover:text-blue-100">{ten}</Link>
             ))}
           </div>
@@ -218,7 +199,7 @@ function AnhHero({ src }) {
   const [hong, setHong] = useState(false);
   if (hong) return null;
   return (
-    <img src={src} alt="Màn hình luyện thi DELF của FRACILE" onError={() => setHong(true)}
+    <img src={src} alt={tr("Màn hình luyện thi DELF của FRACILE", "Écran d'entraînement DELF de FRACILE", "FRACILE DELF practice screen")} onError={() => setHong(true)}
       className="w-full rounded-2xl border border-solid border-line object-cover shadow-2xl transition-transform duration-300 hover:scale-[1.01] motion-reduce:transition-none" />
   );
 }

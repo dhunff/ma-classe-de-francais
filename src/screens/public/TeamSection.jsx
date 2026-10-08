@@ -1,6 +1,7 @@
 import React from "react";
 import { Code2, BadgeCheck } from "lucide-react";
 import { DOI_NGU } from "./doiNgu.js";
+import { tr } from "../../shared/i18n.jsx";
 
 /* Khối « Đội ngũ chuyên môn » của trang giới thiệu.
  *
@@ -116,11 +117,11 @@ export default function TeamSection({ ds = DOI_NGU }) {
     <section className="mt-20">
       <div className="flex items-center gap-2">
         <Code2 size={20} className="text-primary" />
-        <span className="text-xs font-bold uppercase tracking-wide text-soft">Đội ngũ</span>
+        <span className="text-xs font-bold uppercase tracking-wide text-soft">{tr("Đội ngũ", "L'équipe", "Team")}</span>
       </div>
 
       <h2 className="m-0 mt-3 text-3xl font-extrabold tracking-tight text-ink">
-        Đội ngũ xây dựng
+        {tr("Đội ngũ xây dựng", "L'équipe derrière FRACILE", "The team behind FRACILE")}
       </h2>
 
       {/* Câu phụ dưới tiêu đề gỡ 25/09 theo yêu cầu chủ dự án. */}
