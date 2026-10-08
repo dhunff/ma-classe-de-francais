@@ -3,7 +3,7 @@ import { C, S, QTYPES, VF_OPTS, LEVEL_COLORS } from "../../shared/tokens.js";
 import { SoanGhepCap, SoanPhieu, AnhPhuongAn, moiGhepCap, moiPhieu } from "./SoanDangMoi.jsx";
 import { SKILLS, exSkills } from "../../shared/exercises.js";
 import { uid, stripHtml, autoQ, tableauCells, fillAccepted } from "../../shared/questions.js";
-import { useT } from "../../shared/i18n.jsx";
+import { useT, tr } from "../../shared/i18n.jsx";
 import RichTextEditor from "../../editor/RichTextEditor.jsx";
 import { Image as ImageIcon, X, Trash2, FileText, Target, Users, Check, Copy } from "lucide-react";
 
@@ -168,7 +168,7 @@ function Builder({ draft, setDraft, publish, cancel, accounts, classes = [] }) {
         } catch (qe) { return null; } // 1 câu lỗi không làm hỏng cả import
       }).filter(Boolean);
 
-      if (!qs.length) throw new Error("Aucune question valide");
+      if (!qs.length) throw new Error(tr("Không có câu hỏi hợp lệ", "Aucune question valide", "No valid questions"));
 
       // -- infos générales --
       const rawSkills = data.competences ?? data.skills ?? [];
@@ -189,7 +189,7 @@ function Builder({ draft, setDraft, publish, cancel, accounts, classes = [] }) {
       setJsonModal(false);
       showToast("ok", `✅ Import thành công ${qs.length} question${qs.length > 1 ? "s" : ""} !`);
     } catch (e) {
-      setJsonMsg("❌ Lỗi định dạng JSON ! Vui lòng kiểm tra lại cấu trúc (thiếu ngoặc, dư dấu phẩy, thiếu trường questions…).");
+      setJsonMsg(tr("❌ Lỗi định dạng JSON ! Vui lòng kiểm tra lại cấu trúc (thiếu ngoặc, dư dấu phẩy, thiếu trường questions…).", "❌ JSON invalide ! Vérifiez la structure (accolades, virgules, champ questions…).", "❌ Invalid JSON! Check the structure (brackets, commas, questions field…)."));
     }
   };
 
@@ -488,7 +488,7 @@ function Builder({ draft, setDraft, publish, cancel, accounts, classes = [] }) {
               <div style={{ fontSize: 13, fontWeight: 700, color: mergedTargets.size ? C.ok : C.warn }}>
                 {mergedTargets.size
                   ? `✓ ${mergedTargets.size} élève${mergedTargets.size > 1 ? "s" : ""} sélectionné${mergedTargets.size > 1 ? "s" : ""}`
-                  : "⚠ Aucun élève sélectionné — cochez une classe ou un élève."}
+                  : tr("⚠ Chưa chọn học sinh nào.", "⚠ Aucun élève sélectionné — cochez une classe ou un élève.", "⚠ No students selected.")}
               </div>
             </div>
           )}
@@ -544,7 +544,7 @@ function Builder({ draft, setDraft, publish, cancel, accounts, classes = [] }) {
                 </button>
                 <button type="button" onClick={() => setQ(q.id, { optionImages: Array.isArray(q.optionImages) ? undefined : q.options.map(() => "") })}
                   style={{ ...S.btn(false), padding: "7px 16px", fontSize: 13 }}>
-                  {Array.isArray(q.optionImages) ? "Bỏ hình phương án" : "Phương án có hình"}
+                  {Array.isArray(q.optionImages) ? tr("Bỏ hình phương án", "Retirer les images", "Remove option images") : tr("Phương án có hình", "Choix avec images", "Options with images")}
                 </button>
                 <span style={{ fontSize: 12, color: C.soft }}>{t("bd.qcm_hint")}</span>
               </div>

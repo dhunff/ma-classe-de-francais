@@ -70,9 +70,12 @@ for (const [file, bang] of Object.entries(banDich)) {
     const m = src.match(/import \{([^}]*)\} from ["']([^"']*i18n\.jsx)["'];?/);
     if (m) src = src.replace(m[0], `import {${m[1].replace(/\s*$/, "")}, tr } from "${m[2]}";`);
     else {
-      const cuoiImport = [...src.matchAll(/^import [^\n]*\n/gm)].pop();
-      const vt = cuoiImport ? cuoiImport.index + cuoiImport[0].length : 0;
-      src = src.slice(0, vt) + `import { tr } from "${duongDan}";\n` + src.slice(vt);
+      /* Vị trí cuối import THẬT (AST), không dò theo dòng: import nhiều dòng
+         từng làm dòng chèn rơi vào giữa câu import (08/10). */
+      const ast2 = parse(src, { sourceType: "module", plugins: ["jsx"] });
+      const cuoi = ast2.program.body.filter((n) => n.type === "ImportDeclaration").pop();
+      const vt = cuoi ? cuoi.end : 0;
+      src = src.slice(0, vt) + `\nimport { tr } from "${duongDan}";` + src.slice(vt);
     }
   }
   const thieu = Object.keys(bang).filter((k) => !src.includes(js(k.replace(/^FR:/, ""))) );

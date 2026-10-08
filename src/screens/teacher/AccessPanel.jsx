@@ -3,6 +3,7 @@ import { Loader2, Check, Crown } from "lucide-react";
 import { C, S } from "../../shared/tokens.js";
 import { supabase } from "../../storageShim.js";
 import { fmtPrice, loadAccess, accessRecord, setAccessRemote, STATUS, loadPremiumExercises } from "../../shared/access.js";
+import { tr } from "../../shared/i18n.jsx";
 
 /* Quản lý quyền truy cập của MỘT học sinh.
 
@@ -72,12 +73,12 @@ export default function AccessPanel({ student, exercises }) {
   }, [student.email, exercises]);
 
   const toggleFull = async (next) => {
-    if (!student.email) { setMsg("Học sinh này chưa có email nên chưa có hồ sơ."); return; }
+    if (!student.email) { setMsg(tr("Học sinh này chưa có email nên chưa có hồ sơ.", "Cet élève n'a pas d'e-mail, donc pas de profil.", "This student has no email, so no profile yet.")); return; }
     setBusy("full"); setMsg("");
     const { error } = await supabase
       .from("profiles").update({ has_premium_access: next }).eq("email", student.email);
     setBusy(null);
-    if (error) { setMsg("Không lưu được. Bạn có đang đăng nhập bằng tài khoản giáo viên không?"); return; }
+    if (error) { setMsg(tr("Không lưu được. Bạn có đang đăng nhập bằng tài khoản giáo viên không?", "Enregistrement impossible. Êtes-vous connecté en enseignant ?", "Couldn't save. Are you signed in as a teacher?")); return; }
     setFull(next);
   };
 
@@ -85,11 +86,11 @@ export default function AccessPanel({ student, exercises }) {
     const rec = accessRecord(access, student.name, ex.id);
     /* Bài đã thanh toán thì không thu hồi từ đây — đó là bản ghi tiền bạc,
        không phải quyền do giáo viên cấp. */
-    if (rec && rec.status === STATUS.PURCHASED) { setMsg("Bài này học sinh đã thanh toán."); return; }
+    if (rec && rec.status === STATUS.PURCHASED) { setMsg(tr("Bài này học sinh đã thanh toán.", "L'élève a payé cet exercice.", "The student paid for this exercise.")); return; }
     setBusy(ex.id); setMsg("");
     const res = await setAccessRemote(rec ? "revoke" : "grant", student.name, ex.id);
     setBusy(null);
-    if (!res?.ok) { setMsg("Không gọi được máy chủ. Kiểm tra khoá giáo viên và hàm grant-access."); return; }
+    if (!res?.ok) { setMsg(tr("Không gọi được máy chủ. Kiểm tra khoá giáo viên và hàm grant-access.", "Serveur injoignable. Vérifiez la clé enseignant.", "Couldn't reach the server. Check the teacher key.")); return; }
     setAccess(await loadAccess());
   };
 
@@ -118,7 +119,7 @@ export default function AccessPanel({ student, exercises }) {
         <div style={{ marginTop: 8, borderTop: `1px solid ${C.line}`, paddingTop: 8 }}>
           {premium.length === 0 ? (
             <p style={{ fontSize: 13, color: C.soft, margin: "8px 0 0" }}>
-              Aucun exercice payant pour le moment.
+              {tr("Chưa có bài trả phí nào.", "Aucun exercice payant pour le moment.", "No paid exercises yet.")}
             </p>
           ) : premium.map((ex) => {
             const rec = accessRecord(access, student.name, ex.id);

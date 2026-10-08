@@ -34,16 +34,16 @@ import { thoiGianTuongDoi } from "../../shared/display.js";
  * Không dùng emoji nữa. Emoji vẽ khác nhau trên mỗi hệ điều hành, không đổi
  * màu theo trạng thái, và trên Windows thì cỡ chữ nhảy — dự án đã dính một lần
  * với cờ 🇻🇳 (xem CLAUDE.md). Icon vector thì nhất quán và tô màu được. */
-const LOAI = {
-  annonce: { Icon: Megaphone,   nen: "bg-primary-soft", chu: "text-primary", get ten() { return tr("Thông báo từ giáo viên", "Annonce de l'enseignant", "Announcement from the teacher"); } },
-  due:     { Icon: AlarmClock,  nen: "bg-warn-soft",    chu: "text-warn",    get ten() { return tr("Sắp đến hạn nộp", "Date limite proche", "Deadline soon"); } },
-  graded:  { Icon: CheckCircle2, nen: "bg-ok-soft",     chu: "text-ok",      get ten() { return tr("Bài đã được chấm", "Copie corrigée", "Work graded"); } },
-  redo:    { Icon: RotateCcw,   nen: "bg-danger-soft",  chu: "text-danger",  get ten() { return tr("Cần làm lại", "À refaire", "Redo requested"); } },
-  follow:  { Icon: UserPlus,    nen: "bg-primary-soft", chu: "text-primary", get ten() { return tr("Người theo dõi mới", "Nouvel abonné", "New follower"); } },
-};
+const LOAI = () => ({
+  annonce: { Icon: Megaphone,   nen: "bg-primary-soft", chu: "text-primary", ten: tr("Thông báo từ giáo viên", "Annonce de l'enseignant", "Announcement from the teacher") },
+  due:     { Icon: AlarmClock,  nen: "bg-warn-soft",    chu: "text-warn",    ten: tr("Sắp đến hạn nộp", "Date limite proche", "Deadline soon") },
+  graded:  { Icon: CheckCircle2, nen: "bg-ok-soft",     chu: "text-ok",      ten: tr("Bài đã được chấm", "Copie corrigée", "Work graded") },
+  redo:    { Icon: RotateCcw,   nen: "bg-danger-soft",  chu: "text-danger",  ten: tr("Cần làm lại", "À refaire", "Redo requested") },
+  follow:  { Icon: UserPlus,    nen: "bg-primary-soft", chu: "text-primary", ten: tr("Người theo dõi mới", "Nouvel abonné", "New follower") },
+});
 
 function MotThongBao({ n, onClick }) {
-  const kieu = LOAI[n.loai] ?? LOAI.annonce;
+  const kieu = LOAI()[n.loai] ?? LOAI().annonce;
   const { Icon } = kieu;
 
   return (

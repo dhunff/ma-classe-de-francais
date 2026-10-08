@@ -1,0 +1,136 @@
+{
+ "src/PracticeHub.jsx": {
+  "FR:❌ Échec — les exercices n'ont pas pu être libérés.": ["❌ Không chuyển được các bài tập ra khỏi thư mục.", "❌ Failed: the exercises couldn't be released."],
+  "Bài này không nằm trong kho luyện tập.": ["Cet exercice n'est pas dans la bibliothèque d'entraînement.", "This exercise isn't in the practice library."],
+  "FR:Aucun exercice dans cette section": ["Chưa có bài nào trong mục này", "No exercises in this section"],
+  "FR:Le professeur n'a pas encore créé de catégorie. Reviens bientôt !": ["Giáo viên chưa tạo mục nào. Quay lại sau nhé!", "The teacher hasn't created a category yet. Come back soon!"],
+  "FR:exercice": ["bài", "exercise"],
+  "FR:question": ["câu", "question"],
+  "FR:Annuler": ["Huỷ", "Cancel"],
+  "FR:Nouvel exercice": ["Bài tập mới", "New exercise"],
+  "FR:Enregistrer": ["Lưu", "Save"],
+  "FR:🗑 Supprimer «": ["🗑 Xoá «", "🗑 Delete «"],
+  "FR:Êtes-vous sûr de vouloir supprimer ce dossier ?": ["Bạn chắc chắn muốn xoá thư mục này?", "Are you sure you want to delete this folder?"],
+  "FR:Aucun dossier — créez-en un d'abord.": ["Chưa có thư mục nào, hãy tạo một thư mục trước.", "No folders yet, create one first."],
+  "FR:📖 Vocabulaire de l'exercice": ["📖 Từ vựng của bài", "📖 Exercise vocabulary"],
+  "FR:Le professeur peut l'ajouter en modifiant l'exercice (champ «": ["Giáo viên có thể thêm khi sửa bài (ô «", "The teacher can add it by editing the exercise (field «"],
+  "FR:Réponse libre — pas de corrigé type fourni.": ["Câu tự luận, chưa có đáp án mẫu.", "Open answer, no model answer provided."],
+  "FR:Ressources de l'exercice": ["Tài liệu của bài", "Exercise resources"],
+  "⚠️ Chưa chấm được bài lúc này — máy chủ chấm không phản hồi.\n": ["⚠️ Correction impossible pour le moment, le serveur ne répond pas.\n", "⚠️ Can't grade right now, the grading server isn't responding.\n"],
+  "Bài của bạn vẫn còn nguyên, hãy thử nộp lại sau ít phút.": ["Votre copie est conservée, réessayez dans quelques minutes.", "Your answers are kept, try submitting again in a few minutes."],
+  "FR:Justifiez votre réponse en citant le texte…": ["Giải thích câu trả lời bằng cách trích bài đọc…", "Justify your answer by quoting the text…"],
+  "FR:Ma justification : «": ["Căn cứ của tôi: «", "My justification: «"],
+  "FR:Justification attendue :": ["Căn cứ đúng:", "Expected justification:"],
+  "FR:Réponse suggérée :": ["Đáp án gợi ý:", "Suggested answer:"],
+  "FR:Ta réponse…": ["Câu trả lời của bạn…", "Your answer…"],
+  "FR:Réponse attendue :": ["Đáp án đúng:", "Expected answer:"],
+  "FR:Consigne": ["Đề bài", "Instructions"],
+  "FR:Cliquez pour agrandir": ["Bấm để phóng to", "Click to enlarge"],
+  "FR:Cliquez sur l'image pour l'agrandir": ["Bấm vào ảnh để phóng to", "Click the image to enlarge"]
+ },
+ "src/screens/student/Student.jsx": {
+  "FR:Session expirée. Reconnectez-vous.": ["Phiên đăng nhập hết hạn. Hãy đăng nhập lại.", "Session expired. Please sign in again."],
+  "FR:question(s)": ["câu", "question(s)"],
+  "FR:en retard si rendu maintenant": ["nộp bây giờ sẽ bị tính muộn", "late if submitted now"],
+  "FR:Le professeur te demande de refaire cet exercice.": ["Giáo viên yêu cầu bạn làm lại bài này.", "Your teacher asks you to redo this exercise."],
+  "FR:📋 Voir ma copie corrigée": ["📋 Xem bài đã chữa", "📋 See my corrected work"],
+  "FR:Réponse suggérée :": ["Đáp án gợi ý:", "Suggested answer:"],
+  "FR:Mon choix :": ["Lựa chọn của tôi:", "My choice:"],
+  "FR:· Bonne réponse :": ["· Đáp án đúng:", "· Correct answer:"],
+  "FR:Ma justification : «": ["Căn cứ của tôi: «", "My justification: «"],
+  "FR:Justification attendue :": ["Căn cứ đúng:", "Expected justification:"],
+  "FR:Ma réponse :": ["Câu trả lời của tôi:", "My answer:"],
+  "FR:Réponse attendue :": ["Đáp án đúng:", "Expected answer:"],
+  "FR:Voir les remarques question par question": ["Xem nhận xét từng câu", "See comments question by question"],
+  "FR:🗺️ Mon voyage vers Paris —": ["🗺️ Hành trình tới Paris:", "🗺️ My journey to Paris:"],
+  "FR:Obtiens 80 % ou plus à un exercice pour gagner un timbre !": ["Đạt từ 80% ở một bài để nhận một con tem!", "Score 80% or more on an exercise to earn a stamp!"],
+  "FR:Mes notes au fil du temps": ["Điểm của tôi theo thời gian", "My scores over time"],
+  "FR:Rends ta première copie pour voir ta courbe !": ["Nộp bài đầu tiên để xem biểu đồ của bạn!", "Submit your first work to see your chart!"],
+  "FR:Mes points forts par compétence": ["Điểm mạnh theo kỹ năng", "My strengths by skill"],
+  "FR:Enregistrer": ["Lưu", "Save"]
+ },
+ "src/screens/student/Taking.jsx": {
+  "FR:Impossible d'enregistrer la copie. Réessaie.": ["Không lưu được bài làm. Thử lại nhé.", "Couldn't save your work. Try again."],
+  "FR:Justifiez votre réponse en citant le texte…": ["Giải thích câu trả lời bằng cách trích bài đọc…", "Justify your answer by quoting the text…"],
+  "FR:Ta réponse…": ["Câu trả lời của bạn…", "Your answer…"],
+  "FR:Date limite dépassée, copie marquée en retard": ["Đã quá hạn nộp, bài sẽ bị tính muộn", "Deadline passed, submission marked late"],
+  "FR:Temps écoulé : ta copie a été rendue automatiquement.": ["Hết giờ: bài của bạn đã được nộp tự động.", "Time's up: your work was submitted automatically."],
+  "FR:Consigne": ["Đề bài", "Instructions"],
+  "FR:Cliquez pour agrandir": ["Bấm để phóng to", "Click to enlarge"],
+  "FR:Cliquez sur l'image pour l'agrandir": ["Bấm vào ảnh để phóng to", "Click the image to enlarge"]
+ },
+ "src/screens/student/LuyenBoThe.jsx": {
+  "thẻ đến hạn hôm nay": ["cartes à réviser aujourd'hui", "cards due today"],
+  "Không lưu được lần ôn này: ": ["Révision non enregistrée : ", "Couldn't save this review: "],
+  "Đang tải thẻ…": ["Chargement des cartes…", "Loading cards…"],
+  "Không mở được bộ thẻ này": ["Impossible d'ouvrir ce paquet", "Couldn't open this deck"],
+  "Kiểm tra kết nối rồi thử lại.": ["Vérifiez la connexion et réessayez.", "Check your connection and try again."],
+  "Bộ này chưa có thẻ nào": ["Ce paquet est vide", "This deck has no cards yet"],
+  "Giáo viên chưa thêm thẻ vào đây.": ["L'enseignant n'a pas encore ajouté de cartes.", "The teacher hasn't added cards yet."],
+  "Xong phần hôm nay": ["Terminé pour aujourd'hui", "Done for today"],
+  "Hôm nay không có thẻ nào đến hạn": ["Aucune carte à réviser aujourd'hui", "No cards due today"]
+ },
+ "src/screens/student/NotificationDropdown.jsx": {
+  "Thông báo từ giáo viên": ["Annonce de l'enseignant", "Announcement from the teacher"],
+  "Sắp đến hạn nộp": ["Date limite proche", "Deadline soon"],
+  "Bài đã được chấm": ["Copie corrigée", "Work graded"],
+  "Cần làm lại": ["À refaire", "Redo requested"],
+  "Người theo dõi mới": ["Nouvel abonné", "New follower"],
+  "đã bắt đầu theo dõi bạn.": ["a commencé à vous suivre.", "started following you."],
+  "chưa đọc": ["non lu", "unread"],
+  "Đang tải thông báo": ["Chargement des notifications", "Loading notifications"]
+ },
+ "src/screens/student/ThuVienBoThe.jsx": {
+  "Soạn bởi": ["Créé par", "By"],
+  "nháp — học sinh chưa thấy": ["brouillon, invisible pour les élèves", "draft, not visible to students"],
+  "thẻ": ["cartes", "cards"],
+  "Chọn một bộ để luyện. Các bộ này do giáo viên soạn.": ["Choisissez un paquet. Ils sont créés par les enseignants.", "Pick a deck to practise. Decks are made by teachers."],
+  "Đang tải…": ["Chargement…", "Loading…"],
+  "Không đọc được thư viện": ["Impossible de charger la bibliothèque", "Couldn't load the library"],
+  "Danh sách trống ở đây KHÔNG có nghĩa là chưa có bộ nào — kiểm tra kết nối rồi tải lại.": ["Une liste vide ne veut pas dire qu'il n'y a aucun paquet : vérifiez la connexion et rechargez.", "An empty list doesn't mean there are no decks: check your connection and reload."],
+  "Chưa có bộ thẻ nào cho kỹ năng này": ["Aucun paquet pour cette compétence", "No decks for this skill yet"],
+  "Bộ thẻ do giáo viên soạn. Khi có bộ mới cho phần": ["Les paquets sont créés par les enseignants. Quand il y en aura pour", "Decks are made by teachers. When a new one exists for"],
+  ", nó sẽ hiện ở đây.": [", il apparaîtra ici.", ", it will show up here."]
+ },
+ "src/screens/student/NeoNguLieu.jsx": {
+  "Ngữ liệu": ["Document", "Source text"],
+  "Chỗ đánh dấu không còn khớp với bài — có thể bài đã được sửa. Báo giáo viên giúp nhé.": ["Le passage repéré ne correspond plus au texte (modifié ?). Prévenez l'enseignant.", "The highlighted passage no longer matches the text (edited?). Please tell your teacher."],
+  "Câu này chưa có đánh dấu ngữ liệu.": ["Pas de repère dans le texte pour cette question.", "No text highlight for this question yet."],
+  "Vì sao đáp án kia hấp dẫn:": ["Pourquoi l'autre réponse était tentante :", "Why the other answer was tempting:"]
+ },
+ "src/screens/student/PremiumLockCard.jsx": {
+  "Phân tích lỗi sai chi tiết theo phương pháp Linear Thinking.": ["Analyse détaillée des erreurs (méthode Linear Thinking).", "Detailed error analysis (Linear Thinking method)."],
+  "Sổ tay mẹo làm bài độc quyền (Mon Carnet).": ["Carnet d'astuces exclusif (Mon Carnet).", "Exclusive tips notebook (Mon Carnet)."],
+  "Không giới hạn số lần làm bài và chấm điểm tự động.": ["Exercices et correction automatique illimités.", "Unlimited attempts and automatic grading."],
+  "FR:Exercice Réservé aux Membres Premium (DELF B1–B2)": ["Bài dành cho thành viên Premium (DELF B1–B2)", "Premium members only (DELF B1–B2)"],
+  "Nâng cấp gói học ngay": ["Passer à l'offre supérieure", "Upgrade now"],
+  "Quay lại": ["Retour", "Back"],
+  "Nội dung bài học được khoá ở phía máy chủ — không tải về trình duyệt trước khi bạn có quyền truy cập.": ["Le contenu est verrouillé côté serveur et ne se charge pas avant que vous y ayez accès.", "Content is locked on the server and won't load until you have access."]
+ },
+ "src/screens/dashboard/NetworkManager.jsx": {
+  "Ẩn trạng thái online của tôi": ["Masquer mon statut en ligne", "Hide my online status"],
+  "Người khác không thấy": ["Invisible pour les autres", "Hidden from others"],
+  "Người theo dõi bạn thấy": ["Visible par vos abonnés", "Visible to your followers"]
+ },
+ "src/layout/AvatarMenu.jsx": {
+  "Thành viên VIP": ["Membre VIP", "VIP member"]
+ },
+ "src/layout/BanMoi.jsx": {
+  "Đã có phiên bản mới của FRACILE.": ["Une nouvelle version de FRACILE est disponible.", "A new version of FRACILE is available."],
+  "Tải lại": ["Recharger", "Reload"]
+ },
+ "src/screens/student/TheLat3D.jsx": {
+  "Chạm để lật": ["Touchez pour retourner", "Tap to flip"],
+  "Ví dụ": ["Exemple", "Example"]
+ },
+ "src/screens/practice/ExerciseCard.jsx": {
+  "FR:Ressources de l'exercice": ["Tài liệu của bài", "Exercise resources"],
+  "FR:question": ["câu", "question"]
+ },
+ "src/screens/practice/FocusShell.jsx": {
+  "FR:Quitter": ["Thoát", "Exit"]
+ },
+ "src/screens/practice/KhungViet.jsx": {
+  "FR:Écrivez votre réponse ici…": ["Viết câu trả lời của bạn ở đây…", "Write your answer here…"]
+ }
+}

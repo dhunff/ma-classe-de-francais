@@ -1,0 +1,898 @@
+{
+ "src/screens/exam/LuotThi.jsx": [
+  {
+   "loai": "jsx",
+   "chu": "Mô phỏng phòng thi DELF thật"
+  },
+  {
+   "loai": "jsx",
+   "chu": "Thời gian từng phần giống kỳ thi thật, tổng"
+  },
+  {
+   "loai": "jsx",
+   "chu": ". Đồng hồ không dừng lại."
+  },
+  {
+   "loai": "jsx",
+   "chu": "Bài nghe chỉ phát theo số lượt của đề thi, không tua lại được."
+  },
+  {
+   "loai": "jsx",
+   "chu": "Hãy làm bài nghiêm túc và có trách nhiệm như đang ở phòng thi: chuẩn bị chỗ yên tĩnh, tắt thông báo."
+  },
+  {
+   "loai": "jsx",
+   "chu": "Bạn đang là"
+  },
+  {
+   "loai": "jsx",
+   "chu": ": không giới hạn số lượt thi. Thoát giữa chừng thì bài thi dừng lại."
+  },
+  {
+   "loai": "jsx",
+   "chu": "Mỗi ngày chỉ có 2 lượt thi."
+  },
+  {
+   "loai": "jsx",
+   "chu": "Bấm bắt đầu là dùng một lượt; thoát ra giữa chừng sẽ"
+  },
+  {
+   "loai": "jsx",
+   "chu": "mất lượt đó"
+  },
+  {
+   "loai": "jsx",
+   "chu": "Hôm nay bạn còn"
+  },
+  {
+   "loai": "jsx",
+   "chu": "lượt."
+  },
+  {
+   "loai": "jsx",
+   "chu": "Để sau"
+  },
+  {
+   "loai": "str",
+   "chu": "Đang mở bài thi…"
+  },
+  {
+   "loai": "str",
+   "chu": "Hết lượt hôm nay"
+  },
+  {
+   "loai": "str",
+   "chu": "Tôi hiểu, bắt đầu thi"
+  },
+  {
+   "loai": "jsx",
+   "chu": "Bạn vẫn chưa làm xong bài thi"
+  },
+  {
+   "loai": "jsx",
+   "chu": "Nếu thoát bây giờ, bài thi sẽ dừng lại và"
+  },
+  {
+   "loai": "jsx",
+   "chu": "bạn mất lượt thi này trong ngày"
+  },
+  {
+   "loai": "jsx",
+   "chu": ". Phần đã nộp vẫn được lưu, phần đang làm thì không."
+  },
+  {
+   "loai": "jsx",
+   "chu": "Vẫn thoát"
+  },
+  {
+   "loai": "jsx",
+   "chu": "Tiếp tục làm bài"
+  }
+ ],
+ "src/screens/student/NhanXetAI.jsx": [
+  {
+   "loai": "jsx",
+   "chu": "Điểm mạnh."
+  },
+  {
+   "loai": "jsx",
+   "chu": "Cần cải thiện."
+  },
+  {
+   "loai": "jsx",
+   "chu": "Đang tải nhận xét…"
+  },
+  {
+   "loai": "jsx",
+   "chu": "Phiếu nhận xét · DELF"
+  },
+  {
+   "loai": "jsx",
+   "chu": "Giám khảo AI chấm theo grille chính thức ·"
+  },
+  {
+   "loai": "jsx",
+   "chu": "Điểm theo tiêu chí · bấm để xem chi tiết"
+  },
+  {
+   "loai": "jsx",
+   "chu": "tiêu chí AI không chấm được."
+  },
+  {
+   "loai": "jsx",
+   "chu": "Ưu tiên sửa để lên điểm"
+  },
+  {
+   "loai": "jsx",
+   "chu": "Viết lại cho đúng"
+  },
+  {
+   "loai": "jsx",
+   "chu": "Điểm do AI chấm có thể sai và không phải điểm DELF chính thức."
+  }
+ ],
+ "src/screens/student/ExamResults.jsx": [
+  {
+   "loai": "str",
+   "chu": "Hết 3 lượt AI chấm hôm nay · mai mở lại trang (VIP không giới hạn)"
+  },
+  {
+   "loai": "str",
+   "chu": "AI chưa chấm được, mở lại trang để thử lại"
+  },
+  {
+   "loai": "str",
+   "chu": "AI đang chấm…"
+  },
+  {
+   "loai": "str",
+   "chu": "chưa có điểm"
+  },
+  {
+   "loai": "jsx",
+   "chu": "Dưới"
+  },
+  {
+   "loai": "jsx",
+   "chu": "— riêng phần này đã đủ làm trượt cả bài."
+  },
+  {
+   "loai": "jsx",
+   "chu": "Bạn tự chấm:"
+  },
+  {
+   "loai": "str",
+   "chu": " Đây là ước lượng của chính bạn, chưa phải điểm chính thức."
+  },
+  {
+   "loai": "str",
+   "chu": "Xem lại bản tự chấm"
+  },
+  {
+   "loai": "str",
+   "chu": "Tự chấm bài viết này"
+  },
+  {
+   "loai": "str",
+   "chu": "sửa được"
+  },
+  {
+   "loai": "tpl",
+   "chu": "${…} · ${…} điểm"
+  },
+  {
+   "loai": "str",
+   "chu": "Đạt"
+  },
+  {
+   "loai": "str",
+   "chu": "Chưa đạt"
+  },
+  {
+   "loai": "str",
+   "chu": "Chưa kết luận"
+  },
+  {
+   "loai": "jsx",
+   "chu": "chưa có điểm, nên chưa kết luận được."
+  },
+  {
+   "loai": "str",
+   "chu": "Không đọc được kết quả. Kiểm tra mạng rồi thử lại."
+  },
+  {
+   "loai": "jsx",
+   "chu": "Về kết quả thi"
+  },
+  {
+   "loai": "jsx",
+   "chu": "Kết quả thi thử"
+  },
+  {
+   "loai": "jsx",
+   "chu": "Điểm từng phần, và nhận xét của giáo viên cho bài viết."
+  },
+  {
+   "loai": "jsx",
+   "chu": "Đạt DELF cần"
+  },
+  {
+   "loai": "jsx",
+   "chu": "/25 mỗi phần"
+  },
+  {
+   "loai": "jsx",
+   "chu": ". Các đề ở đây không có phần thi nói, nên tổng điểm chỉ tính trên những phần đã làm."
+  },
+  {
+   "loai": "jsx",
+   "chu": "Đang tải…"
+  },
+  {
+   "loai": "jsx",
+   "chu": "Bạn chưa thi thử lần nào"
+  },
+  {
+   "loai": "jsx",
+   "chu": "Vào mục « Thi thử » để làm một đề. Kết quả sẽ lưu lại ở đây."
+  }
+ ],
+ "src/screens/exam/ExamMode.jsx": [
+  {
+   "loai": "jsx",
+   "chu": "Thi thử DELF"
+  },
+  {
+   "loai": "jsx",
+   "chu": "Chưa có đề thi nào"
+  },
+  {
+   "loai": "jsx",
+   "chu": "Đề thi thử do giáo viên soạn và phát hành. Khi có đề, nó sẽ hiện ở đây."
+  },
+  {
+   "loai": "jsx",
+   "chu": "Xem kết quả các lần thi trước"
+  },
+  {
+   "loai": "jsx",
+   "chu": "Về trang chủ"
+  },
+  {
+   "loai": "jsx",
+   "chu": "Kết quả thi của tôi"
+  },
+  {
+   "loai": "jsx",
+   "chu": "Một lần duy nhất, có tính giờ, không xem đáp án giữa chừng."
+  },
+  {
+   "loai": "attr",
+   "chu": "Trình độ"
+  },
+  {
+   "loai": "jsx",
+   "chu": "Chưa có đề"
+  },
+  {
+   "loai": "jsx",
+   "chu": "nào được phát hành."
+  },
+  {
+   "loai": "jsx",
+   "chu": "phần"
+  },
+  {
+   "loai": "jsx",
+   "chu": "Phần"
+  },
+  {
+   "loai": "jsx",
+   "chu": "Thời gian"
+  },
+  {
+   "loai": "jsx",
+   "chu": "Điểm"
+  },
+  {
+   "loai": "jsx",
+   "chu": "chưa có bài"
+  },
+  {
+   "loai": "str",
+   "chu": "(không mở được)"
+  },
+  {
+   "loai": "jsx",
+   "chu": "Đề này"
+  },
+  {
+   "loai": "jsx",
+   "chu": "không có phần thi nói (PO)"
+  },
+  {
+   "loai": "jsx",
+   "chu": ", vốn chiếm 25/100 điểm kỳ thi thật. Kết quả dưới đây chỉ phản ánh ba phần còn lại."
+  },
+  {
+   "loai": "jsx",
+   "chu": "Không mở được phần"
+  },
+  {
+   "loai": "jsx",
+   "chu": "của đề này — bài tương ứng có thể là bài trả phí bạn chưa có quyền, hoặc đã bị gỡ. Báo giáo viên; điểm phần đó sẽ không tính được."
+  },
+  {
+   "loai": "jsx",
+   "chu": "Làm cả phần thi nói (PO)"
+  },
+  {
+   "loai": "jsx",
+   "chu": "— thêm"
+  },
+  {
+   "loai": "jsx",
+   "chu": "Phần này không được chấm điểm: bạn ghi âm để tự nghe lại. Bỏ chọn thì buổi thi chỉ còn ba phần, và tổng điểm không đổi."
+  },
+  {
+   "loai": "jsx",
+   "chu": "Phiên đăng nhập không còn hiệu lực với máy chủ."
+  },
+  {
+   "loai": "jsx",
+   "chu": "Trình duyệt vẫn nhớ tên bạn, nhưng máy chủ thì không — nên bài làm và bản ghi âm sẽ KHÔNG được lưu, dù màn hình vẫn hiện điểm. Đăng nhập lại rồi quay lại đây; đề vẫn còn nguyên."
+  },
+  {
+   "loai": "jsx",
+   "chu": "Đăng nhập lại"
+  },
+  {
+   "loai": "jsx",
+   "chu": "Tôi có"
+  },
+  {
+   "loai": "jsx",
+   "chu": "phút liên tục"
+  },
+  {
+   "loai": "jsx",
+   "chu": "và sẽ không rời khỏi bài thi. Đồng hồ chạy liên tục kể cả khi đóng tab."
+  },
+  {
+   "loai": "str",
+   "chu": "Đang tải đề…"
+  },
+  {
+   "loai": "str",
+   "chu": "Đang kiểm phiên đăng nhập…"
+  },
+  {
+   "loai": "str",
+   "chu": "Cần đăng nhập lại"
+  },
+  {
+   "loai": "str",
+   "chu": "Bắt đầu thi"
+  },
+  {
+   "loai": "jsx",
+   "chu": "VIP: không giới hạn lượt thi thử."
+  },
+  {
+   "loai": "jsx",
+   "chu": "Hôm nay còn"
+  },
+  {
+   "loai": "jsx",
+   "chu": "lượt thi. Lượt mới vào 0 giờ (giờ Việt Nam)."
+  },
+  {
+   "loai": "str",
+   "chu": "Bạn đã phát bài nghe này rồi."
+  },
+  {
+   "loai": "str",
+   "chu": "Bạn đã dùng hết 2 lượt nghe cho phần này."
+  },
+  {
+   "loai": "str",
+   "chu": "Không ghi nhận được lượt nghe."
+  },
+  {
+   "loai": "str",
+   "chu": "Không kết nối được máy chủ, chưa phát được. Thử lại sau giây lát."
+  },
+  {
+   "loai": "str",
+   "chu": "[exam] exam_play_audio hỏng:"
+  },
+  {
+   "loai": "str",
+   "chu": "Đang mở bài thi…"
+  },
+  {
+   "loai": "str",
+   "chu": "Hết lượt nghe"
+  },
+  {
+   "loai": "str",
+   "chu": "Đã phát"
+  },
+  {
+   "loai": "str",
+   "chu": "Phát một lần duy nhất"
+  },
+  {
+   "loai": "str",
+   "chu": "2 lượt nghe"
+  },
+  {
+   "loai": "tpl",
+   "chu": "Còn ${…} lượt"
+  },
+  {
+   "loai": "jsx",
+   "chu": "Như phòng thi thật: file gồm thời gian đọc câu hỏi, lượt nghe 1, khoảng nghỉ, lượt nghe 2 và thời gian hoàn thành câu trả lời. Bấm phát một lần rồi để chạy hết, không tạm dừng được."
+  },
+  {
+   "loai": "attr",
+   "chu": "Bài trong phần thi"
+  },
+  {
+   "loai": "attr",
+   "chu": "Document de l'exercice"
+  },
+  {
+   "loai": "attr",
+   "chu": "Réponse…"
+  },
+  {
+   "loai": "attr",
+   "chu": "Votre texte…"
+  },
+  {
+   "loai": "jsx",
+   "chu": "← Bài trước"
+  },
+  {
+   "loai": "jsx",
+   "chu": "Bài tiếp →"
+  },
+  {
+   "loai": "str",
+   "chu": "Đang nộp…"
+  },
+  {
+   "loai": "str",
+   "chu": "Terminer cette partie"
+  },
+  {
+   "loai": "jsx",
+   "chu": "Bạn chưa làm xong phần này"
+  },
+  {
+   "loai": "jsx",
+   "chu": "câu"
+  },
+  {
+   "loai": "jsx",
+   "chu": "chưa trả lời. Nộp rồi thì không quay lại phần này được."
+  },
+  {
+   "loai": "str",
+   "chu": "Câu"
+  },
+  {
+   "loai": "str",
+   "chu": "câu "
+  },
+  {
+   "loai": "jsx",
+   "chu": "Đến làm →"
+  },
+  {
+   "loai": "jsx",
+   "chu": "Vẫn nộp"
+  },
+  {
+   "loai": "jsx",
+   "chu": "Quay lại làm tiếp"
+  },
+  {
+   "loai": "jsx",
+   "chu": "Kết quả thi thử"
+  },
+  {
+   "loai": "str",
+   "chu": "Đạt"
+  },
+  {
+   "loai": "str",
+   "chu": "Chưa đạt"
+  },
+  {
+   "loai": "str",
+   "chu": "Chưa kết luận được"
+  },
+  {
+   "loai": "jsx",
+   "chu": "chưa có điểm. Máy không chấm được bài viết, và đoán thay thì con số mất hết ý nghĩa — bạn tự chấm phần đó theo thang DELF ở « Kết quả thi »."
+  },
+  {
+   "loai": "jsx",
+   "chu": "⚠️ Kết quả này CHƯA được lưu lên máy chủ."
+  },
+  {
+   "loai": "jsx",
+   "chu": "Máy chủ không nhận ra bạn là ai — nhiều khả năng phiên đăng nhập đã hết hạn. Điểm ở đây chỉ nằm trong trình duyệt và sẽ mất khi bạn tải lại trang; buổi thi này cũng sẽ không hiện ở « Kết quả thi »."
+  },
+  {
+   "loai": "jsx",
+   "chu": "Đăng nhập lại rồi thi lại. Đừng đóng tab trước khi chép lại điểm nếu bạn cần."
+  },
+  {
+   "loai": "jsx",
+   "chu": "Dưới"
+  },
+  {
+   "loai": "jsx",
+   "chu": "/25 — riêng phần này đã đủ làm trượt cả bài."
+  },
+  {
+   "loai": "jsx",
+   "chu": "chưa chấm"
+  },
+  {
+   "loai": "jsx",
+   "chu": "Đạt DELF cần"
+  },
+  {
+   "loai": "jsx",
+   "chu": "/25 ở mỗi phần"
+  },
+  {
+   "loai": "jsx",
+   "chu": ". Người ta thường trượt vì một kỹ năng yếu hẳn, chứ hiếm khi vì tổng điểm."
+  },
+  {
+   "loai": "jsx",
+   "chu": "Bạn rời khỏi tab"
+  },
+  {
+   "loai": "jsx",
+   "chu": "lần trong lúc thi. Không bị trừ điểm — chỉ để bạn biết, vì phòng thi thật thì không rời được."
+  },
+  {
+   "loai": "jsx",
+   "chu": "Thi đề khác"
+  },
+  {
+   "loai": "str",
+   "chu": "Không mở được đề này."
+  },
+  {
+   "loai": "str",
+   "chu": "Không kết nối được máy chủ, chưa mở được bài thi. Thử lại sau giây lát."
+  },
+  {
+   "loai": "str",
+   "chu": "Bạn đã dùng hết 2 lượt thi hôm nay. Hãy quay lại vào ngày mai."
+  },
+  {
+   "loai": "str",
+   "chu": "Không mở được bài thi. Hãy đăng nhập lại."
+  },
+  {
+   "loai": "str",
+   "chu": "[exam] không mở được attempt:"
+  }
+ ],
+ "src/screens/exam/GhiAmBaiNoi.jsx": [
+  {
+   "loai": "str",
+   "chu": "Trình duyệt này không cho ghi âm. Cần HTTPS và một trình duyệt hiện đại."
+  },
+  {
+   "loai": "str",
+   "chu": "Không thu được âm thanh nào. Kiểm tra micro rồi thử lại."
+  },
+  {
+   "loai": "str",
+   "chu": "Trình duyệt ghi ra định dạng máy chủ không nhận: "
+  },
+  {
+   "loai": "str",
+   "chu": "Phiên đăng nhập đã hết hạn. Đăng nhập lại rồi thử lại."
+  },
+  {
+   "loai": "str",
+   "chu": "Không tải lên được. Kiểm tra kết nối rồi thử lại."
+  },
+  {
+   "loai": "str",
+   "chu": "Không lưu được, chưa rõ lý do."
+  },
+  {
+   "loai": "str",
+   "chu": "Bạn đã từ chối quyền dùng micro. Bật lại trong cài đặt trang của trình duyệt."
+  },
+  {
+   "loai": "str",
+   "chu": "Không mở được micro: "
+  },
+  {
+   "loai": "jsx",
+   "chu": "Ghi âm bài nói"
+  },
+  {
+   "loai": "jsx",
+   "chu": "Phần này"
+  },
+  {
+   "loai": "jsx",
+   "chu": "không được chấm điểm"
+  },
+  {
+   "loai": "jsx",
+   "chu": ". DELF chấm phần nói qua đối thoại với giám khảo. Bạn tự nghe lại bản ghi, hoặc bấm « AI nhận xét » để nhận góp ý về ngữ pháp, từ vựng và cách nối ý — AI đọc bản chép lời, không cho điểm."
+  },
+  {
+   "loai": "jsx",
+   "chu": "Đang lưu…"
+  },
+  {
+   "loai": "str",
+   "chu": "Ghi lại"
+  },
+  {
+   "loai": "str",
+   "chu": "Bắt đầu ghi"
+  },
+  {
+   "loai": "jsx",
+   "chu": "Dừng"
+  },
+  {
+   "loai": "jsx",
+   "chu": "Đã lưu"
+  },
+  {
+   "loai": "jsx",
+   "chu": "Bản đã ghi ("
+  },
+  {
+   "loai": "jsx",
+   "chu": "Nghe lại"
+  },
+  {
+   "loai": "jsx",
+   "chu": "AI nhận xét"
+  },
+  {
+   "loai": "str",
+   "chu": "Bạn đã dùng hết 6 lượt AI nhận xét trong 24 giờ. Gói VIP không giới hạn."
+  },
+  {
+   "loai": "str",
+   "chu": "Định dạng ghi âm này (thường từ Firefox) chưa nhận xét được — hãy ghi lại bằng Chrome hoặc Edge."
+  },
+  {
+   "loai": "str",
+   "chu": "AI không nghe được lời nói nào trong bản ghi. Kiểm tra micro rồi ghi lại."
+  },
+  {
+   "loai": "str",
+   "chu": "Máy chủ chưa bật AI nhận xét — đây là việc của người quản trị."
+  },
+  {
+   "loai": "str",
+   "chu": "Bản ghi quá dài để AI nhận xét (tối đa 25 MB)."
+  },
+  {
+   "loai": "tpl",
+   "chu": "Không nhận xét được (${…}${…})."
+  },
+  {
+   "loai": "str",
+   "chu": "lỗi"
+  },
+  {
+   "loai": "jsx",
+   "chu": "AI nhận xét · không phải điểm DELF"
+  },
+  {
+   "loai": "jsx",
+   "chu": "Điểm mạnh"
+  },
+  {
+   "loai": "jsx",
+   "chu": "Nên sửa"
+  },
+  {
+   "loai": "jsx",
+   "chu": "Phát âm (phỏng đoán từ bản chép lời):"
+  },
+  {
+   "loai": "jsx",
+   "chu": "Luyện tiếp:"
+  },
+  {
+   "loai": "jsx",
+   "chu": "Bản chép lời của AI"
+  }
+ ],
+ "src/screens/student/PESelfEvaluation.jsx": [
+  {
+   "loai": "str",
+   "chu": "Votre municipalité envisage de fermer la bibliothèque de quartier pour "
+  },
+  {
+   "loai": "str",
+   "chu": "financer un nouveau parking. Vous écrivez au maire pour exprimer votre "
+  },
+  {
+   "loai": "tpl",
+   "chu": "Monsieur le Maire,\n\nJe me permets de vous écrire au sujet du projet de fermeture de la bibliothèque\ndu quartier Saint-Michel, annoncé lors du conseil municipal du 12 mars. En tant\nqu'habitante de ce quartier depuis huit ans, je souhaite vous faire part de mon\ndésaccord et vous soumettre une proposition.\n\nTout d'abord, il me semble important de rappeler que cette bibliothèque n'est pas\nseulement un lieu où l'on emprunte des livres. Chaque mercredi, une quarantaine\nd'enfants y participent à l'atelier de lecture, et les étudiants y trouvent un\nespace de travail calme que beaucoup n'ont pas chez eux. Fermer ce lieu\nreviendrait à supprimer le seul service public gratuit du quartier.\n\nCertes, on pourrait objecter que le manque de places de stationnement gêne les\ncommerçants de la rue principale. Cette difficulté est réelle et je ne la\nminimise pas. Toutefois, une étude menée en 2023 dans la ville voisine a montré\nqu'un parking souterrain n'augmentait la fréquentation des commerces que de trois\npour cent, alors qu'une bibliothèque active attire un public quotidien.\n\nC'est pourquoi je propose une solution intermédiaire : conserver la bibliothèque\net aménager le terrain vague situé derrière l'ancienne école. Ce terrain, qui\nappartient déjà à la commune, permettrait de créer une trentaine de places sans\ndétruire un équipement culturel. Le coût serait d'ailleurs inférieur, puisqu'il\nn'y aurait ni démolition ni dépollution à prévoir.\n\nJe reste naturellement à votre disposition pour en discuter et vous remercie par\navance de l'attention que vous porterez à cette lettre.\n\nJe vous prie d'agréer, Monsieur le Maire, l'expression de mes salutations\ndistinguées.\n\nClaire Fontaine"
+  },
+  {
+   "loai": "tpl",
+   "chu": "chưa chấm · /${…}"
+  },
+  {
+   "loai": "tpl",
+   "chu": "${…}, tối đa ${…} điểm"
+  },
+  {
+   "loai": "jsx",
+   "chu": "Kéo thanh trượt để chấm. Mốc cao nhất:"
+  },
+  {
+   "loai": "jsx",
+   "chu": "điểm"
+  },
+  {
+   "loai": "jsx",
+   "chu": "AI đề xuất"
+  },
+  {
+   "loai": "jsx",
+   "chu": "dùng số này"
+  },
+  {
+   "loai": "str",
+   "chu": "(đề bài không còn trong hệ thống)"
+  },
+  {
+   "loai": "str",
+   "chu": "Đã chấm xong nhưng KHÔNG lưu được — đóng màn này là mất."
+  },
+  {
+   "loai": "str",
+   "chu": "Không lưu được: "
+  },
+  {
+   "loai": "str",
+   "chu": "lỗi không rõ"
+  },
+  {
+   "loai": "jsx",
+   "chu": "Đề bài"
+  },
+  {
+   "loai": "tpl",
+   "chu": " · tối thiểu ${…} từ"
+  },
+  {
+   "loai": "jsx",
+   "chu": "Bài làm của bạn"
+  },
+  {
+   "loai": "jsx",
+   "chu": "từ"
+  },
+  {
+   "loai": "jsx",
+   "chu": "(bạn nộp bài trống)"
+  },
+  {
+   "loai": "str",
+   "chu": "Ẩn bài mẫu"
+  },
+  {
+   "loai": "str",
+   "chu": "Xem bài mẫu tham khảo"
+  },
+  {
+   "loai": "jsx",
+   "chu": "Đang tải…"
+  },
+  {
+   "loai": "jsx",
+   "chu": "Đề này chưa có bài mẫu. Hãy hỏi giáo viên."
+  },
+  {
+   "loai": "jsx",
+   "chu": "Tự chấm theo tiêu chí DELF"
+  },
+  {
+   "loai": "jsx",
+   "chu": "Đọc lại bài bên trái theo từng tiêu chí một. Giá trị không nằm ở con số cuối — nó nằm ở chỗ bạn đọc bài mình một lần nữa qua mắt người chấm."
+  },
+  {
+   "loai": "tpl",
+   "chu": "Thang ${…} ở đây là bản phỏng theo, quy về ${…} điểm. Đề thi thật chia phần viết thành hai bài tập với thang riêng."
+  },
+  {
+   "loai": "str",
+   "chu": "Thang này do giáo viên tuỳ chỉnh, không phải thang DELF chính thức."
+  },
+  {
+   "loai": "jsx",
+   "chu": "Chưa hỏi được máy chủ xem bài này đã có gợi ý chưa. Tải lại trang rồi thử lại — đừng xin mới vội, có thể bạn đã có một bản rồi."
+  },
+  {
+   "loai": "jsx",
+   "chu": "Gợi ý chấm từ AI"
+  },
+  {
+   "loai": "tpl",
+   "chu": "Chấm được ${…}/${…} tiêu chí · đề xuất ${…}/${…}. Điểm cuối vẫn do bạn chốt."
+  },
+  {
+   "loai": "str",
+   "chu": "Một lượt đọc bài của bạn theo đúng thang bên dưới. Đây là đề xuất để đối chiếu, không phải điểm chính thức."
+  },
+  {
+   "loai": "jsx",
+   "chu": "Đang chấm…"
+  },
+  {
+   "loai": "str",
+   "chu": "Xin lại"
+  },
+  {
+   "loai": "str",
+   "chu": "Xin gợi ý"
+  },
+  {
+   "loai": "jsx",
+   "chu": "tiêu chí không có gợi ý — máy chấm trả về giá trị không khớp thang nên bị bỏ. Những mục đó bạn tự chấm như bình thường."
+  },
+  {
+   "loai": "jsx",
+   "chu": "lượt trong 24 giờ tới."
+  },
+  {
+   "loai": "jsx",
+   "chu": "Tổng điểm"
+  },
+  {
+   "loai": "jsx",
+   "chu": "Chấm lại"
+  },
+  {
+   "loai": "str",
+   "chu": "Đang lưu…"
+  },
+  {
+   "loai": "str",
+   "chu": "Đã lưu"
+  },
+  {
+   "loai": "str",
+   "chu": "Lưu bản tự chấm"
+  },
+  {
+   "loai": "str",
+   "chu": "Chế độ xem thử — dữ liệu mẫu, không lưu được."
+  },
+  {
+   "loai": "str",
+   "chu": "Đã chấm đủ tiêu chí."
+  },
+  {
+   "loai": "tpl",
+   "chu": "Còn ${…} tiêu chí chưa chấm: ${…}${…}"
+  }
+ ]
+}
