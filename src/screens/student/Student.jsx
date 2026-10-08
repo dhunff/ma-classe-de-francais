@@ -14,12 +14,14 @@ import { OrdreChip, OrdreBlocks, TableauCompare, ConfirmSubmitModal } from "./an
 import { DienPhieu, tomTatDangMoi } from "./dangMoi.jsx";
 import ReadingPanel from "../../editor/ReadingPanel.jsx";
 import RichTextEditor from "../../editor/RichTextEditor.jsx";
-import { BookOpen, GraduationCap, MoreVertical, Pencil, Copy, Trash2, RotateCcw, Image as ImageIcon, X, Phone, Calendar, Target, Briefcase, ChevronLeft, TrendingUp, Clock, CheckCircle, ListChecks } from "lucide-react";
+import { BookOpen, GraduationCap, MoreVertical, Pencil, Copy, Trash2, RotateCcw, Image as ImageIcon, X, Phone, Calendar, Target, Briefcase, ChevronLeft, TrendingUp, Clock, CheckCircle, ListChecks, Headphones, Mic } from "lucide-react";
 import { BarChart, Bar, LineChart, Line, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from "recharts";
 import PracticeHub from "../../PracticeHub.jsx";
 import Taking from "./Taking.jsx";
 import NeoCauHoi from "./NeoCauHoi.jsx";
-import { ChuCoSticker } from "../../shared/leon.jsx";
+import { ChuCoSticker, Leon } from "../../shared/leon.jsx";
+import NutTieng from "../../shared/NutTieng.jsx";
+import { phat } from "../../shared/amThanh.js";
 
 
 /* ================= Student ================= */
@@ -119,30 +121,59 @@ function Student({ name, exercises, submissions, setSubmissions, accounts, setAc
     setMsg(error ? `Échec : ${error.message}` : "✅ Mot de passe modifié !");
   };
 
-  const Card = ({ ex }) => {
+  /* Thẻ bài (làm lại 09/10): ô kỹ năng màu, chip thông tin, chip hạn nộp
+     theo mức gấp, điểm dạng huy hiệu, nút bắt đầu nổi khối. */
+  const MAU_KN = { "Grammaire": "from-blue-500 to-indigo-600", "Vocabulaire": "from-amber-400 to-orange-500", "Compréhension de l'oral": "from-sky-500 to-blue-600",
+    "Compréhension des écrits": "from-emerald-500 to-teal-600", "Production écrite": "from-rose-500 to-pink-600", "Production orale": "from-fuchsia-500 to-purple-600",
+    "Traduction": "from-cyan-500 to-sky-600", "Communication": "from-violet-500 to-purple-600" };
+  const ICON_KN = { "Compréhension de l'oral": Headphones, "Compréhension des écrits": BookOpen, "Production écrite": Pencil, "Production orale": Mic, "Vocabulaire": BookOpen };
+  const Card = ({ ex, i = 0 }) => {
     const subRaw = mine(ex.id);
     const redo = subRaw?.redo;
     const sub = redo ? null : subRaw;
     const late = isLate(ex);
     const t = sub && totalScore(sub, ex);
+    const kn = exSkills(ex)[0];
+    const IconKN = ICON_KN[kn] ?? GraduationCap;
+    const conNgay = ex.deadline ? Math.ceil((new Date(ex.deadline).getTime() - Date.now()) / 86400000) : null;
+    const tl = t && t.max ? t.score / t.max : 0;
     return (
-      <div className="mcf-card" style={S.card}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
-          <div>
-            <span style={S.badge(ex.level)}>{ex.level}</span>
-            <span style={S.chip(C.primarySoft, C.primary)}>{exSkills(ex).join(" · ")}</span>{" "}
-            <strong style={{ fontSize: 16 }}>{ex.title}</strong>
-            <div style={{ fontSize: 12, color: C.soft, marginTop: 5 }}>
-              {ex.questions.length} {tr("câu", "question(s)", "question(s)")}{ex.audioUrl && " · 🎧"}{ex.timeLimit && ` · ⏱ ${ex.timeLimit} min`}
-              {ex.deadline && <span style={{ color: late ? C.danger : C.warn, fontWeight: 700 }}> · ⏰ {late ? tr("nộp bây giờ sẽ bị tính muộn", "en retard si rendu maintenant", "late if submitted now") : `avant le ${fmtDate(ex.deadline)}`}</span>}
+      <div className="mcf-cau-vao rounded-3xl border border-solid border-line bg-surface p-5 shadow-[0_8px_30px_rgba(0,0,0,0.04)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_14px_34px_rgba(0,0,0,0.08)]"
+        style={{ animationDelay: `${Math.min(i, 8) * 60}ms` }}>
+        <div className="flex flex-wrap items-center gap-4">
+          <span className={`grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-gradient-to-br ${MAU_KN[kn] ?? "from-blue-500 to-indigo-600"} text-white shadow-md`}>
+            <IconKN size={24} />
+          </span>
+          <div className="min-w-0 flex-1">
+            <p className="m-0 text-base font-extrabold leading-snug text-ink">{ex.title}</p>
+            <div className="mt-1.5 flex flex-wrap items-center gap-1.5 text-[11px] font-bold">
+              <span style={S.badge(ex.level)}>{ex.level}</span>
+              <span className="rounded-full bg-primary-soft px-2 py-0.5 text-primary">{exSkills(ex).join(" · ")}</span>
+              <span className="rounded-full bg-surface2 px-2 py-0.5 text-soft">{ex.questions.length} {tr("câu", "question(s)", "question(s)")}</span>
+              {ex.audioUrl && <span className="inline-flex items-center gap-1 rounded-full bg-surface2 px-2 py-0.5 text-soft"><Headphones size={11} />{tr("Nghe", "Audio", "Audio")}</span>}
+              {ex.timeLimit && <span className="inline-flex items-center gap-1 rounded-full bg-surface2 px-2 py-0.5 text-soft"><Clock size={11} />{ex.timeLimit} {tr("phút", "min", "min")}</span>}
+              {ex.deadline && !sub && (
+                <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 ${late ? "bg-danger text-white" : conNgay <= 2 ? "bg-warn-soft text-warn" : "bg-surface2 text-soft"}`}>
+                  <Calendar size={11} />
+                  {late ? tr("Quá hạn, nộp sẽ tính muộn", "En retard", "Overdue")
+                    : conNgay <= 0 ? tr("Hạn hôm nay", "À rendre aujourd'hui", "Due today")
+                      : tr(`Hạn ${fmtDate(ex.deadline)} · còn ${conNgay} ngày`, `Avant le ${fmtDate(ex.deadline)} · ${conNgay} j`, `Due ${fmtDate(ex.deadline)} · ${conNgay} d left`)}
+                </span>
+              )}
             </div>
           </div>
           {sub ? (
-            <span style={{ fontSize: 13, fontWeight: 700, color: t.pending ? C.warn : C.ok }}>
-              {t.pending ? `⏳ ${t.score}/${t.max} (en attente de correction)` : `✓ ${t.score}/${t.max}`}{sub.late && " 🕐"}
+            <span className={`inline-flex shrink-0 items-center gap-2 rounded-2xl px-4 py-2 font-extrabold tabular-nums ${t.pending ? "bg-warn-soft text-warn" : tl >= 0.8 ? "bg-ok-soft text-ok" : tl >= 0.5 ? "bg-primary-soft text-primary" : "bg-danger-soft text-danger"}`}>
+              {t.pending ? <Clock size={16} /> : <CheckCircle size={16} />}
+              <span className="text-lg">{t.score}<span className="text-xs opacity-70">/{t.max}</span></span>
+              {t.pending && <span className="text-[11px] font-bold">{tr("chờ chấm", "en attente", "pending")}</span>}
+              {sub.late && <span className="rounded-full bg-surface px-1.5 text-[10px] font-bold text-soft">{tr("muộn", "en retard", "late")}</span>}
             </span>
           ) : (
-            <button style={S.btn(true)} onClick={() => setTaking(ex)}>Commencer</button>
+            <button type="button" onClick={() => { phat("batDau"); setTaking(ex); }}
+              className="inline-flex shrink-0 cursor-pointer items-center gap-2 rounded-2xl border-0 border-b-4 border-solid border-blue-800 bg-gradient-to-r from-primary to-indigo-600 px-5 py-2.5 font-sans text-sm font-extrabold text-white shadow-[0_10px_22px_rgba(37,99,235,0.3)] transition-transform hover:-translate-y-0.5 active:translate-y-0.5 active:border-b-0">
+              {redo ? tr("Làm lại", "Refaire", "Redo") : tr("Bắt đầu", "Commencer", "Start")}
+            </button>
           )}
         </div>
         {redo && (
@@ -161,12 +192,12 @@ function Student({ name, exercises, submissions, setSubmissions, accounts, setAc
             background: C.primarySoft, border: `1px solid ${C.primary}33`, borderRadius: 16, padding: "12px 16px" }}>
             <span style={{ fontSize: 22 }}>📄</span>
             <div style={{ flex: 1, minWidth: 140 }}>
-              <div style={{ fontSize: 12, fontWeight: 800, color: C.primary, letterSpacing: 0.5, textTransform: "uppercase" }}>Correction du professeur</div>
+              <div style={{ fontSize: 12, fontWeight: 800, color: C.primary, letterSpacing: 0.5, textTransform: "uppercase" }}>{tr("Bài chữa của giáo viên", "Correction du professeur", "Teacher's correction")}</div>
               <div style={{ fontSize: 13.5, fontWeight: 600, wordBreak: "break-all" }}>{fileNameFromUrl(sub.feedbackUrl)}</div>
             </div>
             <a href={sub.feedbackUrl} target="_blank" rel="noopener noreferrer"
               style={{ ...S.btn(true), textDecoration: "none", fontSize: 13, padding: "9px 18px" }}>
-              Voir le fichier ↗
+              {tr("Xem file ↗", "Voir le fichier ↗", "Open file ↗")}
             </a>
           </div>
         )}
@@ -303,14 +334,32 @@ function Student({ name, exercises, submissions, setSubmissions, accounts, setAc
           nằm trong prop `trailing` của cụm tab đó, nên được tách ra đây. */}
       {/* Nút « Làm mới » gỡ 08/10 theo chủ dự án: dữ liệu tự nạp khi vào trang. */}
 
+      {(tab === "todo" || tab === "done") && (
+        <header className="mcf-cau-vao relative mb-5 overflow-hidden rounded-3xl bg-gradient-to-br from-blue-600 via-primary to-indigo-600 p-6 text-white shadow-[0_20px_50px_rgba(37,99,235,0.3)]">
+          <span aria-hidden className="absolute -right-12 -top-12 h-48 w-48 rounded-full bg-white/10" />
+          <span aria-hidden className="absolute -bottom-20 left-1/3 h-44 w-44 rounded-full bg-sky-300/20 blur-2xl" />
+          <div className="relative flex items-center gap-4">
+            <Leon cam={todo.length ? "lam-viec" : "yeah"} size={108} className="mcf-leon-bay shrink-0 drop-shadow-[0_12px_18px_rgba(0,0,0,0.3)] max-sm:h-20 max-sm:w-20" />
+            <div className="min-w-0 flex-1">
+              <h1 className="m-0 text-3xl font-extrabold tracking-tight">{t("nav.assigned")}</h1>
+              <p className="m-0 mt-1 text-sm text-white/85">
+                {todo.length
+                  ? tr(`Bạn còn ${todo.length} bài cần làm. Allez, courage !`, `Il te reste ${todo.length} devoir(s). Allez, courage !`, `You have ${todo.length} assignment(s) left. Allez, courage!`)
+                  : tr("Xong hết bài được giao rồi. C'est super !", "Tous les devoirs sont faits. C'est super !", "All assignments done. C'est super!")}
+              </p>
+            </div>
+            <NutTieng className="border-white/30 bg-white/15 text-white hover:border-white hover:text-white" />
+          </div>
+        </header>
+      )}
       {(tab === "todo" || tab === "done") && <TongQuanBaiGiao exercises={exercises} submissions={submissions} name={name} t={t} />}
       {/* « Bài tập được giao » (08/10): Cần làm + Đã nộp là hai tab của một mục. */}
       {(tab === "todo" || tab === "done") && (
-        <div role="tablist" className="mb-5 inline-flex gap-1 rounded-full bg-surface2 p-1">
+        <div role="tablist" className="mb-5 inline-flex gap-1 rounded-2xl bg-surface2 p-1.5">
           {[["todo", t("nav.todo"), todo.length], ["done", t("nav.done"), doneList.length]].map(([k, nhan, n]) => (
-            <button key={k} type="button" role="tab" aria-selected={tab === k} onClick={() => setTab(k)}
-              className={`h-9 cursor-pointer rounded-full border-0 px-4 font-sans text-sm font-bold ${tab === k ? "bg-surface text-ink shadow-sm" : "bg-transparent text-soft hover:text-ink"}`}>
-              {nhan} <span className={tab === k ? "text-primary" : "text-soft"}>· {n}</span>
+            <button key={k} type="button" role="tab" aria-selected={tab === k} onClick={() => { if (tab !== k) phat("tiep"); setTab(k); }}
+              className={`inline-flex h-10 cursor-pointer items-center gap-2 rounded-xl border-0 px-5 font-sans text-sm font-extrabold transition-all ${tab === k ? "bg-surface text-ink shadow-md" : "bg-transparent text-soft hover:text-ink"}`}>
+              {nhan} <span className={`grid h-6 min-w-6 place-items-center rounded-full px-1.5 text-xs tabular-nums ${tab === k ? "bg-primary text-white" : "bg-surface text-soft"}`}>{n}</span>
             </button>
           ))}
         </div>
@@ -318,16 +367,16 @@ function Student({ name, exercises, submissions, setSubmissions, accounts, setAc
       {tab === "todo" && (
         todo.length === 0
           ? <div className="flex w-full flex-col items-center justify-center rounded-3xl border border-solid border-line bg-surface px-6 py-16 text-center shadow-sm transition-colors duration-300 dark:shadow-none">
-              <ListChecks size={48} strokeWidth={1.5} className="mb-3 text-ok" />
+              <Leon cam="yeah" size={120} className="mcf-nay mb-3" />
               <p className="m-0 text-lg font-semibold text-ink">{t("todo.empty_title")}</p>
               <p className="m-0 mt-1 text-sm text-soft">{t("todo.empty_body")}</p>
             </div>
-          : <div style={{ display: "grid", gap: 14 }}>{todo.map((ex) => <Card key={ex.id} ex={ex} />)}</div>
+          : <div className="grid gap-3.5">{todo.map((ex, i) => <Card key={ex.id} ex={ex} i={i} />)}</div>
       )}
       {tab === "done" && (
         doneList.length === 0
-          ? <div className="mcf-card" style={{ ...S.card, textAlign: "center", padding: 36, color: C.soft }}>{t("empty.no_submission")}</div>
-          : <div style={{ display: "grid", gap: 14 }}>{doneList.map((ex) => <Card key={ex.id} ex={ex} />)}</div>
+          ? <div className="flex flex-col items-center rounded-3xl border border-solid border-line bg-surface px-6 py-12 text-center text-soft"><Leon cam="buon-ngu" size={110} className="mb-2" />{t("empty.no_submission")}</div>
+          : <div className="grid gap-3.5">{doneList.map((ex, i) => <Card key={ex.id} ex={ex} i={i} />)}</div>
       )}
 
       {tab === "progress" && (
