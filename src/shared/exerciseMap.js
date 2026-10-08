@@ -59,6 +59,9 @@ export const EX_META = [
      phòng thi thật. Màn thi thử khi đó chỉ cho bấm phát MỘT lần (máy chủ đọc
      đúng cờ này trong exam_play_audio, migration 119). */
   "ngheKieuThi",
+  /* audioLuyen (08/10, lô 13): file GỐC không có khoảng nghỉ. audioUrl là bản
+     kiểu phòng thi cho màn thi; màn luyện tập/bài giao phát audioLuyen. */
+  "audioLuyen",
 ];
 export const Q_COLUMNS = ["id", "type", "prompt", "explanation"];
 

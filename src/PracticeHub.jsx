@@ -1397,7 +1397,7 @@ function PracticeWorkspace({ ex, back, onFinish }) {
         </div>
       )}
 
-      <SplitPane audioUrl={ex.audioUrl} readingText={ex.readingText} stickyTop={zen ? FOCUS_TOP : 8}>
+      <SplitPane audioUrl={ex.audioLuyen || ex.audioUrl} readingText={ex.readingText} stickyTop={zen ? FOCUS_TOP : 8}>
         {questionCards}
       </SplitPane>
 

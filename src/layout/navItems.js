@@ -70,7 +70,8 @@ export const STUDENT_NAV = [
   /* Từ điển tra nhanh — nguồn là thẻ flashcard công khai (TuDien.jsx). */
   /* Thách đấu bạn bè — đứng ngay sau Lộ trình vì cùng là phần game. */
   { to: "/etudiant/thach-dau", labelKey: "nav.duel", Icon: Swords },
-  { to: "/etudiant/tu-dien", labelKey: "nav.dict", Icon: BookA },
+  /* « Từ điển » GỠ 08/10 theo chủ dự án: nó chỉ tra lại đúng các thẻ Flashcard
+     công khai (~130 mục), trùng với mục Flashcard. Lấy lại TuDien.jsx từ git. */
   { to: "/etudiant/entrainement", labelKey: "nav.practice", Icon: Dumbbell, view: "practice" },
   /* Không có `view`: là route riêng trong App.jsx, giống « Sổ tay » bên giáo viên.
      Ban đầu tôi cố ý KHÔNG đưa vào đây với lý do "vào là bắt đầu tính giờ, không
