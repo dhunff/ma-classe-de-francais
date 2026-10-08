@@ -175,3 +175,9 @@ body {
 @keyframes mcfLeonNhun { 0%, 92%, 100% { transform: translateY(0); } 95% { transform: translateY(-6px); } }
 .mcf-leon-nut { animation: mcfLeonNhun 6s ease-in-out infinite; }
 @media (prefers-reduced-motion: reduce) { .mcf-leon-vao, .mcf-leon-nut { animation: none; } }
+/* Leon ở trang giới thiệu: bay nhẹ, bong bóng lời trồi lên sau. */
+@keyframes mcfLeonBay { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+.mcf-leon-bay { animation: mcfLeonBay 4s ease-in-out infinite; }
+@keyframes mcfBongVao { from { opacity: 0; transform: translateY(12px) scale(.9); } to { opacity: 1; transform: none; } }
+.mcf-leon-vao-bong { animation: mcfBongVao .5s .4s cubic-bezier(.34,1.56,.64,1) both; }
+@media (prefers-reduced-motion: reduce) { .mcf-leon-bay, .mcf-leon-vao-bong { animation: none; } }

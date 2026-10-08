@@ -133,7 +133,7 @@ export default function LandingPage({ imgSrc = "/images/hero-preview.png" }) {
             </div>
           </div>
 
-          <AnhHero src={imgSrc} />
+          <LeonMoi />
         </section>
 
         {/* ── SỐ LIỆU — ĐẾM THẬT ── */}
@@ -201,5 +201,24 @@ function AnhHero({ src }) {
   return (
     <img src={src} alt={tr("Màn hình luyện thi DELF của FRACILE", "Écran d'entraînement DELF de FRACILE", "FRACILE DELF practice screen")} onError={() => setHong(true)}
       className="w-full rounded-2xl border border-solid border-line object-cover shadow-2xl transition-transform duration-300 hover:scale-[1.01] motion-reduce:transition-none" />
+  );
+}
+
+/* Leon mời khách vào web (09/10, theo chủ dự án): thay ảnh chụp màn hình ở
+   hero bằng Leon cỡ lớn kèm bong bóng lời dẫn tới trang học thử. */
+function LeonMoi() {
+  return (
+    <div className="relative mx-auto flex w-full max-w-md items-end justify-center pt-24 lg:max-w-lg">
+      <span aria-hidden className="absolute bottom-6 left-1/2 h-[78%] w-[88%] -translate-x-1/2 rounded-full bg-primary-soft" />
+      <span aria-hidden className="absolute bottom-3 left-1/2 h-5 w-1/2 -translate-x-1/2 rounded-[50%] bg-ink/10 blur-md" />
+      <img src="/leon/leon-lon.webp" alt={tr("Leon, linh vật của FRACILE, đang chào bạn", "Leon, la mascotte de FRACILE, vous accueille", "Leon, FRACILE's mascot, welcomes you")}
+        width={420} height={420} className="mcf-leon-bay relative h-[340px] w-auto object-contain sm:h-[420px]" />
+      <Link to="/decouvrir"
+        className="mcf-leon-vao-bong group absolute left-0 top-0 max-w-[15rem] rounded-3xl rounded-bl-md bg-surface px-5 py-4 text-ink no-underline shadow-[0_18px_40px_rgb(0,0,0,0.12)] sm:left-2">
+        <span className="block text-lg font-extrabold"><em>Bonjour !</em> 🐾</span>
+        <span className="mt-1 block text-sm leading-snug text-soft">{tr("Mình là Leon. Vào học thử cùng mình nhé!", "Moi, c'est Leon. Viens essayer avec moi !", "I'm Leon. Come and try it with me!")}</span>
+        <span className="mt-2 inline-flex items-center gap-1 text-sm font-bold text-primary">{tr("Vào thôi", "C'est parti", "Let's go")} <ArrowRight size={14} className="transition-transform group-hover:translate-x-1" /></span>
+      </Link>
+    </div>
   );
 }
