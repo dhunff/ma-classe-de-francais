@@ -17,7 +17,7 @@ import { AlertTriangle } from "lucide-react";
  *   · Không có công cụ quảng cáo / phân tích nào: grep gtag, analytics,
  *     posthog, mixpanel, amplitude, hotjar, pixel trên src/ + index.html = 0.
  *   · Bản ghi âm ở bucket RIÊNG `bai-noi` (migration 057).
- *   · Bài viết CHỈ gửi cho OpenAI (26/09; trước đó Anthropic) khi học sinh bấm « Xin gợi ý »
+ *   · Bài viết gửi cho OpenAI khi học sinh bấm « Xin gợi ý », và TỰ ĐỘNG với phần viết bài thi thử (08/10)
  *     (Edge Function `cham-pe`) — không tự động.
  *   · Thanh toán là CHUYỂN KHOẢN qua mã VietQR, SePay báo về; hệ thống không
  *     bao giờ thấy số thẻ.
@@ -107,7 +107,7 @@ const HOI_DAP = [
   ["Điểm thi thử có phải điểm DELF chính thức không?",
    "Không. Đề thi thử mô phỏng cấu trúc và thời gian của kỳ thi thật, nhưng điểm ở đây chỉ để bạn tự đánh giá. Điểm DELF chính thức chỉ do các trung tâm khảo thí được công nhận cấp."],
   ["Ai chấm bài của tôi?",
-   "Trắc nghiệm, điền từ, chia động từ, đúng/sai, bảng và sắp xếp câu được máy chủ chấm ngay khi bạn nộp. Bài viết thì bạn tự chấm theo thang DELF chính thức, từng tiêu chí một. Bạn có thể bấm « Xin gợi ý » để AI đề xuất điểm và nhận xét theo từng tiêu chí (tối đa 6 lượt mỗi 24 giờ). Gợi ý chỉ để đối chiếu — điểm cuối cùng do bạn chốt."],
+   "Trắc nghiệm, điền từ, chia động từ, đúng/sai, bảng và sắp xếp câu được máy chủ chấm ngay khi bạn nộp. Bài viết trong bài THI THỬ được AI chấm tự động theo thang DELF ngay khi bạn mở trang Kết quả thi, kèm nhận xét theo từng tiêu chí; điểm đó là điểm phần viết. Bài viết trong bài luyện tập thì bạn tự chấm, và có thể bấm « Xin gợi ý » để AI đề xuất điểm (tối đa 6 lượt mỗi 24 giờ). Điểm do AI chấm có thể sai và không phải điểm DELF chính thức."],
   ["Bài nói có được chấm điểm không?",
    "Không có điểm số. Kỳ thi thật chấm phần nói qua hội thoại trực tiếp với giám khảo, điều một ứng dụng tự học không mô phỏng được. Bạn ghi âm để tự nghe lại, và có thể bấm « AI nhận xét » để nhận góp ý về ngữ pháp, từ vựng và cách nối ý (AI đọc bản chép lời, tối đa 6 lượt mỗi 24 giờ) — nhưng không có con số nào không có cơ sở."],
   ["Nghe hiểu được nghe mấy lần?",
@@ -166,7 +166,7 @@ export function TrangDieuKhoan() {
 
       <Muc ten="3. Điểm số và kết quả">
         <P><strong>Điểm trên FRACILE không phải kết quả DELF chính thức</strong> và không có giá trị thay thế chứng chỉ. Đề thi thử mô phỏng cấu trúc kỳ thi để bạn luyện tập.</P>
-        <P>Bài viết do bạn tự chấm theo thang DELF. Gợi ý chấm từ AI chỉ mang tính tham khảo và có thể sai. Bài nói không được chấm điểm.</P>
+        <P>Bài viết của bài thi thử do AI chấm tự động theo thang DELF; bài viết luyện tập do bạn tự chấm, có thể xin gợi ý từ AI. Điểm do AI chấm có thể sai và không phải điểm DELF chính thức. Bài nói không được chấm điểm.</P>
       </Muc>
 
       <Muc ten="4. Thanh toán">
@@ -205,7 +205,7 @@ export function TrangBaoMat() {
         <UL>
           <li>Chúng tôi chỉ thu những gì cần để bạn học.</li>
           <li><strong>Không bán dữ liệu. Không có công cụ quảng cáo hay theo dõi nào.</strong></li>
-          <li>Bài viết của bạn chỉ được gửi cho dịch vụ AI khi <strong>chính bạn</strong> bấm « Xin gợi ý ».</li>
+          <li>Bài viết của bạn được gửi cho dịch vụ AI khi bạn bấm « Xin gợi ý », và tự động khi bạn nộp phần viết của một bài <strong>thi thử</strong> (để chấm điểm).</li>
           <li>Bạn có quyền xem, sửa và yêu cầu xoá dữ liệu của mình.</li>
         </UL>
       </Muc>
@@ -234,7 +234,7 @@ export function TrangBaoMat() {
         <UL>
           <li><strong>Supabase</strong> — lưu cơ sở dữ liệu, tài khoản và bản ghi âm.</li>
           <li><strong>Vercel</strong> — phục vụ trang web.</li>
-          <li><strong>OpenAI</strong> — chỉ khi chính bạn bấm: « Xin gợi ý » ở màn tự chấm bài viết (gửi đề bài và bài viết), hoặc « AI nhận xét » cạnh một bản ghi âm (gửi bản ghi âm giọng nói và đề bài để chép lời rồi nhận xét). Không có gì được gửi nếu bạn không bấm.</li>
+          <li><strong>OpenAI</strong> — chỉ khi chính bạn bấm: « Xin gợi ý » ở màn tự chấm bài viết (gửi đề bài và bài viết), hoặc « AI nhận xét » cạnh một bản ghi âm (gửi bản ghi âm giọng nói và đề bài để chép lời rồi nhận xét). Riêng phần viết của bài <strong>thi thử</strong> được gửi tự động để chấm điểm (đề bài, bài viết, phiếu đã điền).</li>
           <li><strong>Google (Google Sheets)</strong> — chỉ khi giáo viên bấm « Đồng bộ Google Sheets » ở trang Thống kê: tên hiển thị, @username và kết quả học tập 30 ngày gần nhất (số lượt làm bài, điểm, thời gian học, sao lộ trình, XP) được ghi vào một bảng tính Google do FRACILE quản lý, chỉ người quản trị xem được. Không gửi email, số điện thoại hay bài làm.</li>
           <li><strong>SePay</strong> — báo cho hệ thống khi có giao dịch chuyển khoản.</li>
           <li><strong>Google</strong> — chỉ khi bạn chọn đăng nhập bằng Google.</li>

@@ -111,6 +111,10 @@ Deno.serve(async (req) => {
   try { than = await req.json(); } catch { /* để rơi xuống câu kiểm dưới */ }
   const answerId = than?.answerId;
   const rubric = than?.rubric;
+  /* chinhThuc (08/10, theo chủ dự án): AI chấm LÀ điểm phần viết của bài thi
+     thử — ghi thẳng answers.score/feedback. Chỉ cho câu CHƯA có điểm, nên mỗi
+     bài tốn đúng một lượt gọi; vì vậy chế độ này không trừ vào hạn mức gợi ý. */
+  const chinhThuc = than?.chinhThuc === true;
   if (!answerId || !rubric?.criteria?.length) {
     return json(400, { ok: false, ma: "THIEU_THAM_SO" });
   }
@@ -123,7 +127,7 @@ Deno.serve(async (req) => {
     .eq("user_id", userId)
     .gte("created_at", tuLuc);
 
-  if ((daDung ?? 0) >= HAN_MUC) {
+  if (!chinhThuc && (daDung ?? 0) >= HAN_MUC) {
     /* Mã lỗi RIÊNG, không gộp vào "thử lại sau".
        "Thử lại sau" mời người ta bấm lại ngay, và lần bấm đó cũng hỏng. Giao
        diện cần nói được "hết lượt, "+giờ+" nữa có lại" — cùng bài học với
@@ -139,7 +143,7 @@ Deno.serve(async (req) => {
      RLS, nên không có hàng rào nào khác ở đây ngoài chính câu lệnh này. */
   const { data: ans, error: loiA } = await admin
     .from("answers")
-    .select("id, raw, question_id, attempts!inner(user_id, finished_at), questions!inner(type, prompt)")
+    .select("id, raw, score, attempt_id, question_id, attempts!inner(user_id, finished_at), questions!inner(type, prompt)")
     .eq("id", answerId)
     .eq("attempts.user_id", userId)
     .maybeSingle();
@@ -154,9 +158,38 @@ Deno.serve(async (req) => {
     return json(400, { ok: false, ma: "CHUA_NOP" });
   }
 
+  if (chinhThuc && (ans as any).score != null) return json(409, { ok: false, ma: "DA_CO_DIEM" });
+
+  const tongToiDa = rubric.criteria.reduce((n: number, c: any) => n + (Number(c.max_score) || 0), 0);
+  /* Phiếu điền (formulaire, A1) cùng lượt làm bài: gộp vào bài để AI chấm cả
+     tiêu chí « điền phiếu », rồi ghi phiếu 0/0 điểm (đã tính trong bài viết). */
+  let phieu: any[] = [];
+  if (chinhThuc) {
+    const { data } = await admin.from("answers").select("id, raw, questions!inner(type, payload)")
+      .eq("attempt_id", (ans as any).attempt_id).eq("questions.type", "formulaire");
+    phieu = data ?? [];
+  }
+  const vanPhieu = phieu.map((a: any) => {
+    const champs = a.questions?.payload?.champs ?? [];
+    const raw = a.raw && typeof a.raw === "object" ? a.raw : {};
+    return "PHIẾU ĐIỀN:\n" + champs.map((c: any) => `- ${c.nhan}: ${String(raw[c.id] ?? "").trim() || "(bỏ trống)"}`).join("\n");
+  }).join("\n\n");
+  const ghiPhieu = () => phieu.length
+    ? admin.from("answers").update({ score: 0, max_score: 0, feedback: "Chấm gộp với bài viết.", graded_at: new Date().toISOString() })
+        .in("id", phieu.map((a: any) => a.id)).is("score", null)
+    : Promise.resolve();
+
   const baiViet = String((ans as any).raw ?? "").trim();
-  if (baiViet.length < 20) return json(400, { ok: false, ma: "BAI_QUA_NGAN" });
-  const copie = baiViet.slice(0, TRAN_KY_TU);
+  if (baiViet.length < 20) {
+    if (!chinhThuc) return json(400, { ok: false, ma: "BAI_QUA_NGAN" });
+    /* Bỏ trống / quá ngắn: không gọi AI (không có gì để chấm), cho 0 kèm lý do. */
+    await admin.from("answers").update({ score: 0, max_score: tongToiDa || 25,
+      feedback: "Bài viết bỏ trống hoặc quá ngắn để chấm.", graded_at: new Date().toISOString() })
+      .eq("id", answerId).is("score", null);
+    await ghiPhieu();
+    return json(200, { ok: true, chinh_thuc: true, tong: 0, tong_toi_da: tongToiDa || 25 });
+  }
+  const copie = (vanPhieu ? vanPhieu + "\n\nBÀI VIẾT:\n" : "") + baiViet.slice(0, TRAN_KY_TU);
 
   /* ── Nhắc mô hình ──
      Liệt kê TỪNG tiêu chí kèm thang điểm và mô tả lấy thẳng từ rubric đang
@@ -265,6 +298,24 @@ Deno.serve(async (req) => {
     token_ra: goi?.usage?.output_tokens ?? goi?.usage?.completion_tokens ?? null,
   });
 
+  /* Chế độ chính thức: ghi điểm AI làm điểm câu này. Chỉ khi AI chấm ĐỦ mọi
+     tiêu chí — thiếu tiêu chí nào thì tổng thấp giả, nên không ghi. */
+  let daGhiDiem = false;
+  if (chinhThuc && !kq.bo?.length) {
+    const g: any = kq.goiY;
+    const chiTiet = rubric.criteria.map((c: any) => {
+      const t = g.tieu_chi?.[c.id];
+      return t ? `• ${c.name ?? c.id}: ${t.diem}/${c.max_score}${t.nhan_xet ? " · " + t.nhan_xet : ""}` : "";
+    }).filter(Boolean).join("\n");
+    const { error: loiD } = await admin.from("answers").update({
+      score: g.tong, max_score: g.tong_toi_da || tongToiDa,
+      feedback: `AI chấm: ${g.tong_quat}\n${chiTiet}`.slice(0, 4000),
+      graded_at: new Date().toISOString(),
+    }).eq("id", answerId).is("score", null);
+    daGhiDiem = !loiD;
+    if (daGhiDiem) await ghiPhieu();
+  }
+
   /* Ghi hỏng thì VẪN trả gợi ý về. Học sinh đã chờ xong lời gọi và tiền token
      đã tiêu; nuốt kết quả vì một lỗi ghi là bắt họ trả giá hai lần. Nhưng nói
      ra rằng nó không được lưu, để "mở lại thấy mất" không thành một bí ẩn. */
@@ -274,6 +325,7 @@ Deno.serve(async (req) => {
     bo: kq.bo,
     model,
     da_luu: !loiGhi,
+    da_ghi_diem: daGhiDiem,
     con_lai: Math.max(0, HAN_MUC - (daDung ?? 0) - 1),
   });
 });

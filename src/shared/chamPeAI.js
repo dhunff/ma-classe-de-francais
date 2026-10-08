@@ -97,3 +97,15 @@ export async function docGoiYAI(answerId) {
   if (error) return undefined;
   return data?.co ? { goiY: data.ket_qua, model: data.model, luc: data.luc } : null;
 }
+
+/* AI chấm CHÍNH THỨC phần viết của bài thi thử (08/10): máy chủ ghi thẳng
+   answers.score + nhận xét. Chỉ dùng cho câu chưa có điểm. */
+export async function chamChinhThuc(answerId, rubric) {
+  const { data, error } = await supabase.functions.invoke("cham-pe", { body: { answerId, rubric, chinhThuc: true } });
+  if (error) {
+    let than = null;
+    try { than = await error.context?.json?.(); } catch { /* bỏ qua */ }
+    return { ok: false, ma: than?.ma ?? "KHONG_RO" };
+  }
+  return { ok: !!data?.ok, daGhi: data?.da_ghi_diem === true || data?.chinh_thuc === true };
+}

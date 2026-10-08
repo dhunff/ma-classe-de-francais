@@ -3,6 +3,8 @@ import { ShieldCheck, Clock, MessageSquare, ClipboardCheck, PenLine, ArrowLeft }
 import PESelfEvaluation from "./PESelfEvaluation.jsx";
 import { loadMyExamResults } from "../../shared/examResults.js";
 import { NGUONG_PHAN, NGUONG_TONG } from "../exam/examPaper.js";
+import { chamChinhThuc } from "../../shared/chamPeAI.js";
+import { grilleToRubric, chuanHoaGrille } from "../../shared/grilleRubric.js";
 
 /* Kết quả thi thử — màn hình của học sinh.
  *
@@ -35,7 +37,7 @@ function Phan({ s, onTuCham }) {
         <span className="text-right">
           {s.score == null
             ? <span className="inline-flex items-center gap-1 text-xs font-bold text-warn">
-                <Clock size={12} /> {s.choCham ? "giáo viên đang chấm" : "chưa có điểm"}
+                <Clock size={12} /> {s.choCham ? (s.aiLoi ? "AI chưa chấm được, mở lại trang để thử lại" : "AI đang chấm…") : "chưa có điểm"}
               </span>
             : <span className="text-base font-extrabold tabular-nums text-ink">
                 {s.score}<span className="text-xs text-soft">/{s.points}</span>
@@ -76,7 +78,7 @@ function Phan({ s, onTuCham }) {
               Nên nó mở ra thành một màn riêng chiếm cả trang. Không thêm route:
               vẫn là màn kết quả, chỉ đổi thứ đang hiện — thêm route thì phải
               đụng navItems và check:nav, cho một màn không nằm ở thanh bên. */}
-          {p.answerId && p.score == null && (
+          {p.answerId && p.score == null && p.loai !== "formulaire" && (
             <button
               type="button"
               onClick={() => onTuCham({
@@ -177,6 +179,27 @@ export default function ExamResults() {
      thêm một đường có thể lệch mà chẳng được gì. */
   const [dangCham, setDangCham] = useState(null);
 
+  /* AI chấm phần viết (08/10, theo chủ dự án): mở trang là tự gọi AI chấm
+     mọi bài viết CHƯA có điểm, rồi nạp lại. Mỗi bài chỉ một lần mỗi lần mở
+     trang; máy chủ từ chối chấm lại bài đã có điểm. */
+  const daGoi = React.useRef(new Set());
+  const [aiLoi, setAiLoi] = useState(false);
+  useEffect(() => {
+    if (!sittings) return;
+    const viec = [];
+    for (const st of sittings) for (const sec of st.sections) for (const p of sec.pe) {
+      if (p.score != null || !p.answerId || p.loai !== "open" || daGoi.current.has(p.answerId)) continue;
+      daGoi.current.add(p.answerId);
+      const rubric = sec.grille ? chuanHoaGrille(sec.grille, sec.level) : grilleToRubric(sec.level);
+      viec.push(chamChinhThuc(p.answerId, rubric));
+    }
+    if (!viec.length) return;
+    Promise.all(viec).then((kq) => {
+      if (kq.some((k) => !k.ok || !k.daGhi)) setAiLoi(true);
+      loadMyExamResults().then(({ sittings: s }) => { if (s) setSittings(s); });
+    });
+  }, [sittings]);
+
   useEffect(() => {
     loadMyExamResults().then(({ sittings: s, error }) => {
       if (error) {
@@ -254,7 +277,7 @@ export default function ExamResults() {
         </div>
       ) : (
         <ul className="m-0 mt-6 list-none space-y-4 p-0">
-          {sittings.map((s, i) => <Luot key={(s.examId ?? "cu") + i} s={s} onTuCham={setDangCham} />)}
+          {sittings.map((s, i) => <Luot key={(s.examId ?? "cu") + i} s={{ ...s, sections: s.sections.map((x) => ({ ...x, aiLoi })) }} onTuCham={setDangCham} />)}
         </ul>
       )}
     </div>

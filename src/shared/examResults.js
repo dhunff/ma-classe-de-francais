@@ -172,7 +172,7 @@ export async function loadMyExamResults() {
         soBai: rs.length,
         finishedAt: rs.reduce((m, r) => (r.finished_at > m ? r.finished_at : m), ""),
         pe: peAll.map((a) => ({
-          answerId: a.id, questionId: a.questions?.id, raw: a.raw ?? "",
+          answerId: a.id, questionId: a.questions?.id, raw: a.raw ?? "", loai: a.questions?.type,
           selfScore: a.self_score == null ? null : Number(a.self_score),
           selfBreakdown: a.self_breakdown ?? null,
           score: a.score == null ? null : Number(a.score), max: Number(a.max_score) || points,
