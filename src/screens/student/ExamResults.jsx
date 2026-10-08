@@ -7,6 +7,9 @@ import { chamChinhThuc } from "../../shared/chamPeAI.js";
 import NhanXetAI from "./NhanXetAI.jsx";
 import { grilleToRubric, chuanHoaGrille } from "../../shared/grilleRubric.js";
 import { tr } from "../../shared/i18n.jsx";
+import { Leon } from "../../shared/leon.jsx";
+import NutTieng from "../../shared/NutTieng.jsx";
+import { BangKetLuan, ThanhPhan } from "../exam/KetQuaVisual.jsx";
 
 /* Kết quả thi thử — màn hình của học sinh.
  *
@@ -31,28 +34,10 @@ const ngay = (iso) => {
 };
 
 function Phan({ s, onTuCham }) {
-  const yeu = s.score != null && s.score < NGUONG_PHAN;
+  const choCham = s.score == null ? (s.choCham ? (s.aiLoi === "HET_LUOT" ? tr("Hết 3 lượt AI chấm hôm nay · mai mở lại trang (VIP không giới hạn)", "Plus de correction IA aujourd'hui (3 par jour) · revenez demain (VIP illimité)", "No AI grading left today (3 per day) · come back tomorrow (VIP unlimited)") : s.aiLoi ? tr("AI chưa chấm được, mở lại trang để thử lại", "L'IA n'a pas pu corriger, rouvrez la page pour réessayer", "The AI couldn't grade it, reopen the page to retry") : tr("AI đang chấm…", "Correction IA en cours…", "AI grading…")) : tr("chưa có điểm", "pas encore de note", "no score yet")) : null;
   return (
-    <li className={`rounded-xl border p-3 ${yeu ? "border-danger bg-danger-soft" : "border-line bg-surface2"}`}>
-      <div className="flex items-center justify-between gap-3">
-        <span className="text-sm font-bold text-ink">{s.code}</span>
-        <span className="text-right">
-          {s.score == null
-            ? <span className="inline-flex items-center gap-1 text-xs font-bold text-warn">
-                <Clock size={12} /> {s.choCham ? (s.aiLoi === "HET_LUOT" ? tr("Hết 3 lượt AI chấm hôm nay · mai mở lại trang (VIP không giới hạn)", "Plus de correction IA aujourd'hui (3 par jour) · revenez demain (VIP illimité)", "No AI grading left today (3 per day) · come back tomorrow (VIP unlimited)") : s.aiLoi ? tr("AI chưa chấm được, mở lại trang để thử lại", "L'IA n'a pas pu corriger, rouvrez la page pour réessayer", "The AI couldn't grade it, reopen the page to retry") : tr("AI đang chấm…", "Correction IA en cours…", "AI grading…")) : tr("chưa có điểm", "pas encore de note", "no score yet")}
-              </span>
-            : <span className="text-base font-extrabold tabular-nums text-ink">
-                {s.score}<span className="text-xs text-soft">/{s.points}</span>
-              </span>}
-        </span>
-      </div>
-
-      {yeu && (
-        <p className="m-0 mt-1 text-xs font-bold text-danger">
-          {tr("Dưới", "Moins de", "Below")} {NGUONG_PHAN}/{s.points} {tr("— riêng phần này đã đủ làm trượt cả bài.", "— cette partie suffit à faire échouer l'examen.", "— this part alone fails the exam.")}
-        </p>
-      )}
-
+    <li className="list-none">
+    <ThanhPhan code={s.code} score={s.score} points={s.points} nguong={s.points ? NGUONG_PHAN : null} choCham={choCham}>
       {/* Nhận xét và điểm từng tiêu chí. Đây là lý do màn hình này tồn tại —
           con số một mình không dạy được gì, "Cohérence 1/3" mới chỉ đúng chỗ
           cần sửa. */}
@@ -129,32 +114,16 @@ function Phan({ s, onTuCham }) {
           )}
         </div>
       ))}
+    </ThanhPhan>
     </li>
   );
 }
 
-function Luot({ s, onTuCham }) {
-  const mau = s.passed === true ? "text-ok" : s.passed === false ? "text-danger" : "text-warn";
-
+function Luot({ s, onTuCham, i = 0 }) {
   return (
-    <li className="rounded-2xl border border-line bg-surface p-5">
-      <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <div className="min-w-0">
-          <span className="text-sm font-bold text-ink">{s.title}</span>
-          {s.level && <span className="ml-2 rounded-full bg-surface2 px-2 py-0.5 text-xs font-bold text-soft">{s.level}</span>}
-          <div className="mt-0.5 text-xs text-soft">{ngay(s.at)}</div>
-        </div>
-        <div className="text-right">
-          <div className={`text-2xl font-extrabold tabular-nums ${mau}`}>
-            {s.total}<span className="text-sm text-soft">/{s.maxScored}</span>
-          </div>
-          <div className={`text-xs font-bold ${mau}`}>
-            {s.passed === true && tr("Đạt", "Réussi", "Pass")}
-            {s.passed === false && tr("Chưa đạt", "Non réussi", "Fail")}
-            {s.passed === null && tr("Chưa kết luận", "Non conclu", "Pending")}
-          </div>
-        </div>
-      </div>
+    <li className="mcf-cau-vao rounded-3xl border border-solid border-line bg-surface p-4 shadow-[0_8px_30px_rgba(0,0,0,0.04)]" style={{ animationDelay: `${i * 80}ms` }}>
+      <BangKetLuan diem={s.total} toiDa={s.maxScored} passed={s.passed}
+        tieuDe={[s.title, s.level].filter(Boolean).join(" · ")} phu={ngay(s.at)} />
 
       {/* Còn phần chưa chấm thì KHÔNG đoán kết luận. Nói "bạn đạt rồi" dựa trên
           hai phần ba bài thi là lời nói dối tử tế nhưng vẫn là nói dối. */}
@@ -164,7 +133,7 @@ function Luot({ s, onTuCham }) {
         </p>
       )}
 
-      <ul className="m-0 mt-4 list-none space-y-2 p-0">
+      <ul className="m-0 mt-4 grid list-none gap-3 p-0">
         {s.sections.map((x) => <Phan key={x.code + x.exerciseId} s={x} onTuCham={onTuCham} />)}
       </ul>
     </li>
@@ -249,15 +218,28 @@ export default function ExamResults() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl py-6">
-      <h1 className="m-0 text-2xl font-extrabold text-ink">{tr("Kết quả thi thử", "Résultats des examens blancs", "Mock exam results")}</h1>
-      <p className="m-0 mt-1 text-sm text-soft">
-        {tr("Điểm từng phần, và nhận xét của giáo viên cho bài viết.", "Notes par partie et évaluation de la production écrite.", "Scores per part and feedback on your writing.")}
-      </p>
+    <div className="mx-auto max-w-3xl px-4 py-6">
+      <header className="mcf-cau-vao relative overflow-hidden rounded-3xl bg-gradient-to-br from-blue-700 via-primary to-indigo-600 p-6 text-white shadow-[0_20px_50px_rgba(37,99,235,0.3)]">
+        <span aria-hidden className="absolute -right-12 -top-12 h-48 w-48 rounded-full bg-white/10" />
+        <div className="relative flex items-center gap-4">
+          <Leon cam="hoc" size={104} className="mcf-leon-bay shrink-0 drop-shadow-[0_12px_18px_rgba(0,0,0,0.3)] max-sm:h-20 max-sm:w-20" />
+          <div className="min-w-0 flex-1">
+            <h1 className="m-0 text-3xl font-extrabold tracking-tight">{tr("Kết quả thi thử", "Résultats des examens blancs", "Mock exam results")}</h1>
+            <p className="m-0 mt-1 text-sm text-white/85">{tr("Điểm từng phần và phiếu nhận xét AI cho bài viết.", "Notes par partie et évaluation IA de la production écrite.", "Scores per part and AI feedback on your writing.")}</p>
+            {Array.isArray(sittings) && sittings.length > 0 && (
+              <div className="mt-3 flex flex-wrap gap-2 text-xs font-extrabold">
+                <span className="rounded-full bg-white/20 px-3 py-1">{sittings.length} {tr("lượt thi", "examen(s)", "sitting(s)")}</span>
+                <span className="rounded-full bg-white/20 px-3 py-1">🏆 {sittings.filter((x) => x.passed === true).length} {tr("đạt", "réussi(s)", "passed")}</span>
+              </div>
+            )}
+          </div>
+          <NutTieng />
+        </div>
+      </header>
 
       {/* Thang điểm nói ngay từ đầu, vì luật đạt có hai vế và vế thứ hai mới
           là vế hay làm trượt người ta. */}
-      <p className="m-0 mt-4 flex items-start gap-2 rounded-xl bg-surface2 p-3 text-xs text-soft">
+      <p className="m-0 mt-4 flex items-start gap-2 rounded-2xl bg-surface2 p-3 text-xs text-soft">
         <ShieldCheck size={13} className="mt-0.5 shrink-0" />
         <span>
           {tr("Đạt DELF cần", "Pour réussir le DELF :", "To pass DELF you need")} <strong className="text-ink">≥ {NGUONG_TONG}{tr("/100 toàn bài", "/100 au total", "/100 overall")}</strong> {tr("VÀ", "ET", "AND")}{" "}
@@ -270,15 +252,16 @@ export default function ExamResults() {
       {sittings === null ? (
         <p className="mt-8 text-center text-sm text-soft">{tr("Đang tải…", "Chargement…", "Loading…")}</p>
       ) : sittings.length === 0 && !loi ? (
-        <div className="mt-8 rounded-2xl border border-line bg-surface p-8 text-center">
-          <p className="m-0 font-bold text-ink">{tr("Bạn chưa thi thử lần nào", "Vous n'avez passé aucun examen blanc", "You haven't taken a mock exam yet")}</p>
+        <div className="mt-8 rounded-3xl border border-solid border-line bg-surface p-8 text-center">
+          <Leon cam="buon-ngu" size={110} className="mx-auto block" />
+          <p className="m-0 mt-2 font-bold text-ink">{tr("Bạn chưa thi thử lần nào", "Vous n'avez passé aucun examen blanc", "You haven't taken a mock exam yet")}</p>
           <p className="m-0 mt-1 text-sm text-soft">
             {tr("Vào mục « Thi thử » để làm một đề. Kết quả sẽ lưu lại ở đây.", "Allez dans « Examen blanc » pour passer un sujet. Les résultats s'afficheront ici.", "Go to « Mock exam » to take one. Results will appear here.")}
           </p>
         </div>
       ) : (
         <ul className="m-0 mt-6 list-none space-y-4 p-0">
-          {sittings.map((s, i) => <Luot key={(s.examId ?? "cu") + i} s={{ ...s, sections: s.sections.map((x) => ({ ...x, aiLoi })) }} onTuCham={setDangCham} />)}
+          {sittings.map((s, i) => <Luot key={(s.examId ?? "cu") + i} i={i} s={{ ...s, sections: s.sections.map((x) => ({ ...x, aiLoi })) }} onTuCham={setDangCham} />)}
         </ul>
       )}
     </div>

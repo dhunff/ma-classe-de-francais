@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Timer, ShieldCheck, AlertTriangle, Clock, Volume2, VolumeX, ArrowLeft, Trophy, Headphones, BookOpen, PenLine, Mic } from "lucide-react";
 import NutTieng from "../../shared/NutTieng.jsx";
+import { BangKetLuan, ThanhPhan, PhaoGiayLon } from "./KetQuaVisual.jsx";
 import { supabase } from "../../storageShim.js";
 import { loadExams, loadExam } from "../../shared/examStore.js";
 import { gradeRemote } from "../../shared/gradeRemote.js";
@@ -803,35 +804,26 @@ function KetQua({ sections, blurCount, onLai }) {
 
   const v = verdict(sections);
   useEffect(() => { phat(mat ? "sai" : v.passed === true ? "thang" : v.passed === false ? "thua" : "nop"); }, []); // eslint-disable-line react-hooks/exhaustive-deps
-  const mau = v.passed === true ? "text-ok" : v.passed === false ? "text-danger" : "text-warn";
-
   return (
-    <div className="mx-auto max-w-2xl py-8">
-      <h1 className="m-0 text-2xl font-extrabold text-ink">{tr("Kết quả thi thử", "Résultat de l'examen blanc", "Mock exam result")}</h1>
+    <div className="relative mx-auto max-w-3xl px-4 py-8">
+      {v.passed === true && !mat && <PhaoGiayLon />}
+      <div className="mb-4 flex items-center justify-between gap-3">
+        <h1 className="m-0 text-2xl font-extrabold text-ink">{tr("Kết quả thi thử", "Résultat de l'examen blanc", "Mock exam result")}</h1>
+        <NutTieng />
+      </div>
 
-      <div className="mt-6 rounded-3xl border border-line bg-surface p-6">
-        <div className={`text-4xl font-extrabold tabular-nums ${mau}`}>
-          {v.total}<span className="text-lg text-soft"> / {v.maxScored}</span>
-        </div>
-        <div className="mt-2 text-sm font-bold text-ink">
-          {v.passed === true && tr("Đạt", "Réussi", "Pass")}
-          {v.passed === false && tr("Chưa đạt", "Non réussi", "Fail")}
-          {v.passed === null && tr("Chưa kết luận được", "Résultat non conclu", "No verdict yet")}
-        </div>
-
-        {/* Chưa chấm hết thì KHÔNG đoán. Nói "bạn đạt rồi" dựa trên hai phần ba
-            bài thi là lời nói dối tử tế nhưng vẫn là nói dối.
-
-            Câu này TỪNG viết « chờ giáo viên chấm ». Từ 09/09/2026 không còn
-            giáo viên chấm bài — màn /professeur/copies đã gỡ — nên câu đó hứa
-            một việc sẽ không xảy ra, và người đọc nó là người vừa thi xong,
-            đang chờ. Nói thẳng ai sẽ chấm, và chấm ở đâu. */}
+      <BangKetLuan diem={v.total} toiDa={v.maxScored} passed={v.passed}
+        tieuDe={tr("Tổng điểm", "Note totale", "Total score")}
+        phu={v.passed === true ? tr("C'est super ! Bạn đã vượt cả hai ngưỡng của DELF.", "C'est super ! Les deux seuils du DELF sont franchis.", "C'est super! You cleared both DELF thresholds.")
+          : v.passed === false ? tr("Allez, courage ! Xem phần nào kéo điểm xuống rồi luyện tiếp nhé.", "Allez, courage ! Repère la partie qui pèse et entraîne-toi.", "Allez, courage! Find the weak part and keep practising.")
+            : null}>
+        {/* Chưa chấm hết thì KHÔNG đoán. */}
         {v.passed === null && (
-          <p className="m-0 mt-2 text-xs text-soft">
-            {tr("Còn", "Encore", "There are")} {v.pending.map((p) => p.code).join(", ")} {tr("chưa có điểm. Máy không chấm được bài viết, và đoán thay thì con số mất hết ý nghĩa — bạn tự chấm phần đó theo thang DELF ở « Kết quả thi ».", "n'a pas de note. La correction s'affiche dans « Mes résultats ».", "has no score yet. Grading appears in « My results ».")}
+          <p className="m-0 mt-2 rounded-xl bg-white/20 px-3 py-2 text-xs font-semibold">
+            {tr("Còn", "Encore", "There are")} {v.pending.map((p) => p.code).join(", ")} {tr("chưa có điểm. AI sẽ chấm bài viết, xem ở « Kết quả thi ».", "n'a pas de note. La correction s'affiche dans « Mes résultats ».", "has no score yet. Grading appears in « My results ».")}
           </p>
         )}
-      </div>
+      </BangKetLuan>
 
       {mat && (
         <div className="mt-5 rounded-2xl border border-solid border-danger bg-danger-soft p-4">
@@ -847,44 +839,15 @@ function KetQua({ sections, blurCount, onLai }) {
         </div>
       )}
 
-      <ul className="m-0 mt-5 list-none space-y-3 p-0">
-        {sections.map((s) => {
-          const yeu = s.score != null && s.score < NGUONG_PHAN;
-          return (
-            <li key={s.code}
-                className={`flex items-center justify-between gap-3 rounded-2xl border p-4 ${
-                  yeu ? "border-danger bg-danger-soft" : "border-line bg-surface"}`}>
-              <div className="min-w-0">
-                <div className="text-sm font-bold text-ink">{s.code} · {s.label}</div>
-                {/* Lượt thi lưu TRƯỚC migration 044 mang `exercise`, lượt sau mang
-                    `baiLabel`. Đọc cả hai: dữ liệu cũ không tự đổi hình khi mã
-                    đổi, và một lượt thi cũ mở ra làm sập cả trang là cái giá
-                    quá đắt cho một dòng chữ phụ. */}
-                <div className="truncate text-xs text-soft">
-                  {s.baiLabel ?? s.exercise?.title ?? ""}
-                </div>
-                {yeu && (
-                  <div className="mt-1 text-xs font-bold text-danger">
-                    {tr("Dưới", "Moins de", "Below")} {NGUONG_PHAN}{tr("/25 — riêng phần này đã đủ làm trượt cả bài.", "/25 — cette partie suffit à faire échouer l'examen.", "/25 — this part alone fails the exam.")}
-                  </div>
-                )}
-              </div>
-              <div className="shrink-0 text-right">
-                {/* « chờ chấm » nói rằng có ai đó sắp chấm. Không còn ai —
-                    xem chú thích ở khối kết luận phía trên. */}
-                {s.score == null
-                  ? <span className="text-xs font-bold text-warn">{tr("chưa chấm", "non noté", "not graded")}</span>
-                  : <span className="text-lg font-extrabold tabular-nums text-ink">
-                      {s.score}<span className="text-xs text-soft">/{s.points}</span>
-                    </span>}
-              </div>
-            </li>
-          );
-        })}
-      </ul>
+      <div className="mt-5 grid gap-3 sm:grid-cols-2">
+        {sections.map((s, k) => (
+          <ThanhPhan key={s.code} code={s.code} label={s.label} phu={s.baiLabel ?? s.exercise?.title ?? ""}
+            score={s.score} points={s.points} nguong={s.points ? NGUONG_PHAN : null} tre={200 + k * 90} />
+        ))}
+      </div>
 
       {/* Luật đạt có HAI vế, và vế thứ hai mới hay làm trượt người ta. */}
-      <p className="m-0 mt-5 flex items-start gap-2 text-xs text-soft">
+      <p className="m-0 mt-5 flex items-start gap-2 rounded-2xl bg-surface2 p-3 text-xs text-soft">
         <ShieldCheck size={13} className="mt-0.5 shrink-0" />
         <span>
           {tr("Đạt DELF cần", "Pour réussir le DELF :", "To pass DELF you need")} <strong className="text-ink">≥ {NGUONG_TONG}{tr("/100 toàn bài", "/100 au total", "/100 overall")}</strong> {tr("VÀ", "ET", "AND")}{" "}
@@ -899,8 +862,12 @@ function KetQua({ sections, blurCount, onLai }) {
       )}
 
       <div className="mt-7 flex flex-wrap gap-3">
+        <Link to="/etudiant/resultats"
+          className="inline-flex items-center gap-2 rounded-2xl border-0 border-b-4 border-solid border-blue-800 bg-gradient-to-r from-primary to-indigo-600 px-6 py-3 text-sm font-extrabold text-white no-underline shadow-lg transition-transform hover:-translate-y-0.5">
+          <Trophy size={15} /> {tr("Xem chi tiết & nhận xét AI", "Détail et évaluation IA", "Details & AI feedback")}
+        </Link>
         <button type="button" onClick={onLai}
-          className="rounded-full border-0 bg-primary px-6 py-3 text-sm font-bold text-white shadow-lg">
+          className="cursor-pointer rounded-2xl border-2 border-solid border-line bg-surface px-6 py-3 font-sans text-sm font-bold text-ink transition-colors hover:border-primary hover:text-primary">
           {tr("Thi đề khác", "Passer un autre sujet", "Take another exam")}
         </button>
         <Link to="/etudiant/dashboard"
