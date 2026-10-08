@@ -164,3 +164,7 @@ body {
 }
 .mcf-tich { animation: mcfTichBat .45s cubic-bezier(.34,1.56,.64,1) both; animation-delay: var(--tre, 0s); }
 @media (prefers-reduced-motion: reduce) { .mcf-lua, .mcf-tich { animation: none; } }
+
+/* Văn bản đọc dạng HTML trong ReadingPanel (08/10). */
+.mcf-van-ban p { margin: 0 0 0.9em; }
+.mcf-van-ban p:last-child { margin-bottom: 0; }
