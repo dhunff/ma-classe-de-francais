@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Award, CheckCircle2, AlertCircle, Quote, ListChecks, PenLine, ChevronDown } from "lucide-react";
 import { docGoiYAI } from "../../shared/chamPeAI.js";
 import { tr } from "../../shared/i18n.jsx";
+import { LeonNoi } from "../../shared/leon.jsx";
 
 /* Phiếu nhận xét của giám khảo AI (08/10).
  *
@@ -114,6 +115,12 @@ export default function NhanXetAI({ answerId, rubric, level, feedback, mau }) {
               ))}
             </ul>
           </div>
+        )}
+        {g.loi_leon && (
+          <LeonNoi size={64} cam={g.tong_toi_da && g.tong / g.tong_toi_da >= 0.7 ? "tuyet-voi" : g.tong_toi_da && g.tong / g.tong_toi_da >= 0.5 ? "duoc-do" : "co-len"}>
+            <span className="block text-[11px] font-extrabold uppercase tracking-wide text-primary">{tr("Leon nhắn bạn", "Le mot de Leon", "A note from Leon")}</span>
+            {g.loi_leon}
+          </LeonNoi>
         )}
         <p className="m-0 text-[11px] text-soft">{tr("Điểm do AI chấm có thể sai và không phải điểm DELF chính thức.", "La note de l'IA peut se tromper et n'est pas une note officielle du DELF.", "AI scores can be wrong and are not official DELF scores.")}</p>
       </div>

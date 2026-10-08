@@ -19,6 +19,7 @@ import { BarChart, Bar, LineChart, Line, RadarChart, Radar, PolarGrid, PolarAngl
 import PracticeHub from "../../PracticeHub.jsx";
 import Taking from "./Taking.jsx";
 import NeoCauHoi from "./NeoCauHoi.jsx";
+import { ChuCoSticker } from "../../shared/leon.jsx";
 
 
 /* ================= Student ================= */
@@ -152,7 +153,7 @@ function Student({ name, exercises, submissions, setSubmissions, accounts, setAc
         )}
         {sub?.comment && (
           <div style={{ marginTop: 12, background: C.warnSoft, border: `1px solid ${C.warn}44`, borderRadius: 12, padding: "10px 14px", fontSize: 14 }}>
-            💬 <strong>Professeur :</strong> {sub.comment}
+            💬 <strong>{tr("Giáo viên:", "Professeur :", "Teacher:")}</strong> <ChuCoSticker text={sub.comment} />
           </div>
         )}
         {sub?.feedbackUrl && (

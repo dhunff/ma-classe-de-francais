@@ -120,7 +120,8 @@ Deno.serve(async (req) => {
     "Trả lời CHỈ bằng một object JSON đúng khuôn:",
     '{ "tong_quat": "<2-3 câu>", "diem_manh": ["<...>"], ',
     '  "can_sua": [{ "trich": "<tiếng Pháp trong bài>", "goi_y": "<cách nói đúng hơn, kèm giải thích ngắn>" }], ',
-    '  "phat_am": "<lưu ý phát âm gián tiếp, hoặc chuỗi rỗng>", "luyen_tiep": "<1 việc nên luyện tiếp>" }',
+    '  "phat_am": "<lưu ý phát âm gián tiếp, hoặc chuỗi rỗng>", "luyen_tiep": "<1 việc nên luyện tiếp>", ',
+    '  "loi_leon": "<1-2 câu động viên ấm áp, giọng Leon (linh vật chó bulldog Pháp của FRACILE), nêu một điểm mạnh THẬT, có thể chen một câu tiếng Pháp đơn giản như Allez, courage !>" }',
   ].join("\n");
   const nguoiDung = ["ĐỀ BÀI:", deBai || "(không rõ)", "", "BẢN CHÉP LỜI BÀI NÓI:", chepLoi.slice(0, 8000)].join("\n");
 
@@ -155,6 +156,7 @@ Deno.serve(async (req) => {
       .filter((x: any) => x.goi_y).slice(0, 8),
     phat_am: chuoi(kq.phat_am),
     luyen_tiep: chuoi(kq.luyen_tiep),
+    loi_leon: chuoi(kq.loi_leon).slice(0, 400),
   };
 
   const { error: loiGhi } = await admin.from("po_ai_nhan_xet").insert({

@@ -268,7 +268,7 @@ export function StatTile({ Icon, label, value, unit, hint, tone = "ink", animate
 export function EmptyState({ Icon, title, body }) {
   return (
     <div className="flex flex-col items-center gap-2 py-8 text-center">
-      {Icon && <Icon size={26} className="text-soft" strokeWidth={1.6} />}
+      <img src="/leon/suy-nghi.webp" alt="" width={72} height={72} className="h-[72px] w-[72px] object-contain" />
       <p className="text-sm font-bold text-ink">{title}</p>
       {body && <p className="max-w-xs text-sm text-soft">{body}</p>}
     </div>

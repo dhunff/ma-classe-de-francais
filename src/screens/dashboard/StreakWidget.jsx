@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { Flame, Check } from "lucide-react";
 import { docChuoiTuan } from "../../shared/hoatDong.js";
+import { tr } from "../../shared/i18n.jsx";
+import { LeonNoi } from "../../shared/leon.jsx";
 
 /* Widget chuỗi ngày học — trang chủ học sinh (25/09).
  *
@@ -52,6 +54,17 @@ export default function StreakWidget({ t, fixture }) {
       </div>
 
       {d?.chuoi === 0 && <p className="m-0 mt-3 text-xs text-soft">{t("dash.streak_zero")}</p>}
+
+      {/* Leon (09/10): khen khi hôm nay đã học, lo lắng khi chuỗi sắp đứt. */}
+      {d && d.homNay != null && (d.tuan?.[d.homNay] ? (
+        <LeonNoi cam="yeah" size={52} className="mt-4">
+          {tr(<><em>C'est super !</em> Hôm nay bạn học rồi, Leon vẫy đuôi mừng lắm 🐾</>, <><em>C'est super !</em> Tu as déjà étudié aujourd'hui, Leon remue la queue 🐾</>, <><em>C'est super!</em> You've studied today, Leon is wagging his tail 🐾</>)}
+        </LeonNoi>
+      ) : d.chuoi > 0 ? (
+        <LeonNoi cam="buon" size={52} className="mt-4">
+          {tr(<><em>Ohlala !</em> Chuỗi {d.chuoi} ngày sắp tắt rồi kìa! Làm một bài nhỏ để giữ lửa nhé, <em>allez</em>!</>, <><em>Ohlala !</em> Ta série de {d.chuoi} jours va s'éteindre ! Un petit exercice pour la garder, <em>allez</em> !</>, <><em>Ohlala!</em> Your {d.chuoi}-day streak is about to go out! One small exercise keeps it alive, <em>allez</em>!</>)}
+        </LeonNoi>
+      ) : null)}
 
       <div className="mt-5 border-0 border-t border-solid border-line pt-4">
         <div className="grid grid-cols-7 gap-1.5">

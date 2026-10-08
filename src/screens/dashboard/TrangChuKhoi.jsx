@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Headphones, BookOpen, PenLine, Puzzle, Languages, Mic, Sparkles, ArrowRight, Map, Swords, Layers, Timer, TrendingUp } from "lucide-react";
 import { tr } from "../../shared/i18n.jsx";
 import { exSkills } from "../../shared/exercises.js";
+import { Leon } from "../../shared/leon.jsx";
 
 /* Ba khối mới của trang chủ học sinh (08/10): trang chủ giờ chủ yếu là ĐỀ XUẤT
  * và TRÒ CHƠI; số liệu bài được giao đã sang trang « Bài tập được giao ».
@@ -64,9 +65,12 @@ export function DeXuatBai({ dsDeXuat, onMo, coHoSo }) {
   return (
     <section className="rounded-3xl bg-surface p-5 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
       <div className="flex flex-wrap items-end justify-between gap-2">
-        <div>
-          <p className="m-0 flex items-center gap-1.5 text-xs font-bold uppercase tracking-[0.14em] text-primary"><Sparkles size={14} /> {tr("Dành cho bạn", "Pour vous", "For you")}</p>
-          <h2 className="m-0 mt-1 text-lg font-extrabold text-ink">{tr("Bài tập đề xuất", "Exercices recommandés", "Recommended exercises")}</h2>
+        <div className="flex items-center gap-3">
+          <Leon cam="hoc" size={60} className="shrink-0" />
+          <div>
+            <p className="m-0 flex items-center gap-1.5 text-xs font-bold uppercase tracking-[0.14em] text-primary"><Sparkles size={14} /> {tr("Leon chọn cho bạn", "Leon a choisi pour vous", "Leon picked for you")}</p>
+            <h2 className="m-0 mt-1 text-lg font-extrabold text-ink">{tr("Bài tập đề xuất", "Exercices recommandés", "Recommended exercises")}</h2>
+          </div>
         </div>
         <Link to="/etudiant/entrainement" className="inline-flex items-center gap-1 text-sm font-bold text-primary no-underline">
           {tr("Toàn bộ thư viện", "Toute la bibliothèque", "Whole library")} <ArrowRight size={14} />

@@ -58,7 +58,7 @@ export default function FocusShell({ zen, setZen, title, meta = [], answered, to
 
   const pct = total ? Math.round((answered / total) * 100) : 0;
   return (
-    <div className="mcf-scroll fixed inset-0 z-[90] overflow-y-auto bg-bg">
+    <div data-che-do-thi className="mcf-scroll fixed inset-0 z-[90] overflow-y-auto bg-bg">
       <header className="sticky top-0 z-30 border-0 border-b border-solid border-line bg-surface/95 backdrop-blur" style={{ height: FOCUS_TOP - 12 }}>
         <div className="mx-auto flex h-full max-w-6xl items-center gap-4 px-4">
           <div className="min-w-0 flex-1">

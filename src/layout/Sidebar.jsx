@@ -116,21 +116,19 @@ function NavList({ role, t, expanded, onNavigate, onBlue = true }) {
   );
 }
 
-/* Chỉ còn chữ, bỏ ô vuông "F" và ba chấm kiểu macOS.
-
-   Thu gọn thì hiện "F" — chữ đầu của tên, không phải biểu tượng riêng — để
-   khoảng trống trên cùng không rỗng hoác. */
+/* Logo (09/10): đầu Leon + chữ FRACILE. Thu gọn thì chỉ còn đầu Leon. */
 function Brand({ expanded, onBlue = true }) {
   const tone = onBlue ? "text-white" : "text-ink";
   const dot = onBlue ? "text-white/60" : "text-primary";
   return (
     <div className={`flex items-center overflow-hidden ${expanded ? "px-5" : "justify-center px-0"}`}>
       {expanded ? (
-        <span className={`whitespace-nowrap text-2xl font-bold tracking-tight ${tone}`}>
-          FRACILE<span className={dot}>.</span>
+        <span className="flex items-center gap-2.5">
+          <img src="/leon/dau.webp" alt="" width={36} height={36} className="h-9 w-9 shrink-0 rounded-full bg-white object-contain p-0.5" />
+          <span className={`whitespace-nowrap text-2xl font-bold tracking-tight ${tone}`}>FRACILE<span className={dot}>.</span></span>
         </span>
       ) : (
-        <span className={`text-2xl font-bold tracking-tight ${tone}`}>F</span>
+        <img src="/leon/dau.webp" alt="FRACILE" width={36} height={36} className="h-9 w-9 rounded-full bg-white object-contain p-0.5" />
       )}
     </div>
   );

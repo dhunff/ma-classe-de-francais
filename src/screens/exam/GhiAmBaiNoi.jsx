@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { Mic, Square, Loader2, AlertTriangle, CheckCircle2, Sparkles } from "lucide-react";
 import { luuBaiNoi, duongNghe, dsBaiNoi, aiNhanXet } from "../../shared/baiNoi.js";
 import { tr } from "../../shared/i18n.jsx";
+import { LeonNoi } from "../../shared/leon.jsx";
 
 /* Ghi âm phần nói.
  *
@@ -244,6 +245,7 @@ function KhungNhanXet({ kq }) {
       )}
       {n.phat_am && <p className="m-0 mt-3"><strong className="text-xs">{tr("Phát âm (phỏng đoán từ bản chép lời):", "Prononciation (déduite de la transcription) :", "Pronunciation (inferred from the transcript):")}</strong> {n.phat_am}</p>}
       {n.luyen_tiep && <p className="m-0 mt-2"><strong className="text-xs">{tr("Luyện tiếp:", "Pour progresser :", "Practice next:")}</strong> {n.luyen_tiep}</p>}
+      {n.loi_leon && <LeonNoi cam="co-len" size={56} className="mt-3">{n.loi_leon}</LeonNoi>}
       {kq.chep_loi && (
         <details className="mt-3">
           <summary className="cursor-pointer text-xs font-semibold text-soft">{tr("Bản chép lời của AI", "Transcription de l'IA", "AI transcript")}</summary>

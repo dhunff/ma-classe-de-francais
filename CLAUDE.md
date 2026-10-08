@@ -1269,6 +1269,7 @@ Xem `docs/roadmap-delf.md` — có nhật ký quyết định ở §5.
   và chức năng tạo lớp (dữ liệu `mcf-classes`, `tips`, `leads`, `lo_trinh_*`
   vẫn nguyên). « Thư viện luyện tập » thành tab thứ hai trong « Bài tập ».
   Lấy lại màn nào thì lấy file từ git trước commit 35759f3.
+- **Linh vật Leon — 09/10** (`shared/leon.jsx`, ảnh `public/leon/*.webp` cắt từ bảng sticker, đã bỏ nền và chữ). Logo + favicon là `dau`. « Hỏi Leon » (`shared/HoiLeon.jsx`, Edge Function `hoi-leon`, bảng `leon_hoi` migration 125): 10 câu/ngày giờ VN, VIP không giới hạn, lịch sử đọc từ DB chứ không nhận từ client, ẩn ở màn thi và khi `[data-che-do-thi]` đang mở. Sticker trong nhận xét giáo viên là mã `[leon:id]`. AI chấm PE và nhận xét bài nói trả thêm `loi_leon`.
 - `s:mcf-submissions` vẫn giữ làm sao lưu, chưa xoá.
 
 

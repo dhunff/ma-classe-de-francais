@@ -249,11 +249,12 @@ Deno.serve(async (req) => {
     "- tong_quat : 2 à 3 phrases, appréciation globale d'examinateur.",
     "- nhan_dinh_trinh_do : une phrase situant la copie par rapport au niveau ${capDo} (atteint, presque atteint, non atteint) et pourquoi.",
     "- uu_tien : les 3 actions prioritaires pour gagner des points, formulées en verbes d'action.",
+    "- loi_leon : 1 à 2 phrases chaleureuses en VIETNAMIEN, signées par Leon (la mascotte bouledogue de FRACILE), qui encouragent l'élève en citant un vrai point fort ; tu peux glisser une expression française simple (Allez, courage !, C'est super !). Hors de la notation, aucun chiffre.",
     "- cau_mau : jusqu'à 3 phrases de la copie réécrites correctement (goc = original exact, sua = version corrigée en français, vi_sao = raison en vietnamien).",
     "",
     "Réponds UNIQUEMENT avec ce JSON :",
     '{ "tieu_chi": { "<id>": { "diem": <nombre>, "nhan_xet": "...", "diem_manh": "...", "can_cai_thien": "...", "trich_dan": "..." } },',
-    '  "tong_quat": "...", "nhan_dinh_trinh_do": "...", "uu_tien": ["...", "...", "..."],',
+    '  "tong_quat": "...", "nhan_dinh_trinh_do": "...", "loi_leon": "...", "uu_tien": ["...", "...", "..."],',
     '  "cau_mau": [ { "goc": "...", "sua": "...", "vi_sao": "..." } ] }',
   ].join("\n").replaceAll("${capDo}", capDo);
 

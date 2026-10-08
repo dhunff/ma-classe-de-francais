@@ -113,6 +113,8 @@ export function kiemGoiY(tho, rubric) {
       so_tieu_chi: rubric.criteria.length,
       tong_quat: String(tho.tong_quat ?? tho.overall ?? "").trim().slice(0, 1500),
       /* Mở rộng 08/10, đều tuỳ chọn và bị cắt độ dài. */
+      /* 09/10: lời động viên của Leon, tuỳ chọn. */
+      loi_leon: String(tho.loi_leon ?? "").trim().slice(0, 400),
       nhan_dinh_trinh_do: String(tho.nhan_dinh_trinh_do ?? "").trim().slice(0, 400),
       uu_tien: (Array.isArray(tho.uu_tien) ? tho.uu_tien : []).map((x) => String(x).trim().slice(0, 300)).filter(Boolean).slice(0, 3),
       cau_mau: (Array.isArray(tho.cau_mau) ? tho.cau_mau : [])

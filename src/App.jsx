@@ -44,6 +44,8 @@ import HomeDashboard from './screens/dashboard/HomeDashboard.jsx'
 import CalendarView from './screens/calendar/CalendarView.jsx'
 import LoginSplit from './screens/LoginSplit.jsx'
 import SetNewPassword from './screens/auth/SetNewPassword.jsx'
+import HoiLeon from './shared/HoiLeon.jsx'
+import { LeonChucMung } from './shared/leon.jsx'
 
 /* App.jsx chỉ còn ba việc: giữ state phiên + dữ liệu, định tuyến, và bắt lỗi.
    Mọi màn hình nằm ở src/screens/, mọi thứ dùng chung ở src/shared/. */
@@ -232,6 +234,7 @@ function AppInner() {
     <LangCtx.Provider value={lang}>
       <div className={"mcf-root" + (dark ? " mcf-dark" : "")}>
         <BanMoi />
+        <LeonChucMung />
         <NhipTim bat={session?.role === "eleve"} />
         <BrowserRouter>
           <Routes>
@@ -382,6 +385,7 @@ function AppInner() {
               <Navigate to={session ? (ROLE_HOME[session.role] || "/login") : "/gioi-thieu"} replace />
             } />
           </Routes>
+          {session?.role === "eleve" && <HoiLeon />}
           {gate && (
             <LoginGate
               accounts={accounts}

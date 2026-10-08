@@ -168,3 +168,10 @@ body {
 /* Văn bản đọc dạng HTML trong ReadingPanel (08/10). */
 .mcf-van-ban p { margin: 0 0 0.9em; }
 .mcf-van-ban p:last-child { margin-bottom: 0; }
+
+/* Leon (09/10): thông báo chúc mừng trồi lên, nút Hỏi Leon nhún nhẹ. */
+@keyframes mcfLeonVao { from { opacity: 0; transform: translate(-50%, 24px) scale(.96); } to { opacity: 1; transform: translate(-50%, 0) scale(1); } }
+.mcf-leon-vao { animation: mcfLeonVao .4s cubic-bezier(.34,1.56,.64,1) both; }
+@keyframes mcfLeonNhun { 0%, 92%, 100% { transform: translateY(0); } 95% { transform: translateY(-6px); } }
+.mcf-leon-nut { animation: mcfLeonNhun 6s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .mcf-leon-vao, .mcf-leon-nut { animation: none; } }

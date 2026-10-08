@@ -178,7 +178,7 @@ export default function LandingPage({ imgSrc = "/images/hero-preview.png" }) {
       <footer className="mt-20 bg-primary px-6 py-8 dark:bg-[#0e1526]">
         <div className="mx-auto flex max-w-6xl flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div className="flex flex-wrap items-center gap-x-8 gap-y-2 text-base font-medium">
-            <span className="text-lg font-extrabold text-white">FRACILE</span>
+            <span className="flex items-center gap-2 text-lg font-extrabold text-white"><img src="/leon/dau.webp" alt="" width={32} height={32} className="h-8 w-8 rounded-full bg-white object-contain p-0.5" />FRACILE</span>
             {[["/decouvrir", tr("Thư viện bài tập", "Bibliothèque d'exercices", "Exercise library")], ["/login", tr("Đăng nhập", "Connexion", "Sign in")], ["/faq", tr("Câu hỏi thường gặp", "Questions fréquentes", "FAQ")], ["/dieu-khoan", tr("Điều khoản sử dụng", "Conditions d'utilisation", "Terms of use")], ["/bao-mat", tr("Chính sách bảo mật", "Politique de confidentialité", "Privacy policy")]].map(([to, ten]) => (
               <Link key={to} to={to} className="text-white no-underline transition-colors hover:text-blue-100">{ten}</Link>
             ))}

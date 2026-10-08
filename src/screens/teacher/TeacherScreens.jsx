@@ -28,6 +28,7 @@ import { supabase } from "../../storageShim.js";
 import { setClassFor } from "../../shared/roster.js";
 import AccessPanel from "./AccessPanel.jsx";
 import ThongKe from "./ThongKe.jsx";
+import { BangSticker, maSticker } from "../../shared/leon.jsx";
 
 
 /* ================= Teacher ================= */
@@ -1060,6 +1061,11 @@ function Progress({ ex, submissions, setSubmissions, accounts, back }) {
                       value={drafts[name] ?? sub.comment ?? ""}
                       placeholder="ex. Très bon travail ! Revois l'accord du participe passé."
                       onChange={(e) => setDrafts({ ...drafts, [name]: e.target.value })} />
+                    {/* Sticker Leon (09/10): chèn mã [leon:…], học sinh thấy thành ảnh. */}
+                    <details style={{ marginTop: 6 }}>
+                      <summary style={{ cursor: "pointer", fontSize: 12, fontWeight: 700, color: C.primary }}>{tr("Chèn sticker Leon", "Ajouter un autocollant Leon", "Add a Leon sticker")}</summary>
+                      <BangSticker className="mt-2 max-w-sm" onChon={(id) => setDrafts({ ...drafts, [name]: `${(drafts[name] ?? sub.comment ?? "").trimEnd()} ${maSticker(id)}`.trim() })} />
+                    </details>
 
                     {/* 📎 File chữa bài đính kèm (optionnel) */}
                     <div style={{ marginTop: 10 }}>

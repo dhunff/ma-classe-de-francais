@@ -16,6 +16,7 @@ import FocusShell, { FOCUS_TOP } from "../practice/FocusShell.jsx";
 import RichTextEditor from "../../editor/RichTextEditor.jsx";
 import { BookOpen, GraduationCap, MoreVertical, Pencil, Copy, Trash2, RotateCcw, Image as ImageIcon, X, Phone, Calendar, Target, Briefcase, ChevronLeft, TrendingUp, Clock, CheckCircle } from "lucide-react";
 import { BarChart, Bar, LineChart, Line, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from "recharts";
+import { leonChucMung } from "../../shared/leon.jsx";
 
 
 /* ================= Taking (with auto-save) ================= */
@@ -131,6 +132,7 @@ function Taking({ ex, name, setSubmissions, done }) {
     if (ok) {
       setSubmissions(await loadSubmissions());
       await del(draftKey); await del(startKey);
+      leonChucMung(null);   // không dựa vào điểm tính ở client: trình duyệt học sinh không có đáp án
       done();
     } else {
       /* Giữ nguyên bản nháp khi ghi hỏng: học sinh bấm lại là nộp được, không
