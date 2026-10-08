@@ -1,5 +1,6 @@
 import React, { useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { tr } from "../../shared/i18n.jsx";
 import {
   ArrowRight, Clock, AlertTriangle, UserPlus, Inbox, CheckCircle,
 } from "lucide-react";
@@ -193,11 +194,19 @@ export default function HomeDashboard({
             </>
           ) : (
             <Rise delay={120}>
-              <section className="relative overflow-hidden rounded-3xl bg-surface/80 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] backdrop-blur-md">
-                <span className="grid h-11 w-11 place-items-center rounded-2xl bg-primary-soft text-primary">
-                  <UserPlus size={21} strokeWidth={2.2} />
-                </span>
-                <h2 className="m-0 mt-4 text-base font-extrabold leading-snug text-ink">
+              {/* Leon mời đăng nhập / đăng ký (09/10, theo chủ dự án). */}
+              <div className="relative flex items-end justify-center pt-2">
+                <span aria-hidden className="absolute bottom-2 left-1/2 h-[70%] w-[85%] -translate-x-1/2 rounded-full bg-primary-soft" />
+                <img src="/leon/leon-lon.webp" alt={tr("Leon mời bạn tham gia FRACILE", "Leon t'invite à rejoindre FRACILE", "Leon invites you to join FRACILE")}
+                  width={300} height={340} className="mcf-leon-bay relative h-[300px] w-auto object-contain drop-shadow-[0_16px_24px_rgb(0,0,0,0.15)]" />
+                <div className="mcf-leon-vao-bong absolute left-0 top-0 max-w-[11rem] rounded-3xl rounded-bl-md bg-surface px-4 py-3 text-ink shadow-[0_18px_40px_rgb(0,0,0,0.12)]">
+                  <span className="block text-base font-extrabold"><em>Bonjour !</em> 🐾</span>
+                  <span className="mt-0.5 block text-[13px] leading-snug text-soft">{tr("Vào lớp cùng Leon nhé, mình giữ tiến độ cho bạn!", "Rejoins Leon, je garde ta progression !", "Join Leon, I'll keep your progress!")}</span>
+                </div>
+              </div>
+              <section className="relative -mt-4 overflow-hidden rounded-3xl bg-surface/80 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] backdrop-blur-md">
+                <h2 className="m-0 flex items-center gap-2 text-base font-extrabold leading-snug text-ink">
+                  <UserPlus size={18} strokeWidth={2.2} className="text-primary" />
                   {t("home.guest_promo_title")}
                 </h2>
                 <p className="m-0 mt-2 text-sm text-soft">{t("home.guest_promo_body")}</p>
@@ -209,6 +218,10 @@ export default function HomeDashboard({
                   {t("home.signup")}
                   <ArrowRight size={16} />
                 </button>
+                <Link to="/login"
+                  className="mt-2.5 flex w-full items-center justify-center rounded-full border border-solid border-line bg-transparent px-5 py-2.5 text-sm font-bold text-ink no-underline transition-colors hover:border-primary hover:text-primary">
+                  {tr("Đã có tài khoản? Đăng nhập", "Déjà inscrit ? Se connecter", "Have an account? Sign in")}
+                </Link>
               </section>
             </Rise>
           )}
