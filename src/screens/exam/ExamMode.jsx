@@ -18,6 +18,8 @@ const daLamCau = (q, answers) => (q.type === "vf" ? answers?.[q.id]?.choice != n
 import { coPhienMayChu } from "../../shared/phienMayChu.js";
 import { tr } from "../../shared/i18n.jsx";
 import { LeonTheoTrang } from "../../shared/leon.jsx";
+import { phat, amThanhBat, datAmThanh } from "../../shared/amThanh.js";
+import { Volume2, VolumeX } from "lucide-react";
 
 /* Mode Examen — thi thử có tính giờ.
  *
@@ -409,6 +411,17 @@ function AudioGioiHan({ src, attemptId, questionId, luot = 2 }) {
 /* Xuất tên để `preview.html` dựng được ĐÚNG component này với dữ liệu thật.
    Màn thi nằm sau đăng nhập và sau một lượt thi đang mở, nên không có đường nào
    khác để nhìn thấy nó — mà đúng ở đây thì mới có ảnh đề bài và consigne. */
+function NutTiengThi() {
+  const [bat, setBat] = useState(amThanhBat);
+  return (
+    <button type="button" onClick={() => { const m = !bat; datAmThanh(m); setBat(m); }}
+      aria-label={bat ? tr("Tắt âm thanh", "Couper le son", "Mute") : tr("Bật âm thanh", "Activer le son", "Unmute")}
+      className="grid h-9 w-9 shrink-0 cursor-pointer place-items-center rounded-full border-0 bg-surface2 text-soft hover:text-ink">
+      {bat ? <Volume2 size={16} /> : <VolumeX size={16} />}
+    </button>
+  );
+}
+
 export function PhanThi({ section, attemptId, answers, setAnswers, onDone, onBlur, onDoiBai, examId, onThoat }) {
   const [conLai, setConLai] = useState(section.minutes * 60);
   const doneRef = useRef(false);
@@ -438,6 +451,7 @@ export function PhanThi({ section, attemptId, answers, setAnswers, onDone, onBlu
   const nopNgay = () => {
     if (doneRef.current) return;
     doneRef.current = true;
+    phat("nop");
     setHoiNop(false);
     setDangNop(true);
     onDone(false);
@@ -446,6 +460,19 @@ export function PhanThi({ section, attemptId, answers, setAnswers, onDone, onBlu
   /* Đổi bài thì báo lên cha để nó mở `attempt` cho bài mới — bộ đếm lượt nghe
      audio gắn vào từng bài, không gắn vào cả phần. */
   useEffect(() => { onDoiBai?.(ex?.id); }, [ex?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  /* Âm thanh (09/10): vào phần thi, đổi bài, còn 5 phút, còn 1 phút, hết giờ.
+     Chỉ vài tiếng ngắn, nhỏ: phòng thi thật cũng chỉ có lời nhắc giờ. */
+  const daBao = useRef({});
+  useEffect(() => { phat("tiep"); daBao.current = {}; }, [section.code]);
+  const lanDoiBai = useRef(0);
+  useEffect(() => { if (lanDoiBai.current++) phat("bam"); }, [baiIdx]);
+  useEffect(() => {
+    const b = daBao.current;
+    if (section.minutes * 60 > 300 && conLai <= 300 && conLai > 60 && !b.n5) { b.n5 = 1; phat("canhBao"); }
+    if (conLai <= 60 && conLai > 0 && !b.n1) { b.n1 = 1; phat("sapHet"); }
+    if (conLai <= 0 && !b.het) { b.het = 1; phat("hetGio"); }
+  }, [conLai, section.minutes]);
   /* Chỉ để đổi CHỮ trên nút. Việc chặn do `doneRef` lo: ref đổi ngay trong cùng
      một nhịp, còn state thì phải đợi render kế — mà hai cú bấm liên tiếp lọt
      vừa đúng vào khe đó. */
@@ -494,6 +521,7 @@ export function PhanThi({ section, attemptId, answers, setAnswers, onDone, onBlu
             Thoát
           </button>
         )}
+        <NutTiengThi />
         {/* Không nhấp nháy: gây hoảng, không giúp gì thêm. */}
         <div className={`flex shrink-0 items-center gap-2 rounded-full bg-surface2 px-4 py-2 font-bold tabular-nums ${gap}`}>
           <Clock size={15} /> {dongHo(Math.max(0, conLai))}
@@ -751,6 +779,7 @@ function KetQua({ sections, blurCount, onLai }) {
   const mat = sections.some((s) => s.luuDuoc === false);
 
   const v = verdict(sections);
+  useEffect(() => { phat(mat ? "sai" : v.passed === true ? "thang" : v.passed === false ? "thua" : "nop"); }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const mau = v.passed === true ? "text-ok" : v.passed === false ? "text-danger" : "text-warn";
 
   return (
@@ -947,6 +976,7 @@ export default function ExamMode() {
       ? tr("Bạn đã dùng hết 2 lượt thi hôm nay. Hãy quay lại vào ngày mai.", "Vous avez utilisé vos 2 essais d'aujourd'hui. Revenez demain.", "You've used today's 2 attempts. Come back tomorrow.")
       : tr("Không mở được bài thi. Hãy đăng nhập lại.", "Impossible d'ouvrir l'examen. Reconnectez-vous.", "Couldn't open the exam. Please sign in again.");
     luotId.current = data.luot_id;
+    phat("batDau");
     setAnswers({}); setKetQua([]); setBlurCount(0); setIdx(0);
     setBaiHienTai(null); attemptTheoBai.current = {};
     setBuoc("thi");
