@@ -68,12 +68,15 @@ export default function TheLat3D({ mat, sau, viDu, daLat, onLat, conLai = 0 }) {
         aria-pressed={daLat}
         className="relative block w-full cursor-pointer border-0 bg-transparent p-0 text-left font-sans">
         <div
-          className={`relative min-h-56 w-full transition-transform duration-500 [transform-style:preserve-3d] motion-reduce:transition-none ${
+          className={`relative min-h-64 w-full transition-transform duration-500 [transform-style:preserve-3d] motion-reduce:transition-none ${
             daLat ? "[transform:rotateY(180deg)]" : ""}`}>
 
           {/* MẶT TRƯỚC */}
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 rounded-3xl bg-gradient-to-br from-indigo-500 to-purple-600 p-8 shadow-lg shadow-indigo-500/30 [backface-visibility:hidden]">
-            <p className="m-0 text-center text-xl font-extrabold leading-relaxed text-white">{mat}</p>
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-500 to-purple-600 p-8 shadow-lg shadow-indigo-500/30 [backface-visibility:hidden]">
+            <span aria-hidden className="absolute -right-10 -top-10 h-36 w-36 rounded-full bg-white/10" />
+            <span aria-hidden className="absolute -bottom-12 -left-8 h-32 w-32 rounded-full bg-white/10" />
+            <span aria-hidden className="absolute left-5 top-4 text-[10px] font-extrabold uppercase tracking-[0.2em] text-white/60">Français</span>
+            <p className="relative m-0 text-center text-3xl font-extrabold leading-snug tracking-tight text-white" lang="fr">{mat}</p>
             <span className="text-xs font-semibold uppercase tracking-wide text-white/70">
               {tr("Chạm để lật", "Touchez pour retourner", "Tap to flip")}
             </span>
@@ -81,7 +84,7 @@ export default function TheLat3D({ mat, sau, viDu, daLat, onLat, conLai = 0 }) {
 
           {/* MẶT SAU — quay sẵn 180°, nên khi cả khối quay 180° thì nó về 0°. */}
           <div className="absolute inset-0 flex flex-col justify-center gap-4 overflow-y-auto rounded-3xl border border-line bg-surface p-7 [backface-visibility:hidden] [transform:rotateY(180deg)]">
-            <p className="m-0 text-center text-base font-bold leading-relaxed text-ink">{sau}</p>
+            <p className="m-0 text-center text-2xl font-extrabold leading-snug text-ink">{sau}</p>
             {viDu && (
               <div className="rounded-2xl bg-surface2 p-4">
                 <div className="text-xs font-bold uppercase tracking-wide text-soft">{tr("Ví dụ", "Exemple", "Example")}</div>

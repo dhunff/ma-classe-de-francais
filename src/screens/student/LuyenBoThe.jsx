@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { ArrowLeft, Check, AlertTriangle, CalendarClock } from "lucide-react";
+import { ArrowLeft, AlertTriangle, RotateCcw, Frown, ThumbsUp, Zap } from "lucide-react";
+import NutTieng from "../../shared/NutTieng.jsx";
 import { hocBo } from "../../shared/boThe.js";
 import { chamThe } from "../../shared/theGhiNho.js";
 import { MUC, xepLichOn, ngayCong } from "../../shared/sm2.js";
@@ -60,6 +61,20 @@ const THU_TU = ["lai", "kho", "tot", "de"];
 
 /* Màu cho bốn nút — token, tự đảo sáng/tối. "Quên rồi" mang màu nguy hiểm vì
    đó là nút duy nhất đặt lại quãng ôn; người bấm nên biết nó nặng hơn ba nút kia. */
+const NHAN_NUT = () => ({
+  lai: tr("Quên rồi", "Oublié", "Forgot"),
+  kho: tr("Khó", "Difficile", "Hard"),
+  tot: tr("Tốt", "Bien", "Good"),
+  de: tr("Dễ", "Facile", "Easy"),
+});
+const ICON_NUT = { lai: RotateCcw, kho: Frown, tot: ThumbsUp, de: Zap };
+const NUT_3D = {
+  lai: "border-red-700 bg-gradient-to-b from-rose-500 to-red-600",
+  kho: "border-orange-700 bg-gradient-to-b from-amber-400 to-orange-500",
+  tot: "border-blue-800 bg-gradient-to-b from-blue-500 to-primary",
+  de: "border-green-700 bg-gradient-to-b from-emerald-400 to-green-600",
+};
+const CAM_SAU = { lai: "buon", kho: "hum", tot: "duoc-do", de: "tuyet-voi" };
 const KIEU_NUT = {
   lai: "bg-danger-soft text-danger",
   kho: "bg-warn-soft text-warn",
@@ -97,6 +112,7 @@ export default function LuyenBoThe({ bo, onThoat }) {
   const [tongPhien, setTongPhien] = useState(0);
   const [dangGhi, setDangGhi] = useState(false);
   const [loi, setLoi] = useState("");
+  const [camLeon, setCamLeon] = useState("suy-nghi");
 
   useEffect(() => {
     let con = true;
@@ -130,6 +146,7 @@ export default function LuyenBoThe({ bo, onThoat }) {
     /* Cập nhật lịch trong bộ nhớ luôn, để màn « hết thẻ » tính được lần ôn tới
        mà không phải gọi lại máy chủ. */
     phat(TIENG_CHAM[khoa] ?? "bam");
+    setCamLeon(CAM_SAU[khoa] ?? "ok");
     if (khoa !== "lai" && hang.length === 1) setTimeout(() => phat("thang"), 350);
     setTatCa((ds) => ds.map((x) => (x.card_id === the.card_id ? { ...x, ...kq.moi } : x)));
     /* "Quên rồi" đưa thẻ về CUỐI hàng trong buổi này — gặp lại trước khi rời
@@ -138,6 +155,19 @@ export default function LuyenBoThe({ bo, onThoat }) {
     if (khoa !== "lai") setXong((v) => v + 1);
     setLat(false);
   };
+
+  const refPhim = React.useRef({});
+  refPhim.current = { the, lat, cham };
+  useEffect(() => {
+    const k = (e) => {
+      const st = refPhim.current;
+      if (!st.the || /INPUT|TEXTAREA/.test(e.target?.tagName || "")) return;
+      if (e.key === " " || e.key === "Enter") { e.preventDefault(); phat("lat"); setLat((v) => !v); return; }
+      if (st.lat && /^[1-4]$/.test(e.key)) st.cham(THU_TU[Number(e.key) - 1]);
+    };
+    window.addEventListener("keydown", k);
+    return () => window.removeEventListener("keydown", k);
+  }, []);
 
   /* Lần ôn gần nhất trong tương lai — cho màn « xong hôm nay ». */
   const lanToi = Array.isArray(tatCa) && tatCa.length
@@ -154,8 +184,26 @@ export default function LuyenBoThe({ bo, onThoat }) {
         <ArrowLeft size={13} /> Flashcard
       </button>
 
-      <h1 className="m-0 mt-4 text-2xl font-extrabold tracking-tight text-ink">{bo?.ten}</h1>
-      {tongPhien > 0 && <ThanhTienDo xong={xong} tong={tongPhien} />}
+      <div className="mcf-cau-vao relative mt-4 overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-500 via-violet-500 to-purple-600 p-5 text-white shadow-[0_16px_40px_rgba(99,102,241,0.3)]">
+        <span aria-hidden className="absolute -right-10 -top-10 h-36 w-36 rounded-full bg-white/10" />
+        <div className="relative flex items-center gap-4">
+          <div className="min-w-0 flex-1">
+            <p className="m-0 text-xs font-extrabold uppercase tracking-[0.18em] text-white/75">Flashcard</p>
+            <h1 className="m-0 mt-1 truncate text-2xl font-extrabold tracking-tight">{bo?.ten}</h1>
+            {tongPhien > 0 && (
+              <div className="mt-3">
+                <div className="h-2.5 overflow-hidden rounded-full bg-white/20">
+                  <div className="relative h-full overflow-hidden rounded-full bg-white transition-[width] duration-500 ease-out" style={{ width: `${Math.round((xong / tongPhien) * 100)}%` }}>
+                    <span aria-hidden className="mcf-anh-sang absolute inset-y-0 left-0 w-1/3 bg-gradient-to-r from-transparent via-violet-300/70 to-transparent" />
+                  </div>
+                </div>
+                <p className="m-0 mt-1 text-xs font-bold tabular-nums text-white/85">{xong}/{tongPhien} {tr("thẻ đến hạn hôm nay", "cartes à réviser aujourd'hui", "cards due today")}</p>
+              </div>
+            )}
+          </div>
+          <NutTieng className="border-white/30 bg-white/15 text-white hover:border-white hover:text-white" />
+        </div>
+      </div>
 
       {tatCa === undefined ? (
         <p className="m-0 py-16 text-center text-sm text-soft">{tr("Đang tải thẻ…", "Chargement des cartes…", "Loading cards…")}</p>
@@ -187,6 +235,13 @@ export default function LuyenBoThe({ bo, onThoat }) {
         <>
           {/* `conLai` vẽ chồng thẻ phía sau theo SỐ THẺ CÒN LẠI thật, không vẽ
               cứng hai cái — vẽ cứng là nói dối bằng hình ảnh khi chỉ còn một thẻ. */}
+          <div className="mt-6 flex items-end justify-center gap-2">
+            <Leon key={camLeon + xong} cam={lat ? (camLeon === "suy-nghi" ? "nhay-mat" : camLeon) : "suy-nghi"} size={84} className="mcf-nay shrink-0 max-sm:hidden" />
+            <span className="mb-3 rounded-2xl rounded-bl-md bg-primary-soft px-3 py-2 text-xs font-bold text-ink">
+              {lat ? tr("Bạn nhớ tới đâu? Chấm thật lòng nhé!", "Tu t'en souvenais ? Sois honnête !", "Did you remember? Be honest!") : tr("Đoán nghĩa trước rồi lật thẻ nhé!", "Devine d'abord, puis retourne la carte !", "Guess first, then flip the card!")}
+            </span>
+          </div>
+          <div key={the.card_id ?? the.id} className="mcf-cau-vao">
           <TheLat3D
             mat={the.matTruoc /* phiên âm gỡ khỏi mặt thẻ 25/09 theo chủ dự án */}
             sau={the.matSau}
@@ -195,11 +250,15 @@ export default function LuyenBoThe({ bo, onThoat }) {
             onLat={() => { phat("lat"); setLat((v) => !v); }}
             conLai={hang.length - 1}
           />
+          </div>
 
           {loi && (
             <p className="m-0 mt-4 rounded-xl bg-danger-soft px-4 py-3 text-sm font-semibold text-danger">{loi}</p>
           )}
 
+          {!lat && (
+            <p className="m-0 mt-5 hidden text-center text-xs text-soft sm:block">{tr("Phím cách để lật thẻ · 1–4 để chấm", "Espace pour retourner · 1 à 4 pour noter", "Space to flip · 1–4 to rate")}</p>
+          )}
           {lat && (
             <div className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-4">
               {THU_TU.map((k) => (
@@ -208,9 +267,12 @@ export default function LuyenBoThe({ bo, onThoat }) {
                   type="button"
                   onClick={() => cham(k)}
                   disabled={dangGhi}
-                  className={`rounded-2xl border-0 px-3 py-3 text-center font-sans text-sm font-bold disabled:opacity-60 ${KIEU_NUT[k]}`}
+                  className={`mcf-cau-vao flex cursor-pointer flex-col items-center gap-1 rounded-2xl border-0 border-b-4 border-solid px-3 py-3 text-center font-sans text-sm font-extrabold text-white shadow-md transition-transform hover:-translate-y-0.5 active:translate-y-0.5 active:border-b-0 disabled:opacity-60 ${NUT_3D[k]}`}
+                  style={{ animationDelay: `${THU_TU.indexOf(k) * 60}ms` }}
                 >
-                  {MUC[k].nhan}
+                  {React.createElement(ICON_NUT[k], { size: 20 })}
+                  <span>{NHAN_NUT()[k]}</span>
+                  <span className="rounded bg-white/25 px-1.5 text-[10px] font-bold">{THU_TU.indexOf(k) + 1}</span>
                 </button>
               ))}
             </div>

@@ -3,6 +3,9 @@ import { ChevronsRight, AlertTriangle, Layers } from "lucide-react";
 import TourGioiThieu from "../../shared/TourGioiThieu.jsx";
 import { useT, tr } from "../../shared/i18n.jsx";
 import { KY_NANG } from "../../shared/kyNang.js";
+import { Leon } from "../../shared/leon.jsx";
+import { phat } from "../../shared/amThanh.js";
+import NutTieng from "../../shared/NutTieng.jsx";
 
 /* Thư viện bộ thẻ — cột tab dọc bên trái, lưới thẻ bên phải.
  *
@@ -63,12 +66,13 @@ function ChuCaiDau({ ten, avatar }) {
 }
 
 /* `dau`: thẻ ĐẦU TIÊN trong lưới mang id cho tour giới thiệu. */
-function TheBo({ b, onMo, dau = false }) {
+function TheBo({ b, onMo, dau = false, thuTu = 0 }) {
   return (
     <button
       id={dau ? "tour-fc-deck" : undefined}
       type="button"
-      onClick={() => onMo(b)}
+      onClick={() => { phat("lat"); onMo(b); }}
+      style={{ animationDelay: `${100 + thuTu * 70}ms` }}
       /* preflight TẮT ⇒ `border-0` + nền rõ ràng + `text-left` + `font-sans`.
          `<button>` KHÔNG kế thừa font, nên thiếu `font-sans` thì cả thẻ rơi về
          font mặc định của trình duyệt và trông như của trang khác.
@@ -76,21 +80,23 @@ function TheBo({ b, onMo, dau = false }) {
          Bóng: phải ghi CẢ hình dạng lẫn màu. Tailwind tách `--tw-shadow` khỏi
          `--tw-shadow-color`, nên `hover:shadow-2xl` một mình làm bóng màu thành
          TRONG SUỐT — đo được `rgba(0,0,0,0)`. Đã dính một lần. */
-      className={`group relative w-full overflow-hidden rounded-3xl border-0 bg-surface
-        p-5 text-left font-sans ring-1 ring-line transition-all duration-300 ease-out
+      className={`mcf-cau-vao group relative w-full overflow-hidden rounded-3xl border-0 bg-surface
+        p-0 text-left font-sans ring-1 ring-line transition-all duration-300 ease-out
         hover:-translate-y-1 hover:shadow-2xl ${VIEN[b.kyNang] ?? ""}
         motion-reduce:transition-none motion-reduce:hover:translate-y-0`}
     >
       {/* Mảng màu góc trên — nhắc lại hình khối của bản thiết kế mà không phải
           tô nền cả thẻ, nhờ vậy chữ vẫn đặt trên `bg-surface` và tương phản
           không đổi giữa hai bản màu. */}
-      <span
-        aria-hidden="true"
-        className={`pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full
-          bg-gradient-to-br ${SAC[b.kyNang] ?? SAC.CO} opacity-20
-          transition-transform duration-500 ease-out group-hover:scale-125`}
-      />
-
+      {/* Bìa màu theo kỹ năng: chồng ba thẻ nghiêng + số thẻ to. */}
+      <div className={`relative h-28 overflow-hidden bg-gradient-to-br ${SAC[b.kyNang] ?? SAC.CO}`}>
+        <span aria-hidden className="absolute -right-6 -top-10 h-28 w-28 rounded-full bg-white/15 transition-transform duration-500 group-hover:scale-125" />
+        <span aria-hidden className="absolute bottom-3 right-16 h-16 w-12 rotate-[-12deg] rounded-xl bg-white/25 shadow-lg transition-transform duration-300 group-hover:rotate-[-20deg]" />
+        <span aria-hidden className="absolute bottom-3 right-10 h-16 w-12 rotate-[-2deg] rounded-xl bg-white/35 shadow-lg transition-transform duration-300 group-hover:-translate-y-1" />
+        <span aria-hidden className="absolute bottom-3 right-4 grid h-16 w-12 rotate-[10deg] place-items-center rounded-xl bg-white text-sm font-extrabold text-ink shadow-lg transition-transform duration-300 group-hover:rotate-[16deg]">{b.soThe}</span>
+        <span className="absolute left-5 top-4 rounded-full bg-white/25 px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wider text-white">{b.kyNang}</span>
+      </div>
+      <div className="p-5">
       <h3 className="m-0 text-lg font-extrabold tracking-tight text-ink">{b.ten}</h3>
 
       {b.moTa && (
@@ -115,6 +121,7 @@ function TheBo({ b, onMo, dau = false }) {
         {b.soThe} {tr("thẻ", "cartes", "cards")}
         <ChevronsRight size={13} className="transition-transform duration-300 group-hover:translate-x-1" />
       </span>
+      </div>
     </button>
   );
 }
@@ -137,10 +144,27 @@ export default function ThuVienBoThe({ ds, onMo }) {
         { target: "#tour-fc-deck", title: t("tour.fc2_title"), content: t("tour.fc2_body") },
         { target: "#tour-fc-count", title: t("tour.fc3_title"), content: t("tour.fc3_body") },
       ]} />
-      <h1 className="m-0 text-2xl font-extrabold tracking-tight text-ink">Flashcard</h1>
-      <p className="m-0 mt-1 text-sm text-soft">
-        {tr("Chọn một bộ để luyện. Các bộ này do giáo viên soạn.", "Choisissez un paquet. Ils sont créés par les enseignants.", "Pick a deck to practise. Decks are made by teachers.")}
-      </p>
+      <header className="mcf-cau-vao relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-500 via-violet-500 to-purple-600 p-6 text-white shadow-[0_20px_50px_rgba(99,102,241,0.3)]">
+        <span aria-hidden className="absolute -right-12 -top-12 h-48 w-48 rounded-full bg-white/10" />
+        <span aria-hidden className="absolute bottom-4 right-28 hidden h-20 w-14 rotate-[-14deg] rounded-xl bg-white/20 sm:block" />
+        <span aria-hidden className="absolute bottom-6 right-20 hidden h-20 w-14 rotate-[8deg] rounded-xl bg-white/30 sm:block" />
+        <div className="relative flex items-center gap-4">
+          <Leon cam="hoc" size={108} className="mcf-leon-bay shrink-0 drop-shadow-[0_12px_18px_rgba(0,0,0,0.3)] max-sm:h-20 max-sm:w-20" />
+          <div className="min-w-0 flex-1">
+            <h1 className="m-0 text-3xl font-extrabold tracking-tight">Flashcard</h1>
+            <p className="m-0 mt-1 text-sm text-white/85">
+              {tr("Chọn một bộ để luyện. Các bộ này do giáo viên soạn.", "Choisissez un paquet. Ils sont créés par les enseignants.", "Pick a deck to practise. Decks are made by teachers.")}
+            </p>
+            {Array.isArray(ds) && (
+              <p className="m-0 mt-3 inline-flex flex-wrap gap-2 text-xs font-extrabold">
+                <span className="rounded-full bg-white/20 px-3 py-1">{ds.length} {tr("bộ", "paquets", "decks")}</span>
+                <span className="rounded-full bg-white/20 px-3 py-1">{ds.reduce((n, b) => n + (b.soThe || 0), 0)} {tr("thẻ", "cartes", "cards")}</span>
+              </p>
+            )}
+          </div>
+          <NutTieng className="border-white/30 bg-white/15 text-white hover:border-white hover:text-white" />
+        </div>
+      </header>
 
       <div className="mt-6 flex gap-4">
         {/* ══ CỘT TAB DỌC ══ */}
@@ -151,7 +175,7 @@ export default function ThuVienBoThe({ ds, onMo }) {
               <button
                 key={k.ma}
                 type="button"
-                onClick={() => setKyNang(k.ma)}
+                onClick={() => { if (!chon) phat("tiep"); setKyNang(k.ma); }}
                 aria-pressed={chon}
                 /* `w-11` cố định: rotate-180 xoay quanh tâm, nên bề rộng co
                    theo chữ sẽ làm các tab lệch nhau sau khi xoay. */
@@ -159,7 +183,7 @@ export default function ThuVienBoThe({ ds, onMo }) {
                   font-sans text-xs font-bold uppercase tracking-widest
                   [writing-mode:vertical-lr] -rotate-180
                   transition-colors duration-300 ${
-                    chon ? "bg-primary text-white" : "bg-surface2 text-soft hover:text-ink"
+                    chon ? `bg-gradient-to-b ${SAC[k.ma] ?? SAC.CO} text-white shadow-lg` : "bg-surface2 text-soft hover:text-ink"
                   }`}
               >
                 {k.ten}
@@ -183,8 +207,8 @@ export default function ThuVienBoThe({ ds, onMo }) {
               </p>
             </div>
           ) : hien.length === 0 ? (
-            <div className="rounded-2xl border border-line bg-surface p-8 text-center">
-              <Layers size={22} className="mx-auto text-soft" />
+            <div className="rounded-3xl border border-solid border-line bg-surface p-8 text-center">
+              <Leon cam="buon-ngu" size={96} className="mx-auto block" />
               <p className="m-0 mt-2 font-bold text-ink">{tr("Chưa có bộ thẻ nào cho kỹ năng này", "Aucun paquet pour cette compétence", "No decks for this skill yet")}</p>
               <p className="m-0 mt-1 text-sm leading-relaxed text-soft">
                 {tr("Bộ thẻ do giáo viên soạn. Khi có bộ mới cho phần", "Les paquets sont créés par les enseignants. Quand il y en aura pour", "Decks are made by teachers. When a new one exists for")}{" "}
@@ -193,7 +217,7 @@ export default function ThuVienBoThe({ ds, onMo }) {
             </div>
           ) : (
             <div className="grid gap-4 sm:grid-cols-2">
-              {hien.map((b, i) => <TheBo key={b.id} b={b} onMo={onMo} dau={i === 0} />)}
+              {hien.map((b, i) => <TheBo key={b.id} b={b} onMo={onMo} dau={i === 0} thuTu={i} />)}
             </div>
           )}
         </div>
