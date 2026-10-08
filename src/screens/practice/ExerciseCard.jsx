@@ -5,6 +5,7 @@ import { S } from "../../shared/tokens.js";
 import { fmtPrice } from "../../shared/access.js";
 import { giaXp as tinhGiaXp } from "../../shared/premium.js";
 import { anhMacDinh } from "../../shared/anhMacDinh.js";
+import { tr } from "../../shared/i18n.jsx";
 
 /* Thẻ bài tập trong Thư viện luyện tập.
 
@@ -48,7 +49,7 @@ function TrainButton({ onStart, onPickMaterial }) {
         onClick={() => setOpen((v) => !v)}
         aria-haspopup="menu"
         aria-expanded={open}
-        aria-label="Ressources de l'exercice"
+        aria-label={tr("Tài liệu của bài", "Ressources de l'exercice", "Exercise resources")}
         className="ml-px cursor-pointer border-0 bg-primary px-3 font-[inherit] text-on-primary transition-opacity hover:opacity-90"
         style={{ borderRadius: "0 999px 999px 0" }}
       >
@@ -151,7 +152,7 @@ export default function ExerciseCard({
         <strong className="mb-1 block text-[15px] leading-snug text-ink">{ex.title}</strong>
 
         <div className="text-xs leading-relaxed text-soft">
-          {nQ} question{nQ > 1 ? "s" : ""}
+          {nQ} {tr("câu", "question", "question")}{nQ > 1 ? "s" : ""}
           {typesLabel && ` · ${typesLabel}`}
           {ex.audioUrl && " · 🎧"}
           {ex.readingText && " · 📖"}

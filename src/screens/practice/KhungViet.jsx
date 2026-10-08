@@ -1,4 +1,5 @@
 import React, { useMemo } from "react";
+import { tr } from "../../shared/i18n.jsx";
 
 /* Khung viết đơn giản cho câu tự luận của học sinh (07/10).
 
@@ -29,7 +30,7 @@ export default function KhungViet({ value, onChange, readOnly }) {
   return (
     <div className="overflow-hidden rounded-2xl border border-solid border-line bg-surface focus-within:border-primary">
       <textarea value={chu} readOnly={readOnly} rows={7}
-        placeholder={readOnly ? "" : "Écrivez votre réponse ici…"}
+        placeholder={readOnly ? "" : tr("Viết câu trả lời của bạn ở đây…", "Écrivez votre réponse ici…", "Write your answer here…")}
         onChange={(e) => onChange(veHtml(e.target.value))}
         className="block w-full resize-y border-0 bg-transparent px-4 py-3 font-sans text-base leading-relaxed text-ink outline-none"
         style={{ minHeight: 160 }} />

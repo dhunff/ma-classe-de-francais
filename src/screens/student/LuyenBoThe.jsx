@@ -10,6 +10,7 @@ import { MUC, xepLichOn, ngayCong } from "../../shared/sm2.js";
    Đây là lý do TheLat3D.jsx sống sót đợt gỡ « Thẻ ghi nhớ » ngày 09/09: thứ
    bị bỏ là màn ôn SM-2 cũ, không phải cách vẽ một cái thẻ. */
 import TheLat3D from "./TheLat3D.jsx";
+import { tr } from "../../shared/i18n.jsx";
 
 /* Màn luyện một bộ Flashcard — CÓ LỊCH ÔN từ 21/09 (migration 089).
  *
@@ -72,7 +73,7 @@ function ThanhTienDo({ xong, tong }) {
         />
       </div>
       <p className="m-0 mt-1 text-right text-[11px] font-bold tabular-nums text-soft">
-        {xong}/{tong} thẻ đến hạn hôm nay
+        {xong}/{tong} {tr("thẻ đến hạn hôm nay", "cartes à réviser aujourd'hui", "cards due today")}
       </p>
     </div>
   );
@@ -119,7 +120,7 @@ export default function LuyenBoThe({ bo, onThoat }) {
        với người học rằng lần ôn đã được ghi — và ngày mai thẻ đó vẫn đến hạn
        mà không ai hiểu vì sao. Đọc kết quả trước khi nói đã xong: lần thứ năm
        trong dự án. */
-    if (!kq.ok) { setLoi("Không lưu được lần ôn này: " + kq.loi); return; }
+    if (!kq.ok) { setLoi(tr("Không lưu được lần ôn này: ", "Révision non enregistrée : ", "Couldn't save this review: ") + kq.loi); return; }
 
     /* Cập nhật lịch trong bộ nhớ luôn, để màn « hết thẻ » tính được lần ôn tới
        mà không phải gọi lại máy chủ. */
@@ -150,17 +151,17 @@ export default function LuyenBoThe({ bo, onThoat }) {
       {tongPhien > 0 && <ThanhTienDo xong={xong} tong={tongPhien} />}
 
       {tatCa === undefined ? (
-        <p className="m-0 py-16 text-center text-sm text-soft">Đang tải thẻ…</p>
+        <p className="m-0 py-16 text-center text-sm text-soft">{tr("Đang tải thẻ…", "Chargement des cartes…", "Loading cards…")}</p>
       ) : tatCa === null ? (
         <div className="mt-8 rounded-2xl bg-danger-soft p-6 text-center">
           <AlertTriangle size={20} className="mx-auto text-danger" />
-          <p className="m-0 mt-2 font-bold text-ink">Không mở được bộ thẻ này</p>
-          <p className="m-0 mt-1 text-sm text-ink">Kiểm tra kết nối rồi thử lại.</p>
+          <p className="m-0 mt-2 font-bold text-ink">{tr("Không mở được bộ thẻ này", "Impossible d'ouvrir ce paquet", "Couldn't open this deck")}</p>
+          <p className="m-0 mt-1 text-sm text-ink">{tr("Kiểm tra kết nối rồi thử lại.", "Vérifiez la connexion et réessayez.", "Check your connection and try again.")}</p>
         </div>
       ) : tatCa.length === 0 ? (
         <div className="mt-8 rounded-2xl border border-line bg-surface p-8 text-center">
-          <p className="m-0 font-bold text-ink">Bộ này chưa có thẻ nào</p>
-          <p className="m-0 mt-1 text-sm text-soft">Giáo viên chưa thêm thẻ vào đây.</p>
+          <p className="m-0 font-bold text-ink">{tr("Bộ này chưa có thẻ nào", "Ce paquet est vide", "This deck has no cards yet")}</p>
+          <p className="m-0 mt-1 text-sm text-soft">{tr("Giáo viên chưa thêm thẻ vào đây.", "L'enseignant n'a pas encore ajouté de cartes.", "The teacher hasn't added cards yet.")}</p>
         </div>
       ) : !the ? (
         /* Hết thẻ đến hạn. Nói NGÀY quay lại — "xong" mà không nói bao giờ
@@ -170,7 +171,7 @@ export default function LuyenBoThe({ bo, onThoat }) {
             ? <Check size={26} className="mx-auto text-ok" />
             : <CalendarClock size={26} className="mx-auto text-primary" />}
           <p className="m-0 mt-3 text-lg font-extrabold text-ink">
-            {tongPhien > 0 ? "Xong phần hôm nay" : "Hôm nay không có thẻ nào đến hạn"}
+            {tongPhien > 0 ? tr("Xong phần hôm nay", "Terminé pour aujourd'hui", "Done for today") : tr("Hôm nay không có thẻ nào đến hạn", "Aucune carte à réviser aujourd'hui", "No cards due today")}
           </p>
           <p className="m-0 mt-1 text-sm text-soft">
             {tongPhien > 0 && `Bạn đã ôn ${xong} thẻ. `}

@@ -1,7 +1,7 @@
 import React from "react";
 import { BellOff, Megaphone, AlarmClock, CheckCircle2, RotateCcw, UserPlus } from "lucide-react";
 import { Avatar } from "../../shared/avatars.jsx";
-import { useT } from "../../shared/i18n.jsx";
+import { useT, tr } from "../../shared/i18n.jsx";
 import { thoiGianTuongDoi } from "../../shared/display.js";
 
 /* Bảng thông báo thả xuống từ chuông.
@@ -35,11 +35,11 @@ import { thoiGianTuongDoi } from "../../shared/display.js";
  * màu theo trạng thái, và trên Windows thì cỡ chữ nhảy — dự án đã dính một lần
  * với cờ 🇻🇳 (xem CLAUDE.md). Icon vector thì nhất quán và tô màu được. */
 const LOAI = {
-  annonce: { Icon: Megaphone,   nen: "bg-primary-soft", chu: "text-primary", ten: "Thông báo từ giáo viên" },
-  due:     { Icon: AlarmClock,  nen: "bg-warn-soft",    chu: "text-warn",    ten: "Sắp đến hạn nộp" },
-  graded:  { Icon: CheckCircle2, nen: "bg-ok-soft",     chu: "text-ok",      ten: "Bài đã được chấm" },
-  redo:    { Icon: RotateCcw,   nen: "bg-danger-soft",  chu: "text-danger",  ten: "Cần làm lại" },
-  follow:  { Icon: UserPlus,    nen: "bg-primary-soft", chu: "text-primary", ten: "Người theo dõi mới" },
+  annonce: { Icon: Megaphone,   nen: "bg-primary-soft", chu: "text-primary", get ten() { return tr("Thông báo từ giáo viên", "Annonce de l'enseignant", "Announcement from the teacher"); } },
+  due:     { Icon: AlarmClock,  nen: "bg-warn-soft",    chu: "text-warn",    get ten() { return tr("Sắp đến hạn nộp", "Date limite proche", "Deadline soon"); } },
+  graded:  { Icon: CheckCircle2, nen: "bg-ok-soft",     chu: "text-ok",      get ten() { return tr("Bài đã được chấm", "Copie corrigée", "Work graded"); } },
+  redo:    { Icon: RotateCcw,   nen: "bg-danger-soft",  chu: "text-danger",  get ten() { return tr("Cần làm lại", "À refaire", "Redo requested"); } },
+  follow:  { Icon: UserPlus,    nen: "bg-primary-soft", chu: "text-primary", get ten() { return tr("Người theo dõi mới", "Nouvel abonné", "New follower"); } },
 };
 
 function MotThongBao({ n, onClick }) {
@@ -89,7 +89,7 @@ function MotThongBao({ n, onClick }) {
               đè. `check:css` bắt được cái thứ nhất, không bắt được cái này. */}
           {n.loai === "follow" && n.actor ? (
             <span className="mt-0.5 line-clamp-2 text-sm text-soft">
-              <span className="font-semibold text-ink">{n.actor.name}</span> đã bắt đầu theo dõi bạn.
+              <span className="font-semibold text-ink">{n.actor.name}</span> {tr("đã bắt đầu theo dõi bạn.", "a commencé à vous suivre.", "started following you.")}
             </span>
           ) : (
             <span className="mt-0.5 line-clamp-2 text-sm text-soft">{n.text}</span>
@@ -105,7 +105,7 @@ function MotThongBao({ n, onClick }) {
             `aria-label` chứ không phải chỉ màu: người dùng trình đọc màn hình
             và người mù màu đều không nhận được thông tin từ một chấm xanh. */}
         {n.chuaDoc && (
-          <span aria-label="chưa đọc"
+          <span aria-label={tr("chưa đọc", "non lu", "unread")}
                 className="mt-1.5 h-2 w-2 shrink-0 animate-pulse rounded-full bg-primary" />
         )}
       </button>
@@ -152,7 +152,7 @@ export default function NotificationDropdown({ notifs, dangTai, soChuaDoc, onDoc
         /* BA nhánh, không phải hai. Lượt đọc đầu chưa xong thì danh sách rỗng,
            và hiện "không có thông báo nào" lúc ấy là khẳng định một điều ta
            chưa biết. Khung xương nói đúng thứ đang xảy ra. */
-        <div className="space-y-3 p-3" aria-busy="true" aria-label="Đang tải thông báo">
+        <div className="space-y-3 p-3" aria-busy="true" aria-label={tr("Đang tải thông báo", "Chargement des notifications", "Loading notifications")}>
           {[0, 1, 2].map((i) => (
             <div key={i} className="flex items-start gap-3">
               <span className="h-9 w-9 shrink-0 animate-pulse rounded-full bg-surface2" />

@@ -1,4 +1,5 @@
 import React from "react";
+import { tr } from "../../shared/i18n.jsx";
 
 /* Thẻ lật 3D + hiệu ứng chồng thẻ.
  *
@@ -74,7 +75,7 @@ export default function TheLat3D({ mat, sau, viDu, daLat, onLat, conLai = 0 }) {
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 rounded-3xl bg-gradient-to-br from-indigo-500 to-purple-600 p-8 shadow-lg shadow-indigo-500/30 [backface-visibility:hidden]">
             <p className="m-0 text-center text-xl font-extrabold leading-relaxed text-white">{mat}</p>
             <span className="text-xs font-semibold uppercase tracking-wide text-white/70">
-              Chạm để lật
+              {tr("Chạm để lật", "Touchez pour retourner", "Tap to flip")}
             </span>
           </div>
 
@@ -83,7 +84,7 @@ export default function TheLat3D({ mat, sau, viDu, daLat, onLat, conLai = 0 }) {
             <p className="m-0 text-center text-base font-bold leading-relaxed text-ink">{sau}</p>
             {viDu && (
               <div className="rounded-2xl bg-surface2 p-4">
-                <div className="text-xs font-bold uppercase tracking-wide text-soft">Ví dụ</div>
+                <div className="text-xs font-bold uppercase tracking-wide text-soft">{tr("Ví dụ", "Exemple", "Example")}</div>
                 <p className="m-0 mt-1 text-sm italic leading-relaxed text-ink">{viDu}</p>
               </div>
             )}

@@ -1,4 +1,5 @@
 import React, { useEffect } from "react";
+import { tr } from "../../shared/i18n.jsx";
 
 /* Khung làm bài dùng chung cho Luyện tập (PracticeHub) và Bài được giao
    (Taking) — 07/10. Chủ dự án muốn chế độ Focus trông chuyên nghiệp, không
@@ -84,7 +85,7 @@ export default function FocusShell({ zen, setZen, title, meta = [], answered, to
           )}
           <button type="button" onClick={() => setZen(false)} title="Échap"
             className="h-9 shrink-0 cursor-pointer rounded-full border-0 bg-ink px-4 font-sans text-sm font-bold text-bg transition-opacity hover:opacity-85">
-            Quitter
+            {tr("Thoát", "Quitter", "Exit")}
           </button>
         </div>
       </header>

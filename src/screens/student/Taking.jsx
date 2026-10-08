@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo, useRef, useCallback } from "react"
 import { C, S, LEVEL_COLORS, LEVEL_PASTEL, QTYPES, VF_OPTS } from "../../shared/tokens.js";
 import { load, save, del } from "../../shared/storage.js";
 import { loadSubmissions, saveSubmission } from "../../shared/submissions.js";
-import { useT } from "../../shared/i18n.jsx";
+import { useT, tr } from "../../shared/i18n.jsx";
 import { SKILLS, fmtDate, isLate, exSkills, assignedTo, totalScore } from "../../shared/exercises.js";
 import { uid, norm, stripHtml, wordCount, vfOk, fillAccepted, fillOk, autoQ, ordreOk, tableauCells, tableauOk, diemCau, isQuestionAnswered, getUnansweredQuestionsCount } from "../../shared/questions.js";
 import { AVA_COLORS, avaColor, fmtDateFR, fmtDuration, targetedAccounts, fileNameFromUrl, formatLastSeen } from "../../shared/display.js";
@@ -135,7 +135,7 @@ function Taking({ ex, name, setSubmissions, done }) {
     } else {
       /* Giữ nguyên bản nháp khi ghi hỏng: học sinh bấm lại là nộp được, không
          phải làm lại từ đầu. */
-      setErr("Impossible d'enregistrer la copie. Réessaie.");
+      setErr(tr("Không lưu được bài làm. Thử lại nhé.", "Impossible d'enregistrer la copie. Réessaie.", "Couldn't save your work. Try again."));
       setSaving(false);
     }
   };
@@ -185,7 +185,7 @@ function Taking({ ex, name, setSubmissions, done }) {
           </div>
           {(answers[q.id]?.choice === 0 || answers[q.id]?.choice === 1) && (
             <textarea disabled={locked} value={answers[q.id]?.just || ""}
-              placeholder="Justifiez votre réponse en citant le texte…"
+              placeholder={tr("Giải thích câu trả lời bằng cách trích bài đọc…", "Justifiez votre réponse en citant le texte…", "Justify your answer by quoting the text…")}
               onChange={(e) => setAnswers({ ...answers, [q.id]: { ...answers[q.id], just: e.target.value } })}
               style={{ ...S.input, minHeight: 60, resize: "vertical" }} />
           )}
@@ -193,7 +193,7 @@ function Taking({ ex, name, setSubmissions, done }) {
       ) : q.type === "open" ? (
         <KhungViet value={answers[q.id] || ""} readOnly={locked} onChange={(html) => setAnswers({ ...answers, [q.id]: html })} />
       ) : (
-        <input style={S.input} disabled={locked} placeholder="Ta réponse…" value={answers[q.id] || ""}
+        <input style={S.input} disabled={locked} placeholder={tr("Câu trả lời của bạn…", "Ta réponse…", "Your answer…")} value={answers[q.id] || ""}
           onChange={(e) => setAnswers({ ...answers, [q.id]: e.target.value })} />
       )}
     </div>
@@ -203,7 +203,7 @@ function Taking({ ex, name, setSubmissions, done }) {
     <FocusShell zen={zen} setZen={setZen} title={ex.title}
       meta={[ex.level, exSkills(ex).join(" + "), `${ex.questions.length} questions`,
         ex.timeLimit && !locked ? `Temps limite : ${ex.timeLimit} min` : null,
-        ex.deadline ? (isLate(ex) ? "Date limite dépassée, copie marquée en retard" : `À rendre avant le ${fmtDate(ex.deadline)}`) : null,
+        ex.deadline ? (isLate(ex) ? tr("Đã quá hạn nộp, bài sẽ bị tính muộn", "Date limite dépassée, copie marquée en retard", "Deadline passed, submission marked late") : `À rendre avant le ${fmtDate(ex.deadline)}`) : null,
         savedAt ? `Brouillon enregistré à ${savedAt.toLocaleTimeString("fr-FR")}` : "Enregistrement automatique"]}
       answered={answeredCount} total={0} remaining={null}>{/* tiến độ + đồng hồ đã có ở thanh đáy */}
       {/* Thanh trạng thái nổi: tiến độ trả lời · đồng hồ · nút nộp.
@@ -255,26 +255,26 @@ function Taking({ ex, name, setSubmissions, done }) {
       )}
       {locked && (
         <div className="mcf-card" style={{ ...S.card, marginBottom: 16, borderLeft: `3px solid ${C.danger}`, fontWeight: 700, color: C.danger }}>
-          Temps écoulé : ta copie a été rendue automatiquement.
+          {tr("Hết giờ: bài của bạn đã được nộp tự động.", "Temps écoulé : ta copie a été rendue automatiquement.", "Time's up: your work was submitted automatically.")}
         </div>
       )}
       {ex.consigne && (
         <div className="mcf-card" style={{ ...S.card, marginBottom: 16, borderLeft: "3px solid var(--mcf-primary)" }}>
-          <div style={S.label}>Consigne</div>
+          <div style={S.label}>{tr("Đề bài", "Consigne", "Instructions")}</div>
           <div style={{ fontSize: 15.5, lineHeight: 1.75, marginTop: 6, fontWeight: 500 }} dangerouslySetInnerHTML={{ __html: ex.consigne }} />
         </div>
       )}
 
       {ex.imageUrl && (
         <div style={{ marginBottom: 16 }}>
-          <img src={ex.imageUrl} alt="illustration — cliquez pour agrandir" title="Cliquez pour agrandir"
+          <img src={ex.imageUrl} alt="illustration — cliquez pour agrandir" title={tr("Bấm để phóng to", "Cliquez pour agrandir", "Click to enlarge")}
             onClick={() => setImgZoom(true)}
             onMouseEnter={(e) => (e.currentTarget.style.opacity = 0.9)}
             onMouseLeave={(e) => (e.currentTarget.style.opacity = 1)}
             style={{ display: "block", width: "100%", maxWidth: 900, margin: "0 auto", objectFit: "contain",
               borderRadius: 16, border: `1px solid ${C.line}`, boxShadow: "0 3px 12px rgba(17,24,39,.08)",
               cursor: "zoom-in", transition: "opacity .15s ease" }} />
-          <div style={{ textAlign: "center", fontSize: 12, color: C.soft, marginTop: 6 }}>Cliquez sur l'image pour l'agrandir</div>
+          <div style={{ textAlign: "center", fontSize: 12, color: C.soft, marginTop: 6 }}>{tr("Bấm vào ảnh để phóng to", "Cliquez sur l'image pour l'agrandir", "Click the image to enlarge")}</div>
         </div>
       )}
       {imgZoom && (

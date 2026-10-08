@@ -3,6 +3,7 @@ import { X, Loader2, Users, UserPlus, UserMinus, Check } from "lucide-react";
 import { AvatarOnline, NhanOnline } from "./ChamOnline.jsx";
 import { datAnTrangThai, docAnTrangThai } from "../../shared/hienDien.js";
 import { docDangTheoDoi, docNguoiTheoDoiToi, theoDoiLai, boTheoDoi } from "../../shared/xp.js";
+import { tr } from "../../shared/i18n.jsx";
 
 /* « Mạng lưới học tập » — hai tab Người theo dõi / Đang theo dõi (01/10).
  *
@@ -114,8 +115,8 @@ export default function NetworkManager({ t, dong, onDoi }) {
         {an !== null && (
           <label className="flex cursor-pointer items-center gap-2.5 border-0 border-t border-solid border-line px-5 py-3 text-sm text-ink">
             <input type="checkbox" checked={an} onChange={doiAn} className="h-4 w-4 cursor-pointer" />
-            Ẩn trạng thái online của tôi
-            <span className="ml-auto text-xs text-soft">{an ? "Người khác không thấy" : "Người theo dõi bạn thấy"}</span>
+            {tr("Ẩn trạng thái online của tôi", "Masquer mon statut en ligne", "Hide my online status")}
+            <span className="ml-auto text-xs text-soft">{an ? tr("Người khác không thấy", "Invisible pour les autres", "Hidden from others") : tr("Người theo dõi bạn thấy", "Visible par vos abonnés", "Visible to your followers")}</span>
           </label>
         )}
       </div>

@@ -10,7 +10,7 @@ export const SU_KIEN_VIP = "fracile:vip-doi";
 function HuyHieuVip({ size }) {
   const n = Math.round(size * 0.45);
   return (
-    <span aria-label="VIP" title="Thành viên VIP"
+    <span aria-label="VIP" title={tr("Thành viên VIP", "Membre VIP", "VIP member")}
       className="absolute -right-1 -top-1 grid place-items-center rounded-full border-2 border-solid border-surface bg-amber-500 text-white shadow"
       style={{ width: n, height: n }}>
       <Crown size={Math.round(n * 0.6)} strokeWidth={2.5} />
@@ -19,6 +19,7 @@ function HuyHieuVip({ size }) {
 }
 import { Avatar } from "../shared/avatars.jsx";
 import { loadDanhTinh, SU_KIEN_DANH_TINH } from "../shared/identity.js";
+import { tr } from "../shared/i18n.jsx";
 
 /* Menu bật ra từ ảnh đại diện — cửa duy nhất tới cài đặt, đổi nền và đăng
    xuất, sau khi khối hồ sơ ở chân thanh bên bị gỡ.

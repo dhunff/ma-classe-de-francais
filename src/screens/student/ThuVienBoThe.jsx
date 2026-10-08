@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from "react";
 import { ChevronsRight, AlertTriangle, Layers } from "lucide-react";
 import TourGioiThieu from "../../shared/TourGioiThieu.jsx";
-import { useT } from "../../shared/i18n.jsx";
+import { useT, tr } from "../../shared/i18n.jsx";
 import { KY_NANG } from "../../shared/kyNang.js";
 
 /* Thư viện bộ thẻ — cột tab dọc bên trái, lưới thẻ bên phải.
@@ -98,7 +98,7 @@ function TheBo({ b, onMo, dau = false }) {
       )}
 
       <div className="mt-3 flex items-center gap-2">
-        <span className="text-[11px] font-semibold text-soft">Soạn bởi</span>
+        <span className="text-[11px] font-semibold text-soft">{tr("Soạn bởi", "Créé par", "By")}</span>
         <ChuCaiDau ten={b.tacGia.ten} avatar={b.tacGia.avatar} />
         <span className="truncate text-[11px] font-bold text-ink">{b.tacGia.ten}</span>
       </div>
@@ -107,12 +107,12 @@ function TheBo({ b, onMo, dau = false }) {
           sinh đang nhìn thấy một bộ chưa xong. */}
       {!b.congKhai && (
         <span className="mt-3 inline-block rounded-full bg-warn-soft px-2 py-0.5 text-[10px] font-bold text-warn">
-          nháp — học sinh chưa thấy
+          {tr("nháp — học sinh chưa thấy", "brouillon, invisible pour les élèves", "draft, not visible to students")}
         </span>
       )}
 
       <span id={dau ? "tour-fc-count" : undefined} className="mt-4 flex w-fit items-center gap-2 rounded-full bg-surface2 px-3 py-1.5 text-xs font-bold text-ink">
-        {b.soThe} thẻ
+        {b.soThe} {tr("thẻ", "cartes", "cards")}
         <ChevronsRight size={13} className="transition-transform duration-300 group-hover:translate-x-1" />
       </span>
     </button>
@@ -139,7 +139,7 @@ export default function ThuVienBoThe({ ds, onMo }) {
       ]} />
       <h1 className="m-0 text-2xl font-extrabold tracking-tight text-ink">Flashcard</h1>
       <p className="m-0 mt-1 text-sm text-soft">
-        Chọn một bộ để luyện. Các bộ này do giáo viên soạn.
+        {tr("Chọn một bộ để luyện. Các bộ này do giáo viên soạn.", "Choisissez un paquet. Ils sont créés par les enseignants.", "Pick a deck to practise. Decks are made by teachers.")}
       </p>
 
       <div className="mt-6 flex gap-4">
@@ -171,25 +171,24 @@ export default function ThuVienBoThe({ ds, onMo }) {
         {/* ══ LƯỚI THẺ ══ */}
         <div className="min-w-0 flex-1">
           {ds === undefined ? (
-            <p className="m-0 py-10 text-center text-sm text-soft">Đang tải…</p>
+            <p className="m-0 py-10 text-center text-sm text-soft">{tr("Đang tải…", "Chargement…", "Loading…")}</p>
           ) : ds === null ? (
             /* KHÔNG ĐỌC ĐƯỢC ≠ CHƯA CÓ BỘ NÀO. Gộp lại là báo tin vui cho một
                sự cố — người dùng sẽ đi tìm bộ thẻ ở chỗ khác. */
             <div className="rounded-2xl bg-danger-soft p-6 text-center">
               <AlertTriangle size={20} className="mx-auto text-danger" />
-              <p className="m-0 mt-2 font-bold text-ink">Không đọc được thư viện</p>
+              <p className="m-0 mt-2 font-bold text-ink">{tr("Không đọc được thư viện", "Impossible de charger la bibliothèque", "Couldn't load the library")}</p>
               <p className="m-0 mt-1 text-sm text-ink">
-                Danh sách trống ở đây KHÔNG có nghĩa là chưa có bộ nào — kiểm tra
-                kết nối rồi tải lại.
+                {tr("Danh sách trống ở đây KHÔNG có nghĩa là chưa có bộ nào — kiểm tra kết nối rồi tải lại.", "Une liste vide ne veut pas dire qu'il n'y a aucun paquet : vérifiez la connexion et rechargez.", "An empty list doesn't mean there are no decks: check your connection and reload.")}
               </p>
             </div>
           ) : hien.length === 0 ? (
             <div className="rounded-2xl border border-line bg-surface p-8 text-center">
               <Layers size={22} className="mx-auto text-soft" />
-              <p className="m-0 mt-2 font-bold text-ink">Chưa có bộ thẻ nào cho kỹ năng này</p>
+              <p className="m-0 mt-2 font-bold text-ink">{tr("Chưa có bộ thẻ nào cho kỹ năng này", "Aucun paquet pour cette compétence", "No decks for this skill yet")}</p>
               <p className="m-0 mt-1 text-sm leading-relaxed text-soft">
-                Bộ thẻ do giáo viên soạn. Khi có bộ mới cho phần{" "}
-                {KY_NANG.find((k) => k.ma === kyNang)?.ten.toLowerCase()}, nó sẽ hiện ở đây.
+                {tr("Bộ thẻ do giáo viên soạn. Khi có bộ mới cho phần", "Les paquets sont créés par les enseignants. Quand il y en aura pour", "Decks are made by teachers. When a new one exists for")}{" "}
+                {KY_NANG.find((k) => k.ma === kyNang)?.ten.toLowerCase()}{tr(", nó sẽ hiện ở đây.", ", il apparaîtra ici.", ", it will show up here.")}
               </p>
             </div>
           ) : (

@@ -3,7 +3,7 @@ import { C, S, LEVEL_COLORS, LEVEL_PASTEL, QTYPES, VF_OPTS } from "../../shared/
 import { load, save, del } from "../../shared/storage.js";
 import { supabase } from "../../storageShim.js";
 import AccountPage from "../account/AccountPage.jsx";
-import { useT } from "../../shared/i18n.jsx";
+import { useT, tr } from "../../shared/i18n.jsx";
 import { SKILLS, fmtDate, isLate, exSkills, assignedTo, totalScore } from "../../shared/exercises.js";
 import { uid, norm, stripHtml, wordCount, vfOk, fillAccepted, fillOk, autoQ, ordreOk, tableauCells, tableauOk, isQuestionAnswered, getUnansweredQuestionsCount } from "../../shared/questions.js";
 import { AVA_COLORS, avaColor, fmtDateFR, fmtDuration, targetedAccounts, fileNameFromUrl, formatLastSeen } from "../../shared/display.js";
@@ -108,7 +108,7 @@ function Student({ name, exercises, submissions, setSubmissions, accounts, setAc
 
     const { data: sess } = await supabase.auth.getUser();
     const emailOf = sess?.user?.email;
-    if (!emailOf) { setMsg("Session expirée. Reconnectez-vous."); return; }
+    if (!emailOf) { setMsg(tr("Phiên đăng nhập hết hạn. Hãy đăng nhập lại.", "Session expirée. Reconnectez-vous.", "Session expired. Please sign in again.")); return; }
 
     const { error: badOld } = await supabase.auth.signInWithPassword({ email: emailOf, password: oldPw });
     if (badOld) { setMsg("Ancien mot de passe incorrect."); return; }
@@ -131,8 +131,8 @@ function Student({ name, exercises, submissions, setSubmissions, accounts, setAc
             <span style={S.chip(C.primarySoft, C.primary)}>{exSkills(ex).join(" · ")}</span>{" "}
             <strong style={{ fontSize: 16 }}>{ex.title}</strong>
             <div style={{ fontSize: 12, color: C.soft, marginTop: 5 }}>
-              {ex.questions.length} question(s){ex.audioUrl && " · 🎧"}{ex.timeLimit && ` · ⏱ ${ex.timeLimit} min`}
-              {ex.deadline && <span style={{ color: late ? C.danger : C.warn, fontWeight: 700 }}> · ⏰ {late ? "en retard si rendu maintenant" : `avant le ${fmtDate(ex.deadline)}`}</span>}
+              {ex.questions.length} {tr("câu", "question(s)", "question(s)")}{ex.audioUrl && " · 🎧"}{ex.timeLimit && ` · ⏱ ${ex.timeLimit} min`}
+              {ex.deadline && <span style={{ color: late ? C.danger : C.warn, fontWeight: 700 }}> · ⏰ {late ? tr("nộp bây giờ sẽ bị tính muộn", "en retard si rendu maintenant", "late if submitted now") : `avant le ${fmtDate(ex.deadline)}`}</span>}
             </div>
           </div>
           {sub ? (
@@ -145,7 +145,7 @@ function Student({ name, exercises, submissions, setSubmissions, accounts, setAc
         </div>
         {redo && (
           <div style={{ marginTop: 12, background: C.warnSoft, border: `2px solid ${C.warn}`, borderRadius: 16, padding: "12px 16px", fontSize: 14, fontWeight: 600 }}>
-            🔁 <strong>Le professeur te demande de refaire cet exercice.</strong>
+            🔁 <strong>{tr("Giáo viên yêu cầu bạn làm lại bài này.", "Le professeur te demande de refaire cet exercice.", "Your teacher asks you to redo this exercise.")}</strong>
             {subRaw.redoNote && <div style={{ marginTop: 4, fontWeight: 400 }}>💬 {subRaw.redoNote}</div>}
           </div>
         )}
@@ -170,7 +170,7 @@ function Student({ name, exercises, submissions, setSubmissions, accounts, setAc
         )}
         {sub?.graded && ex.questions.some((q) => q.type === "open" || q.type === "vf" || q.type === "tableau" || q.type === "ordre" || q.type === "fill" || q.type === "conj" || q.type === "qcm" || q.type === "apparier" || q.type === "formulaire") && (
           <details style={{ marginTop: 10, fontSize: 13.5 }}>
-            <summary style={{ cursor: "pointer", color: C.primary, fontWeight: 700 }}>📋 Voir ma copie corrigée</summary>
+            <summary style={{ cursor: "pointer", color: C.primary, fontWeight: 700 }}>{tr("📋 Xem bài đã chữa", "📋 Voir ma copie corrigée", "📋 See my corrected work")}</summary>
             <div style={{ marginTop: 10, display: "grid", gap: 12 }}>
               {ex.questions.map((q, i) => {
                 const a = sub.answers[q.id];
@@ -181,7 +181,7 @@ function Student({ name, exercises, submissions, setSubmissions, accounts, setAc
                     <div style={{ lineHeight: 1.7 }} dangerouslySetInnerHTML={{ __html: a || "—" }} />
                     {q.model && (
                       <div style={{ marginTop: 10, background: C.okSoft, border: `1.5px solid ${C.ok}55`, borderRadius: 12, padding: "10px 14px" }}>
-                        💡 <strong>Réponse suggérée :</strong>
+                        💡 <strong>{tr("Đáp án gợi ý:", "Réponse suggérée :", "Suggested answer:")}</strong>
                         <div style={{ marginTop: 4, fontStyle: "italic", lineHeight: 1.7 }}>{q.model}</div>
                       </div>
                     )}
@@ -201,12 +201,12 @@ function Student({ name, exercises, submissions, setSubmissions, accounts, setAc
                   return (
                     <div key={q.id} style={{ background: "var(--mcf-surface2)", borderRadius: 14, padding: "12px 15px", border: `1px solid ${C.line}` }}>
                       <div style={{ fontWeight: 700, marginBottom: 6 }}>{i + 1}. {q.prompt}</div>
-                      Mon choix : <strong style={{ color: good === null ? C.ink : good ? C.ok : C.danger }}>{a?.choice != null ? VF_OPTS[a.choice] : "—"}</strong>
-                      {good === false && <span> · Bonne réponse : <strong>{VF_OPTS[q.answer]}</strong></span>}
-                      {a?.just && <div style={{ fontStyle: "italic", marginTop: 4 }}>Ma justification : « {a.just} »</div>}
+                      {tr("Lựa chọn của tôi:", "Mon choix :", "My choice:")} <strong style={{ color: good === null ? C.ink : good ? C.ok : C.danger }}>{a?.choice != null ? VF_OPTS[a.choice] : "—"}</strong>
+                      {good === false && <span> {tr("· Đáp án đúng:", "· Bonne réponse :", "· Correct answer:")} <strong>{VF_OPTS[q.answer]}</strong></span>}
+                      {a?.just && <div style={{ fontStyle: "italic", marginTop: 4 }}>{tr("Căn cứ của tôi: «", "Ma justification : «", "My justification: «")} {a.just} »</div>}
                       {q.answer !== 2 && q.justification && (
                         <div style={{ marginTop: 8, background: C.okSoft, border: `1.5px solid ${C.ok}55`, borderRadius: 12, padding: "10px 14px" }}>
-                          💡 <strong>Justification attendue :</strong> <em>{q.justification}</em>
+                          💡 <strong>{tr("Căn cứ đúng:", "Justification attendue :", "Expected justification:")}</strong> <em>{q.justification}</em>
                         </div>
                       )}
                     </div>
@@ -227,7 +227,7 @@ function Student({ name, exercises, submissions, setSubmissions, accounts, setAc
                   return (
                     <div key={q.id} style={{ background: "var(--mcf-surface2)", borderRadius: 14, padding: "12px 15px", border: `1px solid ${C.line}` }}>
                       <div style={{ fontWeight: 700, marginBottom: 6 }}>{i + 1}. {q.prompt}</div>
-                      <div>Mon choix : <strong>{chon != null ? (q.options?.[chon] ?? "—") : "—"}</strong></div>
+                      <div>{tr("Lựa chọn của tôi:", "Mon choix :", "My choice:")} <strong>{chon != null ? (q.options?.[chon] ?? "—") : "—"}</strong></div>
                       <NeoCauHoi exerciseId={ex.id} questionId={q.id}
                         vanBan={ex.readingText} chonSai={chon} />
                     </div>
@@ -244,9 +244,9 @@ function Student({ name, exercises, submissions, setSubmissions, accounts, setAc
                   return (
                     <div key={q.id} style={{ background: "var(--mcf-surface2)", borderRadius: 14, padding: "12px 15px", border: `1px solid ${C.line}` }}>
                       <div style={{ fontWeight: 700, marginBottom: 6 }}>{i + 1}. {q.prompt}</div>
-                      <div>Ma réponse : <strong style={{ color: good ? C.ok : C.danger }}>{a || "—"}</strong></div>
+                      <div>{tr("Câu trả lời của tôi:", "Ma réponse :", "My answer:")} <strong style={{ color: good ? C.ok : C.danger }}>{a || "—"}</strong></div>
                       <div style={{ marginTop: 6, background: C.okSoft, border: `1.5px solid ${C.ok}55`, borderRadius: 12, padding: "8px 12px", fontSize: 13.5 }}>
-                        💡 <strong style={{ color: C.ok }}>Réponse attendue :</strong> {String(fillAccepted(q)).split("|").join(" / ")}
+                        💡 <strong style={{ color: C.ok }}>{tr("Đáp án đúng:", "Réponse attendue :", "Expected answer:")}</strong> {String(fillAccepted(q)).split("|").join(" / ")}
                       </div>
                       {/* Lời giải thích chỉ hiện khi sai — đó là lúc nó có việc
                           để làm. Người trả lời đúng không cần đọc lại lý do. */}
@@ -270,7 +270,7 @@ function Student({ name, exercises, submissions, setSubmissions, accounts, setAc
                   <div key={q.id} style={{ background: "var(--mcf-surface2)", borderRadius: 14, padding: "12px 15px", border: `1px solid ${C.line}` }}>
                     <div style={{ fontWeight: 700, marginBottom: 8 }}>{i + 1}. {q.prompt}</div>
                     {q.type === "formulaire" ? <DienPhieu q={q} value={a || {}} readOnly />
-                      : <div>Mon choix : <strong>{tomTatDangMoi(q, a)}</strong></div>}
+                      : <div>{tr("Lựa chọn của tôi:", "Mon choix :", "My choice:")} <strong>{tomTatDangMoi(q, a)}</strong></div>}
                   </div>
                 );
                 return null;
@@ -280,7 +280,7 @@ function Student({ name, exercises, submissions, setSubmissions, accounts, setAc
         )}
         {sub && Object.values(sub.qComments || {}).some(Boolean) && (
           <details style={{ marginTop: 8, fontSize: 13 }}>
-            <summary style={{ cursor: "pointer", color: C.primary, fontWeight: 600 }}>Voir les remarques question par question</summary>
+            <summary style={{ cursor: "pointer", color: C.primary, fontWeight: 600 }}>{tr("Xem nhận xét từng câu", "Voir les remarques question par question", "See comments question by question")}</summary>
             <div style={{ marginTop: 8, display: "grid", gap: 6 }}>
               {ex.questions.map((q, i) => sub.qComments?.[q.id] ? (
                 <div key={q.id} style={{ background: "var(--mcf-surface2)", borderRadius: 8, padding: "8px 12px", border: `1px solid ${C.line}` }}>
@@ -330,8 +330,8 @@ function Student({ name, exercises, submissions, setSubmissions, accounts, setAc
       {tab === "progress" && (
         <div style={{ display: "grid", gap: 16 }}>
           <div className="mcf-card" style={{ ...S.card }}>
-            <div style={S.label}>🗺️ Mon voyage vers Paris — {stamps} timbre(s) collecté(s)</div>
-            <div style={{ fontSize: 12.5, color: C.soft, margin: "6px 0 14px" }}>Obtiens 80 % ou plus à un exercice pour gagner un timbre !</div>
+            <div style={S.label}>{tr("🗺️ Hành trình tới Paris:", "🗺️ Mon voyage vers Paris —", "🗺️ My journey to Paris:")} {stamps} timbre(s) collecté(s)</div>
+            <div style={{ fontSize: 12.5, color: C.soft, margin: "6px 0 14px" }}>{tr("Đạt từ 80% ở một bài để nhận một con tem!", "Obtiens 80 % ou plus à un exercice pour gagner un timbre !", "Score 80% or more on an exercise to earn a stamp!")}</div>
             <div style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
               {JOURNEY.map((m, i) => {
                 const got = stamps >= m.need;
@@ -350,8 +350,8 @@ function Student({ name, exercises, submissions, setSubmissions, accounts, setAc
           </div>
 
           <div className="mcf-card" style={{ ...S.card }}>
-            <div style={S.label}>Mes notes au fil du temps</div>
-            {myScores.length === 0 ? <p style={{ color: C.soft, fontSize: 14 }}>Rends ta première copie pour voir ta courbe !</p> : (
+            <div style={S.label}>{tr("Điểm của tôi theo thời gian", "Mes notes au fil du temps", "My scores over time")}</div>
+            {myScores.length === 0 ? <p style={{ color: C.soft, fontSize: 14 }}>{tr("Nộp bài đầu tiên để xem biểu đồ của bạn!", "Rends ta première copie pour voir ta courbe !", "Submit your first work to see your chart!")}</p> : (
               <div style={{ width: "100%", height: 240, marginTop: 10 }}>
                 <ResponsiveContainer>
                   <LineChart data={myScores}>
@@ -367,7 +367,7 @@ function Student({ name, exercises, submissions, setSubmissions, accounts, setAc
           </div>
 
           <div className="mcf-card" style={{ ...S.card }}>
-            <div style={S.label}>Mes points forts par compétence</div>
+            <div style={S.label}>{tr("Điểm mạnh theo kỹ năng", "Mes points forts par compétence", "My strengths by skill")}</div>
             <div style={{ width: "100%", height: 260 }}>
               <ResponsiveContainer>
                 <RadarChart data={radar}>
@@ -419,7 +419,7 @@ function PasswordForm({ changePw }) {
       <div style={S.label}>Changer mon mot de passe</div>
       <input style={{ ...S.input, margin: "10px 0" }} type="password" placeholder="Ancien mot de passe" value={oldPw} onChange={(e) => setOldPw(e.target.value)} />
       <input style={{ ...S.input, marginBottom: 12 }} type="password" placeholder="Nouveau mot de passe (min. 4)" value={newPw} onChange={(e) => setNewPw(e.target.value)} />
-      <button style={S.btn(true)} onClick={() => changePw(oldPw, newPw, setMsg)}>Enregistrer</button>
+      <button style={S.btn(true)} onClick={() => changePw(oldPw, newPw, setMsg)}>{tr("Lưu", "Enregistrer", "Save")}</button>
       {msg && <p style={{ fontSize: 13, marginTop: 10, color: msg.startsWith("✅") ? C.ok : C.danger }}>{msg}</p>}
     </div>
   );

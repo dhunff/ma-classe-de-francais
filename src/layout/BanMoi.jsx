@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { tr } from "../shared/i18n.jsx";
 
 /* Báo « có bản mới » (07/10).
  *
@@ -36,10 +37,10 @@ export default function BanMoi() {
   if (!co) return null;
   return (
     <div role="status" className="fixed bottom-4 left-1/2 z-[500] flex -translate-x-1/2 items-center gap-3 rounded-full bg-ink px-4 py-2 text-sm text-bg shadow-lg">
-      <span>Đã có phiên bản mới của FRACILE.</span>
+      <span>{tr("Đã có phiên bản mới của FRACILE.", "Une nouvelle version de FRACILE est disponible.", "A new version of FRACILE is available.")}</span>
       <button type="button" onClick={() => window.location.reload()}
         className="h-8 cursor-pointer rounded-full border-0 bg-primary px-4 font-sans text-xs font-bold text-white">
-        Tải lại
+        {tr("Tải lại", "Recharger", "Reload")}
       </button>
     </div>
   );

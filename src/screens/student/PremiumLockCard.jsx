@@ -1,5 +1,6 @@
 import React from "react";
 import { Lock, Sparkles, ShieldCheck, NotebookPen, Infinity as InfinityIcon } from "lucide-react";
+import { tr } from "../../shared/i18n.jsx";
 
 /* Thẻ hiện thay cho bài tập khi học sinh chưa có quyền mở bài trả phí.
  *
@@ -29,9 +30,9 @@ import { Lock, Sparkles, ShieldCheck, NotebookPen, Infinity as InfinityIcon } fr
  */
 
 const LOI_ICH = [
-  { icon: Sparkles,     text: "Phân tích lỗi sai chi tiết theo phương pháp Linear Thinking." },
-  { icon: NotebookPen,  text: "Sổ tay mẹo làm bài độc quyền (Mon Carnet)." },
-  { icon: InfinityIcon, text: "Không giới hạn số lần làm bài và chấm điểm tự động." },
+  { icon: Sparkles,     get text() { return tr("Phân tích lỗi sai chi tiết theo phương pháp Linear Thinking.", "Analyse détaillée des erreurs (méthode Linear Thinking).", "Detailed error analysis (Linear Thinking method)."); } },
+  { icon: NotebookPen,  get text() { return tr("Sổ tay mẹo làm bài độc quyền (Mon Carnet).", "Carnet d'astuces exclusif (Mon Carnet).", "Exclusive tips notebook (Mon Carnet)."); } },
+  { icon: InfinityIcon, get text() { return tr("Không giới hạn số lần làm bài và chấm điểm tự động.", "Exercices et correction automatique illimités.", "Unlimited attempts and automatic grading."); } },
 ];
 
 export default function PremiumLockCard({ ex, onBuy, onBack, price }) {
@@ -51,7 +52,7 @@ export default function PremiumLockCard({ ex, onBuy, onBack, price }) {
           </span>
 
           <h2 className="m-0 mt-4 text-2xl font-extrabold leading-snug text-ink">
-            Exercice Réservé aux Membres Premium (DELF B1–B2)
+            {tr("Bài dành cho thành viên Premium (DELF B1–B2)", "Exercice Réservé aux Membres Premium (DELF B1–B2)", "Premium members only (DELF B1–B2)")}
           </h2>
 
           {ex && (
@@ -80,7 +81,7 @@ export default function PremiumLockCard({ ex, onBuy, onBack, price }) {
               className="inline-flex items-center gap-2 rounded-full border-0 bg-primary px-6 py-3 text-sm font-bold text-white shadow-lg transition hover:brightness-110 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
             >
               <Sparkles size={16} />
-              Nâng cấp gói học ngay
+              {tr("Nâng cấp gói học ngay", "Passer à l'offre supérieure", "Upgrade now")}
               {price ? <span className="opacity-80">· {price}</span> : null}
             </button>
 
@@ -90,15 +91,14 @@ export default function PremiumLockCard({ ex, onBuy, onBack, price }) {
                 onClick={onBack}
                 className="rounded-full border-0 bg-transparent px-4 py-3 text-sm font-semibold text-soft transition hover:text-ink"
               >
-                Quay lại
+                {tr("Quay lại", "Retour", "Back")}
               </button>
             )}
           </div>
 
           <p className="m-0 mt-6 flex items-center gap-2 text-xs text-soft">
             <ShieldCheck size={13} className="shrink-0" />
-            Nội dung bài học được khoá ở phía máy chủ — không tải về trình duyệt
-            trước khi bạn có quyền truy cập.
+            {tr("Nội dung bài học được khoá ở phía máy chủ — không tải về trình duyệt trước khi bạn có quyền truy cập.", "Le contenu est verrouillé côté serveur et ne se charge pas avant que vous y ayez accès.", "Content is locked on the server and won't load until you have access.")}
           </p>
         </div>
       </div>

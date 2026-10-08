@@ -1,6 +1,7 @@
 import React, { useMemo } from "react";
 import { AlertTriangle } from "lucide-react";
 import { chuThuan, dungVung, catManh, kiemNeo } from "../../shared/neoNguLieu.js";
+import { tr } from "../../shared/i18n.jsx";
 
 /* Ngữ liệu có tô sáng chỗ chứa đáp án — phần TRÌNH BÀY thuần.
  *
@@ -39,7 +40,7 @@ export default function NeoNguLieu({ vanBan, evidence, chonSai = null }) {
 
   return (
     <div className="rounded-2xl border border-line bg-surface p-5">
-      <div className="text-xs font-bold uppercase tracking-wide text-soft">Ngữ liệu</div>
+      <div className="text-xs font-bold uppercase tracking-wide text-soft">{tr("Ngữ liệu", "Document", "Source text")}</div>
 
       {/* Neo hỏng thì NÓI RA. Im lặng bỏ qua thì học sinh đọc một đoạn văn
           không tô gì và tưởng bài này không có gợi ý — trong khi thật ra giáo
@@ -48,8 +49,8 @@ export default function NeoNguLieu({ vanBan, evidence, chonSai = null }) {
         <p className="m-0 mt-2 flex items-start gap-2 rounded-xl bg-warn-soft p-3 text-xs text-ink">
           <AlertTriangle size={13} className="mt-0.5 shrink-0 text-warn" />
           {tinh.ly_do === "khong_tim_thay"
-            ? "Chỗ đánh dấu không còn khớp với bài — có thể bài đã được sửa. Báo giáo viên giúp nhé."
-            : "Câu này chưa có đánh dấu ngữ liệu."}
+            ? tr("Chỗ đánh dấu không còn khớp với bài — có thể bài đã được sửa. Báo giáo viên giúp nhé.", "Le passage repéré ne correspond plus au texte (modifié ?). Prévenez l'enseignant.", "The highlighted passage no longer matches the text (edited?). Please tell your teacher.")
+            : tr("Câu này chưa có đánh dấu ngữ liệu.", "Pas de repère dans le texte pour cette question.", "No text highlight for this question yet.")}
         </p>
       )}
 
@@ -71,7 +72,7 @@ export default function NeoNguLieu({ vanBan, evidence, chonSai = null }) {
           không nhét vào tooltip. Tooltip trên điện thoại là không có. */}
       {bay.map((b, i) => (
         <p key={i} className="m-0 mt-3 rounded-xl bg-danger-soft p-3 text-sm leading-relaxed text-ink">
-          <strong>Vì sao đáp án kia hấp dẫn: </strong>{b.viSao}
+          <strong>{tr("Vì sao đáp án kia hấp dẫn:", "Pourquoi l'autre réponse était tentante :", "Why the other answer was tempting:")} </strong>{b.viSao}
         </p>
       ))}
     </div>

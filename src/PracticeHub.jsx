@@ -11,7 +11,7 @@ import { load, save } from "./shared/storage.js";
 import { loadPractice, saveExercise, deleteExercise, patchExerciseMeta, clearFolder } from "./shared/exerciseStore.js";
 import { exSkills } from "./shared/exercises.js";
 import { WrongExplanation } from "./shared/ui.jsx";
-import { useT } from "./shared/i18n.jsx";
+import { useT, tr } from "./shared/i18n.jsx";
 import { TableauCompare, OrdreBlocks, ConfirmSubmitModal } from "./screens/student/answers.jsx";
 import RichTextEditor from "./editor/RichTextEditor.jsx";
 import { GhepCap, DienPhieu, AnhLuaChon } from "./screens/student/dangMoi.jsx";
@@ -216,7 +216,7 @@ function PracticeHubInner({ role = "eleve", name = "", accounts = [], onRequireL
   const doDeleteFolder = async () => {
     const id = deleteFolder.id;
     const r = await clearFolder(id);
-    if (!r.ok) { alert("❌ Échec — les exercices n'ont pas pu être libérés."); return; }
+    if (!r.ok) { alert(tr("❌ Không chuyển được các bài tập ra khỏi thư mục.", "❌ Échec — les exercices n'ont pas pu être libérés.", "❌ Failed: the exercises couldn't be released.")); return; }
     setExercises((prev) => prev.map((e) => (e.folderId === id ? { ...e, folderId: undefined } : e)));
     const next = folders.filter((f) => f.id !== id);
     setFolders(next); await save("mcf-folders", next);
@@ -298,7 +298,7 @@ ${r.error?.message ?? ""}`); return; }
     if (!ex) {
       return (
         <div style={{ ...S.card, textAlign: "center" }}>
-          <p style={{ color: C.soft, marginTop: 0 }}>Bài này không nằm trong kho luyện tập.</p>
+          <p style={{ color: C.soft, marginTop: 0 }}>{tr("Bài này không nằm trong kho luyện tập.", "Cet exercice n'est pas dans la bibliothèque d'entraînement.", "This exercise isn't in the practice library.")}</p>
           <button style={S.btn(false)} onClick={() => setView({ page: "home" })}>← {t("back")}</button>
         </div>
       );
@@ -344,8 +344,8 @@ ${r.error?.message ?? ""}`); return; }
         {folders.length === 0 && !teacher ? (
           <div className="mcf-card" style={{ ...S.card, padding: 50, textAlign: "center" }}>
             <div style={{ fontSize: 40, marginBottom: 10 }}>🗂️</div>
-            <div style={{ fontWeight: 800, fontSize: 17 }}>Aucun exercice dans cette section</div>
-            <div style={{ fontSize: 13.5, color: C.soft, marginTop: 6 }}>Le professeur n'a pas encore créé de catégorie. Reviens bientôt !</div>
+            <div style={{ fontWeight: 800, fontSize: 17 }}>{tr("Chưa có bài nào trong mục này", "Aucun exercice dans cette section", "No exercises in this section")}</div>
+            <div style={{ fontSize: 13.5, color: C.soft, marginTop: 6 }}>{tr("Giáo viên chưa tạo mục nào. Quay lại sau nhé!", "Le professeur n'a pas encore créé de catégorie. Reviens bientôt !", "The teacher hasn't created a category yet. Come back soon!")}</div>
           </div>
         ) : (
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(230px,1fr))", gap: 16 }}>
@@ -357,7 +357,7 @@ ${r.error?.message ?? ""}`); return; }
                   <Folder size={24} color="#6E7691" />
                 </div>
                 <div style={{ fontWeight: 800, fontSize: 16 }}>{f.label || f.name}</div>
-                <div style={{ fontSize: 13, color: C.soft, marginTop: 3 }}>{f.count} exercice{f.count > 1 ? "s" : ""}</div>
+                <div style={{ fontSize: 13, color: C.soft, marginTop: 3 }}>{f.count} {tr("bài", "exercice", "exercise")}{f.count > 1 ? "s" : ""}</div>
               </div>
             ))}
             {/* Thẻ + chỉ dành cho giáo viên */}
@@ -389,7 +389,7 @@ ${r.error?.message ?? ""}`); return; }
                     <div style={{ flex: 1, minWidth: 160 }}>
                       <div style={{ fontWeight: 800, fontSize: 15.5 }}>{ex.title}</div>
                       <div style={{ fontSize: 12.5, color: C.soft, marginTop: 2 }}>
-                        {ex.questions.length} question{ex.questions.length > 1 ? "s" : ""}
+                        {ex.questions.length} {tr("câu", "question", "question")}{ex.questions.length > 1 ? "s" : ""}
                         {hh && <> · 🏆 Meilleur : {hh.best}/{hh.max} ({hh.tries} essai{hh.tries > 1 ? "s" : ""})</>}
                       </div>
                     </div>
@@ -428,7 +428,7 @@ ${r.error?.message ?? ""}`); return; }
                 onKeyDown={(e) => e.key === "Enter" && addCat()} />
               <div style={{ display: "flex", gap: 10, marginTop: 14 }}>
                 <button style={S.btn(true)} onClick={addCat}>Créer</button>
-                <button style={S.btn(false)} onClick={() => setCatPopup(false)}>Annuler</button>
+                <button style={S.btn(false)} onClick={() => setCatPopup(false)}>{tr("Huỷ", "Annuler", "Cancel")}</button>
               </div>
             </div>
           </div>
@@ -493,7 +493,7 @@ ${r.error?.message ?? ""}`); return; }
             const d = { ...blank(), skill: sk, skills: [sk], level: niveau };
             if (view.folder) d.customCat = view.folder;
             setDraft(d); setView({ page: "builder" });
-          }}><Plus size={16} /> Nouvel exercice</button>}
+          }}><Plus size={16} /> {tr("Bài tập mới", "Nouvel exercice", "New exercise")}</button>}
         </div>
 
         {/* 📂 Dossiers = filtres (pills) */}
@@ -574,8 +574,8 @@ ${r.error?.message ?? ""}`); return; }
                 onChange={(e) => setRenameFolder({ ...renameFolder, name: e.target.value })}
                 onKeyDown={(e) => e.key === "Enter" && doRenameFolder()} />
               <div style={{ display: "flex", gap: 10, marginTop: 14 }}>
-                <button style={S.btn(true)} onClick={doRenameFolder}>Enregistrer</button>
-                <button style={S.btn(false)} onClick={() => setRenameFolder(null)}>Annuler</button>
+                <button style={S.btn(true)} onClick={doRenameFolder}>{tr("Lưu", "Enregistrer", "Save")}</button>
+                <button style={S.btn(false)} onClick={() => setRenameFolder(null)}>{tr("Huỷ", "Annuler", "Cancel")}</button>
               </div>
             </div>
           </div>
@@ -585,14 +585,14 @@ ${r.error?.message ?? ""}`); return; }
           <div style={{ position: "fixed", inset: 0, background: "rgba(17,24,39,.45)", display: "grid", placeItems: "center", padding: 16, zIndex: 200 }}
             onClick={() => setDeleteFolder(null)}>
             <div className="mcf-card" style={{ ...S.card, width: "100%", maxWidth: 440, borderTop: "4px solid #DE4B4B" }} onClick={(e) => e.stopPropagation()}>
-              <h3 style={{ ...S.display, fontSize: 19, marginTop: 0 }}>🗑 Supprimer « {deleteFolder.name} » ?</h3>
+              <h3 style={{ ...S.display, fontSize: 19, marginTop: 0 }}>{tr("🗑 Xoá «", "🗑 Supprimer «", "🗑 Delete «")} {deleteFolder.name} » ?</h3>
               <p style={{ fontSize: 14, lineHeight: 1.65 }}>
-                Êtes-vous sûr de vouloir supprimer ce dossier ?<br />
+                {tr("Bạn chắc chắn muốn xoá thư mục này?", "Êtes-vous sûr de vouloir supprimer ce dossier ?", "Are you sure you want to delete this folder?")}<br />
                 <strong>Les exercices à l'intérieur ne seront PAS supprimés</strong> — ils redeviendront simplement visibles sans dossier.
               </p>
               <div style={{ display: "flex", gap: 10, marginTop: 14 }}>
                 <button style={{ ...S.btn(true), background: "#DE4B4B" }} onClick={doDeleteFolder}>Oui, supprimer</button>
-                <button style={S.btn(false)} onClick={() => setDeleteFolder(null)}>Annuler</button>
+                <button style={S.btn(false)} onClick={() => setDeleteFolder(null)}>{tr("Huỷ", "Annuler", "Cancel")}</button>
               </div>
             </div>
           </div>
@@ -609,7 +609,7 @@ ${r.error?.message ?? ""}`); return; }
                 onKeyDown={(e) => e.key === "Enter" && addFolder(view.cat)} />
               <div style={{ display: "flex", gap: 10, marginTop: 14 }}>
                 <button style={S.btn(true)} onClick={() => addFolder(view.cat)}>Créer</button>
-                <button style={S.btn(false)} onClick={() => setFolderPopup(false)}>Annuler</button>
+                <button style={S.btn(false)} onClick={() => setFolderPopup(false)}>{tr("Huỷ", "Annuler", "Cancel")}</button>
               </div>
             </div>
           </div>
@@ -631,9 +631,9 @@ ${r.error?.message ?? ""}`); return; }
                     📂 {f.name}
                   </button>
                 ))}
-                {catFolders.length === 0 && <span style={{ fontSize: 13, color: C.soft }}>Aucun dossier — créez-en un d'abord.</span>}
+                {catFolders.length === 0 && <span style={{ fontSize: 13, color: C.soft }}>{tr("Chưa có thư mục nào, hãy tạo một thư mục trước.", "Aucun dossier — créez-en un d'abord.", "No folders yet, create one first.")}</span>}
               </div>
-              <button style={{ ...S.btn(false), marginTop: 14 }} onClick={() => setMoveEx(null)}>Annuler</button>
+              <button style={{ ...S.btn(false), marginTop: 14 }} onClick={() => setMoveEx(null)}>{tr("Huỷ", "Annuler", "Cancel")}</button>
             </div>
           </div>
         )}
@@ -694,7 +694,7 @@ ${r.error?.message ?? ""}`); return; }
     const ex = exercises.find((e) => e.id === matModal.exId);
     if (!ex) return null;
     const kind = matModal.kind;
-    const TITLES = { vocab: ["📖 Vocabulaire de l'exercice"], expl: ["💡 Explications et Astuces"], corrige: ["📝 Sujet et Corrigé détaillé"] };
+    const TITLES = { vocab: [tr("📖 Từ vựng của bài", "📖 Vocabulaire de l'exercice", "📖 Exercise vocabulary")], expl: ["💡 Explications et Astuces"], corrige: ["📝 Sujet et Corrigé détaillé"] };
     const [title] = TITLES[kind] || ["", null];
     const content = kind === "vocab" ? (ex.vocabulaire || "") : kind === "expl" ? (ex.explications || "") : null;
     if (typeof document === "undefined") return null;
@@ -721,7 +721,7 @@ ${r.error?.message ?? ""}`); return; }
               <div style={{ textAlign: "center", padding: "34px 16px", color: C.soft }}>
                 <div style={{ fontSize: 38, marginBottom: 8 }}>{kind === "vocab" ? "📖" : "💡"}</div>
                 <div style={{ fontWeight: 700, fontSize: 15, color: C.ink }}>Le contenu est en cours de mise à jour. Revenez plus tard !</div>
-                <div style={{ fontSize: 13, marginTop: 6 }}>Le professeur peut l'ajouter en modifiant l'exercice (champ « {kind === "vocab" ? "Vocabulaire" : "Explications"} »).</div>
+                <div style={{ fontSize: 13, marginTop: 6 }}>{tr("Giáo viên có thể thêm khi sửa bài (ô «", "Le professeur peut l'ajouter en modifiant l'exercice (champ «", "The teacher can add it by editing the exercise (field «")} {kind === "vocab" ? "Vocabulaire" : "Explications"} »).</div>
               </div>
             )
           ) : (
@@ -750,7 +750,7 @@ ${r.error?.message ?? ""}`); return; }
                   {q.type === "apparier" && <GhepCap q={q} value={q.answers || {}} readOnly correction dapAn={q.answers} />}
                   {q.type === "open" && (
                     q.model ? <div style={{ fontSize: 14, fontStyle: "italic", lineHeight: 1.7 }}>💡 {q.model}</div>
-                      : <div style={{ fontSize: 13, color: C.soft }}>Réponse libre — pas de corrigé type fourni.</div>
+                      : <div style={{ fontSize: 13, color: C.soft }}>{tr("Câu tự luận, chưa có đáp án mẫu.", "Réponse libre — pas de corrigé type fourni.", "Open answer, no model answer provided.")}</div>
                   )}
                 </div>
               ))}
@@ -852,7 +852,7 @@ ${r.error?.message ?? ""}`); return; }
             </span>
           )}
         </div>
-        {teacher && topTab === "bib" && <button style={S.btn(true)} onClick={() => { setDraft(blank()); setView({ page: "builder" }); }}><Plus size={16} /> Nouvel exercice</button>}
+        {teacher && topTab === "bib" && <button style={S.btn(true)} onClick={() => { setDraft(blank()); setView({ page: "builder" }); }}><Plus size={16} /> {tr("Bài tập mới", "Nouvel exercice", "New exercise")}</button>}
       </div>
       {teacher && (
         <div role="tablist" className="mb-5 flex gap-6 border-0 border-b border-solid border-line">
@@ -1013,7 +1013,7 @@ function SplitTrain({ onStart, onPick, open, setOpen, teacher = false }) {
     <div ref={ref} style={{ position: "relative", display: "inline-flex" }}>
       <button onClick={onStart}
         style={{ ...S.btn(true), borderRadius: "999px 0 0 999px", paddingRight: 14 }}>S'entraîner</button>
-      <button onClick={() => setOpen(!open)} title="Ressources de l'exercice" aria-haspopup="menu" aria-expanded={open}
+      <button onClick={() => setOpen(!open)} title={tr("Tài liệu của bài", "Ressources de l'exercice", "Exercise resources")} aria-haspopup="menu" aria-expanded={open}
         style={{ ...S.btn(true), borderRadius: "0 999px 999px 0", padding: "11px 12px", marginLeft: 1,
           display: "inline-flex", alignItems: "center" }}>
         <ChevronDown size={17} style={{ transition: "transform .15s ease", transform: open ? "rotate(180deg)" : "none" }} />
@@ -1136,8 +1136,8 @@ function PracticeWorkspace({ ex, back, onFinish }) {
     if (!res && !conDapAnCucBo) {
       gradedRef.current = false;
       setGraded(false);
-      alert("⚠️ Chưa chấm được bài lúc này — máy chủ chấm không phản hồi.\n"
-          + "Bài của bạn vẫn còn nguyên, hãy thử nộp lại sau ít phút.");
+      alert(tr("⚠️ Chưa chấm được bài lúc này — máy chủ chấm không phản hồi.\n", "⚠️ Correction impossible pour le moment, le serveur ne répond pas.\n", "⚠️ Can't grade right now, the grading server isn't responding.\n")
+          + tr("Bài của bạn vẫn còn nguyên, hãy thử nộp lại sau ít phút.", "Votre copie est conservée, réessayez dans quelques minutes.", "Your answers are kept, try submitting again in a few minutes."));
       return;
     }
 
@@ -1298,16 +1298,16 @@ function PracticeWorkspace({ ex, back, onFinish }) {
             </div>
             {!graded && (a?.choice === 0 || a?.choice === 1) && (
               <textarea value={a?.just || ""}
-                placeholder="Justifiez votre réponse en citant le texte…"
+                placeholder={tr("Giải thích câu trả lời bằng cách trích bài đọc…", "Justifiez votre réponse en citant le texte…", "Justify your answer by quoting the text…")}
                 onChange={(e) => setAnswers({ ...answers, [q.id]: { ...a, just: e.target.value } })}
                 style={{ ...S.input, minHeight: 60, resize: "vertical" }} />
             )}
             {graded && (
               <div style={{ fontSize: 14 }}>
-                {a?.just && <div style={{ fontStyle: "italic" }}>Ma justification : « {a.just} »</div>}
+                {a?.just && <div style={{ fontStyle: "italic" }}>{tr("Căn cứ của tôi: «", "Ma justification : «", "My justification: «")} {a.just} »</div>}
                 {q.answer !== 2 && q.justification && (
                   <div style={{ marginTop: 8, background: C.okSoft, border: `1.5px solid ${C.ok}55`, borderRadius: 12, padding: "10px 14px" }}>
-                    <strong>Justification attendue :</strong> <em>{q.justification}</em>
+                    <strong>{tr("Căn cứ đúng:", "Justification attendue :", "Expected justification:")}</strong> <em>{q.justification}</em>
                   </div>
                 )}
               </div>
@@ -1318,14 +1318,14 @@ function PracticeWorkspace({ ex, back, onFinish }) {
             <KhungViet value={a || ""} readOnly={!!graded} onChange={(html) => setAnswers({ ...answers, [q.id]: html })} />
             {graded && q.model && (
               <div style={{ marginTop: 12, background: C.okSoft, border: `1.5px solid ${C.ok}55`, borderRadius: 12, padding: "12px 15px" }}>
-                <strong>Réponse suggérée :</strong>
+                <strong>{tr("Đáp án gợi ý:", "Réponse suggérée :", "Suggested answer:")}</strong>
                 <div style={{ marginTop: 4, fontSize: 14.5, fontStyle: "italic", lineHeight: 1.7 }}>{q.model}</div>
               </div>
             )}
           </>
         ) : (
           <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-            <input disabled={!!graded} value={a || ""} placeholder="Ta réponse…"
+            <input disabled={!!graded} value={a || ""} placeholder={tr("Câu trả lời của bạn…", "Ta réponse…", "Your answer…")}
               onChange={(e) => setAnswers({ ...answers, [q.id]: e.target.value })}
               style={{ ...S.input, maxWidth: 320,
                 border: `1.5px solid ${graded ? (good ? C.ok : C.danger) : C.line}`,
@@ -1339,7 +1339,7 @@ function PracticeWorkspace({ ex, back, onFinish }) {
                 này vì thế từng hiện « Réponse attendue : » rồi bỏ trống. */}
             {graded && (q.type === "fill" || q.type === "conj") && dapAnFill(q) && (
               <div style={{ marginTop: 8, background: C.okSoft, border: `1.5px solid ${C.ok}55`, borderRadius: 10, padding: "7px 12px", fontSize: 13, display: "inline-block" }}>
-                <strong style={{ color: C.ok }}>Réponse attendue :</strong> {String(dapAnFill(q)).split("|").join(" / ")}
+                <strong style={{ color: C.ok }}>{tr("Đáp án đúng:", "Réponse attendue :", "Expected answer:")}</strong> {String(dapAnFill(q)).split("|").join(" / ")}
               </div>
             )}
             {/* Lời giải thích chỉ hiện khi sai — đó là lúc nó có việc để làm. */}
@@ -1367,21 +1367,21 @@ function PracticeWorkspace({ ex, back, onFinish }) {
 
       {ex.consigne && (
         <div className="mcf-card" style={{ ...S.card, marginBottom: 16, borderLeft: "3px solid var(--mcf-primary)" }}>
-          <div style={S.label}>Consigne</div>
+          <div style={S.label}>{tr("Đề bài", "Consigne", "Instructions")}</div>
           <div style={{ fontSize: 15.5, lineHeight: 1.75, marginTop: 6, fontWeight: 500 }} dangerouslySetInnerHTML={{ __html: ex.consigne }} />
         </div>
       )}
 
       {ex.imageUrl && (
         <div style={{ marginBottom: 16 }}>
-          <img src={ex.imageUrl} alt="illustration — cliquez pour agrandir" title="Cliquez pour agrandir"
+          <img src={ex.imageUrl} alt="illustration — cliquez pour agrandir" title={tr("Bấm để phóng to", "Cliquez pour agrandir", "Click to enlarge")}
             onClick={() => setImgZoom(true)}
             onMouseEnter={(e) => (e.currentTarget.style.opacity = 0.9)}
             onMouseLeave={(e) => (e.currentTarget.style.opacity = 1)}
             style={{ display: "block", width: "100%", maxWidth: 900, margin: "0 auto", objectFit: "contain",
               borderRadius: 16, border: `1px solid ${C.line}`, boxShadow: "0 3px 12px rgba(17,24,39,.08)",
               cursor: "zoom-in", transition: "opacity .15s ease" }} />
-          <div style={{ textAlign: "center", fontSize: 12, color: C.soft, marginTop: 6 }}>Cliquez sur l'image pour l'agrandir</div>
+          <div style={{ textAlign: "center", fontSize: 12, color: C.soft, marginTop: 6 }}>{tr("Bấm vào ảnh để phóng to", "Cliquez sur l'image pour l'agrandir", "Click the image to enlarge")}</div>
         </div>
       )}
       {imgZoom && (
