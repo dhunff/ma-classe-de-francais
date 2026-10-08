@@ -133,7 +133,7 @@ export default function LandingPage({ imgSrc = "/images/hero-preview.png" }) {
             </div>
           </div>
 
-          <LeonMoi />
+          <LeonMoi src={imgSrc} />
         </section>
 
         {/* ── SỐ LIỆU — ĐẾM THẬT ── */}
@@ -204,21 +204,22 @@ function AnhHero({ src }) {
   );
 }
 
-/* Leon mời khách vào web (09/10, theo chủ dự án): thay ảnh chụp màn hình ở
-   hero bằng Leon cỡ lớn kèm bong bóng lời dẫn tới trang học thử. */
-function LeonMoi() {
+/* Leon mời khách vào web (09/10, theo chủ dự án): GIỮ ảnh chụp màn hình,
+   Leon cỡ lớn đứng chồng ở góc phải dưới như đang mời vào, kèm bong bóng lời. */
+function LeonMoi({ src }) {
   return (
-    <div className="relative mx-auto flex w-full max-w-md items-end justify-center pt-24 lg:max-w-lg">
-      <span aria-hidden className="absolute bottom-6 left-1/2 h-[78%] w-[88%] -translate-x-1/2 rounded-full bg-primary-soft" />
-      <span aria-hidden className="absolute bottom-3 left-1/2 h-5 w-1/2 -translate-x-1/2 rounded-[50%] bg-ink/10 blur-md" />
-      <img src="/leon/leon-lon.webp" alt={tr("Leon, linh vật của FRACILE, đang chào bạn", "Leon, la mascotte de FRACILE, vous accueille", "Leon, FRACILE's mascot, welcomes you")}
-        width={420} height={420} className="mcf-leon-bay relative h-[340px] w-auto object-contain sm:h-[420px]" />
-      <Link to="/decouvrir"
-        className="mcf-leon-vao-bong group absolute left-0 top-0 max-w-[15rem] rounded-3xl rounded-bl-md bg-surface px-5 py-4 text-ink no-underline shadow-[0_18px_40px_rgb(0,0,0,0.12)] sm:left-2">
-        <span className="block text-lg font-extrabold"><em>Bonjour !</em> 🐾</span>
-        <span className="mt-1 block text-sm leading-snug text-soft">{tr("Mình là Leon. Vào học thử cùng mình nhé!", "Moi, c'est Leon. Viens essayer avec moi !", "I'm Leon. Come and try it with me!")}</span>
-        <span className="mt-2 inline-flex items-center gap-1 text-sm font-bold text-primary">{tr("Vào thôi", "C'est parti", "Let's go")} <ArrowRight size={14} className="transition-transform group-hover:translate-x-1" /></span>
-      </Link>
+    <div className="relative pb-24 sm:pb-16 lg:pb-20">
+      <AnhHero src={src} />
+      <div className="pointer-events-none absolute -bottom-6 right-0 flex items-end 2xl:-right-12">
+        <Link to="/decouvrir"
+          className="mcf-leon-vao-bong group pointer-events-auto relative z-10 mb-44 -mr-6 max-w-[13rem] rounded-3xl rounded-br-md bg-surface px-4 py-3 text-ink no-underline shadow-[0_18px_40px_rgb(0,0,0,0.15)] sm:mb-52">
+          <span className="block text-base font-extrabold"><em>Bonjour !</em> 🐾</span>
+          <span className="mt-0.5 block text-[13px] leading-snug text-soft">{tr("Mình là Leon. Vào học thử cùng mình nhé!", "Moi, c'est Leon. Viens essayer avec moi !", "I'm Leon. Come and try it with me!")}</span>
+          <span className="mt-1.5 inline-flex items-center gap-1 text-sm font-bold text-primary">{tr("Vào thôi", "C'est parti", "Let's go")} <ArrowRight size={14} className="transition-transform group-hover:translate-x-1" /></span>
+        </Link>
+        <img src="/leon/leon-lon.webp" alt={tr("Leon, linh vật của FRACILE, đang chào bạn", "Leon, la mascotte de FRACILE, vous accueille", "Leon, FRACILE's mascot, welcomes you")}
+          width={260} height={300} className="mcf-leon-bay h-[230px] w-auto object-contain drop-shadow-[0_16px_24px_rgb(0,0,0,0.18)] sm:h-[300px]" />
+      </div>
     </div>
   );
 }
