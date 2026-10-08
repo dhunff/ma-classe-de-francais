@@ -6,7 +6,7 @@ import { C, S, LEVEL_COLORS, LEVEL_PASTEL, QTYPES, VF_OPTS } from "../../shared/
 import { load, save, del } from "../../shared/storage.js";
 import { loadPractice, saveExercise, deleteExercise } from "../../shared/exerciseStore.js";
 import { loadSubmissions, patchSubmission } from "../../shared/submissions.js";
-import { useT } from "../../shared/i18n.jsx";
+import { useT, tr } from "../../shared/i18n.jsx";
 import { SKILLS, fmtDate, isLate, exSkills, assignedTo, totalScore } from "../../shared/exercises.js";
 import { guiThongBao } from "../../shared/notifications.js";
 import { uid, norm, stripHtml, wordCount, vfOk, fillAccepted, fillOk, autoQ, ordreOk, tableauCells, tableauOk, isQuestionAnswered, getUnansweredQuestionsCount } from "../../shared/questions.js";
@@ -106,13 +106,13 @@ function Teacher({ exercises, setExercises, submissions, setSubmissions, account
 
     if (!kq.ok) {
       setAnnLoi({
-        trong: "Chưa nhập nội dung thông báo.",
-        dai: "Thông báo dài quá 2000 ký tự.",
-        chua_chon_ai: "Chưa chọn lớp hoặc học sinh nào.",
-        khong_phai_giao_vien: "Phiên đăng nhập không có quyền giáo viên. Đăng nhập lại rồi thử lại.",
-        chua_co_ham: "Máy chủ chưa sẵn sàng (migration 053 chưa chạy).",
-        mang: "Không gửi được. Kiểm tra kết nối rồi thử lại.",
-      }[kq.loi] || "Không gửi được, chưa rõ lý do.");
+        trong: tr("Chưa nhập nội dung thông báo.", "L'annonce est vide.", "The announcement is empty."),
+        dai: tr("Thông báo dài quá 2000 ký tự.", "Annonce trop longue (2000 caractères max).", "Announcement too long (2000 characters max)."),
+        chua_chon_ai: tr("Chưa chọn lớp hoặc học sinh nào.", "Aucun élève sélectionné.", "No students selected."),
+        khong_phai_giao_vien: tr("Phiên đăng nhập không có quyền giáo viên. Đăng nhập lại rồi thử lại.", "Session sans droits enseignant. Reconnectez-vous.", "This session lacks teacher rights. Sign in again."),
+        chua_co_ham: tr("Máy chủ chưa sẵn sàng (migration 053 chưa chạy).", "Serveur pas prêt (migration 053).", "Server not ready (migration 053)."),
+        mang: tr("Không gửi được. Kiểm tra kết nối rồi thử lại.", "Envoi impossible. Vérifiez la connexion.", "Couldn't send. Check your connection."),
+      }[kq.loi] || tr("Không gửi được, chưa rõ lý do.", "Envoi impossible, raison inconnue.", "Couldn't send, unknown reason."));
       return;
     }
 
@@ -121,8 +121,8 @@ function Teacher({ exercises, setExercises, submissions, setSubmissions, account
        có ai đăng ký, và im lặng thành công ở đó là nói dối. Đường cũ không
        đếm được nên trả `null`, và khi đó chỉ nói "đã gửi". */
     setAnnToast(
-      kq.soNguoiNhan == null ? "✅ Đã gửi thông báo."
-        : kq.soNguoiNhan === 0 ? "⚠️ Đã gửi, nhưng không có học sinh nào nhận — lớp chưa có ai đăng ký tài khoản."
+      kq.soNguoiNhan == null ? tr("✅ Đã gửi thông báo.", "✅ Annonce envoyée.", "✅ Announcement sent.")
+        : kq.soNguoiNhan === 0 ? tr("⚠️ Đã gửi, nhưng không có học sinh nào nhận — lớp chưa có ai đăng ký tài khoản.", "⚠️ Envoyé, mais aucun élève ne l'a reçu.", "⚠️ Sent, but no student received it.")
           : `✅ Đã gửi tới ${kq.soNguoiNhan} học sinh.`);
     setTimeout(() => setAnnToast(""), 4500);
   };
@@ -196,7 +196,7 @@ ${r.error?.message ?? ""}`); return; }
     const ban = {
       ...structuredClone(ex),
       id: uid(),
-      title: (ex.title || "Exercice") + " (copie)",
+      title: (ex.title || "Exercice") + tr(" (bản sao)", " (copie)", " (copy)"),
       createdAt: Date.now(),
       assignedTo: null,
       targeted: false,
@@ -230,7 +230,7 @@ ${r.error?.message ?? ""}`); return; }
           có URL riêng: soạn bài mới và chấm bài. */}
       {view === "list" && (
         <div role="tablist" className="mb-4 inline-flex gap-1 rounded-full bg-surface2 p-1">
-          {[["giao", "Bài được giao"], ["luyen", "Thư viện luyện tập"]].map(([k, nhan]) => (
+          {[["giao", tr("Bài được giao", "Devoirs", "Assigned")], ["luyen", tr("Thư viện luyện tập", "Bibliothèque d'entraînement", "Practice library")]].map(([k, nhan]) => (
             <button key={k} type="button" role="tab" aria-selected={khoBai === k} onClick={() => setKhoBai(k)}
               className={`h-9 cursor-pointer rounded-full border-0 px-4 font-sans text-sm font-bold ${khoBai === k ? "bg-surface text-ink shadow-sm" : "bg-transparent text-soft hover:text-ink"}`}>
               {nhan}
@@ -266,10 +266,10 @@ ${r.error?.message ?? ""}`); return; }
            đang gõ dở. */
         <div className="fixed inset-0 z-[9999] grid place-items-center bg-ink/50 p-4 backdrop-blur-sm"
           onMouseDown={(e) => { if (e.target === e.currentTarget && !annSending) setAnnModal(false); }}>
-          <div role="dialog" aria-modal="true" aria-label="Envoyer une annonce"
+          <div role="dialog" aria-modal="true" aria-label={tr("Gửi thông báo", "Envoyer une annonce", "Send an announcement")}
             className="max-h-[88vh] w-full max-w-lg overflow-y-auto rounded-3xl bg-surface p-6 shadow-2xl ring-1 ring-inset ring-line">
             <h3 className="m-0 flex items-center gap-2 text-lg font-bold text-ink">
-              <Bell size={18} className="text-primary" aria-hidden /> Envoyer une annonce
+              <Bell size={18} className="text-primary" aria-hidden /> {tr("Gửi thông báo", "Envoyer une annonce", "Send an announcement")}
             </h3>
 
             <textarea
@@ -292,7 +292,7 @@ ${r.error?.message ?? ""}`); return; }
               <input type="checkbox" checked={annAll} disabled={annSending}
                 onChange={(e) => { setAnnAll(e.target.checked); if (annLoi) setAnnLoi(""); }}
                 className="h-4 w-4 cursor-pointer accent-[color:var(--mcf-primary)]" />
-              Envoyer à tous les élèves
+              {tr("Gửi cho tất cả học sinh", "Envoyer à tous les élèves", "Send to all students")}
             </label>
 
             {!annAll && (
@@ -338,15 +338,15 @@ ${r.error?.message ?? ""}`); return; }
                 className="cursor-pointer rounded-xl border-0 bg-transparent px-5 py-3 font-[inherit] text-sm
                            font-semibold text-soft transition-colors hover:bg-surface2 hover:text-ink
                            disabled:cursor-not-allowed disabled:opacity-50">
-                Annuler
+                {tr("Huỷ", "Annuler", "Cancel")}
               </button>
               <button type="button" onClick={sendAnnonce} disabled={annSending}
                 className="flex cursor-pointer items-center gap-2 rounded-xl border-0 bg-primary px-6 py-3
                            font-[inherit] text-sm font-bold text-on-primary shadow-lg shadow-primary/30
                            transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60">
                 {annSending
-                  ? <><Loader2 size={15} className="mcf-spin" aria-hidden /> Envoi…</>
-                  : <><Send size={15} aria-hidden /> Envoyer</>}
+                  ? <><Loader2 size={15} className="mcf-spin" aria-hidden /> {tr("Đang gửi…", "Envoi…", "Sending…")}</>
+                  : <><Send size={15} aria-hidden /> {tr("Gửi", "Envoyer", "Send")}</>}
               </button>
             </div>
           </div>
@@ -379,12 +379,12 @@ ${r.error?.message ?? ""}`); return; }
                     <span style={S.chip(C.primarySoft, C.primary)}>{exSkills(ex).join(" · ")}</span>{" "}
                     <strong style={{ fontSize: 17 }}>{ex.title}</strong>
                     <div style={{ fontSize: 12, color: C.soft, marginTop: 5 }}>
-                      {ex.questions.length} question(s) · {subs.length}/{targets.length} copies
+                      {ex.questions.length} {tr("câu ·", "question(s) ·", "question(s) ·")} {subs.length}/{targets.length} copies
                       {ex.assignedTo?.length
                         ? <span style={{ color: C.primary, fontWeight: 700 }} title={ex.assignedTo.join(", ")}> · 👤 {ex.assignedTo.length} élève{ex.assignedTo.length > 1 ? "s" : ""}{ex.assignedClasses?.length ? ` · 🏫 ${ex.assignedClasses.map((id) => classes.find((c) => c.id === id)?.name).filter(Boolean).join(", ")}` : ""}</span>
                         : " · 👥 tous les élèves"}
                       {toGrade > 0 && <span style={{ color: C.warn, fontWeight: 700 }}> · ✏️ {toGrade} à corriger</span>}
-                      {ex.deadline && <span style={{ color: late ? C.danger : C.warn, fontWeight: 700 }}> · ⏰ {fmtDate(ex.deadline)}{late && " (clôturé)"}</span>}
+                      {ex.deadline && <span style={{ color: late ? C.danger : C.warn, fontWeight: 700 }}> · ⏰ {fmtDate(ex.deadline)}{late && tr(" (đã đóng)", " (clôturé)", " (closed)")}</span>}
                       {ex.audioUrl && " · 🎧 audio"}
                       {ex.timeLimit && <span style={{ fontWeight: 700 }}> · ⏱ {ex.timeLimit} min</span>}
                     </div>
@@ -431,7 +431,7 @@ function Accounts({ accounts, setAccounts, classes, setClasses, exercises = [], 
     const latest = await load("mcf-accounts", []);
     const ok = await setClassFor(student, classId, Array.isArray(latest) ? latest : [],
       (next) => save("mcf-accounts", next));
-    if (!ok) { setMsg("Không lưu được lớp cho học sinh này."); return; }
+    if (!ok) { setMsg(tr("Không lưu được lớp cho học sinh này.", "Classe non enregistrée pour cet élève.", "Couldn't save the class for this student.")); return; }
     await refresh();
   };
   const [name, setName] = useState("");
@@ -485,7 +485,7 @@ function Accounts({ accounts, setAccounts, classes, setClasses, exercises = [], 
   const delAcc = async (student) => {
     if (student.status === "registered") {
       const { error } = await supabase.from("profiles").delete().eq("id", student.id);
-      if (error) { setMsg("Không xoá được hồ sơ này."); return; }
+      if (error) { setMsg(tr("Không xoá được hồ sơ này.", "Impossible de supprimer ce profil.", "Couldn't delete this profile.")); return; }
     } else {
       const latest = await load("mcf-accounts", []);
       const next = (Array.isArray(latest) ? latest : []).filter((a) => a.name !== student.name);
@@ -534,7 +534,7 @@ function Accounts({ accounts, setAccounts, classes, setClasses, exercises = [], 
           học sinh vào được mà không cần giáo viên tạo trước. */}
       {accounts.length === 0 && (
         <div className="mcf-card" style={{ ...S.card, textAlign: "center", color: C.soft }}>
-          <div style={{ fontWeight: 700, color: C.ink, marginBottom: 6 }}>Aucun élève inscrit pour le moment.</div>
+          <div style={{ fontWeight: 700, color: C.ink, marginBottom: 6 }}>{tr("Chưa có học sinh nào đăng ký.", "Aucun élève inscrit pour le moment.", "No students registered yet.")}</div>
           <div style={{ fontSize: 13.5 }}>
             Les élèves apparaissent ici dès qu'ils créent leur compte.
           </div>
@@ -585,10 +585,10 @@ function Accounts({ accounts, setAccounts, classes, setClasses, exercises = [], 
             </span>
             <div style={{ display: "flex", gap: 8 }}>
               <button style={{ ...S.btn(false), padding: "5px 12px", fontSize: 12 }} onClick={() => reset(a.name)}
-                title="Envoie un lien de réinitialisation à l'élève">Envoyer un lien</button>            </div>
+                title="Envoie un lien de réinitialisation à l'élève">{tr("Gửi đường dẫn", "Envoyer un lien", "Send a link")}</button>            </div>
           </div>
         ))}
-        {accounts.length === 0 && <p style={{ color: C.soft }}>Aucun compte. Les élèves ne peuvent pas encore se connecter.</p>}
+        {accounts.length === 0 && <p style={{ color: C.soft }}>{tr("Chưa có tài khoản nào.", "Aucun compte. Les élèves ne peuvent pas encore se connecter.", "No accounts yet.")}</p>}
       </div>
 
       <QuyenBaiTap accounts={accounts} exercises={exercises} />
@@ -652,7 +652,7 @@ function StudentDossier({ acc, classes, exercises, submissions, presence, back }
     ...scored.map((r) => ({ title: r.ex.title, level: r.ex.level, pct: r.pct, label: `${r.score}/${r.max}`, at: r.s.at, kind: "Devoir" })),
     ...practiceRows.map(([exId, r]) => {
       const ex = pracEx.find((e) => e.id === exId);
-      return { title: ex ? ex.title : "Exercice supprimé", level: ex ? ex.level : "", pct: Math.round((r.best / r.max) * 100), label: `${r.best}/${r.max}`, at: r.at || 0, kind: "Entraînement" };
+      return { title: ex ? ex.title : tr("Bài đã bị xoá", "Exercice supprimé", "Exercise deleted"), level: ex ? ex.level : "", pct: Math.round((r.best / r.max) * 100), label: `${r.best}/${r.max}`, at: r.at || 0, kind: "Entraînement" };
     }),
   ].sort((a, b) => b.at - a.at).slice(0, 5);
 
@@ -720,12 +720,12 @@ function StudentDossier({ acc, classes, exercises, submissions, presence, back }
               </div>
             )}
             <div style={{ marginTop: 20, paddingTop: 16, borderTop: `1px solid ${C.line}` }}>
-              <div style={S.label}>🗝️ Notes privées (visibles uniquement par vous)</div>
+              <div style={S.label}>{tr("🗝️ Ghi chú riêng (chỉ bạn thấy)", "🗝️ Notes privées (visibles uniquement par vous)", "🗝️ Private notes (only you can see)")}</div>
               <textarea style={{ ...S.input, marginTop: 8, minHeight: 76, resize: "vertical" }} value={notes}
                 placeholder="ex. Prononciation du « r » à travailler ; très bon à l'écrit…"
                 onChange={(e) => setNotes(e.target.value)} />
               <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 10 }}>
-                <button style={{ ...S.btn(true), padding: "8px 18px", fontSize: 13 }} onClick={saveNotes}>💾 Enregistrer les notes</button>
+                <button style={{ ...S.btn(true), padding: "8px 18px", fontSize: 13 }} onClick={saveNotes}>{tr("💾 Lưu ghi chú", "💾 Enregistrer les notes", "💾 Save notes")}</button>
                 {notesSaved && <span style={{ fontSize: 13, color: C.ok, fontWeight: 700 }}>✅ Notes enregistrées</span>}
               </div>
             </div>
@@ -739,7 +739,7 @@ function StudentDossier({ acc, classes, exercises, submissions, presence, back }
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 12 }}>
               {statCard(CheckCircle, "Exercices terminés", totalDone, C.primary)}
               {statCard(TrendingUp, "Score moyen", avg == null ? "—" : `${avg} %`, avg == null ? C.soft : avg >= 80 ? C.ok : avg >= 50 ? C.warn : C.danger)}
-              {statCard(Clock, "Temps total", fmtDuration(totalTime), C.primary)}
+              {statCard(Clock, tr("Tổng thời gian", "Temps total", "Total time"), fmtDuration(totalTime), C.primary)}
             </div>
           </div>
 
@@ -747,7 +747,7 @@ function StudentDossier({ acc, classes, exercises, submissions, presence, back }
           <div className="mcf-card" style={{ ...S.card }}>
             <h3 style={{ ...S.display, fontSize: 17, margin: "0 0 14px" }}>⏱️ Activités récentes</h3>
             {recent.length === 0 ? (
-              <p style={{ color: C.soft, margin: 0, fontSize: 14 }}>Aucune activité pour le moment.</p>
+              <p style={{ color: C.soft, margin: 0, fontSize: 14 }}>{tr("Chưa có hoạt động nào.", "Aucune activité pour le moment.", "No activity yet.")}</p>
             ) : (
               <div style={{ display: "grid", gap: 8 }}>
                 {recent.map((r, i) => (
@@ -826,7 +826,7 @@ function Stats({ accounts, exercises, submissions }) {
     <div style={{ display: "grid", gap: 16 }}>
       <div className="mcf-card" style={{ ...S.card }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
-          <div style={S.label}>Moyenne & écart-type par exercice</div>
+          <div style={S.label}>{tr("Trung bình và độ lệch chuẩn theo bài", "Moyenne & écart-type par exercice", "Average & standard deviation per exercise")}</div>
           <button style={S.btn(true)} onClick={exportCSV}>⬇ Exporter le rapport (CSV)</button>
         </div>
         {chartData.length === 0 ? <p style={{ color: C.soft, fontSize: 14 }}>Pas encore de copies notées.</p> : (
@@ -872,7 +872,7 @@ function StudentTable({ accounts, exercises, submissions }) {
   return (
     <div className="mcf-card" style={{ ...S.card, overflowX: "auto" }}>
       <div style={{ ...S.label, marginBottom: 10 }}>Notes par élève</div>
-      {accounts.length === 0 ? <p style={{ color: C.soft }}>Aucun élève inscrit.</p> : (
+      {accounts.length === 0 ? <p style={{ color: C.soft }}>{tr("Chưa có học sinh nào.", "Aucun élève inscrit.", "No students registered.")}</p> : (
         <table style={{ borderCollapse: "collapse", width: "100%", minWidth: 520 }}>
           <thead><tr>
             <th style={th}>Élève</th><th style={th}>Rendus</th>
@@ -907,7 +907,7 @@ function StudentTable({ accounts, exercises, submissions }) {
           </tbody>
         </table>
       )}
-      <p style={{ fontSize: 12, color: C.soft, marginTop: 10, marginBottom: 0 }}>⏳ = réponses libres pas encore corrigées · 🕐 = rendu en retard · « · » = exercice non assigné à cet élève · 🔁 = à refaire</p>
+      <p style={{ fontSize: 12, color: C.soft, marginTop: 10, marginBottom: 0 }}>{tr("⏳ = câu tự luận chưa chấm · 🕐 = nộp muộn · « · » = bài không giao cho em này · 🔁 = làm lại", "⏳ = réponses libres pas encore corrigées · 🕐 = rendu en retard · « · » = exercice non assigné à cet élève · 🔁 = à refaire", "⏳ = open answers not graded · 🕐 = late · « · » = not assigned · 🔁 = redo")}</p>
     </div>
   );
 }
@@ -964,7 +964,7 @@ function Progress({ ex, submissions, setSubmissions, accounts, back }) {
 
       <div className="mcf-card" style={{ ...S.card, marginBottom: 20 }}>
         <div style={S.label}>Progression de la classe</div>
-        <div style={{ fontSize: 14, marginTop: 8 }}>{subs.length} copie(s) rendue(s) sur {roster.length} élève(s) concerné(s)
+        <div style={{ fontSize: 14, marginTop: 8 }}>{subs.length} {tr("bài đã nộp trên", "copie(s) rendue(s) sur", "submitted out of")} {roster.length} élève(s) concerné(s)
           {ex.assignedTo?.length ? <span style={{ color: C.primary, fontWeight: 700 }}> · 👤 devoir individuel</span> : null}</div>
         <div style={{ height: 10, background: C.line, borderRadius: 99, marginTop: 8 }}>
           <div style={{ height: "100%", width: `${Math.min(100, roster.length ? (subs.length / roster.length) * 100 : 0)}%`, background: `linear-gradient(90deg, ${C.ok}, #37C48E)`, borderRadius: 99 }} />
@@ -983,7 +983,7 @@ function Progress({ ex, submissions, setSubmissions, accounts, back }) {
                   <span style={{ fontSize: 13, color: C.warn, fontWeight: 700 }}>🔁 À refaire demandé{sub.redoNote && ` — « ${sub.redoNote} »`}</span>
                 ) : sub ? (
                   <span style={{ fontSize: 13 }}>
-                    <span style={{ color: C.ok, fontWeight: 700 }}>Rendu</span>
+                    <span style={{ color: C.ok, fontWeight: 700 }}>{tr("Đã nộp", "Rendu", "Submitted")}</span>
                     {" · "}<strong>{t.score}/{t.max}{t.pending && " ⏳"}</strong>
                     {" · "}{fmtDate(sub.at)}
                     {sub.timedOut && " · ⏱ auto (temps écoulé)"}
@@ -991,7 +991,7 @@ function Progress({ ex, submissions, setSubmissions, accounts, back }) {
                     <button style={{ ...S.btn(false), marginLeft: 12, padding: "4px 10px", fontSize: 12 }}
                       onClick={() => setOpen(open === name ? null : name)}>{open === name ? "Fermer" : "Corriger / voir"}</button>
                   </span>
-                ) : <span style={{ fontSize: 13, color: C.danger, fontWeight: 700 }}>Pas encore rendu</span>}
+                ) : <span style={{ fontSize: 13, color: C.danger, fontWeight: 700 }}>{tr("Chưa nộp", "Pas encore rendu", "Not submitted")}</span>}
               </div>
 
               {sub && open === name && (
@@ -1012,21 +1012,21 @@ function Progress({ ex, submissions, setSubmissions, accounts, back }) {
                           {q.type === "ordre" && <div style={{ marginTop: 6 }}><OrdreBlocks q={q} value={a || []} readOnly correction /></div>}
                           {q.type === "apparier" && <div style={{ marginTop: 6 }}><GhepCap q={q} value={a || {}} readOnly correction dapAn={q.answers} /></div>}
                           {q.type === "formulaire" && <div style={{ marginTop: 6 }}><DienPhieu q={q} value={a || {}} readOnly /></div>}
-                          {!["vf", "tableau", "ordre", "apparier", "formulaire"].includes(q.type) && <>Réponse : </>}{["vf", "tableau", "ordre", "apparier", "formulaire"].includes(q.type) ? null : q.type === "qcm"
+                          {!["vf", "tableau", "ordre", "apparier", "formulaire"].includes(q.type) && <>{tr("Trả lời:", "Réponse :", "Answer:")} </>}{["vf", "tableau", "ordre", "apparier", "formulaire"].includes(q.type) ? null : q.type === "qcm"
                             ? <strong style={{ color: good ? C.ok : C.danger }}>{a != null ? String.fromCharCode(65 + a) + ". " + q.options[a] : "—"}</strong>
                             : q.type === "open"
                             ? <div style={{ marginTop: 6, background: "var(--mcf-surface)", border: `1px solid ${C.line}`, borderRadius: 10, padding: "10px 14px", lineHeight: 1.7 }} dangerouslySetInnerHTML={{ __html: a || "—" }} />
                             : <em style={{ color: good ? C.ok : C.danger }}>{a || "—"}</em>}
-                          {good === false && q.type === "qcm" && <span> · attendu : <strong>{String.fromCharCode(65 + q.answer)}. {q.options[q.answer]}</strong></span>}
-                          {(q.type === "fill" || q.type === "conj") && <span> · 💡 attendu : <strong>{String(fillAccepted(q)).split("|")[0]}</strong></span>}
+                          {good === false && q.type === "qcm" && <span> {tr("· đáp án:", "· attendu :", "· expected:")} <strong>{String.fromCharCode(65 + q.answer)}. {q.options[q.answer]}</strong></span>}
+                          {(q.type === "fill" || q.type === "conj") && <span> {tr("· 💡 đáp án:", "· 💡 attendu :", "· 💡 expected:")} <strong>{String(fillAccepted(q)).split("|")[0]}</strong></span>}
                           {q.type === "vf" && (
                             <div style={{ marginTop: 4 }}>
-                              Choix : <strong style={{ color: good ? C.ok : C.danger }}>{a?.choice != null ? VF_OPTS[a.choice] : "—"}</strong>
-                              {good === false && <span> · attendu : <strong>{VF_OPTS[q.answer]}</strong></span>}
-                              {a?.just && <div style={{ fontStyle: "italic", marginTop: 3 }}>Justification de l'élève : « {a.just} »</div>}
+                              {tr("Lựa chọn:", "Choix :", "Choice:")} <strong style={{ color: good ? C.ok : C.danger }}>{a?.choice != null ? VF_OPTS[a.choice] : "—"}</strong>
+                              {good === false && <span> {tr("· đáp án:", "· attendu :", "· expected:")} <strong>{VF_OPTS[q.answer]}</strong></span>}
+                              {a?.just && <div style={{ fontStyle: "italic", marginTop: 3 }}>{tr("Căn cứ của học sinh: «", "Justification de l'élève : «", "Student's justification: «")} {a.just} »</div>}
                               {q.answer !== 2 && q.justification && (
                                 <div style={{ marginTop: 6, background: C.okSoft, border: `1px solid ${C.ok}44`, borderRadius: 10, padding: "8px 12px" }}>
-                                  💡 <strong>Justification attendue :</strong> {q.justification}
+                                  💡 <strong>{tr("Căn cứ đúng:", "Justification attendue :", "Expected justification:")}</strong> {q.justification}
                                 </div>
                               )}
                             </div>
@@ -1048,7 +1048,7 @@ function Progress({ ex, submissions, setSubmissions, accounts, back }) {
                           </div>
                         )}
                         <input style={{ ...S.input, marginTop: 8, fontSize: 13 }}
-                          placeholder="Commentaire sur cette question (visible par l'élève)…"
+                          placeholder={tr("Nhận xét cho câu này (học sinh thấy)…", "Commentaire sur cette question (visible par l'élève)…", "Comment on this question (visible to the student)…")}
                           value={qDrafts[name]?.[q.id] ?? sub.qComments?.[q.id] ?? ""}
                           onChange={(e) => setQDrafts({ ...qDrafts, [name]: { ...(qDrafts[name] || {}), [q.id]: e.target.value } })} />
                       </div>
@@ -1081,7 +1081,7 @@ function Progress({ ex, submissions, setSubmissions, accounts, back }) {
 
                     <div style={{ display: "flex", gap: 10, marginTop: 12, flexWrap: "wrap" }}>
                       <button style={S.btn(true)} onClick={() => saveGrading(name)}>
-                        Enregistrer la correction {opens.length > 0 && "et la note"}
+                        {tr("Lưu bài chấm", "Enregistrer la correction", "Save grading")} {opens.length > 0 && "et la note"}
                       </button>
                       <button onClick={() => { setRedoFor(name); setRedoNote(""); }}
                         style={{ ...S.btn(false), color: C.warn, borderColor: C.warn, display: "inline-flex", alignItems: "center", gap: 7 }}>
@@ -1102,15 +1102,15 @@ function Progress({ ex, submissions, setSubmissions, accounts, back }) {
           onClick={() => setRedoFor(null)}>
           <div className="mcf-card" style={{ ...S.card, width: "100%", maxWidth: 480 }} onClick={(e) => e.stopPropagation()}>
             <h3 style={{ ...S.display, fontSize: 20, marginTop: 0 }}>🔁 Demander à {redoFor} de refaire</h3>
-            <p style={{ fontSize: 13.5, color: C.soft, marginTop: 0 }}>La note sera remise à zéro et l'exercice retournera dans « À faire » de l'élève.</p>
+            <p style={{ fontSize: 13.5, color: C.soft, marginTop: 0 }}>{tr("Điểm sẽ về 0 và bài quay lại mục « Cần làm » của học sinh.", "La note sera remise à zéro et l'exercice retournera dans « À faire » de l'élève.", "The score resets and the exercise returns to the student's « To do ».")}</p>
             <div style={S.label}>Remarque (visible sur le tableau de bord de l'élève)</div>
             <textarea style={{ ...S.input, marginTop: 6, minHeight: 70, resize: "vertical" }} value={redoNote}
-              placeholder="ex. Attention à l'accord du participe passé — refais les questions 3 et 5."
+              placeholder={tr("ví dụ: Chú ý hợp giống phân từ quá khứ, làm lại câu 3 và 5.", "ex. Attention à l'accord du participe passé — refais les questions 3 et 5.", "e.g. Watch past participle agreement, redo questions 3 and 5.")}
               onChange={(e) => setRedoNote(e.target.value)} autoFocus />
             <div style={{ display: "flex", gap: 10, marginTop: 14 }}>
               <button style={{ ...S.btn(true), background: `linear-gradient(135deg, ${C.warn}, #E09A2B)`, boxShadow: "0 6px 16px rgba(201,132,18,.35)" }}
                 onClick={() => requestRedo(redoFor)}>Confirmer</button>
-              <button style={S.btn(false)} onClick={() => setRedoFor(null)}>Annuler</button>
+              <button style={S.btn(false)} onClick={() => setRedoFor(null)}>{tr("Huỷ", "Annuler", "Cancel")}</button>
             </div>
           </div>
         </div>

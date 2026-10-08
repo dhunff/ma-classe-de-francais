@@ -5,6 +5,7 @@ import { nhomTheoTrinhDo } from "../../shared/trinhDoDe.js";
 import { loadExams, saveExam, deleteExam, cotGrilleSanSang } from "../../shared/examStore.js";
 import { EXAM_STRUCTURE, khongCham } from "../exam/examPaper.js";
 import GrilleEditor, { grilleLuuDuoc } from "./GrilleEditor.jsx";
+import { tr } from "../../shared/i18n.jsx";
 
 /* Soạn đề thi thử — màn hình của giáo viên.
  *
@@ -60,9 +61,9 @@ const coSkill = (ex, skill) =>
  * thêm nhiễu cho trường hợp không có gì để phân biệt. */
 const nhanBai = (ex, trungTen) => {
   const phan = [`${ex.questions.length} câu`];
-  if (ex.imageUrl) phan.push("ảnh");
-  if (ex.readingText) phan.push("bài đọc");
-  if (ex.audioUrl) phan.push("âm thanh");
+  if (ex.imageUrl) phan.push(tr("ảnh", "image", "image"));
+  if (ex.readingText) phan.push(tr("bài đọc", "texte", "text"));
+  if (ex.audioUrl) phan.push(tr("âm thanh", "audio", "audio"));
   if (trungTen) phan.push(`#${String(ex.id).slice(-4)}`);
   return `${ex.title} — ${phan.join(" · ")}`;
 };
@@ -115,22 +116,22 @@ export default function ExamComposer({ t }) {
        nhưng nó trả về một thông báo Postgres thô — giáo viên đọc xong vẫn không
        biết tiêu chí nào sai. Kiểm ở đây để nói được tên tiêu chí. */
     const ok = grilleLuuDuoc(draft.exam.grille);
-    if (!ok.ok) { alert("❌ Thang chấm chưa dùng được: " + ok.vi); return; }
+    if (!ok.ok) { alert(tr("❌ Thang chấm chưa dùng được: ", "❌ Grille inutilisable : ", "❌ Grid not usable: ") + ok.vi); return; }
 
     setDangLuu(true);
     const r = await saveExam(draft.exam, draft.sections);
     setDangLuu(false);
-    if (!r.ok) { alert("❌ Không lưu được đề: " + (r.error?.message ?? "")); return; }
-    setToast("✅ Đã lưu đề.");
+    if (!r.ok) { alert(tr("❌ Không lưu được đề: ", "❌ Sujet non enregistré : ", "❌ Couldn't save the exam: ") + (r.error?.message ?? "")); return; }
+    setToast(tr("✅ Đã lưu đề.", "✅ Sujet enregistré.", "✅ Exam saved."));
     setTimeout(() => setToast(""), 2500);
     setDraft(null);
     taiLai();
   };
 
   const xoa = async (id) => {
-    if (!confirm("Xoá hẳn đề này? Bài tập bên trong vẫn còn nguyên trong thư viện.")) return;
+    if (!confirm(tr("Xoá hẳn đề này? Bài tập bên trong vẫn còn nguyên trong thư viện.", "Supprimer ce sujet ? Les exercices restent dans la bibliothèque.", "Delete this exam? Its exercises stay in the library."))) return;
     const r = await deleteExam(id);
-    if (!r.ok) { alert("❌ Không xoá được: " + (r.error?.message ?? "")); return; }
+    if (!r.ok) { alert(tr("❌ Không xoá được: ", "❌ Suppression impossible : ", "❌ Couldn't delete: ") + (r.error?.message ?? "")); return; }
     taiLai();
   };
 
@@ -140,14 +141,14 @@ export default function ExamComposer({ t }) {
       <div className="mx-auto max-w-3xl py-6">
         <div className="flex items-center justify-between gap-4">
           <div>
-            <h1 className="m-0 text-2xl font-extrabold text-ink">Đề thi thử</h1>
+            <h1 className="m-0 text-2xl font-extrabold text-ink">{tr("Đề thi thử", "Examens blancs", "Mock exams")}</h1>
             <p className="m-0 mt-1 text-sm text-soft">
-              Ghép ba bài trong thư viện thành một đề CO + CE + PE.
+              {tr("Ghép ba bài trong thư viện thành một đề CO + CE + PE.", "Assemblez des exercices de la bibliothèque en un sujet CO + CE + PE.", "Combine library exercises into a CO + CE + PE exam.")}
             </p>
           </div>
           <button type="button" onClick={() => { setTab("de"); setDraft(DeMoi("B1")); }}
             className="inline-flex shrink-0 items-center gap-2 rounded-full border-0 bg-primary px-5 py-2.5 text-sm font-bold text-white shadow-lg">
-            <Plus size={16} /> Soạn đề mới
+            <Plus size={16} /> {tr("Soạn đề mới", "Nouveau sujet", "New exam")}
           </button>
         </div>
 
@@ -155,10 +156,9 @@ export default function ExamComposer({ t }) {
 
         {dsDe.length === 0 ? (
           <div className="mt-8 rounded-2xl border border-line bg-surface p-8 text-center">
-            <p className="m-0 font-bold text-ink">Chưa có đề nào</p>
+            <p className="m-0 font-bold text-ink">{tr("Chưa có đề nào", "Aucun sujet", "No exams yet")}</p>
             <p className="m-0 mt-1 text-sm text-soft">
-              Học sinh chỉ thấy đề đã phát hành. Chưa có đề thì mục « Thi thử »
-              của các em sẽ trống.
+              {tr("Học sinh chỉ thấy đề đã phát hành. Chưa có đề thì mục « Thi thử » của các em sẽ trống.", "Les élèves ne voient que les sujets publiés.", "Students only see published exams.")}
             </p>
           </div>
         ) : (
@@ -166,9 +166,9 @@ export default function ExamComposer({ t }) {
           <section key={g.level} className="mt-6">
             <h3 className="m-0 mb-2 flex items-baseline gap-2 text-sm font-extrabold text-ink">
               DELF {g.level}
-              <span className="text-xs font-semibold text-soft">{g.de.length} đề · {g.de.filter((e) => e.is_published).length} đã phát hành</span>
+              <span className="text-xs font-semibold text-soft">{g.de.length} {tr("đề ·", "sujet(s) ·", "exam(s) ·")} {g.de.filter((e) => e.is_published).length} {tr("đã phát hành", "publié(s)", "published")}</span>
             </h3>
-            {g.de.length === 0 && <p className="m-0 rounded-2xl bg-surface2 px-4 py-3 text-xs text-soft">Chưa có đề {g.level}.</p>}
+            {g.de.length === 0 && <p className="m-0 rounded-2xl bg-surface2 px-4 py-3 text-xs text-soft">{tr("Chưa có đề", "Aucun sujet", "No exam at")} {g.level}.</p>}
           <ul className="m-0 list-none space-y-3 p-0">
             {g.de.map((e) => (
               <li key={e.id} className="flex items-center justify-between gap-3 rounded-2xl border border-line bg-surface p-4">
@@ -177,7 +177,7 @@ export default function ExamComposer({ t }) {
                     <span className="text-sm font-bold text-ink">{e.title}</span>
                     <span className="rounded-full bg-surface2 px-2 py-0.5 text-xs font-bold text-soft">{e.level}</span>
                     {e.is_published
-                      ? <span className="inline-flex items-center gap-1 text-xs font-bold text-ok"><Eye size={12} /> đã phát hành</span>
+                      ? <span className="inline-flex items-center gap-1 text-xs font-bold text-ok"><Eye size={12} /> {tr("đã phát hành", "publié(s)", "published")}</span>
                       : <span className="inline-flex items-center gap-1 text-xs font-bold text-warn"><EyeOff size={12} /> nháp</span>}
                   </div>
                   <div className="mt-1 text-xs text-soft">
@@ -188,11 +188,11 @@ export default function ExamComposer({ t }) {
                         nó vẫn là đề đủ, học sinh còn bỏ chọn được ở màn chờ.
                         Tính PO vào đây thì mọi đề đang có bỗng hiện « thiếu
                         phần » màu đỏ, và lời cảnh báo đó là sai. */}
-                    {soPhanCham(e.sections)}/3 phần
+                    {soPhanCham(e.sections)}{tr("/3 phần", "/3 parties", "/3 parts")}
                     {e.sections.length > 3 && ` · ${e.sections.length} bài`}
                     {` · ${e.duration_min ?? 0}′`}
                     {soPhanCham(e.sections) < 3 && (
-                      <span className="ml-2 font-bold text-danger">thiếu phần</span>
+                      <span className="ml-2 font-bold text-danger">{tr("thiếu phần", "incomplet", "missing parts")}</span>
                     )}
                     {e.sections.some((s) => s.code === "PO") && (
                       <span className="ml-2 font-semibold text-primary">+ PO</span>
@@ -217,7 +217,7 @@ export default function ExamComposer({ t }) {
                       }),
                     }); }}
                     className="rounded-full border-0 bg-surface2 px-4 py-2 text-sm font-semibold text-ink">
-                    Sửa
+                    {tr("Sửa", "Modifier", "Edit")}
                   </button>
                   <button type="button" onClick={() => xoa(e.id)}
                     className="rounded-full border-0 bg-surface2 px-3 py-2 text-danger">
@@ -243,21 +243,21 @@ export default function ExamComposer({ t }) {
   return (
     <div className="mx-auto max-w-3xl py-6">
       <h1 className="m-0 text-2xl font-extrabold text-ink">
-        {draft.exam.id ? "Sửa đề thi" : "Soạn đề thi mới"}
+        {draft.exam.id ? tr("Sửa đề thi", "Modifier le sujet", "Edit exam") : tr("Soạn đề thi mới", "Nouveau sujet", "New exam")}
       </h1>
 
       {/* Hai tab. Cấu trúc đề và thang chấm là hai việc khác nhau, làm ở hai
           lúc khác nhau — nhồi chung một trang thì thang chấm nằm dưới cùng, sau
           ba ô chọn bài, và không ai cuộn xuống tới nó. */}
       <div className="mt-5 flex gap-2 border-b border-line">
-        {[["de", "Cấu trúc đề"], ["grille", "Thang chấm PE"]].map(([k, nhan]) => (
+        {[["de", tr("Cấu trúc đề", "Structure", "Structure")], ["grille", tr("Thang chấm PE", "Grille PE", "PE grid")]].map(([k, nhan]) => (
           <button key={k} type="button" onClick={() => setTab(k)}
             className={`-mb-px border-0 border-b-2 bg-transparent px-4 py-2.5 text-sm font-bold ${
               tab === k ? "border-primary text-primary" : "border-transparent text-soft hover:text-ink"}`}>
             {nhan}
             {k === "grille" && draft.exam.grille && (
               <span className="ml-2 rounded-full bg-warn-soft px-2 py-0.5 text-[10px] font-bold text-warn">
-                riêng
+                {tr("riêng", "personnalisée", "custom")}
               </span>
             )}
           </button>
@@ -275,11 +275,11 @@ export default function ExamComposer({ t }) {
           <div className="mt-8 flex items-center gap-3 border-t border-line pt-5">
             <button type="button" onClick={luu} disabled={dangLuu}
               className="inline-flex items-center gap-2 rounded-full border-0 bg-primary px-6 py-2.5 text-sm font-bold text-white disabled:opacity-40">
-              <Save size={15} /> {dangLuu ? "Đang lưu…" : "Lưu đề"}
+              <Save size={15} /> {dangLuu ? tr("Đang lưu…", "Enregistrement…", "Saving…") : tr("Lưu đề", "Enregistrer", "Save exam")}
             </button>
             <button type="button" onClick={() => setDraft(null)}
               className="rounded-full border-0 bg-surface2 px-5 py-2.5 text-sm font-bold text-soft">
-              Huỷ
+              {tr("Huỷ", "Annuler", "Cancel")}
             </button>
           </div>
         </div>
@@ -287,15 +287,15 @@ export default function ExamComposer({ t }) {
       <>
       <div className="mt-6 space-y-4">
         <label className="block">
-          <span className="text-xs font-bold uppercase tracking-wide text-soft">Tên đề</span>
+          <span className="text-xs font-bold uppercase tracking-wide text-soft">{tr("Tên đề", "Titre du sujet", "Exam title")}</span>
           <input value={draft.exam.title}
             onChange={(e) => setDraft({ ...draft, exam: { ...draft.exam, title: e.target.value } })}
-            placeholder="Ví dụ: DELF B1 — đề số 1"
+            placeholder={tr("Ví dụ: DELF B1 — đề số 1", "Ex. : DELF B1 · Sujet 1", "e.g. DELF B1 · Exam 1")}
             className="mt-1 w-full rounded-xl border border-line bg-surface2 px-4 py-2.5 text-sm text-ink" />
         </label>
 
         <div>
-          <span className="text-xs font-bold uppercase tracking-wide text-soft">Trình độ</span>
+          <span className="text-xs font-bold uppercase tracking-wide text-soft">{tr("Trình độ", "Niveau", "Level")}</span>
           <div className="mt-1 flex gap-2">
             {Object.keys(EXAM_STRUCTURE).map((lv) => (
               <button key={lv} type="button" onClick={() => doiLevel(lv)}
@@ -380,7 +380,7 @@ export default function ExamComposer({ t }) {
                 <Icon size={16} className="text-primary" />
                 <span className="text-sm font-bold text-ink">{phan.code} · {phan.label}</span>
                 <span className="ml-auto text-xs text-soft">
-                  {phan.minutes}′ · {khongCham(phan) ? "không chấm điểm" : `/${phan.points}`}
+                  {phan.minutes}′ · {khongCham(phan) ? tr("không chấm điểm", "non noté", "not scored") : `/${phan.points}`}
                   {daChon.length > 0 && ` · ${daChon.length} bài`}
                 </span>
               </div>
@@ -390,15 +390,13 @@ export default function ExamComposer({ t }) {
                   25 phút nữa. */}
               {khongCham(phan) && (
                 <p className="m-0 mt-2 text-xs text-soft">
-                  Phần tuỳ chọn. Học sinh ghi âm để tự nghe lại và bạn nghe ở mục
-                  « Bài nói »; hệ thống không cho điểm, và học sinh bỏ chọn được
-                  phần này khi vào thi. Đề không có PO vẫn là đề đủ.
+                  {tr("Phần tuỳ chọn. Học sinh ghi âm để tự nghe lại và bạn nghe ở mục « Bài nói »; hệ thống không cho điểm, và học sinh bỏ chọn được phần này khi vào thi. Đề không có PO vẫn là đề đủ.", "Partie facultative : l'élève s'enregistre pour se réécouter, sans note. Un sujet sans PO reste complet.", "Optional part: students record themselves to listen back, no score. An exam without PO is still complete.")}
                 </p>
               )}
 
               {daChon.length > 1 && !khongCham(phan) && (
                 <p className="m-0 mt-2 text-xs text-soft">
-                  {daChon.length} bài dùng chung {phan.minutes} phút và {phan.points} điểm của phần này.
+                  {daChon.length} bài dùng chung {phan.minutes} phút và {phan.points} {tr("điểm của phần này.", "points pour cette partie.", "points for this part.")}
                 </p>
               )}
 
@@ -415,16 +413,16 @@ export default function ExamComposer({ t }) {
                               : `(bài ${s.exercise_id} không còn trong thư viện)`}
                         </span>
                         <button type="button" onClick={() => doiCho(s.exercise_id, -1)}
-                          disabled={j === 0} title="Đưa lên trên"
+                          disabled={j === 0} title={tr("Đưa lên trên", "Monter", "Move up")}
                           className="shrink-0 rounded-full border-0 bg-transparent px-1.5 py-1 text-soft hover:text-ink disabled:opacity-30">
                           <ChevronUp size={15} />
                         </button>
                         <button type="button" onClick={() => doiCho(s.exercise_id, 1)}
-                          disabled={j === daChon.length - 1} title="Đưa xuống dưới"
+                          disabled={j === daChon.length - 1} title={tr("Đưa xuống dưới", "Descendre", "Move down")}
                           className="shrink-0 rounded-full border-0 bg-transparent px-1.5 py-1 text-soft hover:text-ink disabled:opacity-30">
                           <ChevronDown size={15} />
                         </button>
-                        <button type="button" onClick={() => bo(s.exercise_id)} title="Bỏ khỏi đề"
+                        <button type="button" onClick={() => bo(s.exercise_id)} title={tr("Bỏ khỏi đề", "Retirer du sujet", "Remove from exam")}
                           className="shrink-0 rounded-full border-0 bg-transparent px-1.5 py-1 text-soft hover:text-danger">
                           <Trash2 size={14} />
                         </button>
@@ -437,12 +435,11 @@ export default function ExamComposer({ t }) {
               {ungVien.length === 0 ? (
                 <p className="m-0 mt-3 flex items-start gap-2 text-xs text-danger">
                   <AlertTriangle size={13} className="mt-0.5 shrink-0" />
-                  Thư viện chưa có bài « {phan.skill} » trình độ {draft.exam.level}.
-                  Soạn một bài ở mục Luyện tập trước đã.
+                  {tr("Thư viện chưa có bài «", "La bibliothèque n'a pas d'exercice «", "The library has no «")} {phan.skill} {tr("» trình độ", "» de niveau", "» exercise at level")} {draft.exam.level}{tr(". Soạn một bài ở mục Luyện tập trước đã.", ". Créez d'abord un exercice.", ". Create one first.")}
                 </p>
               ) : conLai.length === 0 ? (
                 <p className="m-0 mt-3 text-xs text-soft">
-                  Đã dùng hết {ungVien.length} bài « {phan.skill} » {draft.exam.level} của thư viện.
+                  {tr("Đã dùng hết", "Tous utilisés :", "All used:")} {ungVien.length} bài « {phan.skill} » {draft.exam.level} {tr("của thư viện.", "de la bibliothèque.", "from the library.")}
                 </p>
               ) : (
                 /* `value=""` và reset ngay sau khi chọn: ô này là NÚT THÊM, không
@@ -451,7 +448,7 @@ export default function ExamComposer({ t }) {
                 <select value="" onChange={(e) => them(e.target.value)}
                   className="mt-3 w-full rounded-xl border border-line bg-surface2 px-4 py-2.5 text-sm text-ink">
                   <option value="">
-                    {daChon.length ? "+ thêm bài nữa vào phần này —" : "— chọn bài —"}
+                    {daChon.length ? tr("+ thêm bài nữa vào phần này —", "+ ajouter un exercice à cette partie —", "+ add another exercise to this part —") : tr("— chọn bài —", "— choisir —", "— choose —")}
                   </option>
                   {conLai.map((ex) => (
                     <option key={ex.id} value={ex.id}>
@@ -472,13 +469,12 @@ export default function ExamComposer({ t }) {
           onChange={(e) => setDraft({ ...draft, exam: { ...draft.exam, is_published: e.target.checked } })}
           className="mt-1" />
         <span>
-          <strong>Phát hành cho học sinh</strong>
+          <strong>{tr("Phát hành cho học sinh", "Publier pour les élèves", "Publish to students")}</strong>
           <span className="mt-0.5 block text-xs text-soft">
-            Bỏ chọn thì đề là bản nháp — chỉ giáo viên thấy.
+            {tr("Bỏ chọn thì đề là bản nháp — chỉ giáo viên thấy.", "Décoché, le sujet reste un brouillon visible par les enseignants.", "Unticked, the exam stays a draft only teachers see.")}
             {thieu.length > 0 && (
               <span className="mt-1 block font-bold text-danger">
-                Đề còn thiếu {thieu.map((x) => x.code).join(", ")}. Phát hành lúc này thì
-                học sinh mở ra sẽ gặp một đề khuyết phần.
+                {tr("Đề còn thiếu", "Il manque", "Missing")} {thieu.map((x) => x.code).join(", ")}{tr(". Phát hành lúc này thì học sinh mở ra sẽ gặp một đề khuyết phần.", ". Publier maintenant donnerait un sujet incomplet.", ". Publishing now would give students an incomplete exam.")}
               </span>
             )}
           </span>
@@ -488,11 +484,11 @@ export default function ExamComposer({ t }) {
       <div className="mt-6 flex gap-3">
         <button type="button" onClick={luu} disabled={dangLuu}
           className="inline-flex items-center gap-2 rounded-full border-0 bg-primary px-6 py-3 text-sm font-bold text-white shadow-lg disabled:opacity-50">
-          <Save size={16} /> {dangLuu ? "Đang lưu…" : "Lưu đề"}
+          <Save size={16} /> {dangLuu ? tr("Đang lưu…", "Enregistrement…", "Saving…") : tr("Lưu đề", "Enregistrer", "Save exam")}
         </button>
         <button type="button" onClick={() => setDraft(null)}
           className="rounded-full border-0 bg-transparent px-4 py-3 text-sm font-semibold text-soft">
-          Huỷ
+          {tr("Huỷ", "Annuler", "Cancel")}
         </button>
       </div>
       </>

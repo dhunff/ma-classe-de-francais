@@ -3,6 +3,7 @@ import { Plus, Trash2, RotateCcw, AlertTriangle, Info, Database } from "lucide-r
 import { grilleToRubric, grilleLuuDuoc, giongThangChuan, chuanHoaGrille }
   from "../../shared/grilleRubric.js";
 import { TEN_NHOM, THU_TU_NHOM } from "../../shared/peBareme.js";
+import { tr } from "../../shared/i18n.jsx";
 
 /* Soạn thang chấm Production écrite cho một đề.
  *
@@ -97,7 +98,7 @@ export default function GrilleEditor({ level, grille, onChange, cotSanSang = tru
       <div className="rounded-2xl border border-warn bg-warn-soft p-5">
         <p className="m-0 flex items-start gap-2 text-sm font-bold text-warn">
           <Database size={15} className="mt-0.5 shrink-0" />
-          Chưa chạy migration 035
+          {tr("Chưa chạy migration 035", "Migration 035 non appliquée", "Migration 035 not applied")}
         </p>
         <p className="m-0 mt-2 text-sm leading-relaxed text-ink">
           Cột <code>exams.grille</code> chưa có trong database, nên thang riêng chưa
@@ -122,7 +123,7 @@ export default function GrilleEditor({ level, grille, onChange, cotSanSang = tru
           className={`rounded-full border-0 px-4 py-2 text-sm font-bold ${
             tuyChinh ? "bg-surface2 text-soft" : "bg-primary text-white"}`}
         >
-          Thang chuẩn DELF
+          {tr("Thang chuẩn DELF", "Grille DELF standard", "Standard DELF grid")}
         </button>
         <button
           type="button"
@@ -130,7 +131,7 @@ export default function GrilleEditor({ level, grille, onChange, cotSanSang = tru
           className={`rounded-full border-0 px-4 py-2 text-sm font-bold ${
             tuyChinh ? "bg-primary text-white" : "bg-surface2 text-soft"}`}
         >
-          Thang riêng cho đề này
+          {tr("Thang riêng cho đề này", "Grille propre à ce sujet", "Custom grid for this exam")}
         </button>
       </div>
 
@@ -138,8 +139,8 @@ export default function GrilleEditor({ level, grille, onChange, cotSanSang = tru
         <p className="m-0 mt-4 flex items-start gap-2 rounded-xl bg-surface2 p-4 text-sm leading-relaxed text-soft">
           <Info size={15} className="mt-0.5 shrink-0 text-primary" />
           <span>
-            Đề dùng thang chuẩn {level} của France Éducation international —{" "}
-            <strong className="text-ink">{chuan.criteria.length} tiêu chí, {chuan.total} điểm</strong>.
+            {tr("Đề dùng thang chuẩn", "Le sujet utilise la grille standard", "This exam uses the standard grid")} {level} {tr("của France Éducation international —", "de France Éducation international —", "from France Éducation international —")}{" "}
+            <strong className="text-ink">{chuan.criteria.length} {tr("tiêu chí,", "critères,", "criteria,")} {chuan.total} {tr("điểm", "points", "points")}</strong>.
             Thang này sửa ở <code>src/screens/exam/delfGrille.js</code> và áp dụng cho
             mọi đề, nên sửa một lỗi ở đó là sửa cho tất cả. Chỉ chọn thang riêng khi đề
             này thật sự cần khác.
@@ -151,8 +152,8 @@ export default function GrilleEditor({ level, grille, onChange, cotSanSang = tru
             <p className="m-0 flex items-start gap-2 text-sm leading-relaxed text-ink">
               <AlertTriangle size={15} className="mt-0.5 shrink-0 text-warn" />
               <span>
-                Màn tự chấm của học sinh sẽ hiện dòng{" "}
-                <strong>« Thang này do giáo viên tuỳ chỉnh, không phải thang DELF chính thức »</strong>.
+                {tr("Màn tự chấm của học sinh sẽ hiện dòng", "L'écran d'auto-évaluation affichera", "The self-assessment screen will show")}{" "}
+                <strong>{tr("« Thang này do giáo viên tuỳ chỉnh, không phải thang DELF chính thức »", "« Grille personnalisée par l'enseignant, pas la grille officielle du DELF »", "« Grid customised by the teacher, not the official DELF grid »")}</strong>.
                 Đó là chủ ý: điểm tự chấm hay được đem so với ngưỡng đạt của kỳ thi thật.
               </span>
             </p>
@@ -164,26 +165,26 @@ export default function GrilleEditor({ level, grille, onChange, cotSanSang = tru
           <div className={`mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl p-4 ${
             lechDelf ? "bg-danger-soft" : "bg-ok-soft"}`}>
             <div>
-              <span className="text-xs font-bold uppercase tracking-wide text-soft">Tổng thang</span>
+              <span className="text-xs font-bold uppercase tracking-wide text-soft">{tr("Tổng thang", "Total de la grille", "Grid total")}</span>
               <p className={`m-0 text-2xl font-extrabold tabular-nums leading-none ${
                 lechDelf ? "text-danger" : "text-ok"}`}>
-                {tong}<span className="ml-1 text-sm text-soft">/ {TONG_DELF} điểm DELF</span>
+                {tong}<span className="ml-1 text-sm text-soft">/ {TONG_DELF} {tr("điểm DELF", "points DELF", "DELF points")}</span>
               </p>
             </div>
             <div className="flex items-center gap-2">
               <span className="text-xs font-semibold text-soft">
-                {g.criteria.length} tiêu chí
+                {g.criteria.length} {tr("tiêu chí", "critères", "criteria")}
               </span>
               <button type="button" onClick={() => onChange({ ...chuan, adapted: false })}
                 className="inline-flex items-center gap-1.5 rounded-full border-0 bg-surface px-3 py-2 text-xs font-bold text-soft hover:text-ink">
-                <RotateCcw size={13} /> Về thang chuẩn
+                <RotateCcw size={13} /> {tr("Về thang chuẩn", "Revenir à la grille standard", "Back to standard grid")}
               </button>
             </div>
           </div>
 
           {lechDelf && (
             <p className="m-0 mt-2 text-xs font-bold text-danger">
-              Thang DELF cộng đúng {TONG_DELF}. Cộng ra {tong} nghĩa là mọi điểm tự chấm
+              {tr("Thang DELF cộng đúng", "La grille DELF totalise", "The DELF grid adds up to")} {TONG_DELF}. Cộng ra {tong} nghĩa là mọi điểm tự chấm
               đều lệch so với thang thật — học sinh sẽ so nhầm với ngưỡng đạt.
             </p>
           )}
@@ -199,7 +200,7 @@ export default function GrilleEditor({ level, grille, onChange, cotSanSang = tru
                       <input
                         value={c.name ?? ""}
                         onChange={(e) => doiTieuChi(c.id, { name: e.target.value })}
-                        placeholder="Tên tiêu chí — ví dụ: Lập luận"
+                        placeholder={tr("Tên tiêu chí — ví dụ: Lập luận", "Nom du critère, ex. : Argumentation", "Criterion name, e.g. Argumentation")}
                         className={`w-full rounded-xl border bg-surface2 px-3 py-2 text-sm font-bold text-ink ${
                           thieuTen ? "border-danger" : "border-line"}`}
                       />
@@ -207,7 +208,7 @@ export default function GrilleEditor({ level, grille, onChange, cotSanSang = tru
                         value={c.description ?? ""}
                         onChange={(e) => doiTieuChi(c.id, { description: e.target.value })}
                         rows={2}
-                        placeholder="Mô tả: người chấm tìm gì ở tiêu chí này?"
+                        placeholder={tr("Mô tả: người chấm tìm gì ở tiêu chí này?", "Description : que cherche le correcteur ?", "Description: what does the examiner look for?")}
                         className="w-full resize-y rounded-xl border border-line bg-surface2 px-3 py-2 text-xs leading-relaxed text-ink"
                       />
                       <div className="flex flex-wrap items-center gap-2">
@@ -222,7 +223,7 @@ export default function GrilleEditor({ level, grille, onChange, cotSanSang = tru
                         </select>
 
                         <label className="flex items-center gap-1.5 text-xs font-semibold text-soft">
-                          Điểm tối đa
+                          {tr("Điểm tối đa", "Note maximale", "Max score")}
                           <input
                             type="number" min={0.5} max={25} step={0.5}
                             value={c.max_score}
@@ -233,16 +234,16 @@ export default function GrilleEditor({ level, grille, onChange, cotSanSang = tru
 
                         {c.bareme
                           ? <span className="rounded-full bg-ok-soft px-2.5 py-1 text-[11px] font-bold text-ok">
-                              có {c.bareme.length} mốc cho điểm
+                              có {c.bareme.length} {tr("mốc cho điểm", "niveaux de notation", "score bands")}
                             </span>
                           : <span className="rounded-full bg-surface2 px-2.5 py-1 text-[11px] font-bold text-soft">
-                              không mốc — học sinh đọc phần mô tả
+                              {tr("không mốc — học sinh đọc phần mô tả", "sans niveaux, l'élève lit la description", "no bands, students read the description")}
                             </span>}
                       </div>
                     </div>
 
                     <button type="button" onClick={() => xoaTieuChi(c.id)}
-                      title="Xoá tiêu chí"
+                      title={tr("Xoá tiêu chí", "Supprimer le critère", "Delete criterion")}
                       className="shrink-0 rounded-full border-0 bg-surface2 p-2 text-soft hover:text-danger">
                       <Trash2 size={14} />
                     </button>
@@ -250,7 +251,7 @@ export default function GrilleEditor({ level, grille, onChange, cotSanSang = tru
 
                   {thieuTen && (
                     <p className="m-0 mt-2 text-xs font-bold text-danger">
-                      Tiêu chí phải có tên — học sinh chỉ thấy dòng này khi chấm.
+                      {tr("Tiêu chí phải có tên — học sinh chỉ thấy dòng này khi chấm.", "Le critère doit avoir un nom.", "The criterion needs a name.")}
                     </p>
                   )}
                 </li>
@@ -260,12 +261,12 @@ export default function GrilleEditor({ level, grille, onChange, cotSanSang = tru
 
           <button type="button" onClick={themTieuChi}
             className="mt-3 inline-flex items-center gap-2 rounded-full border-0 bg-surface2 px-4 py-2 text-sm font-bold text-ink">
-            <Plus size={15} /> Thêm tiêu chí
+            <Plus size={15} /> {tr("Thêm tiêu chí", "Ajouter un critère", "Add criterion")}
           </button>
 
           {g.criteria.length === 0 && (
             <p className="m-0 mt-3 text-xs font-bold text-danger">
-              Thang không có tiêu chí nào thì không lưu được.
+              {tr("Thang không có tiêu chí nào thì không lưu được.", "Une grille sans critère ne peut pas être enregistrée.", "A grid with no criteria can't be saved.")}
             </p>
           )}
         </>

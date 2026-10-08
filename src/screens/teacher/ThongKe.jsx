@@ -15,15 +15,16 @@ import { Users, ClipboardCheck, Gauge, Award, UserX, Download, Loader2 } from "l
 import { C, S } from "../../shared/tokens.js";
 import { supabase } from "../../storageShim.js";
 import TongQuanHoatDong from "./TongQuanHoatDong.jsx";
+import { tr } from "../../shared/i18n.jsx";
 
 const NGUONG_DAT = 50; // % — cùng ngưỡng bảng điểm cũ dùng để tô xanh/đỏ
 const NGAY = 86400000;
 
 const BANG_DIEM = [
-  { ten: "Giỏi (≥ 80 %)", tu: 80, mau: C.ok },
-  { ten: "Khá (65–79 %)", tu: 65, mau: C.primary },
-  { ten: "Đạt (50–64 %)", tu: 50, mau: C.warn },
-  { ten: "Chưa đạt (< 50 %)", tu: -1, mau: C.danger },
+  { get ten() { return tr("Giỏi (≥ 80 %)", "Très bien (≥ 80 %)", "Excellent (≥ 80%)"); }, tu: 80, mau: C.ok },
+  { get ten() { return tr("Khá (65–79 %)", "Bien (65–79 %)", "Good (65–79%)"); }, tu: 65, mau: C.primary },
+  { get ten() { return tr("Đạt (50–64 %)", "Réussi (50–64 %)", "Pass (50–64%)"); }, tu: 50, mau: C.warn },
+  { get ten() { return tr("Chưa đạt (< 50 %)", "Non réussi (< 50 %)", "Fail (< 50%)"); }, tu: -1, mau: C.danger },
 ];
 
 const tb = (a) => (a.length ? a.reduce((x, y) => x + y, 0) / a.length : null);
@@ -108,13 +109,13 @@ export default function ThongKe({ accounts = [] }) {
   if (!tk) {
     return (
       <div style={{ ...the, display: "flex", alignItems: "center", gap: 10, color: C.soft }}>
-        <Loader2 size={18} className="animate-spin" /> Đang tải số liệu…
+        <Loader2 size={18} className="animate-spin" /> {tr("Đang tải số liệu…", "Chargement des statistiques…", "Loading statistics…")}
       </div>
     );
   }
 
   const xuatCSV = () => {
-    const rows = [["Học sinh", "Email", "Số lượt", "Điểm TB (%)", "Tỷ lệ đạt (%)", "Lần cuối"]];
+    const rows = [[tr("Học sinh", "Élève", "Student"), "Email", tr("Số lượt", "Tentatives", "Attempts"), tr("Điểm TB (%)", "Moyenne (%)", "Average (%)"), tr("Tỷ lệ đạt (%)", "Taux de réussite (%)", "Pass rate (%)"), tr("Lần cuối", "Dernière fois", "Last time")]];
     tk.hs.forEach((h) => rows.push([h.acc.name, h.acc.email ?? "", h.n,
       h.tb == null ? "" : Math.round(h.tb), h.dat == null ? "" : Math.round(h.dat),
       h.cuoi ? new Date(h.cuoi).toLocaleDateString("vi-VN") : ""]));
@@ -133,33 +134,33 @@ export default function ThongKe({ accounts = [] }) {
       {/* Tổng quan 7 ngày + xuất Google Sheets (02/10). Phần dưới là số liệu
           từ đầu tới nay, giữ nguyên như bản 24/09. */}
       <TongQuanHoatDong accounts={accounts} />
-      <div style={{ ...S.label, margin: "8px 0 0" }}>Từ đầu tới nay</div>
+      <div style={{ ...S.label, margin: "8px 0 0" }}>{tr("Từ đầu tới nay", "Depuis le début", "All time")}</div>
       {loi && (
         <div style={{ ...the, color: C.danger, background: C.dangerSoft }}>
-          Không đọc được lượt làm bài: {loi}. Các số dưới đây có thể thiếu.
+          {tr("Không đọc được lượt làm bài:", "Impossible de lire les tentatives :", "Couldn't load attempts:")} {loi}{tr(". Các số dưới đây có thể thiếu.", ". Les chiffres ci-dessous peuvent être incomplets.", ". Figures below may be incomplete.")}
         </div>
       )}
 
       {/* ── Hàng KPI ── */}
       <div style={{ display: "grid", gap: 16, gridTemplateColumns: "repeat(auto-fit, minmax(190px, 1fr))" }}>
-        <Kpi icon={Users} mau={C.primary} nhan="Học sinh" so={accounts.length}
+        <Kpi icon={Users} mau={C.primary} nhan={tr("Học sinh", "Élève", "Student")} so={accounts.length}
           phu={`${tk.daLam} đã làm ít nhất một bài`} />
-        <Kpi icon={ClipboardCheck} mau={C.ok} nhan="Lượt làm bài" so={tongLuot}
+        <Kpi icon={ClipboardCheck} mau={C.ok} nhan={tr("Lượt làm bài", "Tentatives", "Attempts")} so={tongLuot}
           phu={`${tk.gan30} lượt trong 30 ngày qua`} />
-        <Kpi icon={Gauge} mau={C.primary} nhan="Điểm trung bình" so={pct(tk.tbChung)}
-          phu={tk.xuHuong == null ? "Chưa đủ dữ liệu để so với tháng trước"
+        <Kpi icon={Gauge} mau={C.primary} nhan={tr("Điểm trung bình", "Moyenne", "Average score")} so={pct(tk.tbChung)}
+          phu={tk.xuHuong == null ? tr("Chưa đủ dữ liệu để so với tháng trước", "Pas assez de données pour comparer au mois précédent", "Not enough data to compare with last month")
             : `${tk.xuHuong >= 0 ? "↑" : "↓"} ${Math.abs(Math.round(tk.xuHuong))} điểm so với trước 30 ngày`}
           mauPhu={tk.xuHuong == null ? C.soft : tk.xuHuong >= 0 ? C.ok : C.danger} />
-        <Kpi icon={Award} mau={C.warn} nhan="Tỷ lệ lượt đạt" so={pct(tk.tiLeDat)}
+        <Kpi icon={Award} mau={C.warn} nhan={tr("Tỷ lệ lượt đạt", "Taux de réussite", "Pass rate")} so={pct(tk.tiLeDat)}
           phu={`Đạt = từ ${NGUONG_DAT} % trở lên`} />
-        <Kpi icon={UserX} mau={C.danger} nhan="Chưa làm bài nào" so={accounts.length - tk.daLam}
-          phu="học sinh cần nhắc" />
+        <Kpi icon={UserX} mau={C.danger} nhan={tr("Chưa làm bài nào", "Aucun exercice fait", "No exercises done")} so={accounts.length - tk.daLam}
+          phu={tr("học sinh cần nhắc", "élève(s) à relancer", "student(s) to nudge")} />
       </div>
 
       {/* ── Hàng biểu đồ ── */}
       <div style={{ display: "grid", gap: 16, gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))" }}>
         <div style={the}>
-          <div style={nhan}>Phân bố điểm các lượt</div>
+          <div style={nhan}>{tr("Phân bố điểm các lượt", "Répartition des notes", "Score distribution")}</div>
           {!tongLuot ? <Trong /> : (
             <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
               <div style={{ width: 170, height: 170, position: "relative" }}>
@@ -175,7 +176,7 @@ export default function ThongKe({ accounts = [] }) {
                 <div style={{ position: "absolute", inset: 0, display: "grid", placeItems: "center", pointerEvents: "none", textAlign: "center" }}>
                   <div>
                     <div style={{ fontSize: 22, fontWeight: 800, color: C.ink }}>{tongLuot}</div>
-                    <div style={{ fontSize: 11, color: C.soft }}>lượt</div>
+                    <div style={{ fontSize: 11, color: C.soft }}>{tr("lượt", "tentatives", "attempts")}</div>
                   </div>
                 </div>
               </div>
@@ -195,7 +196,7 @@ export default function ThongKe({ accounts = [] }) {
         </div>
 
         <div style={the}>
-          <div style={nhan}>Điểm trung bình theo kỹ năng</div>
+          <div style={nhan}>{tr("Điểm trung bình theo kỹ năng", "Moyenne par compétence", "Average by skill")}</div>
           {!tk.theoKyNang.length ? <Trong /> : (
             <div style={{ width: "100%", height: 200 }}>
               <ResponsiveContainer>
@@ -213,7 +214,7 @@ export default function ThongKe({ accounts = [] }) {
         </div>
 
         <div style={the}>
-          <div style={nhan}>Học sinh điểm cao nhất</div>
+          <div style={nhan}>{tr("Học sinh điểm cao nhất", "Meilleurs élèves", "Top students")}</div>
           {!top.length ? <Trong /> : (
             <ol style={{ listStyle: "none", margin: 0, padding: 0, display: "grid", gap: 4 }}>
               {top.map((h, i) => (
@@ -222,7 +223,7 @@ export default function ThongKe({ accounts = [] }) {
                   <span style={{ width: 24, height: 24, borderRadius: 999, display: "grid", placeItems: "center",
                     fontSize: 12, fontWeight: 800, background: C.primarySoft, color: C.primary }}>{i + 1}</span>
                   <span style={{ flex: 1, color: C.ink, fontWeight: 600, fontSize: 14 }}>{h.acc.name}</span>
-                  <span style={{ fontSize: 12, color: C.soft }}>{h.n} lượt</span>
+                  <span style={{ fontSize: 12, color: C.soft }}>{h.n} {tr("lượt", "tentatives", "attempts")}</span>
                   <span style={{ color: C.ok, fontWeight: 700, fontVariantNumeric: "tabular-nums" }}>{pct(h.tb)}</span>
                 </li>
               ))}
@@ -234,16 +235,16 @@ export default function ThongKe({ accounts = [] }) {
       {/* ── Bảng chi tiết ── */}
       <div style={{ ...the, overflowX: "auto" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8, marginBottom: 12 }}>
-          <div style={{ ...S.label, margin: 0 }}>Kết quả từng học sinh</div>
+          <div style={{ ...S.label, margin: 0 }}>{tr("Kết quả từng học sinh", "Résultats par élève", "Results by student")}</div>
           <button style={{ ...S.btn(false), display: "inline-flex", alignItems: "center", gap: 6 }} onClick={xuatCSV}>
-            <Download size={15} /> Xuất CSV
+            <Download size={15} /> {tr("Xuất CSV", "Exporter CSV", "Export CSV")}
           </button>
         </div>
-        {!accounts.length ? <p style={{ color: C.soft, margin: 0 }}>Chưa có học sinh nào.</p> : (
+        {!accounts.length ? <p style={{ color: C.soft, margin: 0 }}>{tr("Chưa có học sinh nào.", "Aucun élève.", "No students yet.")}</p> : (
           <table style={{ borderCollapse: "collapse", width: "100%", minWidth: 640 }}>
             <thead>
               <tr>
-                {["Học sinh", "Số lượt", "Điểm TB", "Tỷ lệ đạt", "Xu hướng", "Lần cuối"].map((h) => (
+                {[tr("Học sinh", "Élève", "Student"), tr("Số lượt", "Tentatives", "Attempts"), tr("Điểm TB", "Moyenne", "Average"), tr("Tỷ lệ đạt", "Réussite", "Pass rate"), tr("Xu hướng", "Tendance", "Trend"), tr("Lần cuối", "Dernière fois", "Last time")].map((h) => (
                   <th key={h} style={{ fontSize: 11.5, textTransform: "uppercase", letterSpacing: 0.5, color: C.soft,
                     textAlign: "left", padding: "9px 12px", background: C.surface2, fontWeight: 700 }}>{h}</th>
                 ))}
@@ -260,7 +261,7 @@ export default function ThongKe({ accounts = [] }) {
                     <td style={{ ...td, color: h.dat == null ? C.soft : C.ink }}>{pct(h.dat)}</td>
                     <td style={td}><DuongXuHuong ds={h.ds} /></td>
                     <td style={{ ...td, color: C.soft, fontSize: 13 }}>
-                      {h.cuoi ? new Date(h.cuoi).toLocaleDateString("vi-VN") : "Chưa làm bài"}
+                      {h.cuoi ? new Date(h.cuoi).toLocaleDateString("vi-VN") : tr("Chưa làm bài", "Pas commencé", "Not started")}
                     </td>
                   </tr>
                 );
@@ -269,7 +270,7 @@ export default function ThongKe({ accounts = [] }) {
           </table>
         )}
         <p style={{ fontSize: 12, color: C.soft, marginTop: 10, marginBottom: 0 }}>
-          Tính trên các lượt đã nộp và được máy chủ chấm (luyện tập và thi thử). Phần viết/nói không có điểm máy chấm nên không tính vào đây.
+          {tr("Tính trên các lượt đã nộp và được máy chủ chấm (luyện tập và thi thử). Phần viết/nói không có điểm máy chấm nên không tính vào đây.", "Calculé sur les tentatives rendues et corrigées par le serveur (entraînement et examens blancs). L'écrit et l'oral ne sont pas inclus.", "Based on submitted attempts graded by the server (practice and mock exams). Writing and speaking aren't included.")}
         </p>
       </div>
     </div>
@@ -310,5 +311,5 @@ function DuongXuHuong({ ds }) {
 }
 
 function Trong() {
-  return <p style={{ color: C.soft, fontSize: 14, margin: 0 }}>Chưa có lượt làm bài nào được chấm.</p>;
+  return <p style={{ color: C.soft, fontSize: 14, margin: 0 }}>{tr("Chưa có lượt làm bài nào được chấm.", "Aucune tentative corrigée.", "No graded attempts yet.")}</p>;
 }
