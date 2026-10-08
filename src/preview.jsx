@@ -109,6 +109,8 @@ const BO_THE_THU = [
 import NeoNguLieu from "./screens/student/NeoNguLieu.jsx";
 import ChonDoanVan from "./screens/teacher/ChonDoanVan.jsx";
 import TeamSection from "./screens/public/TeamSection.jsx";
+import TroChoiMan from "./screens/student/TroChoiMan.jsx";
+const THE_CHOI = [["le vent","gió"],["la pluie","mưa"],["l'arbre","cây"],["la montagne","núi"],["la mer","biển"],["le soleil","mặt trời"],["la neige","tuyết"],["le nuage","mây"]].map(([a,b],k)=>({id:"t"+k,matTruoc:a,matSau:b,loai:"n",chuDe:"thoi-tiet"}));
 import { Lightbulb, PenLine } from "lucide-react";
 import { Avatar, DS_AVATAR } from "./shared/avatars.jsx";
 
@@ -680,6 +682,7 @@ function Preview() {
     ["/etudiant/bo-the", "Thư viện bộ thẻ — tab dọc"],
     ["/gioi-thieu/doi-ngu", "Đội ngũ chuyên môn"],
     ["/professeur/grille", "Soạn thang chấm"],
+    ["/etudiant/tro-choi", "Màn chơi Lộ trình"],
   ];
 
   const ChonManPhu = () => {
@@ -797,6 +800,7 @@ function Preview() {
           <Route path="/professeur/grille" element={<><Controls /><GrilleThu /></>} />
           <Route path="/etudiant/phan-thi" element={<><Controls /><PhanThiThu /></>} />
           <Route path="/etudiant/nhan-xet-ai" element={<><Controls /><div className="mx-auto max-w-2xl py-6"><NhanXetAI level="A1" rubric={grilleToRubric("A1")} mau={NHAN_XET_MAU} /></div></>} />
+          <Route path="/etudiant/tro-choi" element={<TroChoiMan tieuDe="Thời tiết · Màn 1" the={THE_CHOI} onXong={async (sao) => ({ sao, xp: 15 })} onDong={() => history.back()} t={t} />} />
           <Route path="/etudiant/the-lat" element={<><Controls /><TheLatThu /></>} />
           <Route path="/etudiant/the-bo" element={<><Controls /><TheBoThu /></>} />
           <Route path="/etudiant/neo" element={<><Controls /><NeoThu /></>} />

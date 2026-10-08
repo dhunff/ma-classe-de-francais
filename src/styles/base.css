@@ -181,3 +181,27 @@ body {
 @keyframes mcfBongVao { from { opacity: 0; transform: translateY(12px) scale(.9); } to { opacity: 1; transform: none; } }
 .mcf-leon-vao-bong { animation: mcfBongVao .5s .4s cubic-bezier(.34,1.56,.64,1) both; }
 @media (prefers-reduced-motion: reduce) { .mcf-leon-bay, .mcf-leon-vao-bong { animation: none; } }
+
+/* Màn chơi Lộ trình (09/10): chuyển câu, đúng/sai, pháo giấy, tim mất. */
+@keyframes mcfCauVao { from { opacity: 0; transform: translateX(36px) scale(.98); } to { opacity: 1; transform: none; } }
+.mcf-cau-vao { animation: mcfCauVao .42s cubic-bezier(.22,1,.36,1) both; }
+@keyframes mcfNay { 0% { transform: scale(1); } 40% { transform: scale(1.06); } 70% { transform: scale(.98); } 100% { transform: scale(1); } }
+.mcf-nay { animation: mcfNay .45s cubic-bezier(.34,1.56,.64,1); }
+@keyframes mcfRung { 0%,100% { transform: translateX(0); } 20% { transform: translateX(-8px); } 40% { transform: translateX(7px); } 60% { transform: translateX(-5px); } 80% { transform: translateX(3px); } }
+.mcf-rung { animation: mcfRung .45s ease-in-out; }
+@keyframes mcfDaiLen { from { transform: translateY(100%); } to { transform: none; } }
+.mcf-dai-len { animation: mcfDaiLen .35s cubic-bezier(.22,1,.36,1) both; }
+@keyframes mcfTimMat { 0% { transform: scale(1); } 30% { transform: scale(1.5) rotate(-12deg); } 100% { transform: scale(.85); opacity: .3; } }
+.mcf-tim-mat { animation: mcfTimMat .6s ease-out both; }
+@keyframes mcfAnhSang { from { transform: translateX(-100%); } to { transform: translateX(250%); } }
+.mcf-anh-sang { animation: mcfAnhSang 2.4s ease-in-out infinite; }
+@keyframes mcfPhao { 0% { opacity: 1; transform: translate(0,0) rotate(0); } 100% { opacity: 0; transform: translate(var(--dx), var(--dy)) rotate(var(--r)); } }
+.mcf-phao { animation: mcfPhao .9s cubic-bezier(.2,.8,.3,1) forwards; }
+@keyframes mcfSaoNo { 0% { opacity: 0; transform: scale(.2) rotate(-30deg); } 60% { opacity: 1; transform: scale(1.25) rotate(8deg); } 100% { opacity: 1; transform: scale(1) rotate(0); } }
+.mcf-sao-no { animation: mcfSaoNo .6s cubic-bezier(.34,1.56,.64,1) both; }
+@keyframes mcfLuaNhun { 0%,100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-3px) scale(1.12); } }
+.mcf-lua-nhun { animation: mcfLuaNhun .8s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .mcf-cau-vao, .mcf-nay, .mcf-rung, .mcf-dai-len, .mcf-tim-mat, .mcf-anh-sang, .mcf-phao, .mcf-sao-no, .mcf-lua-nhun { animation: none; }
+  .mcf-phao { display: none; }
+}
