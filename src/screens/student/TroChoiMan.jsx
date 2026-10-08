@@ -1,8 +1,9 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { X, Heart, Star, Flame, RotateCcw, Check, XCircle, CheckCircle2 } from "lucide-react";
+import { X, Heart, Star, Flame, RotateCcw, Check, XCircle, CheckCircle2, Volume2, VolumeX } from "lucide-react";
 import { sinhLuot, tinhSao, SO_TIM } from "../../shared/troChoiThe.js";
 import { tr } from "../../shared/i18n.jsx";
 import { Leon } from "../../shared/leon.jsx";
+import { phat, amThanhBat, datAmThanh } from "../../shared/amThanh.js";
 
 /* Một màn chơi của Lộ trình — phủ kín màn hình, dựng từ thẻ THẬT của bộ.
  *
@@ -43,6 +44,7 @@ export default function TroChoiMan({ tieuDe, the, kho, soCau = 8, ghep = true, o
   const [luu, setLuu] = useState(null);              // null | "dang" | {sao} | {loi}
   const [timMat, setTimMat] = useState(-1);          // chỉ số tim vừa mất (để chạy hoạt ảnh)
   const [loiLeon, setLoiLeon] = useState(null);      // [cảm xúc, câu] cho dải phản hồi
+  const [tieng, setTieng] = useState(amThanhBat);
 
   const choiLai = () => {
     setHat((n) => n + 1); setI(0); setTim(SO_TIM); setSai(0); setChuoi(0);
@@ -51,6 +53,7 @@ export default function TroChoiMan({ tieuDe, the, kho, soCau = 8, ghep = true, o
 
   const xong = (sao) => {
     setKetThuc({ sao });
+    phat(sao > 0 ? "thang" : "thua");
     if (sao > 0) {
       setLuu("dang");
       Promise.resolve(onXong(sao)).then(setLuu, (e) => setLuu({ loi: String(e?.message || e) }));
@@ -60,10 +63,12 @@ export default function TroChoiMan({ tieuDe, the, kho, soCau = 8, ghep = true, o
   const tru = () => {
     setSai((n) => n + 1); setChuoi(0);
     setTimMat(tim - 1);
+    setTimeout(() => phat("timMat"), 180);
     setTim((n) => n - 1);
   };
 
   const tiep = () => {
+    phat("tiep");
     setChon(null); setLoiLeon(null);
     if (tim <= 0) return xong(0);
     if (i + 1 >= luot.length) return xong(tinhSao(sai, tim));
@@ -74,8 +79,10 @@ export default function TroChoiMan({ tieuDe, the, kho, soCau = 8, ghep = true, o
     if (chon) return;
     const cau = luot[i];
     setChon(p);
-    if (p === cau.dung) { setChuoi((n) => n + 1); setLoiLeon(chonNgauNhien(LOI_DUNG())); }
-    else { tru(); setLoiLeon(chonNgauNhien(LOI_SAI())); }
+    if (p === cau.dung) {
+      phat("dung"); if (chuoi + 1 >= 3) setTimeout(() => phat("combo"), 260);
+      setChuoi((n) => n + 1); setLoiLeon(chonNgauNhien(LOI_DUNG()));
+    } else { phat("sai"); tru(); setLoiLeon(chonNgauNhien(LOI_SAI())); }
   };
 
   /* Câu ghép không có dải « Tiếp tục » sau mỗi lần sai, nên hết tim giữa câu
@@ -124,6 +131,11 @@ export default function TroChoiMan({ tieuDe, the, kho, soCau = 8, ghep = true, o
             <span aria-hidden className="mcf-anh-sang absolute inset-y-0 left-0 w-1/3 bg-gradient-to-r from-transparent via-white/45 to-transparent" />
           </div>
         </div>
+        <button type="button" onClick={() => { const m = !tieng; datAmThanh(m); setTieng(m); if (m) phat("bam"); }}
+          aria-label={tieng ? tr("Tắt âm thanh", "Couper le son", "Mute") : tr("Bật âm thanh", "Activer le son", "Unmute")} title={tieng ? tr("Tắt âm thanh", "Couper le son", "Mute") : tr("Bật âm thanh", "Activer le son", "Unmute")}
+          className="grid h-10 w-10 shrink-0 cursor-pointer place-items-center rounded-full border-0 bg-transparent text-soft transition-colors hover:bg-surface2 hover:text-ink">
+          {tieng ? <Volume2 size={20} /> : <VolumeX size={20} />}
+        </button>
         <div className="flex items-center gap-1 text-danger" aria-label={`${tim}/${SO_TIM}`}>
           {Array.from({ length: SO_TIM }, (_, k) => (
             <Heart key={`${k}-${k === timMat ? sai : 0}`} size={22} fill={k < tim ? "currentColor" : "none"}
@@ -140,7 +152,7 @@ export default function TroChoiMan({ tieuDe, the, kho, soCau = 8, ghep = true, o
             onLai={choiLai} onDong={onDong} t={t} />
         ) : cau.kieu === "ghep" ? (
           <CauGhep key={`${hat}-${i}`} cau={cau} t={t} chuoi={chuoi}
-            onSai={tru} onXong={() => { setChuoi((n) => n + 1); setLoiLeon(chonNgauNhien(LOI_DUNG())); setChon("ghep"); }} />
+            onSai={tru} onXong={() => { phat("dung"); setChuoi((n) => n + 1); setLoiLeon(chonNgauNhien(LOI_DUNG())); setChon("ghep"); }} />
         ) : (
           <CauChon key={`${hat}-${i}`} cau={cau} chon={chon} t={t} chuoi={chuoi} so={i + 1} tong={luot.length}
             onChon={traLoi} />
@@ -244,10 +256,10 @@ function CauGhep({ cau, onSai, onXong, chuoi, t }) {
   const bamPhai = (id) => {
     if (!trai || xong.has(id)) return;
     if (trai === id) {
-      const moi = new Set(xong); moi.add(id); setXong(moi); setTrai(null); setVuaGhep(id);
+      const moi = new Set(xong); moi.add(id); setXong(moi); setTrai(null); setVuaGhep(id); if (moi.size < cau.trai.length) phat("ghep");
       if (moi.size === cau.trai.length) onXong();
     } else {
-      setLoi([trai, id]); onSai(); setTrai(null);
+      phat("sai"); setLoi([trai, id]); onSai(); setTrai(null);
       setTimeout(() => setLoi(null), 600);
     }
   };
@@ -276,7 +288,7 @@ function CauGhep({ cau, onSai, onXong, chuoi, t }) {
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div className="flex flex-col gap-3">
-          {cau.trai.map((x) => o(x.id, trai === x.id, !xong.has(x.id), () => setTrai(x.id), x.chu, "fr", loi?.[0] === x.id))}
+          {cau.trai.map((x) => o(x.id, trai === x.id, !xong.has(x.id), () => { phat("bam"); setTrai(x.id); }, x.chu, "fr", loi?.[0] === x.id))}
         </div>
         <div className="flex flex-col gap-3">
           {cau.phai.map((x) => o(x.id, false, !!trai && !xong.has(x.id), () => bamPhai(x.id), x.chu, "vi", loi?.[1] === x.id))}
@@ -315,6 +327,10 @@ function PhanHoi({ dung, dapAn, leon, onTiep, t }) {
 
 function KetQua({ ketThuc, luu, sai, tieuDe, tongCau, onLai, onDong, t }) {
   const { sao } = ketThuc;
+  useEffect(() => {
+    const h = Array.from({ length: sao }, (_, k) => setTimeout(() => phat("sao"), 700 + (k + 1) * 180));
+    return () => h.forEach(clearTimeout);
+  }, [sao]);
   const dung = Math.max(0, tongCau - sai);
   return (
     <div className="mcf-cau-vao m-auto flex w-full max-w-sm flex-col items-center gap-5 text-center">
