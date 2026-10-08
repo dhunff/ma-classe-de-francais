@@ -1,10 +1,11 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { Swords, X, Timer, Trophy, Hourglass, Play } from "lucide-react";
+import { Swords, X, Timer, Trophy, Hourglass, Play, Volume2, VolumeX } from "lucide-react";
+import { phat, amThanhBat, datAmThanh } from "../../shared/amThanh.js";
 import { Avatar } from "../../shared/avatars.jsx";
 import { docDangTheoDoi } from "../../shared/xp.js";
 import { docCacBo } from "../../shared/boThe.js";
 import { dsThachDau, taoThachDau, layDe, nopThachDau } from "../../shared/thachDau.js";
-import { useT } from "../../shared/i18n.jsx";
+import { useT, tr } from "../../shared/i18n.jsx";
 
 /* Thách đấu bạn bè (30/09) — hai người làm CÙNG một đề 8 câu rút từ một bộ
  * flashcard; ai đúng nhiều hơn thắng, bằng nhau thì ai nhanh hơn thắng.
@@ -170,6 +171,16 @@ function ManDau({ tran, onDong, t, loiChu }) {
   const [traLoi, setTraLoi] = useState([]);
   const [giay, setGiay] = useState(0);
   const [kq, setKq] = useState(null);     // null | "dang" | {dung,tong,giay} | {loi}
+  const [tieng, setTieng] = useState(amThanhBat);
+
+  /* Âm thanh (09/10): còi bắt đầu, tiếng bấm mỗi câu, nhạc khi có kết quả.
+     Không có tiếng đúng/sai từng câu: màn đấu không có đáp án ở trình duyệt. */
+  useEffect(() => { phat("batDau"); }, []);
+  useEffect(() => {
+    if (!kq || kq === "dang") return;
+    if (kq.loi) { phat("sai"); return; }
+    phat(kq.tong && kq.dung / kq.tong >= 0.7 ? "thang" : "nop");
+  }, [kq]);
 
   useEffect(() => {
     if (kq) return undefined;
@@ -178,9 +189,10 @@ function ManDau({ tran, onDong, t, loiChu }) {
   }, [kq]);
 
   const chon = async (viTri) => {
+    phat("bam");
     const moi = [...traLoi, viTri];
     setTraLoi(moi);
-    if (i + 1 < tran.cau.length) { setI(i + 1); return; }
+    if (i + 1 < tran.cau.length) { setTimeout(() => phat("tiep"), 90); setI(i + 1); return; }
     setKq("dang");
     setKq(await nopThachDau(tran.id, moi));
   };
@@ -197,6 +209,11 @@ function ManDau({ tran, onDong, t, loiChu }) {
           <div className="h-full rounded-full bg-primary transition-all duration-300"
             style={{ width: `${((kq ? tran.cau.length : i) / tran.cau.length) * 100}%` }} />
         </div>
+        <button type="button" onClick={() => { const m = !tieng; datAmThanh(m); setTieng(m); if (m) phat("bam"); }}
+          aria-label={tieng ? tr("Tắt âm thanh", "Couper le son", "Mute") : tr("Bật âm thanh", "Activer le son", "Unmute")}
+          className="grid h-9 w-9 shrink-0 cursor-pointer place-items-center rounded-full border-0 bg-transparent text-soft hover:bg-surface2 hover:text-ink">
+          {tieng ? <Volume2 size={19} /> : <VolumeX size={19} />}
+        </button>
         <span className="inline-flex items-center gap-1 text-sm font-bold tabular-nums text-ink">
           <Timer size={16} className="text-soft" />{phutGiay(kq?.giay ?? giay)}
         </span>
