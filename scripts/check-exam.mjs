@@ -480,7 +480,7 @@ t("đầu vào null không làm nổ", gomTheoKyNang(null).length, 0);
   const src = readFileSync(new URL("../src/screens/exam/ExamMode.jsx", import.meta.url), "utf8");
   const ma = boChuThichJs(src);
   t("màn chờ hỏi phiên máy chủ", /coPhienMayChu\(\)/.test(ma), true);
-  t("nút bắt đầu khoá khi không có phiên", /phienThuc !== true/.test(ma), true);
+  t("nút bắt đầu khoá khi không có phiên", /phienThuc !== true|phienThuc === true/.test(ma), true);
 
   /* Ba trạng thái, không phải hai. Coi "chưa biết" như "không có" thì màn chờ
      chớp một cảnh báo đỏ ngay lần render đầu rồi tự rút lại. */

@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Timer, ShieldCheck, AlertTriangle, Clock, Volume2, VolumeX, ArrowLeft, Trophy } from "lucide-react";
+import { Timer, ShieldCheck, AlertTriangle, Clock, Volume2, VolumeX, ArrowLeft, Trophy, Headphones, BookOpen, PenLine, Mic } from "lucide-react";
+import NutTieng from "../../shared/NutTieng.jsx";
 import { supabase } from "../../storageShim.js";
 import { loadExams, loadExam } from "../../shared/examStore.js";
 import { gradeRemote } from "../../shared/gradeRemote.js";
@@ -17,7 +18,7 @@ import { isQuestionAnswered } from "../../shared/questions.js";
 const daLamCau = (q, answers) => (q.type === "vf" ? answers?.[q.id]?.choice != null : isQuestionAnswered(q, answers));
 import { coPhienMayChu } from "../../shared/phienMayChu.js";
 import { tr } from "../../shared/i18n.jsx";
-import { LeonTheoTrang } from "../../shared/leon.jsx";
+import { LeonTheoTrang, Leon } from "../../shared/leon.jsx";
 import { phat, amThanhBat, datAmThanh } from "../../shared/amThanh.js";
 
 /* Mode Examen — thi thử có tính giờ.
@@ -98,108 +99,139 @@ function ManCho({ dsDe, chon, paper, onStart, dangTai, lamPhanNoi, setLamPhanNoi
     );
   }
 
+  /* Đổi tab trình độ thì tự chọn đề đầu tiên của tab (09/10). Trước đây bảng
+     cấu trúc vẫn hiện đề của tab cũ, nên tab mới trông như « chưa có bài ». */
+  const doiTab = (lv) => {
+    if (lv !== tab) phat("tiep");
+    setTab(lv);
+    const dau = nhom.find((g) => g.level === lv)?.de?.[0];
+    if (dau && paper?.id !== dau.id) chon(dau.id);
+  };
+  const deDangChon = deTab.some((e) => e.id === paper?.id) ? paper : null;
+  const ICON_PHAN = { CO: Headphones, CE: BookOpen, PE: PenLine, PO: Mic };
+  const MAU_PHAN = { CO: "from-sky-500 to-blue-600", CE: "from-emerald-500 to-teal-600", PE: "from-amber-500 to-orange-600", PO: "from-fuchsia-500 to-purple-600" };
+  const sanSangVao = sanSang && !dangTai && !!deDangChon?.sections?.length && phienThuc === true;
+
   return (
-    <div className="mx-auto max-w-2xl py-8">
+    <div className="mx-auto max-w-3xl px-4 py-8">
       {/* Lối ra. Màn hình thi nằm ngoài vỏ app nên KHÔNG có thanh bên — cố ý,
-          phòng thi không có menu. Nhưng "không có menu" khác "không có lối ra":
-          thiếu link này thì cách duy nhất rời trang là bấm Back của trình
-          duyệt, và người dùng sẽ nghĩ mình bị nhốt. */}
+          phòng thi không có menu. Nhưng "không có menu" khác "không có lối ra". */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <Link to="/etudiant/dashboard"
           className="inline-flex items-center gap-1.5 text-sm font-semibold text-soft no-underline hover:text-ink">
           <ArrowLeft size={15} /> {tr("Về trang chủ", "Accueil", "Home")}
         </Link>
-        {/* « Kết quả thi » không còn ở menu (08/10): vào từ đây. */}
-        <Link to="/etudiant/resultats"
-          className="inline-flex items-center gap-2 rounded-full border border-solid border-line bg-surface px-4 py-2 text-sm font-bold text-ink no-underline hover:border-primary hover:text-primary">
-          <Trophy size={15} /> {tr("Kết quả thi của tôi", "Mes résultats", "My results")}
-        </Link>
+        <div className="flex items-center gap-2">
+          <NutTieng />
+          <Link to="/etudiant/resultats"
+            className="inline-flex items-center gap-2 rounded-full border border-solid border-line bg-surface px-4 py-2 text-sm font-bold text-ink no-underline transition-all hover:-translate-y-0.5 hover:border-primary hover:text-primary">
+            <Trophy size={15} /> {tr("Kết quả thi của tôi", "Mes résultats", "My results")}
+          </Link>
+        </div>
       </div>
 
-      <LeonTheoTrang path="/etudiant/examen" className="mt-5" />
+      {/* ── Khung đầu trang (09/10) ── */}
+      <header className="mcf-cau-vao relative mt-5 overflow-hidden rounded-3xl bg-gradient-to-br from-blue-700 via-primary to-indigo-600 p-6 text-white shadow-[0_20px_50px_rgba(37,99,235,0.3)]">
+        <span aria-hidden className="absolute -right-12 -top-12 h-48 w-48 rounded-full bg-white/10" />
+        <span aria-hidden className="absolute -bottom-20 left-1/4 h-44 w-44 rounded-full bg-sky-300/20 blur-2xl" />
+        <div className="relative flex items-center gap-4">
+          <Leon cam="co-len" size={116} className="mcf-leon-bay shrink-0 drop-shadow-[0_12px_18px_rgba(0,0,0,0.3)] max-sm:h-20 max-sm:w-20" />
+          <div className="min-w-0 flex-1">
+            <p className="m-0 flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-[0.2em] text-white/80"><ShieldCheck size={14} /> {tr("Phòng thi mô phỏng", "Salle d'examen simulée", "Simulated exam room")}</p>
+            <h1 className="m-0 mt-1 text-3xl font-extrabold tracking-tight">{tr("Thi thử DELF", "Examen blanc DELF", "DELF mock exam")}</h1>
+            <p className="m-0 mt-1 text-sm text-white/85">
+              {tr("Một lần duy nhất, có tính giờ, không xem đáp án giữa chừng.", "Une seule fois, chronométré, sans voir les réponses en cours.", "One sitting, timed, no answers shown along the way.")}
+            </p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {luot?.vip ? (
+                <span className="inline-flex items-center gap-1 rounded-full bg-amber-400/90 px-3 py-1 text-xs font-extrabold text-amber-950">👑 {tr("VIP: không giới hạn lượt", "VIP : essais illimités", "VIP: unlimited attempts")}</span>
+              ) : luot && !luot.khong_gioi_han ? (
+                <span className="inline-flex items-center gap-1 rounded-full bg-white/20 px-3 py-1 text-xs font-extrabold">
+                  <Timer size={12} /> {tr("Hôm nay còn", "Reste aujourd'hui", "Left today")} {Math.max(0, luot.gioi_han - luot.da_dung)}/{luot.gioi_han} {tr("lượt", "essai(s)", "attempt(s)")}
+                </span>
+              ) : null}
+              <span className="rounded-full bg-white/20 px-3 py-1 text-xs font-extrabold">{tr("Allez, courage !", "Allez, courage !", "Allez, courage!")}</span>
+            </div>
+          </div>
+        </div>
+      </header>
 
-      <h1 className="m-0 mt-4 text-2xl font-extrabold text-ink">{tr("Thi thử DELF", "Examen blanc DELF", "DELF mock exam")}</h1>
-      <p className="m-0 mt-2 text-sm text-soft">
-        {tr("Một lần duy nhất, có tính giờ, không xem đáp án giữa chừng.", "Une seule fois, chronométré, sans voir les réponses en cours.", "One sitting, timed, no answers shown along the way.")}
-      </p>
-
-      {/* Chọn ĐỀ, không chọn trình độ. Trước đây học sinh chọn B1/B2 rồi máy
-          bốc ngẫu nhiên ba bài — chạy được, nhưng không phải một đề thi. Giờ
-          mỗi dòng ở đây là một vật phẩm giáo viên đã cân nhắc và phát hành. */}
-      <div role="tablist" aria-label={tr("Trình độ", "Niveau", "Level")} className="mt-6 flex flex-wrap gap-2">
-        {nhom.map((g) => (
-          <button key={g.level} type="button" role="tab" aria-selected={g.level === tab} onClick={() => setTab(g.level)}
-            className={`cursor-pointer rounded-full border border-solid px-4 py-1.5 font-sans text-sm font-bold transition-colors ${
-              g.level === tab ? "border-primary bg-primary text-white" : "border-line bg-surface text-ink hover:border-primary"}`}>
-            {g.level} <span className={g.level === tab ? "text-white/75" : "text-soft"}>· {g.de.length}</span>
-          </button>
-        ))}
+      {/* ── Trình độ ── */}
+      <div role="tablist" aria-label={tr("Trình độ", "Niveau", "Level")} className="no-scrollbar -mx-4 mt-6 flex gap-2 overflow-x-auto px-4 pb-1">
+        {nhom.map((g, k) => {
+          const dang = g.level === tab;
+          return (
+            <button key={g.level} type="button" role="tab" aria-selected={dang} onClick={() => doiTab(g.level)}
+              className={`mcf-cau-vao flex shrink-0 cursor-pointer flex-col items-center rounded-2xl border-2 border-solid px-5 py-2.5 font-sans transition-all duration-200 ${
+                dang ? "-translate-y-0.5 border-primary bg-primary text-white shadow-[0_10px_24px_rgba(37,99,235,0.3)]" : "border-line bg-surface text-ink hover:-translate-y-0.5 hover:border-primary/50"}`}
+              style={{ animationDelay: `${80 + k * 50}ms` }}>
+              <span className="text-lg font-extrabold leading-none">{g.level}</span>
+              <span className={`mt-1 text-[11px] font-bold ${dang ? "text-white/80" : "text-soft"}`}>{g.de.length} {tr("đề", "sujet(s)", "exam(s)")}</span>
+            </button>
+          );
+        })}
       </div>
 
-      <div className="mt-4 space-y-2">
+      {/* ── Danh sách đề ── */}
+      <div className="mt-4 grid gap-3 sm:grid-cols-2">
         {deTab.length === 0 && (
-          <p className="m-0 rounded-2xl bg-surface2 px-5 py-4 text-sm text-soft">
-            {tr("Chưa có đề", "Aucun sujet", "No exam at level")} {tab} {tr("nào được phát hành.", "publié pour ce niveau.", "published yet.")}
-          </p>
+          <div className="flex items-center gap-3 rounded-2xl bg-surface2 px-5 py-4 sm:col-span-2">
+            <Leon cam="buon-ngu" size={56} />
+            <p className="m-0 text-sm text-soft">{tr("Chưa có đề", "Aucun sujet", "No exam at level")} {tab} {tr("nào được phát hành.", "publié pour ce niveau.", "published yet.")}</p>
+          </div>
         )}
-        {deTab.map((e) => (
-          <button key={e.id} type="button" onClick={() => chon(e.id)}
-            className={`block w-full rounded-2xl border-0 px-5 py-3 text-left transition ${
-              paper?.id === e.id ? "bg-primary text-white" : "bg-surface2 text-ink hover:brightness-95"}`}>
-            <span className="text-sm font-bold">{e.title}</span>
-            <span className={`ml-2 text-xs ${paper?.id === e.id ? "text-white/75" : "text-soft"}`}>
-              {/* Đếm KỸ NĂNG, không đếm dòng — một đề 6 bài vẫn là 3 phần. */}
-              {e.level} · {new Set(e.sections.map((s) => s.code)).size} {tr("phần", "parties", "parts")}
-              {e.sections.length > 3 ? tr(` · ${e.sections.length} bài`, ` · ${e.sections.length} exercices`, ` · ${e.sections.length} exercises`) : ""}
-              {` · ${e.duration_min ?? 0}′`}
-            </span>
-          </button>
-        ))}
+        {deTab.map((e, k) => {
+          const dang = paper?.id === e.id;
+          return (
+            <button key={e.id} type="button" onClick={() => { phat("bam"); chon(e.id); }} aria-pressed={dang}
+              className={`mcf-cau-vao relative cursor-pointer rounded-2xl border-2 border-solid p-4 text-left font-sans transition-all duration-200 ${
+                dang ? "-translate-y-0.5 border-primary bg-primary-soft shadow-[0_12px_28px_rgba(37,99,235,0.18)]" : "border-line bg-surface hover:-translate-y-0.5 hover:border-primary/50 hover:shadow-md"}`}
+              style={{ animationDelay: `${120 + k * 60}ms` }}>
+              {dang && <span className="mcf-nay absolute right-3 top-3 grid h-6 w-6 place-items-center rounded-full bg-primary text-white"><ShieldCheck size={14} /></span>}
+              <span className="block pr-8 text-base font-extrabold text-ink">{e.title}</span>
+              <span className="mt-2 flex flex-wrap gap-1.5 text-[11px] font-bold">
+                {/* Đếm KỸ NĂNG, không đếm dòng — một đề 6 bài vẫn là 3 phần. */}
+                <span className="rounded-full bg-surface2 px-2 py-0.5 text-soft">{new Set(e.sections.map((x) => x.code)).size} {tr("phần", "parties", "parts")}</span>
+                <span className="rounded-full bg-surface2 px-2 py-0.5 text-soft">{e.sections.length} {tr("bài", "exercices", "exercises")}</span>
+                <span className="inline-flex items-center gap-1 rounded-full bg-surface2 px-2 py-0.5 text-soft"><Clock size={11} />{e.duration_min ?? 0}′</span>
+              </span>
+            </button>
+          );
+        })}
       </div>
 
-      <div className="mt-6 overflow-hidden rounded-2xl border border-line bg-surface">
-        <table className="w-full border-collapse text-sm">
-          <thead>
-            <tr className="bg-surface2 text-left text-xs uppercase tracking-wide text-soft">
-              <th className="p-3 font-bold">{tr("Phần", "Partie", "Part")}</th>
-              <th className="p-3 font-bold">{tr("Thời gian", "Durée", "Time")}</th>
-              <th className="p-3 font-bold">{tr("Điểm", "Points", "Points")}</th>
-              <th className="p-3 font-bold">{tr("Bài", "Exercice", "Exercise")}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {cauTruc.map((p) => {
-              const co = (paper?.sections ?? []).filter((s) => s.code === p.code);
+      {/* ── Cấu trúc đề đang chọn ── */}
+      {deDangChon && (
+        <div className="mt-6">
+          <p className="m-0 mb-3 text-xs font-bold uppercase tracking-[0.14em] text-soft">{tr("Cấu trúc đề", "Structure du sujet", "Exam structure")} · {deDangChon.title}</p>
+          <div className="grid gap-3 sm:grid-cols-2">
+            {cauTruc.map((p, k) => {
+              const co = (deDangChon.sections ?? []).filter((x) => x.code === p.code);
+              const Icon = ICON_PHAN[p.code] ?? BookOpen;
+              const bo = p.code === "PO" && (!co.length || !lamPhanNoi);
               return (
-                <tr key={p.code} className="border-t border-line">
-                  <td className="p-3 font-bold text-ink">{p.code}
-                    <span className="ml-2 font-normal text-soft">{p.label}</span></td>
-                  <td className="p-3 text-ink">{p.minutes}′</td>
-                  <td className="p-3 text-ink">/{p.points}</td>
-                  {/* Liệt kê ĐỦ số bài của phần, không chỉ bài đầu.
-                      Một phần có thể có nhiều bài (migration 044), và học sinh
-                      cần biết trước phần CO là một bài hay ba — nó quyết định
-                      cách chia 25 phút. Bản cũ dùng `find` nên đề ba bài trông
-                      y hệt đề một bài. */}
-                  <td className="p-3">
-                    {co.length === 0
-                      ? <span className="font-bold text-danger">{tr("chưa có bài", "pas d'exercice", "no exercise")}</span>
-                      : (
-                        <span className="text-soft">
-                          {co.length > 1 && (
-                            <strong className="text-ink">{co.length} {tr("bài ·", "exercices ·", "exercises ·")} </strong>
-                          )}
-                          {co.map((s) => s.exercise?.title ?? tr("(không mở được)", "(inaccessible)", "(unavailable)"))
-                            .join(" · ").slice(0, 46)}
-                        </span>
-                      )}
-                  </td>
-                </tr>
+                <div key={p.code} className={`mcf-cau-vao flex items-start gap-3 rounded-2xl border border-solid border-line bg-surface p-4 ${bo ? "opacity-60" : ""}`}
+                  style={{ animationDelay: `${160 + k * 70}ms` }}>
+                  <span className={`grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-gradient-to-br ${MAU_PHAN[p.code] ?? "from-slate-500 to-slate-600"} text-white shadow-md`}>
+                    <Icon size={22} />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="m-0 flex items-baseline gap-2"><span className="text-base font-extrabold text-ink">{p.code}</span><span className="truncate text-xs text-soft">{p.label}</span></p>
+                    <p className="m-0 mt-1 flex flex-wrap gap-x-3 text-xs font-bold text-ink">
+                      <span className="inline-flex items-center gap-1"><Clock size={12} className="text-soft" />{p.minutes}′</span>
+                      <span>{p.points ? `/${p.points}` : tr("không chấm", "non noté", "not scored")}</span>
+                    </p>
+                    <p className="m-0 mt-1 truncate text-xs text-soft">
+                      {co.length === 0 ? <span className="font-bold text-danger">{tr("chưa có bài", "pas d'exercice", "no exercise")}</span>
+                        : <>{co.length > 1 && <strong className="text-ink">{co.length} {tr("bài · ", "exercices · ", "exercises · ")}</strong>}{co.map((x) => x.exercise?.title ?? tr("(không mở được)", "(inaccessible)", "(unavailable)")).join(" · ")}</>}
+                    </p>
+                  </div>
+                </div>
               );
             })}
-          </tbody>
-        </table>
-      </div>
+          </div>
+        </div>
+      )}
 
       {/* Đề KHÔNG có phần nói, và phải nói ra: nó là 25/100 của kỳ thi thật,
           im lặng ở đây là để học sinh tưởng điểm thi thử dự đoán được điểm
@@ -274,18 +306,18 @@ function ManCho({ dsDe, chon, paper, onStart, dangTai, lamPhanNoi, setLamPhanNoi
         </div>
       )}
 
-      <label className="mt-6 flex cursor-pointer items-start gap-3 text-sm text-ink">
-        <input type="checkbox" checked={sanSang} onChange={(e) => setSanSang(e.target.checked)}
-          className="mt-1" />
+      <label className={`mt-6 flex cursor-pointer items-start gap-3 rounded-2xl border-2 border-solid p-4 text-sm text-ink transition-all ${sanSang ? "border-ok bg-ok-soft" : "border-line bg-surface hover:border-primary/40"}`}>
+        <input type="checkbox" checked={sanSang} onChange={(e) => { phat(e.target.checked ? "dung" : "bam"); setSanSang(e.target.checked); }}
+          className="mt-1 h-4 w-4 accent-[rgb(var(--mcf-primary-rgb))]" />
         <span>
           {tr("Tôi có", "J'ai", "I have")} <strong>{tongPhut} {tr("phút liên tục", "minutes sans interruption", "uninterrupted minutes")}</strong> {tr("và sẽ không rời khỏi bài thi. Đồng hồ chạy liên tục kể cả khi đóng tab.", "et je ne quitterai pas l'examen. Le chronomètre continue même si l'onglet est fermé.", "and will not leave the exam. The timer keeps running even if the tab is closed.")}
         </span>
       </label>
 
       <button type="button"
-        disabled={!sanSang || dangTai || !paper?.sections.length || phienThuc !== true}
-        onClick={() => { setLoiMo(""); setMoHop(true); }}
-        className="mt-6 inline-flex items-center gap-2 rounded-full border-0 bg-primary px-6 py-3 text-sm font-bold text-white shadow-lg transition enabled:hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-40">
+        disabled={!sanSangVao}
+        onClick={() => { phat("bam"); setLoiMo(""); setMoHop(true); }}
+        className={`mt-5 inline-flex w-full items-center justify-center gap-2 rounded-2xl border-0 border-b-4 border-solid border-blue-800 bg-gradient-to-r from-primary to-indigo-600 px-6 py-4 text-base font-extrabold uppercase tracking-wide text-white shadow-[0_14px_30px_rgba(37,99,235,0.35)] transition-all enabled:hover:-translate-y-0.5 enabled:active:translate-y-0.5 enabled:active:border-b-0 disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto sm:px-10 ${sanSangVao ? "mcf-nay" : ""}`}>
         {/* Nút mờ đi mà không nói vì sao là một cánh cửa khoá không biển
             báo. Ba lý do khoá, ba câu khác nhau. */}
         <Timer size={16} /> {dangTai ? tr("Đang tải đề…", "Chargement du sujet…", "Loading exam…")
@@ -293,14 +325,6 @@ function ManCho({ dsDe, chon, paper, onStart, dangTai, lamPhanNoi, setLamPhanNoi
           : phienThuc === false ? tr("Cần đăng nhập lại", "Reconnexion nécessaire", "Sign-in required")
           : tr("Bắt đầu thi", "Commencer l'examen", "Start the exam")}
       </button>
-      {luot?.vip && (
-        <p className="m-0 mt-3 text-xs font-bold text-warn">{tr("VIP: không giới hạn lượt thi thử.", "VIP : examens blancs illimités.", "VIP: unlimited mock exams.")}</p>
-      )}
-      {luot && !luot.khong_gioi_han && (
-        <p className="m-0 mt-3 text-xs text-soft">
-          {tr("Hôm nay còn", "Il reste aujourd'hui", "Left today:")} {Math.max(0, luot.gioi_han - luot.da_dung)}/{luot.gioi_han} {tr("lượt thi. Lượt mới vào 0 giờ (giờ Việt Nam).", "essai(s). Nouveaux essais à minuit (heure du Vietnam).", "attempts. New attempts at midnight (Vietnam time).")}
-        </p>
-      )}
       {moHop && (
         <HopBatDau tongPhut={tongPhut} luot={luot} dangMo={dangMo} loi={loiMo}
           onHuy={() => setMoHop(false)} onDongY={dongY} />
