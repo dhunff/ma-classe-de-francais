@@ -1,5 +1,6 @@
 import React from "react";
 import { CheckCircle2, XCircle } from "lucide-react";
+import { tr } from "../../shared/i18n.jsx";
 
 /* Ba dạng câu DELF thêm 07/10, dùng chung cho mọi màn (luyện tập, bài giao,
  * thi thử, xem bài đã nộp, giáo viên chấm).
@@ -51,7 +52,7 @@ export function GhepCap({ q, value, onChange, readOnly, correction, dapAn }) {
               </div>
               {correction && (ok
                 ? <CheckCircle2 size={18} className="text-ok" />
-                : <span className="inline-flex items-center gap-1 text-xs font-bold text-ok"><XCircle size={16} className="text-danger" />{dapAnChu && `Réponse : ${dapAnChu}`}</span>)}
+                : <span className="inline-flex items-center gap-1 text-xs font-bold text-ok"><XCircle size={16} className="text-danger" />{dapAnChu && tr(`Réponse : ${dapAnChu}`, `Đáp án: ${dapAnChu}`, `Answer: ${dapAnChu}`)}</span>)}
             </div>
           );
         })}

@@ -144,15 +144,15 @@ export default function ThongKe({ accounts = [] }) {
       {/* ── Hàng KPI ── */}
       <div style={{ display: "grid", gap: 16, gridTemplateColumns: "repeat(auto-fit, minmax(190px, 1fr))" }}>
         <Kpi icon={Users} mau={C.primary} nhan={tr("Học sinh", "Élève", "Student")} so={accounts.length}
-          phu={`${tk.daLam} đã làm ít nhất một bài`} />
+          phu={tr(`${tk.daLam} đã làm ít nhất một bài`, `${tk.daLam} ont fait au moins un exercice`, `${tk.daLam} did at least one exercise`)} />
         <Kpi icon={ClipboardCheck} mau={C.ok} nhan={tr("Lượt làm bài", "Tentatives", "Attempts")} so={tongLuot}
-          phu={`${tk.gan30} lượt trong 30 ngày qua`} />
+          phu={tr(`${tk.gan30} lượt trong 30 ngày qua`, `${tk.gan30} tentatives sur 30 jours`, `${tk.gan30} attempts in the last 30 days`)} />
         <Kpi icon={Gauge} mau={C.primary} nhan={tr("Điểm trung bình", "Moyenne", "Average score")} so={pct(tk.tbChung)}
           phu={tk.xuHuong == null ? tr("Chưa đủ dữ liệu để so với tháng trước", "Pas assez de données pour comparer au mois précédent", "Not enough data to compare with last month")
-            : `${tk.xuHuong >= 0 ? "↑" : "↓"} ${Math.abs(Math.round(tk.xuHuong))} điểm so với trước 30 ngày`}
+            : tr(`${tk.xuHuong >= 0 ? "↑" : "↓"} ${Math.abs(Math.round(tk.xuHuong))} điểm so với trước 30 ngày`, `${tk.xuHuong >= 0 ? "↑" : "↓"} ${Math.abs(Math.round(tk.xuHuong))} points par rapport à il y a 30 jours`, `${tk.xuHuong >= 0 ? "↑" : "↓"} ${Math.abs(Math.round(tk.xuHuong))} points vs 30 days ago`)}
           mauPhu={tk.xuHuong == null ? C.soft : tk.xuHuong >= 0 ? C.ok : C.danger} />
         <Kpi icon={Award} mau={C.warn} nhan={tr("Tỷ lệ lượt đạt", "Taux de réussite", "Pass rate")} so={pct(tk.tiLeDat)}
-          phu={`Đạt = từ ${NGUONG_DAT} % trở lên`} />
+          phu={tr(`Đạt = từ ${NGUONG_DAT} % trở lên`, `Réussi = ${NGUONG_DAT} % ou plus`, `Pass = ${NGUONG_DAT}% or more`)} />
         <Kpi icon={UserX} mau={C.danger} nhan={tr("Chưa làm bài nào", "Aucun exercice fait", "No exercises done")} so={accounts.length - tk.daLam}
           phu={tr("học sinh cần nhắc", "élève(s) à relancer", "student(s) to nudge")} />
       </div>
@@ -170,7 +170,7 @@ export default function ThongKe({ accounts = [] }) {
                       innerRadius={52} outerRadius={80} paddingAngle={2} stroke="none">
                       {tk.phanBo.filter((b) => b.so).map((b) => <Cell key={b.ten} fill={b.mau} />)}
                     </Pie>
-                    <Tooltip {...hopThoai} formatter={(v) => [`${v} lượt`, ""]} />
+                    <Tooltip {...hopThoai} formatter={(v) => [tr(`${v} lượt`, `${v} tentatives`, `${v} attempts`), ""]} />
                   </PieChart>
                 </ResponsiveContainer>
                 <div style={{ position: "absolute", inset: 0, display: "grid", placeItems: "center", pointerEvents: "none", textAlign: "center" }}>
@@ -205,7 +205,7 @@ export default function ThongKe({ accounts = [] }) {
                   <XAxis dataKey="k" tick={{ fontSize: 11, fill: C.soft }} axisLine={false} tickLine={false} />
                   <YAxis domain={[0, 100]} tick={{ fontSize: 11, fill: C.soft }} axisLine={false} tickLine={false} />
                   <Tooltip {...hopThoai} cursor={{ fill: C.line, opacity: 0.4 }}
-                    formatter={(v, _k, p) => [`${v} % · ${p.payload.n} lượt`, "Trung bình"]} />
+                    formatter={(v, _k, p) => [tr(`${v} % · ${p.payload.n} lượt`, `${v} % · ${p.payload.n} tentatives`, `${v}% · ${p.payload.n} attempts`), "Trung bình"]} />
                   <Bar dataKey="tb" fill={C.primary} radius={[6, 6, 0, 0]} maxBarSize={44} />
                 </BarChart>
               </ResponsiveContainer>

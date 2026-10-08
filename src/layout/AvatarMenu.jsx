@@ -85,7 +85,7 @@ export default function AvatarMenu({ session, t, dark, onToggleDark, onLogout })
   }, [session?.role]);
   const laVip = !!vip?.vip;
   const roleLabel = laVip
-    ? `VIP đến ${new Date(vip.vip_den).toLocaleDateString("vi-VN")}`
+    ? tr(`VIP đến ${new Date(vip.vip_den).toLocaleDateString("vi-VN")}`, `VIP jusqu'au ${new Date(vip.vip_den).toLocaleDateString("vi-VN")}`, `VIP until ${new Date(vip.vip_den).toLocaleDateString("vi-VN")}`)
     : session?.role === "prof" ? t("header.teacher") : t("header.student");
 
   /* `mousedown` chứ không phải `click`: nút mở cũng nghe click, nghe cùng sự

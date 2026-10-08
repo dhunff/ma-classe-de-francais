@@ -14,10 +14,16 @@ const VI = /[ăâđêôơưạảấầẩẫậắằẳẵặẹẻẽếề�
 const FR = /\b(Annuler|Envoyer|Supprimer|Enregistrer|Fermer|Terminer|Réponse|réponse|élève|élèves|Élève|Consigne|Justifi\w*|Ta |Ton |Votre|votre|Vous|vous|Cliquez|Quitter|Rendu|rendu|Aucun\w*|Exercice|exercice|questions?\b|Ma |Mon |Mes |Non noté|Temps|Envoi|copie|Corrigé|Choix|attendue?)\b/;
 const BO_ATTR = new Set(["className", "key", "id", "type", "role", "href", "to", "src", "name", "rel", "target", "method", "autoComplete", "inputMode", "lang", "htmlFor", "style"]);
 
-function can(chu) { return (VI.test(chu) || FR.test(chu)) && /[A-Za-zÀ-ỹ]{2,}/.test(chu); }
+/* VI2: chữ Việt chỉ mang dấu sắc/huyền (bài, phút, dùng) — dấu cũng có ở tiếng
+   Pháp nên chỉ tính khi đi cùng âm tiết không phải tiếng Pháp. Bật bằng RONG=1. */
+const VI2 = new RegExp("(^|[^A-Za-zÀ-ỹ])(" + "bài|phút|dùng|chung|câu|lượt|các|có|là|và|về|tới|mới|khi|chỉ|đã|học|sinh|giáo|viên|điểm|đề|thi|phần|bấm|xem|lại|không|của|cho|trong|này|đó|một" + ")($|[^A-Za-zÀ-ỹ])", "i");
+function can(chu) { return (VI.test(chu) || FR.test(chu) || (process.env.RONG && VI2.test(chu))) && /[A-Za-zÀ-ỹ]{2,}/.test(chu); }
 
 function duyet(node, cha, kq) {
   if (!node || typeof node.type !== "string") return;
+  /* Đã qua tr(...) thì bỏ qua cả cây con. */
+  if (node.type === "CallExpression" && node.callee?.name === "tr") return;
+  if (node.type === "CallExpression" && node.callee?.type === "MemberExpression" && node.callee.object?.name === "console") return;
   if (node.type === "ImportDeclaration" || node.type === "ExportAllDeclaration") return;
   if (node.type === "JSXText") {
     const t = node.value.replace(/\s+/g, " ").trim();

@@ -145,7 +145,7 @@ function ThanhTieuChi({ c, gia, onChange, nhacNho, goiY }) {
             chuaCham ? "bg-surface2 text-soft" : "bg-primary-soft text-primary"
           }`}
         >
-          {chuaCham ? `chưa chấm · /${c.max_score}` : `${v} / ${c.max_score}`}
+          {chuaCham ? tr(`chưa chấm · /${c.max_score}`, `non noté · /${c.max_score}`, `not scored · /${c.max_score}`) : `${v} / ${c.max_score}`}
         </span>
       </div>
 
@@ -155,7 +155,7 @@ function ThanhTieuChi({ c, gia, onChange, nhacNho, goiY }) {
         max={c.max_score}
         step={c.step}
         value={v}
-        aria-label={`${c.name}, tối đa ${c.max_score} điểm`}
+        aria-label={tr(`${c.name}, tối đa ${c.max_score} điểm`, `${c.name}, ${c.max_score} points max`, `${c.name}, max ${c.max_score} points`)}
         onChange={(e) => onChange(Number(e.target.value))}
         /* ══ VÌ SAO CẦN CẢ pointerUp/keyUp, KHÔNG CHỈ onChange ══
          *
@@ -385,7 +385,7 @@ export default function PESelfEvaluation({
             <h2 className="m-0 text-sm font-bold text-ink">{tr("Đề bài", "Consigne", "Prompt")}</h2>
             <span className="ml-auto rounded-full bg-surface2 px-2.5 py-1 text-[11px] font-bold text-soft">
               {rubric.level}
-              {rubric.min_words ? ` · tối thiểu ${rubric.min_words} từ` : ""}
+              {rubric.min_words ? tr(` · tối thiểu ${rubric.min_words} từ`, ` · ${rubric.min_words} mots minimum`, ` · at least ${rubric.min_words} words`) : ""}
             </span>
           </header>
           {/* Bối cảnh đề trước, câu lệnh sau — đúng thứ tự học sinh đã đọc lúc
@@ -481,7 +481,7 @@ export default function PESelfEvaluation({
             <AlertTriangle size={14} className="mt-0.5 shrink-0" aria-hidden="true" />
             <span>
               {rubric.adapted
-                ? `Thang ${rubric.level} ở đây là bản phỏng theo, quy về ${rubric.total} điểm. Đề thi thật chia phần viết thành hai bài tập với thang riêng.`
+                ? tr(`Thang ${rubric.level} ở đây là bản phỏng theo, quy về ${rubric.total} điểm. Đề thi thật chia phần viết thành hai bài tập với thang riêng.`, `La grille ${rubric.level} est une adaptation sur ${rubric.total} points. L'examen réel divise l'écrit en deux exercices avec leurs propres grilles.`, `The ${rubric.level} grid here is adapted to ${rubric.total} points. The real exam splits writing into two tasks with their own grids.`)
                 : tr("Thang này do giáo viên tuỳ chỉnh, không phải thang DELF chính thức.", "Grille personnalisée par l'enseignant, pas la grille officielle du DELF.", "Grid customised by the teacher, not the official DELF grid.")}
             </span>
           </p>
@@ -509,7 +509,7 @@ export default function PESelfEvaluation({
                     </h3>
                     <p className="m-0 mt-1 text-xs leading-relaxed text-soft">
                       {goiY
-                        ? `Chấm được ${goiY.so_cham_duoc}/${goiY.so_tieu_chi} tiêu chí · đề xuất ${goiY.tong}/${goiY.tong_toi_da}. Điểm cuối vẫn do bạn chốt.`
+                        ? tr(`Chấm được ${goiY.so_cham_duoc}/${goiY.so_tieu_chi} tiêu chí · đề xuất ${goiY.tong}/${goiY.tong_toi_da}. Điểm cuối vẫn do bạn chốt.`, `${goiY.so_cham_duoc}/${goiY.so_tieu_chi} critères notés · proposition ${goiY.tong}/${goiY.tong_toi_da}. C'est vous qui décidez de la note finale.`, `${goiY.so_cham_duoc}/${goiY.so_tieu_chi} criteria scored · suggests ${goiY.tong}/${goiY.tong_toi_da}. The final score is yours.`)
                         : tr("Một lượt đọc bài của bạn theo đúng thang bên dưới. Đây là đề xuất để đối chiếu, không phải điểm chính thức.", "Une lecture de votre copie selon la grille ci-dessous. C'est une proposition à comparer, pas une note officielle.", "A read of your writing against the grid below. It's a suggestion to compare, not an official score.")}
                     </p>
                   </div>
@@ -658,9 +658,9 @@ export default function PESelfEvaluation({
                 ? tr("Chế độ xem thử — dữ liệu mẫu, không lưu được.", "Mode aperçu : données d'exemple, non enregistrables.", "Preview mode — sample data, can't be saved.")
                 : xong
                   ? tr("Đã chấm đủ tiêu chí.", "Tous les critères sont notés.", "All criteria scored.")
-                  : `Còn ${conThieu.length} tiêu chí chưa chấm: ${
+                  : tr(`Còn ${conThieu.length} tiêu chí chưa chấm: ${
                       conThieu.slice(0, 3).map((c) => c.name).join(", ")}${
-                      conThieu.length > 3 ? "…" : ""}`}
+                      conThieu.length > 3 ? "…" : ""}`, `${conThieu.length} critère(s) non noté(s) : ${conThieu.slice(0, 3).map((c) => c.name).join(", ")}${conThieu.length > 3 ? "…" : ""}`, `${conThieu.length} criteria not scored: ${conThieu.slice(0, 3).map((c) => c.name).join(", ")}${conThieu.length > 3 ? "…" : ""}`)}
             </p>
 
             {loi && <p className="m-0 mt-2 text-xs font-bold text-danger">{loi}</p>}

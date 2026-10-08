@@ -15,11 +15,12 @@ import { tr } from "../../shared/i18n.jsx";
  *
  * Gửi vẫn đi qua `guiThongBao` (RPC send_announcement_to_students): kiểm vai ở
  * máy chủ và TRẢ VỀ số người nhận, giao diện nói ra con số đó. */
-const MAU = [
-  ["Nhắc làm bài", "Các em nhớ hoàn thành bài tập được giao trước hạn nộp nhé."],
-  ["Bài mới", "Thầy/cô vừa đăng bài tập mới trong Thư viện luyện tập. Vào làm thử nhé!"],
-  ["Thi thử", "Cuối tuần này các em làm một đề thi thử DELF để kiểm tra trình độ nhé. Nhớ chuẩn bị chỗ yên tĩnh."],
-  ["Chúc mừng", "Chúc mừng các em đã học đều cả tuần! Tiếp tục giữ chuỗi ngày học nhé."],
+/* Hàm: nhãn và nội dung mẫu đổi theo ngôn ngữ giao diện. */
+const MAU = () => [
+  [tr("Nhắc làm bài", "Rappel", "Reminder"), tr("Các em nhớ hoàn thành bài tập được giao trước hạn nộp nhé.", "N'oubliez pas de terminer vos devoirs avant la date limite.", "Remember to finish your assignments before the deadline.")],
+  [tr("Bài mới", "Nouvel exercice", "New exercise"), tr("Thầy/cô vừa đăng bài tập mới trong Thư viện luyện tập. Vào làm thử nhé!", "Un nouvel exercice vient d'être publié dans la bibliothèque. Venez l'essayer !", "A new exercise is up in the practice library. Come and try it!")],
+  [tr("Thi thử", "Examen blanc", "Mock exam"), tr("Cuối tuần này các em làm một đề thi thử DELF để kiểm tra trình độ nhé. Nhớ chuẩn bị chỗ yên tĩnh.", "Ce week-end, passez un examen blanc DELF pour faire le point. Installez-vous au calme.", "This weekend, take a DELF mock exam to check your level. Find a quiet place.")],
+  [tr("Chúc mừng", "Bravo", "Well done"), tr("Chúc mừng các em đã học đều cả tuần! Tiếp tục giữ chuỗi ngày học nhé.", "Bravo pour votre régularité cette semaine ! Gardez votre série.", "Well done for studying all week! Keep your streak going.")],
 ];
 const GIOI_HAN = 2000;
 const o = "w-full rounded-xl border border-solid border-line bg-surface2 px-3 py-2 font-sans text-sm text-ink outline-none focus:border-primary";
@@ -70,10 +71,10 @@ export default function GuiThongBao() {
     setDang(false);
     if (!r.ok) {
       setKq({ ok: false, text: r.loi === "khong_phai_giao_vien" ? tr("Tài khoản này không có quyền gửi thông báo.", "Ce compte ne peut pas envoyer d'annonces.", "This account can't send announcements.")
-        : r.loi === "dai" ? `Thông báo dài quá ${GIOI_HAN} ký tự.` : `Chưa gửi được. ${r.chiTiet ?? tr("Kiểm tra mạng rồi thử lại.", "Vérifiez la connexion et réessayez.", "Check your connection and try again.")}` });
+        : r.loi === "dai" ? tr(`Thông báo dài quá ${GIOI_HAN} ký tự.`, `Annonce trop longue (${GIOI_HAN} caractères max).`, `Announcement too long (${GIOI_HAN} characters max).`) : tr(`Chưa gửi được. ${r.chiTiet ?? tr("Kiểm tra mạng rồi thử lại.", "Vérifiez la connexion et réessayez.", "Check your connection and try again.")}`, `Non envoyé. ${r.chiTiet ?? tr("Kiểm tra mạng rồi thử lại.", "Vérifiez la connexion et réessayez.", "Check your connection and try again.")}`, `Not sent. ${r.chiTiet ?? tr("Kiểm tra mạng rồi thử lại.", "Vérifiez la connexion et réessayez.", "Check your connection and try again.")}`) });
       return;
     }
-    setKq({ ok: true, text: r.soNguoiNhan === 0 ? tr("Đã gửi, nhưng không có học sinh nào nhận.", "Envoyé, mais aucun élève ne l'a reçu.", "Sent, but no students received it.") : `Đã gửi tới ${r.soNguoiNhan ?? ""} học sinh.` });
+    setKq({ ok: true, text: r.soNguoiNhan === 0 ? tr("Đã gửi, nhưng không có học sinh nào nhận.", "Envoyé, mais aucun élève ne l'a reçu.", "Sent, but no students received it.") : tr(`Đã gửi tới ${r.soNguoiNhan ?? ""} học sinh.`, `Envoyé à ${r.soNguoiNhan ?? ""} élève(s).`, `Sent to ${r.soNguoiNhan ?? ""} student(s).`) });
     setNoiDung(""); setChon(new Set()); taiLichSu();
   };
 
@@ -93,7 +94,7 @@ export default function GuiThongBao() {
           <div>
             <p className="m-0 text-xs font-bold uppercase tracking-wide text-soft">{tr("Nội dung", "Message", "Message")}</p>
             <div className="mt-2 flex flex-wrap gap-2">
-              {MAU.map(([ten, van]) => (
+              {MAU().map(([ten, van]) => (
                 <button key={ten} type="button" onClick={() => setNoiDung(van)}
                   className="cursor-pointer rounded-full border border-solid border-line bg-surface px-3 py-1 font-sans text-xs font-semibold text-ink hover:border-primary hover:text-primary">{ten}</button>
               ))}
@@ -106,7 +107,7 @@ export default function GuiThongBao() {
           <div>
             <p className="m-0 text-xs font-bold uppercase tracking-wide text-soft">{tr("Người nhận", "Destinataires", "Recipients")}</p>
             <div role="radiogroup" className="mt-2 inline-flex gap-1 rounded-full bg-surface2 p-1">
-              {[[true, `Tất cả học sinh${hs ? ` (${hs.length})` : ""}`], [false, tr("Chọn học sinh", "Choisir des élèves", "Choose students")]].map(([v, n]) => (
+              {[[true, tr(`Tất cả học sinh${hs ? ` (${hs.length})` : ""}`, `Tous les élèves${hs ? ` (${hs.length})` : ""}`, `All students${hs ? ` (${hs.length})` : ""}`)], [false, tr("Chọn học sinh", "Choisir des élèves", "Choose students")]].map(([v, n]) => (
                 <button key={String(v)} type="button" role="radio" aria-checked={tatCa === v} onClick={() => setTatCa(v)}
                   className={`h-9 cursor-pointer rounded-full border-0 px-4 font-sans text-sm font-bold ${tatCa === v ? "bg-surface text-ink shadow-sm" : "bg-transparent text-soft"}`}>{n}</button>
               ))}

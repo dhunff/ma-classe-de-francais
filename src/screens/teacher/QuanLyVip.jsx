@@ -32,7 +32,7 @@ export default function QuanLyVip() {
     setDang(p.id); setLoi("");
     const { data, error } = await supabase.rpc(fn, args);
     setDang(null);
-    if (error || !data?.ok) { setLoi(`Không lưu được cho ${p.name}: ${error?.message ?? data?.ma ?? tr("lỗi", "erreur", "error")}`); return; }
+    if (error || !data?.ok) { setLoi(tr(`Không lưu được cho ${p.name}: ${error?.message ?? data?.ma ?? tr("lỗi", "erreur", "error")}`, `Non enregistré pour ${p.name} : ${error?.message ?? data?.ma ?? tr("lỗi", "erreur", "error")}`, `Couldn't save for ${p.name}: ${error?.message ?? data?.ma ?? tr("lỗi", "erreur", "error")}`)); return; }
     tai();
   };
 
@@ -42,7 +42,7 @@ export default function QuanLyVip() {
         <span className="grid h-10 w-10 place-items-center rounded-2xl bg-warn-soft text-warn"><Crown size={20} /></span>
         <div className="min-w-0 flex-1">
           <h2 className="m-0 text-base font-extrabold text-ink">Gói VIP</h2>
-          <p className="m-0 text-xs text-soft">{fmtPrice(VIP.gia)} / {VIP.ngay} ngày · {ds ? `${soVip} học sinh đang VIP` : tr("Đang tải…", "Chargement…", "Loading…")}</p>
+          <p className="m-0 text-xs text-soft">{fmtPrice(VIP.gia)} / {VIP.ngay} ngày · {ds ? tr(`${soVip} học sinh đang VIP`, `${soVip} élève(s) VIP`, `${soVip} VIP student(s)`) : tr("Đang tải…", "Chargement…", "Loading…")}</p>
         </div>
         <input value={tim} onChange={(e) => setTim(e.target.value)} placeholder={tr("Tìm học sinh…", "Rechercher un élève…", "Search students…")}
           className="h-9 w-48 rounded-lg border border-solid border-line bg-surface2 px-3 font-sans text-sm text-ink outline-none focus:border-primary" />
@@ -63,7 +63,7 @@ export default function QuanLyVip() {
                   <td className="py-2 pr-3 font-semibold text-ink">{p.display_name || p.name}</td>
                   <td className="py-2 pr-3">
                     {con ? <span className="rounded-full bg-ok-soft px-2.5 py-0.5 text-xs font-bold text-ok">{tr("VIP đến", "VIP jusqu'au", "VIP until")} {ngay(p.vip_den)}</span>
-                      : <span className="text-xs text-soft">{p.vip_den ? `Hết hạn ${ngay(p.vip_den)}` : tr("Chưa VIP", "Pas VIP", "Not VIP")}</span>}
+                      : <span className="text-xs text-soft">{p.vip_den ? tr(`Hết hạn ${ngay(p.vip_den)}`, `Expiré le ${ngay(p.vip_den)}`, `Expired ${ngay(p.vip_den)}`) : tr("Chưa VIP", "Pas VIP", "Not VIP")}</span>}
                   </td>
                   <td className="py-2 text-right whitespace-nowrap">
                     <button type="button" disabled={dang === p.id} onClick={() => goi(p, "gv_gia_han_vip", { p_user: p.id, p_so_ngay: VIP.ngay })}
@@ -72,7 +72,7 @@ export default function QuanLyVip() {
                     </button>
                     {con && (
                       <button type="button" disabled={dang === p.id}
-                        onClick={() => { if (window.confirm(`Thu hồi VIP của ${p.name}? Hạn còn lại sẽ mất.`)) goi(p, "gv_thu_hoi_vip", { p_user: p.id }); }}
+                        onClick={() => { if (window.confirm(tr(`Thu hồi VIP của ${p.name}? Hạn còn lại sẽ mất.`, `Retirer le VIP de ${p.name} ? Les jours restants seront perdus.`, `Revoke ${p.name}'s VIP? The remaining days will be lost.`))) goi(p, "gv_thu_hoi_vip", { p_user: p.id }); }}
                         className="ml-2 h-8 cursor-pointer rounded-full border border-solid border-line bg-surface px-3 font-sans text-xs font-bold text-soft hover:text-danger disabled:opacity-50">
                         {tr("Thu hồi", "Retirer", "Revoke")}
                       </button>

@@ -146,7 +146,7 @@ function ManCho({ dsDe, chon, paper, onStart, dangTai, lamPhanNoi, setLamPhanNoi
             <span className={`ml-2 text-xs ${paper?.id === e.id ? "text-white/75" : "text-soft"}`}>
               {/* Đếm KỸ NĂNG, không đếm dòng — một đề 6 bài vẫn là 3 phần. */}
               {e.level} · {new Set(e.sections.map((s) => s.code)).size} {tr("phần", "parties", "parts")}
-              {e.sections.length > 3 ? ` · ${e.sections.length} bài` : ""}
+              {e.sections.length > 3 ? tr(` · ${e.sections.length} bài`, ` · ${e.sections.length} exercices`, ` · ${e.sections.length} exercises`) : ""}
               {` · ${e.duration_min ?? 0}′`}
             </span>
           </button>
@@ -160,7 +160,7 @@ function ManCho({ dsDe, chon, paper, onStart, dangTai, lamPhanNoi, setLamPhanNoi
               <th className="p-3 font-bold">{tr("Phần", "Partie", "Part")}</th>
               <th className="p-3 font-bold">{tr("Thời gian", "Durée", "Time")}</th>
               <th className="p-3 font-bold">{tr("Điểm", "Points", "Points")}</th>
-              <th className="p-3 font-bold">Bài</th>
+              <th className="p-3 font-bold">{tr("Bài", "Exercice", "Exercise")}</th>
             </tr>
           </thead>
           <tbody>
@@ -183,7 +183,7 @@ function ManCho({ dsDe, chon, paper, onStart, dangTai, lamPhanNoi, setLamPhanNoi
                       : (
                         <span className="text-soft">
                           {co.length > 1 && (
-                            <strong className="text-ink">{co.length} bài · </strong>
+                            <strong className="text-ink">{co.length} {tr("bài ·", "exercices ·", "exercises ·")} </strong>
                           )}
                           {co.map((s) => s.exercise?.title ?? tr("(không mở được)", "(inaccessible)", "(unavailable)"))
                             .join(" · ").slice(0, 46)}
@@ -239,7 +239,7 @@ function ManCho({ dsDe, chon, paper, onStart, dangTai, lamPhanNoi, setLamPhanNoi
           <input type="checkbox" checked={lamPhanNoi}
             onChange={(e) => setLamPhanNoi(e.target.checked)} className="mt-1" />
           <span>
-            <strong>{tr("Làm cả phần thi nói (PO)", "Faire aussi la production orale (PO)", "Also do the speaking part (PO)")}</strong> {tr("— thêm", "— en plus", "— adds")} {phutPhanNoi} phút.
+            <strong>{tr("Làm cả phần thi nói (PO)", "Faire aussi la production orale (PO)", "Also do the speaking part (PO)")}</strong> {tr("— thêm", "— en plus", "— adds")} {phutPhanNoi} {tr("phút.", "minutes.", "minutes.")}
             <span className="mt-1 block text-xs text-soft">
               {tr("Phần này không được chấm điểm: bạn ghi âm để tự nghe lại. Bỏ chọn thì buổi thi chỉ còn ba phần, và tổng điểm không đổi.", "Cette partie n'est pas notée : vous vous enregistrez pour vous réécouter. Sans elle, l'examen a trois parties et le total ne change pas.", "This part isn't scored: you record yourself to listen back. Without it the exam has three parts and the total doesn't change.")}
             </span>
@@ -383,12 +383,12 @@ function AudioGioiHan({ src, attemptId, questionId, luot = 2 }) {
       <div className="flex flex-wrap items-center gap-3">
         <button type="button" onClick={phat} disabled={het || dangXin || chuaSanSang}
           className="inline-flex items-center gap-2 rounded-full border-0 bg-primary px-5 py-2.5 text-sm font-bold text-white transition enabled:hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-40">
-          <Volume2 size={15} /> {chuaSanSang ? "Đang mở bài thi…" : dangXin ? "…" : het ? tr("Hết lượt nghe", "Plus d'écoute", "No plays left") : "Phát"}
+          <Volume2 size={15} /> {chuaSanSang ? tr("Đang mở bài thi…", "Ouverture de l'examen…", "Opening the exam…") : dangXin ? "…" : het ? tr("Hết lượt nghe", "Plus d'écoute", "No plays left") : "Phát"}
         </button>
         <span className="text-xs text-soft">
           {luot === 1
             ? (conLai === 0 ? tr("Đã phát", "Écouté", "Played") : tr("Phát một lần duy nhất", "Une seule lecture", "Plays once only"))
-            : conLai === null ? tr("2 lượt nghe", "2 écoutes", "2 plays") : `Còn ${conLai} lượt`}
+            : conLai === null ? tr("2 lượt nghe", "2 écoutes", "2 plays") : tr(`Còn ${conLai} lượt`, `${conLai} écoute(s) restante(s)`, `${conLai} play(s) left`)}
         </span>
       </div>
       {luot === 1 && (
@@ -482,7 +482,7 @@ export function PhanThi({ section, attemptId, answers, setAnswers, onDone, onBlu
           <div className="text-xs font-bold uppercase tracking-wide text-primary">{section.code}</div>
           <div className="truncate text-sm font-bold text-ink">{section.label}</div>
           {dsBai.length > 1 && (
-            <div className="mt-0.5 text-xs text-soft">{dsBai.length} bài · dùng chung {section.minutes} phút</div>
+            <div className="mt-0.5 text-xs text-soft">{dsBai.length} {tr("bài · dùng chung", "exercices · durée commune", "exercises · shared")} {section.minutes} {tr("phút", "min", "min")}</div>
           )}
         </div>
         {onThoat && (
@@ -513,7 +513,7 @@ export function PhanThi({ section, attemptId, answers, setAnswers, onDone, onBlu
                 className={`cursor-pointer rounded-2xl border border-solid p-3 text-left font-sans transition-colors ${dang ? "border-primary bg-primary-soft" : "border-line bg-surface hover:border-primary"}`}>
                 <span className="flex items-center gap-2">
                   <span className={`grid h-6 w-6 shrink-0 place-items-center rounded-full text-xs font-extrabold ${dang ? "bg-primary text-white" : du ? "bg-ok text-white" : "bg-surface2 text-ink"}`}>{j + 1}</span>
-                  <span className="text-xs font-bold text-ink">Bài {j + 1}</span>
+                  <span className="text-xs font-bold text-ink">{tr("Bài", "Exercice", "Exercise")} {j + 1}</span>
                   <span className={`ml-auto text-xs font-bold tabular-nums ${du ? "text-ok" : "text-soft"}`}>{tong ? `${lam}/${tong}` : "—"}</span>
                 </span>
                 <span className="mt-2 block h-1.5 overflow-hidden rounded-full bg-surface2">
@@ -682,7 +682,7 @@ export function PhanThi({ section, attemptId, answers, setAnswers, onDone, onBlu
         <div className="mt-8 flex items-center gap-2">
           <button type="button" disabled={baiIdx === 0} onClick={() => { setBaiIdx(baiIdx - 1); window.scrollTo({ top: 0 }); }}
             className="h-10 cursor-pointer rounded-full border border-solid border-line bg-surface px-4 font-sans text-sm font-bold text-ink disabled:cursor-not-allowed disabled:opacity-40">{tr("← Bài trước", "← Exercice précédent", "← Previous exercise")}</button>
-          <span className="flex-1 text-center text-xs text-soft">Bài {baiIdx + 1}/{dsBai.length}</span>
+          <span className="flex-1 text-center text-xs text-soft">{tr("Bài", "Exercice", "Exercise")} {baiIdx + 1}/{dsBai.length}</span>
           <button type="button" disabled={baiIdx === dsBai.length - 1} onClick={() => { setBaiIdx(baiIdx + 1); window.scrollTo({ top: 0 }); }}
             className="h-10 cursor-pointer rounded-full border-0 bg-primary-soft px-4 font-sans text-sm font-bold text-primary disabled:cursor-not-allowed disabled:opacity-40">{tr("Bài tiếp →", "Exercice suivant →", "Next exercise →")}</button>
         </div>
@@ -717,7 +717,7 @@ export function PhanThi({ section, attemptId, answers, setAnswers, onDone, onBlu
                 <li key={j}>
                   <button type="button" onClick={() => { setBaiIdx(j); setHoiNop(false); window.scrollTo({ top: 0 }); }}
                     className="flex w-full cursor-pointer items-center gap-2 rounded-xl border-0 bg-surface2 px-3 py-2 text-left font-sans text-sm text-ink hover:bg-primary-soft">
-                    <strong>{dsBai.length > 1 ? `Bài ${j + 1}` : tr("Câu", "Question", "Question")}</strong>
+                    <strong>{dsBai.length > 1 ? tr(`Bài ${j + 1}`, `Exercice ${j + 1}`, `Exercise ${j + 1}`) : tr("Câu", "Question", "Question")}</strong>
                     <span className="min-w-0 flex-1 truncate text-soft">{dsBai.length > 1 ? tr("câu ", "questions ", "questions ") : ""}{ds.join(", ")}</span>
                     <span className="text-xs font-bold text-primary">{tr("Đến làm →", "Y aller →", "Go →")}</span>
                   </button>
@@ -752,15 +752,15 @@ function KetQua({ sections, blurCount, onLai }) {
 
   return (
     <div className="mx-auto max-w-2xl py-8">
-      <h1 className="m-0 text-2xl font-extrabold text-ink">Kết quả thi thử</h1>
+      <h1 className="m-0 text-2xl font-extrabold text-ink">{tr("Kết quả thi thử", "Résultat de l'examen blanc", "Mock exam result")}</h1>
 
       <div className="mt-6 rounded-3xl border border-line bg-surface p-6">
         <div className={`text-4xl font-extrabold tabular-nums ${mau}`}>
           {v.total}<span className="text-lg text-soft"> / {v.maxScored}</span>
         </div>
         <div className="mt-2 text-sm font-bold text-ink">
-          {v.passed === true && "Đạt"}
-          {v.passed === false && "Chưa đạt"}
+          {v.passed === true && tr("Đạt", "Réussi", "Pass")}
+          {v.passed === false && tr("Chưa đạt", "Non réussi", "Fail")}
           {v.passed === null && tr("Chưa kết luận được", "Résultat non conclu", "No verdict yet")}
         </div>
 
@@ -810,7 +810,7 @@ function KetQua({ sections, blurCount, onLai }) {
                 </div>
                 {yeu && (
                   <div className="mt-1 text-xs font-bold text-danger">
-                    Dưới {NGUONG_PHAN}{tr("/25 — riêng phần này đã đủ làm trượt cả bài.", "/25 — cette partie suffit à faire échouer l'examen.", "/25 — this part alone fails the exam.")}
+                    {tr("Dưới", "Moins de", "Below")} {NGUONG_PHAN}{tr("/25 — riêng phần này đã đủ làm trượt cả bài.", "/25 — cette partie suffit à faire échouer l'examen.", "/25 — this part alone fails the exam.")}
                   </div>
                 )}
               </div>
@@ -832,7 +832,7 @@ function KetQua({ sections, blurCount, onLai }) {
       <p className="m-0 mt-5 flex items-start gap-2 text-xs text-soft">
         <ShieldCheck size={13} className="mt-0.5 shrink-0" />
         <span>
-          Đạt DELF cần <strong className="text-ink">≥ {NGUONG_TONG}/100 toàn bài</strong> VÀ{" "}
+          {tr("Đạt DELF cần", "Pour réussir le DELF :", "To pass DELF you need")} <strong className="text-ink">≥ {NGUONG_TONG}{tr("/100 toàn bài", "/100 au total", "/100 overall")}</strong> {tr("VÀ", "ET", "AND")}{" "}
           <strong className="text-ink">≥ {NGUONG_PHAN}{tr("/25 ở mỗi phần", "/25 dans chaque partie", "/25 in each part")}</strong>{tr(". Người ta thường trượt vì một kỹ năng yếu hẳn, chứ hiếm khi vì tổng điểm.", ". On échoue souvent à cause d'une compétence faible, rarement à cause du total.", ". People usually fail because of one weak skill, rarely because of the total.")}
         </span>
       </p>

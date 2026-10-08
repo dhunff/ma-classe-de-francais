@@ -257,7 +257,7 @@ export default function DatNeo() {
       <div className="mt-6 flex flex-wrap items-center gap-2">
         <div className="relative min-w-[220px] flex-1">
           <Search size={14} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-soft" />
-          <input value={tim} onChange={(e) => setTim(e.target.value)} placeholder="Tìm bài…"
+          <input value={tim} onChange={(e) => setTim(e.target.value)} placeholder={tr("Tìm bài…", "Rechercher un exercice…", "Search exercises…")}
             className="w-full rounded-full border border-solid border-line bg-surface py-2 pl-9 pr-4 font-sans text-sm text-ink outline-none focus:border-primary" />
         </div>
         {["tat", ...capDo].map((c) => (

@@ -44,6 +44,19 @@ for (const [file, bang] of Object.entries(banDich)) {
           sua.push({ start: node.start, end: node.end, thay: `${dau}{tr(${js(d.vi)}, ${js(d.fr)}, ${js(d.en)})}${cuoi}` });
         }
       }
+    } else if (node.type === "TemplateLiteral" && node.expressions.length) {
+      /* Khoá "TPL:<chữ với ${…}>" → ["fr ${…}", "en ${…}"]; các ${…} được thay
+         bằng ĐÚNG biểu thức gốc, theo thứ tự. */
+      const khoa = node.quasis.map((q) => q.value.cooked).join("${…}");
+      const d = bang["TPL:" + khoa];
+      if (d) {
+        const bt = node.expressions.map((e) => src.slice(e.start, e.end));
+        const dung = (mau) => "`" + mau.split("${…}").map((p) => p.replace(/\\/g, "\\\\").replace(/`/g, "\\`").replace(/\$\{/g, "\\${")).reduce((a, p, i) => a + "${" + bt[i - 1] + "}" + p) + "`";
+        const goc = src.slice(node.start, node.end);
+        if (!ham) capModule.push(khoa);
+        else sua.push({ start: node.start, end: node.end, thay: `tr(${goc}, ${dung(d[0])}, ${dung(d[1])})` });
+        return;
+      }
     } else if (node.type === "StringLiteral") {
       const laAttr = cha?.type === "JSXAttribute";
       const laKhoa = cha?.type === "ObjectProperty" && cha.key === node;

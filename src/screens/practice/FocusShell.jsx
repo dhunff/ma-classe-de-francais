@@ -48,7 +48,7 @@ export default function FocusShell({ zen, setZen, title, meta = [], answered, to
           </div>
           <button type="button" onClick={() => setZen(true)}
             className="h-9 shrink-0 cursor-pointer rounded-full border border-solid border-line bg-surface px-4 font-sans text-sm font-bold text-ink transition-colors hover:border-primary hover:text-primary">
-            Mode focus
+            {tr("Chế độ tập trung", "Mode focus", "Focus mode")}
           </button>
         </div>
         {children}
@@ -68,7 +68,7 @@ export default function FocusShell({ zen, setZen, title, meta = [], answered, to
           {total > 0 && (
             <div className="hidden w-48 shrink-0 sm:block">
               <div className="mb-1 flex justify-between text-xs font-semibold">
-                <span className="text-soft">Réponses</span>
+                <span className="text-soft">{tr("Đã làm", "Réponses", "Answered")}</span>
                 <span className="tabular-nums text-ink">{answered}/{total}</span>
               </div>
               <div role="progressbar" aria-valuenow={answered} aria-valuemin={0} aria-valuemax={total}

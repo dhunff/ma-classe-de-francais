@@ -174,8 +174,8 @@ export default function LuyenBoThe({ bo, onThoat }) {
             {tongPhien > 0 ? tr("Xong phần hôm nay", "Terminé pour aujourd'hui", "Done for today") : tr("Hôm nay không có thẻ nào đến hạn", "Aucune carte à réviser aujourd'hui", "No cards due today")}
           </p>
           <p className="m-0 mt-1 text-sm text-soft">
-            {tongPhien > 0 && `Bạn đã ôn ${xong} thẻ. `}
-            {lanToi && `Lần ôn tới: ${ngayNgan(lanToi)}.`}
+            {tongPhien > 0 && tr(`Bạn đã ôn ${xong} thẻ. `, `Vous avez révisé ${xong} carte(s). `, `You reviewed ${xong} card(s). `)}
+            {lanToi && tr(`Lần ôn tới: ${ngayNgan(lanToi)}.`, `Prochaine révision : ${ngayNgan(lanToi)}.`, `Next review: ${ngayNgan(lanToi)}.`)}
           </p>
         </div>
       ) : (

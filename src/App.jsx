@@ -31,7 +31,7 @@ import { loadAssignments } from './shared/exerciseStore.js'
 import { supabase } from './storageShim.js'
 import { resolveRole } from './shared/authRole.js'
 import { loadRoster } from './shared/roster.js'
-import { LANG_KEY, LANGS, I18N, getLang, LangCtx, digKey , datLangHienTai } from './shared/i18n.jsx'
+import { LANG_KEY, LANGS, I18N, getLang, LangCtx, digKey , datLangHienTai, tr } from "./shared/i18n.jsx";
 
 import PracticeHub from './PracticeHub.jsx'
 import Bell from './screens/student/Bell.jsx'
@@ -420,7 +420,7 @@ class RootErrorBoundary extends React.Component {
             <div style={{ fontSize: 40, marginBottom: 8 }}>⚠️</div>
             <h2 style={{ margin: "0 0 6px", fontSize: 21, fontWeight: 800 }}>Une erreur est survenue</h2>
             <p style={{ fontSize: 13.5, color: "#6B7280", margin: "0 0 16px" }}>
-              Envoyez cette capture d'écran au développeur / Gửi ảnh chụp màn hình này để được hỗ trợ.
+              {tr("Gửi ảnh chụp màn hình này cho người phát triển để được hỗ trợ.", "Envoyez cette capture d'écran au développeur / Gửi ảnh chụp màn hình này để được hỗ trợ.", "Send this screenshot to the developer for support.")}
             </p>
             <div style={{ background: "#FDEEEE", color: "#B42318", border: "1px solid #F5C2C2", borderRadius: 12,
               padding: "12px 16px", fontFamily: "monospace", fontSize: 13.5, fontWeight: 700, wordBreak: "break-word" }}>

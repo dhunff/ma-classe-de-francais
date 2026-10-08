@@ -201,8 +201,8 @@ function Taking({ ex, name, setSubmissions, done }) {
 
   return (
     <FocusShell zen={zen} setZen={setZen} title={ex.title}
-      meta={[ex.level, exSkills(ex).join(" + "), `${ex.questions.length} questions`,
-        ex.timeLimit && !locked ? `Temps limite : ${ex.timeLimit} min` : null,
+      meta={[ex.level, exSkills(ex).join(" + "), tr(`${ex.questions.length} questions`, `${ex.questions.length} câu`, `${ex.questions.length} questions`),
+        ex.timeLimit && !locked ? tr(`Temps limite : ${ex.timeLimit} min`, `Thời gian làm bài: ${ex.timeLimit} phút`, `Time limit: ${ex.timeLimit} min`) : null,
         ex.deadline ? (isLate(ex) ? tr("Đã quá hạn nộp, bài sẽ bị tính muộn", "Date limite dépassée, copie marquée en retard", "Deadline passed, submission marked late") : `À rendre avant le ${fmtDate(ex.deadline)}`) : null,
         savedAt ? `Brouillon enregistré à ${savedAt.toLocaleTimeString("fr-FR")}` : "Enregistrement automatique"]}
       answered={answeredCount} total={0} remaining={null}>{/* tiến độ + đồng hồ đã có ở thanh đáy */}

@@ -282,7 +282,10 @@ const MOC = new Date(2026, 8, 2);      // 02/09/2026, giờ địa phương
   const sql = readFileSync(new URL("../supabase/migrations/069_loi_giai_uu_tien.sql", import.meta.url), "utf8")
     .replace(/\/\*[\s\S]*?\*\//g, " ")
     .split(/\r?\n/).map((x) => x.replace(/--.*$/, "")).join("\n");
-  const man = readFileSync(new URL("../src/screens/teacher/LoiGiaiUuTien.jsx", import.meta.url), "utf8");
+  /* Màn « Câu cần lời giải » đã GỠ 07/10 (AI chấm thay). Bộ kiểm neo vào BẤT
+     BIẾN của SQL, không vào sự tồn tại của file màn hình — xem CLAUDE.md. */
+  const duongMan = new URL("../src/screens/teacher/LoiGiaiUuTien.jsx", import.meta.url);
+  const man = existsSync(duongMan) ? readFileSync(duongMan, "utf8") : null;
 
   t("lưu lời giải cũng làm mới thẻ",
     /update public\.cards[\s\S]{0,200}?set back = /.test(sql), true);
@@ -306,8 +309,8 @@ const MOC = new Date(2026, 8, 2);      // 02/09/2026, giờ địa phương
      trông y hệt mười người cùng sai nếu chỉ đếm lượt. */
   t("đếm cả số người lẫn số lượt", /count\(distinct t\.user_id\)/.test(sql), true);
 
-  t("màn hình đọc kết quả trước khi gỡ khỏi danh sách", /if \(!kq\.ok\)/.test(man), true);
-  t("nói ra số thẻ vừa được làm mới", /soTheLamMoi/.test(man), true);
+  if (man) t("màn hình đọc kết quả trước khi gỡ khỏi danh sách", /if \(!kq\.ok\)/.test(man), true);
+  if (man) t("nói ra số thẻ vừa được làm mới", /soTheLamMoi/.test(man), true);
 
   /* Hàm phải TỪ CHỐI người không phải giáo viên, không trả rỗng.
      Bản 069 viết phép kiểm vai vào mệnh đề `where`, nên người không có quyền
@@ -316,7 +319,7 @@ const MOC = new Date(2026, 8, 2);      // 02/09/2026, giờ địa phương
   const sql071 = readFileSync(new URL("../supabase/migrations/071_loi_giai_khong_im_lang.sql", import.meta.url), "utf8");
   t("danh sách ném lỗi khi không phải giáo viên",
     /if not public\.is_teacher\(\)/.test(sql071), true);
-  t("màn hình có trạng thái riêng cho lỗi vai", /loiVai/.test(man), true);
+  if (man) t("màn hình có trạng thái riêng cho lỗi vai", /loiVai/.test(man), true);
 }
 
 console.log(fail ? `\n${pass} đạt, ${fail} hỏng` : `\n${pass} đạt, 0 hỏng`);

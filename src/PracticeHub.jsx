@@ -1354,7 +1354,7 @@ function PracticeWorkspace({ ex, back, onFinish }) {
     <>
       {!zen && <button style={{ ...S.btn(false), marginBottom: 16 }} onClick={back}><ChevronLeft size={16} /> {t("practice.back")}</button>}
     <FocusShell zen={zen} setZen={setZen} title={ex.title}
-      meta={[ex.level, exSkills(ex).join(" + "), `${ex.questions.length} questions`, ex.timeLimit && !graded ? `Temps limite : ${ex.timeLimit} min` : null]}
+      meta={[ex.level, exSkills(ex).join(" + "), tr(`${ex.questions.length} questions`, `${ex.questions.length} câu`, `${ex.questions.length} questions`), ex.timeLimit && !graded ? tr(`Temps limite : ${ex.timeLimit} min`, `Thời gian làm bài: ${ex.timeLimit} phút`, `Time limit: ${ex.timeLimit} min`) : null]}
       answered={ex.questions.length - getUnansweredQuestionsCount(answers, ex.questions)} total={ex.questions.length}
       remaining={!graded ? remaining : null}>
       {!zen && remaining != null && !graded && (

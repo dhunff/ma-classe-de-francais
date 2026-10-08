@@ -61,7 +61,7 @@ const DUOC_PHEP = {
   "src/screens/student/Student.jsx": [
     { khop: /const biet = q\.answer !== undefined;/,
       ly_do: "đúng phép kiểm 'có biết đáp án không' mà bộ kiểm này đòi" },
-    { khop: /\{good === false && <span> · Bonne réponse : <strong>\{VF_OPTS\[q\.answer\]\}/,
+    { khop: /\{good === false && <span> \{tr\([^\n]*?<strong>\{VF_OPTS\[q\.answer\]\}/,
       ly_do: "chỉ in khi good === false, tức là CHẮC CHẮN biết đáp án" },
     { khop: /q\.answer !== 2 && q\.justification/,
       ly_do: "như trên" },

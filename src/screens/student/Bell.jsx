@@ -4,7 +4,7 @@ import { load, save, del } from "../../shared/storage.js";
 import { docThongBao, danhDauDaDoc, docNguoiGui } from "../../shared/notifications.js";
 import NotificationDropdown from "./NotificationDropdown.jsx";
 import { supabase } from "../../storageShim.js";
-import { useT } from "../../shared/i18n.jsx";
+import { useT, tr } from "../../shared/i18n.jsx";
 import { SKILLS, fmtDate, isLate, exSkills, assignedTo, totalScore } from "../../shared/exercises.js";
 import { uid, norm, stripHtml, wordCount, vfOk, fillAccepted, fillOk, autoQ, ordreOk, tableauCells, tableauOk, isQuestionAnswered, getUnansweredQuestionsCount } from "../../shared/questions.js";
 import { AVA_COLORS, avaColor, fmtDateFR, fmtDuration, targetedAccounts, fileNameFromUrl, formatLastSeen } from "../../shared/display.js";
@@ -158,7 +158,7 @@ function Bell({ name, exercises, submissions }) {
       if (sub?.graded && !sub.redo)
         list.push({ id: "graded-" + sub.id, loai: "graded", title: ex.title,
           chuaDoc: !seen["graded-" + sub.id],
-          text: `Ta copie « ${ex.title} » a été corrigée.` });
+          text: tr(`Ta copie « ${ex.title} » a été corrigée.`, `Bài « ${ex.title} » của bạn đã được chấm.`, `Your work « ${ex.title} » has been graded.`) });
       if (sub?.redo)
         list.push({ id: "redo-" + sub.id, loai: "redo", chuaDoc: true, title: ex.title,
           text: `Le professeur te demande de refaire « ${ex.title} »${sub.redoNote ? " : " + sub.redoNote : ""}.` });

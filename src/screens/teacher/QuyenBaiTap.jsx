@@ -21,16 +21,16 @@ import { tr } from "../../shared/i18n.jsx";
  * bằng nút ở đây. */
 
 const o = "w-full rounded-xl border border-solid border-line bg-surface2 px-3 py-2 font-sans text-sm text-ink outline-none focus:border-primary";
-const NHAN = {
-  [STATUS.PURCHASED]: ["Đã mua", "bg-ok-soft text-ok"],
-  [STATUS.GRANTED_BY_TEACHER]: ["Giáo viên cấp", "bg-primary-soft text-primary"],
-  XP: ["Đổi XP", "bg-warn-soft text-warn"],
-};
+const NHAN = () => ({
+  [STATUS.PURCHASED]: [tr("Đã mua", "Acheté", "Purchased"), "bg-ok-soft text-ok"],
+  [STATUS.GRANTED_BY_TEACHER]: [tr("Giáo viên cấp", "Accordé", "Teacher granted"), "bg-primary-soft text-primary"],
+  XP: [tr("Đổi XP", "Échangé (XP)", "XP"), "bg-warn-soft text-warn"],
+});
 const tuMua = (rec) => rec && rec.status !== STATUS.GRANTED_BY_TEACHER;
 
 function TrangThai({ rec }) {
   if (!rec) return <span className="rounded-full bg-surface2 px-2.5 py-0.5 text-xs font-semibold text-soft">{tr("Chưa có quyền", "Pas d'accès", "No access")}</span>;
-  const [n, c] = NHAN[rec.status] ?? ["Đã mở", "bg-ok-soft text-ok"];
+  const [n, c] = NHAN()[rec.status] ?? [tr("Đã mở", "Ouvert", "Unlocked"), "bg-ok-soft text-ok"];
   return <span className={`rounded-full px-2.5 py-0.5 text-xs font-bold ${c}`}>{n}</span>;
 }
 
@@ -141,10 +141,10 @@ export default function QuyenBaiTap({ accounts, exercises }) {
         <span className="grid h-10 w-10 place-items-center rounded-2xl bg-primary-soft text-primary"><KeyRound size={20} /></span>
         <div className="min-w-0 flex-1">
           <h2 className="m-0 text-base font-extrabold text-ink">{tr("Cấp quyền bài trả phí", "Accès aux exercices payants", "Paid exercise access")}</h2>
-          <p className="m-0 text-xs text-soft">{premium ? `${premium.length} bài trả phí` : tr("Đang tải…", "Chargement…", "Loading…")} {tr("· Học sinh VIP tự mở mọi bài, không cần cấp.", "· Les élèves VIP ont accès à tout.", "· VIP students already have everything.")}</p>
+          <p className="m-0 text-xs text-soft">{premium ? tr(`${premium.length} bài trả phí`, `${premium.length} exercice(s) payant(s)`, `${premium.length} paid exercise(s)`) : tr("Đang tải…", "Chargement…", "Loading…")} {tr("· Học sinh VIP tự mở mọi bài, không cần cấp.", "· Les élèves VIP ont accès à tout.", "· VIP students already have everything.")}</p>
         </div>
         <div role="tablist" className="inline-flex gap-1 rounded-full bg-surface2 p-1">
-          {[["bai", "Theo bài", BookOpen], ["hs", tr("Theo học sinh", "Par élève", "By student"), User]].map(([k, n, I]) => (
+          {[["bai", tr("Theo bài", "Par exercice", "By exercise"), BookOpen], ["hs", tr("Theo học sinh", "Par élève", "By student"), User]].map(([k, n, I]) => (
             <button key={k} type="button" role="tab" aria-selected={che === k} onClick={() => { setChe(k); setTimTrai(""); setTick(new Set()); }}
               className={`inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-full border-0 px-3 font-sans text-xs font-bold ${che === k ? "bg-surface text-ink shadow-sm" : "bg-transparent text-soft"}`}><I size={13} /> {n}</button>
           ))}
@@ -162,7 +162,7 @@ export default function QuyenBaiTap({ accounts, exercises }) {
           <div>
             <div className="relative">
               <Search size={14} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-soft" />
-              <input value={timTrai} onChange={(e) => setTimTrai(e.target.value)} placeholder={che === "bai" ? "Tìm bài…" : tr("Tìm học sinh…", "Rechercher un élève…", "Search students…")} className={`${o} pl-9`} />
+              <input value={timTrai} onChange={(e) => setTimTrai(e.target.value)} placeholder={che === "bai" ? tr("Tìm bài…", "Rechercher un exercice…", "Search exercises…") : tr("Tìm học sinh…", "Rechercher un élève…", "Search students…")} className={`${o} pl-9`} />
             </div>
             <ul className="mcf-scroll m-0 mt-2 grid max-h-[420px] list-none gap-1.5 overflow-y-auto p-0">
               {premium === undefined && <li className="p-2 text-sm text-soft">{tr("Đang tải…", "Chargement…", "Loading…")}</li>}
@@ -215,7 +215,7 @@ export default function QuyenBaiTap({ accounts, exercises }) {
                     const rec = accessRecord(access, a.name, bai.id);
                     return (
                       <li key={a.name} className="flex items-center gap-3 rounded-xl px-2 py-2 hover:bg-surface2">
-                        <input type="checkbox" disabled={!!rec} checked={tick.has(a.name)} aria-label={`Chọn ${a.name}`}
+                        <input type="checkbox" disabled={!!rec} checked={tick.has(a.name)} aria-label={tr(`Chọn ${a.name}`, `Sélectionner ${a.name}`, `Select ${a.name}`)}
                           onChange={() => setTick((s) => { const n = new Set(s); if (n.has(a.name)) n.delete(a.name); else n.add(a.name); return n; })}
                           className="h-4 w-4 cursor-pointer disabled:cursor-default" />
                         <span className="min-w-0 flex-1 truncate text-sm font-semibold text-ink">{a.name}</span>

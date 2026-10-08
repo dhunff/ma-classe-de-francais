@@ -101,13 +101,10 @@ export default function GrilleEditor({ level, grille, onChange, cotSanSang = tru
           {tr("Chưa chạy migration 035", "Migration 035 non appliquée", "Migration 035 not applied")}
         </p>
         <p className="m-0 mt-2 text-sm leading-relaxed text-ink">
-          Cột <code>exams.grille</code> chưa có trong database, nên thang riêng chưa
-          lưu được. Dán <code>supabase/migrations/035_exam_grille.sql</code> vào
-          SQL Editor rồi mở lại màn này.
+          {tr("Cột", "La colonne", "Column")} <code>exams.grille</code> {tr("chưa có trong database, nên thang riêng chưa lưu được. Dán", "n'existe pas encore en base : la grille personnalisée ne peut pas être enregistrée. Collez", "doesn't exist in the database yet, so a custom grid can't be saved. Paste")} <code>supabase/migrations/035_exam_grille.sql</code> {tr("vào SQL Editor rồi mở lại màn này.", "dans le SQL Editor puis rouvrez cet écran.", "into the SQL Editor and reopen this screen.")}
         </p>
         <p className="m-0 mt-2 text-xs text-soft">
-          Trong lúc đó mọi đề vẫn chấm bằng thang chuẩn DELF theo trình độ — đúng
-          như trước. Không đề nào hỏng.
+          {tr("Trong lúc đó mọi đề vẫn chấm bằng thang chuẩn DELF theo trình độ — đúng như trước. Không đề nào hỏng.", "En attendant, tous les sujets utilisent la grille DELF standard. Rien n'est cassé.", "Meanwhile every exam uses the standard DELF grid. Nothing is broken.")}
         </p>
       </div>
     );
@@ -140,10 +137,7 @@ export default function GrilleEditor({ level, grille, onChange, cotSanSang = tru
           <Info size={15} className="mt-0.5 shrink-0 text-primary" />
           <span>
             {tr("Đề dùng thang chuẩn", "Le sujet utilise la grille standard", "This exam uses the standard grid")} {level} {tr("của France Éducation international —", "de France Éducation international —", "from France Éducation international —")}{" "}
-            <strong className="text-ink">{chuan.criteria.length} {tr("tiêu chí,", "critères,", "criteria,")} {chuan.total} {tr("điểm", "points", "points")}</strong>.
-            Thang này sửa ở <code>src/screens/exam/delfGrille.js</code> và áp dụng cho
-            mọi đề, nên sửa một lỗi ở đó là sửa cho tất cả. Chỉ chọn thang riêng khi đề
-            này thật sự cần khác.
+            <strong className="text-ink">{chuan.criteria.length} {tr("tiêu chí,", "critères,", "criteria,")} {chuan.total} {tr("điểm", "points", "points")}</strong>{tr(". Thang này sửa ở", ". Cette grille se modifie dans", ". This grid is edited in")} <code>src/screens/exam/delfGrille.js</code> {tr("và áp dụng cho mọi đề, nên sửa một lỗi ở đó là sửa cho tất cả. Chỉ chọn thang riêng khi đề này thật sự cần khác.", "et s'applique à tous les sujets. Ne choisissez une grille propre que si ce sujet l'exige vraiment.", "and applies to every exam. Only choose a custom grid if this exam really needs it.")}
           </span>
         </p>
       ) : (
@@ -153,8 +147,7 @@ export default function GrilleEditor({ level, grille, onChange, cotSanSang = tru
               <AlertTriangle size={15} className="mt-0.5 shrink-0 text-warn" />
               <span>
                 {tr("Màn tự chấm của học sinh sẽ hiện dòng", "L'écran d'auto-évaluation affichera", "The self-assessment screen will show")}{" "}
-                <strong>{tr("« Thang này do giáo viên tuỳ chỉnh, không phải thang DELF chính thức »", "« Grille personnalisée par l'enseignant, pas la grille officielle du DELF »", "« Grid customised by the teacher, not the official DELF grid »")}</strong>.
-                Đó là chủ ý: điểm tự chấm hay được đem so với ngưỡng đạt của kỳ thi thật.
+                <strong>{tr("« Thang này do giáo viên tuỳ chỉnh, không phải thang DELF chính thức »", "« Grille personnalisée par l'enseignant, pas la grille officielle du DELF »", "« Grid customised by the teacher, not the official DELF grid »")}</strong>{tr(". Đó là chủ ý: điểm tự chấm hay được đem so với ngưỡng đạt của kỳ thi thật.", ". C'est voulu : les auto-évaluations sont souvent comparées au seuil de réussite.", ". That's deliberate: self-assessments are often compared with the pass mark.")}
               </span>
             </p>
           </div>
@@ -184,8 +177,7 @@ export default function GrilleEditor({ level, grille, onChange, cotSanSang = tru
 
           {lechDelf && (
             <p className="m-0 mt-2 text-xs font-bold text-danger">
-              {tr("Thang DELF cộng đúng", "La grille DELF totalise", "The DELF grid adds up to")} {TONG_DELF}. Cộng ra {tong} nghĩa là mọi điểm tự chấm
-              đều lệch so với thang thật — học sinh sẽ so nhầm với ngưỡng đạt.
+              {tr("Thang DELF cộng đúng", "La grille DELF totalise", "The DELF grid adds up to")} {TONG_DELF}{tr(". Cộng ra", ". Total obtenu :", ". This adds up to")} {tong} {tr("nghĩa là mọi điểm tự chấm đều lệch so với thang thật — học sinh sẽ so nhầm với ngưỡng đạt.", "toutes les auto-évaluations seront faussées par rapport à la vraie grille.", "every self-assessment will be off compared with the real grid.")}
             </p>
           )}
 
@@ -234,7 +226,7 @@ export default function GrilleEditor({ level, grille, onChange, cotSanSang = tru
 
                         {c.bareme
                           ? <span className="rounded-full bg-ok-soft px-2.5 py-1 text-[11px] font-bold text-ok">
-                              có {c.bareme.length} {tr("mốc cho điểm", "niveaux de notation", "score bands")}
+                              {tr("có", "comporte", "has")} {c.bareme.length} {tr("mốc cho điểm", "niveaux de notation", "score bands")}
                             </span>
                           : <span className="rounded-full bg-surface2 px-2.5 py-1 text-[11px] font-bold text-soft">
                               {tr("không mốc — học sinh đọc phần mô tả", "sans niveaux, l'élève lit la description", "no bands, students read the description")}

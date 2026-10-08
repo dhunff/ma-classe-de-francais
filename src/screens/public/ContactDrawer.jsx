@@ -60,7 +60,7 @@ export default function ContactDrawer({ isOpen, onClose }) {
       dienThoai: "+84 " + f.sdt.replace(/[\s.-]/g, "").replace(/^0/, ""),
       vai: f.vai,
       mucTieu: f.mucTieu,
-      noiDung: `Năm sinh: ${f.namSinh}` + (f.noiDung.trim() ? `\n\n${f.noiDung.trim()}` : ""),
+      noiDung: tr(`Năm sinh: ${f.namSinh}`, `Année de naissance : ${f.namSinh}`, `Birth year: ${f.namSinh}`) + (f.noiDung.trim() ? `\n\n${f.noiDung.trim()}` : ""),
       nguon: "gioi-thieu",
     });
     setDangGui(false);
@@ -108,7 +108,7 @@ export default function ContactDrawer({ isOpen, onClose }) {
             <div className="grid gap-4 px-6 py-5">
               <div>
                 <label className={NHAN} htmlFor="lh-ten">{tr("Họ và tên *", "Nom et prénom *", "Full name *")}</label>
-                <input id="lh-ten" ref={dauTien} required className={O} value={f.hoTen} onChange={dat("hoTen")} placeholder="Nguyễn Văn A" autoComplete="name" />
+                <input id="lh-ten" ref={dauTien} required className={O} value={f.hoTen} onChange={dat("hoTen")} placeholder={tr("Nguyễn Văn A", "Jean Dupont", "Jane Smith")} autoComplete="name" />
               </div>
 
               <div>

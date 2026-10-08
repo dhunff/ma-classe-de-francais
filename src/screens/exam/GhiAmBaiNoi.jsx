@@ -215,7 +215,7 @@ function KhungNhanXet({ kq }) {
     return (
       <p className="m-0 flex w-full items-start gap-2 rounded-xl bg-danger-soft p-3 text-xs font-semibold text-danger">
         <AlertTriangle size={14} className="mt-px shrink-0" aria-hidden />
-        {LOI()[kq.ma] ?? kq.thong_bao ?? `Không nhận xét được (${kq.ma ?? tr("lỗi", "erreur", "error")}${kq.trang_thai ? " · " + kq.trang_thai : ""}).`}
+        {LOI()[kq.ma] ?? kq.thong_bao ?? tr(`Không nhận xét được (${kq.ma ?? tr("lỗi", "erreur", "error")}${kq.trang_thai ? " · " + kq.trang_thai : ""}).`, `Avis impossible (${kq.ma ?? tr("lỗi", "erreur", "error")}${kq.trang_thai ? " · " + kq.trang_thai : ""}).`, `Couldn't give feedback (${kq.ma ?? tr("lỗi", "erreur", "error")}${kq.trang_thai ? " · " + kq.trang_thai : ""}).`)}
       </p>
     );
   }

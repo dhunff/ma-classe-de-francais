@@ -35,7 +35,7 @@ export default function KhungViet({ value, onChange, readOnly }) {
         className="block w-full resize-y border-0 bg-transparent px-4 py-3 font-sans text-base leading-relaxed text-ink outline-none"
         style={{ minHeight: 160 }} />
       <div className="border-0 border-t border-solid border-line px-4 py-1.5 text-right text-xs font-semibold tabular-nums text-soft">
-        {soChu} mot{soChu > 1 ? "s" : ""}
+        {soChu} {tr("từ", soChu > 1 ? "mots" : "mot", soChu === 1 ? "word" : "words")}
       </div>
     </div>
   );

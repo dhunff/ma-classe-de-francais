@@ -28,3 +28,4 @@ supabase/.temp/
 # tuyệt đối không được đẩy lên remote.
 *.backup.json
 _*.json
+scripts/i18n/tam/

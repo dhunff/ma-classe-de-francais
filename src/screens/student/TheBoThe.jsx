@@ -1,5 +1,6 @@
 import React from "react";
 import { ChevronRight } from "lucide-react";
+import { tr } from "../../shared/i18n.jsx";
 
 /* Một thẻ bộ trong danh sách thẻ ghi nhớ.
  *
@@ -67,10 +68,10 @@ export default function TheBoThe({ bo, onMo }) {
           trắng, khác độ trong — dùng hai màu khác nhau thì thẻ trông như hai
           mảnh ghép rời. */}
       <div className="mt-14 text-xs font-medium uppercase tracking-wide text-white/70">
-        Thẻ ghi nhớ
+        {tr("Thẻ ghi nhớ", "Cartes mémoire", "Flashcards")}
       </div>
       <div className="text-2xl font-bold tracking-tight text-white">{bo.ten}</div>
-      <div className="text-sm font-medium text-white/80">{bo.the.length} thẻ tới hạn</div>
+      <div className="text-sm font-medium text-white/80">{bo.the.length} {tr("thẻ tới hạn", "cartes à réviser", "cards due")}</div>
 
       <span aria-hidden
         className="absolute bottom-5 right-5 grid h-10 w-10 place-items-center rounded-full bg-white/25

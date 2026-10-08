@@ -187,7 +187,7 @@ function Builder({ draft, setDraft, publish, cancel, accounts, classes = [] }) {
         questions: qs,
       });
       setJsonModal(false);
-      showToast("ok", `✅ Import thành công ${qs.length} question${qs.length > 1 ? "s" : ""} !`);
+      showToast("ok", tr(`✅ Import thành công ${qs.length} question${qs.length > 1 ? "s" : ""} !`, `✅ ${qs.length} question${qs.length > 1 ? "s" : ""} importée(s) !`, `✅ Imported ${qs.length} question${qs.length > 1 ? "s" : ""}!`));
     } catch (e) {
       setJsonMsg(tr("❌ Lỗi định dạng JSON ! Vui lòng kiểm tra lại cấu trúc (thiếu ngoặc, dư dấu phẩy, thiếu trường questions…).", "❌ JSON invalide ! Vérifiez la structure (accolades, virgules, champ questions…).", "❌ Invalid JSON! Check the structure (brackets, commas, questions field…)."));
     }
@@ -260,9 +260,9 @@ function Builder({ draft, setDraft, publish, cancel, accounts, classes = [] }) {
       missing.push(t("builder.need_answer", { n }));
     if (q.type === "apparier" && ((q.choix || []).filter((c) => c.texte.trim()).length < 2
       || !(q.items || []).length || (q.items || []).some((it) => !q.answers?.[it.id])))
-      missing.push(`Câu ${n} : ghép cặp cần ≥ 2 phương án và đáp án cho mọi mục`);
+      missing.push(tr(`Câu ${n} : ghép cặp cần ≥ 2 phương án và đáp án cho mọi mục`, `Question ${n} : l'appariement exige ≥ 2 choix et une réponse par élément`, `Question ${n}: matching needs ≥ 2 options and an answer for every item`));
     if (q.type === "formulaire" && !(q.champs || []).some((c) => c.nhan.trim()))
-      missing.push(`Câu ${n} : phiếu cần ít nhất một ô`);
+      missing.push(tr(`Câu ${n} : phiếu cần ít nhất một ô`, `Question ${n} : le formulaire doit avoir au moins un champ`, `Question ${n}: the form needs at least one field`));
   });
   const ready = missing.length === 0;
 

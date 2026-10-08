@@ -30,7 +30,7 @@ export function HopBatDau({ tongPhut, luot, dangMo, loi, onHuy, onDongY }) {
         <h2 className="m-0 text-lg font-extrabold text-ink">{tr("Mô phỏng phòng thi DELF thật", "Simulation d'une vraie salle d'examen DELF", "A real DELF exam room simulation")}</h2>
       </div>
       <ul className="m-0 mt-4 grid list-disc gap-2 pl-5 text-sm leading-relaxed text-ink">
-        <li>{tr("Thời gian từng phần giống kỳ thi thật, tổng", "La durée de chaque partie est celle de l'examen réel, au total", "Each part is timed like the real exam, in total")} <strong>{tongPhut} phút</strong>{tr(". Đồng hồ không dừng lại.", ". Le chronomètre ne s'arrête pas.", ". The timer never stops.")}</li>
+        <li>{tr("Thời gian từng phần giống kỳ thi thật, tổng", "La durée de chaque partie est celle de l'examen réel, au total", "Each part is timed like the real exam, in total")} <strong>{tongPhut} {tr("phút", "minutes", "minutes")}</strong>{tr(". Đồng hồ không dừng lại.", ". Le chronomètre ne s'arrête pas.", ". The timer never stops.")}</li>
         <li>{tr("Bài nghe chỉ phát theo số lượt của đề thi, không tua lại được.", "Les documents audio ne passent que le nombre de fois prévu, sans retour en arrière.", "Audio plays only the number of times the exam allows, with no rewinding.")}</li>
         <li>{tr("Hãy làm bài nghiêm túc và có trách nhiệm như đang ở phòng thi: chuẩn bị chỗ yên tĩnh, tắt thông báo.", "Travaillez sérieusement, comme en salle d'examen : installez-vous au calme et coupez les notifications.", "Take it seriously, as in a real exam room: find a quiet place and turn off notifications.")}</li>
         {luot?.vip

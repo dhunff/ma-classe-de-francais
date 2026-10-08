@@ -98,7 +98,7 @@ function Phan({ s, onTuCham }) {
               <PenLine size={13} className="shrink-0 text-primary" aria-hidden="true" />
               {p.selfScore != null ? tr("Xem lại bản tự chấm", "Revoir mon auto-évaluation", "Review my self-assessment") : tr("Tự chấm bài viết này", "M'auto-évaluer sur cette production", "Self-assess this writing")}
               <span className="ml-auto font-normal text-soft">
-                {p.selfScore != null ? tr("sửa được", "modifiable", "editable") : `${s.level} · ${p.max} điểm`}
+                {p.selfScore != null ? tr("sửa được", "modifiable", "editable") : tr(`${s.level} · ${p.max} điểm`, `${s.level} · ${p.max} points`, `${s.level} · ${p.max} points`)}
               </span>
             </button>
           )}
@@ -260,7 +260,7 @@ export default function ExamResults() {
       <p className="m-0 mt-4 flex items-start gap-2 rounded-xl bg-surface2 p-3 text-xs text-soft">
         <ShieldCheck size={13} className="mt-0.5 shrink-0" />
         <span>
-          {tr("Đạt DELF cần", "Pour réussir le DELF :", "To pass DELF you need")} <strong className="text-ink">≥ {NGUONG_TONG}/100 toàn bài</strong> VÀ{" "}
+          {tr("Đạt DELF cần", "Pour réussir le DELF :", "To pass DELF you need")} <strong className="text-ink">≥ {NGUONG_TONG}{tr("/100 toàn bài", "/100 au total", "/100 overall")}</strong> {tr("VÀ", "ET", "AND")}{" "}
           <strong className="text-ink">≥ {NGUONG_PHAN}{tr("/25 mỗi phần", "/25 par partie", "/25 per part")}</strong>{tr(". Các đề ở đây không có phần thi nói, nên tổng điểm chỉ tính trên những phần đã làm.", ". La production orale n'est pas notée ici : le total ne compte que les parties faites.", ". Speaking isn't scored here, so the total only counts the parts you took.")}
         </span>
       </p>

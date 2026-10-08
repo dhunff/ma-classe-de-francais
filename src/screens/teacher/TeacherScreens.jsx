@@ -123,7 +123,7 @@ function Teacher({ exercises, setExercises, submissions, setSubmissions, account
     setAnnToast(
       kq.soNguoiNhan == null ? tr("✅ Đã gửi thông báo.", "✅ Annonce envoyée.", "✅ Announcement sent.")
         : kq.soNguoiNhan === 0 ? tr("⚠️ Đã gửi, nhưng không có học sinh nào nhận — lớp chưa có ai đăng ký tài khoản.", "⚠️ Envoyé, mais aucun élève ne l'a reçu.", "⚠️ Sent, but no student received it.")
-          : `✅ Đã gửi tới ${kq.soNguoiNhan} học sinh.`);
+          : tr(`✅ Đã gửi tới ${kq.soNguoiNhan} học sinh.`, `✅ Envoyé à ${kq.soNguoiNhan} élève(s).`, `✅ Sent to ${kq.soNguoiNhan} student(s).`));
     setTimeout(() => setAnnToast(""), 4500);
   };
   const [draft, setDraft] = useState(null);

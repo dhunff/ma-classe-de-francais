@@ -76,7 +76,7 @@ function OThe({ t, so, onDoi, onLoi }) {
     setSua(false); onDoi();
   };
   const xoa = async () => {
-    if (!window.confirm(`Xoá thẻ « ${t.matTruoc} »?`)) return;
+    if (!window.confirm(tr(`Xoá thẻ « ${t.matTruoc} »?`, `Supprimer la carte « ${t.matTruoc} » ?`, `Delete card « ${t.matTruoc} »?`))) return;
     const kq = await xoaThe(t.id);
     if (!kq.ok) { onLoi(kq.loi); return; }
     onDoi();
@@ -153,11 +153,11 @@ function SoanMotBo({ bo: boGoc, onQuay, onDoi }) {
     let vao = 0;
     for (const t of duoc) {
       const kq = await themThe(bo.id, t, batDau + vao);
-      if (!kq.ok) { setLoi(`${kq.loi} (dừng sau ${vao} thẻ)`); break; }
+      if (!kq.ok) { setLoi(tr(`${kq.loi} (dừng sau ${vao} thẻ)`, `${kq.loi} (arrêt après ${vao} carte(s))`, `${kq.loi} (stopped after ${vao} card(s))`)); break; }
       vao += 1;
     }
     setDangLuu(false);
-    if (vao) { setVan(""); await tai(); onDoi(); bao(`Đã thêm ${vao} thẻ`); }
+    if (vao) { setVan(""); await tai(); onDoi(); bao(tr(`Đã thêm ${vao} thẻ`, `${vao} carte(s) ajoutée(s)`, `${vao} card(s) added`)); }
   };
 
   const luuTT = async () => {
@@ -247,7 +247,7 @@ function SoanMotBo({ bo: boGoc, onQuay, onDoi }) {
                 placeholder={"Le train entre en gare | Tàu đang vào ga\nVoie 12 | Đường ray số 12"}
                 className={`${o} mt-2 font-mono text-xs leading-relaxed`} />
               <p className="m-0 mt-1 text-xs text-soft">
-                {xemLo.duoc.length} {tr("thẻ hợp lệ", "carte(s) valide(s)", "valid card(s)")}{xemLo.hong.length ? ` · ${xemLo.hong.length} dòng lỗi` : ""}
+                {xemLo.duoc.length} {tr("thẻ hợp lệ", "carte(s) valide(s)", "valid card(s)")}{xemLo.hong.length ? tr(` · ${xemLo.hong.length} dòng lỗi`, ` · ${xemLo.hong.length} ligne(s) en erreur`, ` · ${xemLo.hong.length} invalid line(s)`) : ""}
               </p>
               {hong.length > 0 && (
                 <ul className="m-0 mt-2 list-none rounded-xl bg-warn-soft p-2.5 text-[11px] text-warn">
@@ -255,7 +255,7 @@ function SoanMotBo({ bo: boGoc, onQuay, onDoi }) {
                 </ul>
               )}
               <button type="button" onClick={themLo} disabled={dangLuu || !xemLo.duoc.length} className={`${nutChinh} mt-3 w-full justify-center`}>
-                <Plus size={14} /> {dangLuu ? tr("Đang thêm…", "Ajout…", "Adding…") : `Thêm ${xemLo.duoc.length || ""} thẻ`}
+                <Plus size={14} /> {dangLuu ? tr("Đang thêm…", "Ajout…", "Adding…") : tr(`Thêm ${xemLo.duoc.length || ""} thẻ`, `Ajouter ${xemLo.duoc.length || ""} carte(s)`, `Add ${xemLo.duoc.length || ""} card(s)`)}
               </button>
             </div>
           )}
@@ -317,7 +317,7 @@ export default function SoanBoThe() {
   };
   const bo1Bo = async (b) => {
     /* Xoá bộ là xoá cả thẻ (CASCADE): hỏi lại và NÓI RA con số. */
-    if (!window.confirm(`Xoá bộ « ${b.ten} » và ${b.soThe} thẻ trong đó? Không hoàn lại được.`)) return;
+    if (!window.confirm(tr(`Xoá bộ « ${b.ten} » và ${b.soThe} thẻ trong đó? Không hoàn lại được.`, `Supprimer le paquet « ${b.ten} » et ses ${b.soThe} cartes ? Irréversible.`, `Delete deck « ${b.ten} » and its ${b.soThe} cards? This can't be undone.`))) return;
     const kq = await xoaBo(b.id);
     if (!kq.ok) { setLoi(kq.loi); return; }
     setLoi(""); tai();
@@ -403,7 +403,7 @@ export default function SoanBoThe() {
                   </button>
                   <div className="mt-4 flex items-center gap-2">
                     <span className="text-sm font-bold tabular-nums text-ink">{b.soThe} {tr("thẻ", "cartes", "cards")}</span>
-                    <button type="button" onClick={() => bo1Bo(b)} aria-label={`Xoá bộ ${b.ten}`}
+                    <button type="button" onClick={() => bo1Bo(b)} aria-label={tr(`Xoá bộ ${b.ten}`, `Supprimer le paquet ${b.ten}`, `Delete deck ${b.ten}`)}
                       className="ml-auto grid h-8 w-8 cursor-pointer place-items-center rounded-full border-0 bg-surface2 text-danger"><Trash2 size={14} /></button>
                     <button type="button" onClick={() => setDangMo(b)} className={nutChinh}>{tr("Mở", "Ouvrir", "Open")}</button>
                   </div>

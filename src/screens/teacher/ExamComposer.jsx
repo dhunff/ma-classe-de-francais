@@ -60,7 +60,7 @@ const coSkill = (ex, skill) =>
  * Mã id chỉ hiện khi tên bị TRÙNG trong chính danh sách này. Hiện mọi lúc là
  * thêm nhiễu cho trường hợp không có gì để phân biệt. */
 const nhanBai = (ex, trungTen) => {
-  const phan = [`${ex.questions.length} câu`];
+  const phan = [tr(`${ex.questions.length} câu`, `${ex.questions.length} questions`, `${ex.questions.length} questions`)];
   if (ex.imageUrl) phan.push(tr("ảnh", "image", "image"));
   if (ex.readingText) phan.push(tr("bài đọc", "texte", "text"));
   if (ex.audioUrl) phan.push(tr("âm thanh", "audio", "audio"));
@@ -189,7 +189,7 @@ export default function ExamComposer({ t }) {
                         Tính PO vào đây thì mọi đề đang có bỗng hiện « thiếu
                         phần » màu đỏ, và lời cảnh báo đó là sai. */}
                     {soPhanCham(e.sections)}{tr("/3 phần", "/3 parties", "/3 parts")}
-                    {e.sections.length > 3 && ` · ${e.sections.length} bài`}
+                    {e.sections.length > 3 && tr(` · ${e.sections.length} bài`, ` · ${e.sections.length} exercices`, ` · ${e.sections.length} exercises`)}
                     {` · ${e.duration_min ?? 0}′`}
                     {soPhanCham(e.sections) < 3 && (
                       <span className="ml-2 font-bold text-danger">{tr("thiếu phần", "incomplet", "missing parts")}</span>
@@ -381,7 +381,7 @@ export default function ExamComposer({ t }) {
                 <span className="text-sm font-bold text-ink">{phan.code} · {phan.label}</span>
                 <span className="ml-auto text-xs text-soft">
                   {phan.minutes}′ · {khongCham(phan) ? tr("không chấm điểm", "non noté", "not scored") : `/${phan.points}`}
-                  {daChon.length > 0 && ` · ${daChon.length} bài`}
+                  {daChon.length > 0 && tr(` · ${daChon.length} bài`, ` · ${daChon.length} exercices`, ` · ${daChon.length} exercises`)}
                 </span>
               </div>
 
@@ -396,7 +396,7 @@ export default function ExamComposer({ t }) {
 
               {daChon.length > 1 && !khongCham(phan) && (
                 <p className="m-0 mt-2 text-xs text-soft">
-                  {daChon.length} bài dùng chung {phan.minutes} phút và {phan.points} {tr("điểm của phần này.", "points pour cette partie.", "points for this part.")}
+                  {daChon.length} {tr("bài dùng chung", "exercices partagent", "exercises share")} {phan.minutes} {tr("phút và", "minutes et", "minutes and")} {phan.points} {tr("điểm của phần này.", "points pour cette partie.", "points for this part.")}
                 </p>
               )}
 
@@ -410,7 +410,7 @@ export default function ExamComposer({ t }) {
                         <span className="shrink-0 text-xs font-bold tabular-nums text-soft">{j + 1}.</span>
                         <span className="min-w-0 flex-1 truncate text-sm text-ink">
                           {ex ? nhanBai(ex, tenTrung.has(String(ex.title).trim()))
-                              : `(bài ${s.exercise_id} không còn trong thư viện)`}
+                              : tr(`(bài ${s.exercise_id} không còn trong thư viện)`, `(exercice ${s.exercise_id} retiré de la bibliothèque)`, `(exercise ${s.exercise_id} no longer in the library)`)}
                         </span>
                         <button type="button" onClick={() => doiCho(s.exercise_id, -1)}
                           disabled={j === 0} title={tr("Đưa lên trên", "Monter", "Move up")}
@@ -439,7 +439,7 @@ export default function ExamComposer({ t }) {
                 </p>
               ) : conLai.length === 0 ? (
                 <p className="m-0 mt-3 text-xs text-soft">
-                  {tr("Đã dùng hết", "Tous utilisés :", "All used:")} {ungVien.length} bài « {phan.skill} » {draft.exam.level} {tr("của thư viện.", "de la bibliothèque.", "from the library.")}
+                  {tr("Đã dùng hết", "Tous utilisés :", "All used:")} {ungVien.length} {tr("bài «", "exercice «", "exercise «")} {phan.skill} » {draft.exam.level} {tr("của thư viện.", "de la bibliothèque.", "from the library.")}
                 </p>
               ) : (
                 /* `value=""` và reset ngay sau khi chọn: ô này là NÚT THÊM, không
