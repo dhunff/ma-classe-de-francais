@@ -19,7 +19,6 @@ import { coPhienMayChu } from "../../shared/phienMayChu.js";
 import { tr } from "../../shared/i18n.jsx";
 import { LeonTheoTrang } from "../../shared/leon.jsx";
 import { phat, amThanhBat, datAmThanh } from "../../shared/amThanh.js";
-import { Volume2, VolumeX } from "lucide-react";
 
 /* Mode Examen — thi thử có tính giờ.
  *
