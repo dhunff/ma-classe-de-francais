@@ -160,7 +160,7 @@ function Luot({ s, onTuCham }) {
           hai phần ba bài thi là lời nói dối tử tế nhưng vẫn là nói dối. */}
       {s.passed === null && s.pending.length > 0 && (
         <p className="m-0 mt-2 text-xs text-soft">
-          Còn {s.pending.map((p) => p.code).join(", ")} {tr("chưa có điểm, nên chưa kết luận được.", "n'a pas encore de note, résultat impossible à conclure.", "has no score yet, so no verdict.")}
+          {tr("Còn", "Encore", "Still")} {s.pending.map((p) => p.code).join(", ")} {tr("chưa có điểm, nên chưa kết luận được.", "n'a pas encore de note, résultat impossible à conclure.", "has no score yet, so no verdict.")}
         </p>
       )}
 

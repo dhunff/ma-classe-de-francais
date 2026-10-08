@@ -551,7 +551,7 @@ export default function PESelfEvaluation({
                 )}
 
                 {conLai != null && !loiAI && (
-                  <p className="m-0 mt-2 text-[11px] text-soft">Còn {conLai} {tr("lượt trong 24 giờ tới.", "essai(s) aujourd'hui.", "attempts left today.")}</p>
+                  <p className="m-0 mt-2 text-[11px] text-soft">{tr("Còn", "Il reste", "Remaining:")} {conLai} {tr("lượt trong 24 giờ tới.", "essai(s) aujourd'hui.", "attempts left today.")}</p>
                 )}
               </>
             )}

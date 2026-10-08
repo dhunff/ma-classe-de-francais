@@ -42,7 +42,7 @@ export default function QuanLyVip() {
         <span className="grid h-10 w-10 place-items-center rounded-2xl bg-warn-soft text-warn"><Crown size={20} /></span>
         <div className="min-w-0 flex-1">
           <h2 className="m-0 text-base font-extrabold text-ink">Gói VIP</h2>
-          <p className="m-0 text-xs text-soft">{fmtPrice(VIP.gia)} / {VIP.ngay} ngày · {ds ? tr(`${soVip} học sinh đang VIP`, `${soVip} élève(s) VIP`, `${soVip} VIP student(s)`) : tr("Đang tải…", "Chargement…", "Loading…")}</p>
+          <p className="m-0 text-xs text-soft">{fmtPrice(VIP.gia)} / {VIP.ngay} {tr("ngày ·", "jours ·", "days ·")} {ds ? tr(`${soVip} học sinh đang VIP`, `${soVip} élève(s) VIP`, `${soVip} VIP student(s)`) : tr("Đang tải…", "Chargement…", "Loading…")}</p>
         </div>
         <input value={tim} onChange={(e) => setTim(e.target.value)} placeholder={tr("Tìm học sinh…", "Rechercher un élève…", "Search students…")}
           className="h-9 w-48 rounded-lg border border-solid border-line bg-surface2 px-3 font-sans text-sm text-ink outline-none focus:border-primary" />
@@ -68,7 +68,7 @@ export default function QuanLyVip() {
                   <td className="py-2 text-right whitespace-nowrap">
                     <button type="button" disabled={dang === p.id} onClick={() => goi(p, "gv_gia_han_vip", { p_user: p.id, p_so_ngay: VIP.ngay })}
                       className="h-8 cursor-pointer rounded-full border-0 bg-primary px-3 font-sans text-xs font-bold text-white disabled:opacity-50">
-                      +{VIP.ngay} ngày
+                      +{VIP.ngay} {tr("ngày", "jours", "days")}
                     </button>
                     {con && (
                       <button type="button" disabled={dang === p.id}

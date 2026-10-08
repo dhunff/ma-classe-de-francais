@@ -186,6 +186,16 @@ Vẫn phải **nói rõ những gì chưa kiểm chứng được**.
 Vẫn dừng lại hỏi khi: xoá dữ liệu, đổi cấu hình hạ tầng, hoặc làm hỏng đường vào
 hiện có của người dùng.
 
+### 6b. Chữ giao diện phải đủ BA thứ tiếng (08/10)
+
+Không viết chữ tiếng Việt/Pháp cứng trong JSX. Dùng khoá i18n (`t("…")`)
+hoặc `tr("vi", "fr", "en")` từ `shared/i18n.jsx` (nhận cả JSX). KHÔNG gọi
+`tr()` ở cấp module: hằng số tính một lần lúc nạp file sẽ đứng yên ở một
+ngôn ngữ, viết thành hàm (`const X = () => [...]`). Rà chữ sót bằng
+`RONG=1 node scripts/i18n/trich.cjs <file…>`; áp bản dịch bằng
+`node scripts/i18n/ap.cjs <ban-dich.json>`. Nội dung học (đề, câu hỏi tiếng
+Pháp) KHÔNG dịch.
+
 ### 7. Nội dung học KHÔNG dùng dấu gạch dài « — »
 
 Tiêu đề, đề bài, ngữ liệu, câu hỏi, phương án, lời giải, flashcard, tên đề thi:

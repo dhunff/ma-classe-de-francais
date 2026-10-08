@@ -16,7 +16,7 @@ const BO_ATTR = new Set(["className", "key", "id", "type", "role", "href", "to",
 
 /* VI2: chữ Việt chỉ mang dấu sắc/huyền (bài, phút, dùng) — dấu cũng có ở tiếng
    Pháp nên chỉ tính khi đi cùng âm tiết không phải tiếng Pháp. Bật bằng RONG=1. */
-const VI2 = new RegExp("(^|[^A-Za-zÀ-ỹ])(" + "bài|phút|dùng|chung|câu|lượt|các|có|là|và|về|tới|mới|khi|chỉ|đã|học|sinh|giáo|viên|điểm|đề|thi|phần|bấm|xem|lại|không|của|cho|trong|này|đó|một" + ")($|[^A-Za-zÀ-ỹ])", "i");
+const VI2 = new RegExp("(^|[^A-Za-zÀ-ỹ])(" + "bài|phút|dùng|chung|câu|lượt|các|có|là|và|về|tới|mới|khi|chỉ|đã|học|sinh|giáo|viên|điểm|đề|thi|phần|bấm|xem|lại|không|của|cho|trong|này|đó|một|còn|tôi|bỏ|gì|nào|lúc|rồi|vì|sao|nếu|thì|nên|đúng|sai|mở|lưu|xoá|sửa|tìm|chọn|tất|cả|với|từ|thẻ|bộ|ngày|giờ|tuần|tháng|năm|nghe|nói|đọc|viết|làm|nộp|trả|lời|hỏi|gửi|nhận|đang|chưa|sẽ|được|bị|bạn|em|thầy|cô|hết|vào|ra|lên|xuống|trước|sau|mỗi|nhiều|ít|cách" + ")($|[^A-Za-zÀ-ỹ])", "i");
 function can(chu) { return (VI.test(chu) || FR.test(chu) || (process.env.RONG && VI2.test(chu))) && /[A-Za-zÀ-ỹ]{2,}/.test(chu); }
 
 function duyet(node, cha, kq) {

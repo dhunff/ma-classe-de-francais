@@ -711,7 +711,7 @@ export function PhanThi({ section, attemptId, answers, setAnswers, onDone, onBlu
         <div role="dialog" aria-modal="true" className="fixed inset-0 z-[300] grid place-items-center bg-black/55 p-4 backdrop-blur-sm">
           <div className="w-full max-w-md rounded-3xl bg-surface p-6 shadow-2xl">
             <h2 className="m-0 flex items-center gap-2 text-lg font-extrabold text-ink"><AlertTriangle size={20} className="text-warn" /> {tr("Bạn chưa làm xong phần này", "Vous n'avez pas terminé cette partie", "You haven't finished this part")}</h2>
-            <p className="m-0 mt-2 text-sm text-ink">Còn <strong>{tongThieu} {tr("câu", "question(s)", "question(s)")}</strong> {tr("chưa trả lời. Nộp rồi thì không quay lại phần này được.", "sans réponse. Une fois rendue, vous ne pourrez plus revenir.", "unanswered. Once submitted you can't come back.")}</p>
+            <p className="m-0 mt-2 text-sm text-ink">{tr("Còn", "Encore", "There are")} <strong>{tongThieu} {tr("câu", "question(s)", "question(s)")}</strong> {tr("chưa trả lời. Nộp rồi thì không quay lại phần này được.", "sans réponse. Une fois rendue, vous ne pourrez plus revenir.", "unanswered. Once submitted you can't come back.")}</p>
             <ul className="m-0 mt-3 grid list-none gap-1.5 p-0">
               {thieuTheoBai.map((ds, j) => ds.length ? (
                 <li key={j}>
@@ -773,7 +773,7 @@ function KetQua({ sections, blurCount, onLai }) {
             đang chờ. Nói thẳng ai sẽ chấm, và chấm ở đâu. */}
         {v.passed === null && (
           <p className="m-0 mt-2 text-xs text-soft">
-            Còn {v.pending.map((p) => p.code).join(", ")} {tr("chưa có điểm. Máy không chấm được bài viết, và đoán thay thì con số mất hết ý nghĩa — bạn tự chấm phần đó theo thang DELF ở « Kết quả thi ».", "n'a pas de note. La correction s'affiche dans « Mes résultats ».", "has no score yet. Grading appears in « My results ».")}
+            {tr("Còn", "Encore", "There are")} {v.pending.map((p) => p.code).join(", ")} {tr("chưa có điểm. Máy không chấm được bài viết, và đoán thay thì con số mất hết ý nghĩa — bạn tự chấm phần đó theo thang DELF ở « Kết quả thi ».", "n'a pas de note. La correction s'affiche dans « Mes résultats ».", "has no score yet. Grading appears in « My results ».")}
           </p>
         )}
       </div>

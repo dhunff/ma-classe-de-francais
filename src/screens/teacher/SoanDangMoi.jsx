@@ -35,7 +35,7 @@ export function SoanGhepCap({ q, setQ }) {
             <strong className="w-5 text-primary">{chu(i)}</strong>
             <input className={o} value={c.texte} onChange={(e) => doi({ choix: choix.map((x) => x.id === c.id ? { ...x, texte: e.target.value } : x) })} />
             {choix.length > 2 && (
-              <button type="button" className={nutXoa} title="Xoá" onClick={() => {
+              <button type="button" className={nutXoa} title={tr("Xoá", "Supprimer", "Delete")} onClick={() => {
                 const na = Object.fromEntries(Object.entries(ans).filter(([, v]) => v !== c.id));
                 doi({ choix: choix.filter((x) => x.id !== c.id), answers: na });
               }}><Trash2 size={15} /></button>
@@ -56,7 +56,7 @@ export function SoanGhepCap({ q, setQ }) {
               {choix.map((c, i) => <option key={c.id} value={c.id}>{chu(i)}</option>)}
             </select>
             {items.length > 1 && (
-              <button type="button" className={nutXoa} title="Xoá" onClick={() => {
+              <button type="button" className={nutXoa} title={tr("Xoá", "Supprimer", "Delete")} onClick={() => {
                 const na = { ...ans }; delete na[it.id];
                 doi({ items: items.filter((x) => x.id !== it.id), answers: na });
               }}><Trash2 size={15} /></button>
@@ -79,7 +79,7 @@ export function SoanPhieu({ q, setQ }) {
         <div key={c.id} className="flex items-center gap-2">
           <input className={o} value={c.nhan} onChange={(e) => setQ(q.id, { champs: champs.map((x) => x.id === c.id ? { ...x, nhan: e.target.value } : x) })} />
           {champs.length > 1 && (
-            <button type="button" className={nutXoa} title="Xoá" onClick={() => setQ(q.id, { champs: champs.filter((x) => x.id !== c.id) })}><Trash2 size={15} /></button>
+            <button type="button" className={nutXoa} title={tr("Xoá", "Supprimer", "Delete")} onClick={() => setQ(q.id, { champs: champs.filter((x) => x.id !== c.id) })}><Trash2 size={15} /></button>
           )}
         </div>
       ))}
