@@ -14,6 +14,7 @@ import StreakWidget from "./StreakWidget.jsx";
 import FollowingStreakWidget from "./FollowingStreakWidget.jsx";
 import GioHocWidget from "./GioHocWidget.jsx";
 import TourGioiThieu from "../../shared/TourGioiThieu.jsx";
+import { DeXuatBai, TroChoi, DongDeuKyNang, chonDeXuat } from "./TrangChuKhoi.jsx";
 
 /* Trang chủ học sinh.
 
@@ -71,7 +72,6 @@ export default function StudentDashboard({
       {/* Tour trang chủ (27/09) — một lần mỗi trình duyệt; « Xem lại hướng dẫn »
           trong menu ảnh đại diện mở lại. Bỏ qua ở trang xem thử khi có fixture. */}
       <TourGioiThieu khoa="hasSeenTrangChuTour" choXong="hasSeenGiaoDienTour" steps={[
-        { target: "#tour-tc-so-lieu", title: t("tour.tc1_title"), content: t("tour.tc1_body"), placement: "bottom" },
         { target: "#tour-tc-chuoi", title: t("tour.tc2_title"), content: t("tour.tc2_body"), placement: "left" },
         { target: "#tour-tc-theo-doi", title: t("tour.tc3_title"), content: t("tour.tc3_body"), placement: "left" },
         { target: "#tour-tc-gio-hoc", title: t("tour.tc4_title"), content: t("tour.tc4_body"), placement: "left" },
@@ -120,66 +120,23 @@ export default function StudentDashboard({
             </Rise>
           )}
 
-          <Rise id="tour-tc-so-lieu" delay={160} className="grid gap-4 sm:grid-cols-3">
-            {/* Bốn mảng màu, mỗi ô một sắc. `tone` không còn tác dụng ở bản
-                gradient — chữ luôn trắng — nhưng giữ lại cho ô "đang chờ làm"
-                thì thừa, nên bỏ hẳn khỏi bốn ô này. Cảnh báo quá hạn vẫn nằm
-                nguyên trong dòng phụ, chỉ là không còn tô đỏ con số. */}
-            <StatTile gradient="indigo" Icon={CheckCircle} label={t("dash.submitted")} value={done.length}
-              hint={t("dash.of_assigned", { n: assigned.length })} />
-            <StatTile gradient="blue" Icon={Target} label={t("dash.avg_score")} value={avg} unit="%"
-              hint={avg === null ? t("dash.avg_empty") : undefined} />
-            <StatTile gradient="fuchsia" Icon={Clock} label={t("dash.pending")} value={todo.length}
-              hint={overdue ? t("dash.overdue", { n: overdue }) : undefined} />
+          {/* 08/10: trang chủ là ĐỀ XUẤT + TRÒ CHƠI. Ô Đã nộp / Điểm TB / Đang chờ
+              làm / % hoàn thành / Học tiếp đã sang trang « Bài tập được giao »
+              (TongQuanBaiGiao.jsx). */}
+          <Rise delay={160}>
+            <DeXuatBai coHoSo={!!profile?.level}
+              dsDeXuat={practiceStore ? chonDeXuat({ practice: practiceStore, hist: practiceHist, skills, level: profile?.level }) : null}
+              onMo={(ex) => navigate("/etudiant/entrainement", { state: { moBai: ex.id } })} />
           </Rise>
 
-          {/* Biểu đồ cột thuần CSS. Không phải "hoạt động theo ngày" như bản
-              thiết kế gợi ý — hệ thống chưa ghi nhật ký theo ngày, nên vẽ nó
-              là bịa. Đây là điểm theo kỹ năng, từ bài được giao đã chốt điểm
-              và điểm tốt nhất ở phần luyện tập.
+          <Rise delay={220}>
+            <TroChoi />
+          </Rise>
 
-              Dòng chú thích đổi theo nguồn thật sự có dữ liệu: "tốt nhất sau
-              nhiều lần thử" và "làm một lần duy nhất" không cùng thang, nên
-              người đọc phải biết cột đang dựng từ cái nào. */}
-          <Rise id="tour-tc-ky-nang" delay={240}>
-            <Card title={t("dash.skills")}>
-              {skills.length ? (
-                <>
-                  <div className="flex h-48 items-end justify-around gap-3 pt-2">
-                    {skills.map(({ skill, value }) => {
-                      const best = value === Math.max(...skills.map((s) => s.value));
-                      return (
-                        <div key={skill} className="group flex h-full min-w-0 flex-1 flex-col items-center justify-end gap-2">
-                          <span className="text-xs font-bold text-ink opacity-0 transition-opacity duration-200 group-hover:opacity-100">
-                            {value}%
-                          </span>
-                          <div
-                            className={[
-                              "w-full max-w-[42px] rounded-full transition-all duration-500 ease-out",
-                              "group-hover:brightness-110",
-                              best ? "bg-primary shadow-[0_6px_20px_rgb(var(--mcf-primary-rgb)/0.45)]" : "bg-primary-soft",
-                            ].join(" ")}
-                            style={{ height: `${Math.max(value, 4)}%` }}
-                          />
-                          <span className="w-full truncate text-center text-[11px] font-semibold text-soft">
-                            {skill}
-                          </span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                  <p className="m-0 mt-3 text-xs text-soft">
-                    {skills.sources.assigned && skills.sources.practice
-                      ? t("dash.skills_note_both")
-                      : skills.sources.practice
-                        ? t("dash.skills_note_practice")
-                        : t("dash.skills_note")}
-                  </p>
-                </>
-              ) : (
-                <EmptyState Icon={Sparkles} title={t("dash.skills_empty_title")} body={t("dash.skills_empty_body")} />
-              )}
-            </Card>
+          <Rise id="tour-tc-ky-nang" delay={280}>
+            <DongDeuKyNang skills={skills}
+              ghiChu={skills.sources?.assigned && skills.sources?.practice ? t("dash.skills_note_both")
+                : skills.sources?.practice ? t("dash.skills_note_practice") : t("dash.skills_note")} />
           </Rise>
 
           {/* Kho luyện tập, mới nhất trước — cùng khối với trang chủ chung.
@@ -208,66 +165,6 @@ export default function StudentDashboard({
             </Card>
           </Rise>
 
-          <Rise delay={120}>
-            <Card>
-              <div className="flex flex-col items-center gap-3 py-2">
-                <Ring pct={donePct} label={t("dash.completion")} />
-                <p className="m-0 text-center text-sm font-bold text-ink">{t("dash.completion")}</p>
-                <p className="m-0 text-center text-xs text-soft">
-                  {assigned.length
-                    ? t("dash.of_assigned", { n: assigned.length })
-                    : t("dash.no_exercise_yet")}
-                </p>
-              </div>
-            </Card>
-          </Rise>
-
-          <Rise delay={200}>
-            <Card title={t("dash.continue")}>
-              {upcoming.length === 0 ? (
-                assigned.length === 0 ? (
-                  <EmptyState Icon={Inbox} title={t("dash.no_exercise_yet")} />
-                ) : (
-                  <EmptyState Icon={PartyPopper} title={t("dash.continue_empty_title")} body={t("dash.continue_empty_body")} />
-                )
-              ) : (
-                <ul className="m-0 flex list-none flex-col gap-2 p-0">
-                  {upcoming.map((ex) => {
-                    const late = isLate(ex);
-                    return (
-                      <li key={ex.id}>
-                        <button type="button" onClick={() => onOpen?.(ex)}
-                          className="group flex w-full cursor-pointer items-center gap-3 rounded-2xl border-0 bg-surface2/70 p-3 text-left font-[inherit] transition-all duration-300 ease-out hover:-translate-y-0.5 hover:shadow-md">
-                          <span className="min-w-0 flex-1">
-                            <span className="mb-1 flex items-center justify-between gap-2">
-                              <span className="min-w-0 truncate text-sm font-bold text-ink">{ex.title}</span>
-                              <span className="shrink-0 rounded-full bg-primary-soft px-2 py-0.5 text-xs font-bold text-primary">
-                                {ex.level}
-                              </span>
-                            </span>
-                            <span className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-soft">
-                              <span>{t("dash.questions", { n: (ex.questions || []).length })}</span>
-                              {exSkills(ex).slice(0, 2).map((s) => (
-                                <span key={s} className="rounded-sm bg-surface px-1.5 py-0.5">{s}</span>
-                              ))}
-                              {ex.deadline && (
-                                <span className={late ? "font-bold text-danger" : ""}>
-                                  {late ? t("dash.was_due") : t("dash.due")} {fmtDate(ex.deadline)}
-                                </span>
-                              )}
-                            </span>
-                          </span>
-                          {late
-                            ? <AlertTriangle size={16} className="shrink-0 text-danger" />
-                            : <ChevronRight size={16} className="shrink-0 text-soft transition-transform duration-300 group-hover:translate-x-1 group-hover:text-primary" />}
-                        </button>
-                      </li>
-                    );
-                  })}
-                </ul>
-              )}
-            </Card>
-          </Rise>
         </div>
       </div>
     </div>

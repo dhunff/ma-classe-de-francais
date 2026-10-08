@@ -1,5 +1,6 @@
 ﻿import React, { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { C, S, LEVEL_COLORS, LEVEL_PASTEL, QTYPES, VF_OPTS } from "../../shared/tokens.js";
+import TongQuanBaiGiao from "./TongQuanBaiGiao.jsx";
 import { load, save, del } from "../../shared/storage.js";
 import { supabase } from "../../storageShim.js";
 import AccountPage from "../account/AccountPage.jsx";
@@ -301,6 +302,7 @@ function Student({ name, exercises, submissions, setSubmissions, accounts, setAc
           nằm trong prop `trailing` của cụm tab đó, nên được tách ra đây. */}
       {/* Nút « Làm mới » gỡ 08/10 theo chủ dự án: dữ liệu tự nạp khi vào trang. */}
 
+      {(tab === "todo" || tab === "done") && <TongQuanBaiGiao exercises={exercises} submissions={submissions} name={name} t={t} />}
       {/* « Bài tập được giao » (08/10): Cần làm + Đã nộp là hai tab của một mục. */}
       {(tab === "todo" || tab === "done") && (
         <div role="tablist" className="mb-5 inline-flex gap-1 rounded-full bg-surface2 p-1">
