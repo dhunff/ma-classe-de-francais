@@ -32,3 +32,15 @@ export async function nopThachDau(id, traLoi) {
   if (!r) return { loi: "Máy chủ không trả biên nhận." };
   return { dung: r.r_dung, tong: r.r_tong, giay: r.r_giay };
 }
+
+/* Thách đấu theo CHỦ ĐỀ (10/10, migration 127): 10 thẻ ngẫu nhiên từ mọi bộ
+   công khai cùng chủ đề. */
+export async function dsChuDe() {
+  const { data, error } = await supabase.rpc("ds_chu_de_thach_dau");
+  return error ? null : (Array.isArray(data) ? data : []);
+}
+
+export async function taoThachDauChuDe(doiThuId, chuDe) {
+  const { data, error } = await supabase.rpc("tao_thach_dau_chu_de", { p_doi_thu: doiThuId, p_chu_de: chuDe });
+  return error ? { loi: ma(error) } : { id: data };
+}

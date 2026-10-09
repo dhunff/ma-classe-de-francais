@@ -3,8 +3,7 @@ import { Swords, X, Timer, Trophy, Hourglass, Play, Volume2, VolumeX, Send, Laye
 import { phat, amThanhBat, datAmThanh } from "../../shared/amThanh.js";
 import { Avatar } from "../../shared/avatars.jsx";
 import { docDangTheoDoi } from "../../shared/xp.js";
-import { docCacBo } from "../../shared/boThe.js";
-import { dsThachDau, taoThachDau, layDe, nopThachDau } from "../../shared/thachDau.js";
+import { dsThachDau, layDe, nopThachDau, dsChuDe, taoThachDauChuDe } from "../../shared/thachDau.js";
 import { useT, tr } from "../../shared/i18n.jsx";
 import { Leon } from "../../shared/leon.jsx";
 
@@ -47,7 +46,7 @@ export default function ThachDau() {
   const t = useT();
   const [ds, setDs] = useState(undefined);      // undefined = đang tải, null = lỗi
   const [ban, setBan] = useState(undefined);
-  const [bo, setBo] = useState(undefined);
+  const [bo, setBo] = useState(undefined);      // danh sách CHỦ ĐỀ (giữ tên biến cũ)
   const [chonBan, setChonBan] = useState("");
   const [chonBo, setChonBo] = useState("");
   const [baoLoi, setBaoLoi] = useState("");
@@ -59,7 +58,7 @@ export default function ThachDau() {
   useEffect(() => {
     tai();
     docDangTheoDoi().then(setBan);
-    docCacBo().then((b) => setBo(b ? b.filter((x) => x.congKhai && x.soThe >= 4) : null));
+    dsChuDe().then((d) => setBo(d ? d.filter((x) => x.so_the >= 4) : null));
   }, [tai]);
 
   const loiChu = (m) => t(`duel.err_${m}`) === `duel.err_${m}` ? t("duel.err_generic", { msg: m }) : t(`duel.err_${m}`);
@@ -74,7 +73,7 @@ export default function ThachDau() {
   const tao = async () => {
     if (!chonBan || !chonBo) { phat("sai"); setBaoLoi(t("duel.pick_both")); return; }
     setDangTao(true); setBaoLoi("");
-    const r = await taoThachDau(chonBan, chonBo);
+    const r = await taoThachDauChuDe(chonBan, chonBo);
     setDangTao(false);
     if (r.loi) { phat("sai"); setBaoLoi(loiChu(r.loi)); return; }
     phat("combo"); setVuaGui(true); setTimeout(() => setVuaGui(false), 2400);
@@ -82,7 +81,7 @@ export default function ThachDau() {
     await tai();
   };
 
-  const choi = (d) => { setBaoLoi(""); phat("bam"); setTran({ id: d.id, doi: d.doi_phuong?.name, avatar: d.doi_phuong?.avatar, bo: d.bo }); };
+  const choi = (d) => { setBaoLoi(""); phat("bam"); setTran({ id: d.id, doi: d.doi_phuong?.name, avatar: d.doi_phuong?.avatar, bo: d.chu_de_ten ? tr(d.chu_de_ten.vi, d.chu_de_ten.fr, d.chu_de_ten.en) : d.bo }); };
 
   return (
     <div className="mx-auto max-w-3xl px-4 pb-24 pt-6">
@@ -140,15 +139,32 @@ export default function ThachDau() {
               </div>
             </div>
             <div>
-              <p className="m-0 mb-2 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-soft"><Layers size={13} /> {t("duel.pick_deck")}</p>
-              <div className="flex flex-wrap gap-2">
-                {(bo || []).map((b) => {
-                  const dang = chonBo === b.id;
+              <p className="m-0 mb-2 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-soft"><Layers size={13} /> {tr("Chọn chủ đề · 10 câu ngẫu nhiên", "Choisis un thème · 10 questions au hasard", "Pick a topic · 10 random questions")}</p>
+              <div className="grid gap-3">
+                {[["tu_vung", tr("Từ vựng", "Vocabulaire", "Vocabulary"), "from-amber-400 to-orange-500"], ["ngu_phap", tr("Ngữ pháp và diễn đạt", "Grammaire et expression", "Grammar and expression"), "from-indigo-500 to-violet-600"]].map(([nhom, nhan, mau]) => {
+                  const dsNhom = (bo || []).filter((c) => c.nhom === nhom);
+                  if (!dsNhom.length) return null;
                   return (
-                    <button key={b.id} type="button" onClick={() => { phat("bam"); setChonBo(b.id); }} aria-pressed={dang}
-                      className={`cursor-pointer rounded-full border-2 border-solid px-4 py-2 font-sans text-sm font-bold transition-all duration-200 ${dang ? "border-primary bg-primary text-on-primary shadow-[0_8px_18px_rgba(37,99,235,0.25)]" : "border-line bg-surface text-ink hover:border-primary/40"}`}>
-                      {b.ten}
-                    </button>
+                    <div key={nhom}>
+                      <p className="m-0 mb-1.5 text-[11px] font-extrabold text-ink">{nhan}</p>
+                      <div className="grid gap-2 sm:grid-cols-2">
+                        {dsNhom.map((c) => {
+                          const dang = chonBo === c.ma;
+                          return (
+                            <button key={c.ma} type="button" onClick={() => { phat("bam"); setChonBo(c.ma); }} aria-pressed={dang}
+                              className={`flex cursor-pointer items-center gap-3 rounded-2xl border-2 border-solid p-3 text-left font-sans transition-all duration-200 ${dang ? "-translate-y-0.5 border-primary bg-primary-soft shadow-[0_10px_24px_rgba(37,99,235,0.18)]" : "border-line bg-surface hover:-translate-y-0.5 hover:border-primary/40"}`}>
+                              <span className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-gradient-to-br ${mau} text-white shadow`}>
+                                {dang ? <Check size={18} strokeWidth={3} /> : <Layers size={18} />}
+                              </span>
+                              <span className="min-w-0 flex-1">
+                                <span className="block truncate text-sm font-extrabold text-ink">{tr(c.ten_vi, c.ten_fr, c.ten_en)}</span>
+                                <span className="block text-[11px] font-semibold text-soft">{c.so_the} {tr("thẻ", "cartes", "cards")} · {c.so_bo} {tr("bộ", "paquets", "decks")}</span>
+                              </span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
                   );
                 })}
               </div>
@@ -208,7 +224,7 @@ function Dong({ d, i, onChoi, t }) {
         <p className="m-0 truncate text-sm font-extrabold text-ink">
           {d.toi_thach ? t("duel.you_vs", { ten: d.doi_phuong?.name }) : t("duel.vs_you", { ten: d.doi_phuong?.name })}
         </p>
-        <p className="m-0 mt-0.5 inline-flex max-w-full items-center gap-1 truncate text-xs text-soft"><Layers size={12} />{d.bo}</p>
+        <p className="m-0 mt-0.5 inline-flex max-w-full items-center gap-1 truncate text-xs text-soft"><Layers size={12} />{d.chu_de_ten ? tr(d.chu_de_ten.vi, d.chu_de_ten.fr, d.chu_de_ten.en) : d.bo}</p>
         {d.toi_xong && (
           <p className="m-0 mt-1.5 text-xs tabular-nums text-ink">
             {t("duel.me")}: <strong>{diem(d.toi_dung, d.toi_giay)}</strong>

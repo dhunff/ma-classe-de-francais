@@ -5,7 +5,7 @@ import {
 import { KY_NANG } from "../../shared/kyNang.js";
 import { laGiaoVien } from "../../shared/lienHe.js";
 import {
-  docBoDeSoan, taoBo, suaBo, xoaBo,
+  docBoDeSoan, taoBo, suaBo, xoaBo, docChuDe,
   docTheDeSoan, themThe, suaThe, xoaThe, bocDong,
 } from "../../shared/boTheGiaoVien.js";
 import { tr } from "../../shared/i18n.jsx";
@@ -27,17 +27,41 @@ const nutChinh = "inline-flex cursor-pointer items-center gap-2 rounded-full bor
 const nutPhu = "inline-flex cursor-pointer items-center gap-2 rounded-full border border-solid border-line bg-surface px-4 py-2 font-sans text-sm font-semibold text-ink hover:border-primary";
 const tenKN = (ma) => KY_NANG.find((k) => k.ma === ma)?.ten ?? ma;
 
+/* Chủ đề cho Thách đấu (127). Nạp một lần, dùng chung cho hai ô chọn. */
+let _chuDe = null;
+function useChuDe() {
+  const [ds, setDs] = useState(_chuDe);
+  useEffect(() => { if (!_chuDe) docChuDe().then((v) => { _chuDe = v || []; setDs(_chuDe); }); }, []);
+  return ds || [];
+}
+const tenCD = (c) => (c ? tr(c.ten_vi, c.ten_fr, c.ten_en) : "");
+function ChonChuDe({ value, onChange, className }) {
+  const ds = useChuDe();
+  return (
+    <select value={value || ""} onChange={(e) => onChange(e.target.value)} className={className}
+      aria-label={tr("Chủ đề thách đấu", "Thème des défis", "Duel topic")}>
+      <option value="">{tr("Chủ đề thách đấu: chưa chọn", "Thème des défis : aucun", "Duel topic: none")}</option>
+      {["tu_vung", "ngu_phap"].map((n) => (
+        <optgroup key={n} label={n === "tu_vung" ? tr("Từ vựng", "Vocabulaire", "Vocabulary") : tr("Ngữ pháp và diễn đạt", "Grammaire et expression", "Grammar and expression")}>
+          {ds.filter((c) => c.nhom === n).map((c) => <option key={c.ma} value={c.ma}>{tenCD(c)}</option>)}
+        </optgroup>
+      ))}
+    </select>
+  );
+}
+
 /* ─────────────── Tạo bộ mới ─────────────── */
 function KhungTaoBo({ onXong, onHuy }) {
   const [ten, setTen] = useState("");
   const [kyNang, setKyNang] = useState("CO");
+  const [chuDe, setChuDe] = useState("");
   const [moTa, setMoTa] = useState("");
   const [dangLuu, setDangLuu] = useState(false);
   const [loi, setLoi] = useState("");
   const luu = async () => {
     if (!ten.trim()) { setLoi(tr("Bộ Flashcard cần một cái tên.", "Le paquet a besoin d'un nom.", "The deck needs a name.")); return; }
     setDangLuu(true); setLoi("");
-    const kq = await taoBo({ ten, kyNang, moTa });
+    const kq = await taoBo({ ten, kyNang, chuDe, moTa });
     setDangLuu(false);
     if (!kq.ok) { setLoi(kq.loi); return; }
     onXong();
@@ -52,6 +76,7 @@ function KhungTaoBo({ onXong, onHuy }) {
         </select>
       </div>
       <input value={moTa} onChange={(e) => setMoTa(e.target.value)} placeholder={tr("Mô tả ngắn (tuỳ chọn)", "Courte description (facultatif)", "Short description (optional)")} className={`${o} mt-3`} />
+      <ChonChuDe value={chuDe} onChange={setChuDe} className={`${o} mt-3`} />
       {loi && <p className="m-0 mt-2 text-xs font-semibold text-danger">{loi}</p>}
       <div className="mt-4 flex justify-end gap-2">
         <button type="button" onClick={onHuy} className={nutPhu}>{tr("Huỷ", "Annuler", "Cancel")}</button>
@@ -124,7 +149,7 @@ function SoanMotBo({ bo: boGoc, onQuay, onDoi }) {
   const [tb, setTb] = useState("");
   const [tim, setTim] = useState("");
   const [suaTT, setSuaTT] = useState(false);
-  const [tt, setTT] = useState({ ten: boGoc.ten, moTa: boGoc.moTa ?? "", kyNang: boGoc.kyNang });
+  const [tt, setTT] = useState({ ten: boGoc.ten, moTa: boGoc.moTa ?? "", kyNang: boGoc.kyNang, chuDe: boGoc.chuDe ?? "" });
   const oDau = useRef(null);
 
   const tai = async () => setDs(await docTheDeSoan(bo.id));
@@ -194,9 +219,10 @@ function SoanMotBo({ bo: boGoc, onQuay, onDoi }) {
               {KY_NANG.map((k) => <option key={k.ma} value={k.ma}>{k.ten}</option>)}
             </select>
             <input value={tt.moTa} onChange={(e) => setTT({ ...tt, moTa: e.target.value })} placeholder={tr("Mô tả ngắn", "Courte description", "Short description")} className={`${o} sm:col-span-2`} />
+            <ChonChuDe value={tt.chuDe} onChange={(v) => setTT({ ...tt, chuDe: v })} className={`${o} sm:col-span-2`} />
             <div className="flex gap-2 sm:col-span-2">
               <button type="button" onClick={luuTT} className={nutChinh}><Check size={14} /> {tr("Lưu", "Enregistrer", "Save")}</button>
-              <button type="button" onClick={() => { setTT({ ten: bo.ten, moTa: bo.moTa ?? "", kyNang: bo.kyNang }); setSuaTT(false); }} className={nutPhu}>{tr("Huỷ", "Annuler", "Cancel")}</button>
+              <button type="button" onClick={() => { setTT({ ten: bo.ten, moTa: bo.moTa ?? "", kyNang: bo.kyNang, chuDe: bo.chuDe ?? "" }); setSuaTT(false); }} className={nutPhu}>{tr("Huỷ", "Annuler", "Cancel")}</button>
             </div>
           </div>
         ) : (

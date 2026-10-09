@@ -31,12 +31,12 @@ function dichLoi(error) {
 export async function docBoDeSoan() {
   const { data, error } = await supabase
     .from("the_bo")
-    .select("id, ten, ky_nang, mo_ta, cong_khai, ord, created_at, the_bo_the(count)")
+    .select("id, ten, ky_nang, chu_de, mo_ta, cong_khai, ord, created_at, the_bo_the(count)")
     .order("ky_nang").order("ord");
 
   if (error) return null;
   return (data ?? []).map((b) => ({
-    id: b.id, ten: b.ten, kyNang: b.ky_nang, moTa: b.mo_ta,
+    id: b.id, ten: b.ten, kyNang: b.ky_nang, chuDe: b.chu_de ?? "", moTa: b.mo_ta,
     congKhai: b.cong_khai, ord: b.ord,
     /* Đếm lồng của PostgREST là [{count:n}]; bộ chưa có thẻ nào thì mảng RỖNG
        chứ không phải 0, nên đọc thẳng [0].count sẽ ra undefined. */
@@ -44,13 +44,13 @@ export async function docBoDeSoan() {
   }));
 }
 
-export async function taoBo({ ten, kyNang, moTa }) {
+export async function taoBo({ ten, kyNang, chuDe, moTa }) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { ok: false, loi: "Phiên đăng nhập đã hết hạn." };
 
   const { data, error } = await supabase
     .from("the_bo")
-    .insert({ ten: String(ten).trim(), ky_nang: kyNang, mo_ta: moTa || null, tac_gia: user.id })
+    .insert({ ten: String(ten).trim(), ky_nang: kyNang, chu_de: chuDe || null, mo_ta: moTa || null, tac_gia: user.id })
     .select("id").single();
 
   return error ? { ok: false, loi: dichLoi(error) } : { ok: true, id: data.id };
@@ -61,6 +61,7 @@ export async function suaBo(id, thayDoi) {
   if (thayDoi.ten !== undefined) co.ten = String(thayDoi.ten).trim();
   if (thayDoi.moTa !== undefined) co.mo_ta = thayDoi.moTa || null;
   if (thayDoi.kyNang !== undefined) co.ky_nang = thayDoi.kyNang;
+  if (thayDoi.chuDe !== undefined) co.chu_de = thayDoi.chuDe || null;
   if (thayDoi.congKhai !== undefined) co.cong_khai = !!thayDoi.congKhai;
 
   const { error } = await supabase.from("the_bo").update(co).eq("id", id);
@@ -142,4 +143,10 @@ export function bocDong(van) {
   });
 
   return { duoc, hong };
+}
+
+/* Danh mục chủ đề (migration 127) — dùng cho Thách đấu theo chủ đề. */
+export async function docChuDe() {
+  const { data, error } = await supabase.from("chu_de_the").select("ma, nhom, ten_vi, ten_fr, ten_en").order("ord");
+  return error ? null : (data ?? []);
 }
