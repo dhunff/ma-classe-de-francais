@@ -31,12 +31,12 @@ function dichLoi(error) {
 export async function docBoDeSoan() {
   const { data, error } = await supabase
     .from("the_bo")
-    .select("id, ten, ky_nang, chu_de, mo_ta, cong_khai, ord, created_at, the_bo_the(count)")
+    .select("id, ten, ky_nang, chu_de, mo_ta, cong_khai, tra_phi, gia, ord, created_at, the_bo_the(count)")
     .order("ky_nang").order("ord");
 
   if (error) return null;
   return (data ?? []).map((b) => ({
-    id: b.id, ten: b.ten, kyNang: b.ky_nang, chuDe: b.chu_de ?? "", moTa: b.mo_ta,
+    id: b.id, ten: b.ten, kyNang: b.ky_nang, chuDe: b.chu_de ?? "", traPhi: !!b.tra_phi, gia: b.gia ?? 0, moTa: b.mo_ta,
     congKhai: b.cong_khai, ord: b.ord,
     /* Đếm lồng của PostgREST là [{count:n}]; bộ chưa có thẻ nào thì mảng RỖNG
        chứ không phải 0, nên đọc thẳng [0].count sẽ ra undefined. */
@@ -63,6 +63,8 @@ export async function suaBo(id, thayDoi) {
   if (thayDoi.kyNang !== undefined) co.ky_nang = thayDoi.kyNang;
   if (thayDoi.chuDe !== undefined) co.chu_de = thayDoi.chuDe || null;
   if (thayDoi.congKhai !== undefined) co.cong_khai = !!thayDoi.congKhai;
+  if (thayDoi.traPhi !== undefined) co.tra_phi = !!thayDoi.traPhi;
+  if (thayDoi.gia !== undefined) co.gia = Math.max(0, Math.round(Number(thayDoi.gia) || 0));
 
   const { error } = await supabase.from("the_bo").update(co).eq("id", id);
   return error ? { ok: false, loi: dichLoi(error) } : { ok: true };
@@ -79,15 +81,19 @@ export async function xoaBo(id) {
 export async function docTheDeSoan(boId) {
   const { data, error } = await supabase
     .from("the_bo_the")
-    .select("id, mat_truoc, mat_sau, phien_am, vi_du, ord")
+    .select("id, mat_truoc, mat_sau, phien_am, vi_du, nhieu, ord")
     .eq("bo_id", boId).order("ord");
 
   if (error) return null;
   return (data ?? []).map((t) => ({
     id: t.id, matTruoc: t.mat_truoc, matSau: t.mat_sau,
-    phienAm: t.phien_am, viDu: t.vi_du, ord: t.ord,
+    phienAm: t.phien_am, viDu: t.vi_du, nhieu: t.nhieu ?? [], ord: t.ord,
   }));
 }
+
+/* Nghĩa sai do giáo viên soạn (128): chuỗi "a | b | c" hoặc mảng → tối đa 3 mục. */
+export const tachNhieu = (v) => (Array.isArray(v) ? v : String(v ?? "").split("|"))
+  .map((x) => String(x).trim()).filter(Boolean).slice(0, 3);
 
 export async function themThe(boId, the, ord) {
   const { error } = await supabase.from("the_bo_the").insert({
@@ -96,6 +102,7 @@ export async function themThe(boId, the, ord) {
     mat_sau: String(the.matSau).trim(),
     phien_am: the.phienAm?.trim() || null,
     vi_du: the.viDu?.trim() || null,
+    nhieu: tachNhieu(the.nhieu),
     ord: ord ?? 0,
   });
   return error ? { ok: false, loi: dichLoi(error) } : { ok: true };
@@ -108,6 +115,7 @@ export async function suaThe(id, the) {
   if (the.matSau !== undefined) co.mat_sau = String(the.matSau).trim();
   if (the.phienAm !== undefined) co.phien_am = the.phienAm?.trim() || null;
   if (the.viDu !== undefined) co.vi_du = the.viDu?.trim() || null;
+  if (the.nhieu !== undefined) co.nhieu = tachNhieu(the.nhieu);
   const { error } = await supabase.from("the_bo_the").update(co).eq("id", id);
   return error ? { ok: false, loi: dichLoi(error) } : { ok: true };
 }
@@ -149,4 +157,21 @@ export function bocDong(van) {
 export async function docChuDe() {
   const { data, error } = await supabase.from("chu_de_the").select("ma, nhom, ten_vi, ten_fr, ten_en").order("ord");
   return error ? null : (data ?? []);
+}
+
+/* ── Cấp quyền mở bộ trả phí (128) ── */
+export async function dsHocSinhCapQuyen() {
+  const { data, error } = await supabase.from("profiles")
+    .select("id, name, display_name, username, avatar").eq("role", "eleve").order("name");
+  return error ? null : (data ?? []).map((p) => ({ id: p.id, ten: p.display_name || p.name || "?", username: p.username, avatar: p.avatar }));
+}
+export async function dsQuyenBo(boId) {
+  const { data, error } = await supabase.from("the_bo_quyen").select("user_id").eq("bo_id", boId);
+  return error ? null : new Set((data ?? []).map((r) => r.user_id));
+}
+export async function datQuyenBo(boId, userId, bat) {
+  const { error } = bat
+    ? await supabase.from("the_bo_quyen").insert({ bo_id: boId, user_id: userId })
+    : await supabase.from("the_bo_quyen").delete().eq("bo_id", boId).eq("user_id", userId);
+  return error && String(error.code) !== "23505" ? { ok: false, loi: dichLoi(error) } : { ok: true };
 }

@@ -27,7 +27,7 @@ export { KY_NANG } from "./kyNang.js";
 export async function docCacBo() {
   const { data, error } = await supabase
     .from("the_bo")
-    .select("id, ten, ky_nang, mo_ta, cong_khai, ord, tac_gia, "
+    .select("id, ten, ky_nang, mo_ta, cong_khai, tra_phi, gia, ord, tac_gia, "
           + "the_bo_the(count), profiles!the_bo_tac_gia_fkey(display_name, avatar)")
     .order("ky_nang")
     .order("ord");
@@ -40,6 +40,8 @@ export async function docCacBo() {
     kyNang: b.ky_nang,
     moTa: b.mo_ta,
     congKhai: b.cong_khai,
+    traPhi: !!b.tra_phi,
+    gia: b.gia ?? 0,
     ord: b.ord ?? 0,
     /* PostgREST trả phép đếm lồng dưới dạng [{count: n}]. Không có thẻ nào thì
        nó là mảng rỗng chứ không phải 0 — đọc thẳng `[0].count` sẽ ra undefined
@@ -99,4 +101,13 @@ export async function docTheTrongBo(boId) {
     viDu: t.vi_du,
     amThanh: t.am_thanh,
   }));
+}
+
+/* Bộ trả phí (128): người này mở được bộ nào? VIP mở hết; còn lại theo the_bo_quyen. */
+export async function docQuyenBoCuaToi() {
+  const [{ data: vip }, { data: q }] = await Promise.all([
+    supabase.rpc("toi_la_vip"),
+    supabase.from("the_bo_quyen").select("bo_id"),
+  ]);
+  return { vip: !!vip?.vip, bo: new Set((q ?? []).map((r) => r.bo_id)) };
 }

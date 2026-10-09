@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import { ChevronsRight, AlertTriangle, Layers } from "lucide-react";
+import { ChevronsRight, AlertTriangle, Layers, Lock, Unlock } from "lucide-react";
 import TourGioiThieu from "../../shared/TourGioiThieu.jsx";
 import { useT, tr } from "../../shared/i18n.jsx";
 import { KY_NANG } from "../../shared/kyNang.js";
@@ -95,6 +95,12 @@ function TheBo({ b, onMo, dau = false, thuTu = 0 }) {
         <span aria-hidden className="absolute bottom-3 right-10 h-16 w-12 rotate-[-2deg] rounded-xl bg-white/35 shadow-lg transition-transform duration-300 group-hover:-translate-y-1" />
         <span aria-hidden className="absolute bottom-3 right-4 grid h-16 w-12 rotate-[10deg] place-items-center rounded-xl bg-white text-sm font-extrabold text-ink shadow-lg transition-transform duration-300 group-hover:rotate-[16deg]">{b.soThe}</span>
         <span className="absolute left-5 top-4 rounded-full bg-white/25 px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wider text-white">{b.kyNang}</span>
+        {b.traPhi && (
+          <span className={`absolute left-5 top-11 inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-extrabold ${b.khoa ? "bg-amber-400 text-amber-950" : "bg-white/90 text-ok"}`}>
+            {b.khoa ? <Lock size={10} /> : <Unlock size={10} />}
+            {b.khoa ? (b.gia ? `${b.gia.toLocaleString("vi-VN")}đ` : tr("Trả phí", "Payant", "Paid")) : tr("Đã mở khoá", "Débloqué", "Unlocked")}
+          </span>
+        )}
       </div>
       <div className="p-5">
       <h3 className="m-0 text-lg font-extrabold tracking-tight text-ink">{b.ten}</h3>

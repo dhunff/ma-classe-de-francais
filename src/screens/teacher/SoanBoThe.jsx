@@ -1,12 +1,12 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
-  Plus, Trash2, ArrowLeft, Eye, EyeOff, AlertTriangle, RefreshCw, Layers, Pencil, Check, X, Search,
+  Plus, Trash2, ArrowLeft, Eye, EyeOff, AlertTriangle, RefreshCw, Layers, Pencil, Check, X, Search, Lock, Unlock,
 } from "lucide-react";
 import { KY_NANG } from "../../shared/kyNang.js";
 import { laGiaoVien } from "../../shared/lienHe.js";
 import {
   docBoDeSoan, taoBo, suaBo, xoaBo, docChuDe,
-  docTheDeSoan, themThe, suaThe, xoaThe, bocDong,
+  docTheDeSoan, themThe, suaThe, xoaThe, bocDong, dsHocSinhCapQuyen, dsQuyenBo, datQuyenBo,
 } from "../../shared/boTheGiaoVien.js";
 import { tr } from "../../shared/i18n.jsx";
 
@@ -86,6 +86,82 @@ function KhungTaoBo({ onXong, onHuy }) {
   );
 }
 
+/* ─────────────── Trả phí + cấp quyền (128) ───────────────
+   Giống thư viện bài tập: bộ trả phí thì học sinh thấy bộ nhưng không mở được
+   thẻ, trừ khi là VIP hoặc được giáo viên cấp quyền ở đây. */
+function TraPhiVaQuyen({ bo, onDoi, onLoi }) {
+  const [mo, setMo] = useState(false);
+  const [traPhi, setTraPhi] = useState(!!bo.traPhi);
+  const [gia, setGia] = useState(bo.gia || 0);
+  const [hs, setHs] = useState(undefined);
+  const [co, setCo] = useState(new Set());
+  const [tim, setTim] = useState("");
+  const [dang, setDang] = useState(false);
+  useEffect(() => { setTraPhi(!!bo.traPhi); setGia(bo.gia || 0); }, [bo.traPhi, bo.gia]);
+  useEffect(() => {
+    if (!mo) return;
+    dsHocSinhCapQuyen().then(setHs);
+    dsQuyenBo(bo.id).then((v) => setCo(v || new Set()));
+  }, [mo, bo.id]);
+  const luuGia = async () => {
+    setDang(true);
+    const kq = await suaBo(bo.id, { traPhi, gia });
+    setDang(false);
+    if (!kq.ok) { onLoi(kq.loi); return; }
+    onDoi({ traPhi, gia: Math.max(0, Math.round(Number(gia) || 0)) });
+  };
+  const doi = async (id) => {
+    const bat = !co.has(id);
+    const kq = await datQuyenBo(bo.id, id, bat);
+    if (!kq.ok) { onLoi(kq.loi); return; }
+    const m = new Set(co); if (bat) m.add(id); else m.delete(id); setCo(m);
+  };
+  const hien = (hs || []).filter((h) => !tim.trim() || `${h.ten} ${h.username ?? ""}`.toLowerCase().includes(tim.trim().toLowerCase()));
+  return (
+    <div className="relative shrink-0">
+      <button type="button" onClick={() => setMo(!mo)}
+        className={`inline-flex cursor-pointer items-center gap-1.5 rounded-full border-0 px-4 py-2 font-sans text-sm font-bold ${bo.traPhi ? "bg-amber-100 text-amber-800 dark:bg-amber-500/15 dark:text-amber-300" : "bg-surface2 text-ink"}`}>
+        {bo.traPhi ? <Lock size={14} /> : <Unlock size={14} />}
+        {bo.traPhi ? tr(`Trả phí · ${(bo.gia || 0).toLocaleString("vi-VN")}đ`, `Payant · ${(bo.gia || 0).toLocaleString("vi-VN")} ₫`, `Paid · ${(bo.gia || 0).toLocaleString("vi-VN")} VND`) : tr("Miễn phí", "Gratuit", "Free")}
+        <span className="text-soft">· {tr("cấp quyền", "accès", "access")}</span>
+      </button>
+      {mo && (
+        <div className="absolute right-0 top-full z-30 mt-2 w-[min(92vw,380px)] rounded-3xl border border-solid border-line bg-surface p-4 shadow-[0_20px_50px_rgba(0,0,0,0.15)]">
+          <p className="m-0 text-sm font-extrabold text-ink">{tr("Trả phí", "Accès payant", "Paid access")}</p>
+          <label className="mt-2 flex cursor-pointer items-center gap-2 text-sm text-ink">
+            <input type="checkbox" checked={traPhi} onChange={(e) => setTraPhi(e.target.checked)} />
+            {tr("Bộ này là bản trả phí", "Ce paquet est payant", "This deck is paid")}
+          </label>
+          {traPhi && (
+            <label className="mt-2 grid gap-1 text-xs font-bold text-soft">{tr("Giá (VNĐ)", "Prix (VND)", "Price (VND)")}
+              <input type="number" min={0} step={1000} value={gia} onChange={(e) => setGia(e.target.value)} className={o} /></label>
+          )}
+          <p className="m-0 mt-2 text-[11px] leading-relaxed text-soft">{tr("Học sinh thấy bộ kèm ổ khoá; VIP và học sinh được cấp quyền mở được. Bộ trả phí không vào Thách đấu.", "Les élèves voient le paquet verrouillé ; les VIP et les élèves autorisés peuvent l'ouvrir. Les paquets payants ne sont pas utilisés dans les défis.", "Students see the deck locked; VIPs and granted students can open it. Paid decks aren't used in duels.")}</p>
+          <button type="button" onClick={luuGia} disabled={dang} className={`${nutChinh} mt-3 w-full justify-center`}><Check size={14} /> {tr("Lưu", "Enregistrer", "Save")}</button>
+
+          <div className="mt-4 border-0 border-t border-solid border-line pt-3">
+            <p className="m-0 text-sm font-extrabold text-ink">{tr("Cấp quyền cho học sinh", "Accès des élèves", "Grant access")} <span className="font-semibold text-soft">· {co.size}</span></p>
+            <input value={tim} onChange={(e) => setTim(e.target.value)} placeholder={tr("Tìm học sinh…", "Rechercher un élève…", "Find a student…")} className={`${o} mt-2`} />
+            <ul className="mcf-scroll m-0 mt-2 grid max-h-56 list-none gap-1 overflow-y-auto p-0">
+              {hs === undefined && <li className="text-xs text-soft">{tr("Đang tải…", "Chargement…", "Loading…")}</li>}
+              {hs === null && <li className="text-xs text-danger">{tr("Không đọc được danh sách học sinh.", "Liste des élèves indisponible.", "Couldn't load students.")}</li>}
+              {hien.map((h) => (
+                <li key={h.id}>
+                  <label className="flex cursor-pointer items-center gap-2 rounded-xl px-2 py-1.5 text-sm text-ink hover:bg-surface2">
+                    <input type="checkbox" checked={co.has(h.id)} onChange={() => doi(h.id)} />
+                    <span className="min-w-0 flex-1 truncate font-semibold">{h.ten}</span>
+                    {h.username && <span className="text-xs text-soft">@{h.username}</span>}
+                  </label>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 /* ─────────────── Một thẻ trong lưới (xem / sửa tại chỗ) ─────────────── */
 function OThe({ t, so, onDoi, onLoi }) {
   const [sua, setSua] = useState(false);
@@ -113,6 +189,8 @@ function OThe({ t, so, onDoi, onLoi }) {
         <input value={b.phienAm ?? ""} onChange={(e) => setB({ ...b, phienAm: e.target.value })} className={o} placeholder={tr("Phiên âm (tuỳ chọn)", "Phonétique (facultatif)", "Pronunciation (optional)")} />
         <input value={b.matSau} onChange={(e) => setB({ ...b, matSau: e.target.value })} className={o} placeholder={tr("Mặt sau", "Verso", "Back")} />
         <input value={b.viDu ?? ""} onChange={(e) => setB({ ...b, viDu: e.target.value })} className={o} placeholder={tr("Câu ví dụ (tuỳ chọn)", "Phrase d'exemple (facultatif)", "Example sentence (optional)")} />
+        <input value={Array.isArray(b.nhieu) ? b.nhieu.join(" | ") : (b.nhieu ?? "")} onChange={(e) => setB({ ...b, nhieu: e.target.value })} className={o}
+          placeholder={tr("3 nghĩa sai cho Thách đấu: a | b | c", "3 mauvais sens pour les défis : a | b | c", "3 wrong meanings for duels: a | b | c")} />
         <div className="flex justify-end gap-2">
           <button type="button" onClick={() => { setB(t); setSua(false); }} className="grid h-8 w-8 cursor-pointer place-items-center rounded-full border-0 bg-surface2 text-soft" aria-label={tr("Huỷ", "Annuler", "Cancel")}><X size={14} /></button>
           <button type="button" onClick={luu} disabled={dang} className="grid h-8 w-8 cursor-pointer place-items-center rounded-full border-0 bg-primary text-white" aria-label={tr("Lưu", "Enregistrer", "Save")}><Check size={14} /></button>
@@ -128,6 +206,11 @@ function OThe({ t, so, onDoi, onLoi }) {
       <div className="my-2 h-px bg-line" />
       <p className="m-0 text-sm leading-relaxed text-ink">{t.matSau}</p>
       {t.viDu && <p className="m-0 mt-1 text-xs italic leading-relaxed text-soft">{t.viDu}</p>}
+      {t.nhieu?.length > 0 && (
+        <div className="mt-2 flex flex-wrap gap-1" title={tr("Phương án sai dùng trong Thách đấu", "Mauvaises réponses utilisées dans les défis", "Wrong options used in duels")}>
+          {t.nhieu.map((x, k) => <span key={k} className="rounded-full bg-danger-soft px-2 py-0.5 text-[11px] font-semibold text-danger line-through decoration-danger/40">{x}</span>)}
+        </div>
+      )}
       <div className="absolute right-2 top-2 flex gap-1 opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100">
         <button type="button" onClick={() => setSua(true)} aria-label={tr("Sửa thẻ", "Modifier la carte", "Edit card")} className="grid h-8 w-8 cursor-pointer place-items-center rounded-full border-0 bg-surface2 text-ink"><Pencil size={13} /></button>
         <button type="button" onClick={xoa} aria-label={tr("Xoá thẻ", "Supprimer la carte", "Delete card")} className="grid h-8 w-8 cursor-pointer place-items-center rounded-full border-0 bg-surface2 text-danger"><Trash2 size={13} /></button>
@@ -141,7 +224,7 @@ function SoanMotBo({ bo: boGoc, onQuay, onDoi }) {
   const [bo, setBo] = useState(boGoc);
   const [ds, setDs] = useState(undefined);
   const [che, setChe] = useState("mot");          // mot | lo
-  const [moi, setMoi] = useState({ matTruoc: "", matSau: "", phienAm: "", viDu: "" });
+  const [moi, setMoi] = useState({ matTruoc: "", matSau: "", phienAm: "", viDu: "", nhieu: "" });
   const [van, setVan] = useState("");
   const [hong, setHong] = useState([]);
   const [dangLuu, setDangLuu] = useState(false);
@@ -162,7 +245,7 @@ function SoanMotBo({ bo: boGoc, onQuay, onDoi }) {
     const kq = await themThe(bo.id, moi, ds?.length ?? 0);
     setDangLuu(false);
     if (!kq.ok) { setLoi(kq.loi); return; }
-    setMoi({ matTruoc: "", matSau: "", phienAm: "", viDu: "" });
+    setMoi({ matTruoc: "", matSau: "", phienAm: "", viDu: "", nhieu: "" });
     oDau.current?.focus();
     await tai(); onDoi(); bao(tr("Đã thêm 1 thẻ", "1 carte ajoutée", "1 card added"));
   };
@@ -234,6 +317,7 @@ function SoanMotBo({ bo: boGoc, onQuay, onDoi }) {
             <p className="m-0 mt-1 text-sm text-soft">{tenKN(bo.kyNang)} · {ds?.length ?? "…"} {tr("thẻ", "cartes", "cards")}{bo.moTa ? ` · ${bo.moTa}` : ""}</p>
           </div>
         )}
+        <TraPhiVaQuyen bo={bo} onDoi={(m) => { setBo({ ...bo, ...m }); onDoi(); }} onLoi={setLoi} />
         <button type="button" onClick={doiCongKhai}
           className={`inline-flex shrink-0 cursor-pointer items-center gap-1.5 rounded-full border-0 px-4 py-2 font-sans text-sm font-bold ${bo.congKhai ? "bg-ok-soft text-ok" : "bg-warn-soft text-warn"}`}>
           {bo.congKhai ? <><Eye size={14} /> {tr("Học sinh đang thấy", "Visible par les élèves", "Visible to students")}</> : <><EyeOff size={14} /> {tr("Nháp · bấm để công khai", "Brouillon · cliquer pour publier", "Draft · click to publish")}</>}
@@ -261,6 +345,8 @@ function SoanMotBo({ bo: boGoc, onQuay, onDoi }) {
                 <input value={moi.matSau} onChange={(e) => setMoi({ ...moi, matSau: e.target.value })} className={o} placeholder="Tàu đang vào ga" /></label>
               <label className="grid gap-1 text-xs font-bold text-soft">{tr("Câu ví dụ", "Phrase d'exemple", "Example sentence")} <span className="font-normal">{tr("(tuỳ chọn)", "(facultatif)", "(optional)")}</span>
                 <input value={moi.viDu} onChange={(e) => setMoi({ ...moi, viDu: e.target.value })} className={o} /></label>
+              <label className="grid gap-1 text-xs font-bold text-soft">{tr("Phương án sai cho Thách đấu", "Mauvaises réponses (défis)", "Wrong options (duels)")} <span className="font-normal">{tr("(3 nghĩa sai, cách nhau bằng |; bỏ trống thì máy tự chọn)", "(3 mauvais sens séparés par | ; vide = choix automatique)", "(3 wrong meanings separated by |; empty = automatic)")}</span>
+                <input value={moi.nhieu} onChange={(e) => setMoi({ ...moi, nhieu: e.target.value })} className={o} placeholder="Tàu rời ga | Tàu bị huỷ | Tàu đến muộn" /></label>
               <button type="submit" disabled={dangLuu} className={`${nutChinh} mt-1 justify-center`}><Plus size={14} /> {dangLuu ? tr("Đang thêm…", "Ajout…", "Adding…") : tr("Thêm thẻ", "Ajouter la carte", "Add card")}</button>
               <p className="m-0 text-[11px] text-soft">{tr("Nhấn Enter để thêm nhanh; con trỏ quay về ô đầu.", "Entrée pour ajouter vite ; le curseur revient au premier champ.", "Press Enter to add quickly; the cursor returns to the first field.")}</p>
             </form>
