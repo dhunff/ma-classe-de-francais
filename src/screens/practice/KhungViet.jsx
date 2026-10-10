@@ -29,7 +29,7 @@ export default function KhungViet({ value, onChange, readOnly }) {
   const soChu = chu.trim() ? chu.trim().split(/\s+/).length : 0;
   return (
     <div className="overflow-hidden rounded-2xl border border-solid border-line bg-surface focus-within:border-primary">
-      <textarea value={chu} readOnly={readOnly} rows={7}
+      <textarea lang="fr" value={chu} readOnly={readOnly} rows={7}
         placeholder={readOnly ? "" : tr("Viết câu trả lời của bạn ở đây…", "Écrivez votre réponse ici…", "Write your answer here…")}
         onChange={(e) => onChange(veHtml(e.target.value))}
         className="block w-full resize-y border-0 bg-transparent px-4 py-3 font-sans text-base leading-relaxed text-ink outline-none"

@@ -67,7 +67,7 @@ export function DienPhieu({ q, value, onChange, readOnly }) {
       {(q.champs || []).map((c) => (
         <label key={c.id} className="grid gap-1 text-xs font-bold uppercase tracking-wide text-soft">
           {c.nhan}
-          <input type="text" value={value?.[c.id] || ""} disabled={readOnly}
+          <input lang="fr" type="text" value={value?.[c.id] || ""} disabled={readOnly}
             onChange={(e) => onChange?.({ ...value, [c.id]: e.target.value })}
             className="h-10 rounded-lg border border-solid border-line bg-surface2 px-3 font-sans text-sm font-normal normal-case tracking-normal text-ink outline-none focus:border-primary" />
         </label>

@@ -46,6 +46,7 @@ import CalendarView from './screens/calendar/CalendarView.jsx'
 import LoginSplit from './screens/LoginSplit.jsx'
 import SetNewPassword from './screens/auth/SetNewPassword.jsx'
 import HoiLeon from './shared/HoiLeon.jsx'
+import BangDauPhap from './shared/BangDauPhap.jsx'
 import { LeonChucMung } from './shared/leon.jsx'
 
 /* App.jsx chỉ còn ba việc: giữ state phiên + dữ liệu, định tuyến, và bắt lỗi.
@@ -388,6 +389,7 @@ function AppInner() {
             } />
           </Routes>
           {session?.role === "eleve" && <HoiLeon />}
+          <BangDauPhap />
           {gate && (
             <LoginGate
               accounts={accounts}

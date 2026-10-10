@@ -77,7 +77,7 @@ function ChepChinhTa({ cau, onXong }) {
   return (
     <div className="grid gap-4">
       <NutNghe src={cau.audio_url} />
-      <textarea ref={oNhap} value={go} onChange={(e) => setGo(e.target.value)} rows={3} disabled={!!kq}
+      <textarea data-khong-bang-dau ref={oNhap} value={go} onChange={(e) => setGo(e.target.value)} rows={3} disabled={!!kq}
         onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); kq ? null : kiem(); } }}
         placeholder={tr("Gõ lại câu bạn nghe được…", "Écrivez la phrase entendue…", "Type the sentence you hear…")} lang="fr" spellCheck={false}
         className="w-full resize-none rounded-2xl border-2 border-solid border-line bg-surface px-4 py-3 font-sans text-lg text-ink outline-none focus:border-primary disabled:opacity-80" />

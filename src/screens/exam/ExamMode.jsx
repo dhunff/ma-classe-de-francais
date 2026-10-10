@@ -647,7 +647,7 @@ export function PhanThi({ section, attemptId, answers, setAnswers, onDone, onBlu
             )}
 
             {(q.type === "fill" || q.type === "conj") && (
-              <input value={answers[q.id] ?? ""} onChange={(e) => dat(q.id, e.target.value)}
+              <input lang="fr" value={answers[q.id] ?? ""} onChange={(e) => dat(q.id, e.target.value)}
                 placeholder={tr("Câu trả lời…", "Réponse…", "Answer…")}
                 className="mt-3 w-full max-w-sm rounded-xl border border-line bg-surface2 px-4 py-2.5 text-sm text-ink" />
             )}
@@ -667,7 +667,7 @@ export function PhanThi({ section, attemptId, answers, setAnswers, onDone, onBlu
 
             {q.type === "open" && (
               <>
-                <textarea rows={10} value={answers[q.id] ?? ""}
+                <textarea lang="fr" rows={10} value={answers[q.id] ?? ""}
                   onChange={(e) => dat(q.id, e.target.value)}
                   placeholder={tr("Bài viết của bạn…", "Votre texte…", "Your text…")}
                   className="mt-3 w-full rounded-xl border border-line bg-surface2 p-4 text-sm leading-relaxed text-ink" />

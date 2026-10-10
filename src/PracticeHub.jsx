@@ -1379,7 +1379,7 @@ function PracticeWorkspace({ ex, back, onFinish }) {
               })}
             </div>
             {!graded && (a?.choice === 0 || a?.choice === 1) && (
-              <textarea value={a?.just || ""}
+              <textarea lang="fr" value={a?.just || ""}
                 placeholder={tr("Giải thích câu trả lời bằng cách trích bài đọc…", "Justifiez votre réponse en citant le texte…", "Justify your answer by quoting the text…")}
                 onChange={(e) => setAnswers({ ...answers, [q.id]: { ...a, just: e.target.value } })}
                 style={{ ...S.input, minHeight: 60, resize: "vertical" }} />
@@ -1407,7 +1407,7 @@ function PracticeWorkspace({ ex, back, onFinish }) {
           </>
         ) : (
           <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-            <input disabled={!!graded} value={a || ""} placeholder={tr("Câu trả lời của bạn…", "Ta réponse…", "Your answer…")}
+            <input lang="fr" disabled={!!graded} value={a || ""} placeholder={tr("Câu trả lời của bạn…", "Ta réponse…", "Your answer…")}
               onChange={(e) => setAnswers({ ...answers, [q.id]: e.target.value })}
               style={{ ...S.input, maxWidth: 320,
                 border: `1.5px solid ${graded ? (good ? C.ok : C.danger) : C.line}`,

@@ -186,7 +186,7 @@ function Taking({ ex, name, setSubmissions, done }) {
             })}
           </div>
           {(answers[q.id]?.choice === 0 || answers[q.id]?.choice === 1) && (
-            <textarea disabled={locked} value={answers[q.id]?.just || ""}
+            <textarea lang="fr" disabled={locked} value={answers[q.id]?.just || ""}
               placeholder={tr("Giải thích câu trả lời bằng cách trích bài đọc…", "Justifiez votre réponse en citant le texte…", "Justify your answer by quoting the text…")}
               onChange={(e) => setAnswers({ ...answers, [q.id]: { ...answers[q.id], just: e.target.value } })}
               style={{ ...S.input, minHeight: 60, resize: "vertical" }} />
@@ -195,7 +195,7 @@ function Taking({ ex, name, setSubmissions, done }) {
       ) : q.type === "open" ? (
         <KhungViet value={answers[q.id] || ""} readOnly={locked} onChange={(html) => setAnswers({ ...answers, [q.id]: html })} />
       ) : (
-        <input style={S.input} disabled={locked} placeholder={tr("Câu trả lời của bạn…", "Ta réponse…", "Your answer…")} value={answers[q.id] || ""}
+        <input lang="fr" style={S.input} disabled={locked} placeholder={tr("Câu trả lời của bạn…", "Ta réponse…", "Your answer…")} value={answers[q.id] || ""}
           onChange={(e) => setAnswers({ ...answers, [q.id]: e.target.value })} />
       )}
     </div>
