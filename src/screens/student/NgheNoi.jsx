@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { Headphones, Mic, Square, Play, Turtle, RotateCcw, ArrowRight, ArrowLeft, Check, Lightbulb, Loader2, PenLine, Info } from "lucide-react";
+import { Headphones, Mic, Square, Play, Turtle, RotateCcw, ArrowRight, ArrowLeft, Check, Lightbulb, Loader2, PenLine, Info, TextCursorInput } from "lucide-react";
 import { supabase } from "../../storageShim.js";
 import { tr } from "../../shared/i18n.jsx";
 import { Leon } from "../../shared/leon.jsx";
@@ -107,6 +107,99 @@ function ChepChinhTa({ cau, onXong }) {
           <p className="m-0 text-sm text-ink"><strong lang="fr">{cau.cau}</strong></p>
           {cau.nghia && <p className="m-0 text-sm text-soft">{cau.nghia}</p>}
           <button type="button" onClick={() => { setKq(null); setGo(""); }}
+            className="inline-flex w-fit cursor-pointer items-center gap-1.5 rounded-xl border-0 bg-transparent px-0 font-sans text-sm font-bold text-primary"><RotateCcw size={14} /> {tr("Làm lại câu này", "Refaire", "Try again")}</button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ── Nghe điền từ (132) ──
+   Ẩn vài từ « có nghĩa » (dài ≥ 4 chữ, không phải từ công cụ), chọn CỐ ĐỊNH
+   theo câu để làm lại vẫn là cùng chỗ trống. Số chỗ trống theo trình độ. */
+const TU_CONG_CU = new Set(["dans", "avec", "pour", "sans", "sous", "chez", "vers", "mais", "donc", "comme", "plus", "très", "tout", "toute", "tous", "leur", "leurs", "notre", "votre", "nous", "vous", "elle", "elles", "ils", "cette", "ces", "est", "sont", "avez", "avons", "être", "avoir", "que", "qui", "dont", "quand", "aussi", "bien", "encore", "depuis"]);
+const SO_TRONG = { A1: 2, A2: 2, B1: 3, B2: 4 };
+const bam = (x) => { let h = 0; for (const c of x) h = (h * 31 + c.charCodeAt(0)) >>> 0; return h; };
+const thuong = (w) => String(w).toLowerCase().normalize("NFC").trim();
+const khongDau = (w) => thuong(w).normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+function tachTrong(cau, cap) {
+  const manh = cau.split(/(\s+)/);
+  const ung = [];
+  manh.forEach((m, i) => {
+    const g = m.match(/^([^A-Za-zÀ-ÿœŒ]*(?:[a-zA-Z]['’])?)([A-Za-zÀ-ÿœŒ-]+)([^A-Za-zÀ-ÿœŒ]*)$/);
+    if (!g) return;
+    const tu = g[2];
+    if (tu.length < 4 || TU_CONG_CU.has(tu.toLowerCase()) || /^[A-ZÀ-Ý]/.test(tu) && i > 0) return;
+    ung.push({ i, truoc: g[1], tu, sau: g[3], k: bam(cau + i) });
+  });
+  const chon = new Set(ung.sort((a, b) => a.k - b.k).slice(0, SO_TRONG[cap] ?? 2).map((x) => x.i));
+  return manh.map((m, i) => (chon.has(i) ? ung.find((x) => x.i === i) : m));
+}
+
+function DienTu({ cau, onXong }) {
+  const phan = useMemo(() => tachTrong(cau.cau, cau.cap), [cau.cau, cau.cap]);
+  const trong = phan.filter((p) => typeof p === "object");
+  const [dien, setDien] = useState({});
+  const [kq, setKq] = useState(null);
+  const dau = useRef(null);
+  useEffect(() => { setDien({}); setKq(null); setTimeout(() => dau.current?.focus(), 50); }, [cau.id]);
+  const kiem = async () => {
+    const chi = trong.map((t) => {
+      const v = dien[t.i] ?? "";
+      const khop = thuong(v) === thuong(t.tu) ? "dung" : khongDau(v) === khongDau(t.tu) && v.trim() ? "sai_dau" : "sai";
+      return { i: t.i, khop };
+    });
+    const diem = trong.length ? chi.reduce((n, c) => n + (c.khop === "dung" ? 1 : c.khop === "sai_dau" ? 0.5 : 0), 0) / trong.length : 0;
+    const r = { chi: Object.fromEntries(chi.map((c) => [c.i, c.khop])), diem, dung: chi.filter((c) => c.khop === "dung").length, tong: trong.length };
+    setKq(r); phat(diem >= 0.99 ? "dung" : diem >= 0.5 ? "nop" : "sai");
+    await supabase.rpc("ghi_chinh_ta", { p_cau: cau.id, p_diem: diem, p_chu: trong.map((t) => dien[t.i] ?? "").join(" | "), p_kieu: "dien_tu" });
+    onXong(diem);
+  };
+  let soO = 0;
+  return (
+    <div className="grid gap-4">
+      <NutNghe src={cau.audio_url} />
+      <p className="m-0 flex flex-wrap items-baseline gap-x-1 gap-y-2 text-xl font-semibold leading-loose text-ink" lang="fr">
+        {phan.map((p, i) => {
+          if (typeof p === "string") return <span key={i}>{p}</span>;
+          const khop = kq?.chi[p.i];
+          const laDau = soO++ === 0;
+          return (
+            <span key={i} className="inline-flex items-baseline">
+              {p.truoc}
+              {kq ? (
+                <span className={`rounded-lg px-1.5 font-bold ${khop === "dung" ? "bg-ok-soft text-ok" : khop === "sai_dau" ? "bg-warn-soft text-warn" : "bg-danger-soft text-danger"}`}
+                  title={khop !== "dung" ? tr(`Bạn điền: « ${dien[p.i] || "…"} »`, `Votre réponse : « ${dien[p.i] || "…"} »`, `You wrote: « ${dien[p.i] || "…"} »`) : undefined}>
+                  {p.tu}
+                </span>
+              ) : (
+                <input ref={laDau ? dau : undefined} value={dien[p.i] ?? ""} onChange={(e) => setDien({ ...dien, [p.i]: e.target.value })}
+                  onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); kiem(); } }}
+                  spellCheck={false} autoComplete="off" aria-label={tr("Từ còn thiếu", "Mot manquant", "Missing word")}
+                  style={{ width: `${Math.max(4, p.tu.length + 1)}ch` }}
+                  className="rounded-lg border-0 border-b-2 border-solid border-primary bg-primary-soft px-1 text-center font-sans text-lg font-bold text-ink outline-none focus:bg-surface" />
+              )}
+              {p.sau}
+            </span>
+          );
+        })}
+      </p>
+      {!kq ? (
+        <button type="button" onClick={kiem}
+          className="inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-2xl border-0 bg-ok px-5 py-3 font-sans text-sm font-extrabold text-white sm:w-auto">
+          <Check size={16} strokeWidth={3} /> {tr("Kiểm tra", "Vérifier", "Check")}
+        </button>
+      ) : (
+        <div className="mcf-cau-vao grid gap-3 rounded-2xl border border-solid border-line bg-surface2 p-4">
+          <div className="flex items-center gap-3">
+            <Leon cam={kq.diem >= 0.99 ? "tuyet-voi" : kq.diem >= 0.5 ? "duoc-do" : "co-len"} size={64} className="mcf-nay shrink-0" />
+            <div>
+              <p className="m-0 text-2xl font-extrabold tabular-nums text-ink">{kq.dung}/{kq.tong} <span className="text-sm font-bold text-soft">{tr("chỗ trống đúng", "réponses justes", "blanks right")}</span></p>
+              <p className="m-0 text-xs text-soft">{tr("Xanh: đúng · vàng: sai dấu (nửa điểm) · đỏ: sai. Rê chuột lên từ để xem bạn đã điền gì.", "Vert : juste · jaune : accent · rouge : faux.", "Green: right · yellow: accent · red: wrong.")}</p>
+            </div>
+          </div>
+          {cau.nghia && <p className="m-0 text-sm text-soft">{cau.nghia}</p>}
+          <button type="button" onClick={() => { setKq(null); setDien({}); }}
             className="inline-flex w-fit cursor-pointer items-center gap-1.5 rounded-xl border-0 bg-transparent px-0 font-sans text-sm font-bold text-primary"><RotateCcw size={14} /> {tr("Làm lại câu này", "Refaire", "Try again")}</button>
         </div>
       )}
@@ -224,18 +317,21 @@ export default function NgheNoi() {
       setDs(cau ?? null);
       const uid = u?.user?.id;
       if (!uid) return;
-      const { data: kq } = await supabase.from("cau_luyen_ket_qua").select("cau_id, diem").eq("user_id", uid);
+      const { data: kq } = await supabase.from("cau_luyen_ket_qua").select("cau_id, diem, kieu").eq("user_id", uid);
       const m = new Map();
-      for (const r of kq ?? []) m.set(r.cau_id, Math.max(m.get(r.cau_id) ?? 0, Number(r.diem)));
+      for (const r of kq ?? []) { const k = `${r.kieu}:${r.cau_id}`; m.set(k, Math.max(m.get(k) ?? 0, Number(r.diem))); }
       if (con) setDiem(m);
     })();
     return () => { con = false; };
   }, []);
 
-  const loc = useMemo(() => (ds || []).filter((c) => c.loai === loai && c.cap === cap), [ds, loai, cap]);
+  const loaiCau = loai === "phat_am" ? "phat_am" : "chinh_ta";
+  const kieu = loai === "phat_am" ? "phat_am" : loai === "dien_tu" ? "dien_tu" : "chep";
+  const loc = useMemo(() => (ds || []).filter((c) => c.loai === loaiCau && c.cap === cap), [ds, loaiCau, cap]);
+  const dCau = (id) => diem.get(`${kieu}:${id}`);
   const cau = dang != null ? loc[dang] : null;
-  const xongCap = loc.filter((c) => (diem.get(c.id) ?? 0) >= 0.9).length;
-  const ghiDiem = (d) => setDiem((m) => new Map(m).set(cau.id, Math.max(m.get(cau.id) ?? 0, d)));
+  const xongCap = loc.filter((c) => (dCau(c.id) ?? 0) >= 0.9).length;
+  const ghiDiem = (d) => setDiem((m) => { const k = `${kieu}:${cau.id}`; return new Map(m).set(k, Math.max(m.get(k) ?? 0, d)); });
 
   return (
     <div className="mx-auto max-w-3xl px-4 pb-24 pt-6">
@@ -245,12 +341,12 @@ export default function NgheNoi() {
           <Leon cam={loai === "phat_am" ? "chao" : "lam-viec"} size={104} className="mcf-leon-bay shrink-0 drop-shadow-[0_12px_18px_rgba(0,0,0,0.3)] max-sm:h-20 max-sm:w-20" />
           <div className="min-w-0 flex-1">
             <h1 className="m-0 text-3xl font-extrabold tracking-tight">{tr("Nghe & Nói", "Écoute & Oral", "Listen & Speak")}</h1>
-            <p className="m-0 mt-1 text-sm text-white/85">{tr("Chép chính tả từng câu và luyện đọc cho máy nghe ra đúng.", "Dictées phrase par phrase et lecture à voix haute reconnue par la machine.", "Sentence dictations and read-aloud practice checked by speech recognition.")}</p>
+            <p className="m-0 mt-1 text-sm text-white/85">{tr("Chép chính tả, nghe điền từ và luyện đọc cho máy nghe ra đúng.", "Dictées, textes à trous et lecture à voix haute reconnue par la machine.", "Dictations, gap fills and read-aloud practice checked by speech recognition.")}</p>
           </div>
           <NutTieng className="border-white/30 bg-white/15 text-white hover:border-white hover:text-white" />
         </div>
         <div className="relative mt-5 inline-flex gap-1 rounded-2xl bg-white/15 p-1.5">
-          {[["chinh_ta", PenLine, tr("Chép chính tả", "Dictée", "Dictation")], ["phat_am", Mic, tr("Phát âm", "Prononciation", "Pronunciation")]].map(([k, Icon, nhan]) => (
+          {[["chinh_ta", PenLine, tr("Chép chính tả", "Dictée", "Dictation")], ["dien_tu", TextCursorInput, tr("Nghe điền từ", "Texte à trous", "Fill the gaps")], ["phat_am", Mic, tr("Phát âm", "Prononciation", "Pronunciation")]].map(([k, Icon, nhan]) => (
             <button key={k} type="button" onClick={() => { if (k !== loai) phat("tiep"); setLoai(k); setDang(null); }}
               className={`inline-flex cursor-pointer items-center gap-2 rounded-xl border-0 px-4 py-2 font-sans text-sm font-extrabold transition-all ${loai === k ? "bg-white text-fuchsia-700 shadow" : "bg-transparent text-white hover:bg-white/15"}`}>
               <Icon size={15} /> {nhan}
@@ -284,7 +380,7 @@ export default function NgheNoi() {
               {cau.nghia && <p className="m-0 mt-1 text-sm text-soft">{cau.nghia}</p>}
             </div>
           )}
-          {loai === "chinh_ta" ? <ChepChinhTa cau={cau} onXong={ghiDiem} /> : <PhatAm cau={cau} onXong={ghiDiem} />}
+          {loai === "chinh_ta" ? <ChepChinhTa cau={cau} onXong={ghiDiem} /> : loai === "dien_tu" ? <DienTu cau={cau} onXong={ghiDiem} /> : <PhatAm cau={cau} onXong={ghiDiem} />}
           <div className="mt-5 flex justify-between gap-2 border-0 border-t border-solid border-line pt-4">
             <button type="button" disabled={dang === 0} onClick={() => setDang(dang - 1)}
               className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border-0 bg-surface2 px-4 py-2 font-sans text-sm font-bold text-ink disabled:opacity-40"><ArrowLeft size={14} /> {tr("Câu trước", "Précédente", "Previous")}</button>
@@ -295,7 +391,7 @@ export default function NgheNoi() {
       ) : (
         <ul className="m-0 mt-5 grid list-none gap-2.5 p-0 sm:grid-cols-2">
           {loc.map((c, i) => {
-            const d = diem.get(c.id);
+            const d = dCau(c.id);
             return (
               <li key={c.id} className="mcf-cau-vao" style={{ animationDelay: `${i * 40}ms` }}>
                 <button type="button" onClick={() => { phat("bam"); setDang(i); }}
@@ -305,11 +401,11 @@ export default function NgheNoi() {
                   </span>
                   <span className="min-w-0 flex-1">
                     <span className="block truncate text-sm font-bold text-ink" lang="fr">
-                      {loai === "chinh_ta" ? (d != null ? c.cau : tr("Câu chép chính tả", "Dictée", "Dictation") + ` ${i + 1}`) : c.cau}
+                      {loai === "chinh_ta" ? (d != null ? c.cau : tr("Câu chép chính tả", "Dictée", "Dictation") + ` ${i + 1}`) : loai === "dien_tu" ? (d != null ? c.cau : tr("Câu điền từ", "Texte à trous", "Gap fill") + ` ${i + 1}`) : c.cau}
                     </span>
-                    <span className="block truncate text-xs text-soft">{loai === "chinh_ta" && d == null ? tr("Nghe rồi gõ lại", "Écoutez puis écrivez", "Listen then type") : c.nghia}</span>
+                    <span className="block truncate text-xs text-soft">{loai === "chinh_ta" && d == null ? tr("Nghe rồi gõ lại", "Écoutez puis écrivez", "Listen then type") : loai === "dien_tu" && d == null ? tr("Nghe rồi điền từ còn thiếu", "Écoutez et complétez", "Listen and fill in") : c.nghia}</span>
                   </span>
-                  {loai === "chinh_ta" ? <Headphones size={16} className="shrink-0 text-soft" /> : <Mic size={16} className="shrink-0 text-soft" />}
+                  {loai === "phat_am" ? <Mic size={16} className="shrink-0 text-soft" /> : <Headphones size={16} className="shrink-0 text-soft" />}
                 </button>
               </li>
             );

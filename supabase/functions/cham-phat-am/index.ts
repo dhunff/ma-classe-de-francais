@@ -73,6 +73,6 @@ Deno.serve(async (req) => {
   }
 
   const kq = soCau(cau.cau, chu, { dau: false, amGan: true });
-  if (!laThu) await admin.from("cau_luyen_ket_qua").insert({ user_id: userId, cau_id: cau.id, diem: kq.diem, chu: chu.slice(0, 600) });
+  if (!laThu) await admin.from("cau_luyen_ket_qua").insert({ user_id: userId, cau_id: cau.id, diem: kq.diem, chu: chu.slice(0, 600), kieu: "phat_am" });
   return json(200, { ok: true, chu, ...kq, con_lai: laVip ? null : Math.max(0, HAN_MUC - (daDung ?? 0) - 1), vip: laVip });
 });
