@@ -326,7 +326,7 @@ function AppInner() {
               {/* Bộ thẻ giáo viên soạn. Hai màn (thư viện + luyện) nằm TRONG
                   một route: đổi route thì React Router tháo màn cũ ngay khi
                   màn mới gắn vào, không còn gì để trượt. Xem BoTheApp.jsx. */}
-              <Route path="/etudiant/bo-the" element={<BoTheApp />} />
+              <Route path="/etudiant/bo-the" element={<BoTheApp name={session?.name} />} />
 
 
 

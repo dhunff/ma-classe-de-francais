@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Swords, X, Timer, Trophy, Hourglass, Play, Volume2, VolumeX, Send, Layers, Users, Check } from "lucide-react";
+import { Swords, X, Timer, Trophy, Hourglass, Play, Volume2, VolumeX, Send, Layers, Users, Check, XCircle, Handshake, Zap } from "lucide-react";
 import { phat, amThanhBat, datAmThanh } from "../../shared/amThanh.js";
 import { Avatar } from "../../shared/avatars.jsx";
 import { docDangTheoDoi } from "../../shared/xp.js";
@@ -99,10 +99,10 @@ export default function ThachDau() {
           <NutTieng />
         </div>
         <div className="relative mt-5 grid grid-cols-4 gap-2">
-          {[["thang", tr("Thắng", "Victoires", "Wins"), "🏆"], ["thua", tr("Thua", "Défaites", "Losses"), "💥"], ["hoa", tr("Hoà", "Nuls", "Draws"), "🤝"], ["cho", tr("Đến lượt", "À jouer", "Your turn"), "⚡"]].map(([k, nhan, bieu], i) => (
+          {[["thang", tr("Thắng", "Victoires", "Wins"), <Trophy size={12} strokeWidth={2.5} />], ["thua", tr("Thua", "Défaites", "Losses"), <XCircle size={12} strokeWidth={2.5} />], ["hoa", tr("Hoà", "Nuls", "Draws"), <Handshake size={12} strokeWidth={2.5} />], ["cho", tr("Đến lượt", "À jouer", "Your turn"), <Zap size={12} strokeWidth={2.5} />]].map(([k, nhan, bieu], i) => (
             <div key={k} className="mcf-cau-vao rounded-2xl bg-white/15 px-3 py-2.5 text-center backdrop-blur" style={{ animationDelay: `${120 + i * 70}ms` }}>
               <p className="m-0 text-xl font-extrabold tabular-nums">{ds ? thanhTich[k] : "–"}</p>
-              <p className="m-0 text-[11px] font-bold text-white/80">{bieu} {nhan}</p>
+              <p className="m-0 inline-flex items-center gap-1 text-[11px] font-bold text-white/85">{bieu}{nhan}</p>
             </div>
           ))}
         </div>

@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Timer, ShieldCheck, AlertTriangle, Clock, Volume2, VolumeX, ArrowLeft, Trophy, Headphones, BookOpen, PenLine, Mic } from "lucide-react";
+import { Timer, ShieldCheck, AlertTriangle, Clock, Volume2, VolumeX, ArrowLeft, Trophy, Crown, Headphones, BookOpen, PenLine, Mic } from "lucide-react";
 import NutTieng from "../../shared/NutTieng.jsx";
 import { BangKetLuan, ThanhPhan, PhaoGiayLon } from "./KetQuaVisual.jsx";
 import { supabase } from "../../storageShim.js";
@@ -145,7 +145,7 @@ function ManCho({ dsDe, chon, paper, onStart, dangTai, lamPhanNoi, setLamPhanNoi
             </p>
             <div className="mt-3 flex flex-wrap gap-2">
               {luot?.vip ? (
-                <span className="inline-flex items-center gap-1 rounded-full bg-amber-400/90 px-3 py-1 text-xs font-extrabold text-amber-950">👑 {tr("VIP: không giới hạn lượt", "VIP : essais illimités", "VIP: unlimited attempts")}</span>
+                <span className="inline-flex items-center gap-1 rounded-full bg-amber-400/90 px-3 py-1 text-xs font-extrabold text-amber-950"><Crown size={12} /> {tr("VIP: không giới hạn lượt", "VIP : essais illimités", "VIP: unlimited attempts")}</span>
               ) : luot && !luot.khong_gioi_han ? (
                 <span className="inline-flex items-center gap-1 rounded-full bg-white/20 px-3 py-1 text-xs font-extrabold">
                   <Timer size={12} /> {tr("Hôm nay còn", "Reste aujourd'hui", "Left today")} {Math.max(0, luot.gioi_han - luot.da_dung)}/{luot.gioi_han} {tr("lượt", "essai(s)", "attempt(s)")}

@@ -391,7 +391,7 @@ ${r.error?.message ?? ""}`); return; }
                       <div style={{ fontWeight: 800, fontSize: 15.5 }}>{ex.title}</div>
                       <div style={{ fontSize: 12.5, color: C.soft, marginTop: 2 }}>
                         {ex.questions.length} {tr("câu", "question", "question")}{ex.questions.length > 1 ? "s" : ""}
-                        {hh && <> · 🏆 Meilleur : {hh.best}/{hh.max} ({hh.tries} essai{hh.tries > 1 ? "s" : ""})</>}
+                        {hh && <> · {tr(`Tốt nhất: ${hh.best}/${hh.max} (${hh.tries} lượt)`, `Meilleur : ${hh.best}/${hh.max} (${hh.tries} essai${hh.tries > 1 ? "s" : ""})`, `Best: ${hh.best}/${hh.max} (${hh.tries} tr${hh.tries > 1 ? "ies" : "y"})`)}</>}
                       </div>
                     </div>
     </div>

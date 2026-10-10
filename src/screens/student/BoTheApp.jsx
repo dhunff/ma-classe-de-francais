@@ -2,7 +2,10 @@ import React, { useEffect, useState } from "react";
 import ThuVienBoThe from "./ThuVienBoThe.jsx";
 import LuyenBoThe from "./LuyenBoThe.jsx";
 import { docCacBo, docQuyenBoCuaToi } from "../../shared/boThe.js";
-import { Lock, X } from "lucide-react";
+import { Lock, X, CreditCard } from "lucide-react";
+import PaymentModal from "./PaymentModal.jsx";
+import { load } from "../../shared/storage.js";
+import { PAYMENT_KEY, memoSafe } from "../../shared/access.js";
 import { tr } from "../../shared/i18n.jsx";
 import { Leon } from "../../shared/leon.jsx";
 import { phat } from "../../shared/amThanh.js";
@@ -48,7 +51,7 @@ import { phat } from "../../shared/amThanh.js";
 
 const NHIP = "transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none";
 
-export default function BoTheApp() {
+export default function BoTheApp({ name }) {
   const [man, setMan] = useState("LIBRARY");   // 'LIBRARY' | 'GAME'
   const [bo, setBo] = useState(null);
   const [ds, setDs] = useState(undefined);
@@ -76,6 +79,11 @@ export default function BoTheApp() {
   const oGame = man === "GAME";
 
   const [boKhoa, setBoKhoa] = useState(null);
+  const [muaBo, setMuaBo] = useState(null);
+  const [payCfg, setPayCfg] = useState(null);
+  useEffect(() => { load(PAYMENT_KEY, null).then(setPayCfg).catch(() => {}); }, []);
+  /* Mở khoá xong: đánh dấu bộ đã mở rồi vào luyện luôn. */
+  const daMua = () => { const b = muaBo; setMuaBo(null); setDs((d) => (Array.isArray(d) ? d.map((x) => (x.id === b.boId ? { ...x, khoa: false } : x)) : d)); };
   const moBo = (b) => {
     if (b.khoa) { phat("sai"); setBoKhoa(b); return; }
     setBo(b); setMan("GAME");
@@ -106,6 +114,8 @@ export default function BoTheApp() {
         {bo && <LuyenBoThe bo={bo} onThoat={() => setMan("LIBRARY")} />}
       </div>
 
+      {muaBo && <PaymentModal ex={muaBo} student={name} config={payCfg} onClose={() => setMuaBo(null)} onUnlocked={daMua} />}
+
       {/* Bộ trả phí chưa mở khoá */}
       {boKhoa && (
         <div className="fixed inset-0 z-[70] grid place-items-center bg-black/40 p-4 backdrop-blur-sm" onClick={() => setBoKhoa(null)}>
@@ -119,10 +129,16 @@ export default function BoTheApp() {
             </p>
             <h2 className="m-0 mt-3 text-lg font-extrabold text-ink">{boKhoa.ten}</h2>
             <p className="m-0 mt-2 text-sm leading-relaxed text-soft">
-              {tr("Bộ này cần được mở khoá. Gói VIP mở được mọi bộ trả phí, hoặc nhờ giáo viên cấp quyền cho bạn.", "Ce paquet est verrouillé. L'offre VIP ouvre tous les paquets payants, ou demandez l'accès à votre enseignant.", "This deck is locked. VIP unlocks every paid deck, or ask your teacher for access.")}
+              {tr("Mua bộ này bằng chuyển khoản để mở khoá ngay. Gói VIP cũng mở được mọi bộ trả phí, hoặc nhờ giáo viên cấp quyền.", "Achetez ce paquet par virement pour le débloquer. L'offre VIP ouvre aussi tous les paquets payants, ou demandez l'accès à votre enseignant.", "Buy this deck by bank transfer to unlock it. VIP also unlocks every paid deck, or ask your teacher for access.")}
             </p>
+            {boKhoa.gia > 0 && name && (
+              <button type="button" onClick={() => { const b = boKhoa; setBoKhoa(null); setMuaBo({ id: "BO" + memoSafe(b.id).slice(-4), boId: b.id, price: b.gia, title: b.ten, laBo: true }); }}
+                className="mt-5 inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-2xl border-0 border-b-4 border-solid border-blue-800 bg-gradient-to-r from-primary to-indigo-600 px-5 py-3 font-sans text-sm font-extrabold text-white">
+                <CreditCard size={16} /> {tr("Mua bằng chuyển khoản", "Acheter par virement", "Buy by bank transfer")} · {boKhoa.gia.toLocaleString("vi-VN")}đ
+              </button>
+            )}
             <button type="button" onClick={() => setBoKhoa(null)}
-              className="mt-5 w-full cursor-pointer rounded-2xl border-0 bg-primary px-5 py-3 font-sans text-sm font-extrabold text-on-primary">{tr("Đã hiểu", "Compris", "Got it")}</button>
+              className="mt-2 w-full cursor-pointer rounded-2xl border-0 bg-surface2 px-5 py-3 font-sans text-sm font-bold text-ink">{tr("Để sau", "Plus tard", "Later")}</button>
           </div>
         </div>
       )}

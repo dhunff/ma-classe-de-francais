@@ -68,7 +68,11 @@ export default function PaymentModal({ ex, student, config, onClose, onUnlocked 
 
     const check = async () => {
       let xong = false;
-      if (ex.laVip) {
+      if (ex.laBo) {
+        /* Bộ Flashcard (130): quyền nằm ở the_bo_quyen, học sinh đọc được dòng của mình. */
+        const { data } = await supabase.from("the_bo_quyen").select("bo_id").eq("bo_id", ex.boId).limit(1);
+        xong = !!data?.length;
+      } else if (ex.laVip) {
         const { data } = await supabase.from("profiles").select("vip_den").limit(1).maybeSingle();
         const moi = data?.vip_den ? new Date(data.vip_den).getTime() : 0;
         xong = moi > (vipLucMo ? new Date(vipLucMo).getTime() : 0) && moi > Date.now();

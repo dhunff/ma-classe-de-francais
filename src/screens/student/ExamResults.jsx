@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { ShieldCheck, Clock, MessageSquare, ClipboardCheck, PenLine, ArrowLeft } from "lucide-react";
+import { ShieldCheck, Trophy, Clock, MessageSquare, ClipboardCheck, PenLine, ArrowLeft } from "lucide-react";
 import PESelfEvaluation from "./PESelfEvaluation.jsx";
 import { loadMyExamResults } from "../../shared/examResults.js";
 import { NGUONG_PHAN, NGUONG_TONG } from "../exam/examPaper.js";
@@ -229,7 +229,7 @@ export default function ExamResults() {
             {Array.isArray(sittings) && sittings.length > 0 && (
               <div className="mt-3 flex flex-wrap gap-2 text-xs font-extrabold">
                 <span className="rounded-full bg-white/20 px-3 py-1">{sittings.length} {tr("lượt thi", "examen(s)", "sitting(s)")}</span>
-                <span className="rounded-full bg-white/20 px-3 py-1">🏆 {sittings.filter((x) => x.passed === true).length} {tr("đạt", "réussi(s)", "passed")}</span>
+                <span className="inline-flex items-center gap-1 rounded-full bg-white/20 px-3 py-1"><Trophy size={12} /> {sittings.filter((x) => x.passed === true).length} {tr("đạt", "réussi(s)", "passed")}</span>
               </div>
             )}
           </div>

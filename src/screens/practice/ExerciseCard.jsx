@@ -1,5 +1,5 @@
 import React, { useRef, useState } from "react";
-import { Lock, ChevronDown, BookOpen, Lightbulb, FileCheck, Folder, Star } from "lucide-react";
+import { Lock, ChevronDown, BookOpen, Lightbulb, FileCheck, Folder, Star, Trophy } from "lucide-react";
 import { FloatingLayer, KebabMenu } from "../../shared/ui.jsx";
 import { S } from "../../shared/tokens.js";
 import { fmtPrice } from "../../shared/access.js";
@@ -161,7 +161,7 @@ export default function ExerciseCard({
 
         {best && (
           <div className={`mt-1 text-xs font-bold ${best.max && best.best / best.max >= 0.8 ? "text-ok" : "text-primary"}`}>
-            🏆 Meilleur : {best.best}/{best.max} ({best.tries} essai{best.tries > 1 ? "s" : ""})
+            <Trophy size={12} className="inline align-[-1px]" /> {tr(`Tốt nhất: ${best.best}/${best.max} (${best.tries} lượt)`, `Meilleur : ${best.best}/${best.max} (${best.tries} essai${best.tries > 1 ? "s" : ""})`, `Best: ${best.best}/${best.max} (${best.tries} tr${best.tries > 1 ? "ies" : "y"})`)}
           </div>
         )}
 

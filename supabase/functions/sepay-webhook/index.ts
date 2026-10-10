@@ -217,6 +217,26 @@ Deno.serve(async (req) => {
     return json(200, { ok: true, auth: cach, vip: kq, student: hop[0].name, amount });
   }
 
+  /* ── BỘ FLASHCARD TRẢ PHÍ (10/10, migration 130) ──
+     Nội dung `LMS <tên> BO<4 ký tự cuối id bộ>`. Giá đọc ở máy chủ; mua_bo_the
+     tự từ chối khi thiếu tiền và bỏ qua giao dịch đã xử lý (ref duy nhất).
+     Không khớp bộ nào thì rơi xuống nhánh bài tập như cũ. */
+  if (parsed.exSuffix.startsWith("BO")) {
+    const { data: bos, error: boErr } = await supabase.from("the_bo").select("id, ten").eq("tra_phi", true);
+    if (boErr) return json(500, { error: "deck_read_failed", detail: boErr.message });
+    const khopBo = (bos ?? []).filter((b: any) => normalize(String(b.id)).slice(-4) === parsed.exSuffix.slice(2));
+    if (khopBo.length > 1) return json(200, { auth: cach, ignored: "deck_ambiguous", memo: parsed });
+    if (khopBo.length === 1) {
+      const { data: ps } = await supabase.from("profiles").select("id, name").eq("role", "eleve");
+      const hop = (ps ?? []).filter((p: any) => normalize(String(p.name ?? "")).slice(0, 12) === parsed.student);
+      if (hop.length !== 1) return json(200, { auth: cach, ignored: hop.length ? "deck_student_ambiguous" : "student_not_found", memo: parsed });
+      const { data: kq, error: muaErr } = await supabase.rpc("mua_bo_the", { p_bo: khopBo[0].id, p_user: hop[0].id, p_ref: ref, p_so_tien: amount });
+      if (muaErr) return json(500, { error: "deck_write_failed", detail: muaErr.message });
+      if (!kq?.ok) return json(200, { auth: cach, ignored: String(kq?.ly_do ?? "deck_rejected").toLowerCase(), amount, price: kq?.gia });
+      return json(200, { ok: true, auth: cach, deck: khopBo[0].ten, student: hop[0].name, amount, duplicate: !!kq?.trung });
+    }
+  }
+
   // 2. Tìm bài tập. Giá lấy từ máy chủ, KHÔNG lấy từ bất cứ thứ gì client gửi.
   /* ── Tìm bài tập trong BẢNG `exercises` ──
    *
