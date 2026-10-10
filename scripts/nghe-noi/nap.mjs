@@ -4,18 +4,22 @@
  *   2. ghi file SQL upsert theo `ma` (chạy lại không nhân đôi). */
 import { readFileSync, writeFileSync } from "node:fs";
 import { CHINH_TA, PHAT_AM } from "./cau.mjs";
+import { CHINH_TA_2, PHAT_AM_2 } from "./cau2.mjs";
+/* CHI_MOI=1: chỉ tạo audio + nạp những câu chưa có (ord > 10, tức kho bổ sung). */
+const CHI_MOI = process.env.CHI_MOI === "1";
 const env = Object.fromEntries(readFileSync(new URL("../../.env", import.meta.url), "utf8").split(/\r?\n/).filter((l) => l.includes("=")).map((l) => [l.slice(0, l.indexOf("=")), l.slice(l.indexOf("=") + 1)]));
 const URL0 = env.VITE_SUPABASE_URL, ANON = env.VITE_SUPABASE_ANON_KEY, TK = process.env.TTS_TOKEN;
 const q = (s) => (s == null ? "null" : "'" + String(s).replace(/'/g, "''") + "'");
 const ds = [];
 const dem = { A1: 0, A2: 0, B1: 0, B2: 0 };
-for (const [loai, kho, tienTo] of [["chinh_ta", CHINH_TA, "ct"], ["phat_am", PHAT_AM, "pa"]]) {
+for (const [loai, kho, tienTo] of [["chinh_ta", [...CHINH_TA, ...CHINH_TA_2], "ct"], ["phat_am", [...PHAT_AM, ...PHAT_AM_2], "pa"]]) {
   Object.keys(dem).forEach((k) => (dem[k] = 0));
   for (const [cap, cau, nghia, meo] of kho) {
     dem[cap]++;
     ds.push({ loai, cap, cau, nghia, meo, ma: `${tienTo}-${cap.toLowerCase()}-${String(dem[cap]).padStart(2, "0")}`, ord: dem[cap] });
   }
 }
+if (CHI_MOI) ds.splice(0, ds.length, ...ds.filter((d) => d.ord > 10));
 let i = 0;
 await Promise.all(Array.from({ length: 5 }, async () => {
   while (i < ds.length) {
