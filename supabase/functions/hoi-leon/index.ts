@@ -25,7 +25,7 @@ const laOpenAI = (m: string) => /^(gpt-|o\d)/.test(m);
 const HAN_MUC = 10;
 const TRAN_CAU_HOI = 1000;
 const CAM = ["chao", "nhay-mat", "tuyet-voi", "duoc-do", "yeu-qua", "hum", "suy-nghi", "gian", "buon", "ngac-nhien",
-  "haha", "buon-ngu", "lam-viec", "hoc", "co-len", "tam-biet", "xin-loi", "yeah", "ok", "phap"];
+  "haha", "buon-ngu", "lam-viec", "hoc", "co-len", "tam-biet", "xin-loi", "yeah", "ok", "phap", "hoi", "quyet-tam", "cuoi-lon", "mim-cuoi"];
 const dauNgayVN = () => {
   const vn = new Date(Date.now() + 7 * 3600_000);
   return new Date(Date.UTC(vn.getUTCFullYear(), vn.getUTCMonth(), vn.getUTCDate()) - 7 * 3600_000).toISOString();

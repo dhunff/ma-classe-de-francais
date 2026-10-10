@@ -29,6 +29,10 @@ export const STICKER = [
   ["yeah", () => tr("Yeah!", "Youpi !", "Yay!")],
   ["ok", () => tr("OK!", "D'accord !", "OK!")],
   ["phap", () => tr("Học tiếng Pháp cùng Fracile!", "Le français avec Fracile !", "French with Fracile!")],
+  ["hoi", () => tr("Thắc mắc", "Une question ?", "A question?")],
+  ["quyet-tam", () => tr("Quyết tâm!", "Déterminé !", "Determined!")],
+  ["cuoi-lon", () => tr("Vui quá!", "Trop content !", "So happy!")],
+  ["mim-cuoi", () => tr("Mỉm cười", "Sourire", "Smile")],
 ];
 const CO = new Set(STICKER.map((s) => s[0]).concat(["leon", "dau"]));
 export const nhanSticker = (id) => STICKER.find((s) => s[0] === id)?.[1]() ?? "Leon";
@@ -74,7 +78,7 @@ export function ChuCoSticker({ text, size = 72 }) {
 /* Bảng chọn sticker (giáo viên chèn vào nhận xét, học sinh gửi trong Hỏi Leon). */
 export function BangSticker({ onChon, className = "" }) {
   return (
-    <div className={`grid grid-cols-5 gap-1 ${className}`}>
+    <div className={`grid grid-cols-6 gap-1 ${className}`}>
       {STICKER.map(([id, nhan]) => (
         <button key={id} type="button" onClick={() => onChon(id)} title={nhan()}
           className="grid cursor-pointer place-items-center rounded-xl border-0 bg-transparent p-1 transition-transform hover:-translate-y-0.5 hover:bg-surface2">
