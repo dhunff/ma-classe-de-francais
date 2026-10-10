@@ -325,7 +325,7 @@ export default function NgheNoi() {
     return () => { con = false; };
   }, []);
 
-  const loaiCau = loai === "phat_am" ? "phat_am" : "chinh_ta";
+  const loaiCau = loai === "phat_am" ? "phat_am" : loai === "dien_tu" ? "dien_tu" : "chinh_ta";
   const kieu = loai === "phat_am" ? "phat_am" : loai === "dien_tu" ? "dien_tu" : "chep";
   const loc = useMemo(() => (ds || []).filter((c) => c.loai === loaiCau && c.cap === cap), [ds, loaiCau, cap]);
   const dCau = (id) => diem.get(`${kieu}:${id}`);
