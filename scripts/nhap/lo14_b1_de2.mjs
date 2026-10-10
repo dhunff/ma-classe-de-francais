@@ -137,7 +137,7 @@ const ghi = (ex) => {
   ra.push(`with e as (insert into public.exercises (${cot.join(", ")}) values (${gt.join(", ")}) returning id) insert into public.questions (id, exercise_id, ord, type, prompt, payload, answer_key, explanation) select v.* from e, (values ${dong}) as v(id, exercise_id, ord, type, prompt, payload, answer_key, explanation);`);
 };
 const exCO = { ...chung, id: id("b1d2"), title: CO.tieuDe, level: "B1", skills: ["Écoute"], ngheKieuThi: true, audioLuyen: tl.url,
-  consigne: `<p>${CO.gioiThieu} Lisez les questions, puis écoutez le document.</p><p>Comme à l'examen, l'enregistrement contient tout le déroulement : ${DOC_CAU} secondes pour lire les questions, première écoute, ${NGHI} secondes de pause, deuxième écoute, puis ${HOAN_THANH} secondes pour compléter vos réponses.</p><p><em>Enregistrement réalisé avec une voix de synthèse (giọng tổng hợp).</em></p>`,
+  consigne: `<p>${CO.gioiThieu} Lisez les questions, puis écoutez le document.</p><p>Comme à l'examen, l'enregistrement contient tout le déroulement : ${DOC_CAU} secondes pour lire les questions, première écoute, ${NGHI} secondes de pause, deuxième écoute, puis ${HOAN_THANH} secondes pour compléter vos réponses.</p>`,
   audioUrl: up.url, questions: CO.cau, createdAt: Date.now() };
 const exCE = { ...chung, id: id("b1d2"), title: CE.tieuDe, level: "B1", skills: ["Lecture"], consigne: CE.consigne, readingText: CE.readingText, questions: CE.cau, createdAt: Date.now() };
 const exPE = { ...chung, ...PE, id: id("b1d2"), createdAt: Date.now() };

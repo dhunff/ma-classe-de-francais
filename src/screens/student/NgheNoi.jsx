@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { Headphones, Mic, Square, Play, Turtle, RotateCcw, ArrowRight, ArrowLeft, Check, Lightbulb, Loader2, PenLine, Info, TextCursorInput } from "lucide-react";
+import { Headphones, Mic, Square, Play, Turtle, RotateCcw, ArrowRight, ArrowLeft, Check, Lightbulb, Loader2, PenLine, TextCursorInput } from "lucide-react";
 import { supabase } from "../../storageShim.js";
 import { tr } from "../../shared/i18n.jsx";
 import { Leon } from "../../shared/leon.jsx";
@@ -362,7 +362,6 @@ export default function NgheNoi() {
         ))}
         {loc.length > 0 && <span className="ml-auto text-xs font-bold text-soft">{tr(`Hoàn thành ${xongCap}/${loc.length} câu (từ 90%)`, `${xongCap}/${loc.length} réussies (≥ 90 %)`, `${xongCap}/${loc.length} done (≥ 90%)`)}</span>}
       </div>
-      <p className="m-0 mt-2 flex items-center gap-1.5 text-[11px] text-soft"><Info size={12} /> {tr("Câu mẫu đọc bằng giọng tổng hợp (AI), không phải người bản xứ thu âm.", "Les modèles sont lus par une voix de synthèse (IA).", "Model sentences use a synthetic (AI) voice.")}</p>
 
       {ds === undefined ? (
         <p className="mt-8 text-center text-sm text-soft">{tr("Đang tải…", "Chargement…", "Loading…")}</p>

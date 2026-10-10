@@ -272,7 +272,7 @@ function Builder({ draft, setDraft, publish, cancel, accounts, classes = [] }) {
   };
 
   return (
-    <div>
+    <div lang="fr">
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 10 }}>
         <h2 style={{ ...S.display, marginTop: 0, marginBottom: 0 }}>{draft.title ? t("bd.edit_title") : t("bd.new_title")}</h2>
         <button style={{ ...S.btn(false), display: "inline-flex", alignItems: "center", gap: 8 }}

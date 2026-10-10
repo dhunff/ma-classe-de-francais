@@ -249,7 +249,7 @@ const ghi = (ex) => {
 const PHAN = [];
 CO.forEach((b, k) => {
   const ex = { ...chung, id: id("nhap"), title: "[NHÁP] " + b.tieuDe, level: "A2", skills: ["Écoute"], ngheKieuThi: true,
-    consigne: `<p>${b.gioiThieu} Lisez les questions, puis écoutez le document.</p><p>Comme à l'examen, l'enregistrement contient tout le déroulement : ${DOC_CAU} secondes pour lire les questions, première écoute, ${NGHI} secondes de pause, deuxième écoute, puis ${HOAN_THANH} secondes pour compléter vos réponses.</p><p><em>Enregistrement réalisé avec une voix de synthèse (giọng tổng hợp).</em></p>`,
+    consigne: `<p>${b.gioiThieu} Lisez les questions, puis écoutez le document.</p><p>Comme à l'examen, l'enregistrement contient tout le déroulement : ${DOC_CAU} secondes pour lire les questions, première écoute, ${NGHI} secondes de pause, deuxième écoute, puis ${HOAN_THANH} secondes pour compléter vos réponses.</p>`,
     audioUrl: URL_THI[k], questions: b.cau, createdAt: Date.now() };
   ghi(ex); PHAN.push(["CO", ex.id, k ? 0 : 25, k ? 0 : 25]);
 });
