@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo, useRef, useCallback } from "react"
 import { useLocation, useNavigate } from "react-router-dom";
 import QuanLyVip from "./QuanLyVip.jsx";
 import QuyenBaiTap from "./QuyenBaiTap.jsx";
+import { DanhSachHocSinh, ChiTietHocSinh } from "./TheoDoiHocSinh.jsx";
 import { C, S, LEVEL_COLORS, LEVEL_PASTEL, QTYPES, VF_OPTS } from "../../shared/tokens.js";
 import { load, save, del } from "../../shared/storage.js";
 import { loadPractice, saveExercise, deleteExercise } from "../../shared/exerciseStore.js";
@@ -358,7 +359,7 @@ ${r.error?.message ?? ""}`); return; }
           background: C.ok, color: "#fff", padding: "12px 26px", borderRadius: 999, fontWeight: 700, fontSize: 14,
           boxShadow: "0 10px 30px rgba(17,24,39,.35)" }}>{annToast}</div>
       )}
-      {view === "students" && <Accounts accounts={accounts} setAccounts={setAccounts} classes={classes} setClasses={setClasses} exercises={exercises} submissions={submissions} />}
+      {view === "students" && <Accounts refresh={refresh} accounts={accounts} setAccounts={setAccounts} classes={classes} setClasses={setClasses} exercises={exercises} submissions={submissions} />}
       {view === "stats" && <ThongKe accounts={accounts} />}
       {view === "list" && (
         exercises.length === 0 ? (
@@ -410,7 +411,7 @@ ${r.error?.message ?? ""}`); return; }
 }
 
 /* ================= Accounts ================= */
-function Accounts({ accounts, setAccounts, classes, setClasses, exercises = [], submissions = [] }) {
+function Accounts({ refresh, accounts, setAccounts, classes, setClasses, exercises = [], submissions = [] }) {
   /* Ô tìm kiếm ở thanh trên mở thẳng hồ sơ qua state `moHocSinh` (25/09). */
   const viTri = useLocation();
   const [openStudent, setOpenStudent] = useState(() => viTri.state?.moHocSinh ?? null);   // 📂 dossier détaillé
@@ -509,8 +510,7 @@ function Accounts({ accounts, setAccounts, classes, setClasses, exercises = [], 
   if (openStudent) {
     const acc = accounts.find((a) => a.name === openStudent);
     if (!acc) { setOpenStudent(null); return null; }
-    return <StudentDossier acc={acc} classes={classes} exercises={exercises} submissions={submissions}
-      presence={presence} back={() => setOpenStudent(null)} />;
+    return <ChiTietHocSinh acc={acc} exercises={exercises} onDoi={refresh} back={() => setOpenStudent(null)} />;
   }
 
   return (
@@ -522,75 +522,8 @@ function Accounts({ accounts, setAccounts, classes, setClasses, exercises = [], 
       {msg && <p style={{ color: C.danger, fontSize: 13, marginTop: 0, marginBottom: 10 }}>{msg}</p>}
       {/* Nút « Afficher les mots de passe » đã bỏ cùng với trường code — không
           còn mật khẩu nào ở đây để hiện. */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-        <span style={{ fontSize: 13, color: C.soft }}>
-          {accounts.length} compte(s)
-          {accounts.some((a) => a.status === "invited") &&
-            ` · ${accounts.filter((a) => a.status === "invited").length} en attente d'inscription`}
-        </span>
-      </div>
-
-      {/* Danh sách rỗng nói rõ vì sao rỗng. Câu cũ — "Aucun compte. Les élèves
-          ne peuvent pas encore se connecter" — sai kể từ khi có tự đăng ký:
-          học sinh vào được mà không cần giáo viên tạo trước. */}
-      {accounts.length === 0 && (
-        <div className="mcf-card" style={{ ...S.card, textAlign: "center", color: C.soft }}>
-          <div style={{ fontWeight: 700, color: C.ink, marginBottom: 6 }}>{tr("Chưa có học sinh nào đăng ký.", "Aucun élève inscrit pour le moment.", "No students registered yet.")}</div>
-          <div style={{ fontSize: 13.5 }}>
-            Les élèves apparaissent ici dès qu'ils créent leur compte.
-          </div>
-        </div>
-      )}
-
-      <div style={{ display: "grid", gap: 10 }}>
-        {accounts.map((a) => (
-          <div key={a.id || a.name} className="mcf-card" style={{ ...S.card, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
-            <span style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
-              <button onClick={() => setOpenStudent(a.name)} title="Voir le dossier de l'élève"
-                style={{ border: "none", background: "transparent", cursor: "pointer", fontFamily: "inherit",
-                  fontWeight: 800, fontSize: 15, color: C.primary, padding: 0, textDecoration: "underline", textUnderlineOffset: 3 }}>
-                {a.name}
-              </button>
-
-              {/* Đã đăng ký hay mới được mời — hai trạng thái rất khác nhau:
-                  người "mời" chưa có tài khoản nào để đăng nhập. */}
-              {a.status === "invited" ? (
-                <span style={{ fontSize: 11.5, fontWeight: 700, color: C.warn, background: C.warnSoft,
-                  borderRadius: 999, padding: "2px 9px" }}>En attente</span>
-              ) : (
-                <span style={{ fontSize: 11.5, fontWeight: 700, color: C.ok, background: C.okSoft,
-                  borderRadius: 999, padding: "2px 9px" }}>Inscrit</span>
-              )}
-
-              {(() => {
-                const st = formatLastSeen(presence[a.name]);
-                return (
-                  <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12.5, color: st.online ? C.ok : C.soft, fontWeight: st.online ? 700 : 500 }}>
-                    <span className={st.online ? "mcf-pulse" : ""}
-                      style={{ width: 9, height: 9, borderRadius: "50%", background: st.online ? "#22C55E" : "#9CA3AF", flexShrink: 0 }} />
-                    {st.label}
-                  </span>
-                );
-              })()}
-
-              <span style={{ fontSize: 13, color: a.email ? C.soft : C.warn }}>
-                {a.email || "sans email — l'élève ne peut pas se connecter"}
-              </span>
-
-              {a.createdAt && (
-                <span style={{ fontSize: 12.5, color: C.soft }}>
-                  Inscrit le {fmtDateFR(a.createdAt)}
-                </span>
-              )}
-
-            </span>
-            <div style={{ display: "flex", gap: 8 }}>
-              <button style={{ ...S.btn(false), padding: "5px 12px", fontSize: 12 }} onClick={() => reset(a.name)}
-                title="Envoie un lien de réinitialisation à l'élève">{tr("Gửi đường dẫn", "Envoyer un lien", "Send a link")}</button>            </div>
-          </div>
-        ))}
-        {accounts.length === 0 && <p style={{ color: C.soft }}>{tr("Chưa có tài khoản nào.", "Aucun compte. Les élèves ne peuvent pas encore se connecter.", "No accounts yet.")}</p>}
-      </div>
+      {/* 10/10: danh sách có số liệu thật + Nhắn tin / Giao bài / Chi tiết (TheoDoiHocSinh.jsx). */}
+      <DanhSachHocSinh accounts={accounts} exercises={exercises} onMo={setOpenStudent} onDoi={refresh} />
 
       <QuyenBaiTap accounts={accounts} exercises={exercises} />
     </div>
