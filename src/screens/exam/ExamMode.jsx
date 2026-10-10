@@ -318,7 +318,7 @@ function ManCho({ dsDe, chon, paper, onStart, dangTai, lamPhanNoi, setLamPhanNoi
       <button type="button"
         disabled={!sanSangVao}
         onClick={() => { phat("bam"); setLoiMo(""); setMoHop(true); }}
-        className={`mt-5 inline-flex w-full items-center justify-center gap-2 rounded-2xl border-0 border-b-4 border-solid border-blue-800 bg-gradient-to-r from-primary to-indigo-600 px-6 py-4 text-base font-extrabold uppercase tracking-wide text-white shadow-[0_14px_30px_rgba(37,99,235,0.35)] transition-all enabled:hover:-translate-y-0.5 enabled:active:translate-y-0.5 enabled:active:border-b-0 disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto sm:px-10 ${sanSangVao ? "mcf-nay" : ""}`}>
+        className={`mt-5 inline-flex w-full items-center justify-center gap-2 rounded-2xl border-0 border-b-4 border-solid border-blue-800 bg-gradient-to-r from-primary to-indigo-600 px-6 py-4 font-sans text-base font-extrabold uppercase tracking-wide text-white shadow-[0_14px_30px_rgba(37,99,235,0.35)] transition-all enabled:hover:-translate-y-0.5 enabled:active:translate-y-0.5 enabled:active:border-b-0 disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto sm:px-10 ${sanSangVao ? "mcf-nay" : ""}`}>
         {/* Nút mờ đi mà không nói vì sao là một cánh cửa khoá không biển
             báo. Ba lý do khoá, ba câu khác nhau. */}
         <Timer size={16} /> {dangTai ? tr("Đang tải đề…", "Chargement du sujet…", "Loading exam…")

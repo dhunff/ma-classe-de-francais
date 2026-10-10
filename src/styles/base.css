@@ -216,3 +216,7 @@ body {
   .mcf-ve-duong { animation: none; stroke-dashoffset: 0; }
   .mcf-nut-vao, .mcf-vong-sang { animation: none; }
 }
+
+/* Preflight tắt nên nút/ô nhập KHÔNG kế thừa font: chữ hoa tiếng Việt rơi về
+   font hệ thống (lỗi nút « BẮT ĐẦU THI », 10/10). Chốt chung cho mọi nơi. */
+button, input, select, textarea { font-family: inherit; }

@@ -30,6 +30,7 @@ import { tenVN } from "./shared/display.js";
 import TourGioiThieu from "./shared/TourGioiThieu.jsx";
 import { gradeRemote } from "./shared/gradeRemote.js";
 import { phat } from "./shared/amThanh.js";
+import { Leon } from "./shared/leon.jsx";
 import { PAYMENT_KEY, isPremium, hasAccess, fmtPrice, loadAccess } from "./shared/access.js";
 import ExerciseCard from "./screens/practice/ExerciseCard.jsx";
 import { supabase } from "./storageShim.js";
@@ -485,9 +486,14 @@ ${r.error?.message ?? ""}`); return; }
         {/* Dải tab chọn kỹ năng ở đây đã gỡ 25/09 theo yêu cầu chủ dự án —
             đổi kỹ năng bằng nút Quay lại về lưới thẻ. */}
 
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18, flexWrap: "wrap", gap: 10 }}>
-          <h2 style={{ ...S.display, margin: 0, display: "flex", alignItems: "center", gap: 10 }}>
-            <meta.Icon size={24} color={meta.color} /> {view.folder ? view.folder : t(`skill.${meta.key}`)}
+        <div className="mcf-cau-vao relative mb-5 flex flex-wrap items-center justify-between gap-3 overflow-hidden rounded-3xl p-5 text-white shadow-[0_16px_40px_rgba(0,0,0,0.12)]" style={{ background: meta.tuoi || meta.color }}>
+          <span aria-hidden className="absolute -right-10 -top-12 h-40 w-40 rounded-full bg-white/15" />
+          <h2 className="relative m-0 flex items-center gap-3 text-2xl font-extrabold tracking-tight">
+            <span className="grid h-12 w-12 place-items-center rounded-2xl bg-white/25"><meta.Icon size={24} /></span>
+            <span>
+              {view.folder ? view.folder : t(`skill.${meta.key}`)}
+              <span className="block text-xs font-bold text-white/80">{niveau} · {list.length} {tr("bài", "exercices", "exercises")}</span>
+            </span>
           </h2>
           {teacher && <button style={S.btn(true)} onClick={() => {
             const sk = view.cat === "__autres__" ? "Traduction" : view.cat;
@@ -845,18 +851,40 @@ ${r.error?.message ?? ""}`); return; }
   return (
     <div>
       {MatModal()}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20, flexWrap: "wrap", gap: 10 }}>
-        <div className="flex flex-wrap items-center gap-3">
-          <h2 className="m-0 text-2xl font-extrabold tracking-tight text-ink">{t("practice.library_title")}</h2>
-          {xp !== null && (
-            <span title={t("xp.balance_hint")}
-              className="inline-flex items-center gap-1.5 rounded-full bg-primary-soft px-3 py-1 text-sm font-bold tabular-nums text-primary">
-              <Star size={15} className="fill-current" /> {xp.toLocaleString("vi-VN")} XP
-            </span>
-          )}
-        </div>
-        {teacher && topTab === "bib" && <button style={S.btn(true)} onClick={() => { setDraft(blank()); setView({ page: "builder" }); }}><Plus size={16} /> {tr("Bài tập mới", "Nouvel exercice", "New exercise")}</button>}
-      </div>
+      {/* Khung đầu (10/10): Leon + số liệu THẬT từ exercises / hist. */}
+      {(() => {
+        const tong = exercises.length;
+        const daLam = exercises.filter((e) => hist[e.id]).length;
+        const pct = tong ? Math.round((daLam / tong) * 100) : 0;
+        return (
+          <header className="mcf-cau-vao relative mb-6 overflow-hidden rounded-3xl bg-gradient-to-br from-blue-600 via-primary to-violet-600 p-6 text-white shadow-[0_20px_50px_rgba(37,99,235,0.3)]">
+            <span aria-hidden className="absolute -right-12 -top-12 h-48 w-48 rounded-full bg-white/10" />
+            <span aria-hidden className="absolute -bottom-20 left-1/3 h-44 w-44 rounded-full bg-sky-300/20 blur-2xl" />
+            <div className="relative flex flex-wrap items-center gap-4">
+              <Leon cam="lam-viec" size={104} className="mcf-leon-bay shrink-0 drop-shadow-[0_12px_18px_rgba(0,0,0,0.3)] max-sm:h-20 max-sm:w-20" />
+              <div className="min-w-0 flex-1">
+                <h2 className="m-0 text-3xl font-extrabold tracking-tight">{t("practice.library_title")}</h2>
+                <p className="m-0 mt-1 text-sm text-white/85">{tr("Chọn kỹ năng, chọn trình độ rồi luyện. Mỗi bài có Từ vựng, Giải thích và đáp án sau khi nộp.", "Choisissez une compétence et un niveau. Chaque exercice a son vocabulaire, ses explications et son corrigé après envoi.", "Pick a skill and a level. Every exercise has vocabulary, explanations and an answer key after you submit.")}</p>
+                <div className="mt-3 flex flex-wrap gap-2 text-xs font-extrabold">
+                  <span className="rounded-full bg-white/20 px-3 py-1">{tong} {tr("bài", "exercices", "exercises")}</span>
+                  {!teacher && <span className="rounded-full bg-white/20 px-3 py-1">{daLam} {tr("đã làm", "faits", "done")} · {pct}%</span>}
+                  {xp !== null && (
+                    <span title={t("xp.balance_hint")} className="inline-flex items-center gap-1 rounded-full bg-amber-400 px-3 py-1 tabular-nums text-amber-950">
+                      <Star size={13} className="fill-current" /> {xp.toLocaleString("vi-VN")} XP
+                    </span>
+                  )}
+                </div>
+              </div>
+              {teacher && topTab === "bib" && (
+                <button type="button" onClick={() => { setDraft(blank()); setView({ page: "builder" }); }}
+                  className="inline-flex cursor-pointer items-center gap-2 rounded-2xl border-0 bg-white px-5 py-3 font-sans text-sm font-extrabold text-primary shadow-lg">
+                  <Plus size={16} /> {tr("Bài tập mới", "Nouvel exercice", "New exercise")}
+                </button>
+              )}
+            </div>
+          </header>
+        );
+      })()}
       {teacher && (
         <div role="tablist" className="mb-5 flex gap-6 border-0 border-b border-solid border-line">
           {[["bib", BookOpen, t("suivi.tab_library")], ["suivi", Users, t("suivi.tab_tracking")]].map(([k, Icon, l]) => (
@@ -897,12 +925,22 @@ ${r.error?.message ?? ""}`); return; }
           const pct = list.length ? Math.round((doneCount / list.length) * 100) : 0;
           return (
             <button key={cat.skill} type="button"
-              onClick={() => setView(cat.skill === "__autres__" ? { page: "autres" } : { page: "category", cat: cat.skill })}
-              style={{ animationDelay: `${i * 40}ms` }}
-              className="mcf-card group relative flex cursor-pointer flex-col rounded-3xl border border-solid border-line bg-surface p-6 text-left font-sans shadow-sm transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-md motion-reduce:transition-none motion-reduce:hover:translate-y-0 dark:shadow-2xl dark:hover:shadow-blue-900/20">
-              <span className="mb-4 grid h-12 w-12 place-items-center rounded-full text-white shadow-md transition-transform duration-300 group-hover:scale-110" style={{ background: cat.tuoi || cat.color }}>
-                <cat.Icon size={22} />
+              onClick={() => { phat("bam"); setView(cat.skill === "__autres__" ? { page: "autres" } : { page: "category", cat: cat.skill }); }}
+              style={{ animationDelay: `${i * 60}ms` }}
+              className="mcf-cau-vao group relative flex cursor-pointer flex-col overflow-hidden rounded-3xl border border-solid border-line bg-surface p-0 text-left font-sans shadow-sm transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-[0_18px_40px_rgba(0,0,0,0.1)] motion-reduce:transition-none motion-reduce:hover:translate-y-0">
+              <span className="relative flex h-24 items-center justify-between overflow-hidden px-6" style={{ background: cat.tuoi || cat.color }}>
+                <span aria-hidden className="absolute -right-8 -top-10 h-32 w-32 rounded-full bg-white/15 transition-transform duration-500 group-hover:scale-125" />
+                <span className="relative grid h-12 w-12 place-items-center rounded-2xl bg-white/25 text-white shadow-md backdrop-blur transition-transform duration-300 group-hover:rotate-[-6deg] group-hover:scale-110">
+                  <cat.Icon size={24} />
+                </span>
+                {!teacher && list.length > 0 && (
+                  <span className="relative grid h-14 w-14 place-items-center rounded-full text-xs font-extrabold tabular-nums text-white"
+                    style={{ background: `conic-gradient(rgba(255,255,255,0.95) ${pct * 3.6}deg, rgba(255,255,255,0.25) 0)` }}>
+                    <span className="grid h-11 w-11 place-items-center rounded-full" style={{ background: cat.color }}>{pct}%</span>
+                  </span>
+                )}
               </span>
+              <span className="flex flex-1 flex-col p-6 pt-5">
               <span className="flex flex-wrap items-center gap-2">
                 <span className="text-lg font-bold text-ink">{t(`skill.${cat.key}`)}</span>
                 <span className="rounded-full bg-surface2 px-2.5 py-0.5 text-xs font-medium text-soft">
@@ -931,6 +969,7 @@ ${r.error?.message ?? ""}`); return; }
                 <span className="grid h-8 w-8 place-items-center rounded-full border border-solid border-line-strong text-soft transition-colors duration-300 group-hover:border-primary group-hover:text-primary">
                   <Play size={13} className="ml-0.5" />
                 </span>
+              </span>
               </span>
             </button>
           );
