@@ -86,6 +86,24 @@ function KhungTaoBo({ onXong, onHuy }) {
   );
 }
 
+/* Dạng của thẻ (129): Thách đấu chỉ lấy phương án CÙNG dạng. */
+const DANG_THE = () => [
+  ["", tr("Dạng: chưa chọn", "Type : non défini", "Type: not set")],
+  ["nhom_tu", tr("Từ, cụm danh từ", "Mot, groupe nominal", "Word, noun phrase")],
+  ["dong_tu", tr("Động từ", "Verbe", "Verb")],
+  ["tu_noi", tr("Từ nối, trạng từ", "Connecteur, adverbe", "Connector, adverb")],
+  ["mo_dau", tr("Cụm mở đầu câu", "Début de phrase", "Sentence starter")],
+  ["cau", tr("Câu hoàn chỉnh", "Phrase complète", "Full sentence")],
+  ["so", tr("Con số, giờ, ngày", "Nombre, heure, date", "Number, time, date")],
+];
+function ChonDang({ value, onChange }) {
+  return (
+    <select value={value || ""} onChange={(e) => onChange(e.target.value)} className={o} aria-label={tr("Dạng thẻ", "Type de carte", "Card type")}>
+      {DANG_THE().map(([v, n]) => <option key={v} value={v}>{n}</option>)}
+    </select>
+  );
+}
+
 /* ─────────────── Trả phí + cấp quyền (128) ───────────────
    Giống thư viện bài tập: bộ trả phí thì học sinh thấy bộ nhưng không mở được
    thẻ, trừ khi là VIP hoặc được giáo viên cấp quyền ở đây. */
@@ -191,6 +209,7 @@ function OThe({ t, so, onDoi, onLoi }) {
         <input value={b.viDu ?? ""} onChange={(e) => setB({ ...b, viDu: e.target.value })} className={o} placeholder={tr("Câu ví dụ (tuỳ chọn)", "Phrase d'exemple (facultatif)", "Example sentence (optional)")} />
         <input value={Array.isArray(b.nhieu) ? b.nhieu.join(" | ") : (b.nhieu ?? "")} onChange={(e) => setB({ ...b, nhieu: e.target.value })} className={o}
           placeholder={tr("3 nghĩa sai cho Thách đấu: a | b | c", "3 mauvais sens pour les défis : a | b | c", "3 wrong meanings for duels: a | b | c")} />
+        <ChonDang value={b.loai} onChange={(v) => setB({ ...b, loai: v })} />
         <div className="flex justify-end gap-2">
           <button type="button" onClick={() => { setB(t); setSua(false); }} className="grid h-8 w-8 cursor-pointer place-items-center rounded-full border-0 bg-surface2 text-soft" aria-label={tr("Huỷ", "Annuler", "Cancel")}><X size={14} /></button>
           <button type="button" onClick={luu} disabled={dang} className="grid h-8 w-8 cursor-pointer place-items-center rounded-full border-0 bg-primary text-white" aria-label={tr("Lưu", "Enregistrer", "Save")}><Check size={14} /></button>
@@ -224,7 +243,7 @@ function SoanMotBo({ bo: boGoc, onQuay, onDoi }) {
   const [bo, setBo] = useState(boGoc);
   const [ds, setDs] = useState(undefined);
   const [che, setChe] = useState("mot");          // mot | lo
-  const [moi, setMoi] = useState({ matTruoc: "", matSau: "", phienAm: "", viDu: "", nhieu: "" });
+  const [moi, setMoi] = useState({ matTruoc: "", matSau: "", phienAm: "", viDu: "", nhieu: "", loai: "" });
   const [van, setVan] = useState("");
   const [hong, setHong] = useState([]);
   const [dangLuu, setDangLuu] = useState(false);
@@ -245,7 +264,7 @@ function SoanMotBo({ bo: boGoc, onQuay, onDoi }) {
     const kq = await themThe(bo.id, moi, ds?.length ?? 0);
     setDangLuu(false);
     if (!kq.ok) { setLoi(kq.loi); return; }
-    setMoi({ matTruoc: "", matSau: "", phienAm: "", viDu: "", nhieu: "" });
+    setMoi((m) => ({ matTruoc: "", matSau: "", phienAm: "", viDu: "", nhieu: "", loai: m.loai }));
     oDau.current?.focus();
     await tai(); onDoi(); bao(tr("Đã thêm 1 thẻ", "1 carte ajoutée", "1 card added"));
   };
@@ -347,6 +366,8 @@ function SoanMotBo({ bo: boGoc, onQuay, onDoi }) {
                 <input value={moi.viDu} onChange={(e) => setMoi({ ...moi, viDu: e.target.value })} className={o} /></label>
               <label className="grid gap-1 text-xs font-bold text-soft">{tr("Phương án sai cho Thách đấu", "Mauvaises réponses (défis)", "Wrong options (duels)")} <span className="font-normal">{tr("(3 nghĩa sai, cách nhau bằng |; bỏ trống thì máy tự chọn)", "(3 mauvais sens séparés par | ; vide = choix automatique)", "(3 wrong meanings separated by |; empty = automatic)")}</span>
                 <input value={moi.nhieu} onChange={(e) => setMoi({ ...moi, nhieu: e.target.value })} className={o} placeholder="Tàu rời ga | Tàu bị huỷ | Tàu đến muộn" /></label>
+              <label className="grid gap-1 text-xs font-bold text-soft">{tr("Dạng thẻ", "Type de carte", "Card type")} <span className="font-normal">{tr("(Thách đấu chỉ trộn phương án cùng dạng; không viết giải thích trong ngoặc ở phương án)", "(les défis ne mélangent que des cartes du même type)", "(duels only mix cards of the same type)")}</span>
+                <ChonDang value={moi.loai} onChange={(v) => setMoi({ ...moi, loai: v })} /></label>
               <button type="submit" disabled={dangLuu} className={`${nutChinh} mt-1 justify-center`}><Plus size={14} /> {dangLuu ? tr("Đang thêm…", "Ajout…", "Adding…") : tr("Thêm thẻ", "Ajouter la carte", "Add card")}</button>
               <p className="m-0 text-[11px] text-soft">{tr("Nhấn Enter để thêm nhanh; con trỏ quay về ô đầu.", "Entrée pour ajouter vite ; le curseur revient au premier champ.", "Press Enter to add quickly; the cursor returns to the first field.")}</p>
             </form>

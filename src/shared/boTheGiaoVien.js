@@ -81,13 +81,13 @@ export async function xoaBo(id) {
 export async function docTheDeSoan(boId) {
   const { data, error } = await supabase
     .from("the_bo_the")
-    .select("id, mat_truoc, mat_sau, phien_am, vi_du, nhieu, ord")
+    .select("id, mat_truoc, mat_sau, phien_am, vi_du, nhieu, loai, ord")
     .eq("bo_id", boId).order("ord");
 
   if (error) return null;
   return (data ?? []).map((t) => ({
     id: t.id, matTruoc: t.mat_truoc, matSau: t.mat_sau,
-    phienAm: t.phien_am, viDu: t.vi_du, nhieu: t.nhieu ?? [], ord: t.ord,
+    phienAm: t.phien_am, viDu: t.vi_du, nhieu: t.nhieu ?? [], loai: t.loai ?? "", ord: t.ord,
   }));
 }
 
@@ -103,6 +103,7 @@ export async function themThe(boId, the, ord) {
     phien_am: the.phienAm?.trim() || null,
     vi_du: the.viDu?.trim() || null,
     nhieu: tachNhieu(the.nhieu),
+    loai: the.loai || null,
     ord: ord ?? 0,
   });
   return error ? { ok: false, loi: dichLoi(error) } : { ok: true };
@@ -116,6 +117,7 @@ export async function suaThe(id, the) {
   if (the.phienAm !== undefined) co.phien_am = the.phienAm?.trim() || null;
   if (the.viDu !== undefined) co.vi_du = the.viDu?.trim() || null;
   if (the.nhieu !== undefined) co.nhieu = tachNhieu(the.nhieu);
+  if (the.loai !== undefined) co.loai = the.loai || null;
   const { error } = await supabase.from("the_bo_the").update(co).eq("id", id);
   return error ? { ok: false, loi: dichLoi(error) } : { ok: true };
 }
