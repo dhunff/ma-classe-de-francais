@@ -14,6 +14,7 @@ import { useNhipTim } from './shared/hienDien.js'
 function NhipTim({ bat }) { useNhipTim(bat); return null }
 import ExamComposer from './screens/teacher/ExamComposer.jsx'
 import BoTheApp from './screens/student/BoTheApp.jsx'
+import NgheNoi from './screens/student/NgheNoi.jsx'
 import LoTrinh from './screens/student/LoTrinh.jsx'
 import ThachDau from './screens/student/ThachDau.jsx'
 import DatNeo from './screens/teacher/DatNeo.jsx'
@@ -327,6 +328,7 @@ function AppInner() {
                   một route: đổi route thì React Router tháo màn cũ ngay khi
                   màn mới gắn vào, không còn gì để trượt. Xem BoTheApp.jsx. */}
               <Route path="/etudiant/bo-the" element={<BoTheApp name={session?.name} />} />
+              <Route path="/etudiant/nghe-noi" element={<NgheNoi />} />
 
 
 

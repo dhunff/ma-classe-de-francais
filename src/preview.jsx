@@ -119,7 +119,7 @@ const VI = {
      chính tên khoá, và thanh bên hiện "nav.todo" thay vì "Cần làm" — trang
      xem thử khi đó nói dối về diện mạo thật. */
   nav: { dashboard: "Trang chủ", exercises: "Thư viện bài tập", students: "Theo dõi học sinh",
-    practice: "Luyện tập", calendar: "Lịch", settings: "Cài đặt",
+    practice: "Luyện tập", speak: "Nghe & Nói", calendar: "Lịch", settings: "Cài đặt",
     todo: "Cần làm", done: "Đã nộp", assigned: "Bài tập được giao", account: "Tài khoản", stats: "Thống kê", exam: "Thi thử", exams: "Đề thi thử", results: "Kết quả thi", decks: "Flashcard",
     explanations: "Câu cần lời giải",
     anchors: "Neo ngữ liệu",

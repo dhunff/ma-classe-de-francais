@@ -1,5 +1,5 @@
 import {
-  LayoutDashboard, BookOpen, Users, BarChart3, Dumbbell,
+  LayoutDashboard, BookOpen, Users, BarChart3, Dumbbell, AudioLines,
   ClipboardList, CheckSquare, CalendarDays, Settings, Lightbulb, Timer, Trophy, Layers, Lightbulb as Bulb, Anchor, Inbox,
   Map, BookA, Swords, FileCheck2, Megaphone } from "lucide-react";
 
@@ -73,6 +73,8 @@ export const STUDENT_NAV = [
   /* « Từ điển » GỠ 08/10 theo chủ dự án: nó chỉ tra lại đúng các thẻ Flashcard
      công khai (~130 mục), trùng với mục Flashcard. Lấy lại TuDien.jsx từ git. */
   { to: "/etudiant/entrainement", labelKey: "nav.practice", Icon: Dumbbell, view: "practice" },
+  /* « Nghe & Nói » (10/10): chép chính tả + luyện phát âm, route riêng. */
+  { to: "/etudiant/nghe-noi", labelKey: "nav.speak", Icon: AudioLines },
   /* Không có `view`: là route riêng trong App.jsx, giống « Sổ tay » bên giáo viên.
      Ban đầu tôi cố ý KHÔNG đưa vào đây với lý do "vào là bắt đầu tính giờ, không
      phải mục menu thường". Sai — kết quả là một màn hình không ai tới được, tức
