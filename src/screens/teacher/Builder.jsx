@@ -312,7 +312,7 @@ function Builder({ draft, setDraft, publish, cancel, accounts, classes = [] }) {
             </div>
             <div>
               <div style={S.label}>{t("bd.tips_label")}</div>
-              <textarea style={{ ...S.input, marginTop: 6, minHeight: 80, resize: "vertical" }}
+              <textarea data-khong-bang-dau style={{ ...S.input, marginTop: 6, minHeight: 80, resize: "vertical" }}
                 value={draft.explications || ""} placeholder={"Rappel : « grâce à » = cause positive ; « à cause de » = cause négative\u2026"}
                 onChange={(e) => setDraft({ ...draft, explications: e.target.value })} />
             </div>
@@ -568,7 +568,7 @@ function Builder({ draft, setDraft, publish, cancel, accounts, classes = [] }) {
           {autoQ(q) && (
             <div style={{ marginTop: 10 }}>
               <div style={S.label}>{t("bd.explain_label")}</div>
-              <textarea
+              <textarea data-khong-bang-dau
                 style={{ ...S.input, marginTop: 6, minHeight: 60, resize: "vertical", fontFamily: "inherit" }}
                 value={q.explanation || ""}
                 placeholder="ex. Après « bien que », il faut le subjonctif."
