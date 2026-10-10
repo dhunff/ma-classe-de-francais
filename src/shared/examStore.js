@@ -99,7 +99,9 @@ export async function loadExam(examId) {
   const missing = [];
   for (const s of secs) {
     const bai = baiTheoId[s.exercise_id];
-    if (bai && (bai.questions?.length ?? 0) > 0) sections.push({ ...s, exercise: bai });
+    /* PO không có câu hỏi: đề nằm ở consigne, màn thi dựng bộ ghi âm theo MÃ
+     * phần. Đòi questions > 0 ở đây làm PO của MỌI đề bị coi là « thiếu bài ». */
+    if (bai && (s.code === "PO" || (bai.questions?.length ?? 0) > 0)) sections.push({ ...s, exercise: bai });
     else missing.push(s);
   }
   return { ...exam, sections, missing };
