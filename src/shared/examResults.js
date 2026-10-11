@@ -39,7 +39,7 @@ export async function loadMyExamResults() {
   const examIds = [...new Set(rows.map((r) => r.exam_id).filter(Boolean))];
   const attemptIds = rows.map((r) => r.id);
 
-  const [deRes, secRes, ansRes] = await Promise.all([
+  const [deRes, secRes, ansRes, poRes] = await Promise.all([
     examIds.length
       /* Đọc `grille` bằng đường lùi được: migration 035 chạy tay ở SQL Editor,
          nên có quãng mà mã đã deploy còn cột thì chưa. PostgREST trả 42703 và
@@ -67,7 +67,12 @@ export async function loadMyExamResults() {
       .select("id, attempt_id, raw, score, max_score, feedback, graded_at, self_score, self_breakdown, questions!inner (id, type, prompt)")
       .in("attempt_id", attemptIds)
       .eq("questions.type", "open"),
+    /* 12/10: bản chấm phần nói (migration 135). Bảng có thể chưa có ở môi
+       trường cũ: lỗi thì coi như chưa ai tự chấm, đừng làm hỏng cả trang. */
+    supabase.from("po_cham").select("attempt_id, cap, tu_cham, diem, ai_goi_y").in("attempt_id", attemptIds)
+      .then((r) => (r.error ? { data: [] } : r)),
   ]);
+  const poTheoAttempt = Object.fromEntries((poRes.data ?? []).map((p) => [p.attempt_id, p]));
 
   const de = Object.fromEntries((deRes.data ?? []).map((e) => [e.id, e]));
   const secs = secRes.data ?? [];
@@ -153,7 +158,11 @@ export async function loadMyExamResults() {
          · người đã chấm (có answers.score) → dùng thẳng điểm đó
          · chưa ai chấm                     → null, tức "chờ chấm"        */
       let score = null;
-      if (tong > 0) {
+      /* Phần nói: điểm là bản TỰ CHẤM (máy chủ tự cộng theo grille). */
+      const poDong = code === "PO" ? rs.map((r) => poTheoAttempt[r.id]).find(Boolean) : null;
+      if (poDong) {
+        score = poDong.diem == null ? null : Number(poDong.diem);
+      } else if (tong > 0) {
         score = diemMay;
       } else if (peList.length) {
         const t = peList.reduce((n, a) => n + Number(a.score), 0);
@@ -180,7 +189,9 @@ export async function loadMyExamResults() {
         })),
         /* Bài viết đã nộp nhưng CHƯA chấm — phân biệt với "phần này không có
            bài viết nào". Hai thứ trông giống nhau khi score = null. */
-        choCham: tong === 0 && !peList.length,
+        choCham: tong === 0 && !peList.length && !poDong,
+        /* Phần nói chờ / đã tự chấm: màn kết quả mở màn tự chấm từ đây. */
+        po: poDong ? { attemptId: poDong.attempt_id, cap: poDong.cap, tuCham: poDong.tu_cham, aiGoiY: poDong.ai_goi_y, examId } : null,
         /* Trình độ của đề — màn tự chấm cần nó để chọn đúng grille. */
         level: thongTinDe?.level ?? "B1",
         /* Thang do giáo viên soạn, hoặc null = dùng thang chuẩn theo level. */

@@ -1273,6 +1273,15 @@ Xem `docs/roadmap-delf.md` — có nhật ký quyết định ở §5.
 - **Thách đấu theo CHỦ ĐỀ — 10/10** (migration 127). Bảng `chu_de_the` (7 chủ đề, nhóm tu_vung/ngu_phap), `the_bo.chu_de` (giáo viên chọn ở màn soạn bộ). `tao_thach_dau_chu_de` gộp thẻ mọi bộ công khai cùng chủ đề, bỏ trùng mặt trước, rút 10 câu; `thach_dau.bo_id` giờ có thể NULL (trận cũ vẫn theo bộ). `lay_de`/`nop` không đổi.
 - **Phương án Thách đấu — 10/10** (migration 128/129). `the_bo_the.loai` (so|cau|nhom_tu|tu_noi|mo_dau|dong_tu, giáo viên chọn ở màn soạn thẻ), `the_bo_the.nhieu` (3 nghĩa sai tự soạn). Nhiễu CÙNG dạng, ưu tiên cùng chủ đề; thẻ không đủ 3 nhiễu cùng dạng thì không vào đề. `sach_pa()` bỏ « (…) » khi HIỆN câu hỏi/phương án, mặt thẻ gốc giữ nguyên. Bộ trả phí (`tra_phi`, `the_bo_quyen`, `co_quyen_bo`) không vào Thách đấu.
 - **Nghe & Nói — 10/10** (migration 131, `/etudiant/nghe-noi`). Kho `cau_luyen` (200 chép chính tả + 200 phát âm, soạn ở `scripts/nghe-noi/cau.mjs` + `cau2.mjs`, nạp + tạo audio giọng tổng hợp bằng `nap.mjs`). So từng từ ở `supabase/functions/_shared/soCau.js` (client import thẳng). Phát âm: Edge Function `cham-phat-am` chép lời bằng whisper KHÔNG gửi câu gốc làm prompt, so theo âm (bỏ đuôi câm), 20 lượt/ngày; bản ghi âm không lưu; `x-admin-token` = chế độ thử không ghi.
+- **Phần nói ĐƯỢC CHẤM — 12/10** (migration 135, Edge Function `cham-po`, theo chủ dự án).
+  Thay quyết định « PO không chấm » ở trên. Học sinh TỰ CHẤM theo grille PO chính thức
+  (A1–B2, chép từ tờ grille giám khảo chủ dự án cung cấp, ở
+  `supabase/functions/_shared/grillePO.js` + bản SQL `_thang_po()` — hai bản phải khớp);
+  AI gợi ý từng tiêu chí, phải bấm « dùng số này ». Ghi chỉ qua `ket_thuc_po` (đóng
+  attempt PO) và `luu_po_tu_cham` (máy chủ tự cộng, từ chối giá trị không có trên grille).
+  Thi PO → /100; bỏ PO ở màn chờ → /75. Ngưỡng tổng TỈ LỆ (`nguongTong`): 50/100 hoặc
+  37,5/75. `khongCham` giờ nhận theo ĐIỂM của dòng: PO 0 điểm (đề C1, chưa có grille)
+  vẫn không chấm.
 - `s:mcf-submissions` vẫn giữ làm sao lưu, chưa xoá.
 
 

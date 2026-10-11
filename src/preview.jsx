@@ -76,6 +76,7 @@ const GOI_Y_AI_THU = {
     + "câu trên 40 từ thì người đọc theo được mạch mà không mất gì.",
 };
 import { PhanThi } from "./screens/exam/ExamMode.jsx";
+import POSelfEvaluation from "./screens/student/POSelfEvaluation.jsx";
 import NhanXetAI from "./screens/student/NhanXetAI.jsx";
 import { grilleToRubric } from "./shared/grilleRubric.js";
 import GrilleEditor from "./screens/teacher/GrilleEditor.jsx";
@@ -674,6 +675,7 @@ function Preview() {
     ["/etudiant/danh-tinh", "Danh tính (avatar + @username)"],
     ["/etudiant/thong-bao", "Bảng thông báo"],
     ["/etudiant/auto-evaluation", "Tự chấm Production écrite"],
+    ["/etudiant/tu-cham-noi", "Tự chấm Production orale"],
     ["/etudiant/phan-thi", "Một phần thi thử"],
     ["/etudiant/nhan-xet-ai", "Phiếu nhận xét AI"],
     ["/etudiant/the-lat", "Thẻ ghi nhớ — lật 3D"],
@@ -810,6 +812,7 @@ function Preview() {
           <Route path="/gioi-thieu/doi-ngu" element={<><Controls /><DoiNguThu /></>} />
           <Route path="/etudiant/danh-tinh" element={<><Controls /><DanhTinhThu /></>} />
           <Route path="/etudiant/thong-bao" element={<><Controls /><ThongBaoThu /></>} />
+          <Route path="/etudiant/tu-cham-noi" element={<><Controls /><div className="mx-auto max-w-6xl py-6"><POSelfEvaluation po={{ attemptId: "xem-thu", cap: "B2", examId: "xem-thu", tuCham: { monologue: 3 }, aiGoiY: { diem: { monologue: 3, interaction: 1, lexique: 3, morpho: 3, phono: 3 }, ly_do: { interaction: "Bản ghi chỉ có phần độc thoại, chưa có phần tranh luận." }, tong_quat: "Bài độc thoại có nêu vấn đề và hai luận điểm rõ, nhưng thiếu ví dụ cụ thể.", chep_loi: "Aujourd’hui, de plus en plus de jeunes reviennent à la photographie argentique…" } }} exerciseId="xem-thu" consigne="<p>Vous dégagez le problème soulevé par ce document…</p>" /></div></>} />
           <Route path="/etudiant/auto-evaluation" element={
             <><Controls /><PESelfEvaluation goiYThu={GOI_Y_AI_THU} /></>
           } />

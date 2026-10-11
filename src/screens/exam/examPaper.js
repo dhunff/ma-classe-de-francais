@@ -26,25 +26,25 @@ export const EXAM_STRUCTURE = {
     { code: "CO", skill: "Écoute",            label: "Compréhension de l'oral",  minutes: 20, points: 25 },
     { code: "CE", skill: "Lecture",           label: "Compréhension des écrits", minutes: 30, points: 25 },
     { code: "PE", skill: "Production écrite", label: "Production écrite",        minutes: 30, points: 25 },
-    { code: "PO", skill: "Production orale",  label: "Production orale",         minutes: 10, points: 0, khongCham: true },
+    { code: "PO", skill: "Production orale",  label: "Production orale",         minutes: 10, points: 25 },
   ],
   A2: [
     { code: "CO", skill: "Écoute",            label: "Compréhension de l'oral",  minutes: 25, points: 25 },
     { code: "CE", skill: "Lecture",           label: "Compréhension des écrits", minutes: 30, points: 25 },
     { code: "PE", skill: "Production écrite", label: "Production écrite",        minutes: 45, points: 25 },
-    { code: "PO", skill: "Production orale",  label: "Production orale",         minutes: 12, points: 0, khongCham: true },
+    { code: "PO", skill: "Production orale",  label: "Production orale",         minutes: 12, points: 25 },
   ],
   B1: [
     { code: "CO", skill: "Écoute",            label: "Compréhension de l'oral",  minutes: 25, points: 25 },
     { code: "CE", skill: "Lecture",           label: "Compréhension des écrits", minutes: 45, points: 25 },
     { code: "PE", skill: "Production écrite", label: "Production écrite",        minutes: 45, points: 25 },
-    { code: "PO", skill: "Production orale",  label: "Production orale",         minutes: 15, points: 0, khongCham: true },
+    { code: "PO", skill: "Production orale",  label: "Production orale",         minutes: 15, points: 25 },
   ],
   B2: [
     { code: "CO", skill: "Écoute",            label: "Compréhension de l'oral",  minutes: 30, points: 25 },
     { code: "CE", skill: "Lecture",           label: "Compréhension des écrits", minutes: 60, points: 25 },
     { code: "PE", skill: "Production écrite", label: "Production écrite",        minutes: 60, points: 25 },
-    { code: "PO", skill: "Production orale",  label: "Production orale",         minutes: 20, points: 0, khongCham: true },
+    { code: "PO", skill: "Production orale",  label: "Production orale",         minutes: 20, points: 25 },
   ],
 };
 
@@ -81,8 +81,16 @@ export const NHAN_KY_NANG = Object.fromEntries(
  *
  * Hệ quả có chủ ý: tổng vẫn là /75, KHÔNG phải /100. Thang không đổi, nên
  * lượt thi cũ và mới vẫn so sánh được với nhau. */
+/* 12/10: PO ĐƯỢC CHẤM (tự chấm theo grille PO chính thức, AI gợi ý; migration
+ * 135). Chỉ còn « không chấm » khi phần đó mang 0 điểm, tức đề C1/C2 chưa có
+ * grille PO: exam_sections.points = 0. Nhận theo ĐIỂM của dòng, không theo mã. */
 export const MA_KHONG_CHAM = new Set(["PO"]);
-export const khongCham = (s) => !!s?.khongCham || MA_KHONG_CHAM.has(s?.code);
+export const khongCham = (s) => !!s?.khongCham || (MA_KHONG_CHAM.has(s?.code) && !(Number(s?.points) > 0));
+
+/* Ngưỡng tổng TỈ LỆ theo số phần thật sự thi (12/10): DELF đòi 50/100. Thi
+ * cả PO → 50/100; bỏ PO ở màn chờ → 37,5/75. Giữ cứng 50 trên /75 là bắt đạt
+ * 67 %, khắt khe hơn kỳ thi thật. */
+export const nguongTong = (toiDa) => (toiDa > 0 ? (toiDa * NGUONG_TONG) / 100 : NGUONG_TONG);
 
 export const NGUONG_TONG = 50;      // /100 toàn bài
 export const NGUONG_PHAN = 5;       // /25 mỗi phần — điều kiện dễ trượt hơn
@@ -238,10 +246,12 @@ export function verdict(sections) {
   /* Tối đa còn có thể đạt được, để nói "chắc chắn trượt" khi đúng là vậy. */
   const conLai = chuaCham.reduce((n, s) => n + (s.points ?? 25), 0);
 
+  const toiDa = tinhDiem.reduce((n, s) => n + (s.points ?? 25), 0);
+  const nguong = nguongTong(toiDa);
   let passed = null;
   if (!chuaCham.length) {
-    passed = tong >= NGUONG_TONG && phanYeu.length === 0;
-  } else if (phanYeu.length > 0 || tong + conLai < NGUONG_TONG) {
+    passed = tong >= nguong && phanYeu.length === 0;
+  } else if (phanYeu.length > 0 || tong + conLai < nguong) {
     /* Đã chắc chắn trượt: hoặc có phần dưới ngưỡng, hoặc dù được điểm tối đa
        những phần còn lại vẫn không đủ 50. Kết luận được mà không cần đoán. */
     passed = false;
@@ -250,6 +260,8 @@ export function verdict(sections) {
   return {
     total: tong,
     maxScored: daCham.reduce((n, s) => n + (s.points ?? 25), 0),
+    toiDa,
+    nguong,
     pending: chuaCham,
     weakSections: phanYeu,
     passed,

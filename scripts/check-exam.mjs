@@ -48,7 +48,12 @@ t("phần yếu được liệt kê ra",
   verdict([s(24), s(23), s(4)]).weakSections.length, 1);
 t("đúng 50 là đạt (ngưỡng bao gồm)",
   verdict([s(20), s(20), s(10)]).passed, true);
-t("49 là trượt", verdict([s(20), s(20), s(9)]).passed, false);
+/* 12/10: ngưỡng tổng TỈ LỆ — /75 (bỏ PO) cần 37,5; /100 (có PO) cần 50. */
+t("bỏ PO: 36/75 là trượt", verdict([s(12), s(12), s(12)]).passed, false);
+t("bỏ PO: 38/75 là đạt", verdict([s(13), s(13), s(12)]).passed, true);
+t("có PO: 49/100 là trượt", verdict([s(13), s(12), s(12), s(12)]).passed, false);
+t("có PO: 50/100 là đạt", verdict([s(13), s(13), s(12), s(12)]).passed, true);
+t("ngưỡng của /75 là 37,5", verdict([s(13), s(13), s(12)]).nguong, 37.5);
 t("đúng ngưỡng phần 5/25 vẫn đạt",
   verdict([s(25), s(25), s(NGUONG_PHAN)]).passed, true);
 
@@ -60,8 +65,8 @@ t("tổng chỉ cộng phần đã chấm", treo.total, 38);
 
 t("chắc chắn trượt dù chưa chấm hết: có phần dưới ngưỡng",
   verdict([s(25), s(3), { score: null, points: 25 }]).passed, false);
-t("chắc chắn trượt dù chưa chấm hết: tối đa vẫn không đủ 50",
-  verdict([s(10), s(10), { score: null, points: 25 }]).passed, false);
+t("chắc chắn trượt dù chưa chấm hết: tối đa vẫn không đủ ngưỡng",
+  verdict([s(5), s(5), { score: null, points: 25 }]).passed, false);
 t("còn cứu được thì vẫn để ngỏ",
   verdict([s(13), s(13), { score: null, points: 25 }]).passed, null);
 
@@ -82,27 +87,20 @@ t("còn cứu được thì vẫn để ngỏ",
  * nhóm chờ chấm và kết luận đạt/trượt treo vĩnh viễn ở "chưa kết luận được". */
 t("PO có mặt ở cả bốn trình độ",
   ["A1", "A2", "B1", "B2"].every((lv) => EXAM_STRUCTURE[lv].some((x) => x.code === "PO")), true);
-t("PO không mang điểm",
-  ["A1", "A2", "B1", "B2"].every((lv) =>
-    EXAM_STRUCTURE[lv].find((x) => x.code === "PO").points === 0), true);
-t("PO gắn cờ khongCham",
-  ["A1", "A2", "B1", "B2"].every((lv) =>
-    EXAM_STRUCTURE[lv].find((x) => x.code === "PO").khongCham === true), true);
-
-/* verdict phải LOẠI HẲN phần không chấm, không xếp vào "chờ chấm". */
-t("verdict bỏ qua PO, vẫn kết luận được",
-  verdict([s(20), s(20), s(20), { code: "PO", score: null, points: 0, khongCham: true }]).passed,
-  true);
-t("PO không làm phồng mẫu số",
-  verdict([s(20), s(20), s(20), { code: "PO", score: null, points: 0, khongCham: true }]).maxScored,
-  75);
-t("PO không nằm trong nhóm chờ chấm",
-  verdict([s(20), s(20), s(20), { code: "PO", score: null, points: 0, khongCham: true }]).pending.length,
-  0);
-/* Nhận theo MÃ kể cả khi dòng không mang cờ — dòng `exam_sections` đọc từ
-   database không có `khongCham`. */
-t("nhận PO theo mã, không cần cờ",
-  verdict([s(20), s(20), s(20), { code: "PO", score: null, points: 25 }]).passed, true);
+/* 12/10: PO ĐƯỢC CHẤM (tự chấm theo grille chính thức, migration 135). */
+t("PO mang 25 điểm ở A1–B2",
+  ["A1", "A2", "B1", "B2"].every((lv) => EXAM_STRUCTURE[lv].find((x) => x.code === "PO").points === 25), true);
+t("PO chưa tự chấm → chờ chấm, chưa kết luận",
+  verdict([s(20), s(20), s(20), { code: "PO", score: null, points: 25 }]).passed, null);
+t("PO chưa tự chấm nằm trong nhóm chờ",
+  verdict([s(20), s(20), s(20), { code: "PO", score: null, points: 25 }]).pending.length, 1);
+t("có PO thì tổng /100",
+  verdict([s(20), s(20), s(20), { code: "PO", score: 15, points: 25 }]).toiDa, 100);
+/* Đề C1 chưa có grille PO: dòng exam_sections PO mang 0 điểm → vẫn không chấm. */
+t("PO 0 điểm (C1) vẫn bị loại khỏi phép tính",
+  verdict([s(20), s(20), s(20), { code: "PO", score: null, points: 0 }]).passed, true);
+t("PO 0 điểm không làm phồng mẫu số",
+  verdict([s(20), s(20), s(20), { code: "PO", score: null, points: 0 }]).toiDa, 75);
 
 /* ── Cả bốn trình độ đều soạn được đề ──
  *
@@ -127,8 +125,8 @@ for (const lv of ["A1", "A2", "B1", "B2"]) {
   t(`${lv}: ba phần chấm điểm đều 25`,
     EXAM_STRUCTURE[lv].filter((x) => x.code !== "PO").every((x) => x.points === 25), true);
   t(`${lv}: thời lượng đều dương`, EXAM_STRUCTURE[lv].every((x) => x.minutes > 0), true);
-  t(`${lv}: tổng điểm chấm được vẫn là 75`,
-    EXAM_STRUCTURE[lv].reduce((n, x) => n + x.points, 0), 75);
+  t(`${lv}: tổng điểm cả bốn phần là 100`,
+    EXAM_STRUCTURE[lv].reduce((n, x) => n + x.points, 0), 100);
   /* Kỹ năng phải khớp HỆT chuỗi trong `exercises.skills`, nếu không bộ lọc của
      trình soạn đề trả về rỗng và giáo viên đọc "Thư viện chưa có bài" trong khi
      thư viện có đủ. */

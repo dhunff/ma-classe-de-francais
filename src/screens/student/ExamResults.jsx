@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { ShieldCheck, Trophy, Clock, MessageSquare, ClipboardCheck, PenLine, ArrowLeft } from "lucide-react";
 import PESelfEvaluation from "./PESelfEvaluation.jsx";
+import POSelfEvaluation from "./POSelfEvaluation.jsx";
+import { Mic } from "lucide-react";
 import { loadMyExamResults } from "../../shared/examResults.js";
 import { NGUONG_PHAN, NGUONG_TONG } from "../exam/examPaper.js";
 import { chamChinhThuc } from "../../shared/chamPeAI.js";
@@ -34,13 +36,22 @@ const ngay = (iso) => {
 };
 
 function Phan({ s, onTuCham }) {
-  const choCham = s.score == null ? (s.choCham ? (s.aiLoi === "HET_LUOT" ? tr("Hết 3 lượt AI chấm hôm nay · mai mở lại trang (VIP không giới hạn)", "Plus de correction IA aujourd'hui (3 par jour) · revenez demain (VIP illimité)", "No AI grading left today (3 per day) · come back tomorrow (VIP unlimited)") : s.aiLoi ? tr("AI chưa chấm được, mở lại trang để thử lại", "L'IA n'a pas pu corriger, rouvrez la page pour réessayer", "The AI couldn't grade it, reopen the page to retry") : tr("AI đang chấm…", "Correction IA en cours…", "AI grading…")) : tr("chưa có điểm", "pas encore de note", "no score yet")) : null;
+  const choCham = s.score == null && s.po ? tr("chờ bạn tự chấm", "à auto-évaluer", "awaiting your self-assessment") : s.score == null ? (s.choCham ? (s.aiLoi === "HET_LUOT" ? tr("Hết 3 lượt AI chấm hôm nay · mai mở lại trang (VIP không giới hạn)", "Plus de correction IA aujourd'hui (3 par jour) · revenez demain (VIP illimité)", "No AI grading left today (3 per day) · come back tomorrow (VIP unlimited)") : s.aiLoi ? tr("AI chưa chấm được, mở lại trang để thử lại", "L'IA n'a pas pu corriger, rouvrez la page pour réessayer", "The AI couldn't grade it, reopen the page to retry") : tr("AI đang chấm…", "Correction IA en cours…", "AI grading…")) : tr("chưa có điểm", "pas encore de note", "no score yet")) : null;
   return (
     <li className="list-none">
     <ThanhPhan code={s.code} score={s.score} points={s.points} nguong={s.points ? NGUONG_PHAN : null} choCham={choCham}>
       {/* Nhận xét và điểm từng tiêu chí. Đây là lý do màn hình này tồn tại —
           con số một mình không dạy được gì, "Cohérence 1/3" mới chỉ đúng chỗ
           cần sửa. */}
+      {/* Phần nói (12/10): tự chấm theo grille PO chính thức, AI gợi ý. */}
+      {s.po && (
+        <button type="button" onClick={() => onTuCham({ loai: "po", po: s.po, exerciseId: s.exerciseId, consigne: s.consigne })}
+          className="mt-2 flex w-full cursor-pointer items-center gap-2 rounded-lg border-0 bg-surface px-3 py-2.5 text-left font-sans text-xs font-bold text-ink transition hover:bg-primary-soft">
+          <Mic size={13} className="shrink-0 text-primary" aria-hidden="true" />
+          {s.score != null ? tr("Xem lại / sửa bản tự chấm phần nói", "Revoir mon auto-évaluation orale", "Review my speaking self-assessment") : tr("Tự chấm phần nói (AI gợi ý)", "M'auto-évaluer à l'oral (suggestions IA)", "Self-assess speaking (AI suggestions)")}
+          <span className="ml-auto font-normal text-soft">{s.po.cap} · 25 {tr("điểm", "points", "points")}</span>
+        </button>
+      )}
       {s.pe.map((p, i) => (
         <div key={i} className="mt-2 space-y-2">
           {/* Bản tự chấm — hiện RIÊNG, không cộng vào điểm phần thi.
@@ -202,6 +213,12 @@ export default function ExamResults() {
           {tr("Về kết quả thi", "Retour aux résultats", "Back to results")}
         </button>
 
+        {dangCham.loai === "po" ? (
+          <POSelfEvaluation {...dangCham} onXong={() => {
+            loadMyExamResults().then(({ sittings: s }) => { if (s) setSittings(s); });
+            setDangCham(null);
+          }} />
+        ) : (
         <PESelfEvaluation
           {...dangCham}
           /* Lưu xong thì đọc lại kết quả và quay ra, KHÔNG reload cả trang.
@@ -213,6 +230,7 @@ export default function ExamResults() {
             setDangCham(null);
           }}
         />
+        )}
       </div>
     );
   }
@@ -242,8 +260,8 @@ export default function ExamResults() {
       <p className="m-0 mt-4 flex items-start gap-2 rounded-2xl bg-surface2 p-3 text-xs text-soft">
         <ShieldCheck size={13} className="mt-0.5 shrink-0" />
         <span>
-          {tr("Đạt DELF cần", "Pour réussir le DELF :", "To pass DELF you need")} <strong className="text-ink">≥ {NGUONG_TONG}{tr("/100 toàn bài", "/100 au total", "/100 overall")}</strong> {tr("VÀ", "ET", "AND")}{" "}
-          <strong className="text-ink">≥ {NGUONG_PHAN}{tr("/25 mỗi phần", "/25 par partie", "/25 per part")}</strong>{tr(". Các đề ở đây không có phần thi nói, nên tổng điểm chỉ tính trên những phần đã làm.", ". La production orale n'est pas notée ici : le total ne compte que les parties faites.", ". Speaking isn't scored here, so the total only counts the parts you took.")}
+          {tr("Đạt DELF cần", "Pour réussir le DELF :", "To pass DELF you need")} <strong className="text-ink">≥ 50 %{tr(" tổng điểm", " du total", " of the total")}</strong> {tr("VÀ", "ET", "AND")}{" "}
+          <strong className="text-ink">≥ {NGUONG_PHAN}{tr("/25 mỗi phần", "/25 par partie", "/25 per part")}</strong>{tr(". Thi cả phần nói thì tổng /100 (cần 50); bỏ phần nói thì tổng /75 (cần 37,5). Phần nói bạn tự chấm theo thang DELF chính thức, có AI gợi ý.", ". Avec l'oral, total /100 (50 requis) ; sans l'oral, /75 (37,5 requis). L'oral s'auto-évalue avec la grille officielle, suggestions de l'IA.", ". With speaking the total is /100 (50 needed); without it /75 (37.5 needed). You self-assess speaking with the official grid, with AI suggestions.")}
         </span>
       </p>
 

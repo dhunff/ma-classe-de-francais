@@ -6,7 +6,7 @@ import { BangKetLuan, ThanhPhan, PhaoGiayLon } from "./KetQuaVisual.jsx";
 import { supabase } from "../../storageShim.js";
 import { loadExams, loadExam } from "../../shared/examStore.js";
 import { gradeRemote } from "../../shared/gradeRemote.js";
-import { EXAM_STRUCTURE, sectionScore, verdict, ghiPhan, gomTheoKyNang, NGUONG_PHAN, NGUONG_TONG, khongCham }
+import { EXAM_STRUCTURE, sectionScore, verdict, ghiPhan, gomTheoKyNang, NGUONG_PHAN, khongCham }
   from "./examPaper.js";
 import GhiAmBaiNoi from "./GhiAmBaiNoi.jsx";
 import { GhepCap, DienPhieu, AnhLuaChon } from "../student/dangMoi.jsx";
@@ -276,9 +276,11 @@ function ManCho({ dsDe, chon, paper, onStart, dangTai, lamPhanNoi, setLamPhanNoi
           <input type="checkbox" checked={lamPhanNoi}
             onChange={(e) => setLamPhanNoi(e.target.checked)} className="mt-1" />
           <span>
-            <strong>{tr("Làm cả phần thi nói (PO)", "Faire aussi la production orale (PO)", "Also do the speaking part (PO)")}</strong> {tr("— thêm", "— en plus", "— adds")} {phutPhanNoi} {tr("phút.", "minutes.", "minutes.")}
+            <strong>{tr("Làm cả phần thi nói (PO)", "Faire aussi la production orale (PO)", "Also do the speaking part (PO)")}</strong> {tr(": thêm", ": en plus", ": adds")} {phutPhanNoi} {tr("phút.", "minutes.", "minutes.")}
             <span className="mt-1 block text-xs text-soft">
-              {tr("Phần này không được chấm điểm: bạn ghi âm để tự nghe lại. Bỏ chọn thì buổi thi chỉ còn ba phần, và tổng điểm không đổi.", "Cette partie n'est pas notée : vous vous enregistrez pour vous réécouter. Sans elle, l'examen a trois parties et le total ne change pas.", "This part isn't scored: you record yourself to listen back. Without it the exam has three parts and the total doesn't change.")}
+              {paper?.sections?.some((x) => x.code === "PO" && Number(x.points) > 0)
+                ? tr("Bạn ghi âm bài nói, sau đó tự chấm theo thang DELF chính thức (AI gợi ý từng tiêu chí) ở trang « Kết quả thi ». Làm phần này thì tổng điểm /100; bỏ chọn thì tổng chỉ tính /75 và ngưỡng đạt là 37,5.", "Vous vous enregistrez, puis vous vous auto-évaluez avec la grille DELF officielle (suggestions de l'IA) dans « Mes résultats ». Avec cette partie : total /100 ; sans elle : total /75, seuil 37,5.", "You record yourself, then self-assess with the official DELF grid (AI suggestions) in « My results ». With this part the total is /100; without it /75, pass mark 37.5.")
+                : tr("Phần này không được chấm điểm (chưa có thang chấm cho trình độ này): bạn ghi âm để tự nghe lại. Tổng điểm vẫn /75.", "Cette partie n'est pas notée pour ce niveau : vous vous enregistrez pour vous réécouter. Total /75.", "This part isn't scored at this level: you record yourself to listen back. Total /75.")}
             </span>
           </span>
         </label>
@@ -844,7 +846,7 @@ function KetQua({ sections, blurCount, onLai }) {
         {/* Chưa chấm hết thì KHÔNG đoán. */}
         {v.passed === null && (
           <p className="m-0 mt-2 rounded-xl bg-white/20 px-3 py-2 text-xs font-semibold">
-            {tr("Còn", "Encore", "There are")} {v.pending.map((p) => p.code).join(", ")} {tr("chưa có điểm. AI sẽ chấm bài viết, xem ở « Kết quả thi ».", "n'a pas de note. La correction s'affiche dans « Mes résultats ».", "has no score yet. Grading appears in « My results ».")}
+            {tr("Còn", "Encore", "There are")} {v.pending.map((p) => p.code).join(", ")} {tr("chưa có điểm. AI sẽ chấm bài viết; phần nói bạn tự chấm (có AI gợi ý) ở « Kết quả thi ».", "n'a pas de note. L'écrit est corrigé par l'IA ; l'oral s'auto-évalue dans « Mes résultats ».", "has no score yet. Writing is AI-graded; you self-assess speaking in « My results ».")}
           </p>
         )}
       </BangKetLuan>
@@ -874,7 +876,7 @@ function KetQua({ sections, blurCount, onLai }) {
       <p className="m-0 mt-5 flex items-start gap-2 rounded-2xl bg-surface2 p-3 text-xs text-soft">
         <ShieldCheck size={13} className="mt-0.5 shrink-0" />
         <span>
-          {tr("Đạt DELF cần", "Pour réussir le DELF :", "To pass DELF you need")} <strong className="text-ink">≥ {NGUONG_TONG}{tr("/100 toàn bài", "/100 au total", "/100 overall")}</strong> {tr("VÀ", "ET", "AND")}{" "}
+          {tr("Đạt DELF cần", "Pour réussir le DELF :", "To pass DELF you need")} <strong className="text-ink">≥ {String(v.nguong).replace(".", ",")}/{v.toiDa} {tr("toàn bài", "au total", "overall")}</strong> {tr("VÀ", "ET", "AND")}{" "}
           <strong className="text-ink">≥ {NGUONG_PHAN}{tr("/25 ở mỗi phần", "/25 dans chaque partie", "/25 in each part")}</strong>{tr(". Người ta thường trượt vì một kỹ năng yếu hẳn, chứ hiếm khi vì tổng điểm.", ". On échoue souvent à cause d'une compétence faible, rarement à cause du total.", ". People usually fail because of one weak skill, rarely because of the total.")}
         </span>
       </p>
@@ -1063,6 +1065,24 @@ export default function ExamMode() {
      * Ghi `score: null` kèm `khongCham`, và `verdict` loại nó khỏi mọi phép
      * tính — nếu không thì kết luận đạt/trượt treo vĩnh viễn ở "chưa kết luận
      * được". Xem MA_KHONG_CHAM trong examPaper.js. */
+    if (k.code === "PO" && !khongCham(k)) {
+      /* 12/10: PO được chấm (migration 135). Không gọi grade: đóng attempt PO
+         và mở dòng po_cham để tự chấm ở trang Kết quả thi. Điểm null = chờ. */
+      let luuDuocPO = true;
+      for (const ex of k.exercises) {
+        const aid = attemptTheoBai.current[ex.id];
+        const { data, error } = aid ? await supabase.rpc("ket_thuc_po", { p_attempt: aid }) : { data: null, error: true };
+        if (error || !data?.ok) luuDuocPO = false;
+      }
+      setKetQua((p) => ghiPhan(p, {
+        code: k.code, points: k.points, label: k.label ?? k.code,
+        baiLabel: k.exercises.map((e) => e.title).join(" · "),
+        exerciseId: k.exercises[0]?.id, score: null, luuDuoc: luuDuocPO,
+      }));
+      if (conNua) { setIdx(idx + 1); setBaiHienTai(null); }
+      else setBuoc("xong");
+      return;
+    }
     if (khongCham(k)) {
       setKetQua((p) => ghiPhan(p, {
         code: k.code, points: 0, khongCham: true,
