@@ -1287,7 +1287,8 @@ Xem `docs/roadmap-delf.md` — có nhật ký quyết định ở §5.
   tối đa 5 ngày mỗi tháng dương lịch (theo tháng của ngày bị lỡ); lỡ ngày thứ 6 thì chuỗi đứt.
   Không lưu trạng thái: `_chuoi_tinh()` tính lại từ `attempts` mỗi lần đọc; `_chuoi_ngay`
   (thưởng XP mốc chuỗi, tổng quan giáo viên) và `get_student_streak` đều đi qua nó. Chuỗi đếm
-  NGÀY ĐÃ HỌC, ngày đóng băng chỉ nối. Giới hạn: ngân sách chỉ đếm trong chuỗi hiện tại.
+  NGÀY ĐÃ HỌC, ngày đóng băng chỉ nối. 139: lịch sử ở bảng `chuoi_dong_bang` (ghi khi mở widget
+  và khi nộp bài, chỉ ngày đã NỐI được chuỗi), nên ngân sách tháng đếm cả chuỗi đã đứt.
 - `s:mcf-submissions` vẫn giữ làm sao lưu, chưa xoá.
 
 
