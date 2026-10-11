@@ -44,11 +44,13 @@ const SAC = {
   PE: "from-rose-500 to-pink-600",
   PO: "from-amber-500 to-orange-600",
 };
+/* 13/10: bóng khi rê chuột để TRUNG TÍNH. Bóng màu theo kỹ năng (cam ở phần
+   Nói) loang ra quanh thẻ trắng, trông như thẻ đó bị lệch màu so với thẻ bên cạnh. */
 const VIEN = {
-  CO: "hover:shadow-indigo-500/25",
-  CE: "hover:shadow-emerald-500/25",
-  PE: "hover:shadow-rose-500/25",
-  PO: "hover:shadow-amber-500/25",
+  CO: "hover:shadow-black/10",
+  CE: "hover:shadow-black/10",
+  PE: "hover:shadow-black/10",
+  PO: "hover:shadow-black/10",
 };
 
 function ChuCaiDau({ ten, avatar }) {
@@ -80,7 +82,7 @@ function TheBo({ b, onMo, dau = false, thuTu = 0 }) {
          Bóng: phải ghi CẢ hình dạng lẫn màu. Tailwind tách `--tw-shadow` khỏi
          `--tw-shadow-color`, nên `hover:shadow-2xl` một mình làm bóng màu thành
          TRONG SUỐT — đo được `rgba(0,0,0,0)`. Đã dính một lần. */
-      className={`mcf-cau-vao group relative w-full overflow-hidden rounded-3xl border-0 bg-surface
+      className={`mcf-cau-vao group relative flex h-full w-full flex-col overflow-hidden rounded-3xl border-0 bg-surface
         p-0 text-left font-sans ring-1 ring-line transition-all duration-300 ease-out
         hover:-translate-y-1 hover:shadow-2xl ${VIEN[b.kyNang] ?? ""}
         motion-reduce:transition-none motion-reduce:hover:translate-y-0`}
@@ -89,7 +91,7 @@ function TheBo({ b, onMo, dau = false, thuTu = 0 }) {
           tô nền cả thẻ, nhờ vậy chữ vẫn đặt trên `bg-surface` và tương phản
           không đổi giữa hai bản màu. */}
       {/* Bìa màu theo kỹ năng: chồng ba thẻ nghiêng + số thẻ to. */}
-      <div className={`relative h-28 overflow-hidden bg-gradient-to-br ${SAC[b.kyNang] ?? SAC.CO}`}>
+      <div className={`relative h-28 w-full shrink-0 overflow-hidden bg-gradient-to-br ${SAC[b.kyNang] ?? SAC.CO}`}>
         <span aria-hidden className="absolute -right-6 -top-10 h-28 w-28 rounded-full bg-white/15 transition-transform duration-500 group-hover:scale-125" />
         <span aria-hidden className="absolute bottom-3 right-16 h-16 w-12 rotate-[-12deg] rounded-xl bg-white/25 shadow-lg transition-transform duration-300 group-hover:rotate-[-20deg]" />
         <span aria-hidden className="absolute bottom-3 right-10 h-16 w-12 rotate-[-2deg] rounded-xl bg-white/35 shadow-lg transition-transform duration-300 group-hover:-translate-y-1" />
@@ -102,7 +104,7 @@ function TheBo({ b, onMo, dau = false, thuTu = 0 }) {
           </span>
         )}
       </div>
-      <div className="p-5">
+      <div className="w-full flex-1 p-5">
       <h3 className="m-0 text-lg font-extrabold tracking-tight text-ink">{b.ten}</h3>
 
       {b.moTa && (
