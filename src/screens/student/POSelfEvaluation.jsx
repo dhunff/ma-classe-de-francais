@@ -65,6 +65,16 @@ export default function POSelfEvaluation({ po, exerciseId, consigne, onXong }) {
           {banGhi === null && <p className="m-0 mt-3 text-sm text-soft"><Loader2 size={14} className="inline animate-spin" /> {tr("Đang tìm bản ghi…", "Recherche de l'enregistrement…", "Finding the recording…")}</p>}
           {banGhi === false && <p className="m-0 mt-3 rounded-xl bg-warn-soft p-3 text-sm font-semibold text-warn">{tr("Không thấy bản ghi âm nào. Bạn vẫn tự chấm được nếu nhớ bài nói của mình, nhưng nên ghi lại ở lần thi sau.", "Aucun enregistrement trouvé.", "No recording found.")}</p>}
           {banGhi?.url && <audio controls src={banGhi.url} className="mt-3 w-full" />}
+          {Array.isArray(po.deBoc) && po.deBoc.length > 0 && (
+            <div className="mt-3 grid gap-2">
+              {po.deBoc.map((d, i) => (
+                <div key={i} className="rounded-xl bg-surface2 p-3">
+                  <p className="m-0 text-[11px] font-extrabold uppercase tracking-wide text-soft">{d.phan} · {tr("đề bạn đã bốc", "sujet tiré", "drawn task")} {d.ma}</p>
+                  <div lang="fr" className="mt-1 text-sm text-ink [&_p]:m-0 [&_p+p]:mt-1.5" dangerouslySetInnerHTML={{ __html: d.html }} />
+                </div>
+              ))}
+            </div>
+          )}
           {consigne && <details className="mt-3"><summary className="cursor-pointer text-sm font-bold text-ink">{tr("Đề bài", "Sujet", "Task")}</summary>
             <div className="mt-2 text-sm leading-relaxed text-ink [&_p]:m-0 [&_p+p]:mt-2" dangerouslySetInnerHTML={{ __html: consigne }} /></details>}
         </div>

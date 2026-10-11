@@ -1282,6 +1282,7 @@ Xem `docs/roadmap-delf.md` — có nhật ký quyết định ở §5.
   Thi PO → /100; bỏ PO ở màn chờ → /75. Ngưỡng tổng TỈ LỆ (`nguongTong`): 50/100 hoặc
   37,5/75. `khongCham` giờ nhận theo ĐIỂM của dòng: PO 0 điểm (đề C1, chưa có grille)
   vẫn không chấm. 13/10 (migration 136): thêm grille C1 (5 tiêu chí × 0/1/3/5), đề C1 PO = 25 điểm.
+  13/10 (137, lô 17): BỐC THĂM đề nói + thời gian CHUẨN BỊ như thi thật (`meta.bocTham`, `BocThamNoi.jsx`): A1 bốc 1, A2–C1 bốc 2 chọn 1; chuẩn bị 10/10/10/30/60 phút, cộng vào đồng hồ phần PO. Đề đã chọn lưu ở `po_cham.de_boc` để tự chấm và AI biết bài nói trả lời đề nào.
 - `s:mcf-submissions` vẫn giữ làm sao lưu, chưa xoá.
 
 

@@ -9,6 +9,7 @@ import { gradeRemote } from "../../shared/gradeRemote.js";
 import { EXAM_STRUCTURE, sectionScore, verdict, ghiPhan, gomTheoKyNang, NGUONG_PHAN, khongCham }
   from "./examPaper.js";
 import GhiAmBaiNoi from "./GhiAmBaiNoi.jsx";
+import BocThamNoi, { deDaChon, khoaBoc } from "./BocThamNoi.jsx";
 import { GhepCap, DienPhieu, AnhLuaChon } from "../student/dangMoi.jsx";
 import { nhomTheoTrinhDo } from "../../shared/trinhDoDe.js";
 import { HopBatDau, HopThoat, useGiuPhongThi } from "./LuotThi.jsx";
@@ -57,8 +58,9 @@ function ManCho({ dsDe, chon, paper, onStart, dangTai, lamPhanNoi, setLamPhanNoi
   const phutPhanNoi = cauTruc.find((x) => x.code === "PO")?.minutes ?? 0;
   /* Tổng phút phải theo LỰA CHỌN, không theo cấu trúc: bỏ phần nói mà vẫn hứa
      "tôi có 130 phút liên tục" là bắt người ta cam kết một điều sai. */
+  const phutChuanBiNoi = Number((paper?.sections ?? []).find((x) => x.code === "PO")?.exercise?.bocTham?.chuanBi) || 0;
   const tongPhut = cauTruc.reduce(
-    (n, p) => n + (p.code === "PO" && (!coPhanNoi || !lamPhanNoi) ? 0 : p.minutes), 0);
+    (n, p) => n + (p.code === "PO" && (!coPhanNoi || !lamPhanNoi) ? 0 : p.minutes + (p.code === "PO" ? phutChuanBiNoi : 0)), 0);
   const [sanSang, setSanSang] = useState(false);
   /* Lượt thi hôm nay (120) + hộp cảnh báo trước khi vào thi. */
   const [luot, setLuot] = useState(null);
@@ -219,7 +221,7 @@ function ManCho({ dsDe, chon, paper, onStart, dangTai, lamPhanNoi, setLamPhanNoi
                   <div className="min-w-0 flex-1">
                     <p className="m-0 flex items-baseline gap-2"><span className="text-base font-extrabold text-ink">{p.code}</span><span className="truncate text-xs text-soft">{p.label}</span></p>
                     <p className="m-0 mt-1 flex flex-wrap gap-x-3 text-xs font-bold text-ink">
-                      <span className="inline-flex items-center gap-1"><Clock size={12} className="text-soft" />{p.minutes}′</span>
+                      <span className="inline-flex items-center gap-1"><Clock size={12} className="text-soft" />{p.minutes}′{p.code === "PO" && phutChuanBiNoi ? ` + ${phutChuanBiNoi}′ ${tr("chuẩn bị", "prépa", "prep")}` : ""}</span>
                       <span>{p.points ? `/${p.points}` : tr("không chấm", "non noté", "not scored")}</span>
                     </p>
                     <p className="m-0 mt-1 truncate text-xs text-soft">
@@ -276,7 +278,7 @@ function ManCho({ dsDe, chon, paper, onStart, dangTai, lamPhanNoi, setLamPhanNoi
           <input type="checkbox" checked={lamPhanNoi}
             onChange={(e) => setLamPhanNoi(e.target.checked)} className="mt-1" />
           <span>
-            <strong>{tr("Làm cả phần thi nói (PO)", "Faire aussi la production orale (PO)", "Also do the speaking part (PO)")}</strong> {tr(": thêm", ": en plus", ": adds")} {phutPhanNoi} {tr("phút.", "minutes.", "minutes.")}
+            <strong>{tr("Làm cả phần thi nói (PO)", "Faire aussi la production orale (PO)", "Also do the speaking part (PO)")}</strong> {tr(": thêm", ": en plus", ": adds")} {phutPhanNoi + phutChuanBiNoi} {tr("phút", "minutes", "minutes")}{phutChuanBiNoi ? tr(` (gồm ${phutChuanBiNoi} phút chuẩn bị, bốc thăm đề như thi thật).`, ` (dont ${phutChuanBiNoi} min de préparation, sujets tirés au sort).`, ` (incl. ${phutChuanBiNoi} min preparation, tasks drawn at random).`) : "."}
             <span className="mt-1 block text-xs text-soft">
               {paper?.sections?.some((x) => x.code === "PO" && Number(x.points) > 0)
                 ? tr("Bạn ghi âm bài nói, sau đó tự chấm theo thang DELF chính thức (AI gợi ý từng tiêu chí) ở trang « Kết quả thi ». Làm phần này thì tổng điểm /100; bỏ chọn thì tổng chỉ tính /75 và ngưỡng đạt là 37,5.", "Vous vous enregistrez, puis vous vous auto-évaluez avec la grille DELF officielle (suggestions de l'IA) dans « Mes résultats ». Avec cette partie : total /100 ; sans elle : total /75, seuil 37,5.", "You record yourself, then self-assess with the official DELF grid (AI suggestions) in « My results ». With this part the total is /100; without it /75, pass mark 37.5.")
@@ -449,7 +451,10 @@ function NutTiengThi() {
 }
 
 export function PhanThi({ section, attemptId, answers, setAnswers, onDone, onBlur, onDoiBai, examId, onThoat }) {
-  const [conLai, setConLai] = useState(section.minutes * 60);
+  /* Phần nói: đồng hồ = thời gian thi + thời gian chuẩn bị (13/10, bocTham). */
+  const phutChuanBi = section.code === "PO" ? Number((section.exercises ?? [section.exercise])[0]?.bocTham?.chuanBi) || 0 : 0;
+  const tongPhut = section.minutes + phutChuanBi;
+  const [conLai, setConLai] = useState(tongPhut * 60);
   const doneRef = useRef(false);
 
   /* ══ NHIỀU BÀI TRONG MỘT PHẦN ══
@@ -508,7 +513,7 @@ export function PhanThi({ section, attemptId, answers, setAnswers, onDone, onBlu
      setInterval bị trình duyệt giảm nhịp ở tab nền, nên đếm ngược bằng cách
      trừ dần sẽ chạy chậm lại — học sinh chuyển tab là được thêm giờ. */
   useEffect(() => {
-    const het = Date.now() + section.minutes * 60 * 1000;
+    const het = Date.now() + tongPhut * 60 * 1000;
     const id = setInterval(() => {
       const s = Math.ceil((het - Date.now()) / 1000);
       setConLai(s);
@@ -630,8 +635,11 @@ export function PhanThi({ section, attemptId, answers, setAnswers, onDone, onBlu
       {/* ── PHẦN NÓI: ghi âm thay cho câu hỏi ──
           Nhận biết theo MÃ phần, không theo "bài này có câu hỏi hay không". */}
       {section.code === "PO" ? (
-        <GhiAmBaiNoi examId={examId} exerciseId={ex.id}
-          gioiHanGiay={Math.max(60, (section.minutes ?? 15) * 60)} />
+        /* 13/10: bốc thăm + chuẩn bị trước khi ghi âm (BocThamNoi). */
+        <BocThamNoi ex={ex} khoa={`${examId}:${ex.id}`}>
+          <GhiAmBaiNoi examId={examId} exerciseId={ex.id}
+            gioiHanGiay={Math.max(60, (section.minutes ?? 15) * 60)} />
+        </BocThamNoi>
       ) : (
       <ol className="m-0 list-none space-y-7 p-0 text-[15.5px] leading-snug text-[#111]">
         {ex.questions.map((q, i) => (
@@ -1071,7 +1079,9 @@ export default function ExamMode() {
       let luuDuocPO = true;
       for (const ex of k.exercises) {
         const aid = attemptTheoBai.current[ex.id];
-        const { data, error } = aid ? await supabase.rpc("ket_thuc_po", { p_attempt: aid }) : { data: null, error: true };
+        const khoa = `${paper?.id}:${ex.id}`;
+        const { data, error } = aid ? await supabase.rpc("ket_thuc_po", { p_attempt: aid, p_de: deDaChon(ex, khoa) }) : { data: null, error: true };
+        try { sessionStorage.removeItem(khoaBoc(khoa)); } catch { /* */ }
         if (error || !data?.ok) luuDuocPO = false;
       }
       setKetQua((p) => ghiPhan(p, {

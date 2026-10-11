@@ -41,7 +41,7 @@ Deno.serve(async (req) => {
   try { than = await req.json(); } catch { /* */ }
   const attemptId = String(than?.attemptId ?? "");
 
-  const { data: pc } = await admin.from("po_cham").select("cap, ai_goi_y").eq("attempt_id", attemptId).eq("user_id", userId).maybeSingle();
+  const { data: pc } = await admin.from("po_cham").select("cap, ai_goi_y, de_boc").eq("attempt_id", attemptId).eq("user_id", userId).maybeSingle();
   if (!pc) return json(404, { ok: false, ma: "KHONG_THAY_BAI_NOI" });
   if (pc.ai_goi_y) return json(200, { ok: true, goi_y: pc.ai_goi_y, da_co: true });
   const grille = (GRILLE_PO as any)[pc.cap];
@@ -74,7 +74,9 @@ Deno.serve(async (req) => {
   if (chepLoi.length < 5) return json(422, { ok: false, ma: "KHONG_NGHE_RO" });
 
   const { data: ex } = await admin.from("exercises").select("consigne").eq("id", att.exercise_id).maybeSingle();
-  const deBai = String(ex?.consigne ?? "").replace(/<[^>]+>/g, " ").slice(0, 2500);
+  /* Đề học sinh đã BỐC và CHỌN (137) quan trọng hơn consigne chung. */
+  const deBoc = Array.isArray(pc.de_boc) ? pc.de_boc.map((d: any) => `${d.phan} : ${d.html}`).join("\n") : "";
+  const deBai = `${ex?.consigne ?? ""}\n${deBoc}`.replace(/<[^>]+>/g, " ").slice(0, 3500);
   const moTa = grille.criteres.map((c: any) => `- ${c.id} (${c.nhom}) « ${c.label} » : giá trị được phép ${JSON.stringify(mucCuaTieuChi(pc.cap, c).map((m: any) => m.v))}`).join("\n");
   const heThong = [
     `Bạn là giám khảo DELF ${pc.cap}, chấm Production orale theo grille chính thức của France Éducation international.`,
