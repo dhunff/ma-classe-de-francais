@@ -248,3 +248,7 @@ button, input, select, textarea { font-family: inherit; }
 .mcf-cuon-mong { scrollbar-width: thin; scrollbar-color: rgb(var(--mcf-line-rgb)) transparent; }
 .mcf-cuon-mong::-webkit-scrollbar { height: 6px; width: 6px; }
 .mcf-cuon-mong::-webkit-scrollbar-thumb { background: rgb(var(--mcf-line-rgb)); border-radius: 999px; }
+
+/* Bút tô sáng trên bài đọc thi thử (14/10, VanBanToSang). Màu cố định như tờ đề. */
+mark.de-to { background: #fde047; color: inherit; cursor: pointer; padding: 0 1px; border-radius: 2px; }
+mark.de-to:hover { background: #facc15; }

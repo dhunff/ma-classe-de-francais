@@ -1,4 +1,5 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
+import { chanDan } from "../../shared/chanDan.js";
 import { tr } from "../../shared/i18n.jsx";
 
 /* Khung viết đơn giản cho câu tự luận của học sinh (07/10).
@@ -27,13 +28,16 @@ const veChu = (html) => {
 export default function KhungViet({ value, onChange, readOnly }) {
   const chu = useMemo(() => veChu(value), [value]);
   const soChu = chu.trim() ? chu.trim().split(/\s+/).length : 0;
+  /* 14/10: chặn dán vào câu trả lời tự luận (shared/chanDan.js). */
+  const [canhDan, setCanhDan] = useState(false);
   return (
     <div className="overflow-hidden rounded-2xl border border-solid border-line bg-surface focus-within:border-primary">
       <textarea lang="fr" value={chu} readOnly={readOnly} rows={7}
         placeholder={readOnly ? "" : tr("Viết câu trả lời của bạn ở đây…", "Écrivez votre réponse ici…", "Write your answer here…")}
-        onChange={(e) => onChange(veHtml(e.target.value))}
+        onChange={(e) => onChange(veHtml(e.target.value))} {...chanDan(() => setCanhDan(true))}
         className="block w-full resize-y border-0 bg-transparent px-4 py-3 font-sans text-base leading-relaxed text-ink outline-none"
         style={{ minHeight: 160 }} />
+      {canhDan && !readOnly && <p className="m-0 px-4 pb-1 text-xs font-bold text-danger">{tr("Không được dán chữ vào bài viết: hãy tự gõ câu trả lời.", "Coller du texte est interdit : rédigez vous-même votre réponse.", "Pasting is not allowed: type your answer yourself.")}</p>}
       <div className="border-0 border-t border-solid border-line px-4 py-1.5 text-right text-xs font-semibold tabular-nums text-soft">
         {soChu} {tr("từ", soChu > 1 ? "mots" : "mot", soChu === 1 ? "word" : "words")}
       </div>

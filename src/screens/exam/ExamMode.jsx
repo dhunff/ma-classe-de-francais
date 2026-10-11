@@ -11,6 +11,8 @@ import { EXAM_STRUCTURE, sectionScore, verdict, ghiPhan, gomTheoKyNang, NGUONG_P
 import GhiAmBaiNoi from "./GhiAmBaiNoi.jsx";
 import BocThamNoi, { deDaChon, khoaBoc } from "./BocThamNoi.jsx";
 import GiayNhap from "./GiayNhap.jsx";
+import VanBanToSang from "./VanBanToSang.jsx";
+import { chanDan } from "../../shared/chanDan.js";
 import { GhepCap, DienPhieu, AnhLuaChon } from "../student/dangMoi.jsx";
 import { nhomTheoTrinhDo } from "../../shared/trinhDoDe.js";
 import { HopBatDau, HopThoat, useGiuPhongThi } from "./LuotThi.jsx";
@@ -511,6 +513,8 @@ export function PhanThi({ section, attemptId, attemptTheoBai = {}, answers, setA
      một nhịp, còn state thì phải đợi render kế — mà hai cú bấm liên tiếp lọt
      vừa đúng vào khe đó. */
   const [dangNop, setDangNop] = useState(false);
+  /* Chặn dán vào bài viết (14/10): báo lý do ngay cạnh ô. */
+  const [canhDan, setCanhDan] = useState(false);
 
   /* Đồng hồ neo vào MỐC THỜI GIAN THẬT, không cộng dồn từng giây.
      setInterval bị trình duyệt giảm nhịp ở tab nền, nên đếm ngược bằng cách
@@ -637,8 +641,9 @@ export function PhanThi({ section, attemptId, attemptTheoBai = {}, answers, setA
           {/* Ngữ liệu đọc: in ra như trang báo trong đề, hai cột, KHÔNG khung cuộn. */}
           {ex.readingText && (
             <div className="de-van mb-8 p-5 text-[15px] leading-[1.45] sm:p-7">
-              <div className="de-van-cot [&_strong:first-child]:block [&_p:first-child]:text-center [&_p:first-child]:text-[20px] [&_p:first-child]:font-bold [&_p:first-child]:[column-span:all] [&_p:first-child]:mb-4"
-                   dangerouslySetInnerHTML={{ __html: ex.readingText }} />
+              {/* 14/10: bút tô sáng trên bài đọc (VanBanToSang). */}
+              <VanBanToSang key={ex.id} exId={ex.id} html={ex.readingText}
+                className="de-van-cot [&_strong:first-child]:block [&_p:first-child]:text-center [&_p:first-child]:text-[20px] [&_p:first-child]:font-bold [&_p:first-child]:[column-span:all] [&_p:first-child]:mb-4" />
             </div>
           )}
           {ex.readingText && section.code !== "PO" && <p className="m-0 mb-5 text-[15px] font-bold sm:ml-9">Répondez aux questions.</p>}
@@ -705,9 +710,10 @@ export function PhanThi({ section, attemptId, attemptTheoBai = {}, answers, setA
             {q.type === "open" && (
               <>
                 <textarea lang="fr" rows={14} value={answers[q.id] ?? ""}
-                  onChange={(e) => dat(q.id, e.target.value)}
+                  onChange={(e) => dat(q.id, e.target.value)} {...chanDan(() => setCanhDan(true))}
                   aria-label={tr("Bài viết của bạn", "Votre texte", "Your text")}
                   className="de-dong-ke mt-4 block w-full resize-y text-[15.5px]" />
+                {canhDan && <p className="m-0 mt-2 text-[13px] font-bold text-[#c00]">{tr("Không được dán chữ vào bài viết: hãy tự gõ câu trả lời.", "Coller du texte est interdit : rédigez vous-même votre réponse.", "Pasting is not allowed: type your answer yourself.")}</p>}
                 <div className="mt-2 text-right text-[14px]">
                   Nombre de mots : <strong className="tabular-nums">{String(answers[q.id] ?? "").trim().split(/\s+/).filter(Boolean).length}</strong>
                 </div>
