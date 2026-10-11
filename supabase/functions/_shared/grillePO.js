@@ -8,8 +8,8 @@
  *   Au niveau ciblé / Au-dessus (niveau +).
  * `muc` là ĐÚNG các giá trị in trên tờ grille, không nội suy thêm.
  *
- * C1/C2: chưa có tờ grille nào trong tay → KHÔNG có ở đây, và phần nói của
- * DALF vẫn « không chấm » (quy tắc 1: không bịa thang).
+ * C1 (13/10): grille DALF C1 chính thức của France Éducation international
+ * (bản delfdalf.ch), 5 tiêu chí × 0/1/3/5. C2: chưa có → vẫn « không chấm ».
  *
  * File này dùng chung: client import theo đường tương đối, Edge Function
  * cham-po import thẳng. Sửa một chỗ là đủ. */
@@ -63,6 +63,16 @@ export const GRILLE_PO = {
     criteres: [
       { id: "monologue", max: 5, nhom: "Compétences pragmatique et sociolinguistique", label: "Réalisation de la tâche : monologue suivi", vi: "Độc thoại: nêu vấn đề, lập luận có ví dụ, bố cục rõ." },
       { id: "interaction", max: 5, nhom: "Compétences pragmatique et sociolinguistique", label: "Réalisation de la tâche : exercice en interaction", vi: "Tranh luận: phản hồi, nhấn sắc thái, bảo vệ quan điểm." },
+      { id: "lexique", max: 5, nhom: "Compétence linguistique", label: "Lexique", vi: "Từ vựng." },
+      { id: "morpho", max: 5, nhom: "Compétence linguistique", label: "Morphosyntaxe", vi: "Ngữ pháp." },
+      { id: "phono", max: 5, nhom: "Compétence linguistique", label: "Maîtrise du système phonologique", vi: "Phát âm." },
+    ],
+  },
+  C1: {
+    kieu: "bon",
+    criteres: [
+      { id: "expose", max: 5, nhom: "Compétences pragmatique et sociolinguistique", label: "Réalisation de la tâche : exposé", vi: "Exposé: nêu chủ đề, có dàn ý, phân tích có suy nghĩ riêng và ví dụ." },
+      { id: "entretien", max: 5, nhom: "Compétences pragmatique et sociolinguistique", label: "Réalisation de la tâche : entretien", vi: "Trao đổi với hội đồng: trả lời rõ, bảo vệ và nhấn sắc thái quan điểm." },
       { id: "lexique", max: 5, nhom: "Compétence linguistique", label: "Lexique", vi: "Từ vựng." },
       { id: "morpho", max: 5, nhom: "Compétence linguistique", label: "Morphosyntaxe", vi: "Ngữ pháp." },
       { id: "phono", max: 5, nhom: "Compétence linguistique", label: "Maîtrise du système phonologique", vi: "Phát âm." },

@@ -1281,7 +1281,7 @@ Xem `docs/roadmap-delf.md` — có nhật ký quyết định ở §5.
   attempt PO) và `luu_po_tu_cham` (máy chủ tự cộng, từ chối giá trị không có trên grille).
   Thi PO → /100; bỏ PO ở màn chờ → /75. Ngưỡng tổng TỈ LỆ (`nguongTong`): 50/100 hoặc
   37,5/75. `khongCham` giờ nhận theo ĐIỂM của dòng: PO 0 điểm (đề C1, chưa có grille)
-  vẫn không chấm.
+  vẫn không chấm. 13/10 (migration 136): thêm grille C1 (5 tiêu chí × 0/1/3/5), đề C1 PO = 25 điểm.
 - `s:mcf-submissions` vẫn giữ làm sao lưu, chưa xoá.
 
 

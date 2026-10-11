@@ -82,7 +82,7 @@ export const NHAN_KY_NANG = Object.fromEntries(
  * Hệ quả có chủ ý: tổng vẫn là /75, KHÔNG phải /100. Thang không đổi, nên
  * lượt thi cũ và mới vẫn so sánh được với nhau. */
 /* 12/10: PO ĐƯỢC CHẤM (tự chấm theo grille PO chính thức, AI gợi ý; migration
- * 135). Chỉ còn « không chấm » khi phần đó mang 0 điểm, tức đề C1/C2 chưa có
+ * 135). Chỉ còn « không chấm » khi phần đó mang 0 điểm, tức đề C2 chưa có
  * grille PO: exam_sections.points = 0. Nhận theo ĐIỂM của dòng, không theo mã. */
 export const MA_KHONG_CHAM = new Set(["PO"]);
 export const khongCham = (s) => !!s?.khongCham || (MA_KHONG_CHAM.has(s?.code) && !(Number(s?.points) > 0));
