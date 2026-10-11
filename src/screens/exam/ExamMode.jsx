@@ -10,6 +10,7 @@ import { EXAM_STRUCTURE, sectionScore, verdict, ghiPhan, gomTheoKyNang, NGUONG_P
   from "./examPaper.js";
 import GhiAmBaiNoi from "./GhiAmBaiNoi.jsx";
 import BocThamNoi, { deDaChon, khoaBoc } from "./BocThamNoi.jsx";
+import GiayNhap from "./GiayNhap.jsx";
 import { GhepCap, DienPhieu, AnhLuaChon } from "../student/dangMoi.jsx";
 import { nhomTheoTrinhDo } from "../../shared/trinhDoDe.js";
 import { HopBatDau, HopThoat, useGiuPhongThi } from "./LuotThi.jsx";
@@ -588,6 +589,8 @@ export function PhanThi({ section, attemptId, attemptTheoBai = {}, answers, setA
         </nav>
       )}
 
+      {/* Giấy nháp (14/10): Nghe, Đọc, Viết. Phần nói có nháp riêng lúc chuẩn bị. */}
+      {section.code !== "PO" && <GiayNhap khoa={`${examId}:${section.code}`} />}
       <article className="de-giay mx-auto max-w-[840px]">
         <div className="de-dau-trang px-6 pb-3 pt-6 text-center text-[13px] uppercase sm:pt-8">DOCUMENT RÉSERVÉ AU CANDIDAT – ÉPREUVES COLLECTIVES</div>
         <div className="px-5 pb-8 pt-6 sm:px-14">
