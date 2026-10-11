@@ -80,7 +80,7 @@ function PracticeHubInner({ role = "eleve", name = "", accounts = [], onRequireL
   const [topTab, setTopTab] = useState("bib");      // "bib" | "de" | "suivi" (prof)
   /* 13/10: bài thi thử nằm ở kho RIÊNG (store 'exam', migration 140), không
      hiện trong thư viện luyện tập. Giáo viên soạn/sửa chúng ở tab « Bài thi thử ». */
-  const kho = teacher && topTab === "de" ? "exam" : "practice";
+  const kho = role === "prof" && topTab === "de" ? "exam" : "practice";
   const [suivi, setSuivi] = useState(null);          // null = en cours de chargement
   const [suiviOpen, setSuiviOpen] = useState(null);  // ligne dépliée
   const [matModal, setMatModal] = useState(null);    // {exId, kind: "vocab"|"expl"|"corrige"}
