@@ -654,7 +654,8 @@ export function PhanThi({ section, attemptId, answers, setAnswers, onDone, onBlu
 
             {q.type === "vf" && (
               <div className="mt-3 flex gap-2">
-                {["Vrai", "Faux", "?"].map((o, j) => (
+                {/* B2/C1 (đề DELF thật) chỉ có Vrai/Faux + chép câu chứng minh. */}
+                {(["B2", "C1"].includes(ex.level) ? ["Vrai", "Faux"] : ["Vrai", "Faux", "?"]).map((o, j) => (
                   <button key={j} type="button"
                     onClick={() => dat(q.id, { ...(answers[q.id] ?? {}), choice: j })}
                     className={`rounded-full border-0 px-4 py-2 text-sm font-semibold transition ${
@@ -663,6 +664,12 @@ export function PhanThi({ section, attemptId, answers, setAnswers, onDone, onBlu
                   </button>
                 ))}
               </div>
+            )}
+            {q.type === "vf" && (
+              <textarea lang="fr" rows={2} value={answers[q.id]?.just ?? ""}
+                onChange={(e) => dat(q.id, { ...(answers[q.id] ?? {}), just: e.target.value })}
+                placeholder={tr("Justification : chép lại câu trong bài chứng minh cho lựa chọn", "Justification : recopiez la phrase du texte", "Justification: copy the sentence from the text")}
+                className="mt-2 w-full resize-y rounded-xl border border-solid border-line bg-surface px-3 py-2 font-sans text-sm text-ink outline-none focus:border-primary" />
             )}
 
             {q.type === "open" && (
