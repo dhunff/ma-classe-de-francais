@@ -1,7 +1,18 @@
 ﻿import React, { useEffect, useRef } from "react";
 import { NavLink, Link } from "react-router-dom";
-import { LogIn, X, ChevronLeft, ChevronRight } from "lucide-react";
-import { navFor } from "./navItems.js";
+import { LogIn, X, ChevronLeft, ChevronRight, LifeBuoy } from "lucide-react";
+import { navTheoNhom } from "./navItems.js";
+import { tr } from "../shared/i18n.jsx";
+
+/* Tên nhóm menu (13/10). Hàm, không hằng số: tr() phải chạy lúc dựng. */
+const tenNhom = (n) => ({
+  hoc: tr("Học tập", "Apprendre", "Learn"),
+  thi: tr("Luyện thi", "S'entraîner à l'examen", "Exam prep"),
+  toi: tr("Của tôi", "Mon espace", "My space"),
+  tong: tr("Tổng quan", "Vue d'ensemble", "Overview"),
+  lop: tr("Học sinh", "Élèves", "Students"),
+  noi_dung: tr("Nội dung", "Contenus", "Content"),
+}[n] ?? n);
 
 /* Thanh điều hướng trái — nằm thẳng trên nền xanh của khung, không có nền
    riêng.
@@ -70,49 +81,80 @@ function Tip({ show, children }) {
    mobile nằm trên nền `surface`. Cùng một danh sách, hai bảng màu. */
 function NavList({ role, t, expanded, onNavigate, onBlue = true }) {
   return (
-    <nav className={`flex flex-1 flex-col gap-1 ${onBlue ? "pl-3" : "px-3"}`} aria-label={t("nav.primary")}>
-      <Label
-        expanded={expanded}
-        className={`mb-1 block px-2 text-[10px] font-bold uppercase tracking-[0.14em] ${onBlue ? "text-white/60" : "text-soft"}`}
-      >
-        {t("nav.menu")}
-      </Label>
-
-      {navFor(role).map(({ to, labelKey, Icon }) => (
-        <NavLink
-          key={to}
-          to={to}
-          onClick={onNavigate}
-          className={({ isActive }) =>
-            [
-              "group relative flex items-center py-2.5 text-sm no-underline",
-              "transition-all duration-200 ease-out",
-              expanded ? "px-3" : "justify-center px-0",
-              /* Mục đang chọn trên nền xanh: cùng màu với tấm thẻ, bo tròn bên
-                 TRÁI và vuông bên PHẢI, rồi kéo dài thêm 12px sang phải bằng
-                 `-mr-3` để nuốt trọn khoảng đệm của <nav> và chạm vào mép thẻ.
-                 Thiếu bước đó thì còn một khe xanh mỏng, và cái ảo giác "liền
-                 khối" hỏng ngay. */
-              onBlue
-                ? isActive
-                  ? "-mr-3 rounded-l-full bg-bg pr-6 font-bold text-primary"
-                  : "mr-3 rounded-full font-medium text-white/70 hover:bg-white/15 hover:text-white"
-                : isActive
-                  ? "rounded-2xl bg-primary-soft font-bold text-primary"
-                  : "rounded-2xl font-medium text-soft hover:bg-surface2/70 hover:text-ink",
-            ].join(" ")
-          }
-        >
-          {({ isActive }) => (
-            <>
-              <Icon size={19} strokeWidth={isActive ? 2.4 : 2} className="shrink-0" />
-              <Label expanded={expanded} className="truncate">{t(labelKey)}</Label>
-              <Tip show={!expanded}>{t(labelKey)}</Tip>
-            </>
+    <nav className={`flex flex-1 flex-col ${onBlue ? "pl-3" : "px-3"}`} aria-label={t("nav.primary")}>
+      {navTheoNhom(role).map(({ nhom, muc }, gi) => (
+        <div key={nhom} className={gi ? "mt-4" : ""}>
+          {/* Tên nhóm khi mở rộng; khi thu gọn thì một vạch ngắn ngăn nhóm. */}
+          {expanded ? (
+            <span className={`mb-1.5 block px-3 text-[10px] font-extrabold uppercase tracking-[0.16em] ${onBlue ? "text-white/55" : "text-soft"}`}>{tenNhom(nhom)}</span>
+          ) : gi > 0 && (
+            <span aria-hidden className={`mx-auto mb-3 block h-px w-8 ${onBlue ? "bg-white/25" : "bg-line"}`} />
           )}
-        </NavLink>
+          <div className="flex flex-col gap-0.5">
+            {muc.map(({ to, labelKey, Icon }) => (
+              <NavLink
+                key={to}
+                to={to}
+                onClick={onNavigate}
+                className={({ isActive }) =>
+                  [
+                    "group relative flex items-center py-1.5 text-sm no-underline",
+                    "transition-all duration-200 ease-out",
+                    expanded ? "px-2" : "justify-center px-0",
+                    /* Mục đang chọn trên nền xanh: liền khối với tấm thẻ (bo trái,
+                       kéo -mr-3 chạm mép thẻ). Xem chú thích đầu file. */
+                    onBlue
+                      ? isActive
+                        ? "-mr-3 rounded-l-2xl bg-bg pr-5 font-bold text-primary"
+                        : "mr-3 rounded-2xl font-medium text-white/75 hover:bg-white/10 hover:text-white"
+                      : isActive
+                        ? "rounded-2xl bg-primary-soft font-bold text-primary"
+                        : "rounded-2xl font-medium text-soft hover:bg-surface2/70 hover:text-ink",
+                  ].join(" ")
+                }
+              >
+                {({ isActive }) => (
+                  <>
+                    {/* Biểu tượng trong ô vuông bo góc: đang chọn thì ô đặc màu chính. */}
+                    <span className={[
+                      "grid h-9 w-9 shrink-0 place-items-center rounded-xl transition-all duration-200",
+                      isActive
+                        ? "bg-primary text-white shadow-[0_6px_14px_rgba(37,99,235,0.35)]"
+                        : onBlue ? "bg-white/10 group-hover:bg-white/20 group-hover:scale-105" : "bg-surface2 group-hover:scale-105",
+                    ].join(" ")}>
+                      <Icon size={18} strokeWidth={isActive ? 2.4 : 2} />
+                    </span>
+                    <Label expanded={expanded} className="truncate">{t(labelKey)}</Label>
+                    <Tip show={!expanded}>{t(labelKey)}</Tip>
+                  </>
+                )}
+              </NavLink>
+            ))}
+          </div>
+        </div>
       ))}
     </nav>
+  );
+}
+
+/* Ô trợ giúp cuối thanh (13/10): lối tới FAQ, có Leon. Không số liệu nào. */
+function TroGiup({ expanded, onNavigate, onBlue = true }) {
+  if (!expanded) {
+    return (
+      <Link to="/faq" onClick={onNavigate} className={`group relative mx-auto mt-4 grid h-10 w-10 place-items-center rounded-xl no-underline ${onBlue ? "bg-white/10 text-white hover:bg-white/20" : "bg-surface2 text-soft"}`}>
+        <LifeBuoy size={18} /><Tip show>{tr("Trợ giúp", "Aide", "Help")}</Tip>
+      </Link>
+    );
+  }
+  return (
+    <Link to="/faq" onClick={onNavigate}
+      className={`relative mx-3 mt-4 flex items-center gap-3 overflow-hidden rounded-2xl p-3 no-underline transition-colors ${onBlue ? "bg-white/10 text-white hover:bg-white/15" : "bg-surface2 text-ink hover:bg-primary-soft"}`}>
+      <img src="/leon/dau.webp" alt="" width={40} height={40} className="h-10 w-10 shrink-0 object-contain" />
+      <span className="min-w-0">
+        <span className="block text-xs font-extrabold">{tr("Cần trợ giúp?", "Besoin d'aide ?", "Need help?")}</span>
+        <span className={`block text-[11px] ${onBlue ? "text-white/70" : "text-soft"}`}>{tr("Câu hỏi thường gặp", "Questions fréquentes", "FAQ")}</span>
+      </span>
+    </Link>
   );
 }
 
@@ -227,12 +269,18 @@ export default function Sidebar({
           bo góc — nó CHÍNH LÀ nền, tấm thẻ trắng bên phải mới là thứ nổi lên. */}
       <aside
         className={[
-          "mcf-rise hidden h-screen shrink-0 flex-col py-5 md:flex",
+          "mcf-rise relative hidden h-screen shrink-0 flex-col py-5 md:flex",
           "transition-[width] duration-300 ease-in-out",
           expanded ? "w-64" : "w-[5.5rem]",
         ].join(" ")}
       >
-        <div className={`flex shrink-0 items-center px-4 ${expanded ? "justify-end" : "justify-center"}`}>
+        {/* Đốm sáng trang trí trên nền xanh (13/10). */}
+        {/* Lớp cắt riêng: đốm tràn ra ngoài sẽ làm khung overflow-hidden cuộn được. */}
+        <span aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
+          <span className="absolute -left-16 -top-16 h-56 w-56 rounded-full bg-white/10 blur-2xl" />
+          <span className="absolute -bottom-20 left-6 h-48 w-48 rounded-full bg-sky-300/15 blur-3xl" />
+        </span>
+        <div className={`relative flex shrink-0 items-center px-4 ${expanded ? "justify-end" : "justify-center"}`}>
           {onToggle && (
             <button
               type="button"
@@ -251,6 +299,7 @@ export default function Sidebar({
         </div>
 
         <NavList role={role} t={t} expanded={expanded} />
+        {signedIn && <TroGiup expanded={expanded} />}
         {/* Khối « Lớp của bạn » gỡ 24/09 theo yêu cầu chủ dự án; PeopleCard
             còn đó nếu cần dựng lại. */}
 
@@ -296,6 +345,7 @@ export default function Sidebar({
         {/* Ngăn kéo luôn mở rộng: thu gọn một tấm đã chiếm hết màn hình thì
             chẳng tiết kiệm được gì. */}
         <NavList role={role} t={t} expanded onNavigate={onClose} onBlue={false} />
+        {signedIn && <TroGiup expanded onNavigate={onClose} onBlue={false} />}
 
         <Footer t={t} signedIn={signedIn} expanded onNavigate={onClose} onBlue={false} />
       </aside>

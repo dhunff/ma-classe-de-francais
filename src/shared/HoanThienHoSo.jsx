@@ -5,6 +5,7 @@ import { loadHoSo, luuHoSo } from "./profileStore.js";
 import { emptyProfile, validateProfile, LEVELS_PROFILE, GOALS_PROFILE } from "./profile.js";
 import { Leon } from "./leon.jsx";
 import { tr } from "./i18n.jsx";
+import { supabase } from "../storageShim.js";
 
 /* Hoàn thiện hồ sơ ngay khi vào (13/10, theo chủ dự án).
  *
@@ -17,6 +18,8 @@ import { tr } from "./i18n.jsx";
  * hiện cho tới khi điền đủ. Không hiện giữa giờ thi (/etudiant/examen). */
 const BAT_BUOC = ["prenom", "nom", "level", "goal"];
 const KHOA_HOAN = "mcf-hoan-ho-so";
+/* Tài khoản tạo từ thời điểm này (giờ VN, ngày ra mắt hộp hoàn thiện hồ sơ) mới bị hỏi. */
+const MOC_TAI_KHOAN_MOI = Date.parse("2026-10-13T00:00:00+07:00");
 
 export default function HoanThienHoSo({ fixture }) {
   const viTri = useLocation();
@@ -29,8 +32,11 @@ export default function HoanThienHoSo({ fixture }) {
     if (fixture) { setP({ ...emptyProfile(), ...fixture }); setMo(true); return; }
     let con = true;
     try { if (sessionStorage.getItem(KHOA_HOAN)) return; } catch { /* */ }
-    loadHoSo().then((h) => {
+    /* 13/10 (chủ dự án): CHỈ hỏi tài khoản đăng ký từ ngày tính năng ra mắt.
+       Học sinh cũ không bị chặn bằng hộp này; họ vẫn tự điền ở trang Tài khoản. */
+    Promise.all([supabase.auth.getUser(), loadHoSo()]).then(([{ data: u }, h]) => {
       if (!con || !h) return;
+      if (!(Date.parse(u?.user?.created_at ?? "") >= MOC_TAI_KHOAN_MOI)) return;
       setP({ ...emptyProfile(), ...h });
       if (BAT_BUOC.some((k) => !String(h[k] ?? "").trim())) setMo(true);
     });

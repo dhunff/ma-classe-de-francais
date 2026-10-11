@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
-import { User, Lock, LogOut, Calendar, Pencil, CheckCircle2, Loader2, AlertTriangle } from "lucide-react";
-import { useT } from "../../shared/i18n.jsx";
+import { User, Lock, LogOut, Calendar, Pencil, CheckCircle2, Loader2, AlertTriangle, AtSign, IdCard, Phone, GraduationCap, ShieldCheck } from "lucide-react";
+import { useT, tr } from "../../shared/i18n.jsx";
+import { Leon } from "../../shared/leon.jsx";
 import { loadHoSo, luuHoSo } from "../../shared/profileStore.js";
 import { emptyProfile, calculateProfileCompletion, validateProfile, LEVELS_PROFILE, GOALS_PROFILE } from "../../shared/profile.js";
 import { Avatar } from "../../shared/avatars.jsx";
@@ -30,7 +31,23 @@ import ChonNgay from "../../shared/ChonNgay.jsx";
 const INPUT =
   "w-full rounded-xl border-0 bg-surface2 px-4 py-3 text-sm font-medium text-ink " +
   "outline-none transition placeholder:text-soft focus:ring-2 focus:ring-primary/50";
-const LABEL = "mb-1.5 block text-sm text-soft";
+const LABEL = "mb-1.5 block text-xs font-bold uppercase tracking-wide text-soft";
+
+/* Khối biểu mẫu có tiêu đề + biểu tượng (13/10, làm lại cho chuyên nghiệp hơn). */
+function Khoi({ Icon, mau = "bg-primary-soft text-primary", tieuDe, moTa, children, id, className = "" }) {
+  return (
+    <section id={id} className={`rounded-2xl border border-solid border-line bg-surface p-5 sm:p-6 ${className}`}>
+      <div className="mb-5 flex items-start gap-3">
+        <span className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl ${mau}`}><Icon size={19} /></span>
+        <div className="min-w-0">
+          <h2 className="m-0 text-base font-extrabold text-ink">{tieuDe}</h2>
+          {moTa && <p className="m-0 mt-0.5 text-xs text-soft">{moTa}</p>}
+        </div>
+      </div>
+      {children}
+    </section>
+  );
+}
 
 function Field({ label, children, className = "" }) {
   return (
@@ -243,8 +260,15 @@ export default function AccountPage({ name, role, email, emailVerified, onLogout
 
       {/* ─────────────── Cột trái: nhận dạng + điều hướng ─────────────── */}
       <aside className="w-full shrink-0 lg:w-80">
-        <div className="rounded-3xl bg-surface p-6 shadow-sm">
-          <div className="flex flex-col items-center text-center">
+        <div className="overflow-hidden rounded-3xl bg-surface shadow-sm lg:sticky lg:top-4">
+          {/* Ảnh bìa trang trí (13/10). */}
+          <div className="relative h-28 overflow-hidden bg-gradient-to-br from-blue-600 via-primary to-violet-600">
+            <span aria-hidden className="absolute -right-8 -top-10 h-36 w-36 rounded-full bg-white/15" />
+            <span aria-hidden className="absolute -bottom-14 left-6 h-28 w-28 rounded-full bg-sky-300/25 blur-xl" />
+            <Leon cam="chao" size={72} className="absolute bottom-0 right-3 drop-shadow-[0_8px_12px_rgba(0,0,0,0.25)]" />
+          </div>
+          <div className="px-6 pb-6">
+          <div className="-mt-12 flex flex-col items-center text-center">
             {/* Nút sửa ảnh KHÔNG còn `disabled`. Trước đây nó xám và có
                 `title` giải thích — nhưng `title` chỉ hiện khi rê chuột, tức
                 là không bao giờ hiện trên điện thoại, nên với một nửa người
@@ -255,7 +279,7 @@ export default function AccountPage({ name, role, email, emailVerified, onLogout
                 type="button"
                 onClick={() => setMoChonAvatar(true)}
                 aria-label={t("identity.avatar_change")}
-                className="grid cursor-pointer place-items-center rounded-full border-0 bg-transparent p-0 transition hover:opacity-90"
+                className="grid cursor-pointer place-items-center rounded-full border-0 bg-surface p-1 shadow-lg ring-4 ring-surface transition hover:opacity-90"
               >
                 <Avatar khoa={dt.avatar} ten={tenHienThi} size={96} />
               </button>
@@ -265,17 +289,22 @@ export default function AccountPage({ name, role, email, emailVerified, onLogout
               </span>
             </span>
 
-            <p className="m-0 mt-4 text-lg font-bold text-ink">{tenHienThi}</p>
+            <p className="m-0 mt-3 text-xl font-extrabold tracking-tight text-ink">{tenHienThi}</p>
             {/* @username dưới tên, như mọi nơi khác trên internet. Chưa đặt thì
                 không hiện một dấu « @ » trơ trọi. */}
             {dt.username && <p className="m-0 mt-0.5 text-sm font-semibold text-primary">@{dt.username}</p>}
-            <p className="m-0 mt-0.5 text-sm text-soft">{roleLabel}</p>
+            <span className="mt-2 inline-flex items-center gap-1 rounded-full bg-primary-soft px-3 py-1 text-xs font-bold text-primary"><GraduationCap size={13} /> {roleLabel}</span>
 
-            {pct < 100 && (
-              <p id="tour-pf-completion" className="m-0 mt-3 rounded-full bg-primary-soft px-3 py-1 text-xs font-bold text-primary">
-                {t("account.completed", { pct })}
-              </p>
-            )}
+            {/* Thanh hoàn thiện hồ sơ: số thật từ calculateProfileCompletion. */}
+            <div id={pct < 100 ? "tour-pf-completion" : undefined} className="mt-5 w-full text-left">
+              <div className="flex items-baseline justify-between text-xs font-bold">
+                <span className="text-soft">{tr("Hoàn thiện hồ sơ", "Profil complété", "Profile completion")}</span>
+                <span className={`tabular-nums ${pct === 100 ? "text-ok" : "text-primary"}`}>{pct}%</span>
+              </div>
+              <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-surface2">
+                <div className={`h-full rounded-full transition-all duration-500 ${pct === 100 ? "bg-ok" : "bg-gradient-to-r from-primary to-violet-500"}`} style={{ width: `${pct}%` }} />
+              </div>
+            </div>
           </div>
 
           <nav className="mt-6 flex flex-col gap-1">
@@ -289,14 +318,18 @@ export default function AccountPage({ name, role, email, emailVerified, onLogout
               {t("account.logout")}
             </TabButton>
           </nav>
+          </div>
         </div>
       </aside>
 
       {/* ─────────────── Cột phải: biểu mẫu ─────────────── */}
-      <section className="min-w-0 flex-1 rounded-3xl bg-surface p-8 shadow-sm">
+      <section className="min-w-0 flex-1">
         {tab === "infos" ? (
-          <form onSubmit={submit}>
-            <h1 className="m-0 text-2xl font-bold text-ink">{t("account.title")}</h1>
+          <form onSubmit={submit} className="grid gap-5">
+            <div>
+              <h1 className="m-0 text-2xl font-extrabold tracking-tight text-ink">{t("account.title")}</h1>
+              <p className="m-0 mt-1 text-sm text-soft">{tr("Thông tin này giúp giáo viên hiểu trình độ và mục tiêu của bạn.", "Ces informations aident votre professeur à connaître votre niveau et vos objectifs.", "This helps your teacher understand your level and goals.")}</p>
+            </div>
 
             {loading ? (
               <p className="mt-6 flex items-center gap-2 text-sm text-soft">
@@ -305,10 +338,7 @@ export default function AccountPage({ name, role, email, emailVerified, onLogout
             ) : (
               <>
                 {/* ─────────── Danh tính ─────────── */}
-                <div className="mt-6 rounded-2xl bg-surface2/60 p-5">
-                  <h2 className="m-0 text-sm font-bold uppercase tracking-wider text-soft">
-                    {t("identity.identity_title")}
-                  </h2>
+                <Khoi Icon={AtSign} tieuDe={t("identity.identity_title")} moTa={tr("Tên hiện với bạn học và giáo viên.", "Le nom visible par vos camarades et votre professeur.", "The name classmates and your teacher see.")}>
 
                   {/* Migration 046 chưa chạy: nói thẳng thay vì để người dùng
                       gõ xong rồi nhận lỗi lúc bấm Lưu. Quy tắc 1 — trạng thái
@@ -361,9 +391,10 @@ export default function AccountPage({ name, role, email, emailVerified, onLogout
                       <AlertTriangle size={14} className="mt-px shrink-0" /> {loiDt}
                     </p>
                   )}
-                </div>
+                </Khoi>
 
-                <div className="mt-6">
+                <Khoi Icon={IdCard} mau="bg-violet-500/10 text-violet-600 dark:text-violet-300" tieuDe={tr("Thông tin cơ bản", "Informations de base", "Basic information")}>
+                <div>
                   <span className={LABEL}>{t("account.gender")}</span>
                   <div className="flex flex-wrap gap-4">
                     {/* Giá trị lưu xuống ("homme"/"femme"/"autre") KHÔNG dịch
@@ -389,7 +420,10 @@ export default function AccountPage({ name, role, email, emailVerified, onLogout
                   </Field>
                 </div>
 
-                <div className="mt-5">
+                </Khoi>
+
+                <Khoi Icon={Phone} mau="bg-emerald-500/10 text-emerald-600 dark:text-emerald-300" tieuDe={tr("Liên hệ", "Coordonnées", "Contact")}>
+                <div>
                   <span className={LABEL}>{t("account.email")}</span>
                   <div className="flex flex-wrap items-center gap-3">
                     {/* Email đến từ tài khoản đăng nhập, không sửa ở đây được —
@@ -426,12 +460,11 @@ export default function AccountPage({ name, role, email, emailVerified, onLogout
                   </Field>
                 </div>
 
-                {/* Phần học tập. Bản mô tả không nhắc tới, nhưng `goal` đang
-                    hiện trên trang chủ và cả ba trường nuôi thanh hoàn thiện —
-                    bỏ khỏi đây là không còn chỗ nào đặt chúng. */}
-                <div id="tour-pf-parcours" className="mt-8 border-0 border-t border-solid border-line pt-6">
-                  <h2 className="m-0 text-sm font-bold uppercase tracking-wider text-soft">{t("account.parcours")}</h2>
-                  <div className="mt-4 grid gap-5 sm:grid-cols-2">
+                </Khoi>
+
+                {/* Phần học tập: goal hiện trên trang chủ và nuôi thanh hoàn thiện. */}
+                <Khoi id="tour-pf-parcours" Icon={GraduationCap} mau="bg-amber-500/10 text-amber-600 dark:text-amber-300" tieuDe={t("account.parcours")} moTa={tr("Dùng để gợi ý bài và xếp lộ trình.", "Sert à proposer des exercices et un parcours.", "Used to suggest exercises and a path.")}>
+                  <div className="grid gap-5 sm:grid-cols-2">
                     <Field label={t("account.level")}>
                       <select className={INPUT} value={p.level || ""} onChange={set("level")}>
                         <option value="">—</option>
@@ -451,7 +484,7 @@ export default function AccountPage({ name, role, email, emailVerified, onLogout
                       {errs.school && <p className="m-0 mt-1 text-xs font-semibold text-danger">{errs.school}</p>}
                     </Field>
                   </div>
-                </div>
+                </Khoi>
 
                 {/* Migration 049 chưa chạy: nói thẳng thay vì để người dùng
                     điền xong rồi nhận lỗi lúc bấm Lưu. Quy tắc 1 — trạng thái
@@ -469,7 +502,8 @@ export default function AccountPage({ name, role, email, emailVerified, onLogout
                   </p>
                 )}
 
-                <div className="mt-8 flex flex-wrap items-center justify-end gap-3">
+                {/* Thanh lưu dính đáy (13/10): luôn thấy nút Lưu khi cuộn. */}
+                <div className="sticky bottom-0 z-10 flex flex-wrap items-center justify-end gap-3 rounded-2xl border border-solid border-line bg-surface/95 px-5 py-3 shadow-[0_-8px_24px_rgba(0,0,0,0.06)] backdrop-blur">
                   {toast && <span className="mr-auto text-sm font-bold text-ok">{toast}</span>}
                   <button type="button" onClick={() => window.location.reload()}
                     className="cursor-pointer rounded-xl border-0 bg-transparent px-5 py-3 font-[inherit] text-sm font-semibold text-soft transition-colors hover:bg-surface2 hover:text-ink">
@@ -527,9 +561,10 @@ function SecurityTab({ changePw }) {
   };
 
   return (
-    <form onSubmit={submit}>
-      <h1 className="m-0 text-2xl font-bold text-ink">{t("account.security_title")}</h1>
-      <div className="mt-6 grid max-w-md gap-5">
+    <form onSubmit={submit} className="grid gap-5">
+      <h1 className="m-0 text-2xl font-extrabold tracking-tight text-ink">{t("account.security_title")}</h1>
+      <Khoi Icon={ShieldCheck} mau="bg-rose-500/10 text-rose-600 dark:text-rose-300" tieuDe={tr("Đổi mật khẩu", "Changer le mot de passe", "Change password")} moTa={tr("Dùng mật khẩu dài, không trùng với trang khác.", "Choisissez un mot de passe long et unique.", "Use a long password you don't reuse elsewhere.")}>
+      <div className="grid max-w-md gap-5">
         <Field label={t("account.current_pw")}>
           <input type="password" className={INPUT} value={oldPw} onChange={(e) => setOldPw(e.target.value)} autoComplete="current-password" />
         </Field>
@@ -545,6 +580,7 @@ function SecurityTab({ changePw }) {
           </button>
         </div>
       </div>
+      </Khoi>
     </form>
   );
 }

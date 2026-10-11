@@ -18,12 +18,12 @@ import {
 export const ROLE_HOME = { prof: "/professeur/dashboard", eleve: "/etudiant/dashboard" };
 
 export const TEACHER_NAV = [
-  { to: "/professeur/dashboard", labelKey: "nav.dashboard", Icon: LayoutDashboard },
-  { to: "/professeur/exercices", labelKey: "nav.exercises", Icon: BookOpen, view: "list" },
-  { to: "/professeur/eleves", labelKey: "nav.students", Icon: Users, view: "students" },
-  { to: "/professeur/statistiques", labelKey: "nav.stats", Icon: BarChart3, view: "stats" },
+  { to: "/professeur/dashboard", nhom: "tong", labelKey: "nav.dashboard", Icon: LayoutDashboard },
+  { to: "/professeur/exercices", nhom: "noi_dung", labelKey: "nav.exercises", Icon: BookOpen, view: "list" },
+  { to: "/professeur/eleves", nhom: "lop", labelKey: "nav.students", Icon: Users, view: "students" },
+  { to: "/professeur/statistiques", nhom: "tong", labelKey: "nav.stats", Icon: BarChart3, view: "stats" },
   /* Gửi thông báo (08/10): trang riêng thay hộp nổi ở trang Bài tập. */
-  { to: "/professeur/thong-bao", labelKey: "nav.notify", Icon: Megaphone },
+  { to: "/professeur/thong-bao", nhom: "lop", labelKey: "nav.notify", Icon: Megaphone },
   /* 07/10, theo chủ dự án: giáo viên chỉ còn quản lý học sinh, cấp quyền bài,
      gói VIP và giao bài (cùng soạn bài, đề thi, flashcard, neo, duyệt nháp).
      ĐÃ GỠ: « Thư viện luyện tập » riêng (gộp thành tab trong « Bài tập »),
@@ -31,7 +31,7 @@ export const TEACHER_NAV = [
      theo mặc định), « Đăng ký tư vấn », và chức năng tạo lớp. Các bảng dữ
      liệu đứng sau vẫn còn nguyên. */
   /* Soạn đề thi thử — cũng là route riêng, không có `view`. */
-  { to: "/professeur/examens", labelKey: "nav.exams", Icon: Timer },
+  { to: "/professeur/examens", nhom: "noi_dung", labelKey: "nav.exams", Icon: Timer },
   /* « Chấm bài viết » (/professeur/copies) ĐÃ GỠ — 09/09/2026.
      Giáo viên không còn chấm bài; bài viết do học sinh tự chấm theo grille
      DELF chính thức ở « Kết quả thi ».
@@ -50,37 +50,37 @@ export const TEACHER_NAV = [
      lấy BaiNoiGiaoVien.jsx từ git, thêm route + dòng này + khoá nav.oral. */
   /* Đặt neo. Đứng cạnh « Câu cần lời giải » vì cùng một loại việc: nhìn vào
      chỗ học sinh chưa hiểu rồi làm gì đó về nó. */
-  { to: "/professeur/neo", labelKey: "nav.anchors", Icon: Anchor },
+  { to: "/professeur/neo", nhom: "noi_dung", labelKey: "nav.anchors", Icon: Anchor },
   /* Soạn Flashcard. Đặt cạnh « Neo ngữ liệu » vì cùng loại việc: chuẩn bị ngữ
      liệu cho học sinh, khác với ba mục trên vốn là theo dõi và chấm. */
-  { to: "/professeur/bo-the", labelKey: "nav.decks", Icon: Layers },
+  { to: "/professeur/bo-the", nhom: "noi_dung", labelKey: "nav.decks", Icon: Layers },
   /* Duyệt bài nháp do scripts/nhap soạn sẵn, xuất bản một cú bấm. */
-  { to: "/professeur/duyet-nhap", labelKey: "nav.drafts", Icon: FileCheck2 },
+  { to: "/professeur/duyet-nhap", nhom: "noi_dung", labelKey: "nav.drafts", Icon: FileCheck2 },
 ];
 
 export const STUDENT_NAV = [
-  { to: "/etudiant/dashboard", labelKey: "nav.dashboard", Icon: LayoutDashboard },
+  { to: "/etudiant/dashboard", nhom: "hoc", labelKey: "nav.dashboard", Icon: LayoutDashboard },
   /* Lộ trình học tập — cây kỹ năng A1 → C1. Không có `view`: route riêng
      trong App.jsx, không nằm trong Student.jsx.
 
      Đứng ngay sau Trang chủ và TRƯỚC « Cần làm » vì nó là màn nhìn tổng thể:
      mở ra để biết mình đang ở đâu trong cả chặng, khác với các mục bên dưới
      vốn là chỗ làm từng việc. */
-  { to: "/etudiant/lo-trinh", labelKey: "nav.path", Icon: Map },
+  { to: "/etudiant/lo-trinh", nhom: "hoc", labelKey: "nav.path", Icon: Map },
   /* Từ điển tra nhanh — nguồn là thẻ flashcard công khai (TuDien.jsx). */
   /* Thách đấu bạn bè — đứng ngay sau Lộ trình vì cùng là phần game. */
-  { to: "/etudiant/thach-dau", labelKey: "nav.duel", Icon: Swords },
+  { to: "/etudiant/thach-dau", nhom: "thi", labelKey: "nav.duel", Icon: Swords },
   /* « Từ điển » GỠ 08/10 theo chủ dự án: nó chỉ tra lại đúng các thẻ Flashcard
      công khai (~130 mục), trùng với mục Flashcard. Lấy lại TuDien.jsx từ git. */
-  { to: "/etudiant/entrainement", labelKey: "nav.practice", Icon: Dumbbell, view: "practice" },
+  { to: "/etudiant/entrainement", nhom: "hoc", labelKey: "nav.practice", Icon: Dumbbell, view: "practice" },
   /* « Nghe & Nói » (10/10): chép chính tả + luyện phát âm, route riêng. */
-  { to: "/etudiant/nghe-noi", labelKey: "nav.speak", Icon: AudioLines },
+  { to: "/etudiant/nghe-noi", nhom: "hoc", labelKey: "nav.speak", Icon: AudioLines },
   /* Không có `view`: là route riêng trong App.jsx, giống « Sổ tay » bên giáo viên.
      Ban đầu tôi cố ý KHÔNG đưa vào đây với lý do "vào là bắt đầu tính giờ, không
      phải mục menu thường". Sai — kết quả là một màn hình không ai tới được, tức
      là chưa làm xong. Chỗ cảnh báo trước khi tính giờ nằm ở màn chờ của chính
      ExamMode, không phải ở việc giấu lối vào. */
-  { to: "/etudiant/examen", labelKey: "nav.exam", Icon: Timer },
+  { to: "/etudiant/examen", nhom: "thi", labelKey: "nav.exam", Icon: Timer },
   /* « Kết quả thi » rời menu 08/10: vào bằng nút trong màn Thi thử. */
   /* « Thẻ ghi nhớ » (/etudiant/the-ghi-nho) ĐÃ GỠ — 09/09/2026.
      Đó là thẻ SM-2 sinh từ chính câu học sinh làm sai. Flashcard giờ là bộ do
@@ -90,19 +90,27 @@ export const STUDENT_NAV = [
      mất. Đường GHI cũng tắt cùng lúc (xem gradeRemote.js): để nguyên nó thì
      mỗi lần chấm bài lại ghi thêm thẻ vào chỗ không màn nào mở được — một
      đường ghi còn sống sau khi đường đọc đã chết. */
-  { to: "/etudiant/bo-the", labelKey: "nav.decks", Icon: Layers },
+  { to: "/etudiant/bo-the", nhom: "hoc", labelKey: "nav.decks", Icon: Layers },
   /* « Ma progression » đã rời khỏi menu theo yêu cầu. Route
      /etudiant/progression VẪN sống trong App.jsx nên hành trình tới Paris và
      biểu đồ điểm không mất — chỉ là hiện không còn lối vào từ thanh bên.
      Muốn dựng lại thì thêm một dòng ở đây, không phải viết lại màn hình. */
-  { to: "/etudiant/calendrier", labelKey: "nav.calendar", Icon: CalendarDays },
+  { to: "/etudiant/calendrier", nhom: "toi", labelKey: "nav.calendar", Icon: CalendarDays },
   /* « Bài tập được giao » (08/10): gộp « Cần làm » + « Đã nộp » thành hai tab
      của một mục, đặt ngay dưới Lịch theo yêu cầu chủ dự án. */
-  { to: "/etudiant/devoirs", labelKey: "nav.assigned", Icon: ClipboardList, view: "todo" },
-  { to: "/etudiant/compte", labelKey: "nav.account", Icon: Settings, view: "settings" },
+  { to: "/etudiant/devoirs", nhom: "toi", labelKey: "nav.assigned", Icon: ClipboardList, view: "todo" },
+  { to: "/etudiant/compte", nhom: "toi", labelKey: "nav.account", Icon: Settings, view: "settings" },
 ];
 
+/* 13/10: thanh bên chia NHÓM (trường `nhom`). Danh sách giữ nguyên thứ tự
+   khai báo cho mọi chỗ khác; chỉ thanh bên sắp lại theo thứ tự nhóm dưới đây. */
+export const THU_TU_NHOM = { prof: ["tong", "lop", "noi_dung"], eleve: ["hoc", "thi", "toi"] };
 export const navFor = (role) => (role === "prof" ? TEACHER_NAV : STUDENT_NAV);
+export const navTheoNhom = (role) => {
+  const ds = navFor(role);
+  return (THU_TU_NHOM[role === "prof" ? "prof" : "eleve"]).map((n) => ({ nhom: n, muc: ds.filter((x) => x.nhom === n) }))
+    .filter((g) => g.muc.length);
+};
 
 const ALL = [...TEACHER_NAV, ...STUDENT_NAV];
 
