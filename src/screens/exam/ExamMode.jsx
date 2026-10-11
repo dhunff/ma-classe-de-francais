@@ -225,8 +225,10 @@ function ManCho({ dsDe, chon, paper, onStart, dangTai, lamPhanNoi, setLamPhanNoi
                       <span>{p.points ? `/${p.points}` : tr("không chấm", "non noté", "not scored")}</span>
                     </p>
                     <p className="m-0 mt-1 truncate text-xs text-soft">
+                      {/* 13/10: không hiện tên bài (chủ dự án), chỉ số bài. */}
                       {co.length === 0 ? <span className="font-bold text-danger">{tr("chưa có bài", "pas d'exercice", "no exercise")}</span>
-                        : <>{co.length > 1 && <strong className="text-ink">{co.length} {tr("bài · ", "exercices · ", "exercises · ")}</strong>}{co.map((x) => x.exercise?.title ?? tr("(không mở được)", "(inaccessible)", "(unavailable)")).join(" · ")}</>}
+                        : co.some((x) => !x.exercise) ? <span className="font-bold text-danger">{tr("có bài không mở được", "exercice inaccessible", "an exercise is unavailable")}</span>
+                        : <>{co.length} {tr("bài", co.length > 1 ? "exercices" : "exercice", co.length > 1 ? "exercises" : "exercise")}</>}
                     </p>
                   </div>
                 </div>
@@ -278,11 +280,11 @@ function ManCho({ dsDe, chon, paper, onStart, dangTai, lamPhanNoi, setLamPhanNoi
           <input type="checkbox" checked={lamPhanNoi}
             onChange={(e) => setLamPhanNoi(e.target.checked)} className="mt-1" />
           <span>
-            <strong>{tr("Làm cả phần thi nói (PO)", "Faire aussi la production orale (PO)", "Also do the speaking part (PO)")}</strong> {tr(": thêm", ": en plus", ": adds")} {phutPhanNoi + phutChuanBiNoi} {tr("phút", "minutes", "minutes")}{phutChuanBiNoi ? tr(` (gồm ${phutChuanBiNoi} phút chuẩn bị, bốc thăm đề như thi thật).`, ` (dont ${phutChuanBiNoi} min de préparation, sujets tirés au sort).`, ` (incl. ${phutChuanBiNoi} min preparation, tasks drawn at random).`) : "."}
+            <strong>{tr("Làm cả phần thi nói (PO)", "Faire aussi la production orale (PO)", "Also do the speaking part (PO)")}</strong> : +{phutPhanNoi + phutChuanBiNoi} {tr("phút", "min", "min")}{phutChuanBiNoi ? ` (${phutChuanBiNoi}′ ${tr("chuẩn bị", "de préparation", "prep")})` : ""}
             <span className="mt-1 block text-xs text-soft">
               {paper?.sections?.some((x) => x.code === "PO" && Number(x.points) > 0)
-                ? tr("Bạn ghi âm bài nói, sau đó tự chấm theo thang DELF chính thức (AI gợi ý từng tiêu chí) ở trang « Kết quả thi ». Làm phần này thì tổng điểm /100; bỏ chọn thì tổng chỉ tính /75 và ngưỡng đạt là 37,5.", "Vous vous enregistrez, puis vous vous auto-évaluez avec la grille DELF officielle (suggestions de l'IA) dans « Mes résultats ». Avec cette partie : total /100 ; sans elle : total /75, seuil 37,5.", "You record yourself, then self-assess with the official DELF grid (AI suggestions) in « My results ». With this part the total is /100; without it /75, pass mark 37.5.")
-                : tr("Phần này không được chấm điểm (chưa có thang chấm cho trình độ này): bạn ghi âm để tự nghe lại. Tổng điểm vẫn /75.", "Cette partie n'est pas notée pour ce niveau : vous vous enregistrez pour vous réécouter. Total /75.", "This part isn't scored at this level: you record yourself to listen back. Total /75.")}
+                ? tr("Có phần nói: tổng /100. Bỏ: tổng /75.", "Avec l'oral : /100. Sans : /75.", "With speaking: /100. Without: /75.")
+                : tr("Không chấm điểm, chỉ ghi âm để nghe lại.", "Non noté, enregistrement pour vous réécouter.", "Not scored, recording only.")}
             </span>
           </span>
         </label>
