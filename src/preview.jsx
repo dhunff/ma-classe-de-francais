@@ -786,7 +786,7 @@ function Preview() {
               bxhFixture={empty ? [] : [{ hang: 1, id: "a", name: "Minh Anh", avatar: "chouette", xp: 120 }, { hang: 2, id: "me", name: "Linh", avatar: "", xp: 85, la_toi: true }, { hang: 3, id: "b", name: "Tuấn", avatar: "", xp: 40 }]}
               gioHocFixture={empty ? { co_du_lieu: false } : { co_du_lieu: true, tong_phut: 185, ngay: [["2026-09-21",20],["2026-09-22",0],["2026-09-23",45],["2026-09-24",30],["2026-09-25",0],["2026-09-26",60],["2026-09-27",30]].map(([d, phut]) => ({ d, phut })) }}
               theoDoiFixture={empty ? [] : [{ id: "a", name: "Minh Anh", username: "minh_anh", avatar: "chouette", has_studied_today: true }, { id: "b", name: "Tuấn", username: "tuan_b1", avatar: "", has_studied_today: false }]}
-              chuoiFixture={empty ? { chuoi: 0, tuan: Array(7).fill(false), homNay: 4 } : { chuoi: 5, tuan: [true, true, true, true, false, false, false], homNay: 3 }}
+              chuoiFixture={empty ? { chuoi: 0, tuan: Array(7).fill(false), homNay: 4 } : { chuoi: 4, tuan: [false, false, true, true, true, false, false], bang: [false, true, false, false, false, false, false], homNay: 5, conLaiBang: 4, bangMoiThang: 5 }}
               profile={{ goal: "DELF B1" }} t={t} /></>
           } />
           {/* Lịch: hạn nộp lấy từ EXERCISES nên có sẵn nội dung; `events`

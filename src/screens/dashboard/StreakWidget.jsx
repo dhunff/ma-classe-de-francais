@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Flame, Check } from "lucide-react";
+import { Flame, Check, Snowflake } from "lucide-react";
 import { docChuoiTuan } from "../../shared/hoatDong.js";
 import { tr } from "../../shared/i18n.jsx";
 import { LeonNoi } from "../../shared/leon.jsx";
@@ -62,7 +62,10 @@ export default function StreakWidget({ t, fixture }) {
         </LeonNoi>
       ) : d.chuoi > 0 ? (
         <LeonNoi cam="buon" size={52} className="mt-4">
-          {tr(<><em>Ohlala !</em> Chuỗi {d.chuoi} ngày sắp tắt rồi kìa! Làm một bài nhỏ để giữ lửa nhé, <em>allez</em>!</>, <><em>Ohlala !</em> Ta série de {d.chuoi} jours va s'éteindre ! Un petit exercice pour la garder, <em>allez</em> !</>, <><em>Ohlala!</em> Your {d.chuoi}-day streak is about to go out! One small exercise keeps it alive, <em>allez</em>!</>)}
+          {/* 13/10: còn lượt đóng băng thì ngày lỡ không làm đứt chuỗi. */}
+          {d.conLaiBang > 0
+            ? tr(<><em>Ohlala !</em> Hôm nay chưa học. Bỏ lỡ thì Leon sẽ đóng băng ngày này để giữ chuỗi {d.chuoi} ngày (còn {d.conLaiBang} lần tháng này). Làm một bài nhỏ cho chắc nhé!</>, <><em>Ohlala !</em> Pas encore étudié aujourd'hui. Sinon, Leon gèlera ce jour pour garder ta série de {d.chuoi} jours (encore {d.conLaiBang} ce mois-ci).</>, <><em>Ohlala!</em> No study yet today. If you skip, Leon will freeze this day to keep your {d.chuoi}-day streak ({d.conLaiBang} freezes left this month).</>)
+            : tr(<><em>Ohlala !</em> Hết lượt đóng băng tháng này: không học hôm nay là chuỗi {d.chuoi} ngày tắt đó. <em>Allez</em>!</>, <><em>Ohlala !</em> Plus de gel ce mois-ci : sans exercice aujourd'hui, ta série de {d.chuoi} jours s'éteint. <em>Allez</em> !</>, <><em>Ohlala!</em> No freezes left this month: skip today and your {d.chuoi}-day streak ends. <em>Allez</em>!</>)}
         </LeonNoi>
       ) : null)}
 
@@ -70,6 +73,7 @@ export default function StreakWidget({ t, fixture }) {
         <div className="grid grid-cols-7 gap-1.5">
           {THU.map((ten, i) => {
             const xong = !!d?.tuan?.[i];
+            const bang = !xong && !!d?.bang?.[i];
             const homNay = d?.homNay === i;
             const style = xong ? { "--tre": `${0.08 * tre++}s` } : undefined;
             return (
@@ -85,11 +89,12 @@ export default function StreakWidget({ t, fixture }) {
                     /* 08/10: màu cam cùng tông ngọn lửa, viền 3px, ô đã học tô đặc. */
                     "grid aspect-square w-full max-w-[2.5rem] place-items-center rounded-full border-[3px] border-solid",
                     xong ? "mcf-tich border-orange-500 bg-orange-500 text-white shadow-[0_6px_16px_rgba(249,115,22,0.35)]"
+                      : bang ? "border-sky-400 bg-sky-100 text-sky-600 dark:bg-sky-500/20 dark:text-sky-300"
                       : homNay ? "border-orange-400 bg-orange-500/10 text-transparent"
                       : "border-line-strong bg-transparent text-transparent",
                   ].join(" ")}
                 >
-                  <Check size={18} strokeWidth={3.5} />
+                  {bang ? <Snowflake size={18} strokeWidth={2.5} aria-label={tr("Ngày đóng băng", "Jour gelé", "Frozen day")} /> : <Check size={18} strokeWidth={3.5} />}
                 </span>
                 </span>
                 <span className={`text-xs ${homNay ? "font-bold text-ink" : "text-soft"}`}>{ten}</span>
@@ -97,6 +102,13 @@ export default function StreakWidget({ t, fixture }) {
             );
           })}
         </div>
+        {/* Đóng băng chuỗi (13/10): 5 lần mỗi tháng, tự dùng khi lỡ một ngày. */}
+        {d?.conLaiBang != null && (
+          <p className="m-0 mt-3 flex items-center justify-center gap-1.5 text-xs text-soft" title={tr("Ngày không làm bài được tự đóng băng để giữ chuỗi. Lỡ quá 5 ngày trong một tháng thì chuỗi đứt.", "Un jour sans exercice est gelé automatiquement. Au-delà de 5 par mois, la série s'arrête.", "A day without study is frozen automatically. More than 5 in a month and the streak ends.")}>
+            <Snowflake size={13} className="text-sky-500" />
+            {tr(`Đóng băng: còn ${d.conLaiBang}/${d.bangMoiThang} lần tháng này`, `Gel de série : ${d.conLaiBang}/${d.bangMoiThang} ce mois-ci`, `Streak freezes: ${d.conLaiBang}/${d.bangMoiThang} left this month`)}
+          </p>
+        )}
       </div>
     </section>
   );

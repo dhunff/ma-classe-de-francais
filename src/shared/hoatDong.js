@@ -68,6 +68,10 @@ export async function docChuoiTuan() {
       chuoi: Number(data.current_streak) || 0,
       tuan: Array.isArray(data.weekly_status) ? data.weekly_status.map(Boolean) : Array(7).fill(false),
       homNay: Number.isInteger(data.today_index) ? data.today_index : -1,
+      /* Đóng băng chuỗi (migration 138): ngày lỡ được giữ chuỗi, 5 lần/tháng. */
+      bang: Array.isArray(data.weekly_frozen) ? data.weekly_frozen.map(Boolean) : Array(7).fill(false),
+      conLaiBang: Number.isInteger(data.freeze_left) ? data.freeze_left : null,
+      bangMoiThang: Number(data.freeze_per_month) || 5,
     };
   } catch {
     return null;
