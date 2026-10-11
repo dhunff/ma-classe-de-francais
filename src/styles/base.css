@@ -243,3 +243,8 @@ button, input, select, textarea { font-family: inherit; }
 @media (min-width: 768px) { .de-van-cot { column-count: 2; column-gap: 28px; column-rule: 1px solid #ddd; } }
 .de-giay .de-nhat { color: #555; }
 .de-chan-trang { border-top: 1.5px solid #111; color: #222; }
+
+/* Thanh cuộn mảnh (13/10): dải chủ đề Lộ trình cần thấy được là cuộn được. */
+.mcf-cuon-mong { scrollbar-width: thin; scrollbar-color: rgb(var(--mcf-line-rgb)) transparent; }
+.mcf-cuon-mong::-webkit-scrollbar { height: 6px; width: 6px; }
+.mcf-cuon-mong::-webkit-scrollbar-thumb { background: rgb(var(--mcf-line-rgb)); border-radius: 999px; }

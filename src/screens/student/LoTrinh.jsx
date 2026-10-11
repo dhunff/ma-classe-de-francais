@@ -140,7 +140,7 @@ export default function LoTrinh() {
   }
 
   return (
-    <div className="mx-auto max-w-3xl px-4 pb-24 pt-6">
+    <div className="mx-auto max-w-5xl px-4 pb-24 pt-6">
       {/* Khung đầu trang (09/10): Leon + tổng sao + thanh tiến độ. */}
       <header className="mcf-cau-vao relative mb-5 overflow-hidden rounded-3xl bg-gradient-to-br from-blue-600 via-primary to-indigo-600 p-6 text-white shadow-[0_20px_50px_rgba(37,99,235,0.3)]">
         <span aria-hidden className="absolute -right-12 -top-12 h-48 w-48 rounded-full bg-white/10" />
@@ -164,26 +164,42 @@ export default function LoTrinh() {
         </div>
       </header>
 
-      {/* Dãy chọn chủ đề — mỗi nút hiện số màn đã qua / tổng. */}
-      <nav aria-label={t("path.topics")} className="no-scrollbar -mx-4 mb-4 flex gap-2 overflow-x-auto px-4 pb-2">
-        {chuongs.map((c) => {
-          const xong = c.man.filter((m) => m.sao > 0).length;
-          const dang = c.ma === dangXem.ma;
-          return (
-            <button key={c.ma} type="button" onClick={() => { if (!dang) phat("tiep"); setChon(c.ma); }} aria-pressed={dang}
-              className={"shrink-0 cursor-pointer rounded-2xl border-2 border-solid px-3 py-2 text-left font-sans transition-all duration-200 " + (dang ? "-translate-y-0.5 text-white shadow-lg" : "border-line bg-surface text-ink hover:-translate-y-0.5 hover:bg-surface2")}
-              style={dang ? { backgroundColor: c.mau, borderColor: c.mau } : undefined}>
-              <span className="block max-w-[11rem] truncate text-xs font-extrabold">{c.ten}</span>
-              <span className={"block text-[11px] font-semibold " + (dang ? "opacity-90" : "text-soft")}>{xong}/{c.man.length}{c.trum.sao > 0 ? " · ★" : ""}</span>
-              <span className={"mt-1 block h-1 w-full overflow-hidden rounded-full " + (dang ? "bg-white/30" : "bg-surface2")}>
-                <span className="block h-full rounded-full" style={{ width: `${(xong / c.man.length) * 100}%`, backgroundColor: dang ? "#fff" : c.mau }} />
-              </span>
-            </button>
-          );
-        })}
-      </nav>
+      {/* 13/10: chủ đề thành CỘT DỌC bên trái (màn rộng), lộ trình bên phải.
+          Màn hẹp vẫn là dải ngang nhưng cuộn được bằng con lăn chuột (đổi
+          deltaY thành cuộn ngang) và có thanh cuộn mảnh, không phải chỉ dùng phím. */}
+      <div className="lg:grid lg:grid-cols-[17rem_minmax(0,1fr)] lg:items-start lg:gap-6">
+        <nav aria-label={t("path.topics")}
+          onWheel={(e) => {
+            const el = e.currentTarget;
+            if (window.matchMedia("(min-width: 1024px)").matches) return;
+            if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) el.scrollLeft += e.deltaY;
+          }}
+          className="mcf-cuon-mong -mx-4 mb-4 flex gap-2 overflow-x-auto px-4 pb-2 lg:sticky lg:top-2 lg:mx-0 lg:mb-0 lg:max-h-[calc(100vh-7rem)] lg:flex-col lg:overflow-y-auto lg:overflow-x-hidden lg:rounded-3xl lg:border lg:border-solid lg:border-line lg:bg-surface lg:p-3">
+          <p className="m-0 hidden px-2 pb-1 pt-1 text-[11px] font-extrabold uppercase tracking-[0.14em] text-soft lg:block">{t("path.topics")} · {chuongs.length}</p>
+          {chuongs.map((c) => {
+            const xong = c.man.filter((m) => m.sao > 0).length;
+            const dang = c.ma === dangXem.ma;
+            return (
+              <button key={c.ma} type="button" onClick={() => { if (!dang) phat("tiep"); setChon(c.ma); }} aria-pressed={dang}
+                className={"shrink-0 cursor-pointer rounded-2xl border-2 border-solid px-3 py-2 text-left font-sans transition-all duration-200 lg:w-full lg:shrink " + (dang ? "text-white shadow-lg" : "border-transparent bg-surface text-ink hover:bg-surface2 max-lg:border-line")}
+                style={dang ? { backgroundColor: c.mau, borderColor: c.mau } : undefined}>
+                <span className="flex items-center gap-2">
+                  <span aria-hidden className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: dang ? "#fff" : c.mau }} />
+                  <span className="block max-w-[11rem] truncate text-xs font-extrabold lg:max-w-none lg:whitespace-normal lg:leading-snug">{c.ten}</span>
+                </span>
+                <span className={"mt-0.5 block text-[11px] font-semibold " + (dang ? "opacity-90" : "text-soft")}>{xong}/{c.man.length}{c.trum.sao > 0 ? " · ★" : ""}</span>
+                <span className={"mt-1 block h-1 w-full overflow-hidden rounded-full " + (dang ? "bg-white/30" : "bg-surface2")}>
+                  <span className="block h-full rounded-full" style={{ width: `${(xong / c.man.length) * 100}%`, backgroundColor: dang ? "#fff" : c.mau }} />
+                </span>
+              </button>
+            );
+          })}
+        </nav>
 
-      <Chuong key={dangXem.ma} chuong={dangXem} onMo={(m, laTrum) => mo(m, laTrum, dangXem)} t={t} />
+        <div className="min-w-0">
+          <Chuong key={dangXem.ma} chuong={dangXem} onMo={(m, laTrum) => mo(m, laTrum, dangXem)} t={t} />
+        </div>
+      </div>
 
       {dangChoi && <TroChoiMan {...dangChoi} t={t} onXong={luuKetQua} onDong={() => setDangChoi(null)} />}
     </div>
