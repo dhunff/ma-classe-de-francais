@@ -220,3 +220,26 @@ body {
 /* Preflight tắt nên nút/ô nhập KHÔNG kế thừa font: chữ hoa tiếng Việt rơi về
    font hệ thống (lỗi nút « BẮT ĐẦU THI », 10/10). Chốt chung cho mọi nơi. */
 button, input, select, textarea { font-family: inherit; }
+
+/* ══ Trang giấy đề thi DELF (11/10) ══
+ * Dựng lại đúng « DOCUMENT RÉSERVÉ AU CANDIDAT » của France Éducation
+ * international: giấy trắng chữ đen, Roboto Condensed, ô đánh dấu vuông, dòng
+ * chấm để viết. CỐ Ý không đảo theo bản tối (như tờ đề thật), nên màu viết
+ * thẳng ở đây thay vì đi qua token, ngoại lệ có chủ đích như STAT_GRADIENTS. */
+.de-ban { background: #d9d9d9; }
+.de-giay { background: #fff; color: #111; font-family: "Roboto Condensed", "Arial Narrow", Arial, sans-serif; box-shadow: 0 2px 14px rgba(0,0,0,.18); }
+.de-giay * { font-family: inherit; }
+.de-dau-trang { background: #efefef; border-bottom: 2px solid #111; color: #222; letter-spacing: .02em; }
+.de-so-phan { background: #222; color: #fff; }
+.de-tron { background: #111; color: #fff; }
+.de-o { border: 1.5px solid #111; background: #fff; }
+.de-cham { border: 0; border-bottom: 1.5px dotted #333; background: transparent; color: #111; outline: none; }
+.de-cham:focus { border-bottom-color: #2563eb; background: #f5f8ff; }
+.de-dong-ke { border: 1px solid #bbb; color: #111; outline: none; line-height: 32px; padding: 0 12px;
+  background: #fff repeating-linear-gradient(#fff 0 31px, #b9b9b9 31px 32px); background-attachment: local; }
+.de-dong-ke:focus { border-color: #2563eb; }
+.de-van { border: 1px solid #111; }
+.de-van p { margin: 0 0 .7em; }
+@media (min-width: 768px) { .de-van-cot { column-count: 2; column-gap: 28px; column-rule: 1px solid #ddd; } }
+.de-giay .de-nhat { color: #555; }
+.de-chan-trang { border-top: 1.5px solid #111; color: #222; }

@@ -317,8 +317,9 @@ const PHAN_THI_MAU = {
 };
 /* Phần có HAI bài: để xem thanh chuyển bài và hộp « chưa làm xong » (08/10). */
 PHAN_THI_MAU.exercises = [PHAN_THI_MAU.exercise, {
-  id: "xem-thu-2", title: "Activité 2", level: "B1", consigne: "<p>Lisez le document puis répondez.</p>",
-  imageUrl: "", readingText: "", audioUrl: "",
+  id: "xem-thu-2", title: "Activité 2", level: "B2", consigne: "<p>Lisez le document puis répondez.</p>",
+  imageUrl: "", audioUrl: "",
+  readingText: "<p><strong>Un musée ouvert la nuit</strong></p><p>Depuis le mois de mai, le musée des Arts et Métiers reste ouvert jusqu&#39;à 22 heures le vendredi. Les visiteurs peuvent y découvrir les collections dans une ambiance plus calme.</p><p>Selon la direction, la fréquentation du soir a doublé en trois mois, surtout chez les jeunes actifs qui ne peuvent pas venir en semaine.</p>",
   questions: [
     { id: "q2", ord: 0, type: "qcm", prompt: "Le musée ouvre à quelle heure ?", options: ["9 h", "10 h", "11 h"] },
     { id: "q3", ord: 1, type: "vf", prompt: "Le musée est gratuit le dimanche." },

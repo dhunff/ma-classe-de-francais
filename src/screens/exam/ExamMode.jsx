@@ -525,122 +525,129 @@ export function PhanThi({ section, attemptId, answers, setAnswers, onDone, onBlu
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const gap = conLai <= 60 ? "text-danger" : conLai <= 300 ? "text-warn" : "text-ink";
 
   const dat = (qid, v) => setAnswers((p) => ({ ...p, [qid]: v }));
 
+  /* ══ GIAO DIỆN « TỜ ĐỀ » (11/10) ══
+   * Dựng theo tờ đề DELF thật (France Éducation international): dải xám
+   * « DOCUMENT RÉSERVÉ AU CANDIDAT », ô số phần đen + tiêu đề lớn, « ▶ EXERCICE »,
+   * câu đánh số trong chấm tròn đen, phương án « A ☐ », điểm in nghiêng bên
+   * phải, dòng chấm để viết, chân trang « DELF B2 tout public · Page x sur y ».
+   * Màu cố định trắng/đen như giấy (xem .de-giay trong base.css). */
+  const SO_PHAN = { CO: 1, CE: 2, PE: 3, PO: 4 };
+  const TEN_PHAN = { CO: "Compréhension de l'oral", CE: "Compréhension des écrits", PE: "Production écrite", PO: "Production orale" };
+  const capDe = ex?.level === "C1" || ex?.level === "C2" ? `DALF ${ex.level}` : `DELF ${ex?.level ?? ""}`;
+  const diemPhan = section.points || EXAM_STRUCTURE[ex?.level]?.find((p) => p.code === section.code)?.points || 25;
+  const O = ({ chon }) => (
+    <span aria-hidden className="de-o inline-grid h-[18px] w-[18px] shrink-0 place-items-center text-[15px] font-bold leading-none">{chon ? "✕" : ""}</span>
+  );
+
   return (
-    <div className="mx-auto max-w-3xl py-6">
-      <div className="sticky top-0 z-10 -mx-4 mb-6 flex items-center justify-between gap-4 bg-bg/95 px-4 py-3 backdrop-blur">
-        <div className="min-w-0">
-          <div className="text-xs font-bold uppercase tracking-wide text-primary">{section.code}</div>
-          <div className="truncate text-sm font-bold text-ink">{section.label}</div>
-          {dsBai.length > 1 && (
-            <div className="mt-0.5 text-xs text-soft">{dsBai.length} {tr("bài · dùng chung", "exercices · durée commune", "exercises · shared")} {section.minutes} {tr("phút", "min", "min")}</div>
-          )}
+    <div className="de-ban -mx-4 min-h-screen px-2 pb-12 sm:px-6">
+      <div className="sticky top-0 z-10 -mx-2 mb-5 flex items-center justify-between gap-4 border-0 border-b border-solid border-[#bbb] bg-white/95 px-4 py-2.5 backdrop-blur sm:-mx-6 sm:px-6" style={{ fontFamily: '"Roboto Condensed", sans-serif' }}>
+        <div className="min-w-0 text-[#111]">
+          <div className="text-[11px] font-bold uppercase tracking-[.12em] text-[#555]">{capDe} · {tr("Phần", "Épreuve", "Part")} {SO_PHAN[section.code]}</div>
+          <div className="truncate text-[15px] font-bold">{TEN_PHAN[section.code] ?? section.label}</div>
         </div>
         {onThoat && (
           <button type="button" onClick={onThoat}
-            className="ml-auto h-9 shrink-0 cursor-pointer rounded-full border border-solid border-line bg-surface px-4 font-sans text-xs font-bold text-soft hover:text-danger">
-            Thoát
+            className="ml-auto h-9 shrink-0 cursor-pointer rounded-md border border-solid border-[#999] bg-white px-4 text-xs font-bold text-[#333] hover:border-[#c00] hover:text-[#c00]">
+            {tr("Thoát", "Quitter", "Exit")}
           </button>
         )}
         <NutTiengThi />
         {/* Không nhấp nháy: gây hoảng, không giúp gì thêm. */}
-        <div className={`flex shrink-0 items-center gap-2 rounded-full bg-surface2 px-4 py-2 font-bold tabular-nums ${gap}`}>
-          <Clock size={15} /> {dongHo(Math.max(0, conLai))}
+        <div className={`flex shrink-0 items-center gap-2 rounded-md border border-solid border-[#111] bg-white px-3 py-1.5 text-lg font-bold tabular-nums ${conLai <= 60 ? "text-[#c00]" : conLai <= 300 ? "text-[#b45309]" : "text-[#111]"}`}>
+          <Clock size={16} /> {dongHo(Math.max(0, conLai))}
         </div>
       </div>
 
-      {/* ── Thanh chuyển bài (làm lại 08/10) ──
-         Mỗi bài một ô: số thứ tự, tên ngắn, « đã làm x/y câu » và thanh tiến độ.
-         Chỉ đi lại TRONG phần này; câu trả lời khoá theo question.id nên chuyển
-         qua lại không mất gì. */}
+      {/* Chuyển bài trong cùng phần: dạng thẻ hồ sơ, đọc được « đã làm x/y ». */}
       {dsBai.length > 1 && (
-        <nav aria-label={tr("Bài trong phần thi", "Exercices de la partie", "Exercises in this part")} className="mb-6 grid gap-2" style={{ gridTemplateColumns: `repeat(${Math.min(dsBai.length, 4)}, minmax(0, 1fr))` }}>
+        <nav aria-label={tr("Bài trong phần thi", "Exercices de la partie", "Exercises in this part")} className="mx-auto mb-0 flex max-w-[840px] flex-wrap gap-1 px-2" style={{ fontFamily: '"Roboto Condensed", sans-serif' }}>
           {dsBai.map((b, j) => {
             const tong = (b.questions ?? []).length;
             const lam = tong - thieuTheoBai[j].length;
             const dang = j === baiIdx;
-            const du = tong > 0 && lam === tong;
             return (
               <button key={b.id} type="button" onClick={() => setBaiIdx(j)} aria-current={dang ? "step" : undefined}
-                className={`cursor-pointer rounded-2xl border border-solid p-3 text-left font-sans transition-colors ${dang ? "border-primary bg-primary-soft" : "border-line bg-surface hover:border-primary"}`}>
-                <span className="flex items-center gap-2">
-                  <span className={`grid h-6 w-6 shrink-0 place-items-center rounded-full text-xs font-extrabold ${dang ? "bg-primary text-white" : du ? "bg-ok text-white" : "bg-surface2 text-ink"}`}>{j + 1}</span>
-                  <span className="text-xs font-bold text-ink">{tr("Bài", "Exercice", "Exercise")} {j + 1}</span>
-                  <span className={`ml-auto text-xs font-bold tabular-nums ${du ? "text-ok" : "text-soft"}`}>{tong ? `${lam}/${tong}` : "—"}</span>
-                </span>
-                <span className="mt-2 block h-1.5 overflow-hidden rounded-full bg-surface2">
-                  <span className={`block h-full rounded-full ${du ? "bg-ok" : "bg-primary"}`} style={{ width: tong ? `${(lam / tong) * 100}%` : "0%" }} />
-                </span>
+                className={`cursor-pointer rounded-t-md border border-b-0 border-solid px-4 py-2 text-left text-sm font-bold ${dang ? "border-[#111] bg-white text-[#111]" : "border-[#aaa] bg-[#ececec] text-[#555] hover:bg-white"}`}>
+                EXERCICE {j + 1} <span className="ml-1 font-normal tabular-nums">{tong ? `· ${lam}/${tong}` : ""}</span>
               </button>
             );
           })}
         </nav>
       )}
 
-      {/* Consigne là HTML, không phải chữ thuần.
-         Trình soạn bài (RichTextEditor) sinh ra thẻ — căn giữa, in nghiêng, tô
-         màu — và lưu nguyên vào `consigne`. Dựng bằng `{ex.consigne}` thì React
-         escape hết, và học sinh đọc đúng nghĩa đen của mã nguồn:
-         `<div style="text-align: center;"> <span style=…>Depuis une dizaine…`
+      <article className="de-giay mx-auto max-w-[840px]">
+        <div className="de-dau-trang px-6 pb-3 pt-6 text-center text-[13px] uppercase sm:pt-8">DOCUMENT RÉSERVÉ AU CANDIDAT – ÉPREUVES COLLECTIVES</div>
+        <div className="px-5 pb-8 pt-6 sm:px-14">
+          {baiIdx === 0 && (
+            <div className="mb-7 flex items-center gap-4">
+              <span className="de-so-phan grid h-14 w-14 shrink-0 place-items-center text-[34px] font-bold">{SO_PHAN[section.code]}</span>
+              <h1 className="m-0 flex-1 text-[30px] font-extrabold leading-tight text-[#111] sm:text-[38px]">{TEN_PHAN[section.code] ?? section.label}</h1>
+              {section.code !== "PO" && <span className="shrink-0 text-sm font-bold italic">{diemPhan} points</span>}
+            </div>
+          )}
+          {(dsBai.length > 1 || section.code === "CO" || section.code === "CE") && (
+            <div className="mb-1 flex items-start gap-3">
+              <span aria-hidden className="mt-1 text-[22px] leading-none">▶</span>
+              <h2 className="m-0 flex-1 text-[24px] font-extrabold uppercase leading-none text-[#111]">Exercice {baiIdx + 1}</h2>
+              <span className="text-xs font-bold italic">{(ex.questions ?? []).length} {(ex.questions ?? []).length > 1 ? "points" : "point"}</span>
+            </div>
+          )}
 
-         `Taking.jsx` và `PracticeHub.jsx` đã dùng dangerouslySetInnerHTML cho
-         đúng trường này từ lâu; chỉ màn thi bị bỏ sót. Nội dung do giáo viên
-         soạn và đã nằm sau `is_teacher()`, cùng mức tin cậy với `readingText`
-         ngay bên dưới. */}
-      {ex.consigne && (
-        <div className="m-0 mb-4 text-sm italic leading-relaxed text-soft"
-             dangerouslySetInnerHTML={{ __html: ex.consigne }} />
-      )}
-      {ex.audioUrl && (
-        /* `key` theo bài (07/10): không có nó thì sang bài 2 React giữ nguyên
-           component của bài 1, kèm `conLai = 0` → mọi bài sau báo hết lượt. */
-        <AudioGioiHan key={ex.id} src={ex.audioUrl} attemptId={attemptId} questionId={`ex:${ex.id}`} luot={ex.ngheKieuThi ? 1 : 2} />
-      )}
+          {/* Consigne là HTML do giáo viên soạn (RichTextEditor), cùng mức tin cậy
+              với readingText, nên dựng bằng dangerouslySetInnerHTML như Taking.jsx. */}
+          {ex.consigne && (
+            <div className="mb-5 ml-0 text-[15px] font-bold leading-snug text-[#111] sm:ml-9 [&_em]:font-normal [&_p]:m-0 [&_p+p]:mt-2"
+                 dangerouslySetInnerHTML={{ __html: ex.consigne }} />
+          )}
+          {ex.audioUrl && (
+            /* `key` theo bài (07/10): không có nó thì sang bài 2 React giữ nguyên
+               component của bài 1, kèm `conLai = 0` → mọi bài sau báo hết lượt. */
+            <div className="mb-6 sm:ml-9"><AudioGioiHan key={ex.id} src={ex.audioUrl} attemptId={attemptId} questionId={`ex:${ex.id}`} luot={ex.ngheKieuThi ? 1 : 2} /></div>
+          )}
 
-      {/* Ảnh đề bài — màn thi trước đây KHÔNG dựng nó.
-         Với bài đọc hiểu, ảnh thường CHÍNH LÀ ngữ liệu: áp phích, vé tàu, quảng
-         cáo. Thiếu nó thì câu hỏi vẫn hiện đủ nhưng không trả lời được, và học
-         sinh mất điểm vì một thứ không phải lỗi của họ. */}
-      {ex.imageUrl && (
-        <figure className="m-0 mb-6">
-          <img src={ex.imageUrl} alt={tr("Tài liệu của bài", "Document de l'exercice", "Exercise document")} loading="lazy"
-            className="mx-auto block w-full max-w-3xl rounded-2xl border border-line object-contain" />
-        </figure>
-      )}
-      {ex.readingText && (
-        <div className="mb-6 max-h-80 overflow-y-auto rounded-2xl border border-line bg-surface p-5 text-sm leading-relaxed text-ink"
-             dangerouslySetInnerHTML={{ __html: ex.readingText }} />
-      )}
+          {/* Ảnh đề bài: với bài đọc hiểu, ảnh thường CHÍNH LÀ ngữ liệu. */}
+          {ex.imageUrl && (
+            <figure className="m-0 mb-6">
+              <img src={ex.imageUrl} alt={tr("Tài liệu của bài", "Document de l'exercice", "Exercise document")} loading="lazy"
+                className="mx-auto block w-full border border-solid border-[#111] object-contain" />
+            </figure>
+          )}
+          {/* Ngữ liệu đọc: in ra như trang báo trong đề, hai cột, KHÔNG khung cuộn. */}
+          {ex.readingText && (
+            <div className="de-van mb-8 p-5 text-[15px] leading-[1.45] sm:p-7">
+              <div className="de-van-cot [&_strong:first-child]:block [&_p:first-child]:text-center [&_p:first-child]:text-[20px] [&_p:first-child]:font-bold [&_p:first-child]:[column-span:all] [&_p:first-child]:mb-4"
+                   dangerouslySetInnerHTML={{ __html: ex.readingText }} />
+            </div>
+          )}
+          {ex.readingText && section.code !== "PO" && <p className="m-0 mb-5 text-[15px] font-bold sm:ml-9">Répondez aux questions.</p>}
 
       {/* ── PHẦN NÓI: ghi âm thay cho câu hỏi ──
-          Bài nói không có câu trắc nghiệm nào để trả lời. Đề bài (consigne và
-          ảnh) đã hiện ở trên; dưới đây là bộ ghi âm.
-
-          Nhận biết theo MÃ phần, không theo "bài này có câu hỏi hay không":
-          một bài nói soạn thiếu vẫn phải hiện đúng bộ ghi âm chứ không phải
-          một danh sách rỗng. */}
+          Nhận biết theo MÃ phần, không theo "bài này có câu hỏi hay không". */}
       {section.code === "PO" ? (
         <GhiAmBaiNoi examId={examId} exerciseId={ex.id}
           gioiHanGiay={Math.max(60, (section.minutes ?? 15) * 60)} />
       ) : (
-      <ol className="m-0 list-none space-y-5 p-0">
+      <ol className="m-0 list-none space-y-7 p-0 text-[15.5px] leading-snug text-[#111]">
         {ex.questions.map((q, i) => (
-          <li key={q.id} className="rounded-2xl border border-line bg-surface p-5">
-            <div className="m-0 text-sm font-bold text-ink">
-              <span className="mr-2 text-soft">{i + 1}.</span>{q.prompt}
+          <li key={q.id} className="flex gap-3">
+            <span className="de-tron mt-0.5 grid h-[22px] w-[22px] shrink-0 place-items-center rounded-full text-[12px] font-bold">{i + 1}</span>
+            <div className="min-w-0 flex-1">
+            <div className="flex gap-3">
+              <div className="m-0 min-w-0 flex-1 whitespace-pre-line">{q.type === "vf" ? q.prompt.replace(/\s*Cochez la bonne réponse.*$/s, "") : q.prompt}</div>
+              {q.type !== "open" && <span className="shrink-0 pt-0.5 text-[11.5px] italic">1 point</span>}
             </div>
 
             {/* KHÔNG có tô màu đúng/sai ở đây — cố ý. Xem chú thích đầu file. */}
             {q.type === "qcm" && (
-              <div className="mt-3 space-y-2">
+              <div className="mt-2 grid gap-1">
                 {(q.options ?? []).map((o, j) => (
-                  <button key={j} type="button" onClick={() => dat(q.id, j)}
-                    className={`block w-full rounded-xl border-0 px-4 py-2.5 text-left text-sm transition ${
-                      answers[q.id] === j ? "bg-primary text-white" : "bg-surface2 text-ink hover:brightness-95"}`}>
-                    <span className="flex items-center gap-3"><AnhLuaChon q={q} j={j} />{o}</span>
+                  <button key={j} type="button" onClick={() => dat(q.id, j)} aria-pressed={answers[q.id] === j}
+                    className={`flex w-full cursor-pointer items-center gap-2.5 rounded border-0 px-1.5 py-1 text-left text-[15.5px] text-[#111] ${answers[q.id] === j ? "bg-[#eef3ff]" : "bg-transparent hover:bg-[#f4f4f4]"}`}>
+                    <strong className="w-3">{String.fromCharCode(65 + j)}</strong><O chon={answers[q.id] === j} /><AnhLuaChon q={q} j={j} /><span>{o}</span>
                   </button>
                 ))}
               </div>
@@ -648,38 +655,40 @@ export function PhanThi({ section, attemptId, answers, setAnswers, onDone, onBlu
 
             {(q.type === "fill" || q.type === "conj") && (
               <input lang="fr" value={answers[q.id] ?? ""} onChange={(e) => dat(q.id, e.target.value)}
-                placeholder={tr("Câu trả lời…", "Réponse…", "Answer…")}
-                className="mt-3 w-full max-w-sm rounded-xl border border-line bg-surface2 px-4 py-2.5 text-sm text-ink" />
+                aria-label={tr("Câu trả lời", "Réponse", "Answer")}
+                className="de-cham mt-3 w-full px-1 py-1.5 text-[15.5px]" />
             )}
 
             {q.type === "vf" && (
-              <div className="mt-3 flex gap-2">
-                {/* B2/C1 (đề DELF thật) chỉ có Vrai/Faux + chép câu chứng minh. */}
-                {(["B2", "C1"].includes(ex.level) ? ["Vrai", "Faux"] : ["Vrai", "Faux", "?"]).map((o, j) => (
-                  <button key={j} type="button"
-                    onClick={() => dat(q.id, { ...(answers[q.id] ?? {}), choice: j })}
-                    className={`rounded-full border-0 px-4 py-2 text-sm font-semibold transition ${
-                      answers[q.id]?.choice === j ? "bg-primary text-white" : "bg-surface2 text-ink"}`}>
-                    {o}
-                  </button>
-                ))}
-              </div>
-            )}
-            {q.type === "vf" && (
-              <textarea lang="fr" rows={2} value={answers[q.id]?.just ?? ""}
-                onChange={(e) => dat(q.id, { ...(answers[q.id] ?? {}), just: e.target.value })}
-                placeholder={tr("Justification : chép lại câu trong bài chứng minh cho lựa chọn", "Justification : recopiez la phrase du texte", "Justification: copy the sentence from the text")}
-                className="mt-2 w-full resize-y rounded-xl border border-solid border-line bg-surface px-3 py-2 font-sans text-sm text-ink outline-none focus:border-primary" />
+              <>
+                <p className="m-0 mt-1 text-[12px] italic text-[#444]">{["B2", "C1"].includes(ex.level) ? "Cochez (X) la bonne réponse et recopiez la phrase ou la partie de texte qui justifie votre réponse." : "Cochez (X) la bonne réponse."}</p>
+                <div className="mt-2 flex flex-wrap justify-end gap-5">
+                  {/* B2/C1 (đề DELF thật) chỉ có Vrai/Faux + chép câu chứng minh. */}
+                  {(["B2", "C1"].includes(ex.level) ? ["Vrai", "Faux"] : ["Vrai", "Faux", "On ne sait pas"]).map((o, j) => (
+                    <button key={j} type="button" aria-pressed={answers[q.id]?.choice === j}
+                      onClick={() => dat(q.id, { ...(answers[q.id] ?? {}), choice: j })}
+                      className="flex cursor-pointer items-center gap-1.5 border-0 bg-transparent p-0 text-[15.5px] text-[#111]">
+                      <O chon={answers[q.id]?.choice === j} /> {o}
+                    </button>
+                  ))}
+                </div>
+                <label className="mt-3 flex items-end gap-2">
+                  <span className="shrink-0">Justification :</span>
+                  <textarea lang="fr" rows={2} value={answers[q.id]?.just ?? ""}
+                    onChange={(e) => dat(q.id, { ...(answers[q.id] ?? {}), just: e.target.value })}
+                    className="de-cham min-h-[52px] w-full resize-y px-1 text-[15px] leading-[26px]" />
+                </label>
+              </>
             )}
 
             {q.type === "open" && (
               <>
-                <textarea lang="fr" rows={10} value={answers[q.id] ?? ""}
+                <textarea lang="fr" rows={14} value={answers[q.id] ?? ""}
                   onChange={(e) => dat(q.id, e.target.value)}
-                  placeholder={tr("Bài viết của bạn…", "Votre texte…", "Your text…")}
-                  className="mt-3 w-full rounded-xl border border-line bg-surface2 p-4 text-sm leading-relaxed text-ink" />
-                <div className="mt-1 text-xs text-soft">
-                  {String(answers[q.id] ?? "").trim().split(/\s+/).filter(Boolean).length} mots
+                  aria-label={tr("Bài viết của bạn", "Votre texte", "Your text")}
+                  className="de-dong-ke mt-4 block w-full resize-y text-[15.5px]" />
+                <div className="mt-2 text-right text-[14px]">
+                  Nombre de mots : <strong className="tabular-nums">{String(answers[q.id] ?? "").trim().split(/\s+/).filter(Boolean).length}</strong>
                 </div>
               </>
             )}
@@ -694,30 +703,29 @@ export function PhanThi({ section, attemptId, answers, setAnswers, onDone, onBlu
 
             {q.type === "tableau" && (
               <div className="mt-3 overflow-x-auto">
-                <table className="w-full border-collapse text-sm">
+                <table className="w-full border-collapse text-[14.5px]">
                   <thead>
                     <tr>
-                      <th />
+                      <th className="border border-solid border-[#111] p-2" />
                       {(q.colonnes ?? []).map((c) => (
-                        <th key={c.id} className="p-2 text-xs font-bold text-soft">{c.titre}</th>
+                        <th key={c.id} className="border border-solid border-[#111] bg-[#efefef] p-2 text-xs font-bold">{c.titre}</th>
                       ))}
                     </tr>
                   </thead>
                   <tbody>
                     {(q.criteres ?? []).map((cr) => (
-                      <tr key={cr.id} className="border-t border-line">
-                        <td className="p-2 text-ink">{cr.texte}</td>
+                      <tr key={cr.id}>
+                        <td className="border border-solid border-[#111] p-2">{cr.texte}</td>
                         {(q.colonnes ?? []).map((co) => {
                           const key = `${cr.id}_${co.id}`;
                           const cur = answers[q.id]?.[key];
                           return (
-                            <td key={co.id} className="p-2 text-center">
+                            <td key={co.id} className="border border-solid border-[#111] p-2 text-center">
                               {["OUI", "NON"].map((v) => (
                                 <button key={v} type="button"
                                   onClick={() => dat(q.id, { ...(answers[q.id] ?? {}), [key]: v })}
-                                  className={`mx-0.5 rounded-full border-0 px-2.5 py-1 text-xs font-bold ${
-                                    cur === v ? "bg-primary text-white" : "bg-surface2 text-soft"}`}>
-                                  {v}
+                                  className="mx-1 inline-flex cursor-pointer items-center gap-1 border-0 bg-transparent p-0 text-xs font-bold text-[#111]">
+                                  <O chon={cur === v} /> {v}
                                 </button>
                               ))}
                             </td>
@@ -729,6 +737,7 @@ export function PhanThi({ section, attemptId, answers, setAnswers, onDone, onBlu
                 </table>
               </div>
             )}
+            </div>
           </li>
         ))}
       </ol>
@@ -764,10 +773,18 @@ export function PhanThi({ section, attemptId, answers, setAnswers, onDone, onBlu
        * đồng hồ bắn `onDone` lần nữa, không chặn ngón tay. */}
       <button type="button" disabled={doneRef.current}
         onClick={() => { if (doneRef.current) return; if (tongThieu > 0) setHoiNop(true); else nopNgay(); }}
-        className="mt-8 rounded-full border-0 bg-primary px-6 py-3 text-sm font-bold text-white shadow-lg
+        className="mt-10 cursor-pointer rounded-md border-0 bg-[#111] px-6 py-3 text-sm font-bold uppercase tracking-wide text-white
                    disabled:cursor-not-allowed disabled:bg-surface2 disabled:text-soft disabled:shadow-none">
         {dangNop ? tr("Đang nộp…", "Envoi…", "Submitting…") : tr("Nộp phần này", "Terminer cette partie", "Finish this part")}
       </button>
+
+        </div>
+        <div className="de-chan-trang mx-5 flex items-center justify-between py-3 text-[12px] sm:mx-14">
+          <strong>FRACILE</strong>
+          <span><strong>{capDe}</strong> tout public</span>
+          <span className="tabular-nums">Page {baiIdx + 1} sur {dsBai.length}</span>
+        </div>
+      </article>
 
       {hoiNop && (
         <div role="dialog" aria-modal="true" className="fixed inset-0 z-[300] grid place-items-center bg-black/55 p-4 backdrop-blur-sm">
