@@ -752,10 +752,10 @@ export function PhanThi({ section, attemptId, answers, setAnswers, onDone, onBlu
       {dsBai.length > 1 && (
         <div className="mt-8 flex items-center gap-2">
           <button type="button" disabled={baiIdx === 0} onClick={() => { setBaiIdx(baiIdx - 1); window.scrollTo({ top: 0 }); }}
-            className="h-10 cursor-pointer rounded-full border border-solid border-line bg-surface px-4 font-sans text-sm font-bold text-ink disabled:cursor-not-allowed disabled:opacity-40">{tr("← Bài trước", "← Exercice précédent", "← Previous exercise")}</button>
-          <span className="flex-1 text-center text-xs text-soft">{tr("Bài", "Exercice", "Exercise")} {baiIdx + 1}/{dsBai.length}</span>
+            className="h-10 cursor-pointer rounded-none border-[1.5px] border-solid border-[#111] bg-white px-4 text-[13px] font-bold uppercase tracking-wide text-[#111] hover:bg-[#f2f2f2] disabled:invisible">◀ Exercice {baiIdx > 0 ? baiIdx : 1}</button>
+          <span className="flex-1 text-center text-[13px] italic text-[#444]">Exercice {baiIdx + 1} sur {dsBai.length}</span>
           <button type="button" disabled={baiIdx === dsBai.length - 1} onClick={() => { setBaiIdx(baiIdx + 1); window.scrollTo({ top: 0 }); }}
-            className="h-10 cursor-pointer rounded-full border-0 bg-primary-soft px-4 font-sans text-sm font-bold text-primary disabled:cursor-not-allowed disabled:opacity-40">{tr("Bài tiếp →", "Exercice suivant →", "Next exercise →")}</button>
+            className="h-10 cursor-pointer rounded-none border-[1.5px] border-solid border-[#111] bg-[#111] px-4 text-[13px] font-bold uppercase tracking-wide text-white hover:bg-[#333] disabled:invisible">Exercice {Math.min(baiIdx + 2, dsBai.length)} ▶</button>
         </div>
       )}
 
@@ -773,7 +773,7 @@ export function PhanThi({ section, attemptId, answers, setAnswers, onDone, onBlu
        * đồng hồ bắn `onDone` lần nữa, không chặn ngón tay. */}
       <button type="button" disabled={doneRef.current}
         onClick={() => { if (doneRef.current) return; if (tongThieu > 0) setHoiNop(true); else nopNgay(); }}
-        className="mt-10 cursor-pointer rounded-md border-0 bg-[#111] px-6 py-3 text-sm font-bold uppercase tracking-wide text-white
+        className="mt-10 cursor-pointer rounded-none border-0 bg-[#111] px-6 py-3 text-sm font-bold uppercase tracking-wide text-white
                    disabled:cursor-not-allowed disabled:bg-surface2 disabled:text-soft disabled:shadow-none">
         {dangNop ? tr("Đang nộp…", "Envoi…", "Submitting…") : tr("Nộp phần này", "Terminer cette partie", "Finish this part")}
       </button>
