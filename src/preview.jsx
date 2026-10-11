@@ -77,6 +77,7 @@ const GOI_Y_AI_THU = {
 };
 import { PhanThi } from "./screens/exam/ExamMode.jsx";
 import POSelfEvaluation from "./screens/student/POSelfEvaluation.jsx";
+import HoanThienHoSo from "./shared/HoanThienHoSo.jsx";
 import NhanXetAI from "./screens/student/NhanXetAI.jsx";
 import { grilleToRubric } from "./shared/grilleRubric.js";
 import GrilleEditor from "./screens/teacher/GrilleEditor.jsx";
@@ -677,6 +678,7 @@ function Preview() {
     ["/etudiant/auto-evaluation", "Tự chấm Production écrite"],
     ["/etudiant/tu-cham-noi", "Tự chấm Production orale"],
     ["/etudiant/boc-tham", "Phần nói: bốc thăm + chuẩn bị"],
+    ["/etudiant/hoan-ho-so", "Hoàn thiện hồ sơ (mới đăng ký)"],
     ["/etudiant/phan-thi", "Một phần thi thử"],
     ["/etudiant/nhan-xet-ai", "Phiếu nhận xét AI"],
     ["/etudiant/the-lat", "Thẻ ghi nhớ — lật 3D"],
@@ -813,6 +815,7 @@ function Preview() {
           <Route path="/gioi-thieu/doi-ngu" element={<><Controls /><DoiNguThu /></>} />
           <Route path="/etudiant/danh-tinh" element={<><Controls /><DanhTinhThu /></>} />
           <Route path="/etudiant/thong-bao" element={<><Controls /><ThongBaoThu /></>} />
+          <Route path="/etudiant/hoan-ho-so" element={<><Controls /><HoanThienHoSo fixture={{ prenom: "Linh" }} /></>} />
           <Route path="/etudiant/boc-tham" element={<><Controls /><PhanThi section={{ code: "PO", label: "Production orale", minutes: 20, points: 25, exercise: { id: "po-xem-thu", level: "B2", questions: [], consigne: "<p><strong>Production orale : 20 minutes environ.</strong> 30 minutes de préparation.</p><p>Vous tirez au sort deux documents et vous en choisissez un.</p>", bocTham: { chuanBi: 30, phan: [{ ten: "Monologue suivi puis exercice en interaction", cachLam: "Choisissez un document.", soRut: 2, sujets: [{ ma: "1", html: "<p><strong>La publicité destinée aux enfants</strong></p>" }, { ma: "2", html: "<p><strong>Le télétravail, un acquis à généraliser ?</strong></p>" }, { ma: "3", html: "<p><strong>Faut-il rendre le service civique obligatoire ?</strong></p>" }, { ma: "4", html: "<p><strong>Voyager moins pour protéger la planète ?</strong></p>" }] }] } } }} attemptId="xem-thu" answers={{}} setAnswers={() => {}} onDone={() => {}} onBlur={() => {}} examId="xem-thu" /></>} />
           <Route path="/etudiant/tu-cham-noi" element={<><Controls /><div className="mx-auto max-w-6xl py-6"><POSelfEvaluation po={{ attemptId: "xem-thu", cap: "B2", examId: "xem-thu", tuCham: { monologue: 3 }, aiGoiY: { diem: { monologue: 3, interaction: 1, lexique: 3, morpho: 3, phono: 3 }, ly_do: { interaction: "Bản ghi chỉ có phần độc thoại, chưa có phần tranh luận." }, tong_quat: "Bài độc thoại có nêu vấn đề và hai luận điểm rõ, nhưng thiếu ví dụ cụ thể.", chep_loi: "Aujourd’hui, de plus en plus de jeunes reviennent à la photographie argentique…" } }} exerciseId="xem-thu" consigne="<p>Vous dégagez le problème soulevé par ce document…</p>" /></div></>} />
           <Route path="/etudiant/auto-evaluation" element={
