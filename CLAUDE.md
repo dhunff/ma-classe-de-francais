@@ -1289,6 +1289,11 @@ Xem `docs/roadmap-delf.md` — có nhật ký quyết định ở §5.
   (thưởng XP mốc chuỗi, tổng quan giáo viên) và `get_student_streak` đều đi qua nó. Chuỗi đếm
   NGÀY ĐÃ HỌC, ngày đóng băng chỉ nối. 139: lịch sử ở bảng `chuoi_dong_bang` (ghi khi mở widget
   và khi nộp bài, chỉ ngày đã NỐI được chuỗi), nên ngân sách tháng đếm cả chuỗi đã đứt.
+- **Kho bài thi thử RIÊNG — 13/10** (migration 140). `exercises.store` thêm `'exam'`: mọi bài
+  đề thi tham chiếu nằm ở đó (giữ nguyên id), không hiện trong thư viện luyện tập lẫn tìm kiếm
+  học sinh. 6 bài thư viện gốc từng ghép vào đề được nhân bản lại (`<id>_tv`). Giáo viên sửa
+  bài thi ở tab « Bài thi thử » (PracticeHub, biến `kho`); ExamComposer chỉ nạp kho `exam`.
+  LƯU Ý: `xuat_ban_nhap` (Duyệt nháp) vẫn xuất bản vào `practice`: đề nháp mới phải chuyển kho.
 - `s:mcf-submissions` vẫn giữ làm sao lưu, chưa xoá.
 
 

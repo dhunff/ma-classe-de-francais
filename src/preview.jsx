@@ -681,6 +681,7 @@ function Preview() {
     ["/etudiant/boc-tham", "Phần nói: bốc thăm + chuẩn bị"],
     ["/etudiant/hoan-ho-so", "Hoàn thiện hồ sơ (mới đăng ký)"],
     ["/etudiant/tai-khoan-moi", "Trang Tài khoản"],
+    ["/etudiant/phan-nghe", "Phần nghe 2 bài (thi thử)"],
     ["/etudiant/phan-thi", "Một phần thi thử"],
     ["/etudiant/nhan-xet-ai", "Phiếu nhận xét AI"],
     ["/etudiant/the-lat", "Thẻ ghi nhớ — lật 3D"],
@@ -817,6 +818,7 @@ function Preview() {
           <Route path="/gioi-thieu/doi-ngu" element={<><Controls /><DoiNguThu /></>} />
           <Route path="/etudiant/danh-tinh" element={<><Controls /><DanhTinhThu /></>} />
           <Route path="/etudiant/thong-bao" element={<><Controls /><ThongBaoThu /></>} />
+          <Route path="/etudiant/phan-nghe" element={<><Controls /><PhanThi section={{ code: "CO", label: "Compréhension de l'oral", minutes: 25, points: 25, exercises: [1, 2].map((k) => ({ id: "co-" + k, level: "A2", title: "Écoute " + k, consigne: "<p>Exercice " + k + "</p>", audioUrl: "/am-thanh-mau-" + k + ".mp3", imageUrl: ANH_MAU, questions: [{ id: "cq" + k, ord: 0, type: "qcm", prompt: "Question " + k, options: ["a", "b", "c"] }] })) }} attemptId="xem-thu" attemptTheoBai={{ "co-1": "a1", "co-2": "a2" }} answers={{}} setAnswers={() => {}} onDone={() => {}} onBlur={() => {}} examId="xem-thu" /></>} />
           <Route path="/etudiant/tai-khoan-moi" element={<><Controls /><AccountPage name="Linh" role="eleve" email="linh@example.com" emailVerified onLogout={() => {}} changePw={() => {}} /></>} />
           <Route path="/etudiant/hoan-ho-so" element={<><Controls /><HoanThienHoSo fixture={{ prenom: "Linh" }} /></>} />
           <Route path="/etudiant/boc-tham" element={<><Controls /><PhanThi section={{ code: "PO", label: "Production orale", minutes: 20, points: 25, exercise: { id: "po-xem-thu", level: "B2", questions: [], consigne: "<p><strong>Production orale : 20 minutes environ.</strong> 30 minutes de préparation.</p><p>Vous tirez au sort deux documents et vous en choisissez un.</p>", bocTham: { chuanBi: 30, phan: [{ ten: "Monologue suivi puis exercice en interaction", cachLam: "Choisissez un document.", soRut: 2, sujets: [{ ma: "1", html: "<p><strong>La publicité destinée aux enfants</strong></p>" }, { ma: "2", html: "<p><strong>Le télétravail, un acquis à généraliser ?</strong></p>" }, { ma: "3", html: "<p><strong>Faut-il rendre le service civique obligatoire ?</strong></p>" }, { ma: "4", html: "<p><strong>Voyager moins pour protéger la planète ?</strong></p>" }] }] } } }} attemptId="xem-thu" answers={{}} setAnswers={() => {}} onDone={() => {}} onBlur={() => {}} examId="xem-thu" /></>} />

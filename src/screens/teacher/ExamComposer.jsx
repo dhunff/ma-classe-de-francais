@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Plus, Trash2, Eye, EyeOff, Save, AlertTriangle, Headphones, BookOpen, PenLine, Mic, ChevronUp, ChevronDown } from "lucide-react";
-import { loadPractice } from "../../shared/exerciseStore.js";
+import { loadExercises } from "../../shared/exerciseStore.js";
 import { nhomTheoTrinhDo } from "../../shared/trinhDoDe.js";
 import { loadExams, saveExam, deleteExam, cotGrilleSanSang } from "../../shared/examStore.js";
 import { EXAM_STRUCTURE, khongCham } from "../exam/examPaper.js";
@@ -91,7 +91,8 @@ export default function ExamComposer({ t }) {
   const [tab, setTab] = useState("de");
 
   const taiLai = () => loadExams().then(setDsDe);
-  useEffect(() => { loadPractice().then(setKho); taiLai(); }, []);
+  /* 13/10: đề thi thử chỉ ghép bài trong kho thi thử (store 'exam'), không lấy từ thư viện luyện tập. */
+  useEffect(() => { loadExercises("exam").then(setKho); taiLai(); }, []);
 
   const doiLevel = (level) => setDraft((d) => ({
     exam: { ...d.exam, level,

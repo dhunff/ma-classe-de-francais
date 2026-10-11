@@ -450,7 +450,7 @@ function NutTiengThi() {
   );
 }
 
-export function PhanThi({ section, attemptId, answers, setAnswers, onDone, onBlur, onDoiBai, examId, onThoat }) {
+export function PhanThi({ section, attemptId, attemptTheoBai = {}, answers, setAnswers, onDone, onBlur, onDoiBai, examId, onThoat }) {
   /* Phần nói: đồng hồ = thời gian thi + thời gian chuẩn bị (13/10, bocTham). */
   const phutChuanBi = section.code === "PO" ? Number((section.exercises ?? [section.exercise])[0]?.bocTham?.chuanBi) || 0 : 0;
   const tongPhut = section.minutes + phutChuanBi;
@@ -610,14 +610,20 @@ export function PhanThi({ section, attemptId, answers, setAnswers, onDone, onBlu
             <div className="mb-5 ml-0 text-[15px] font-bold leading-snug text-[#111] sm:ml-9 [&_em]:font-normal [&_p]:m-0 [&_p+p]:mt-2"
                  dangerouslySetInnerHTML={{ __html: ex.consigne }} />
           )}
-          {ex.audioUrl && (
-            /* `key` theo bài (07/10): không có nó thì sang bài 2 React giữ nguyên
-               component của bài 1, kèm `conLai = 0` → mọi bài sau báo hết lượt. */
-            <div className="mb-6 sm:ml-9"><AudioGioiHan key={ex.id} src={ex.audioUrl} attemptId={attemptId} questionId={`ex:${ex.id}`} luot={ex.ngheKieuThi ? 1 : 2} /></div>
-          )}
+          {/* 13/10: MỌI bộ phát của phần này cùng được dựng, chỉ ẩn bài không xem.
+              Trước đây đổi bài là gỡ bộ phát bài 1, nên đang nghe bài 1 mà bấm
+              sang xem bài 2 thì mất luôn phần nghe (và mất lượt nghe duy nhất).
+              Mỗi bộ phát giữ attempt CỦA BÀI ĐÓ (attemptTheoBai). */}
+          {dsBai.map((b) => b.audioUrl && (
+            <div key={b.id} hidden={b.id !== ex.id} className="mb-6 sm:ml-9">
+              <AudioGioiHan src={b.audioUrl} attemptId={attemptTheoBai[b.id] ?? (b.id === ex.id ? attemptId : null)}
+                questionId={`ex:${b.id}`} luot={b.ngheKieuThi ? 1 : 2} />
+            </div>
+          ))}
 
-          {/* Ảnh đề bài: với bài đọc hiểu, ảnh thường CHÍNH LÀ ngữ liệu. */}
-          {ex.imageUrl && (
+          {/* Ảnh đề bài: với bài đọc hiểu, ảnh thường CHÍNH LÀ ngữ liệu.
+              13/10 (chủ dự án): phần NGHE không hiện ảnh, như đề thật. */}
+          {ex.imageUrl && section.code !== "CO" && (
             <figure className="m-0 mb-6">
               <img src={ex.imageUrl} alt={tr("Tài liệu của bài", "Document de l'exercice", "Exercise document")} loading="lazy"
                 className="mx-auto block w-full border border-solid border-[#111] object-contain" />
@@ -1161,7 +1167,7 @@ export default function ExamMode() {
        đổi, component sống tiếp, đồng hồ chạy tiếp. */
     return <>
       <PhanThi key={khoi[idx].code} section={khoi[idx]} examId={paper?.id}
-      attemptId={attemptId}
+      attemptId={attemptId} attemptTheoBai={attemptTheoBai.current}
       answers={answers} setAnswers={setAnswers} onDone={xongPhan}
       onDoiBai={setBaiHienTai}
       onThoat={() => setHopThoat(true)}

@@ -2,13 +2,13 @@ import React, { useState, useEffect, useRef, useLayoutEffect } from "react";
 import { createPortal } from "react-dom";
 import { useLocation } from "react-router-dom";
 import {
-  Headphones, BookOpen, PenLine, Puzzle, BookA, Sparkles, ArrowRight, Play, PackageOpen, Award, Target, Star, Users, RefreshCw, ChevronRight,
+  Timer, Headphones, BookOpen, PenLine, Puzzle, BookA, Sparkles, ArrowRight, Play, PackageOpen, Award, Target, Star, Users, RefreshCw, ChevronRight,
   RotateCcw, CheckCircle2, XCircle, Plus, ChevronLeft, PartyPopper, Trash2, Pencil, Copy, MoreVertical, Folder, FolderPlus, Image as ImageIcon, ChevronDown, Lightbulb, FileCheck,
 } from "lucide-react";
 import { C, S, QTYPES, VF_OPTS, LEVEL_COLORS } from "./shared/tokens.js";
 import { uid, fillOk, fillAccepted, vfOk, stripHtml, autoQ, tableauOk, tableauCells, diemCau, ordreOk, apparierOk, isQuestionAnswered, getUnansweredQuestionsCount } from "./shared/questions.js";
 import { load, save } from "./shared/storage.js";
-import { loadPractice, saveExercise, deleteExercise, patchExerciseMeta, clearFolder } from "./shared/exerciseStore.js";
+import { loadPractice, loadExercises, saveExercise, deleteExercise, patchExerciseMeta, clearFolder } from "./shared/exerciseStore.js";
 import { exSkills } from "./shared/exercises.js";
 import { WrongExplanation } from "./shared/ui.jsx";
 import { useT, tr } from "./shared/i18n.jsx";
@@ -77,7 +77,10 @@ function PracticeHubInner({ role = "eleve", name = "", accounts = [], onRequireL
   const isGuest = role === "guest";
   const requireLogin = () => { onRequireLogin?.(); };
   const t = useT();
-  const [topTab, setTopTab] = useState("bib");      // "bib" | "suivi" (prof)
+  const [topTab, setTopTab] = useState("bib");      // "bib" | "de" | "suivi" (prof)
+  /* 13/10: bài thi thử nằm ở kho RIÊNG (store 'exam', migration 140), không
+     hiện trong thư viện luyện tập. Giáo viên soạn/sửa chúng ở tab « Bài thi thử ». */
+  const kho = teacher && topTab === "de" ? "exam" : "practice";
   const [suivi, setSuivi] = useState(null);          // null = en cours de chargement
   const [suiviOpen, setSuiviOpen] = useState(null);  // ligne dépliée
   const [matModal, setMatModal] = useState(null);    // {exId, kind: "vocab"|"expl"|"corrige"}
@@ -164,6 +167,11 @@ function PracticeHubInner({ role = "eleve", name = "", accounts = [], onRequireL
     rows.sort((x, y) => y.at - x.at);
     setSuivi(rows);
   };
+  const lanDauKho = useRef(true);
+  useEffect(() => {
+    if (lanDauKho.current) { lanDauKho.current = false; return; }
+    loadExercises(kho).then(setExercises);
+  }, [kho]);
   useEffect(() => {
     if (teacher && topTab === "suivi") loadSuivi();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -188,7 +196,7 @@ function PracticeHubInner({ role = "eleve", name = "", accounts = [], onRequireL
     /* Không cần đọc lại cả kho trước khi thêm: chèn một dòng không đụng gì tới
        các bài khác. Bước `load` cũ tồn tại chỉ để khỏi đè mất bài người khác
        vừa tạo — với bảng thì chuyện đó không xảy ra được. */
-    const r = await saveExercise(copy, "practice");
+    const r = await saveExercise(copy, kho);
     if (!r.ok) { alert("❌ Échec de la duplication."); return; }
     setExercises((prev) => [...prev, copy]);
   };
@@ -281,7 +289,7 @@ ${r.error?.message ?? ""}`); return; }
           setExercises((prev) => prev.filter((e) => e.id !== draft.id));
           setView({ page: "home" }); return;
         }
-        const r = await saveExercise(draft, "practice");
+        const r = await saveExercise(draft, kho);
         if (!r.ok) { alert(`${t("builder.save_failed")}
 
 ${r.error?.message ?? ""}`); return; }
@@ -875,7 +883,7 @@ ${r.error?.message ?? ""}`); return; }
                   )}
                 </div>
               </div>
-              {teacher && topTab === "bib" && (
+              {teacher && topTab !== "suivi" && (
                 <button type="button" onClick={() => { setDraft(blank()); setView({ page: "builder" }); }}
                   className="inline-flex cursor-pointer items-center gap-2 rounded-2xl border-0 bg-white px-5 py-3 font-sans text-sm font-extrabold text-primary shadow-lg">
                   <Plus size={16} /> {tr("Bài tập mới", "Nouvel exercice", "New exercise")}
@@ -887,7 +895,7 @@ ${r.error?.message ?? ""}`); return; }
       })()}
       {teacher && (
         <div role="tablist" className="mb-5 flex gap-6 border-0 border-b border-solid border-line">
-          {[["bib", BookOpen, t("suivi.tab_library")], ["suivi", Users, t("suivi.tab_tracking")]].map(([k, Icon, l]) => (
+          {[["bib", BookOpen, t("suivi.tab_library")], ["de", Timer, tr("Bài thi thử", "Sujets d'examen blanc", "Mock exam items")], ["suivi", Users, t("suivi.tab_tracking")]].map(([k, Icon, l]) => (
             <button key={k} type="button" role="tab" aria-selected={topTab === k} onClick={() => setTopTab(k)}
               className={`-mb-px flex cursor-pointer items-center gap-2 border-0 border-b-2 border-solid bg-transparent px-1 pb-3 pt-1 font-sans text-sm transition-colors ${topTab === k
                 ? "border-primary font-semibold text-primary"
