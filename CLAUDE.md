@@ -1294,6 +1294,10 @@ Xem `docs/roadmap-delf.md` — có nhật ký quyết định ở §5.
   học sinh. 6 bài thư viện gốc từng ghép vào đề được nhân bản lại (`<id>_tv`). Giáo viên sửa
   bài thi ở tab « Bài thi thử » (PracticeHub, biến `kho`); ExamComposer chỉ nạp kho `exam`.
   LƯU Ý: `xuat_ban_nhap` (Duyệt nháp) vẫn xuất bản vào `practice`: đề nháp mới phải chuyển kho.
+- **Từ vựng Thách đấu theo Lộ trình — 13/10** (migration 141, sinh bởi
+  `scripts/thach-dau/tu-lo-trinh.mjs`). 16 chủ đề Lộ trình → chủ đề Thách đấu (`lt-…`; Môi trường
+  và Truyền thông gộp vào mã có sẵn) + 16 bộ « Từ vựng Lộ trình: … » công khai, 800 thẻ. Dạng thẻ
+  thêm `tinh_tu`, `thanh_ngu` (n→nhom_tu, v→dong_tu). Thử: 10 câu, 0 phương án lệch dạng.
 - `s:mcf-submissions` vẫn giữ làm sao lưu, chưa xoá.
 
 

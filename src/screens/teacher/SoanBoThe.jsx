@@ -91,6 +91,9 @@ const DANG_THE = () => [
   ["", tr("Dạng: chưa chọn", "Type : non défini", "Type: not set")],
   ["nhom_tu", tr("Từ, cụm danh từ", "Mot, groupe nominal", "Word, noun phrase")],
   ["dong_tu", tr("Động từ", "Verbe", "Verb")],
+  /* 13/10 (migration 141): hai dạng mới cho bộ từ vựng theo Lộ trình. */
+  ["tinh_tu", tr("Tính từ", "Adjectif", "Adjective")],
+  ["thanh_ngu", tr("Thành ngữ, cụm từ", "Expression", "Expression")],
   ["tu_noi", tr("Từ nối, trạng từ", "Connecteur, adverbe", "Connector, adverb")],
   ["mo_dau", tr("Cụm mở đầu câu", "Début de phrase", "Sentence starter")],
   ["cau", tr("Câu hoàn chỉnh", "Phrase complète", "Full sentence")],
