@@ -1,7 +1,11 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   ChevronLeft, ChevronRight, CalendarDays, ClipboardList, Trash2, Plus,
+  Map, Dumbbell, Layers, Timer, AudioLines, Swords,
 } from "lucide-react";
+import ChonGio from "../../shared/ChonGio.jsx";
+import { tr } from "../../shared/i18n.jsx";
 import { Rise } from "../dashboard/parts.jsx";
 import CalendarTour from "./CalendarTour.jsx";
 import { load, save } from "../../shared/storage.js";
@@ -26,10 +30,10 @@ import ChonNgay from "../../shared/ChonNgay.jsx";
 
 const CAL_KEY = (name) => `mcf-cal-${name}`;
 
-/* Khung giờ hiển thị. Sự kiện ngoài khoảng này bị kẹp vào hai đầu chứ không
-   biến mất — một hạn nộp lúc 23:00 vẫn phải thấy được. */
-const HOUR_FROM = 8;
-const HOUR_TO = 19;
+/* Khung giờ hiển thị: đủ 24 giờ (14/10, chủ dự án). Lưới cuộn dọc trong
+   khung, mở ra thì tự cuộn tới 07:00. */
+const HOUR_FROM = 0;
+const HOUR_TO = 24;
 const HOURS = Array.from({ length: HOUR_TO - HOUR_FROM }, (_, i) => HOUR_FROM + i);
 const ROW_H = 60;   // px mỗi giờ
 
@@ -64,14 +68,31 @@ const KIND = {
   custom: { dot: "bg-primary", bar: "bg-primary", Icon: CalendarDays },
 };
 
-function EventCard({ ev, t, onDelete, style }) {
+/* Hoạt động gắn với lịch (14/10): học sinh đặt lịch để LÀM BÀI ở một phần của
+   app, nên mỗi sự kiện mang `muc` và bấm vào thẻ là mở thẳng phần đó.
+   Hàm, không phải hằng: tr() phải chạy lúc dựng để theo ngôn ngữ đang chọn. */
+const MUC = () => [
+  { id: "lo-trinh", to: "/etudiant/lo-trinh", Icon: Map, nhan: tr("Lộ trình học tập", "Parcours", "Learning path") },
+  { id: "luyen-tap", to: "/etudiant/entrainement", Icon: Dumbbell, nhan: tr("Luyện tập", "Entraînement", "Practice") },
+  { id: "flashcard", to: "/etudiant/bo-the", Icon: Layers, nhan: "Flashcard" },
+  { id: "thi-thu", to: "/etudiant/examen", Icon: Timer, nhan: tr("Thi thử DELF", "Examen blanc", "Mock exam") },
+  { id: "nghe-noi", to: "/etudiant/nghe-noi", Icon: AudioLines, nhan: tr("Nghe & Nói", "Écoute & Oral", "Listen & Speak") },
+  { id: "thach-dau", to: "/etudiant/thach-dau", Icon: Swords, nhan: tr("Thách đấu", "Défi", "Duel") },
+];
+const mucCua = (id) => MUC().find((x) => x.id === id);
+
+function EventCard({ ev, t, onDelete, style, onMo }) {
   const kind = KIND[ev.kind] || KIND.custom;
+  const muc = ev.muc ? mucCua(ev.muc) : null;
+  const Icon = muc?.Icon ?? kind.Icon;
   const time = `${pad2(ev.at.getHours())}:${pad2(ev.at.getMinutes())}`;
 
   return (
     <article
       style={style}
-      className="group absolute inset-x-1 overflow-hidden rounded-xl bg-surface pl-2.5 pr-2 shadow-[0_6px_18px_rgb(0,0,0,0.10)] transition-all duration-300 ease-[cubic-bezier(.25,.8,.25,1)] hover:z-10 hover:-translate-y-0.5 hover:shadow-[0_14px_32px_rgb(0,0,0,0.16)]"
+      onClick={muc ? () => onMo?.(muc.to) : undefined}
+      title={muc ? tr(`Mở ${muc.nhan}`, `Ouvrir ${muc.nhan}`, `Open ${muc.nhan}`) : undefined}
+      className={`group absolute ${muc ? "cursor-pointer" : ""}  inset-x-1 overflow-hidden rounded-xl bg-surface pl-2.5 pr-2 shadow-[0_6px_18px_rgb(0,0,0,0.10)] transition-all duration-300 ease-[cubic-bezier(.25,.8,.25,1)] hover:z-10 hover:-translate-y-0.5 hover:shadow-[0_14px_32px_rgb(0,0,0,0.16)]`}
     >
       {/* Vạch màu bên trái báo loại sự kiện. Kèm cả biểu tượng vì chỉ dựa vào
           màu thì người mù màu không phân biệt được. */}
@@ -87,7 +108,7 @@ function EventCard({ ev, t, onDelete, style }) {
           {ev.title}
         </p>
         <p className="m-0 flex items-center gap-1 truncate text-[10px] font-semibold text-soft">
-          <kind.Icon size={10} className="shrink-0" />
+          <Icon size={10} className="shrink-0" />
           <span className="truncate">
             {ev.kind === "devoir" ? t("cal.deadline_at", { time }) : time}
           </span>
@@ -97,7 +118,7 @@ function EventCard({ ev, t, onDelete, style }) {
       {onDelete && ev.kind === "custom" && (
         <button
           type="button"
-          onClick={() => onDelete(ev.id)}
+          onClick={(e) => { e.stopPropagation(); onDelete(ev.id); }}
           aria-label={t("cal.delete")}
           className="absolute right-1 top-1 hidden h-5 w-5 cursor-pointer place-items-center rounded-full border-0 bg-surface2 p-0 text-soft transition-colors hover:text-danger group-hover:grid"
         >
@@ -184,7 +205,8 @@ function MiniMonth({ t, month, selected, onPick, onMonth }) {
 function AddEventForm({ t, defaultDate, onAdd }) {
   const [title, setTitle] = useState("");
   const [date, setDate] = useState(ymd(defaultDate));
-  const [time, setTime] = useState("09:00");
+  const [time, setTime] = useState("19:00");
+  const [muc, setMuc] = useState("luyen-tap");
   const [err, setErr] = useState("");
 
   /* Chọn ngày ở lịch nhỏ thì ô ngày đi theo — người dùng vừa chỉ vào một ngày
@@ -196,9 +218,11 @@ function AddEventForm({ t, defaultDate, onAdd }) {
   const submit = (e) => {
     e.preventDefault();
     const clean = title.trim();
-    if (!clean) { setErr(t("cal.need_title")); return; }
+    /* Đã chọn hoạt động thì tiêu đề là tuỳ chọn: để trống lấy tên hoạt động. */
+    const tieuDe = clean || mucCua(muc)?.nhan || "";
+    if (!tieuDe) { setErr(t("cal.need_title")); return; }
     setErr("");
-    onAdd({ title: clean, date, time });
+    onAdd({ title: tieuDe, date, time, muc });
     setTitle("");
   };
 
@@ -207,11 +231,22 @@ function AddEventForm({ t, defaultDate, onAdd }) {
       className="rounded-3xl bg-surface p-5 shadow-[0_18px_44px_rgb(0,0,0,0.20)]">
       <h3 className="m-0 text-sm font-extrabold text-ink">{t("cal.new_event")}</h3>
 
-      <div className="mt-4 flex flex-col gap-2.5">
+      <p className="m-0 mt-3 text-xs font-bold text-soft">{tr("Bạn sẽ học gì?", "Que allez-vous travailler ?", "What will you study?")}</p>
+      <div className="mt-2 grid grid-cols-2 gap-1.5">
+        {MUC().map((x) => (
+          <button key={x.id} type="button" onClick={() => setMuc(x.id)} aria-pressed={muc === x.id}
+            className={`flex cursor-pointer items-center gap-1.5 rounded-xl border-0 px-2.5 py-2 text-left text-xs font-bold transition-colors ${
+              muc === x.id ? "bg-primary text-on-primary" : "bg-surface2 text-ink hover:bg-primary-soft hover:text-primary"}`}>
+            <x.Icon size={14} className="shrink-0" /> <span className="truncate">{x.nhan}</span>
+          </button>
+        ))}
+      </div>
+
+      <div className="mt-3 flex flex-col gap-2.5">
         <label className="block">
           <span className="sr-only">{t("cal.f_title")}</span>
           <input value={title} onChange={(e) => setTitle(e.target.value)}
-            placeholder={t("cal.f_title_ph")} className={field} />
+            placeholder={tr("Ghi chú (tuỳ chọn): Ôn bài 3…", "Note (facultatif) : réviser l'exercice 3…", "Note (optional): review exercise 3…")} className={field} />
         </label>
 
         <div className="flex gap-2.5">
@@ -221,7 +256,7 @@ function AddEventForm({ t, defaultDate, onAdd }) {
           </label>
           <label className="w-[104px] shrink-0">
             <span className="sr-only">{t("cal.f_time")}</span>
-            <input type="time" value={time} onChange={(e) => setTime(e.target.value)} className={field} />
+            <ChonGio value={time} onChange={setTime} className={field} />
           </label>
         </div>
       </div>
@@ -273,11 +308,11 @@ export default function CalendarView({
     if (name && !eventsProp) await save(CAL_KEY(name), next, false);
   };
 
-  const addEvent = ({ title, date, time }) => {
+  const addEvent = ({ title, date, time, muc }) => {
     const [h, m] = time.split(":").map(Number);
     const d = new Date(`${date}T00:00:00`);
     d.setHours(h || 0, m || 0, 0, 0);
-    persist([...custom, { id: `c${Date.now()}`, title, at: d.toISOString(), kind: "custom" }]);
+    persist([...custom, { id: `c${Date.now()}`, title, at: d.toISOString(), kind: "custom", muc }]);
   };
 
   const removeEvent = (id) => persist(custom.filter((e) => e.id !== id));
@@ -315,6 +350,17 @@ export default function CalendarView({
     const clamped = Math.min(Math.max(mins, from), to - 30);
     return ((clamped - from) / 60) * ROW_H;
   };
+
+  const nav = useNavigate();
+  const cuon = useRef(null);
+  /* Cuộn tới 07:00. Đặt lại sau một nhịp: lúc nạp, tour/hiệu ứng vào trang
+     kéo khung cuộn xuống đáy (đo được scrollTop = max). */
+  useEffect(() => {
+    const dat = () => { if (cuon.current) cuon.current.scrollTop = 7 * ROW_H; };
+    dat();
+    const id = setTimeout(dat, 400);
+    return () => clearTimeout(id);
+  }, []);
 
   const navBtn = "grid h-8 w-8 cursor-pointer place-items-center rounded-full border-0 bg-surface2 text-soft shadow-sm transition-all duration-200 hover:scale-105 hover:text-primary";
 
@@ -360,10 +406,10 @@ export default function CalendarView({
                 dung cao hơn khung đúng 22px và đẻ thêm một thanh cuộn dọc chỉ
                 để bù lại phần nó vừa chiếm. Giấu thanh ngang là hết vòng
                 luẩn quẩn, mà vuốt và lăn chuột vẫn cuộn được như thường. */}
-            <div className="no-scrollbar overflow-x-auto">
+            <div ref={cuon} className="no-scrollbar max-h-[640px] overflow-auto">
               <div className="min-w-[680px]">
                 {/* Hàng tên thứ */}
-                <div id="tour-cal-grid" className="grid border-0 border-b border-solid border-line"
+                <div id="tour-cal-grid" className="sticky top-0 z-20 grid border-0 border-b border-solid border-line bg-surface"
                   style={{ gridTemplateColumns: `56px repeat(7, minmax(0, 1fr))` }}>
                   <span />
                   {days.map((d) => {
@@ -407,7 +453,7 @@ export default function CalendarView({
                       ))}
 
                       {weekEvents[i].map((ev) => (
-                        <EventCard key={ev.id} ev={ev} t={t} onDelete={removeEvent}
+                        <EventCard key={ev.id} ev={ev} t={t} onDelete={removeEvent} onMo={(to) => nav(to)}
                           style={{ top: posOf(ev.at), height: ROW_H - 8 }} />
                       ))}
                     </div>
