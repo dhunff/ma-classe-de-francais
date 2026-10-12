@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Check, Lock, Play, Crown, Star, BookOpen } from "lucide-react";
+import { Check, Lock, Play, Crown, Star, BookOpen, Music, VolumeX } from "lucide-react";
+import { batNhac, tatNhac, nhacBat, datNhac } from "../../shared/nhacNen.js";
 import { docKetQua, ghiKetQua, docLoTrinh } from "../../shared/loTrinhStore.js";
 import { useT, tr } from "../../shared/i18n.jsx";
 import { Leon } from "../../shared/leon.jsx";
@@ -74,6 +75,18 @@ export default function LoTrinh() {
     return () => { huy = true; };
   }, []);
 
+  /* Nhạc nền phiêu lưu (15/10). Trình duyệt chặn phát khi chưa có cú bấm nào,
+     nên thử ngay rồi thử lại ở cú bấm đầu tiên; rời trang thì tắt. */
+  const [coNhac, setCoNhac] = useState(nhacBat);
+  useEffect(() => {
+    if (!coNhac) return undefined;
+    batNhac();
+    const mo = () => batNhac();
+    window.addEventListener("pointerdown", mo, { once: true });
+    return () => { window.removeEventListener("pointerdown", mo); tatNhac(); };
+  }, [coNhac]);
+  const doiNhac = () => { const moi = !coNhac; datNhac(moi); setCoNhac(moi); };
+
   /* Mỗi chủ đề: màn đang bật + trạng thái tuần tự riêng. */
   const chuongs = useMemo(() => {
     if (!lt) return [];
@@ -145,6 +158,11 @@ export default function LoTrinh() {
       <header className="mcf-cau-vao relative mb-5 overflow-hidden rounded-3xl bg-gradient-to-br from-blue-600 via-primary to-indigo-600 p-6 text-white shadow-[0_20px_50px_rgba(37,99,235,0.3)]">
         <span aria-hidden className="absolute -right-12 -top-12 h-48 w-48 rounded-full bg-white/10" />
         <span aria-hidden className="absolute -bottom-20 left-10 h-44 w-44 rounded-full bg-sky-300/20 blur-2xl" />
+        <button type="button" onClick={doiNhac} aria-pressed={coNhac}
+          title={coNhac ? tr("Tắt nhạc nền", "Couper la musique", "Mute music") : tr("Bật nhạc nền", "Activer la musique", "Play music")}
+          className="absolute right-4 top-4 z-10 inline-flex cursor-pointer items-center gap-1.5 rounded-full border-0 bg-white/20 px-3 py-1.5 font-sans text-xs font-bold text-white backdrop-blur transition-colors hover:bg-white/30">
+          {coNhac ? <Music size={14} /> : <VolumeX size={14} />} {coNhac ? tr("Nhạc: bật", "Musique : oui", "Music: on") : tr("Nhạc: tắt", "Musique : non", "Music: off")}
+        </button>
         <div className="relative flex items-center gap-4">
           <Leon cam="phap" size={112} className="mcf-leon-bay shrink-0 drop-shadow-[0_12px_18px_rgba(0,0,0,0.3)] max-sm:h-20 max-sm:w-20" />
           <div className="min-w-0 flex-1">
