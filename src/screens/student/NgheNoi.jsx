@@ -15,7 +15,7 @@ import { soCau } from "../../../supabase/functions/_shared/soCau.js";
  * cham-phat-am: AI chép lại, so từng từ; điểm là « máy nghe ra đúng bao nhiêu
  * từ », không phải một con số phát âm bịa ra. Bản ghi âm không được lưu. */
 
-const CAP = ["A1", "A2", "B1", "B2"];
+const CAP = ["A1", "A2", "B1", "B2", "C1"];
 const DAU = ["é", "è", "ê", "à", "â", "ç", "î", "ï", "ô", "û", "ù", "ë", "œ"];
 const mauDiem = (d) => (d == null ? "bg-surface2 text-soft" : d >= 0.9 ? "bg-ok text-white" : d >= 0.6 ? "bg-amber-400 text-amber-950" : "bg-danger text-white");
 
@@ -118,7 +118,7 @@ function ChepChinhTa({ cau, onXong }) {
    Ẩn vài từ « có nghĩa » (dài ≥ 4 chữ, không phải từ công cụ), chọn CỐ ĐỊNH
    theo câu để làm lại vẫn là cùng chỗ trống. Số chỗ trống theo trình độ. */
 const TU_CONG_CU = new Set(["dans", "avec", "pour", "sans", "sous", "chez", "vers", "mais", "donc", "comme", "plus", "très", "tout", "toute", "tous", "leur", "leurs", "notre", "votre", "nous", "vous", "elle", "elles", "ils", "cette", "ces", "est", "sont", "avez", "avons", "être", "avoir", "que", "qui", "dont", "quand", "aussi", "bien", "encore", "depuis"]);
-const SO_TRONG = { A1: 2, A2: 2, B1: 3, B2: 4 };
+const SO_TRONG = { A1: 2, A2: 2, B1: 3, B2: 4, C1: 5 };
 const bam = (x) => { let h = 0; for (const c of x) h = (h * 31 + c.charCodeAt(0)) >>> 0; return h; };
 const thuong = (w) => String(w).toLowerCase().normalize("NFC").trim();
 const khongDau = (w) => thuong(w).normalize("NFD").replace(/[\u0300-\u036f]/g, "");

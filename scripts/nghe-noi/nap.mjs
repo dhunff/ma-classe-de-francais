@@ -6,6 +6,9 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { CHINH_TA, PHAT_AM } from "./cau.mjs";
 import { CHINH_TA_2, PHAT_AM_2 } from "./cau2.mjs";
 import { DIEN_TU } from "./cau3.mjs";
+import { CHINH_TA_C1, DIEN_TU_C1, PHAT_AM_C1 } from "./cau4.mjs";
+/* CHI_CAP=C1: chỉ nạp một trình độ (15/10: kho C1). */
+const CHI_CAP = process.env.CHI_CAP;
 /* CHI_LOAI=dien_tu: chỉ nạp một loại. */
 const CHI_LOAI = process.env.CHI_LOAI;
 /* CHI_MOI=1: chỉ tạo audio + nạp những câu chưa có (ord > 10, tức kho bổ sung). */
@@ -14,8 +17,8 @@ const env = Object.fromEntries(readFileSync(new URL("../../.env", import.meta.ur
 const URL0 = env.VITE_SUPABASE_URL, ANON = env.VITE_SUPABASE_ANON_KEY, TK = process.env.TTS_TOKEN;
 const q = (s) => (s == null ? "null" : "'" + String(s).replace(/'/g, "''") + "'");
 const ds = [];
-const dem = { A1: 0, A2: 0, B1: 0, B2: 0 };
-for (const [loai, kho, tienTo] of [["chinh_ta", [...CHINH_TA, ...CHINH_TA_2], "ct"], ["phat_am", [...PHAT_AM, ...PHAT_AM_2], "pa"], ["dien_tu", DIEN_TU, "dt"]]) {
+const dem = { A1: 0, A2: 0, B1: 0, B2: 0, C1: 0 };
+for (const [loai, kho, tienTo] of [["chinh_ta", [...CHINH_TA, ...CHINH_TA_2, ...CHINH_TA_C1], "ct"], ["phat_am", [...PHAT_AM, ...PHAT_AM_2, ...PHAT_AM_C1], "pa"], ["dien_tu", [...DIEN_TU, ...DIEN_TU_C1], "dt"]]) {
   Object.keys(dem).forEach((k) => (dem[k] = 0));
   for (const [cap, cau, nghia, meo] of kho) {
     dem[cap]++;
@@ -23,6 +26,7 @@ for (const [loai, kho, tienTo] of [["chinh_ta", [...CHINH_TA, ...CHINH_TA_2], "c
   }
 }
 if (CHI_LOAI) ds.splice(0, ds.length, ...ds.filter((d) => d.loai === CHI_LOAI));
+if (CHI_CAP) ds.splice(0, ds.length, ...ds.filter((d) => d.cap === CHI_CAP));
 if (CHI_MOI) ds.splice(0, ds.length, ...ds.filter((d) => d.ord > 10));
 let i = 0;
 await Promise.all(Array.from({ length: 5 }, async () => {
