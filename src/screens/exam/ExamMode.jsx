@@ -324,6 +324,14 @@ function ManCho({ dsDe, chon, paper, onStart, dangTai, lamPhanNoi, setLamPhanNoi
         </span>
       </label>
 
+      {/* 14/10 (chủ dự án): báo trước rằng nộp sớm được. Mỗi phần có đồng hồ
+          riêng, nộp sớm thì sang phần sau ngay; phút dư KHÔNG cộng sang phần sau
+          (đúng với PhanThi: đồng hồ mỗi phần tính lại từ đầu). */}
+      <p className="m-0 mt-3 flex items-start gap-2 rounded-2xl bg-primary-soft p-3 text-xs text-ink">
+        <Clock size={14} className="mt-0.5 shrink-0 text-primary" />
+        <span>{tr("Bạn có thể hoàn thành bài trước tổng thời gian: làm xong phần nào thì bấm « Nộp phần này » để sang phần sau. Thời gian dư không được cộng sang phần tiếp theo.", "Vous pouvez terminer avant la durée totale : dès qu'une partie est finie, cliquez sur « Terminer cette partie » pour passer à la suivante. Le temps restant n'est pas reporté.", "You can finish before the total time: when a part is done, click « Finish this part » to move on. Leftover time is not carried over.")}</span>
+      </p>
+
       <button type="button"
         disabled={!sanSangVao}
         onClick={() => { phat("bam"); setLoiMo(""); setMoHop(true); }}
