@@ -35,7 +35,9 @@ await Promise.all(Array.from({ length: 5 }, async () => {
     const r = await fetch(`${URL0}/functions/v1/tao-audio`, {
       method: "POST",
       headers: { apikey: ANON, Authorization: `Bearer ${ANON}`, "x-admin-token": TK, "content-type": "application/json" },
-      body: JSON.stringify({ ten: d.ma, doan: [{ giong: d.ord % 2 ? "nova" : "onyx", chu: d.cau }] }),
+      /* C1 (15/10): đọc NHANH như người bản xứ nói tự nhiên, có nối âm, không đọc rời. */
+      body: JSON.stringify({ ten: d.ma + (d.cap === "C1" ? "-nhanh" : ""), doan: [{ giong: d.ord % 2 ? "nova" : "onyx", chu: d.cau,
+        ...(d.cap === "C1" ? { toc: 1.15, cach: "Parle en français de France, débit rapide et naturel de locuteur natif cultivé, comme à la radio d'information, avec toutes les liaisons et enchaînements, sans articuler mot à mot." } : {}) }] }),
     }).then((x) => x.json()).catch((e) => ({ ok: false, loi: String(e) }));
     if (!r.ok) { console.error("HONG", d.ma, JSON.stringify(r).slice(0, 200)); continue; }
     d.audio = r.url;

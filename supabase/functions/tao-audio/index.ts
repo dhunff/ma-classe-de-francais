@@ -94,6 +94,8 @@ Deno.serve(async (req) => {
       headers: { Authorization: `Bearer ${KHOA}`, "Content-Type": "application/json" },
       body: JSON.stringify({
         model, voice: giong, input: chu, response_format: "mp3",
+        /* `toc` (15/10): tốc độ đọc, kẹp 0.7–1.4; không gửi thì để mặc định. */
+        ...(Number.isFinite(Number(d?.toc)) && d?.toc != null ? { speed: Math.min(1.4, Math.max(0.7, Number(d.toc))) } : {}),
         instructions: String(d?.cach ?? "Parle en français de France, ton naturel, débit clair."),
       }),
     });
