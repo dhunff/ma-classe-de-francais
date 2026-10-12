@@ -69,7 +69,7 @@ export async function loadMyExamResults() {
       .eq("questions.type", "open"),
     /* 12/10: bản chấm phần nói (migration 135). Bảng có thể chưa có ở môi
        trường cũ: lỗi thì coi như chưa ai tự chấm, đừng làm hỏng cả trang. */
-    supabase.from("po_cham").select("attempt_id, cap, tu_cham, diem, ai_goi_y, de_boc").in("attempt_id", attemptIds)
+    supabase.from("po_cham").select("attempt_id, cap, tu_cham, diem, ai_goi_y, de_boc, nguon").in("attempt_id", attemptIds)
       .then((r) => (r.error ? { data: [] } : r)),
   ]);
   const poTheoAttempt = Object.fromEntries((poRes.data ?? []).map((p) => [p.attempt_id, p]));
@@ -191,7 +191,7 @@ export async function loadMyExamResults() {
            bài viết nào". Hai thứ trông giống nhau khi score = null. */
         choCham: tong === 0 && !peList.length && !poDong,
         /* Phần nói chờ / đã tự chấm: màn kết quả mở màn tự chấm từ đây. */
-        po: poDong ? { attemptId: poDong.attempt_id, cap: poDong.cap, tuCham: poDong.tu_cham, aiGoiY: poDong.ai_goi_y, deBoc: poDong.de_boc, examId } : null,
+        po: poDong ? { attemptId: poDong.attempt_id, cap: poDong.cap, tuCham: poDong.tu_cham, aiGoiY: poDong.ai_goi_y, deBoc: poDong.de_boc, nguon: poDong.nguon, coBanGhi: true, examId } : null,
         /* Trình độ của đề — màn tự chấm cần nó để chọn đúng grille. */
         level: thongTinDe?.level ?? "B1",
         /* Thang do giáo viên soạn, hoặc null = dùng thang chuẩn theo level. */

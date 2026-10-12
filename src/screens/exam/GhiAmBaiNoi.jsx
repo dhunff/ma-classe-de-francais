@@ -121,7 +121,8 @@ export default function GhiAmBaiNoi({ examId, exerciseId, gioiHanGiay = 900 }) {
       {/* Nói thẳng là KHÔNG chấm. Im lặng ở đây thì người học chờ một con số
           không bao giờ tới, và nghĩ hệ thống hỏng. */}
       <p className="m-0 mt-2 text-sm text-soft">
-        {tr("Phần này", "Cette partie", "This part")} <strong className="text-ink">{tr("không được chấm điểm", "n'est pas notée", "is not scored")}</strong>{tr(". DELF chấm phần nói qua đối thoại với giám khảo. Bạn tự nghe lại bản ghi, hoặc bấm « AI nhận xét » để nhận góp ý về ngữ pháp, từ vựng và cách nối ý — AI đọc bản chép lời, không cho điểm.", ". Au DELF, l'oral est évalué face à un examinateur. Réécoutez-vous, ou cliquez sur « Avis de l'IA » pour des conseils sur la grammaire, le vocabulaire et l'enchaînement — sans note.", ". DELF assesses speaking with a live examiner. Listen back, or click « AI feedback » for advice on grammar, vocabulary and flow — no score.")}
+        {/* 14/10: phần nói ĐƯỢC CHẤM (AI chấm theo grille ở trang Kết quả thi, hoặc tự chấm). */}
+        {tr("Ghi âm bài nói của bạn. Nộp xong, AI chấm theo thang DELF chính thức ở trang « Kết quả thi »; bạn cũng có thể tự chấm lại theo từng tiêu chí.", "Enregistrez-vous. Après l’envoi, l’IA vous note avec la grille DELF officielle dans « Mes résultats » ; vous pouvez aussi vous auto-évaluer.", "Record yourself. After submitting, the AI grades you with the official DELF grid in « My results »; you can also self-assess.")}
       </p>
 
       <div className="mt-4 flex flex-wrap items-center gap-3">

@@ -40,10 +40,22 @@ Deno.serve(async (req) => {
   let than: any = null;
   try { than = await req.json(); } catch { /* */ }
   const attemptId = String(than?.attemptId ?? "");
+  /* 14/10: chinhThuc = AI CHẤM luôn (như phần viết): đủ mọi tiêu chí hợp lệ thì
+     ghi điểm vào po_cham (nguon 'ai'), CHỈ khi học sinh chưa tự chấm. */
+  const chinhThuc = than?.chinhThuc === true;
 
-  const { data: pc } = await admin.from("po_cham").select("cap, ai_goi_y, de_boc").eq("attempt_id", attemptId).eq("user_id", userId).maybeSingle();
+  const { data: pc } = await admin.from("po_cham").select("cap, ai_goi_y, de_boc, diem").eq("attempt_id", attemptId).eq("user_id", userId).maybeSingle();
   if (!pc) return json(404, { ok: false, ma: "KHONG_THAY_BAI_NOI" });
-  if (pc.ai_goi_y) return json(200, { ok: true, goi_y: pc.ai_goi_y, da_co: true });
+  const ghiDiem = async (goiY: any) => {
+    if (!chinhThuc || pc.diem != null) return null;
+    const g = (GRILLE_PO as any)[pc.cap];
+    if (!g || !g.criteres.every((c: any) => typeof goiY?.diem?.[c.id] === "number")) return null;
+    const tong = g.criteres.reduce((n: number, c: any) => n + goiY.diem[c.id], 0);
+    await admin.from("po_cham").update({ tu_cham: goiY.diem, diem: tong, nguon: "ai", cap_nhat: new Date().toISOString() })
+      .eq("attempt_id", attemptId).is("diem", null);
+    return tong;
+  };
+  if (pc.ai_goi_y) return json(200, { ok: true, goi_y: pc.ai_goi_y, da_co: true, diem: await ghiDiem(pc.ai_goi_y) });
   const grille = (GRILLE_PO as any)[pc.cap];
   if (!grille) return json(400, { ok: false, ma: "KHONG_CO_THANG" });
 
@@ -108,5 +120,5 @@ Deno.serve(async (req) => {
   }
   const goiY = { diem, ly_do: lyDo, tong_quat: String(kq.tong_quat ?? "").slice(0, 1200), chep_loi: chepLoi.slice(0, 8000), tep: tep.name, model };
   await admin.from("po_cham").update({ ai_goi_y: goiY, ai_luc: new Date().toISOString() }).eq("attempt_id", attemptId);
-  return json(200, { ok: true, goi_y: goiY });
+  return json(200, { ok: true, goi_y: goiY, diem: await ghiDiem(goiY) });
 });

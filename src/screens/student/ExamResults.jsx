@@ -9,6 +9,7 @@ import { chamChinhThuc } from "../../shared/chamPeAI.js";
 import NhanXetAI from "./NhanXetAI.jsx";
 import { grilleToRubric, chuanHoaGrille } from "../../shared/grilleRubric.js";
 import { tr } from "../../shared/i18n.jsx";
+import { supabase } from "../../storageShim.js";
 import { Leon } from "../../shared/leon.jsx";
 import NutTieng from "../../shared/NutTieng.jsx";
 import { BangKetLuan, ThanhPhan } from "../exam/KetQuaVisual.jsx";
@@ -36,7 +37,7 @@ const ngay = (iso) => {
 };
 
 function Phan({ s, onTuCham }) {
-  const choCham = s.score == null && s.po ? tr("chờ bạn tự chấm", "à auto-évaluer", "awaiting your self-assessment") : s.score == null ? (s.choCham ? (s.aiLoi === "HET_LUOT" ? tr("Hết 3 lượt AI chấm hôm nay · mai mở lại trang (VIP không giới hạn)", "Plus de correction IA aujourd'hui (3 par jour) · revenez demain (VIP illimité)", "No AI grading left today (3 per day) · come back tomorrow (VIP unlimited)") : s.aiLoi ? tr("AI chưa chấm được, mở lại trang để thử lại", "L'IA n'a pas pu corriger, rouvrez la page pour réessayer", "The AI couldn't grade it, reopen the page to retry") : tr("AI đang chấm…", "Correction IA en cours…", "AI grading…")) : tr("chưa có điểm", "pas encore de note", "no score yet")) : null;
+  const choCham = s.score == null && s.po ? tr("AI đang chấm… hoặc bạn tự chấm", "Correction IA en cours… ou auto-évaluez-vous", "AI grading… or self-assess") : s.score == null ? (s.choCham ? (s.aiLoi === "HET_LUOT" ? tr("Hết 3 lượt AI chấm hôm nay · mai mở lại trang (VIP không giới hạn)", "Plus de correction IA aujourd'hui (3 par jour) · revenez demain (VIP illimité)", "No AI grading left today (3 per day) · come back tomorrow (VIP unlimited)") : s.aiLoi ? tr("AI chưa chấm được, mở lại trang để thử lại", "L'IA n'a pas pu corriger, rouvrez la page pour réessayer", "The AI couldn't grade it, reopen the page to retry") : tr("AI đang chấm…", "Correction IA en cours…", "AI grading…")) : tr("chưa có điểm", "pas encore de note", "no score yet")) : null;
   return (
     <li className="list-none">
     <ThanhPhan code={s.code} score={s.score} points={s.points} nguong={s.points ? NGUONG_PHAN : null} choCham={choCham}>
@@ -48,7 +49,9 @@ function Phan({ s, onTuCham }) {
         <button type="button" onClick={() => onTuCham({ loai: "po", po: s.po, exerciseId: s.exerciseId, consigne: s.consigne })}
           className="mt-2 flex w-full cursor-pointer items-center gap-2 rounded-lg border-0 bg-surface px-3 py-2.5 text-left font-sans text-xs font-bold text-ink transition hover:bg-primary-soft">
           <Mic size={13} className="shrink-0 text-primary" aria-hidden="true" />
-          {s.score != null ? tr("Xem lại / sửa bản tự chấm phần nói", "Revoir mon auto-évaluation orale", "Review my speaking self-assessment") : tr("Tự chấm phần nói (AI gợi ý)", "M'auto-évaluer à l'oral (suggestions IA)", "Self-assess speaking (AI suggestions)")}
+          {s.score != null
+            ? (s.po.nguon === "ai" ? tr("AI đã chấm: xem chi tiết hoặc tự chấm lại", "Noté par l'IA : voir ou s'auto-évaluer", "AI-graded: review or self-assess") : tr("Xem lại / sửa bản tự chấm phần nói", "Revoir mon auto-évaluation orale", "Review my speaking self-assessment"))
+            : tr("Tự chấm phần nói (AI gợi ý)", "M'auto-évaluer à l'oral (suggestions IA)", "Self-assess speaking (AI suggestions)")}
           <span className="ml-auto font-normal text-soft">{s.po.cap} · 25 {tr("điểm", "points", "points")}</span>
         </button>
       )}
@@ -167,6 +170,13 @@ export default function ExamResults() {
   useEffect(() => {
     if (!sittings) return;
     const viec = [];
+    /* 14/10: phần nói chưa có điểm → AI chấm theo grille (cham-po chinhThuc). */
+    for (const st of sittings) for (const sec of st.sections) {
+      if (!sec.po || sec.score != null || daGoi.current.has(sec.po.attemptId)) continue;
+      daGoi.current.add(sec.po.attemptId);
+      viec.push(supabase.functions.invoke("cham-po", { body: { attemptId: sec.po.attemptId, chinhThuc: true } })
+        .then(({ data }) => ({ ok: !!data?.ok, daGhi: data?.diem != null, ma: data?.ma })).catch(() => ({ ok: false })));
+    }
     for (const st of sittings) for (const sec of st.sections) for (const p of sec.pe) {
       if (p.score != null || !p.answerId || p.loai !== "open" || daGoi.current.has(p.answerId)) continue;
       daGoi.current.add(p.answerId);

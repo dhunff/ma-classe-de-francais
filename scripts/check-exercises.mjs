@@ -261,5 +261,14 @@ for (const q of [
   t(`${q.type}: payload không lộ trường nào`, lo, []);
 }
 
+/* 14/10: bocTham (bốc thăm đề nói) từng bị toRows vứt đi: 5 đề lô 18 nạp lên
+   mất bốc thăm, và giáo viên lưu lại một bài nói là mất luôn. */
+{
+  const bt = { chuanBi: 30, phan: [{ ten: "x", soRut: 2, sujets: [{ ma: "1", html: "<p>a</p>" }] }] };
+  const r = toRows({ id: "po", title: "PO", bocTham: bt, questions: [] }, "exam");
+  t("bocTham sống sót qua toRows", JSON.stringify(r.exRow.meta.bocTham), JSON.stringify(bt));
+  t("đọc lại vẫn còn bocTham", exerciseFromRow(r.exRow).bocTham?.chuanBi, 30);
+}
+
 console.log(fail ? `\n${pass} đạt, ${fail} hỏng` : `\n${pass} đạt, 0 hỏng`);
 process.exit(fail ? 1 : 0);
