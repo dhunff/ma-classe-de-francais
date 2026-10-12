@@ -7,6 +7,7 @@ import { loadMyExamResults } from "../../shared/examResults.js";
 import { NGUONG_PHAN, NGUONG_TONG } from "../exam/examPaper.js";
 import { chamChinhThuc } from "../../shared/chamPeAI.js";
 import NhanXetAI from "./NhanXetAI.jsx";
+import BaiVietMau from "./BaiVietMau.jsx";
 import { grilleToRubric, chuanHoaGrille } from "../../shared/grilleRubric.js";
 import { tr } from "../../shared/i18n.jsx";
 import { supabase } from "../../storageShim.js";
@@ -106,6 +107,7 @@ function Phan({ s, onTuCham }) {
             <NhanXetAI answerId={p.answerId} level={s.level} feedback={p.feedback}
               rubric={s.grille ? chuanHoaGrille(s.grille, s.level) : grilleToRubric(s.level)} />
           )}
+          {p.answerId && p.loai === "open" && <BaiVietMau answerId={p.answerId} />}
 
           {p.selfBreakdown && typeof p.selfBreakdown === "object" && (
             <ul className="m-0 list-none space-y-1 p-0">

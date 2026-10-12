@@ -52,7 +52,7 @@ export const cotGrilleSanSang = () => cotGrilleCoSan;
 export async function loadExams() {
   const { data, error, coGrille } = await chonCoGrille((coGrille) => supabase
     .from("exams")
-    .select("id, title, level, duration_min, is_published, created_at, "
+    .select("id, title, level, duration_min, is_published, created_at, chi_vip, "
           + (coGrille ? "grille, " : "")
           + "exam_sections (id, code, exercise_id, minutes, points, ord)")
     .order("created_at", { ascending: false }));
@@ -73,7 +73,7 @@ export async function loadExams() {
 export async function loadExam(examId) {
   const { data: exam, error, coGrille } = await chonCoGrille((coGrille) => supabase
     .from("exams")
-    .select("id, title, level, duration_min, is_published, "
+    .select("id, title, level, duration_min, is_published, chi_vip, "
           + (coGrille ? "grille, " : "")
           + "exam_sections (id, code, exercise_id, minutes, points, ord)")
     .eq("id", examId)

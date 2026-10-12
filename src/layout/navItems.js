@@ -1,5 +1,5 @@
 import {
-  LayoutDashboard, BookOpen, Users, BarChart3, Dumbbell, AudioLines,
+  LayoutDashboard, BookOpen, Users, BarChart3, Dumbbell, AudioLines, TrendingUp,
   ClipboardList, CheckSquare, CalendarDays, Settings, Lightbulb, Timer, Trophy, Layers, Lightbulb as Bulb, Anchor, Inbox,
   Map, BookA, Swords, FileCheck2, Megaphone } from "lucide-react";
 
@@ -95,6 +95,8 @@ export const STUDENT_NAV = [
      /etudiant/progression VẪN sống trong App.jsx nên hành trình tới Paris và
      biểu đồ điểm không mất — chỉ là hiện không còn lối vào từ thanh bên.
      Muốn dựng lại thì thêm một dòng ở đây, không phải viết lại màn hình. */
+  /* « Tiến bộ VIP » (14/10, migration 143): báo cáo tuần + ôn câu sai. */
+  { to: "/etudiant/tien-bo", nhom: "toi", labelKey: "nav.progress", Icon: TrendingUp },
   { to: "/etudiant/calendrier", nhom: "toi", labelKey: "nav.calendar", Icon: CalendarDays },
   /* « Bài tập được giao » (08/10): gộp « Cần làm » + « Đã nộp » thành hai tab
      của một mục, đặt ngay dưới Lịch theo yêu cầu chủ dự án. */

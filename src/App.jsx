@@ -15,6 +15,7 @@ function NhipTim({ bat }) { useNhipTim(bat); return null }
 import ExamComposer from './screens/teacher/ExamComposer.jsx'
 import BoTheApp from './screens/student/BoTheApp.jsx'
 import NgheNoi from './screens/student/NgheNoi.jsx'
+import TienBoVip from './screens/student/TienBoVip.jsx'
 import LoTrinh from './screens/student/LoTrinh.jsx'
 import ThachDau from './screens/student/ThachDau.jsx'
 import DatNeo from './screens/teacher/DatNeo.jsx'
@@ -298,7 +299,7 @@ function AppInner() {
                 Vẫn qua RequireRole: ẩn giao diện cho gọn. Hàng rào thật là RLS
                 và Edge Function `grade`, không phải route. */}
             <Route path="/etudiant/examen"
-              element={<RequireRole session={session} role="eleve"><ExamMode /></RequireRole>} />
+              element={<RequireRole session={session} role="eleve"><ExamMode name={session?.name} /></RequireRole>} />
 
             <Route element={<RequireRole session={session} role="eleve">{shell}</RequireRole>}>
               <Route path="/etudiant/dashboard"
@@ -331,6 +332,7 @@ function AppInner() {
                   màn mới gắn vào, không còn gì để trượt. Xem BoTheApp.jsx. */}
               <Route path="/etudiant/bo-the" element={<BoTheApp name={session?.name} />} />
               <Route path="/etudiant/nghe-noi" element={<NgheNoi />} />
+              <Route path="/etudiant/tien-bo" element={<TienBoVip name={session?.name} />} />
 
 
 

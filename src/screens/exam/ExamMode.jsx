@@ -4,6 +4,7 @@ import { Timer, ShieldCheck, AlertTriangle, Clock, Volume2, VolumeX, ArrowLeft, 
 import NutTieng from "../../shared/NutTieng.jsx";
 import { BangKetLuan, ThanhPhan, PhaoGiayLon } from "./KetQuaVisual.jsx";
 import { supabase } from "../../storageShim.js";
+import { load } from "../../shared/storage.js";
 import { loadExams, loadExam } from "../../shared/examStore.js";
 import { gradeRemote } from "../../shared/gradeRemote.js";
 import { EXAM_STRUCTURE, sectionScore, verdict, ghiPhan, gomTheoKyNang, NGUONG_PHAN, khongCham }
@@ -25,6 +26,9 @@ import { coPhienMayChu } from "../../shared/phienMayChu.js";
 import { tr } from "../../shared/i18n.jsx";
 import { LeonTheoTrang, Leon } from "../../shared/leon.jsx";
 import { phat, amThanhBat, datAmThanh } from "../../shared/amThanh.js";
+import PaymentModal from "../student/PaymentModal.jsx";
+import { goiVip } from "../../shared/vip.js";
+import { PAYMENT_KEY } from "../../shared/access.js";
 
 /* Mode Examen — thi thử có tính giờ.
  *
@@ -51,7 +55,7 @@ const dongHo = (giay) => `${hai(Math.floor(giay / 60))}:${hai(Math.max(0, giay %
 
 /* ─────────────────────────── Màn chờ ─────────────────────────── */
 
-function ManCho({ dsDe, chon, paper, onStart, dangTai, lamPhanNoi, setLamPhanNoi, phienThuc }) {
+function ManCho({ dsDe, chon, paper, onStart, dangTai, lamPhanNoi, setLamPhanNoi, phienThuc, name }) {
   const level = paper?.level ?? "B1";
   const cauTruc = EXAM_STRUCTURE[level] ?? [];
   /* Đề có phần nói không — hỏi DỮ LIỆU của đề, không hỏi cấu trúc chuẩn.
@@ -67,12 +71,13 @@ function ManCho({ dsDe, chon, paper, onStart, dangTai, lamPhanNoi, setLamPhanNoi
   const [sanSang, setSanSang] = useState(false);
   /* Lượt thi hôm nay (120) + hộp cảnh báo trước khi vào thi. */
   const [luot, setLuot] = useState(null);
+  const [luotMoi, setLuotMoi] = useState(0);
   const [moHop, setMoHop] = useState(false);
   const [dangMo, setDangMo] = useState(false);
   const [loiMo, setLoiMo] = useState("");
   useEffect(() => {
     supabase.rpc("luot_thi_hom_nay").then(({ data }) => { if (data) setLuot(data); });
-  }, [moHop]);
+  }, [moHop, luotMoi]);
   const dongY = async () => {
     setDangMo(true); setLoiMo("");
     const loi = await onStart();
@@ -80,6 +85,12 @@ function ManCho({ dsDe, chon, paper, onStart, dangTai, lamPhanNoi, setLamPhanNoi
     if (loi) setLoiMo(loi);
   };
   const nhom = useMemo(() => nhomTheoTrinhDo(dsDe), [dsDe]);
+  /* 14/10 (143): tài khoản thường chỉ làm « Đề 1 » mỗi trình độ. Máy chủ chặn thật
+     (bat_dau_thi trả CAN_VIP); ở đây chỉ khoá cho rõ và mở đường mua VIP. */
+  const coVip = !!(luot?.vip || luot?.khong_gioi_han);
+  const [payFor, setPayFor] = useState(null);
+  const [payCfg, setPayCfg] = useState(null);
+  useEffect(() => { load(PAYMENT_KEY, null).then(setPayCfg).catch(() => {}); }, []);
   const [tabChon, setTab] = useState(null);
   /* Mặc định: trình độ của đề đang chọn, không thì trình độ đầu tiên có đề. */
   const tab = tabChon ?? paper?.level ?? nhom.find((g) => g.de.length)?.level ?? "A1";
@@ -116,7 +127,8 @@ function ManCho({ dsDe, chon, paper, onStart, dangTai, lamPhanNoi, setLamPhanNoi
   const deDangChon = deTab.some((e) => e.id === paper?.id) ? paper : null;
   const ICON_PHAN = { CO: Headphones, CE: BookOpen, PE: PenLine, PO: Mic };
   const MAU_PHAN = { CO: "from-sky-500 to-blue-600", CE: "from-emerald-500 to-teal-600", PE: "from-amber-500 to-orange-600", PO: "from-fuchsia-500 to-purple-600" };
-  const sanSangVao = sanSang && !dangTai && !!deDangChon?.sections?.length && phienThuc === true;
+  const khoaVip = !!deDangChon?.chi_vip && !coVip;
+  const sanSangVao = sanSang && !dangTai && !!deDangChon?.sections?.length && phienThuc === true && !khoaVip;
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-8">
@@ -195,6 +207,11 @@ function ManCho({ dsDe, chon, paper, onStart, dangTai, lamPhanNoi, setLamPhanNoi
               style={{ animationDelay: `${120 + k * 60}ms` }}>
               {dang && <span className="mcf-nay absolute right-3 top-3 grid h-6 w-6 place-items-center rounded-full bg-primary text-white"><ShieldCheck size={14} /></span>}
               <span className="block pr-8 text-base font-extrabold text-ink">{e.title}</span>
+              {e.chi_vip && (
+                <span className="mt-1 inline-flex items-center gap-1 rounded-full bg-amber-400 px-2 py-0.5 text-[11px] font-extrabold text-amber-950">
+                  <Crown size={11} /> {coVip ? "VIP" : tr("Cần VIP", "VIP requis", "VIP only")}
+                </span>
+              )}
               <span className="mt-2 flex flex-wrap gap-1.5 text-[11px] font-bold">
                 {/* Đếm KỸ NĂNG, không đếm dòng — một đề 6 bài vẫn là 3 phần. */}
                 <span className="rounded-full bg-surface2 px-2 py-0.5 text-soft">{new Set(e.sections.map((x) => x.code)).size} {tr("phần", "parties", "parts")}</span>
@@ -316,6 +333,22 @@ function ManCho({ dsDe, chon, paper, onStart, dangTai, lamPhanNoi, setLamPhanNoi
         </div>
       )}
 
+      {khoaVip && (
+        <div className="mt-6 flex flex-wrap items-center gap-3 rounded-2xl border-2 border-solid border-amber-400 bg-warn-soft p-4">
+          <Crown size={22} className="shrink-0 text-warn" />
+          <p className="m-0 min-w-0 flex-1 text-sm text-ink">
+            <strong>{tr("Đề này dành cho thành viên VIP.", "Ce sujet est réservé aux membres VIP.", "This exam is for VIP members.")}</strong>{" "}
+            {tr("Tài khoản thường làm được Đề 1 của mỗi trình độ.", "Un compte standard peut passer le Sujet 1 de chaque niveau.", "A standard account can take Exam 1 of each level.")}
+          </p>
+          <button type="button" onClick={() => setPayFor(goiVip(tr("Gói VIP 1 tháng", "Abonnement VIP 1 mois", "1-month VIP plan")))}
+            className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border-0 bg-amber-400 px-4 py-2 font-sans text-sm font-extrabold text-amber-950 hover:bg-amber-300">
+            <Crown size={14} /> {tr("Nâng cấp VIP", "Passer VIP", "Upgrade to VIP")}
+          </button>
+        </div>
+      )}
+      {payFor && <PaymentModal ex={payFor} student={name} config={payCfg}
+        onClose={() => setPayFor(null)} onUnlocked={() => setLuotMoi((x) => x + 1)} />}
+
       <label className={`mt-6 flex cursor-pointer items-start gap-3 rounded-2xl border-2 border-solid p-4 text-sm text-ink transition-all ${sanSang ? "border-ok bg-ok-soft" : "border-line bg-surface hover:border-primary/40"}`}>
         <input type="checkbox" checked={sanSang} onChange={(e) => { phat(e.target.checked ? "dung" : "bam"); setSanSang(e.target.checked); }}
           className="mt-1 h-4 w-4 accent-[rgb(var(--mcf-primary-rgb))]" />
@@ -341,6 +374,7 @@ function ManCho({ dsDe, chon, paper, onStart, dangTai, lamPhanNoi, setLamPhanNoi
         <Timer size={16} /> {dangTai ? tr("Đang tải đề…", "Chargement du sujet…", "Loading exam…")
           : phienThuc === null ? tr("Đang kiểm phiên đăng nhập…", "Vérification de la session…", "Checking your session…")
           : phienThuc === false ? tr("Cần đăng nhập lại", "Reconnexion nécessaire", "Sign-in required")
+          : khoaVip ? tr("Cần VIP", "VIP requis", "VIP only")
           : tr("Bắt đầu thi", "Commencer l'examen", "Start the exam")}
       </button>
       {moHop && (
@@ -940,7 +974,7 @@ function KetQua({ sections, blurCount, onLai }) {
 
 /* ─────────────────────────── Vỏ ─────────────────────────── */
 
-export default function ExamMode() {
+export default function ExamMode({ name }) {
   const [dsDe, setDsDe] = useState([]);
   const [dangTai, setDangTai] = useState(true);
   const [paper, setPaper] = useState(null);
@@ -1021,6 +1055,7 @@ export default function ExamMode() {
   const batDau = async () => {
     const { data, error } = await supabase.rpc("bat_dau_thi", { p_exam_id: paper?.id ?? null });
     if (error) return tr("Không kết nối được máy chủ, chưa mở được bài thi. Thử lại sau giây lát.", "Serveur injoignable, examen non ouvert. Réessayez dans un instant.", "Can't reach the server; exam not opened. Try again shortly.");
+    if (data?.ma === "CAN_VIP") return tr("Đề này dành cho thành viên VIP. Tài khoản thường làm được Đề 1 của mỗi trình độ.", "Ce sujet est réservé aux membres VIP. Un compte standard peut passer le Sujet 1 de chaque niveau.", "This exam is for VIP members. A standard account can take Exam 1 of each level.");
     if (!data?.ok) return data?.ma === "HET_LUOT"
       ? tr("Bạn đã dùng hết 2 lượt thi hôm nay. Hãy quay lại vào ngày mai.", "Vous avez utilisé vos 2 essais d'aujourd'hui. Revenez demain.", "You've used today's 2 attempts. Come back tomorrow.")
       : tr("Không mở được bài thi. Hãy đăng nhập lại.", "Impossible d'ouvrir l'examen. Reconnectez-vous.", "Couldn't open the exam. Please sign in again.");
@@ -1175,7 +1210,7 @@ export default function ExamMode() {
   };
 
   if (buoc === "cho") {
-    return <ManCho dsDe={dsDe} chon={chonDe} paper={paper}
+    return <ManCho name={name} dsDe={dsDe} chon={chonDe} paper={paper}
       lamPhanNoi={lamPhanNoi} setLamPhanNoi={setLamPhanNoi}
       phienThuc={phienThuc}
       dangTai={dangTai} onStart={batDau} />;
