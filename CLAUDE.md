@@ -1298,6 +1298,7 @@ Xem `docs/roadmap-delf.md` — có nhật ký quyết định ở §5.
   `scripts/thach-dau/tu-lo-trinh.mjs`). 16 chủ đề Lộ trình → chủ đề Thách đấu (`lt-…`; Môi trường
   và Truyền thông gộp vào mã có sẵn) + 16 bộ « Từ vựng Lộ trình: … » công khai, 800 thẻ. Dạng thẻ
   thêm `tinh_tu`, `thanh_ngu` (n→nhom_tu, v→dong_tu). Thử: 10 câu, 0 phương án lệch dạng.
+- **Quyền lợi VIP mới — 14/10** (migration 143, Edge Function `viet-mau`). `exams.chi_vip` (mọi đề không kết thúc bằng « Đề 1 »): `bat_dau_thi` trả CAN_VIP, `exam_start` ném CAN_VIP; màn chờ hiện nhãn + nút mua VIP. Bài viết mẫu: AI viết lại bài PE của chính học sinh, lưu ở `bai_viet_mau` (mỗi answer một bản). `/etudiant/tien-bo` (`TienBoVip.jsx`): `bao_cao_tuan()` + `cau_sai_cua_toi()`, không VIP thì trả CAN_VIP. Đề mới phải đặt `chi_vip` tay (update lúc 143 chỉ chạy một lần).
 - `s:mcf-submissions` vẫn giữ làm sao lưu, chưa xoá.
 
 
