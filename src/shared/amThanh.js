@@ -7,7 +7,11 @@ const KHOA = "fracile-am-thanh";
 let ctx = null;
 
 export const amThanhBat = () => { try { return localStorage.getItem(KHOA) !== "0"; } catch { return true; } };
-export const datAmThanh = (bat) => { try { localStorage.setItem(KHOA, bat ? "1" : "0"); } catch { /* bỏ qua */ } };
+/* Báo cho các màn đang mở (vd. nhạc nền Lộ trình, 15/10): một nút loa điều khiển cả hiệu ứng lẫn nhạc. */
+export const datAmThanh = (bat) => {
+  try { localStorage.setItem(KHOA, bat ? "1" : "0"); } catch { /* bỏ qua */ }
+  try { window.dispatchEvent(new CustomEvent("fracile-am-thanh", { detail: bat })); } catch { /* bỏ qua */ }
+};
 
 function lay() {
   if (typeof window === "undefined") return null;

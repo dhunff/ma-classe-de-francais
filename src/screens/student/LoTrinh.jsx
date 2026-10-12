@@ -1,10 +1,10 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Check, Lock, Play, Crown, Star, BookOpen, Music, VolumeX } from "lucide-react";
-import { batNhac, tatNhac, nhacBat, datNhac } from "../../shared/nhacNen.js";
+import { Check, Lock, Play, Crown, Star, BookOpen, Volume2, VolumeX } from "lucide-react";
+import { batNhac, tatNhac } from "../../shared/nhacNen.js";
 import { docKetQua, ghiKetQua, docLoTrinh } from "../../shared/loTrinhStore.js";
 import { useT, tr } from "../../shared/i18n.jsx";
 import { Leon } from "../../shared/leon.jsx";
-import { phat } from "../../shared/amThanh.js";
+import { phat, amThanhBat, datAmThanh } from "../../shared/amThanh.js";
 import TroChoiMan from "./TroChoiMan.jsx";
 
 /* Lộ trình học tập — THEO CHỦ ĐỀ XÃ HỘI (06/10), không theo kỹ năng nữa.
@@ -77,7 +77,13 @@ export default function LoTrinh() {
 
   /* Nhạc nền phiêu lưu (15/10). Trình duyệt chặn phát khi chưa có cú bấm nào,
      nên thử ngay rồi thử lại ở cú bấm đầu tiên; rời trang thì tắt. */
-  const [coNhac, setCoNhac] = useState(nhacBat);
+  const [coNhac, setCoNhac] = useState(amThanhBat);
+  /* Nút loa ở đâu (đầu trang này, trong màn chơi) cũng bật/tắt luôn nhạc nền. */
+  useEffect(() => {
+    const nghe = (e) => setCoNhac(!!e.detail);
+    window.addEventListener("fracile-am-thanh", nghe);
+    return () => window.removeEventListener("fracile-am-thanh", nghe);
+  }, []);
   useEffect(() => {
     if (!coNhac) return undefined;
     batNhac();
@@ -86,7 +92,7 @@ export default function LoTrinh() {
     window.addEventListener("keydown", mo);
     return () => { window.removeEventListener("pointerdown", mo); window.removeEventListener("keydown", mo); tatNhac(); };
   }, [coNhac]);
-  const doiNhac = () => { const moi = !coNhac; datNhac(moi); setCoNhac(moi); };
+  const doiNhac = () => { const moi = !coNhac; datAmThanh(moi); if (moi) phat("bam"); };
 
   /* Mỗi chủ đề: màn đang bật + trạng thái tuần tự riêng. */
   const chuongs = useMemo(() => {
@@ -160,9 +166,10 @@ export default function LoTrinh() {
         <span aria-hidden className="absolute -right-12 -top-12 h-48 w-48 rounded-full bg-white/10" />
         <span aria-hidden className="absolute -bottom-20 left-10 h-44 w-44 rounded-full bg-sky-300/20 blur-2xl" />
         <button type="button" onClick={doiNhac} aria-pressed={coNhac}
-          title={coNhac ? tr("Tắt nhạc nền", "Couper la musique", "Mute music") : tr("Bật nhạc nền", "Activer la musique", "Play music")}
-          className="absolute right-4 top-4 z-10 inline-flex cursor-pointer items-center gap-1.5 rounded-full border-0 bg-white/20 px-3 py-1.5 font-sans text-xs font-bold text-white backdrop-blur transition-colors hover:bg-white/30">
-          {coNhac ? <Music size={14} /> : <VolumeX size={14} />} {coNhac ? tr("Nhạc: bật", "Musique : oui", "Music: on") : tr("Nhạc: tắt", "Musique : non", "Music: off")}
+          title={coNhac ? tr("Tắt âm thanh và nhạc nền", "Couper le son et la musique", "Mute sound and music") : tr("Bật âm thanh và nhạc nền", "Activer le son et la musique", "Turn on sound and music")}
+          aria-label={coNhac ? tr("Tắt âm thanh và nhạc nền", "Couper le son et la musique", "Mute sound and music") : tr("Bật âm thanh và nhạc nền", "Activer le son et la musique", "Turn on sound and music")}
+          className="absolute right-4 top-4 z-10 grid h-10 w-10 cursor-pointer place-items-center rounded-full border-0 bg-white/20 p-0 text-white backdrop-blur transition-colors hover:bg-white/30">
+          {coNhac ? <Volume2 size={18} /> : <VolumeX size={18} />}
         </button>
         <div className="relative flex items-center gap-4">
           <Leon cam="phap" size={112} className="mcf-leon-bay shrink-0 drop-shadow-[0_12px_18px_rgba(0,0,0,0.3)] max-sm:h-20 max-sm:w-20" />

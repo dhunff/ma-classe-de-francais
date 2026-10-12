@@ -1,14 +1,15 @@
-/* Nhạc nền phiêu lưu cho Lộ trình (15/10, theo chủ dự án; làm lại cho gay cấn
- * hơn và có cao trào).
+/* Nhạc nền Lộ trình (15/10, theo chủ dự án): EDM kiểu nhạc game Geometry Dash.
  *
  * Tổng hợp bằng Web Audio như amThanh.js, KHÔNG tải file (không vướng bản
- * quyền, không tốn băng thông). Rê thứ, 150 bpm, bốn đoạn nối thành vòng ~38 s:
- *   mở đầu (bass dồn + trống thưa) → đoạn chính (giai điệu, trống đủ)
- *   → dồn lên (giai điệu leo thang, trống lăn dày dần)
- *   → CAO TRÀO (giai điệu cao gấp đôi bè, hợp âm sawtooth dày, chũm choẹ).
+ * quyền, không tốn băng thông). La thứ, 140 bpm, vòng Am–F–C–G.
+ *   mở đầu 4 ô (pluck + kick) → đoạn chính 8 ô (kick đều mỗi phách, clap,
+ *   hi-hat, bass nảy phách nghịch, giai điệu pluck) → BUILD-UP 4 ô (trống lăn
+ *   nhanh dần, tiếng « vút » đi lên, nín nửa phách) → DROP 8 ô (supersaw bơm
+ *   theo phách, sub bass, giai điệu supersaw, chũm choẹ). Hết drop quay về
+ *   đoạn chính (bỏ mở đầu).
  *
- * Bật/tắt lưu ở localStorage "fracile-nhac-nen" (mặc định bật), và tắt hẳn khi
- * hiệu ứng âm thanh chung đang tắt. Trình duyệt chỉ cho phát sau một cú bấm,
+ * Bật/tắt đi theo NÚT LOA chung (amThanhBat, sự kiện "fracile-am-thanh"), không
+ * có công tắc riêng nữa (15/10). Trình duyệt chỉ cho phát sau một cú bấm,
  * nên batNhac() phải được gọi lại từ một sự kiện người dùng. */
 import { amThanhBat } from "./amThanh.js";
 
@@ -16,136 +17,154 @@ const KHOA = "fracile-nhac-nen";
 export const nhacBat = () => { try { return localStorage.getItem(KHOA) !== "0"; } catch { return true; } };
 export const datNhac = (bat) => { try { localStorage.setItem(KHOA, bat ? "1" : "0"); } catch { /* bỏ qua */ } };
 
-const BUOC = 0.2;               // một móc đơn ở 150 bpm
-const AM_LUONG = 0.07;
+const BPM = 140;
+const B16 = 60 / BPM / 4;       // một móc kép
+const PHACH = 4 * B16;
+const AM_LUONG = 0.22;   // 15/10: to hơn (chủ dự án); bộ nén phía sau giữ không vỡ tiếng
 const hz = (m) => 440 * 2 ** ((m - 69) / 12);
 
-/* Hợp âm: bass + ba nốt. */
-const HA = {
-  Dm: [38, [62, 65, 69]], Bb: [34, [58, 62, 65]], C: [36, [60, 64, 67]], A: [33, [61, 64, 69]],
-  F: [41, [60, 65, 69]], Gm: [43, [62, 67, 70]],
-};
-
-/* Mỗi ô nhịp: [hợp âm, giai điệu [nốt, số móc đơn] cộng đủ 8, mức gay cấn 0–3].
-   Mức: 0 mở đầu · 1 đoạn chính · 2 dồn lên · 3 cao trào. */
-const BAI = [
-  ["Dm", [], 0], ["Bb", [], 0], ["C", [], 0], ["A", [[69, 4], [73, 4]], 0],
-  ["Dm", [[62, 1], [65, 1], [69, 2], [67, 1], [65, 1], [64, 2]], 1],
-  ["Bb", [[65, 2], [62, 2], [70, 3], [69, 1]], 1],
-  ["C", [[67, 1], [64, 1], [67, 1], [72, 1], [71, 2], [67, 2]], 1],
-  ["A", [[69, 3], [68, 1], [64, 2], [61, 2]], 1],
-  ["Dm", [[62, 1], [65, 1], [69, 2], [67, 1], [65, 1], [64, 2]], 1],
-  ["Bb", [[65, 2], [62, 2], [70, 3], [69, 1]], 1],
-  ["C", [[67, 1], [64, 1], [67, 1], [72, 1], [74, 2], [72, 2]], 1],
-  ["A", [[69, 2], [73, 2], [76, 4]], 1],
-  ["Bb", [[65, 1], [67, 1], [69, 1], [70, 1], [69, 1], [70, 1], [72, 1], [74, 1]], 2],
-  ["C", [[72, 1], [74, 1], [76, 1], [77, 1], [76, 1], [77, 1], [79, 1], [81, 1]], 2],
-  ["Gm", [[79, 2], [82, 2], [79, 2], [82, 2]], 2],
-  ["A", [[81, 2], [85, 2], [88, 4]], 2],
-  ["Dm", [[74, 3], [69, 1], [74, 2], [77, 2]], 3],
-  ["Bb", [[74, 2], [70, 2], [77, 3], [74, 1]], 3],
-  ["F", [[72, 2], [69, 1], [72, 1], [77, 2], [76, 2]], 3],
-  ["C", [[76, 3], [74, 1], [72, 2], [67, 2]], 3],
-  ["Gm", [[70, 2], [74, 2], [79, 3], [77, 1]], 3],
-  ["Dm", [[77, 2], [74, 2], [69, 2], [74, 2]], 3],
-  ["Bb", [[74, 2], [77, 2], [82, 2], [79, 2]], 3],
-  ["A", [[81, 4], [76, 2], [73, 2]], 3],
+const HA = { Am: [33, [69, 72, 76]], F: [29, [65, 69, 72]], C: [36, [67, 72, 76]], G: [31, [67, 71, 74]] };
+const VONG = ["Am", "F", "C", "G"];
+/* Giai điệu: [nốt, số móc kép], mỗi ô cộng đủ 16. */
+const GIAI = [
+  [[76, 2], [76, 2], [79, 2], [76, 2], [74, 2], [72, 2], [74, 4]],
+  [[72, 2], [72, 2], [76, 2], [72, 2], [69, 2], [72, 2], [74, 4]],
+  [[76, 2], [76, 2], [79, 2], [81, 2], [79, 2], [76, 2], [72, 4]],
+  [[74, 2], [74, 2], [71, 2], [74, 2], [79, 4], [74, 4]],
 ];
+/* Đoạn: [tên, số ô]. */
+const DOAN = [["mo", 4], ["chinh", 8], ["build", 4], ["drop", 8]];
+const TONG_O = DOAN.reduce((n, d) => n + d[1], 0);
+const O_VONG_LAI = 4;           // hết bài quay về ô này (đầu đoạn chính)
+const doanCua = (o) => { let n = 0; for (const [ten, so] of DOAN) { if (o < n + so) return [ten, o - n]; n += so; } return ["chinh", 0]; };
 
-let ctx = null, tong = null, onhieu = null, hen = null, oNhip = 0, mocTiep = 0;
+let ctx = null, tong = null, bom = null, onhieu = null, hen = null, oNhip = 0, mocTiep = 0;
 
-function not(f, t, dai, song, to, loc = null) {
+function osc(f, t, dai, song, to, dich, loc = null, lech = 0) {
   const o = ctx.createOscillator(), g = ctx.createGain();
-  o.type = song; o.frequency.setValueAtTime(f, t);
+  o.type = song; o.frequency.setValueAtTime(f, t); o.detune.value = lech;
   g.gain.setValueAtTime(0.0001, t);
-  g.gain.exponentialRampToValueAtTime(to, t + 0.015);
+  g.gain.exponentialRampToValueAtTime(to, t + 0.008);
   g.gain.exponentialRampToValueAtTime(0.0001, t + dai);
   let cuoi = g;
   if (loc) { const b = ctx.createBiquadFilter(); b.type = "lowpass"; b.frequency.value = loc; g.connect(b); cuoi = b; }
-  o.connect(g); cuoi.connect(tong);
+  o.connect(g); cuoi.connect(dich);
   o.start(t); o.stop(t + dai + 0.05);
 }
+/* Supersaw: 5 sawtooth lệch nhau vài cent, âm « dày » đặc trưng EDM. */
+const supersaw = (n, t, dai, to, dich, loc = 5000) =>
+  [-22, -11, 0, 11, 22].forEach((c) => osc(hz(n), t, dai, "sawtooth", to / 3, dich, loc, c));
 
-/* Tiếng ồn trắng dùng chung cho trống lẫn chũm choẹ. */
-function nhieu(t, dai, to, loai, tan) {
+function nhieu(t, dai, to, loai, tan, tanCuoi = null) {
   if (!onhieu) {
-    const b = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate), d = b.getChannelData(0);
+    const b = ctx.createBuffer(1, ctx.sampleRate * 2, ctx.sampleRate), d = b.getChannelData(0);
     for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
     onhieu = b;
   }
   const s = ctx.createBufferSource(), f = ctx.createBiquadFilter(), g = ctx.createGain();
-  s.buffer = onhieu; f.type = loai; f.frequency.value = tan;
-  g.gain.setValueAtTime(to, t);
-  g.gain.exponentialRampToValueAtTime(0.0001, t + dai);
+  s.buffer = onhieu; s.loop = true; f.type = loai;
+  f.frequency.setValueAtTime(tan, t);
+  if (tanCuoi) f.frequency.exponentialRampToValueAtTime(tanCuoi, t + dai);
+  if (tanCuoi) { g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(to, t + dai * 0.95); g.gain.linearRampToValueAtTime(0, t + dai); }
+  else { g.gain.setValueAtTime(to, t); g.gain.exponentialRampToValueAtTime(0.0001, t + dai); }
   s.connect(f).connect(g).connect(tong);
   s.start(t); s.stop(t + dai + 0.02);
 }
 
-function kick(t, to = 0.9) {
+function kick(t, to = 1) {
   const o = ctx.createOscillator(), g = ctx.createGain();
-  o.frequency.setValueAtTime(120, t);
-  o.frequency.exponentialRampToValueAtTime(40, t + 0.22);
+  o.frequency.setValueAtTime(150, t);
+  o.frequency.exponentialRampToValueAtTime(42, t + 0.12);
   g.gain.setValueAtTime(to, t);
-  g.gain.exponentialRampToValueAtTime(0.0001, t + 0.28);
-  o.connect(g).connect(tong); o.start(t); o.stop(t + 0.3);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + 0.32);
+  o.connect(g).connect(tong); o.start(t); o.stop(t + 0.35);
+  osc(2200, t, 0.012, "square", 0.15 * to, tong);             // tiếng « tách » đầu kick
 }
-const snare = (t, to = 0.35) => { nhieu(t, 0.16, to, "bandpass", 1800); not(190, t, 0.08, "triangle", 0.25); };
-const hihat = (t, to = 0.08) => nhieu(t, 0.04, to, "highpass", 7000);
-const chumChoe = (t) => nhieu(t, 1.4, 0.3, "highpass", 5000);
+const clap = (t, to = 0.45) => { [0, 0.012, 0.024].forEach((d) => nhieu(t + d, 0.12, to, "bandpass", 1500)); };
+const snare = (t, to) => { nhieu(t, 0.1, to, "bandpass", 2000); osc(220, t, 0.06, "triangle", to * 0.6, tong); };
+const hat = (t, to = 0.09, dai = 0.035) => nhieu(t, dai, to, "highpass", 8000);
+const choe = (t) => nhieu(t, 1.8, 0.35, "highpass", 4500);
+
+/* « Bơm » theo phách (sidechain): âm lượng tụt khi kick đánh rồi hồi lên. */
+function bomPhach(t0, soPhach) {
+  for (let p = 0; p < soPhach; p++) {
+    const t = t0 + p * PHACH;
+    bom.gain.setValueAtTime(0.15, t);
+    bom.gain.linearRampToValueAtTime(1, t + PHACH * 0.6);
+  }
+}
 
 function xepOnhip(t0) {
-  const k = oNhip % BAI.length;
-  const [ten, giai, muc] = BAI[k];
+  const [doan, trong] = doanCua(oNhip);
+  const ten = VONG[trong % 4];
   const [bass, ba] = HA[ten];
-  const cuoiDon = muc === 2 && BAI[(k + 1) % BAI.length][2] === 3;   // ô cuối trước cao trào
+  const giai = GIAI[trong % 4];
 
-  if (muc === 3 && BAI[(k + BAI.length - 1) % BAI.length][2] !== 3) chumChoe(t0);
-  for (let i = 0; i < 8; i++) {
-    const t = t0 + i * BUOC;
-    /* Bass: móc đơn dồn dập, cao trào nhảy quãng tám. */
-    const nBass = muc === 3 && i % 2 ? bass + 12 : bass;
-    not(hz(nBass), t, BUOC * 0.9, "sawtooth", muc === 0 ? 0.28 : 0.36, muc === 3 ? 900 : 550);
-    /* Rải hợp âm (từ đoạn chính). */
-    if (muc >= 1) not(hz(ba[i % 3] + (i >= 4 ? 12 : 0)), t, BUOC * 0.8, "square", muc === 3 ? 0.06 : 0.045, 2400);
-    /* Trống. */
-    if (i === 0 || i === 4 || (muc === 3 && i === 7)) kick(t);
-    if (muc === 0 && i === 6) kick(t, 0.5);
-    if (muc >= 1 && (i === 2 || i === 6)) snare(t);
-    if (muc >= 2) hihat(t + BUOC / 2, muc === 3 ? 0.1 : 0.06);
-    if (muc >= 1) hihat(t);
+  if (doan === "drop") {
+    if (trong === 0) choe(t0);
+    bomPhach(t0, 4);
+    for (let i = 0; i < 16; i++) {
+      const t = t0 + i * B16;
+      if (i % 4 === 0) kick(t);
+      if (i === 4 || i === 12) clap(t);
+      if (i % 2 === 1) hat(t, 0.07);
+      if (i % 4 === 2) hat(t, 0.12, 0.09);                     // hi-hat mở ở phách nghịch
+      if (i % 4 === 2) supersaw(bass + 24, t, B16 * 1.8, 0.22, bom, 1800);   // bass nảy
+    }
+    osc(hz(bass), t0, 16 * B16, "sine", 0.55, bom);           // sub bass
+    ba.forEach((n) => supersaw(n - 12, t0, 16 * B16, 0.1, bom, 3500));      // hợp âm dày, bơm
+    let t = t0;
+    for (const [n, d] of giai) { supersaw(n, t, d * B16 * 0.92, 0.2, tong, 6000); osc(hz(n + 12), t, d * B16 * 0.9, "square", 0.04, tong, 4000); t += d * B16; }
+  } else if (doan === "build") {
+    /* Trống lăn nhanh dần: 4 → 8 → 16 → 32 lần mỗi ô, to dần. */
+    const lan = [4, 8, 16, 32][trong];
+    const het = trong === 3 ? 14 : 16;                        // nín 2 móc kép cuối trước drop
+    for (let j = 0; j < lan; j++) {
+      const t = t0 + j * (16 * B16 / lan);
+      if (t < t0 + het * B16) snare(t, 0.12 + 0.07 * trong + 0.004 * j);
+    }
+    if (trong < 3) for (let i = 0; i < 16; i += 4) kick(t0 + i * B16, 0.8);
+    if (trong === 0) nhieu(t0, 4 * 16 * B16 - 2 * B16, 0.25, "highpass", 300, 9000);   // tiếng « vút » cả 4 ô
+    for (let i = 0; i < het; i++) {                           // rải hợp âm leo cao dần
+      const n = ba[i % 3] + 12 * Math.floor(i / 6) + trong * 2 - 12;
+      osc(hz(n), t0 + i * B16, B16 * 0.8, "sawtooth", 0.06 + trong * 0.02, tong, 2000 + trong * 1500);
+    }
+  } else {
+    const chinh = doan === "chinh";
+    for (let i = 0; i < 16; i++) {
+      const t = t0 + i * B16;
+      if (i % 4 === 0) kick(t, chinh ? 1 : 0.85);
+      if (chinh && (i === 4 || i === 12)) clap(t, 0.35);
+      if (chinh && i % 2 === 1) hat(t, 0.05);
+      if (i % 4 === 2) osc(hz(bass + 12), t, B16 * 1.6, "sawtooth", 0.3, tong, chinh ? 900 : 500);
+      if (!chinh) osc(hz(ba[i % 3] + (i % 8 >= 4 ? 12 : 0)), t, B16 * 0.7, "square", 0.05, tong, 1200 + trong * 600);
+    }
+    if (chinh) { let t = t0; for (const [n, d] of giai) { osc(hz(n - 12), t, d * B16 * 0.6, "square", 0.12, tong, 2500); osc(hz(n), t, d * B16 * 0.5, "triangle", 0.12, tong); t += d * B16; } }
   }
-  /* Trống lăn dồn lên: móc kép, to dần, ở ô cuối trước cao trào. */
-  if (cuoiDon) for (let j = 0; j < 16; j++) snare(t0 + j * BUOC / 2, 0.08 + j * 0.02);
-  /* Cao trào: hợp âm sawtooth dày giữ cả ô nhịp. */
-  if (muc === 3) ba.forEach((n) => not(hz(n), t0, 8 * BUOC, "sawtooth", 0.07, 1600));
-
-  let t = t0;
-  for (const [n, d] of giai) {
-    const dai = d * BUOC * 0.95;
-    not(hz(n), t, dai, muc === 3 ? "square" : "triangle", muc === 3 ? 0.13 : 0.3, muc === 3 ? 3000 : null);
-    if (muc === 3) not(hz(n - 12), t, dai, "triangle", 0.25);      // bè quãng tám dưới
-    t += d * BUOC;
-  }
-  oNhip++;
+  oNhip = oNhip + 1 >= TONG_O ? O_VONG_LAI : oNhip + 1;
 }
 
 /* Lịch đặt trước 0,3 giây, kiểm mỗi 100 ms: đồng hồ JS không chính xác,
    đồng hồ AudioContext thì có. */
-const lap = () => { while (mocTiep < ctx.currentTime + 0.3) { xepOnhip(mocTiep); mocTiep += 8 * BUOC; } };
+const lap = () => { while (mocTiep < ctx.currentTime + 0.3) { xepOnhip(mocTiep); mocTiep += 16 * B16; } };
 
 export function batNhac() {
   /* Đã xếp lịch nhưng AudioContext còn « suspended » (tạo trước cú bấm đầu
      tiên): phải resume ở chính cú bấm này, nếu không nhạc im mãi. */
   if (hen) { if (ctx?.state === "suspended") ctx.resume().catch(() => {}); return; }
-  if (!nhacBat() || !amThanhBat() || typeof window === "undefined") return;
+  if (!amThanhBat() || typeof window === "undefined") return;
   const AC = window.AudioContext || window.webkitAudioContext;
   if (!AC) return;
   if (!ctx) ctx = new AC();
   if (ctx.state === "suspended") ctx.resume().catch(() => {});
+  /* Nén nhẹ ở cuối để drop to mà không vỡ tiếng. */
+  const nen = ctx.createDynamicsCompressor();
+  nen.threshold.value = -14; nen.ratio.value = 4;
   tong = ctx.createGain();
   tong.gain.setValueAtTime(0.0001, ctx.currentTime);
   tong.gain.exponentialRampToValueAtTime(AM_LUONG, ctx.currentTime + 1.5);   // vào nhẹ
-  tong.connect(ctx.destination);
+  tong.connect(nen).connect(ctx.destination);
+  bom = ctx.createGain(); bom.connect(tong);
   oNhip = 0; mocTiep = ctx.currentTime + 0.1;
   lap();
   hen = setInterval(lap, 100);
