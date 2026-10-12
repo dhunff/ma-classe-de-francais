@@ -80,7 +80,10 @@ function xepOnhip(t0) {
 const lap = () => { while (mocTiep < ctx.currentTime + 0.3) { xepOnhip(mocTiep); mocTiep += 8 * BUOC; } };
 
 export function batNhac() {
-  if (hen || !nhacBat() || !amThanhBat() || typeof window === "undefined") return;
+  /* Đã xếp lịch nhưng AudioContext còn « suspended » (tạo trước cú bấm đầu
+     tiên): phải resume ở chính cú bấm này, nếu không nhạc im mãi (15/10). */
+  if (hen) { if (ctx?.state === "suspended") ctx.resume().catch(() => {}); return; }
+  if (!nhacBat() || !amThanhBat() || typeof window === "undefined") return;
   const AC = window.AudioContext || window.webkitAudioContext;
   if (!AC) return;
   if (!ctx) ctx = new AC();

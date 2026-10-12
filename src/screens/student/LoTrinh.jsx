@@ -82,8 +82,9 @@ export default function LoTrinh() {
     if (!coNhac) return undefined;
     batNhac();
     const mo = () => batNhac();
-    window.addEventListener("pointerdown", mo, { once: true });
-    return () => { window.removeEventListener("pointerdown", mo); tatNhac(); };
+    window.addEventListener("pointerdown", mo);
+    window.addEventListener("keydown", mo);
+    return () => { window.removeEventListener("pointerdown", mo); window.removeEventListener("keydown", mo); tatNhac(); };
   }, [coNhac]);
   const doiNhac = () => { const moi = !coNhac; datNhac(moi); setCoNhac(moi); };
 
