@@ -119,7 +119,14 @@ export default function PaymentModal({ ex, student, config, onClose, onUnlocked 
           ) : (
             <>
               <p className="mb-3 text-sm text-soft">{t("pay.scan")}</p>
-              <img src={qr} alt="" className="mx-auto mb-4 w-full max-w-[260px] rounded-md border border-solid border-line" />
+              {/* 14/10: căn giữa. Preflight tắt nên <img> vẫn là inline và
+                  mx-auto không có tác dụng: mã QR dạt sang trái. Bọc trong khung flex. */}
+              <div className="mb-4 flex justify-center">
+                <div className="rounded-2xl border border-solid border-line bg-white p-3 shadow-sm">
+                  <img src={qr} alt={t("pay.scan")} width={240} height={240}
+                    className="block h-auto w-[min(240px,70vw)]" />
+                </div>
+              </div>
 
               <div className="mb-3">
                 <Row label={t("pay.bank")} value={config.bank} t={t} />
