@@ -252,3 +252,12 @@ button, input, select, textarea { font-family: inherit; }
 /* Bút tô sáng trên bài đọc thi thử (14/10, VanBanToSang). Màu cố định như tờ đề. */
 mark.de-to { background: #fde047; color: inherit; cursor: pointer; padding: 0 1px; border-radius: 2px; }
 mark.de-to:hover { background: #facc15; }
+
+/* Ô nhập TRÊN TỜ ĐỀ và giấy nháp luôn chữ đen (14/10). Luật « .mcf-dark textarea »
+   ở trên đổi chữ ô nhập sang màu sáng khi bật nền tối, và nó mạnh hơn .de-dong-ke,
+   nên trên giấy trắng chữ gõ vào thành xám nhạt. Đặt độ ưu tiên cao hơn hẳn. */
+.de-giay input, .de-giay textarea, .de-giay select,
+.mcf-dark .de-giay input, .mcf-dark .de-giay textarea, .mcf-dark .de-giay select,
+.de-nhap textarea, .mcf-dark .de-nhap textarea { color: #111; caret-color: #111; }
+.de-giay input::placeholder, .de-giay textarea::placeholder,
+.de-nhap textarea::placeholder { color: #8a8a8a; opacity: 1; }

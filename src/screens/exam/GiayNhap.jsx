@@ -23,7 +23,7 @@ export default function GiayNhap({ khoa }) {
       </button>
       {mo && (
         <aside aria-label={tr("Giấy nháp", "Brouillon", "Scratch paper")}
-          className="fixed bottom-20 right-5 z-40 flex h-[min(70vh,520px)] w-[min(92vw,380px)] flex-col border-[1.5px] border-solid border-[#111] bg-white shadow-2xl"
+          className="de-nhap fixed bottom-20 right-5 z-40 flex h-[min(70vh,520px)] w-[min(92vw,380px)] flex-col border-[1.5px] border-solid border-[#111] bg-white shadow-2xl"
           style={{ fontFamily: '"Roboto Condensed", sans-serif' }}>
           <div className="flex items-center justify-between border-0 border-b border-solid border-[#111] bg-[#efefef] px-3 py-2">
             <span className="text-[13px] font-bold uppercase tracking-wide text-[#111]">Brouillon</span>
