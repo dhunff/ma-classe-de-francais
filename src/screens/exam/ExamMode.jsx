@@ -455,28 +455,53 @@ function AudioGioiHan({ src, attemptId, questionId, luot = 2 }) {
     }
   };
 
+  /* 15/10 (chủ dự án): khung phát giống TỜ ĐỀ, đen trắng, chữ Roboto Condensed
+     của .de-giay; thanh tiến trình chỉ để XEM, không tua được. */
+  const [giay, setGiay] = useState(0);
+  const [tong, setTong] = useState(0);
+  const [dangPhat, setDangPhat] = useState(false);
+  const mmss = (x) => `${String(Math.floor(x / 60)).padStart(2, "0")}:${String(Math.floor(x % 60)).padStart(2, "0")}`;
+  const nhan = chuaSanSang ? tr("Đang mở bài thi…", "Ouverture de l'examen…", "Opening the exam…")
+    : dangXin ? "…" : dangPhat ? tr("Đang phát", "Lecture en cours", "Playing")
+    : het ? tr("Đã nghe xong", "Écoute terminée", "Listening finished") : tr("Bấm để nghe", "Lancer l'écoute", "Start listening");
+
   return (
-    <div className="mb-5 rounded-2xl border border-line bg-surface p-4">
+    <div className="de-o mb-6 p-4">
       {/* KHÔNG dùng `controls` mặc định: nó cho tua lại và phát lại tuỳ ý, tức
           là bỏ qua bộ đếm hoàn toàn. Chỉ một nút, mỗi lần bấm là một lượt. */}
-      <audio ref={ref} src={src} onEnded={() => {}} />
-      <div className="flex flex-wrap items-center gap-3">
-        <button type="button" onClick={phat} disabled={het || dangXin || chuaSanSang}
-          className="inline-flex items-center gap-2 rounded-full border-0 bg-primary px-5 py-2.5 text-sm font-bold text-white transition enabled:hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-40">
-          <Volume2 size={15} /> {chuaSanSang ? tr("Đang mở bài thi…", "Ouverture de l'examen…", "Opening the exam…") : dangXin ? "…" : het ? tr("Hết lượt nghe", "Plus d'écoute", "No plays left") : "Phát"}
+      <audio ref={ref} src={src} preload="metadata"
+        onLoadedMetadata={(e) => setTong(e.currentTarget.duration || 0)}
+        onTimeUpdate={(e) => setGiay(e.currentTarget.currentTime)}
+        onPlay={() => setDangPhat(true)} onEnded={() => setDangPhat(false)} onPause={() => setDangPhat(false)} />
+      <div className="flex items-center gap-4">
+        <button type="button" onClick={phat} disabled={het || dangXin || chuaSanSang || dangPhat}
+          aria-label={nhan}
+          className="de-tron grid h-14 w-14 shrink-0 cursor-pointer place-items-center rounded-none border-0 p-0 transition enabled:hover:opacity-85 disabled:cursor-not-allowed">
+          {dangPhat ? <Volume2 size={24} /> : <span aria-hidden className="ml-1 text-2xl leading-none">▶</span>}
         </button>
-        <span className="text-xs text-soft">
-          {luot === 1
-            ? (conLai === 0 ? tr("Đã phát", "Écouté", "Played") : tr("Phát một lần duy nhất", "Une seule lecture", "Plays once only"))
-            : conLai === null ? tr("2 lượt nghe", "2 écoutes", "2 plays") : tr(`Còn ${conLai} lượt`, `${conLai} écoute(s) restante(s)`, `${conLai} play(s) left`)}
-        </span>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-baseline justify-between gap-3">
+            <span className="text-[15px] font-bold uppercase tracking-wide">{nhan}</span>
+            <span className="text-sm font-bold italic tabular-nums">
+              {tong ? `${mmss(giay)} / ${mmss(tong)}` : ""}
+            </span>
+          </div>
+          <div className="mt-2 h-1.5 w-full bg-[#ddd]">
+            <div className="h-full bg-[#111] transition-[width] duration-300" style={{ width: tong ? `${Math.min(100, (giay / tong) * 100)}%` : 0 }} />
+          </div>
+          <p className="de-nhat m-0 mt-1.5 text-xs italic">
+            {luot === 1
+              ? (conLai === 0 ? tr("Đã phát: không nghe lại được.", "Déjà lancé : pas de seconde lecture.", "Already played: no replay.") : tr("Một lần phát duy nhất, không tạm dừng.", "Une seule lecture, sans pause.", "One play only, no pausing."))
+              : conLai === null ? tr("2 lượt nghe", "2 écoutes", "2 plays") : tr(`Còn ${conLai} lượt`, `${conLai} écoute(s) restante(s)`, `${conLai} play(s) left`)}
+          </p>
+        </div>
       </div>
       {luot === 1 && (
-        <p className="m-0 mt-2 text-xs leading-relaxed text-soft">
+        <p className="de-nhat m-0 mt-3 border-0 border-t border-solid border-[#ccc] pt-2 text-xs leading-relaxed">
           {tr("Như phòng thi thật: file gồm thời gian đọc câu hỏi, lượt nghe 1, khoảng nghỉ, lượt nghe 2 và thời gian hoàn thành câu trả lời. Bấm phát một lần rồi để chạy hết, không tạm dừng được.", "Comme à l'examen : l'enregistrement contient le temps de lecture des questions, la 1re écoute, une pause, la 2e écoute et le temps pour compléter. Lancez-le une fois et laissez-le jusqu'au bout, sans pause.", "Like the real exam: the recording includes question-reading time, 1st listening, a pause, 2nd listening and time to finish. Play it once and let it run, no pausing.")}
         </p>
       )}
-      {loi && <p className="m-0 mt-2 text-xs font-semibold text-danger">{loi}</p>}
+      {loi && <p className="m-0 mt-2 text-xs font-semibold text-[#b91c1c]">{loi}</p>}
     </div>
   );
 }
