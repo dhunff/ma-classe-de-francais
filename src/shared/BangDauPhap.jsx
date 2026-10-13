@@ -9,12 +9,22 @@ import { tr } from "./i18n.jsx";
  * Ô nhập là controlled React: phải ghi qua setter GỐC của trình duyệt rồi bắn
  * sự kiện `input`, nếu gán `el.value` thẳng thì React không thấy và lần dựng
  * sau xoá mất ký tự vừa chèn. */
-const DAU = ["é", "è", "ê", "à", "â", "ç", "î", "ï", "ô", "û", "ù", "ë", "œ"];
+export const DAU = ["é", "è", "ê", "à", "â", "ç", "î", "ï", "ô", "û", "ù", "ë", "œ"];
 
 const hopLe = (el) => el instanceof HTMLElement
   && (el.tagName === "TEXTAREA" || (el.tagName === "INPUT" && /^(text|search|)$/.test(el.type || "")))
   && !el.disabled && !el.readOnly && !el.closest("[data-khong-bang-dau]")
   && el.closest('[lang="fr"]') !== null;
+
+/* Chèn ký tự vào ô controlled React (dùng chung cho bảng nổi và giấy nháp). */
+export function chenKyTu(o, c) {
+  const a = o.selectionStart ?? o.value.length, b = o.selectionEnd ?? a;
+  const moi = o.value.slice(0, a) + c + o.value.slice(b);
+  const set = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(o), "value").set;
+  set.call(o, moi);
+  o.dispatchEvent(new Event("input", { bubbles: true }));
+  requestAnimationFrame(() => { o.focus(); o.setSelectionRange(a + c.length, a + c.length); });
+}
 
 export default function BangDauPhap() {
   const [o, setO] = useState(null);
@@ -33,13 +43,7 @@ export default function BangDauPhap() {
   if (!o) return null;
 
   const chen = (c0) => {
-    const c = hoa.current ? c0.toUpperCase() : c0;
-    const a = o.selectionStart ?? o.value.length, b = o.selectionEnd ?? a;
-    const moi = o.value.slice(0, a) + c + o.value.slice(b);
-    const set = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(o), "value").set;
-    set.call(o, moi);
-    o.dispatchEvent(new Event("input", { bubbles: true }));
-    requestAnimationFrame(() => { o.focus(); o.setSelectionRange(a + c.length, a + c.length); });
+    chenKyTu(o, hoa.current ? c0.toUpperCase() : c0);
   };
 
   return (
