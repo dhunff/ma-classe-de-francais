@@ -12,7 +12,6 @@ import { loadDanhTinh, luuDanhTinh, usernameConTrong, baoDanhTinhDoi } from "../
 import { chuanHoaUsername, kiemUsername, goiYUsername, TEN_HIEN_THI_TOI_DA }
   from "../../shared/identityRules.js";
 import ChonNgay from "../../shared/ChonNgay.jsx";
-import { GoiYTheoHoSo } from "../dashboard/TrangChuKhoi.jsx";
 
 /* Trang "Mon Compte" — hai cột: thẻ nhận dạng bên trái, biểu mẫu bên phải.
 
@@ -485,7 +484,6 @@ export default function AccountPage({ name, role, email, emailVerified, onLogout
                       {errs.school && <p className="m-0 mt-1 text-xs font-semibold text-danger">{errs.school}</p>}
                     </Field>
                   </div>
-                  {role !== "prof" && <GoiYTheoHoSo name={name} level={p.level} goal={p.goal} />}
                 </Khoi>
 
                 {/* Migration 049 chưa chạy: nói thẳng thay vì để người dùng

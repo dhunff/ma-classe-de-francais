@@ -92,10 +92,8 @@ export default function StudentDashboard({
               lặp y nguyên ở hàng ô số liệu ngay bên dưới, chỉ riêng "Mục tiêu"
               là không lặp nên được mang vào banner. */}
           <Rise delay={0}>
-            <HeroBanner t={t} signedIn name={name} as="h2"
-              note={goal
-                ? <>{t("dash.goal")}: <span className="font-extrabold">{goal}</span></>
-                : t("dash.no_goal")} />
+            <HeroBanner t={t} signedIn name={name} as="h2" goal={goal} level={profile?.level}
+              hocTiep="/etudiant/entrainement" note={goal ? null : t("dash.no_goal")} />
           </Rise>
 
           {/* Hồ sơ chưa đầy thì mời điền. Đầy rồi thì biến mất — một thanh

@@ -1,6 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { Sparkles, ArrowRight } from "lucide-react";
+import { Sparkles, ArrowRight, Target, GraduationCap, Timer } from "lucide-react";
+import { tr } from "../../shared/i18n.jsx";
+import { Leon } from "../../shared/leon.jsx";
 
 /* Khối dùng chung cho Dashboard — phong cách Soft UI.
 
@@ -124,32 +126,67 @@ export function Ring({ pct = 0, size = 116, stroke = 10, label, className = "" }
    Topbar dựng, nên lời chào ở đó phải là <h2> — hai <h1> trên một trang làm
    trình đọc màn hình mất mốc điều hướng. Ở /decouvrir Topbar không có tiêu
    đề, nên lời chào chính là <h1>. */
-export function HeroBanner({ t, signedIn, name, note, as: Heading = "h1" }) {
+/* 15/10 (chủ dự án): làm lại cho bớt đơn điệu. Lời chào theo buổi trong
+   ngày, Leon cổ vũ bên phải, chip mục tiêu / trình độ, hai nút (học tiếp +
+   thi thử), nền có lưới chấm và quầng sáng. Mọi chữ đi qua t()/tr(). */
+const loiChaoBuoi = () => {
+  const h = new Date().getHours();
+  return h < 11 ? tr("Chào buổi sáng", "Bonjour", "Good morning")
+    : h < 14 ? tr("Chào buổi trưa", "Bon midi", "Good afternoon")
+      : h < 18 ? tr("Chào buổi chiều", "Bon après-midi", "Good afternoon")
+        : tr("Chào buổi tối", "Bonsoir", "Good evening");
+};
+export function HeroBanner({ t, signedIn, name, note, goal, level, hocTiep = "/decouvrir/entrainement", as: Heading = "h1" }) {
   return (
-    <section className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-primary to-[#6d5ce7] p-6 text-on-primary shadow-[0_14px_34px_rgb(0,0,0,0.14)] sm:p-8">
-      {/* Hai vòng tròn mờ tạo chiều sâu — trang trí thuần tuý, ẩn với trình
-          đọc màn hình. */}
-      <span aria-hidden className="absolute -right-10 -top-12 h-36 w-36 rounded-full bg-white/15" />
-      <span aria-hidden className="absolute -bottom-16 right-10 h-28 w-28 rounded-full bg-white/10" />
+    <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-blue-600 via-primary to-[#6d5ce7] p-6 text-on-primary shadow-[0_20px_50px_rgba(37,99,235,0.3)] sm:p-8">
+      {/* Trang trí: lưới chấm mờ + hai quầng sáng. Ẩn với trình đọc màn hình. */}
+      <span aria-hidden className="pointer-events-none absolute inset-0 opacity-20 [background-image:radial-gradient(rgba(255,255,255,0.7)_1px,transparent_1px)] [background-size:18px_18px] [mask-image:linear-gradient(to_left,black,transparent_70%)]" />
+      <span aria-hidden className="absolute -right-16 -top-16 h-56 w-56 rounded-full bg-white/10" />
+      <span aria-hidden className="absolute -bottom-24 left-1/3 h-56 w-56 rounded-full bg-sky-300/25 blur-3xl" />
 
-      <div className="relative max-w-lg">
-        <span className="grid h-11 w-11 place-items-center rounded-2xl bg-white/20">
-          <Sparkles size={21} strokeWidth={2.3} />
-        </span>
-        <Heading className="m-0 mt-4 text-2xl font-extrabold leading-tight tracking-tight sm:text-3xl">
-          {signedIn ? t("home.welcome_back", { name }) : t("home.welcome_guest")}
-        </Heading>
-        <p className="m-0 mt-2 text-sm font-medium opacity-90">
-          {signedIn ? t("home.hero_sub_user") : t("home.hero_sub_guest")}
-        </p>
-        {note && <p className="m-0 mt-2 text-sm font-medium opacity-90">{note}</p>}
-        <Link
-          to="/decouvrir/entrainement"
-          className="mt-6 inline-flex items-center gap-2 rounded-full bg-surface px-5 py-2.5 text-sm font-bold text-primary no-underline shadow-[0_6px_16px_rgb(0,0,0,0.15)] transition-transform duration-200 hover:scale-[1.03]"
-        >
-          {t("home.discover")}
-          <ArrowRight size={16} />
-        </Link>
+      <div className="relative flex items-center gap-4">
+        <div className="min-w-0 flex-1">
+          <p className="m-0 inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-xs font-bold backdrop-blur">
+            <Sparkles size={13} /> {signedIn ? loiChaoBuoi() : tr("Chào bạn", "Bienvenue", "Welcome")}
+          </p>
+          <Heading className="m-0 mt-3 text-2xl font-extrabold leading-tight tracking-tight [text-wrap:balance] sm:text-[32px]">
+            {signedIn ? t("home.welcome_back", { name }) : t("home.welcome_guest")}
+          </Heading>
+          <p className="m-0 mt-2 max-w-md text-sm font-medium text-white/85">
+            {signedIn ? t("home.hero_sub_user") : t("home.hero_sub_guest")}
+          </p>
+
+          {(goal || level || note) && (
+            <div className="mt-4 flex flex-wrap items-center gap-2">
+              {goal ? (
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-400 px-3 py-1 text-xs font-extrabold text-amber-950 shadow-sm">
+                  <Target size={13} /> {tr("Mục tiêu", "Objectif", "Goal")}: {goal}
+                </span>
+              ) : note ? (
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-xs font-bold">{note}</span>
+              ) : null}
+              {level && (
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-xs font-bold">
+                  <GraduationCap size={13} /> {tr("Trình độ", "Niveau", "Level")}: {level}
+                </span>
+              )}
+            </div>
+          )}
+
+          <div className="mt-5 flex flex-wrap gap-2.5">
+            <Link to={hocTiep}
+              className="inline-flex items-center gap-2 rounded-full bg-surface px-5 py-2.5 text-sm font-bold text-primary no-underline shadow-[0_6px_16px_rgb(0,0,0,0.15)] transition-transform duration-200 hover:scale-[1.03]">
+              {t("home.discover")} <ArrowRight size={16} />
+            </Link>
+            {signedIn && (
+              <Link to="/etudiant/examen"
+                className="inline-flex items-center gap-2 rounded-full border border-solid border-white/40 bg-white/10 px-5 py-2.5 text-sm font-bold text-white no-underline backdrop-blur transition-colors hover:bg-white/20">
+                <Timer size={16} /> {tr("Thi thử DELF", "Examen blanc", "Mock exam")}
+              </Link>
+            )}
+          </div>
+        </div>
+        <Leon cam="co-len" size={150} className="mcf-leon-bay hidden shrink-0 drop-shadow-[0_14px_20px_rgba(0,0,0,0.3)] sm:block" />
       </div>
     </section>
   );

@@ -1,7 +1,5 @@
 import React from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { usePracticeStore, usePracticeHistory } from "./PracticeRail.jsx";
-import { chonDeXuat as chonBai } from "../../shared/deXuat.js";
+import { Link } from "react-router-dom";
 import { Headphones, BookOpen, PenLine, Puzzle, Languages, Mic, Sparkles, ArrowRight, Map, Swords, Layers, Timer, TrendingUp } from "lucide-react";
 import { tr } from "../../shared/i18n.jsx";
 import { exSkills } from "../../shared/exercises.js";
@@ -121,23 +119,6 @@ export function DeXuatBai({ dsDeXuat, onMo, coHoSo, level, goal, gon = false }) 
         </ul>
       )}
     </section>
-  );
-}
-
-/* Gợi ý ngay trên trang Tài khoản (15/10): học sinh vừa chọn trình độ / mục
-   tiêu là danh sách đổi theo, chưa cần bấm Lưu. Đọc cùng kho và lịch sử luyện
-   tập như trang chủ. */
-export function GoiYTheoHoSo({ name, level, goal }) {
-  const navigate = useNavigate();
-  const kho = usePracticeStore();
-  const hist = usePracticeHistory(name);
-  if (!level && !goal) return null;
-  const ds = kho ? chonBai({ practice: kho, hist, skills: [], level, goal, so: 4 }) : null;
-  return (
-    <div className="mt-6 border-0 border-t border-solid border-line pt-5">
-      <DeXuatBai gon coHoSo level={level} goal={goal} dsDeXuat={ds}
-        onMo={(ex) => navigate("/etudiant/entrainement", { state: { moBai: ex.id } })} />
-    </div>
   );
 }
 
