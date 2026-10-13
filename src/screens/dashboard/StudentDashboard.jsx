@@ -124,8 +124,8 @@ export default function StudentDashboard({
               làm / % hoàn thành / Học tiếp đã sang trang « Bài tập được giao »
               (TongQuanBaiGiao.jsx). */}
           <Rise delay={160}>
-            <DeXuatBai coHoSo={!!profile?.level}
-              dsDeXuat={practiceStore ? chonDeXuat({ practice: practiceStore, hist: practiceHist, skills, level: profile?.level }) : null}
+            <DeXuatBai coHoSo={!!(profile?.level && profile?.goal)} level={profile?.level} goal={profile?.goal}
+              dsDeXuat={practiceStore ? chonDeXuat({ practice: practiceStore, hist: practiceHist, skills, level: profile?.level, goal: profile?.goal }) : null}
               onMo={(ex) => navigate("/etudiant/entrainement", { state: { moBai: ex.id } })} />
           </Rise>
 

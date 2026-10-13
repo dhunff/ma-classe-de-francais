@@ -1,9 +1,12 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { usePracticeStore, usePracticeHistory } from "./PracticeRail.jsx";
+import { chonDeXuat as chonBai } from "../../shared/deXuat.js";
 import { Headphones, BookOpen, PenLine, Puzzle, Languages, Mic, Sparkles, ArrowRight, Map, Swords, Layers, Timer, TrendingUp } from "lucide-react";
 import { tr } from "../../shared/i18n.jsx";
 import { exSkills } from "../../shared/exercises.js";
 import { Leon } from "../../shared/leon.jsx";
+import { keHoach, CAP } from "../../shared/deXuat.js";
 
 /* Ba khối mới của trang chủ học sinh (08/10): trang chủ giờ chủ yếu là ĐỀ XUẤT
  * và TRÒ CHƠI; số liệu bài được giao đã sang trang « Bài tập được giao ».
@@ -27,43 +30,44 @@ const KY_NANG = {
 };
 const tenKN = (k) => KY_NANG[k]?.ten() ?? k;
 const IconKN = (k) => KY_NANG[k]?.Icon ?? Sparkles;
-const CAP = ["A1", "A2", "B1", "B2", "C1"];
-
-/* ─────────── Đề xuất bài ─────────── */
-export function chonDeXuat({ practice, hist, skills, level, so = 4 }) {
-  if (!Array.isArray(practice) || !practice.length) return [];
-  const daLam = (ex) => hist?.[ex.id] && typeof hist[ex.id].best === "number" && hist[ex.id].best >= 0;
-  const yeu = (skills ?? []).length ? [...skills].sort((a, b) => a.value - b.value)[0] : null;
-  const viTriCap = CAP.indexOf(level);
-  const diem = (ex) => {
-    let d = 0;
-    const ly = [];
-    if (!daLam(ex)) { d += 3; ly.push("moi"); }
-    if (yeu && exSkills(ex).includes(yeu.skill)) { d += 4; ly.push("yeu"); }
-    if (viTriCap >= 0) {
-      const c = CAP.indexOf(ex.level);
-      if (c === viTriCap) { d += 3; ly.push("cap"); }
-      else if (c === viTriCap + 1) { d += 1; ly.push("thu_thach"); }
-      else if (c >= 0 && Math.abs(c - viTriCap) > 1) d -= 3;
-    }
-    if (ex.isPremium) d -= 1;
-    return { ex, d, ly };
-  };
-  return practice.filter((ex) => (ex.questions ?? []).length).map(diem)
-    .sort((a, b) => b.d - a.d || String(b.ex.createdAt ?? "").localeCompare(String(a.ex.createdAt ?? "")))
-    .slice(0, so).map((x) => ({ ...x, yeu: yeu?.skill }));
-}
+/* ─────────── Đề xuất bài ───────────
+   Thuật toán ở shared/deXuat.js (15/10): theo trình độ + mục tiêu + kỹ năng yếu. */
+export { chonDeXuat } from "../../shared/deXuat.js";
 
 const NHAN_LY_DO = {
   yeu: () => tr("Kỹ năng cần luyện", "Compétence à renforcer", "Skill to strengthen"),
   cap: () => tr("Đúng trình độ", "À votre niveau", "Your level"),
   thu_thach: () => tr("Thử sức trình độ cao hơn", "Niveau au-dessus", "Next level up"),
   moi: () => tr("Chưa làm", "Pas encore fait", "Not done yet"),
+  muc_tieu: () => tr("Hợp mục tiêu", "Pour votre objectif", "Fits your goal"),
 };
 
-export function DeXuatBai({ dsDeXuat, onMo, coHoSo }) {
+/* Một dòng nói rõ kế hoạch suy ra từ hồ sơ, để học sinh hiểu VÌ SAO là các bài này. */
+export function DongKeHoach({ level, goal }) {
+  const kh = keHoach(level, goal);
+  if (!kh) return null;
+  const tu = level || CAP[kh.capChinh];
   return (
-    <section className="rounded-3xl bg-surface p-5 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+    <p className="m-0 mt-3 flex flex-wrap items-center gap-1.5 rounded-2xl bg-primary-soft px-3 py-2 text-xs text-ink">
+      <Sparkles size={13} className="shrink-0 text-primary" />
+      <span>
+        <strong>{tu}</strong>{goal ? <> → <strong>{goal}</strong></> : null}
+        {": "}{tr("ưu tiên bài", "priorité aux exercices", "focus on")} <strong>{CAP[kh.capChinh]}</strong>
+        {kh.capThu != null && <>, {tr("thử sức", "puis", "then try")} <strong>{CAP[kh.capThu]}</strong></>}
+        {kh.thi && <>; {tr("luyện đủ kỹ năng thi", "toutes les compétences de l'examen", "all exam skills")}</>}
+      </span>
+      {kh.thi && kh.dich != null && (
+        <Link to="/etudiant/examen" className="ml-auto inline-flex items-center gap-1 font-bold text-primary no-underline">
+          <Timer size={13} /> {tr("Thi thử", "Examen blanc", "Mock exam")} {CAP[kh.dich]}
+        </Link>
+      )}
+    </p>
+  );
+}
+
+export function DeXuatBai({ dsDeXuat, onMo, coHoSo, level, goal, gon = false }) {
+  return (
+    <section className={gon ? "" : "rounded-3xl bg-surface p-5 shadow-[0_8px_30px_rgb(0,0,0,0.04)]"}>
       <div className="flex flex-wrap items-end justify-between gap-2">
         <div className="flex items-center gap-3">
           <Leon cam="hoc" size={60} className="shrink-0" />
@@ -76,9 +80,10 @@ export function DeXuatBai({ dsDeXuat, onMo, coHoSo }) {
           {tr("Toàn bộ thư viện", "Toute la bibliothèque", "Whole library")} <ArrowRight size={14} />
         </Link>
       </div>
+      {(level || goal) && <DongKeHoach level={level} goal={goal} />}
       {!coHoSo && (
         <p className="m-0 mt-2 text-xs text-soft">
-          {tr("Điền trình độ ở trang Tài khoản để đề xuất sát hơn.", "Indiquez votre niveau dans « Mon compte » pour des suggestions plus précises.", "Set your level in Account for better suggestions.")}
+          {tr("Điền trình độ và mục tiêu ở trang Tài khoản để đề xuất sát hơn.", "Indiquez votre niveau et votre objectif dans « Mon compte » pour des suggestions plus précises.", "Set your level and goal in Account for better suggestions.")}
         </p>
       )}
       {dsDeXuat === null ? (
@@ -116,6 +121,23 @@ export function DeXuatBai({ dsDeXuat, onMo, coHoSo }) {
         </ul>
       )}
     </section>
+  );
+}
+
+/* Gợi ý ngay trên trang Tài khoản (15/10): học sinh vừa chọn trình độ / mục
+   tiêu là danh sách đổi theo, chưa cần bấm Lưu. Đọc cùng kho và lịch sử luyện
+   tập như trang chủ. */
+export function GoiYTheoHoSo({ name, level, goal }) {
+  const navigate = useNavigate();
+  const kho = usePracticeStore();
+  const hist = usePracticeHistory(name);
+  if (!level && !goal) return null;
+  const ds = kho ? chonBai({ practice: kho, hist, skills: [], level, goal, so: 4 }) : null;
+  return (
+    <div className="mt-6 border-0 border-t border-solid border-line pt-5">
+      <DeXuatBai gon coHoSo level={level} goal={goal} dsDeXuat={ds}
+        onMo={(ex) => navigate("/etudiant/entrainement", { state: { moBai: ex.id } })} />
+    </div>
   );
 }
 
