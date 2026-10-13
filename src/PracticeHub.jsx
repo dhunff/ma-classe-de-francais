@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useLayoutEffect } from "react";
 import { createPortal } from "react-dom";
 import { useLocation } from "react-router-dom";
 import {
-  Timer, Headphones, BookOpen, PenLine, Puzzle, BookA, Sparkles, ArrowRight, Play, PackageOpen, Award, Target, Star, Users, RefreshCw, ChevronRight,
+  Shapes, Timer, Headphones, BookOpen, PenLine, Puzzle, BookA, ArrowRight, Play, PackageOpen, Award, Target, Star, Users, RefreshCw, ChevronRight,
   RotateCcw, CheckCircle2, XCircle, Plus, ChevronLeft, PartyPopper, Trash2, Pencil, Copy, MoreVertical, Folder, FolderPlus, Image as ImageIcon, ChevronDown, Lightbulb, FileCheck,
 } from "lucide-react";
 import { C, S, QTYPES, VF_OPTS, LEVEL_COLORS } from "./shared/tokens.js";
@@ -62,7 +62,7 @@ const CATS = [
   { skill: "Production écrite", key: "writing", Icon: PenLine, color: "#9B3D66", pastel: "#F8EAF0", tuoi: "linear-gradient(135deg,#FB7185,#E11D48)" },
   { skill: "Grammaire", key: "grammar", Icon: Puzzle, color: "#5B4B9E", pastel: "#EFECF9", tuoi: "linear-gradient(135deg,#A78BFA,#7C3AED)" },
   { skill: "Vocabulaire", key: "vocab", Icon: BookA, color: "#8F5E22", pastel: "#F7EFE3", tuoi: "linear-gradient(135deg,#FBBF24,#F97316)" },
-  { skill: "__autres__", key: "others", Icon: Sparkles, color: "#626A85", pastel: "#EFF0F3", tuoi: "linear-gradient(135deg,#22D3EE,#0891B2)" },
+  { skill: "__autres__", key: "others", Icon: Shapes, color: "#626A85", pastel: "#EFF0F3", tuoi: "linear-gradient(135deg,#22D3EE,#0891B2)" },
 ];
 const MAIN_SKILLS = CATS.filter((c) => !c.skill.startsWith("__")).map((c) => c.skill);
 const inCat = (ex, sk) => sk === "__autres__"
@@ -348,7 +348,7 @@ ${r.error?.message ?? ""}`); return; }
         {MatModal()}
         <button style={{ ...S.btn(false), marginBottom: 16 }} onClick={() => setView({ page: "home" })}><ChevronLeft size={16} /> {t("practice.back")}</button>
         <h2 style={{ ...S.display, margin: "0 0 18px", display: "flex", alignItems: "center", gap: 10 }}>
-          <Sparkles size={24} color="#6E7691" /> Autres — Catégories
+Autres — Catégories
         </h2>
 
         {folders.length === 0 && !teacher ? (

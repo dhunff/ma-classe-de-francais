@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { Sparkles, ArrowRight, Target, GraduationCap, Timer } from "lucide-react";
+import { ArrowRight, Target, GraduationCap, Timer } from "lucide-react";
 import { tr } from "../../shared/i18n.jsx";
 import { Leon } from "../../shared/leon.jsx";
 
@@ -147,7 +147,7 @@ export function HeroBanner({ t, signedIn, name, note, goal, level, hocTiep = "/d
       <div className="relative flex items-center gap-4">
         <div className="min-w-0 flex-1">
           <p className="m-0 inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-xs font-bold backdrop-blur">
-            <Sparkles size={13} /> {signedIn ? loiChaoBuoi() : tr("Chào bạn", "Bienvenue", "Welcome")}
+{signedIn ? loiChaoBuoi() : tr("Chào bạn", "Bienvenue", "Welcome")}
           </p>
           <Heading className="m-0 mt-3 text-2xl font-extrabold leading-tight tracking-tight [text-wrap:balance] sm:text-[32px]">
             {signedIn ? t("home.welcome_back", { name }) : t("home.welcome_guest")}

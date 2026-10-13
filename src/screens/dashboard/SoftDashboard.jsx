@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import {
   House, LayoutGrid, Flame, CalendarDays, BookOpen, ChartColumn,
   LogOut, Search, Bell, MessageCircle, ChevronRight, Plus,
-  Sparkles, Wallet, GraduationCap, Clock,
+  Wallet, GraduationCap, Clock,
 } from "lucide-react";
 
 /* Bảng điều khiển "Soft UI" — ba cột: điều hướng · nội dung · panel phụ.
@@ -103,7 +103,7 @@ function Sidebar({ active, onSelect }) {
     <Rise as="aside" delay={0} className="flex w-[250px] shrink-0 flex-col px-5 py-7">
       <div className="flex items-center gap-2.5 px-3">
         <span className="flex h-9 w-9 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-blue-500 shadow-[0_6px_16px_rgba(79,70,229,0.35)]">
-          <Sparkles size={18} className="text-white" strokeWidth={2.5} />
+          <GraduationCap size={18} className="text-white" strokeWidth={2.5} />
         </span>
         <span className="text-[19px] font-extrabold tracking-tight text-slate-800">
           Français<span className="text-indigo-500">Pro</span>

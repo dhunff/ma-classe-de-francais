@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Crown, Sparkles, Loader2, ArrowRight } from "lucide-react";
+import { Crown, Loader2, ArrowRight } from "lucide-react";
 import { supabase } from "../../storageShim.js";
 import { tr } from "../../shared/i18n.jsx";
 
@@ -59,7 +59,6 @@ export default function BaiVietMau({ answerId }) {
 
   return (
     <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-dashed border-amber-400 bg-surface p-3">
-      <Sparkles size={18} className="shrink-0 text-warn" />
       <p className="m-0 min-w-0 flex-1 text-sm text-ink">
         {trangThai === "vip"
           ? tr("Bài viết mẫu là quyền lợi của gói VIP. Nâng cấp ở mục Bài tập hoặc màn thi thử.", "La version modèle est réservée aux membres VIP.", "The model version is a VIP benefit.")

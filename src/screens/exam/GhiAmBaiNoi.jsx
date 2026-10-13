@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Mic, Square, Loader2, AlertTriangle, CheckCircle2, Sparkles } from "lucide-react";
+import { Mic, Square, Loader2, AlertTriangle, CheckCircle2 } from "lucide-react";
 import { luuBaiNoi, duongNghe, dsBaiNoi, aiNhanXet } from "../../shared/baiNoi.js";
 import { tr } from "../../shared/i18n.jsx";
 import { LeonNoi } from "../../shared/leon.jsx";
@@ -181,7 +181,7 @@ export default function GhiAmBaiNoi({ examId, exerciseId, gioiHanGiay = 900 }) {
                 <button type="button" onClick={() => xinNhanXet(b.duongDan)} disabled={nx[b.duongDan]?.dang}
                   className="flex cursor-pointer items-center gap-1.5 rounded-lg border-0 bg-primary-soft px-3 py-1.5 font-sans text-xs
                              font-semibold text-primary transition-colors hover:bg-primary hover:text-white disabled:cursor-wait disabled:opacity-60">
-                  {nx[b.duongDan]?.dang ? <Loader2 size={13} className="mcf-spin" aria-hidden /> : <Sparkles size={13} aria-hidden />}
+                  {nx[b.duongDan]?.dang ? <Loader2 size={13} className="mcf-spin" aria-hidden /> : null}
                   {tr("AI nhận xét", "Avis de l'IA", "AI feedback")}
                 </button>
                 <span className="text-xs text-soft">
@@ -225,7 +225,7 @@ function KhungNhanXet({ kq }) {
   return (
     <div className="w-full rounded-xl border border-solid border-line bg-surface2 p-4 text-sm text-ink">
       <p className="m-0 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-primary">
-        <Sparkles size={13} aria-hidden /> {tr("AI nhận xét · không phải điểm DELF", "Avis de l'IA · pas une note DELF", "AI feedback · not a DELF score")}
+{tr("AI nhận xét · không phải điểm DELF", "Avis de l'IA · pas une note DELF", "AI feedback · not a DELF score")}
       </p>
       <p className="m-0 mt-2 leading-relaxed">{n.tong_quat}</p>
       {n.diem_manh?.length > 0 && (

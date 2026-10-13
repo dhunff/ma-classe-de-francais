@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   Wand2, ScrollText, Columns2, ClipboardList, ArrowRight, CheckCircle2, Headphones, BookOpen, PenLine, Mic,
-  Map, Swords, Layers, Timer, MessageCircle, Sparkles, LogIn,
+  Map, Swords, Layers, Timer, MessageCircle, LogIn, Bot,
 } from "lucide-react";
 import { Leon } from "../../shared/leon.jsx";
 import { docSoLieu } from "../../shared/soLieuCongKhai.js";
@@ -119,7 +119,7 @@ const TINH_NANG = () => [
   { Icon: Layers, ten: "Flashcard", mo: tr("Bộ thẻ do giáo viên soạn, ôn theo lịch lặp lại ngắt quãng.", "Paquets créés par les enseignants, révision espacée.", "Teacher-made decks with spaced repetition."), mau: "from-fuchsia-500 to-purple-600" },
   { Icon: Swords, ten: tr("Thách đấu", "Défis", "Duels"), mo: tr("Thách bạn bè 10 câu theo chủ đề từ vựng hoặc ngữ pháp.", "Défiez vos amis sur 10 questions de vocabulaire ou de grammaire.", "Challenge friends on 10 vocabulary or grammar questions."), mau: "from-rose-500 to-orange-500" },
   { Icon: MessageCircle, ten: tr("Hỏi Leon", "Demande à Leon", "Ask Leon"), mo: tr("Trợ lý AI giải thích ngữ pháp, sửa câu tiếng Pháp ngay trong web.", "Assistant IA qui explique la grammaire et corrige vos phrases.", "AI assistant that explains grammar and fixes your sentences."), mau: "from-amber-400 to-orange-500" },
-  { Icon: Sparkles, ten: tr("AI chấm bài viết", "Correction IA de l'écrit", "AI writing feedback"), mo: tr("Phiếu nhận xét theo grille DELF: điểm từng tiêu chí, câu viết lại.", "Fiche selon la grille DELF : note par critère, phrases corrigées.", "A DELF-grid sheet: score per criterion and rewritten sentences."), mau: "from-emerald-500 to-teal-600" },
+  { Icon: Bot, ten: tr("AI chấm bài viết", "Correction IA de l'écrit", "AI writing feedback"), mo: tr("Phiếu nhận xét theo grille DELF: điểm từng tiêu chí, câu viết lại.", "Fiche selon la grille DELF : note par critère, phrases corrigées.", "A DELF-grid sheet: score per criterion and rewritten sentences."), mau: "from-emerald-500 to-teal-600" },
 ];
 
 /* Nội dung chủ dự án chốt 25/09. Ba chỗ được chỉnh cho khớp sản phẩm thật

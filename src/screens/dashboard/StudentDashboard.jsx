@@ -2,8 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   CheckCircle, Target, Clock, PartyPopper, AlertTriangle, Inbox,
-  UserCircle, ChevronRight, Sparkles,
-} from "lucide-react";
+  UserCircle, ChevronRight, } from "lucide-react";
 import { Card, StatTile, EmptyState, HeroBanner, Rise, Ring } from "./parts.jsx";
 import { NewestPracticeRail, usePracticeStore, usePracticeHistory } from "./PracticeRail.jsx";
 import {

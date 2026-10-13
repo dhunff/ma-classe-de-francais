@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import {
   FileText, ScrollText, Info, CheckCircle2, RotateCcw,
-  BookOpen, ChevronDown, ChevronUp, AlertTriangle, Sparkles, Loader2,
+  BookOpen, ChevronDown, ChevronUp, AlertTriangle, Loader2,
 } from "lucide-react";
 import { supabase } from "../../storageShim.js";
 import { grilleToRubric, chuanHoaGrille } from "../../shared/grilleRubric.js";
@@ -215,7 +215,6 @@ function ThanhTieuChi({ c, gia, onChange, nhacNho, goiY }) {
         <div className="m-0 mt-3 rounded-sm bg-primary-soft px-3 py-2.5">
           <div className="flex items-center justify-between gap-3">
             <span className="flex items-center gap-1.5 text-xs font-bold text-primary">
-              <Sparkles size={13} aria-hidden="true" />
               {tr("AI đề xuất", "Proposition IA", "AI suggests")} {goiY.diem} / {c.max_score}
             </span>
             {gia !== goiY.diem && (
@@ -504,7 +503,6 @@ export default function PESelfEvaluation({
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div className="min-w-0">
                     <h3 className="m-0 flex items-center gap-1.5 text-sm font-bold text-ink">
-                      <Sparkles size={14} className="text-primary" aria-hidden="true" />
                       {tr("Gợi ý chấm từ AI", "Proposition de note de l'IA", "AI grading suggestion")}
                     </h3>
                     <p className="m-0 mt-1 text-xs leading-relaxed text-soft">

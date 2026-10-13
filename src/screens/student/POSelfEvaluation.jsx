@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Mic, Sparkles, Loader2, CheckCircle2, AlertTriangle, Info } from "lucide-react";
+import { Mic, Loader2, CheckCircle2, AlertTriangle, Info } from "lucide-react";
 import { supabase } from "../../storageShim.js";
 import { dsBaiNoi, duongNghe } from "../../shared/baiNoi.js";
 import { GRILLE_PO, mucCuaTieuChi } from "../../../supabase/functions/_shared/grillePO.js";
@@ -81,11 +81,10 @@ export default function POSelfEvaluation({ po, exerciseId, consigne, onXong }) {
 
         <div className="rounded-3xl border border-solid border-line bg-surface p-5">
           <div className="flex items-center gap-2">
-            <Sparkles size={16} className="text-primary" />
             <h3 className="m-0 flex-1 text-base font-extrabold text-ink">{tr("AI gợi ý điểm", "Suggestions de l'IA", "AI suggestions")}</h3>
             {!ai && <button type="button" onClick={xinAI} disabled={aiTT === "dang"}
               className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border-0 bg-primary px-3 py-2 font-sans text-xs font-extrabold text-white disabled:opacity-50">
-              {aiTT === "dang" ? <Loader2 size={13} className="animate-spin" /> : <Sparkles size={13} />} {tr("Nhờ AI gợi ý", "Demander à l'IA", "Ask the AI")}</button>}
+              {aiTT === "dang" ? <Loader2 size={13} className="animate-spin" /> : null} {tr("Nhờ AI gợi ý", "Demander à l'IA", "Ask the AI")}</button>}
           </div>
           <p className="m-0 mt-2 flex items-start gap-1.5 text-xs text-soft"><Info size={13} className="mt-0.5 shrink-0" /> {tr("AI chỉ đọc bản chép lời: không nghe được ngữ điệu và không có giám khảo đối thoại, nên đây chỉ là gợi ý. Điểm tính là điểm BẠN chọn.", "L'IA ne lit que la transcription : simple suggestion. La note retenue est la vôtre.", "The AI only reads the transcript: it's just a suggestion. Your choice is what counts.")}</p>
           {aiTT && aiTT !== "dang" && <p className="m-0 mt-2 text-sm font-bold text-danger">{LOI_AI[aiTT] ?? tr("AI chưa gợi ý được, thử lại sau.", "Échec de l'IA, réessayez.", "AI failed, try again.")}</p>}
@@ -128,7 +127,7 @@ export default function POSelfEvaluation({ po, exerciseId, consigne, onXong }) {
                   </div>
                   {goiY != null && (
                     <p className="m-0 mt-2 flex flex-wrap items-center gap-2 text-xs text-ink">
-                      <Sparkles size={12} className="text-primary" /> AI: <strong>{String(goiY).replace(".", ",")}</strong>
+AI: <strong>{String(goiY).replace(".", ",")}</strong>
                       {ai.ly_do?.[c.id] && <span className="text-soft">{ai.ly_do[c.id]}</span>}
                       {bang[c.id] !== goiY && <button type="button" onClick={() => setBang((b) => ({ ...b, [c.id]: goiY }))}
                         className="cursor-pointer rounded-lg border-0 bg-primary-soft px-2 py-1 font-sans text-xs font-bold text-primary">{tr("dùng số này", "utiliser", "use this")}</button>}

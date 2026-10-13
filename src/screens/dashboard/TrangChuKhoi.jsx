@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { Headphones, BookOpen, PenLine, Puzzle, Languages, Mic, Sparkles, ArrowRight, Map, Swords, Layers, Timer, TrendingUp } from "lucide-react";
+import { Headphones, BookOpen, PenLine, Puzzle, Languages, Mic, ArrowRight, Map, Swords, Layers, Timer, TrendingUp } from "lucide-react";
 import { tr } from "../../shared/i18n.jsx";
 import { exSkills } from "../../shared/exercises.js";
 import { Leon } from "../../shared/leon.jsx";
@@ -27,7 +27,7 @@ const KY_NANG = {
   "Traduction": { Icon: Languages, ten: () => tr("Dịch", "Traduction", "Translation") },
 };
 const tenKN = (k) => KY_NANG[k]?.ten() ?? k;
-const IconKN = (k) => KY_NANG[k]?.Icon ?? Sparkles;
+const IconKN = (k) => KY_NANG[k]?.Icon ?? BookOpen;
 /* ─────────── Đề xuất bài ───────────
    Thuật toán ở shared/deXuat.js (15/10): theo trình độ + mục tiêu + kỹ năng yếu. */
 export { chonDeXuat } from "../../shared/deXuat.js";
@@ -47,7 +47,6 @@ export function DongKeHoach({ level, goal }) {
   const tu = level || CAP[kh.capChinh];
   return (
     <p className="m-0 mt-3 flex flex-wrap items-center gap-1.5 rounded-2xl bg-primary-soft px-3 py-2 text-xs text-ink">
-      <Sparkles size={13} className="shrink-0 text-primary" />
       <span>
         <strong>{tu}</strong>{goal ? <> → <strong>{goal}</strong></> : null}
         {": "}{tr("ưu tiên bài", "priorité aux exercices", "focus on")} <strong>{CAP[kh.capChinh]}</strong>
@@ -70,7 +69,7 @@ export function DeXuatBai({ dsDeXuat, onMo, coHoSo, level, goal, gon = false }) 
         <div className="flex items-center gap-3">
           <Leon cam="hoc" size={60} className="shrink-0" />
           <div>
-            <p className="m-0 flex items-center gap-1.5 text-xs font-bold uppercase tracking-[0.14em] text-primary"><Sparkles size={14} /> {tr("Leon chọn cho bạn", "Leon a choisi pour vous", "Leon picked for you")}</p>
+            <p className="m-0 flex items-center gap-1.5 text-xs font-bold uppercase tracking-[0.14em] text-primary">{tr("Leon chọn cho bạn", "Leon a choisi pour vous", "Leon picked for you")}</p>
             <h2 className="m-0 mt-1 text-lg font-extrabold text-ink">{tr("Bài tập đề xuất", "Exercices recommandés", "Recommended exercises")}</h2>
           </div>
         </div>

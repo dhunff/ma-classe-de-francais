@@ -1,5 +1,5 @@
 import React from "react";
-import { Lock, Sparkles, ShieldCheck, NotebookPen, Infinity as InfinityIcon } from "lucide-react";
+import { Lock, ShieldCheck, NotebookPen, Lightbulb, Infinity as InfinityIcon } from "lucide-react";
 import { tr } from "../../shared/i18n.jsx";
 
 /* Thẻ hiện thay cho bài tập khi học sinh chưa có quyền mở bài trả phí.
@@ -30,7 +30,7 @@ import { tr } from "../../shared/i18n.jsx";
  */
 
 const LOI_ICH = [
-  { icon: Sparkles,     get text() { return tr("Phân tích lỗi sai chi tiết theo phương pháp Linear Thinking.", "Analyse détaillée des erreurs (méthode Linear Thinking).", "Detailed error analysis (Linear Thinking method)."); } },
+  { icon: Lightbulb,     get text() { return tr("Phân tích lỗi sai chi tiết theo phương pháp Linear Thinking.", "Analyse détaillée des erreurs (méthode Linear Thinking).", "Detailed error analysis (Linear Thinking method)."); } },
   { icon: NotebookPen,  get text() { return tr("Sổ tay mẹo làm bài độc quyền (Mon Carnet).", "Carnet d'astuces exclusif (Mon Carnet).", "Exclusive tips notebook (Mon Carnet)."); } },
   { icon: InfinityIcon, get text() { return tr("Không giới hạn số lần làm bài và chấm điểm tự động.", "Exercices et correction automatique illimités.", "Unlimited attempts and automatic grading."); } },
 ];
@@ -80,7 +80,6 @@ export default function PremiumLockCard({ ex, onBuy, onBack, price }) {
               onClick={onBuy}
               className="inline-flex items-center gap-2 rounded-full border-0 bg-primary px-6 py-3 text-sm font-bold text-white shadow-lg transition hover:brightness-110 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
             >
-              <Sparkles size={16} />
               {tr("Nâng cấp gói học ngay", "Passer à l'offre supérieure", "Upgrade now")}
               {price ? <span className="opacity-80">· {price}</span> : null}
             </button>
