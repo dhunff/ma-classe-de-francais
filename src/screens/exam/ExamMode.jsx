@@ -405,7 +405,23 @@ const chuDiem = (d) => `${String(d).replace(".", ",")} ${d > 1 ? "points" : "poi
 /* `luot`: 2 như kỳ thi (024), hoặc 1 với bài « nghe kiểu thi » (119) vì file
    đã chứa sẵn cả hai lượt nghe và khoảng nghỉ. Máy chủ quyết định thật; số ở
    đây chỉ để hiện chữ cho khớp. */
+/* 15/10 (chủ dự án): MỘT bài nghe phát tại một thời điểm. Các bài trong phần
+   Nghe đều được dựng sẵn và chỉ ẩn khi chuyển bài, nên bài 1 vẫn chạy khi học
+   sinh sang bài 2; trước đây bấm phát bài 2 là hai tiếng chồng lên nhau. Khoá
+   chung cấp module: bài đang phát giữ khoá tới khi chạy hết. */
+const khoaNghe = { dang: null, nghe: new Set() };
+const datKhoaNghe = (k) => { khoaNghe.dang = k; khoaNghe.nghe.forEach((fn) => fn(k)); };
+
 function AudioGioiHan({ src, attemptId, questionId, luot = 2 }) {
+  const [baiDangPhat, setBaiDangPhat] = useState(khoaNghe.dang);
+  useEffect(() => {
+    khoaNghe.nghe.add(setBaiDangPhat);
+    return () => {
+      khoaNghe.nghe.delete(setBaiDangPhat);
+      if (khoaNghe.dang === questionId) datKhoaNghe(null);   // rời phần thi: nhả khoá
+    };
+  }, [questionId]);
+  const biKhoa = baiDangPhat != null && baiDangPhat !== questionId;
   const [conLai, setConLai] = useState(null);   // null = chưa hỏi lần nào
   const [dangXin, setDangXin] = useState(false);
   const [loi, setLoi] = useState("");
@@ -433,7 +449,7 @@ function AudioGioiHan({ src, attemptId, questionId, luot = 2 }) {
   }, [attemptId, questionId, luot]);
 
   const phat = async () => {
-    if (het || dangXin || chuaSanSang) return;
+    if (het || dangXin || chuaSanSang || biKhoa) return;
     setDangXin(true); setLoi("");
     try {
       const { data, error } = await supabase.rpc("exam_play_audio", {
@@ -468,6 +484,7 @@ function AudioGioiHan({ src, attemptId, questionId, luot = 2 }) {
   const mmss = (x) => `${String(Math.floor(x / 60)).padStart(2, "0")}:${String(Math.floor(x % 60)).padStart(2, "0")}`;
   const nhan = chuaSanSang ? tr("Đang mở bài thi…", "Ouverture de l'examen…", "Opening the exam…")
     : dangXin ? "…" : dangPhat ? tr("Đang phát", "Lecture en cours", "Playing")
+    : biKhoa ? tr("Chờ bài đang phát kết thúc", "Attendez la fin de l'écoute en cours", "Wait for the current audio to finish")
     : het ? tr("Đã nghe xong", "Écoute terminée", "Listening finished") : tr("Bấm để nghe", "Lancer l'écoute", "Start listening");
 
   return (
@@ -477,9 +494,11 @@ function AudioGioiHan({ src, attemptId, questionId, luot = 2 }) {
       <audio ref={ref} src={src} preload="metadata"
         onLoadedMetadata={(e) => setTong(e.currentTarget.duration || 0)}
         onTimeUpdate={(e) => setGiay(e.currentTarget.currentTime)}
-        onPlay={() => setDangPhat(true)} onEnded={() => setDangPhat(false)} onPause={() => setDangPhat(false)} />
+        onPlay={() => { setDangPhat(true); datKhoaNghe(questionId); }}
+        onEnded={() => { setDangPhat(false); if (khoaNghe.dang === questionId) datKhoaNghe(null); }}
+        onPause={() => setDangPhat(false)} />
       <div className="flex items-center gap-4">
-        <button type="button" onClick={phat} disabled={het || dangXin || chuaSanSang || dangPhat}
+        <button type="button" onClick={phat} disabled={het || dangXin || chuaSanSang || dangPhat || biKhoa}
           aria-label={nhan}
           className="de-tron grid h-14 w-14 shrink-0 cursor-pointer place-items-center rounded-none border-0 p-0 transition enabled:hover:opacity-85 disabled:cursor-not-allowed">
           {dangPhat ? <Volume2 size={24} /> : <span aria-hidden className="ml-1 text-2xl leading-none">▶</span>}
@@ -504,6 +523,11 @@ function AudioGioiHan({ src, attemptId, questionId, luot = 2 }) {
       {luot === 1 && (
         <p className="de-nhat m-0 mt-3 border-0 border-t border-solid border-[#ccc] pt-2 text-xs leading-relaxed">
           {tr("Như phòng thi thật: file gồm thời gian đọc câu hỏi, lượt nghe 1, khoảng nghỉ, lượt nghe 2 và thời gian hoàn thành câu trả lời. Bấm phát một lần rồi để chạy hết, không tạm dừng được.", "Comme à l'examen : l'enregistrement contient le temps de lecture des questions, la 1re écoute, une pause, la 2e écoute et le temps pour compléter. Lancez-le une fois et laissez-le jusqu'au bout, sans pause.", "Like the real exam: the recording includes question-reading time, 1st listening, a pause, 2nd listening and time to finish. Play it once and let it run, no pausing.")}
+        </p>
+      )}
+      {biKhoa && !het && (
+        <p className="m-0 mt-2 text-xs font-semibold text-[#b45309]">
+          {tr("Một bài nghe khác đang phát. Hãy nghe hết bài đó rồi mới bắt đầu bài này, để hai tiếng không chồng lên nhau.", "Un autre enregistrement est en cours. Écoutez-le jusqu'au bout avant de lancer celui-ci.", "Another recording is playing. Let it finish before starting this one.")}
         </p>
       )}
       {loi && <p className="m-0 mt-2 text-xs font-semibold text-[#b91c1c]">{loi}</p>}
