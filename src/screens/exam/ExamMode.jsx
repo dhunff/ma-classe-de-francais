@@ -385,6 +385,11 @@ function ManCho({ dsDe, chon, paper, onStart, dangTai, lamPhanNoi, setLamPhanNoi
   );
 }
 
+/* Điểm hiển thị trên tờ đề (15/10): câu có `heSo` (số nửa điểm) thì đáng heSo/2,
+   câu thường 1 điểm. Viết kiểu Pháp: « 1,5 point », « 9 points ». */
+const diemCauHien = (q) => (Number.isInteger(q?.heSo) && q.heSo > 0 ? q.heSo / 2 : 1);
+const chuDiem = (d) => `${String(d).replace(".", ",")} ${d > 1 ? "points" : "point"}`;
+
 /* ───────────────────── Audio giới hạn 2 lượt ───────────────────── */
 
 /* Bộ đếm nằm ở MÁY CHỦ (`attempts.audio_plays`), không ở đây.
@@ -676,7 +681,7 @@ export function PhanThi({ section, attemptId, attemptTheoBai = {}, answers, setA
             <div className="mb-1 flex items-start gap-3">
               <span aria-hidden className="mt-1 text-[22px] leading-none">▶</span>
               <h2 className="m-0 flex-1 text-[24px] font-extrabold uppercase leading-none text-[#111]">Exercice {baiIdx + 1}</h2>
-              <span className="text-xs font-bold italic">{(ex.questions ?? []).length} {(ex.questions ?? []).length > 1 ? "points" : "point"}</span>
+              <span className="text-xs font-bold italic">{chuDiem((ex.questions ?? []).filter((q) => q.type !== "open").reduce((n, q) => n + diemCauHien(q), 0))}</span>
             </div>
           )}
 
@@ -731,7 +736,7 @@ export function PhanThi({ section, attemptId, attemptTheoBai = {}, answers, setA
             <div className="min-w-0 flex-1">
             <div className="flex gap-3">
               <div className="m-0 min-w-0 flex-1 whitespace-pre-line">{q.type === "vf" ? q.prompt.replace(/\s*Cochez la bonne réponse.*$/s, "") : q.prompt}</div>
-              {q.type !== "open" && <span className="shrink-0 pt-0.5 text-[11.5px] italic">1 point</span>}
+              {q.type !== "open" && <span className="shrink-0 pt-0.5 text-[11.5px] italic">{chuDiem(diemCauHien(q))}</span>}
             </div>
 
             {/* KHÔNG có tô màu đúng/sai ở đây — cố ý. Xem chú thích đầu file. */}

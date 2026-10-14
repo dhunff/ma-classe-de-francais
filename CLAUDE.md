@@ -1299,6 +1299,7 @@ Xem `docs/roadmap-delf.md` — có nhật ký quyết định ở §5.
   và Truyền thông gộp vào mã có sẵn) + 16 bộ « Từ vựng Lộ trình: … » công khai, 800 thẻ. Dạng thẻ
   thêm `tinh_tu`, `thanh_ngu` (n→nhom_tu, v→dong_tu). Thử: 10 câu, 0 phương án lệch dạng.
 - **Quyền lợi VIP mới — 14/10** (migration 143, Edge Function `viet-mau`). `exams.chi_vip` (mọi đề không kết thúc bằng « Đề 1 »): `bat_dau_thi` trả CAN_VIP, `exam_start` ném CAN_VIP; màn chờ hiện nhãn + nút mua VIP. Bài viết mẫu: AI viết lại bài PE của chính học sinh, lưu ở `bai_viet_mau` (mỗi answer một bản). `/etudiant/tien-bo` (`TienBoVip.jsx`): `bao_cao_tuan()` + `cau_sai_cua_toi()`, không VIP thì trả CAN_VIP. Đề mới phải đặt `chi_vip` tay (update lúc 143 chỉ chạy một lần).
+- **DELF B2 format mới — 15/10** (lô 20, `scripts/nhap/lo20_b2_*.mjs`, khuôn: đề TP68 chủ dự án gửi, KHÔNG chép nội dung đề thật). Nghe 3 bài (9 + 9 + 7 đ; bài 3 = ba tài liệu ngắn nghe 1 lượt), Đọc 3 bài (9 + 9 + 7 đ; bài 3 ghép ý kiến diễn đàn), mọi câu trắc nghiệm A/B/C với ĐIỂM RIÊNG từng câu: `q.heSo` = số NỬA điểm (1,5 đ → 3), `diemCau` nhân theo nó nên score/max vẫn nguyên và quy về /25 như cũ (check:exercises canh). Viết/Nói dùng lại bài đề cũ. Ba đề B2 cũ đổi tên « [Format cũ] … » và ẩn, KHÔNG xoá (lượt thi cũ trỏ tới).
 - `s:mcf-submissions` vẫn giữ làm sao lưu, chưa xoá.
 
 

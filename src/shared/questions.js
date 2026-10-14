@@ -113,7 +113,11 @@ const diemCau = (q, ans, exercise) => {
     : q.type === "vf" ? vfOk(q, ans)
       : q.type === "ordre" ? ordreOk(q, ans)
         : fillOk(q, ans, exercise);
-  return { dung: ok ? 1 : 0, tong: 1 };
+  /* Điểm riêng từng câu (15/10, format DELF B2 mới: 0,5 / 1 / 1,5 / 2 điểm).
+     `heSo` = số NỬA điểm, số nguyên, để score/max vẫn nguyên và quy về thang 25
+     một lần như cũ. Không có thì 1 đơn vị. */
+  const heSo = Number.isInteger(q.heSo) && q.heSo > 0 ? q.heSo : 1;
+  return { dung: ok ? heSo : 0, tong: heSo };
 };
 
 /* GHÉP CẶP (« apparier », 07/10): DELF A2 nghe bài 4, đọc A1/A2.

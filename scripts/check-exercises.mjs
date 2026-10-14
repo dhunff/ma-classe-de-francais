@@ -270,5 +270,18 @@ for (const q of [
   t("đọc lại vẫn còn bocTham", exerciseFromRow(r.exRow).bocTham?.chuanBi, 30);
 }
 
+/* 15/10: điểm riêng từng câu (heSo, số nửa điểm) cho format DELF B2 mới.
+   Rơi khỏi payload thì câu 2 điểm bị chấm như 1 điểm, im lặng. */
+{
+  const { diemCau } = await import("../src/shared/questions.js");
+  const q = { id: "w", type: "qcm", prompt: "p", options: ["a", "b", "c"], answer: 1, heSo: 3 };
+  const r = toRows({ id: "hs", title: "HS", questions: [q] }, "exam");
+  const qq = questionFromRow(r.qRows[0]);
+  t("heSo sống sót qua toRows/đọc lại", qq.heSo, 3);
+  t("đúng câu heSo 3 = 3/3 đơn vị", JSON.stringify(diemCau(q, 1)), JSON.stringify({ dung: 3, tong: 3 }));
+  t("sai câu heSo 3 = 0/3", JSON.stringify(diemCau(q, 0)), JSON.stringify({ dung: 0, tong: 3 }));
+  t("không heSo vẫn 1 đơn vị", JSON.stringify(diemCau({ ...q, heSo: undefined }, 1)), JSON.stringify({ dung: 1, tong: 1 }));
+}
+
 console.log(fail ? `\n${pass} đạt, ${fail} hỏng` : `\n${pass} đạt, 0 hỏng`);
 process.exit(fail ? 1 : 0);
