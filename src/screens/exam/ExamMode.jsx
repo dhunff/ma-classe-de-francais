@@ -755,7 +755,12 @@ export function PhanThi({ section, attemptId, attemptTheoBai = {}, answers, setA
       ) : (
       <ol className="m-0 list-none space-y-7 p-0 text-[15.5px] leading-snug text-[#111]">
         {ex.questions.map((q, i) => (
-          <li key={q.id} className="flex gap-3">
+          <React.Fragment key={q.id}>
+          {/* 15/10: tiêu đề nhóm câu (« DOCUMENT 1 »…) như tờ đề DELF B2, đọc từ q.nhom. */}
+          {q.nhom && q.nhom !== ex.questions[i - 1]?.nhom && (
+            <li aria-hidden={false} className={`text-[22px] font-extrabold uppercase leading-none tracking-wide text-[#111] ${i ? "pt-3" : ""}`}>{q.nhom}</li>
+          )}
+          <li className="flex gap-3">
             <span className="de-tron mt-0.5 grid h-[22px] w-[22px] shrink-0 place-items-center rounded-full text-[12px] font-bold">{i + 1}</span>
             <div className="min-w-0 flex-1">
             <div className="flex gap-3">
@@ -862,6 +867,7 @@ export function PhanThi({ section, attemptId, attemptTheoBai = {}, answers, setA
             )}
             </div>
           </li>
+          </React.Fragment>
         ))}
       </ol>
       )}

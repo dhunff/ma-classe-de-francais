@@ -105,7 +105,7 @@ for (const de of CAC_DE) {
   }
   {
     const b = de.CO3, a = await ngheBaTaiLieu(b);
-    const cau = b.docs.flatMap((doc, k) => doc.cau.map((c) => ({ ...c, prompt: `Document ${k + 1} : ${c.prompt}` })));
+    const cau = b.docs.flatMap((doc, k) => doc.cau.map((c) => ({ ...c, nhom: `Document ${k + 1}` })));
     const ex = { ...chung, id: id("lo20"), title: b.tieuDe, level: "B2", skills: ["Écoute"], ngheKieuThi: true, audioUrl: a.thi,
       consigne: consigneCO(b, false), questions: cau, createdAt: Date.now() };
     ghi(ex); PHAN.push(["CO", ex.id, 0, 0]);

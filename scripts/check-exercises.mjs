@@ -278,6 +278,9 @@ for (const q of [
   const r = toRows({ id: "hs", title: "HS", questions: [q] }, "exam");
   const qq = questionFromRow(r.qRows[0]);
   t("heSo sống sót qua toRows/đọc lại", qq.heSo, 3);
+  /* Tiêu đề nhóm câu « DOCUMENT 1 » (bài nghe 3 B2) cũng đi qua payload. */
+  const qn = questionFromRow(toRows({ id: "nh", title: "NH", questions: [{ ...q, nhom: "Document 1" }] }, "exam").qRows[0]);
+  t("nhom sống sót qua toRows/đọc lại", qn.nhom, "Document 1");
   t("đúng câu heSo 3 = 3/3 đơn vị", JSON.stringify(diemCau(q, 1)), JSON.stringify({ dung: 3, tong: 3 }));
   t("sai câu heSo 3 = 0/3", JSON.stringify(diemCau(q, 0)), JSON.stringify({ dung: 0, tong: 3 }));
   t("không heSo vẫn 1 đơn vị", JSON.stringify(diemCau({ ...q, heSo: undefined }, 1)), JSON.stringify({ dung: 1, tong: 1 }));
