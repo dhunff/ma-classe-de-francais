@@ -21,6 +21,7 @@ import Taking from "./Taking.jsx";
 import NeoCauHoi from "./NeoCauHoi.jsx";
 import { ChuCoSticker, Leon } from "../../shared/leon.jsx";
 import NutTieng from "../../shared/NutTieng.jsx";
+import { lamSachHtml } from "../../shared/lamSachHtml.js";
 import { phat } from "../../shared/amThanh.js";
 
 
@@ -211,7 +212,7 @@ function Student({ name, exercises, submissions, setSubmissions, accounts, setAc
                   <div key={q.id} style={{ background: "var(--mcf-surface2)", borderRadius: 14, padding: "12px 15px", border: `1px solid ${C.line}` }}>
                     <div style={{ fontWeight: 700, marginBottom: 6 }}>{i + 1}. {q.prompt}</div>
                     <div style={{ fontSize: 12, color: C.soft, fontWeight: 700, marginBottom: 4 }}>MA RÉPONSE</div>
-                    <div style={{ lineHeight: 1.7 }} dangerouslySetInnerHTML={{ __html: a || "—" }} />
+                    <div style={{ lineHeight: 1.7 }} dangerouslySetInnerHTML={{ __html: lamSachHtml(a) || "—" }} />
                     {q.model && (
                       <div style={{ marginTop: 10, background: C.okSoft, border: `1.5px solid ${C.ok}55`, borderRadius: 12, padding: "10px 14px" }}>
                         💡 <strong>{tr("Đáp án gợi ý:", "Réponse suggérée :", "Suggested answer:")}</strong>

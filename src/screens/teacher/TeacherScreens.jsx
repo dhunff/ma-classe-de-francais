@@ -29,6 +29,7 @@ import { supabase } from "../../storageShim.js";
 import { setClassFor } from "../../shared/roster.js";
 import AccessPanel from "./AccessPanel.jsx";
 import ThongKe from "./ThongKe.jsx";
+import { lamSachHtml } from "../../shared/lamSachHtml.js";
 import { BangSticker, maSticker } from "../../shared/leon.jsx";
 
 
@@ -949,7 +950,7 @@ function Progress({ ex, submissions, setSubmissions, accounts, back }) {
                           {!["vf", "tableau", "ordre", "apparier", "formulaire"].includes(q.type) && <>{tr("Trả lời:", "Réponse :", "Answer:")} </>}{["vf", "tableau", "ordre", "apparier", "formulaire"].includes(q.type) ? null : q.type === "qcm"
                             ? <strong style={{ color: good ? C.ok : C.danger }}>{a != null ? String.fromCharCode(65 + a) + ". " + q.options[a] : "—"}</strong>
                             : q.type === "open"
-                            ? <div style={{ marginTop: 6, background: "var(--mcf-surface)", border: `1px solid ${C.line}`, borderRadius: 10, padding: "10px 14px", lineHeight: 1.7 }} dangerouslySetInnerHTML={{ __html: a || "—" }} />
+                            ? <div style={{ marginTop: 6, background: "var(--mcf-surface)", border: `1px solid ${C.line}`, borderRadius: 10, padding: "10px 14px", lineHeight: 1.7 }} dangerouslySetInnerHTML={{ __html: lamSachHtml(a) || "—" }} />
                             : <em style={{ color: good ? C.ok : C.danger }}>{a || "—"}</em>}
                           {good === false && q.type === "qcm" && <span> {tr("· đáp án:", "· attendu :", "· expected:")} <strong>{String.fromCharCode(65 + q.answer)}. {q.options[q.answer]}</strong></span>}
                           {(q.type === "fill" || q.type === "conj") && <span> {tr("· 💡 đáp án:", "· 💡 attendu :", "· 💡 expected:")} <strong>{String(fillAccepted(q)).split("|")[0]}</strong></span>}
