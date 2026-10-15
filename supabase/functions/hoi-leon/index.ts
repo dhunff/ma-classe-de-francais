@@ -17,6 +17,7 @@
  */
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.112.4";
 import { CORS, json } from "../_shared/cors.ts";
+import { tranVip } from "../_shared/tranVip.ts";
 // @ts-ignore — JS thuần
 import { bocJSON } from "../_shared/goiYPE.js";
 
@@ -87,6 +88,7 @@ Deno.serve(async (req) => {
   if (!laVip && (daDung ?? 0) >= HAN_MUC) {
     return json(429, { ok: false, ma: "HET_LUOT", han_muc: HAN_MUC });
   }
+  if (laVip) { const tran = await tranVip(admin, userId, "hoi-leon"); if (tran) return tran; }
 
   const { data: cu } = await admin.from("leon_hoi").select("cau_hoi, tra_loi")
     .eq("user_id", userId).order("created_at", { ascending: false }).limit(6);

@@ -43,6 +43,7 @@
    ghim, tức ĐÚNG bản đang chạy. */
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.112.4";
 import { CORS, json } from "../_shared/cors.ts";
+import { tranVip } from "../_shared/tranVip.ts";
 // @ts-ignore — JS thuần, cố ý không có khai báo kiểu
 import { kiemGoiY, bocJSON } from "../_shared/goiYPE.js";
 
@@ -148,6 +149,7 @@ Deno.serve(async (req) => {
       thong_bao: `Bạn đã dùng hết ${HAN_MUC} lượt AI chấm hôm nay. Lượt mới mở lúc 0 giờ; gói VIP không giới hạn.`,
     });
   }
+  if (laVip) { const tran = await tranVip(admin, userId, "cham-pe"); if (tran) return tran; }
 
   /* ── Bài viết + đề bài, đọc từ database ──
      Lọc theo attempts.user_id NGAY TRONG câu truy vấn: service_role bỏ qua

@@ -27,6 +27,7 @@
  */
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.112.4";
 import { CORS, json } from "../_shared/cors.ts";
+import { tranVip } from "../_shared/tranVip.ts";
 
 const KHO = "bai-noi";
 const HAN_MUC = 6;
@@ -77,6 +78,7 @@ Deno.serve(async (req) => {
     return json(429, { ok: false, ma: "HET_LUOT", han_muc: HAN_MUC, cua_so_gio: CUA_SO_GIO,
       thong_bao: `Hết lượt AI nhận xét (${HAN_MUC} lượt mỗi ${CUA_SO_GIO} giờ).` });
   }
+  if (laVip) { const tran = await tranVip(admin, userId, "nhan-xet-noi"); if (tran) return tran; }
 
   // Đề bài: exerciseId nằm trong tên file `<uid>/<exam>/<exerciseId>-<mốc>.<đuôi>`.
   const tenFile = duongDan.split("/").pop() ?? "";

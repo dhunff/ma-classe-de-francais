@@ -5,6 +5,7 @@ import { tr } from "../../shared/i18n.jsx";
 import { Leon } from "../../shared/leon.jsx";
 import { phat } from "../../shared/amThanh.js";
 import NutTieng from "../../shared/NutTieng.jsx";
+import { loiTranVip } from "../../shared/loiTranVip.js";
 import { soCau } from "../../../supabase/functions/_shared/soCau.js";
 
 /* « Nghe & Nói » (10/10): chép chính tả + luyện phát âm.
@@ -247,7 +248,7 @@ function PhatAm({ cau, onXong }) {
     if (error) { try { d = await error.context?.json?.(); } catch { d = null; } }
     if (!d?.ok) {
       setTT("cho"); phat("sai");
-      setLoi(d?.ma === "HET_LUOT" ? tr(`Hôm nay bạn đã dùng hết ${d.han_muc} lượt chấm phát âm. Mai luyện tiếp nhé, VIP không giới hạn.`, `Vous avez utilisé vos ${d.han_muc} essais du jour. VIP : illimité.`, `You've used today's ${d.han_muc} tries. VIP is unlimited.`)
+      setLoi(d?.ma === "HET_LUOT_VIP" ? loiTranVip() : d?.ma === "HET_LUOT" ? tr(`Hôm nay bạn đã dùng hết ${d.han_muc} lượt chấm phát âm. Mai luyện tiếp nhé, VIP tới 100 lượt AI/ngày.`, `Vous avez utilisé vos ${d.han_muc} essais du jour. VIP : jusqu'à 100 requêtes IA/jour.`, `You've used today's ${d.han_muc} tries. VIP gets up to 100 AI requests a day.`)
         : d?.ma === "QUA_NGAN" ? tr("Bản ghi quá ngắn, hãy đọc cả câu.", "Enregistrement trop court.", "Recording too short.")
           : tr("Chưa chấm được lần này. Thử lại sau ít phút nhé.", "Échec de l'analyse, réessayez.", "Couldn't analyse it, try again."));
       return;

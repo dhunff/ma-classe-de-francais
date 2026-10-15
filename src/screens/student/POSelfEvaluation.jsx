@@ -3,6 +3,7 @@ import { Mic, Loader2, CheckCircle2, AlertTriangle, Info } from "lucide-react";
 import { supabase } from "../../storageShim.js";
 import { dsBaiNoi, duongNghe } from "../../shared/baiNoi.js";
 import { GRILLE_PO, mucCuaTieuChi } from "../../../supabase/functions/_shared/grillePO.js";
+import { loiTranVip } from "../../shared/loiTranVip.js";
 import { tr } from "../../shared/i18n.jsx";
 
 /* Tự chấm Production orale (12/10, migration 135).
@@ -49,7 +50,8 @@ export default function POSelfEvaluation({ po, exerciseId, consigne, onXong }) {
   };
 
   const LOI_AI = {
-    HET_LUOT: tr("Hết lượt AI gợi ý hôm nay (6 lượt / 24 giờ). VIP không giới hạn.", "Plus de suggestions IA aujourd'hui (6 / 24 h).", "No AI suggestions left today (6 per 24 h)."),
+    HET_LUOT_VIP: loiTranVip(),
+    HET_LUOT: tr("Hết lượt AI gợi ý hôm nay (6 lượt / 24 giờ). VIP tới 100 lượt AI/ngày.", "Plus de suggestions IA aujourd'hui (6 / 24 h).", "No AI suggestions left today (6 per 24 h)."),
     CHUA_CO_BAN_GHI: tr("Chưa có bản ghi âm nào cho phần nói này.", "Aucun enregistrement pour cet oral.", "No recording for this speaking part."),
     KHONG_NGHE_RO: tr("AI không nghe ra lời nói nào trong bản ghi.", "L'IA n'entend aucune parole.", "The AI couldn't hear any speech."),
     DINH_DANG_KHONG_HO_TRO: tr("Định dạng ghi âm này (thường từ Firefox) AI chưa đọc được.", "Format non pris en charge.", "Unsupported recording format."),

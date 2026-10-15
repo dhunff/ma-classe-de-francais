@@ -18,6 +18,7 @@
  */
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.112.4";
 import { CORS, json } from "../_shared/cors.ts";
+import { tranVip } from "../_shared/tranVip.ts";
 import { GRILLE_PO, mucCuaTieuChi } from "../_shared/grillePO.js";
 
 const KHO = "bai-noi";
@@ -64,6 +65,7 @@ Deno.serve(async (req) => {
   const { count: daDung } = await admin.from("po_cham").select("attempt_id", { count: "exact", head: true })
     .eq("user_id", userId).gte("ai_luc", new Date(Date.now() - 24 * 3600_000).toISOString());
   if (!laVip && (daDung ?? 0) >= HAN_MUC) return json(429, { ok: false, ma: "HET_LUOT", han_muc: HAN_MUC });
+  if (laVip) { const tran = await tranVip(admin, userId, "cham-po"); if (tran) return tran; }
 
   const { data: att } = await admin.from("attempts").select("exam_id, exercise_id").eq("id", attemptId).maybeSingle();
   if (!att?.exam_id) return json(404, { ok: false, ma: "KHONG_THAY_BAI_NOI" });

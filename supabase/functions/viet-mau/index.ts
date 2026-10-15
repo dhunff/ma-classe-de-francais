@@ -14,6 +14,7 @@
  */
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.112.4";
 import { CORS, json } from "../_shared/cors.ts";
+import { tranVip } from "../_shared/tranVip.ts";
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
@@ -36,6 +37,7 @@ Deno.serve(async (req) => {
 
   const { data: hs } = await admin.from("profiles").select("vip_den").eq("id", userId).maybeSingle();
   if (!(hs?.vip_den && new Date(hs.vip_den).getTime() > Date.now())) return json(403, { ok: false, ma: "CAN_VIP" });
+  if (true) { const tran = await tranVip(admin, userId, "viet-mau"); if (tran) return tran; }
 
   const { data: an } = await admin.from("answers").select("id, raw, attempt_id, question_id").eq("id", answerId).maybeSingle();
   if (!an) return json(404, { ok: false, ma: "KHONG_THAY_BAI" });

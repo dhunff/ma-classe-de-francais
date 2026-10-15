@@ -38,7 +38,7 @@ const ngay = (iso) => {
 };
 
 function Phan({ s, onTuCham }) {
-  const choCham = s.score == null && s.po ? tr("AI đang chấm… hoặc bạn tự chấm", "Correction IA en cours… ou auto-évaluez-vous", "AI grading… or self-assess") : s.score == null ? (s.choCham ? (s.aiLoi === "HET_LUOT" ? tr("Hết 3 lượt AI chấm hôm nay · mai mở lại trang (VIP không giới hạn)", "Plus de correction IA aujourd'hui (3 par jour) · revenez demain (VIP illimité)", "No AI grading left today (3 per day) · come back tomorrow (VIP unlimited)") : s.aiLoi ? tr("AI chưa chấm được, mở lại trang để thử lại", "L'IA n'a pas pu corriger, rouvrez la page pour réessayer", "The AI couldn't grade it, reopen the page to retry") : tr("AI đang chấm…", "Correction IA en cours…", "AI grading…")) : tr("chưa có điểm", "pas encore de note", "no score yet")) : null;
+  const choCham = s.score == null && s.po ? tr("AI đang chấm… hoặc bạn tự chấm", "Correction IA en cours… ou auto-évaluez-vous", "AI grading… or self-assess") : s.score == null ? (s.choCham ? (s.aiLoi === "HET_LUOT" ? tr("Hết 3 lượt AI chấm hôm nay · mai mở lại trang (VIP tới 100 lượt AI/ngày)", "Plus de correction IA aujourd'hui (3 par jour) · revenez demain (VIP : 100 requêtes IA/jour)", "No AI grading left today (3 per day) · come back tomorrow (VIP: 100 AI requests/day)") : s.aiLoi ? tr("AI chưa chấm được, mở lại trang để thử lại", "L'IA n'a pas pu corriger, rouvrez la page pour réessayer", "The AI couldn't grade it, reopen the page to retry") : tr("AI đang chấm…", "Correction IA en cours…", "AI grading…")) : tr("chưa có điểm", "pas encore de note", "no score yet")) : null;
   return (
     <li className="list-none">
     <ThanhPhan code={s.code} score={s.score} points={s.points} nguong={s.points ? NGUONG_PHAN : null} choCham={choCham}>

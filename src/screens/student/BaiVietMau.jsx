@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Crown, Loader2, ArrowRight } from "lucide-react";
 import { supabase } from "../../storageShim.js";
+import { loiTranVip } from "../../shared/loiTranVip.js";
 import { tr } from "../../shared/i18n.jsx";
 
 /* Bài viết mẫu (VIP) — 14/10, migration 143 + Edge Function viet-mau.
@@ -10,6 +11,7 @@ import { tr } from "../../shared/i18n.jsx";
  * Mỗi bài một bản: bấm lại chỉ đọc bản đã lưu, không tốn thêm. */
 const loiTheoMa = (ma) => ({
   CAN_VIP: null,
+  HET_LUOT_VIP: loiTranVip(),
   BAI_QUA_NGAN: tr("Bài quá ngắn để viết lại (cần ít nhất 15 từ).", "Texte trop court pour être réécrit (15 mots minimum).", "Too short to rewrite (at least 15 words)."),
   CHUA_CAU_HINH_KHOA: tr("Máy chủ chưa cấu hình AI. Đây là việc của quản trị viên.", "L'IA n'est pas configurée sur le serveur.", "AI is not configured on the server."),
 }[ma] ?? tr("AI chưa viết được bài mẫu. Thử lại sau giây lát.", "L'IA n'a pas pu rédiger le modèle. Réessayez dans un instant.", "The AI couldn't write the model text. Try again shortly."));

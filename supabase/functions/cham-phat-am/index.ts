@@ -13,6 +13,7 @@
  */
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.112.4";
 import { CORS, json } from "../_shared/cors.ts";
+import { tranVip } from "../_shared/tranVip.ts";
 // @ts-ignore — JS thuần
 import { soCau } from "../_shared/soCau.js";
 
@@ -55,6 +56,7 @@ Deno.serve(async (req) => {
   const { count: daDung } = await admin.from("cau_luyen_ket_qua").select("id", { count: "exact", head: true })
     .eq("user_id", userId).gte("created_at", dauNgayVN()).in("cau_id", (dsPa ?? []).map((x: any) => x.id));
   if (!laThu && !laVip && (daDung ?? 0) >= HAN_MUC) return json(429, { ok: false, ma: "HET_LUOT", han_muc: HAN_MUC });
+  if (laVip && !laThu) { const tran = await tranVip(admin, userId, "cham-phat-am"); if (tran) return tran; }
 
   /* Chép lời. KHÔNG gửi câu gốc làm « prompt » cho mô hình: gợi ý câu gốc thì
      máy sẽ « nghe » ra đúng câu đó dù học sinh đọc sai, và phép đo mất nghĩa. */

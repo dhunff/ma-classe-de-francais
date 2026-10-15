@@ -1,4 +1,5 @@
 import { supabase } from "../storageShim.js";
+import { loiTranVip } from "./loiTranVip.js";
 
 /* Xin gợi ý chấm Production écrite từ AI.
  *
@@ -43,7 +44,7 @@ const CAU = {
 const noiHetLuot = (d) => {
   const gio = Number(d?.cua_so_gio) || 24;
   void gio;
-  return `Bạn đã dùng hết ${d?.han_muc ?? 3} lượt AI chấm hôm nay. Lượt mới mở lúc 0 giờ; gói VIP không giới hạn.`;
+  return `Bạn đã dùng hết ${d?.han_muc ?? 3} lượt AI chấm hôm nay. Lượt mới mở lúc 0 giờ; gói VIP tới 100 lượt AI/ngày.`;
 };
 
 /**
@@ -68,7 +69,7 @@ export async function xinGoiYAI(answerId, rubric) {
     return {
       ok: false,
       ma,
-      thongBao: ma === "HET_LUOT" ? noiHetLuot(than)
+      thongBao: ma === "HET_LUOT_VIP" ? loiTranVip() : ma === "HET_LUOT" ? noiHetLuot(than)
         : (CAU[ma] ?? than?.thong_bao ?? "Không xin được gợi ý. Thử lại sau ít phút."),
     };
   }

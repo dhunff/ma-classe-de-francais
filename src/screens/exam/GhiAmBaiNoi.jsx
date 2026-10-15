@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { Mic, Square, Loader2, AlertTriangle, CheckCircle2 } from "lucide-react";
 import { luuBaiNoi, duongNghe, dsBaiNoi, aiNhanXet } from "../../shared/baiNoi.js";
 import { tr } from "../../shared/i18n.jsx";
+import { loiTranVip } from "../../shared/loiTranVip.js";
 import { LeonNoi } from "../../shared/leon.jsx";
 
 /* Ghi âm phần nói.
@@ -206,7 +207,8 @@ export default function GhiAmBaiNoi({ examId, exerciseId, gioiHanGiay = 900 }) {
 /* Khung hiện nhận xét của AI cho một bản ghi. Không có điểm số — cố ý. */
 /* Hàm, không phải hằng: phải đọc ngôn ngữ lúc HIỂN THỊ, không lúc nạp file. */
 const LOI = () => ({
-  HET_LUOT: tr("Bạn đã dùng hết 6 lượt AI nhận xét trong 24 giờ. Gói VIP không giới hạn.", "Vous avez utilisé vos 6 avis IA des dernières 24 h. Illimité en VIP.", "You've used 6 AI feedbacks in 24 h. Unlimited with VIP."),
+  HET_LUOT_VIP: loiTranVip(),
+  HET_LUOT: tr("Bạn đã dùng hết 6 lượt AI nhận xét trong 24 giờ. Gói VIP tới 100 lượt AI/ngày.", "Vous avez utilisé vos 6 avis IA des dernières 24 h. Illimité en VIP.", "You've used 6 AI feedbacks in 24 h. Unlimited with VIP."),
   DINH_DANG_KHONG_HO_TRO: tr("Định dạng ghi âm này (thường từ Firefox) chưa nhận xét được, hãy ghi lại bằng Chrome hoặc Edge.", "Ce format (souvent Firefox) n'est pas pris en charge : réenregistrez avec Chrome ou Edge.", "This format (usually Firefox) isn't supported: record again with Chrome or Edge."),
   KHONG_NGHE_RO: tr("AI không nghe được lời nói nào trong bản ghi. Kiểm tra micro rồi ghi lại.", "L'IA n'entend aucune parole. Vérifiez le micro et réenregistrez.", "The AI heard no speech. Check your microphone and record again."),
   CHUA_CAU_HINH_KHOA: tr("Máy chủ chưa bật AI nhận xét, đây là việc của người quản trị.", "L'avis IA n'est pas activé sur le serveur (administrateur).", "AI feedback isn't enabled on the server (admin task)."),

@@ -3,6 +3,7 @@ import { useLocation } from "react-router-dom";
 import { Send, Smile, X, Crown } from "lucide-react";
 import { supabase } from "../storageShim.js";
 import { LangCtx, tr } from "./i18n.jsx";
+import { loiTranVip } from "./loiTranVip.js";
 import { Leon, BangSticker, nhanSticker } from "./leon.jsx";
 
 /* Hỏi Leon (09/10): khung chat nổi góc phải dưới, chỉ cho học sinh.
@@ -52,9 +53,10 @@ function VanBan({ text }) {
 }
 
 const loiMa = (ma, d) => ({
-  HET_LUOT: tr(`Ohlala, hôm nay bạn đã hỏi đủ ${d?.han_muc ?? 10} câu rồi! Mai Leon trả lời tiếp nhé. Gói VIP thì hỏi không giới hạn.`,
-    `Ohlala, tu as posé tes ${d?.han_muc ?? 10} questions du jour ! Leon te répond demain. Avec le VIP, c'est illimité.`,
-    `Ohlala, you've used your ${d?.han_muc ?? 10} questions for today! Leon will answer again tomorrow. VIP is unlimited.`),
+  HET_LUOT_VIP: loiTranVip(),
+  HET_LUOT: tr(`Ohlala, hôm nay bạn đã hỏi đủ ${d?.han_muc ?? 10} câu rồi! Mai Leon trả lời tiếp nhé. Gói VIP được tới 100 lượt AI mỗi ngày.`,
+    `Ohlala, tu as posé tes ${d?.han_muc ?? 10} questions du jour ! Leon te répond demain. Avec le VIP : jusqu'à 100 requêtes IA par jour.`,
+    `Ohlala, you've used your ${d?.han_muc ?? 10} questions for today! Leon will answer again tomorrow. VIP gets up to 100 AI requests a day.`),
   CHUA_CAU_HINH_KHOA: tr("Leon chưa được bật trên máy chủ. Đây là việc của người quản trị.", "Leon n'est pas encore activé sur le serveur.", "Leon isn't enabled on the server yet."),
   QUA_DAI: tr("Câu hỏi dài quá, bạn rút gọn dưới 1000 ký tự nhé.", "Question trop longue (1000 caractères max).", "Question too long (1000 characters max)."),
   CHUA_DANG_NHAP: tr("Phiên đăng nhập đã hết hạn. Đăng nhập lại nhé.", "Session expirée. Reconnecte-toi.", "Session expired. Please sign in again."),
@@ -129,7 +131,7 @@ export default function HoiLeon() {
             <div className="min-w-0 flex-1">
               <p className="m-0 text-sm font-extrabold">Leon</p>
               <p className="m-0 text-[11px] text-on-primary/80">
-                {conLai === null ? <span className="inline-flex items-center gap-1"><Crown size={11} /> {tr("VIP: hỏi không giới hạn", "VIP : illimité", "VIP: unlimited")}</span>
+                {conLai === null ? <span className="inline-flex items-center gap-1"><Crown size={11} /> {tr("VIP: tới 100 lượt AI/ngày", "VIP : jusqu'à 100 requêtes IA/jour", "VIP: up to 100 AI requests/day")}</span>
                   : conLai !== undefined ? tr(`Còn ${conLai} câu hỏi hôm nay`, `Encore ${conLai} question(s) aujourd'hui`, `${conLai} question(s) left today`)
                   : tr("Bạn đồng hành học tiếng Pháp", "Ton compagnon de français", "Your French buddy")}
               </p>
