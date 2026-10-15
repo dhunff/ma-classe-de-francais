@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Swords, X, Timer, Trophy, Hourglass, Play, Volume2, VolumeX, Send, Layers, Users, Check, XCircle, Handshake, Zap } from "lucide-react";
+import { Swords, X, Timer, Trophy, Hourglass, Play, Volume2, VolumeX, Send, Layers, Users, Check, XCircle, Handshake, Zap, ListChecks } from "lucide-react";
+import XemLaiDau from "./XemLaiDau.jsx";
 import { phat, amThanhBat, datAmThanh } from "../../shared/amThanh.js";
 import { Avatar } from "../../shared/avatars.jsx";
 import { docDangTheoDoi } from "../../shared/xp.js";
@@ -53,6 +54,8 @@ export default function ThachDau() {
   const [dangTao, setDangTao] = useState(false);
   const [vuaGui, setVuaGui] = useState(false);
   const [tran, setTran] = useState(null);       // { id, doi, bo }
+  /* Xem lại câu sai (15/10): { id, doi } của trận đang xem lại. */
+  const [xemLai, setXemLai] = useState(null);
 
   const tai = useCallback(() => dsThachDau().then(setDs), []);
   useEffect(() => {
@@ -191,19 +194,21 @@ export default function ThachDau() {
         </div>
       ) : (
         <ul className="m-0 flex list-none flex-col gap-3 p-0">
-          {ds.map((d, i) => <Dong key={d.id} d={d} i={i} onChoi={() => choi(d)} t={t} />)}
+          {ds.map((d, i) => <Dong key={d.id} d={d} i={i} onChoi={() => choi(d)} onXemLai={() => { phat("bam"); setXemLai({ id: d.id, doi: d.doi_phuong?.name }); }} t={t} />)}
         </ul>
       )}
 
       {tran && (
         <ManDau tran={tran} t={t} loiChu={loiChu}
-          onDong={() => { setTran(null); tai(); }} />
+          onDong={() => { setTran(null); tai(); }}
+          onXemLai={() => { setXemLai({ id: tran.id, doi: tran.doi }); setTran(null); tai(); }} />
       )}
+      {xemLai && <XemLaiDau tranId={xemLai.id} doi={xemLai.doi} onDong={() => setXemLai(null)} />}
     </div>
   );
 }
 
-function Dong({ d, i, onChoi, t }) {
+function Dong({ d, i, onChoi, onXemLai, t }) {
   const kc = ketCuc(d);
   const den = !d.toi_xong;
   const nhan = kc === "thang" ? ["bg-ok text-white", t("duel.win"), "tuyet-voi"]
@@ -238,6 +243,12 @@ function Dong({ d, i, onChoi, t }) {
         {kc === "thang" ? <Trophy size={13} /> : d.toi_xong && !kc ? <Hourglass size={13} /> : null}
         {nhan[1]}
       </span>
+      {d.toi_xong && (
+        <button type="button" onClick={onXemLai}
+          className="inline-flex cursor-pointer items-center gap-1.5 rounded-2xl border border-solid border-line bg-surface px-4 py-2 font-sans text-xs font-bold text-ink transition-colors hover:border-primary hover:text-primary">
+          <ListChecks size={14} />{tr("Xem lại", "Revoir", "Review")}
+        </button>
+      )}
       {den && (
         <button type="button" onClick={onChoi}
           className="inline-flex cursor-pointer items-center gap-1.5 rounded-2xl border-0 border-b-4 border-solid border-indigo-800 bg-gradient-to-r from-indigo-600 to-violet-600 px-5 py-2.5 font-sans text-sm font-extrabold text-white transition-transform hover:-translate-y-0.5 active:translate-y-0.5 active:border-b-0">
@@ -264,7 +275,7 @@ function PhaoGiay({ n = 22 }) {
 }
 
 /* Màn đấu phủ kín. Không báo đúng/sai từng câu — màn này không có đáp án. */
-function ManDau({ tran, onDong, t, loiChu }) {
+function ManDau({ tran, onDong, onXemLai, t, loiChu }) {
   const [dem, setDem] = useState(3);           // 3,2,1,0(GO),-1 = đang chơi
   const [cauDe, setCauDe] = useState(null);    // null = chưa lấy · [] · {loi}
   const [i, setI] = useState(0);
@@ -382,7 +393,7 @@ function ManDau({ tran, onDong, t, loiChu }) {
               className="mt-4 cursor-pointer rounded-xl border-0 bg-primary px-5 py-2.5 font-sans text-sm font-bold text-on-primary">{t("duel.back")}</button>
           </div>
         ) : kq ? (
-          <KetQuaDau kq={kq} tran={tran} onDong={onDong} t={t} />
+          <KetQuaDau kq={kq} tran={tran} onDong={onDong} onXemLai={onXemLai} t={t} />
         ) : cau ? (
           <div key={i} className="mcf-cau-vao flex flex-col gap-6">
             <div className="flex items-center justify-between">
@@ -421,7 +432,7 @@ function ManDau({ tran, onDong, t, loiChu }) {
   );
 }
 
-function KetQuaDau({ kq, tran, onDong, t }) {
+function KetQuaDau({ kq, tran, onDong, onXemLai, t }) {
   const tot = kq.tong && kq.dung / kq.tong >= 0.7;
   const [so, setSo] = useState(0);
   useEffect(() => {
@@ -441,6 +452,12 @@ function KetQuaDau({ kq, tran, onDong, t }) {
       </p>
       <p className="m-0 inline-flex items-center gap-1.5 rounded-full bg-surface2 px-3 py-1 text-sm font-bold text-ink"><Timer size={14} />{phutGiay(kq.giay)}</p>
       <p className="m-0 text-sm text-soft">{t("duel.done_body", { giay: phutGiay(kq.giay), ten: tran.doi })}</p>
+      {kq.dung < kq.tong && onXemLai && (
+        <button type="button" onClick={onXemLai}
+          className="inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-2xl border-2 border-solid border-violet-300 bg-surface px-8 py-3 font-sans text-sm font-extrabold text-ink transition-colors hover:border-violet-500">
+          <ListChecks size={16} />{tr(`Xem ${kq.tong - kq.dung} câu sai và làm lại`, `Voir les ${kq.tong - kq.dung} erreurs et les refaire`, `See ${kq.tong - kq.dung} mistakes and redo them`)}
+        </button>
+      )}
       <button type="button" onClick={onDong}
         className="w-full cursor-pointer rounded-2xl border-0 border-b-4 border-solid border-indigo-800 bg-gradient-to-r from-indigo-600 to-violet-600 px-8 py-3 font-sans text-sm font-extrabold uppercase tracking-wide text-white transition-transform hover:-translate-y-0.5 active:translate-y-0.5 active:border-b-0">{t("duel.back")}</button>
     </div>

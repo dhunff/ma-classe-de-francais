@@ -44,3 +44,12 @@ export async function taoThachDauChuDe(doiThuId, chuDe) {
   const { data, error } = await supabase.rpc("tao_thach_dau_chu_de", { p_doi_thu: doiThuId, p_chu_de: chuDe });
   return error ? { loi: ma(error) } : { id: data };
 }
+
+/* Xem lại bài làm (migration 147): chỉ sau khi CHÍNH người gọi đã nộp.
+   → { cau: [{ chieu, de, luaChon, dapAn, chon }] } | { loi }. `chon` null ở trận
+   chơi trước 15/10 (khi đó máy chủ chưa lưu lựa chọn). */
+export async function xemLaiThachDau(id) {
+  const { data, error } = await supabase.rpc("xem_lai_thach_dau", { p_id: id });
+  if (error) return { loi: ma(error) };
+  return { cau: (data ?? []).map((c) => ({ chieu: c.chieu, de: c.de, luaChon: c.lua_chon || [], dapAn: c.dap_an, chon: c.chon })) };
+}
