@@ -94,6 +94,8 @@ import TheBoThe from "./screens/student/TheBoThe.jsx";
    không chạm storageShim, nên vào được đây. Đó là lý do KY_NANG được tách ra
    một file riêng, cùng lối với ChonDoanVan.jsx. */
 import ThuVienBoThe from "./screens/student/ThuVienBoThe.jsx";
+import LuyenBoThe from "./screens/student/LuyenBoThe.jsx";
+const THE_MAU = [["en raison de", "do, vì", "En raison de travaux, la ligne est fermée."], ["du coup", "thế là, vậy nên", "Il pleuvait, du coup je suis resté."], ["faire état de", "cho biết, nêu ra", "Le rapport fait état de retards."]].map(([a, b, c], i) => ({ card_id: "m" + i, matTruoc: a, matSau: b, viDu: c, due_at: "2026-10-15", interval_days: 1, ease: 2.5, reps: 0, lapses: 0 }));
 
 const BO_THE_THU = [
   { id: "1", ten: "Nghe hiểu: thông báo nhà ga", kyNang: "CO", congKhai: true, soThe: 15,
@@ -689,6 +691,7 @@ function Preview() {
     ["/etudiant/neo", "Neo đáp án vào ngữ liệu"],
     ["/professeur/chon-doan", "Đặt neo — bôi đen đoạn văn"],
     ["/etudiant/bo-the", "Thư viện bộ thẻ — tab dọc"],
+    ["/etudiant/luyen-the", "Luyện Flashcard (thẻ mẫu)"],
     ["/gioi-thieu/doi-ngu", "Đội ngũ chuyên môn"],
     ["/professeur/grille", "Soạn thang chấm"],
     ["/etudiant/tro-choi", "Màn chơi Lộ trình"],
@@ -814,6 +817,7 @@ function Preview() {
           <Route path="/etudiant/the-bo" element={<><Controls /><TheBoThu /></>} />
           <Route path="/etudiant/neo" element={<><Controls /><NeoThu /></>} />
           <Route path="/professeur/chon-doan" element={<><Controls /><ChonDoanThu /></>} />
+          <Route path="/etudiant/luyen-the" element={<><Controls /><LuyenBoThe bo={{ id: "mau", ten: "Bộ mẫu" }} theMau={THE_MAU} onThoat={() => {}} /></>} />
           <Route path="/etudiant/bo-the" element={<><Controls /><ThuVienBoThe ds={BO_THE_THU} onMo={() => {}} /></>} />
           <Route path="/gioi-thieu/doi-ngu" element={<><Controls /><DoiNguThu /></>} />
           <Route path="/etudiant/danh-tinh" element={<><Controls /><DanhTinhThu /></>} />

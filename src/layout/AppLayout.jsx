@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import Sidebar from "./Sidebar.jsx";
 import Topbar from "./Topbar.jsx";
-import CheatSheetPanel from "./CheatSheetPanel.jsx";
 import { titleKeyFor } from "./navItems.js";
 import { LeonTheoTrang } from "../shared/leon.jsx";
 
@@ -29,7 +28,6 @@ export default function AppLayout({
   people = [], conversations = [], tips,
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
-  const [carnetOpen, setCarnetOpen] = useState(false);
   const [query, setQuery] = useState("");
   const location = useLocation();
 
@@ -45,7 +43,7 @@ export default function AppLayout({
   });
 
   // Đổi trang thì đóng ngăn kéo — nếu không nó che mất trang vừa mở.
-  useEffect(() => { setMenuOpen(false); setCarnetOpen(false); }, [location.pathname]);
+  useEffect(() => { setMenuOpen(false); }, [location.pathname]);
   /* Chốt chặn (09/10): thư viện nào đặt overflow nội tuyến lên <main> (Joyride
      từng làm vậy) thì gỡ ra khi đổi trang, để trang không bị khoá cuộn mãi. */
   const mainRef = useRef(null);
@@ -97,8 +95,6 @@ export default function AppLayout({
           query={query}
           onQuery={setQuery}
           onOpenMenu={() => setMenuOpen(true)}
-          onOpenCarnet={() => setCarnetOpen((v) => !v)}
-          carnetOpen={carnetOpen}
         />
 
         <main ref={mainRef} className="min-w-0 flex-1 overflow-y-auto px-4 pb-8 md:px-8">
@@ -106,7 +102,6 @@ export default function AppLayout({
           <Outlet context={{ query }} />
         </main>
 
-        <CheatSheetPanel open={carnetOpen} onClose={() => setCarnetOpen(false)} t={t} tips={tips} />
       </div>
     </div>
   );

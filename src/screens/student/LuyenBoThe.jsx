@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { ArrowLeft, AlertTriangle, RotateCcw, Frown, ThumbsUp, Zap } from "lucide-react";
+import { ArrowLeft, AlertTriangle, RotateCcw, Frown, ThumbsUp, Zap, Repeat, Layers } from "lucide-react";
 import NutTieng from "../../shared/NutTieng.jsx";
 import { hocBo } from "../../shared/boThe.js";
 import { chamThe } from "../../shared/theGhiNho.js";
@@ -102,9 +102,15 @@ function ThanhTienDo({ xong, tong }) {
 /* "2026-09-24" → "24/09". Cắt chuỗi, KHÔNG qua `new Date()`: parse một chuỗi
    ngày trần là parse theo UTC, và ở Việt Nam trước 7 giờ sáng nó lùi mất một
    ngày — cùng họ với bẫy `toISOString` mà `check:sm2` đang canh. */
+/* Mức tệ nhất của một thẻ trong buổi (15/10): thẻ bấm « Quên rồi » rồi gặp lại
+   bấm « Tốt » vẫn tính là đã sai một lần. */
+const HANG_MUC = { lai: 0, kho: 1, tot: 2, de: 3 };
+const tronNgauNhien = (a) => { const b = [...a]; for (let i = b.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [b[i], b[j]] = [b[j], b[i]]; } return b; };
+
 const ngayNgan = (s) => (s ? `${s.slice(8, 10)}/${s.slice(5, 7)}` : "");
 
-export default function LuyenBoThe({ bo, onThoat }) {
+/* `theMau`: chỉ /preview.html dùng: thẻ mẫu, KHÔNG gọi máy chủ, không ghi. */
+export default function LuyenBoThe({ bo, onThoat, theMau }) {
   const [tatCa, setTatCa] = useState(undefined);   // undefined tải · null lỗi · [] rỗng
   const [hang, setHang] = useState([]);            // thẻ đến hạn, theo thứ tự SM-2
   const [lat, setLat] = useState(false);
@@ -113,11 +119,17 @@ export default function LuyenBoThe({ bo, onThoat }) {
   const [dangGhi, setDangGhi] = useState(false);
   const [loi, setLoi] = useState("");
   const [camLeon, setCamLeon] = useState("suy-nghi");
+  /* 15/10 (chủ dự án): biết thẻ nào sai và làm lại được.
+     ketQua: card_id → { the, muc } (mức tệ nhất trong vòng này).
+     cheDo "on" = ôn theo lịch SM-2 (ghi máy chủ); "luyen" = luyện thêm, KHÔNG ghi,
+     để làm lại nhiều lần trong ngày không làm xáo lịch ôn. */
+  const [ketQua, setKetQua] = useState(() => new Map());
+  const [cheDo, setCheDo] = useState("on");
 
   useEffect(() => {
     let con = true;
-    setTatCa(undefined); setHang([]); setLat(false); setXong(0); setLoi("");
-    hocBo(bo?.id).then((v) => {
+    setTatCa(undefined); setHang([]); setLat(false); setXong(0); setLoi(""); setKetQua(new Map()); setCheDo("on");
+    (theMau ? Promise.resolve(theMau) : hocBo(bo?.id)).then((v) => {
       if (!con) return;
       setTatCa(v);
       if (Array.isArray(v)) {
@@ -127,14 +139,25 @@ export default function LuyenBoThe({ bo, onThoat }) {
       }
     });
     return () => { con = false; };
-  }, [bo?.id]);
+  }, [bo?.id, theMau]);
 
   const the = hang[0] ?? null;
 
   const cham = async (khoa) => {
     if (!the || dangGhi) return;
+    const id = the.card_id ?? the.id;
+    setKetQua((m) => { const n = new Map(m); const cu = n.get(id); if (!cu || HANG_MUC[khoa] < HANG_MUC[cu.muc]) n.set(id, { the, muc: khoa }); return n; });
+    if (cheDo === "luyen") {
+      /* Luyện thêm: không ghi máy chủ, chỉ xoay hàng như buổi ôn. */
+      phat(TIENG_CHAM[khoa] ?? "bam");
+      setCamLeon(CAM_SAU[khoa] ?? "ok");
+      setHang((h) => (khoa === "lai" ? [...h.slice(1), the] : h.slice(1)));
+      if (khoa !== "lai") setXong((v) => v + 1);
+      setLat(false);
+      return;
+    }
     setDangGhi(true); setLoi("");
-    const kq = await chamThe(the, MUC[khoa].q);
+    const kq = theMau ? { ok: true, moi: {} } : await chamThe(the, MUC[khoa].q);
     setDangGhi(false);
 
     /* Ghi hỏng thì DỪNG LẠI ở thẻ này, không lật sang thẻ sau. Lật sang là nói
@@ -169,6 +192,16 @@ export default function LuyenBoThe({ bo, onThoat }) {
     return () => window.removeEventListener("keydown", k);
   }, []);
 
+  const batDauLuyen = (ds) => {
+    if (!ds?.length) return;
+    phat("batDau");
+    setCheDo("luyen"); setHang(tronNgauNhien(ds)); setTongPhien(ds.length); setXong(0);
+    setKetQua(new Map()); setLat(false); setLoi(""); setCamLeon("suy-nghi");
+  };
+  const dsKetQua = [...ketQua.values()];
+  const dsSai = dsKetQua.filter((x) => x.muc === "lai" || x.muc === "kho");
+  const demMuc = (k) => dsKetQua.filter((x) => x.muc === k).length;
+
   /* Lần ôn gần nhất trong tương lai — cho màn « xong hôm nay ». */
   const lanToi = Array.isArray(tatCa) && tatCa.length
     ? tatCa.map((x) => x.due_at).filter(Boolean).sort()[0]
@@ -197,7 +230,7 @@ export default function LuyenBoThe({ bo, onThoat }) {
                     <span aria-hidden className="mcf-anh-sang absolute inset-y-0 left-0 w-1/3 bg-gradient-to-r from-transparent via-violet-300/70 to-transparent" />
                   </div>
                 </div>
-                <p className="m-0 mt-1 text-xs font-bold tabular-nums text-white/85">{xong}/{tongPhien} {tr("thẻ đến hạn hôm nay", "cartes à réviser aujourd'hui", "cards due today")}</p>
+                <p className="m-0 mt-1 text-xs font-bold tabular-nums text-white/85">{xong}/{tongPhien} {cheDo === "luyen" ? tr("thẻ luyện thêm (không đổi lịch ôn)", "cartes en entraînement libre (planning inchangé)", "practice cards (schedule unchanged)") : tr("thẻ đến hạn hôm nay", "cartes à réviser aujourd'hui", "cards due today")}</p>
               </div>
             )}
           </div>
@@ -221,15 +254,64 @@ export default function LuyenBoThe({ bo, onThoat }) {
       ) : !the ? (
         /* Hết thẻ đến hạn. Nói NGÀY quay lại — "xong" mà không nói bao giờ
            quay lại thì người ta hoặc mở lại liên tục, hoặc quên luôn bộ này. */
-        <div className="mt-8 rounded-3xl border border-line bg-surface p-10 text-center">
-          <Leon cam={tongPhien > 0 ? "yeah" : "buon-ngu"} size={120} className="mcf-nay mx-auto block" />
+        <div className="mt-8 rounded-3xl border border-line bg-surface p-6 text-center sm:p-8">
+          <Leon cam={tongPhien > 0 ? (dsSai.length ? "hum" : "yeah") : "buon-ngu"} size={110} className="mcf-nay mx-auto block" />
           <p className="m-0 mt-3 text-lg font-extrabold text-ink">
-            {tongPhien > 0 ? tr("Xong phần hôm nay", "Terminé pour aujourd'hui", "Done for today") : tr("Hôm nay không có thẻ nào đến hạn", "Aucune carte à réviser aujourd'hui", "No cards due today")}
+            {tongPhien === 0 ? tr("Hôm nay không có thẻ nào đến hạn", "Aucune carte à réviser aujourd'hui", "No cards due today")
+              : cheDo === "luyen" ? tr("Xong vòng luyện thêm", "Entraînement terminé", "Practice round done")
+                : tr("Xong phần hôm nay", "Terminé pour aujourd'hui", "Done for today")}
           </p>
           <p className="m-0 mt-1 text-sm text-soft">
-            {tongPhien > 0 && tr(`Bạn đã ôn ${xong} thẻ. `, `Vous avez révisé ${xong} carte(s). `, `You reviewed ${xong} card(s). `)}
-            {lanToi && tr(`Lần ôn tới: ${ngayNgan(lanToi)}.`, `Prochaine révision : ${ngayNgan(lanToi)}.`, `Next review: ${ngayNgan(lanToi)}.`)}
+            {tongPhien > 0 && cheDo === "on" && tr(`Bạn đã ôn ${xong} thẻ. `, `Vous avez révisé ${xong} carte(s). `, `You reviewed ${xong} card(s). `)}
+            {cheDo === "on" && lanToi && tr(`Lần ôn tới: ${ngayNgan(lanToi)}.`, `Prochaine révision : ${ngayNgan(lanToi)}.`, `Next review: ${ngayNgan(lanToi)}.`)}
           </p>
+
+          {dsKetQua.length > 0 && (
+            <div className="mt-4 grid grid-cols-4 gap-2">
+              {THU_TU.map((k) => (
+                <div key={k} className={`rounded-xl px-2 py-2 ${KIEU_NUT[k]}`}>
+                  <p className="m-0 text-xl font-extrabold tabular-nums">{demMuc(k)}</p>
+                  <p className="m-0 text-[11px] font-bold">{NHAN_NUT()[k]}</p>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {dsSai.length > 0 ? (
+            <div className="mt-5 text-left">
+              <p className="m-0 mb-2 text-sm font-extrabold text-ink">{tr(`Thẻ bạn chưa nhớ (${dsSai.length})`, `Cartes à retravailler (${dsSai.length})`, `Cards to work on (${dsSai.length})`)}</p>
+              <ul className="m-0 grid list-none gap-2 p-0">
+                {dsSai.map(({ the: t, muc }) => (
+                  <li key={t.card_id ?? t.id} className="flex items-start gap-3 rounded-2xl border border-solid border-line bg-surface p-3">
+                    <span className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-extrabold ${KIEU_NUT[muc]}`}>{NHAN_NUT()[muc]}</span>
+                    <span className="min-w-0 flex-1">
+                      <span lang="fr" className="block text-sm font-bold text-ink">{t.matTruoc}</span>
+                      <span className="block text-sm text-soft">{t.matSau}</span>
+                      {t.viDu && <span lang="fr" className="mt-0.5 block text-xs italic text-soft">{t.viDu}</span>}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : dsKetQua.length > 0 && (
+            <p className="m-0 mt-4 rounded-2xl bg-ok-soft p-3 text-sm font-bold text-ok">{tr("Không thẻ nào bị quên. Tuyệt vời!", "Aucune carte oubliée. Bravo !", "No forgotten cards. Great job!")}</p>
+          )}
+
+          <div className="mt-5 flex flex-wrap justify-center gap-2">
+            {dsSai.length > 0 && (
+              <button type="button" onClick={() => batDauLuyen(dsSai.map((x) => x.the))}
+                className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border-0 bg-primary px-5 py-2.5 font-sans text-sm font-extrabold text-on-primary hover:opacity-90">
+                <Repeat size={15} /> {tr(`Làm lại ${dsSai.length} thẻ sai`, `Refaire les ${dsSai.length} cartes ratées`, `Redo ${dsSai.length} missed cards`)}
+              </button>
+            )}
+            {Array.isArray(tatCa) && tatCa.length > 0 && (
+              <button type="button" onClick={() => batDauLuyen(tatCa)}
+                className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-solid border-line bg-surface px-5 py-2.5 font-sans text-sm font-bold text-ink hover:border-primary hover:text-primary">
+                <Layers size={15} /> {tr(`Luyện lại cả bộ (${tatCa.length} thẻ)`, `Revoir tout le paquet (${tatCa.length})`, `Practice the whole deck (${tatCa.length})`)}
+              </button>
+            )}
+          </div>
+          <p className="m-0 mt-2 text-[11px] text-soft">{tr("Luyện thêm không làm thay đổi lịch ôn tập.", "L'entraînement libre ne modifie pas le planning de révision.", "Extra practice doesn't change your review schedule.")}</p>
         </div>
       ) : (
         <>
