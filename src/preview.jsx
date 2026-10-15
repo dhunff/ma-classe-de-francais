@@ -96,6 +96,7 @@ import TheBoThe from "./screens/student/TheBoThe.jsx";
 import ThuVienBoThe from "./screens/student/ThuVienBoThe.jsx";
 import LuyenBoThe from "./screens/student/LuyenBoThe.jsx";
 import XemLaiDau from "./screens/student/XemLaiDau.jsx";
+import NguPhap from "./screens/student/NguPhap.jsx";
 const DAU_MAU = { cau: [{ chieu: "nghia", de: "du coup", luaChon: ["thế là, vậy nên", "tuy nhiên", "ngay lập tức", "dù sao"], dapAn: 0, chon: 0 }, { chieu: "nghia", de: "faire état de", luaChon: ["làm hỏng", "cho biết, nêu ra", "phủ nhận", "đề nghị"], dapAn: 1, chon: 3 }, { chieu: "tu", de: "do, vì (+ danh từ)", luaChon: ["grâce à", "pourtant", "en raison de", "bref"], dapAn: 2, chon: 0 }] };
 const THE_MAU = [["en raison de", "do, vì", "En raison de travaux, la ligne est fermée."], ["du coup", "thế là, vậy nên", "Il pleuvait, du coup je suis resté."], ["faire état de", "cho biết, nêu ra", "Le rapport fait état de retards."]].map(([a, b, c], i) => ({ card_id: "m" + i, matTruoc: a, matSau: b, viDu: c, due_at: "2026-10-15", interval_days: 1, ease: 2.5, reps: 0, lapses: 0 }));
 
@@ -126,7 +127,7 @@ const VI = {
      chính tên khoá, và thanh bên hiện "nav.todo" thay vì "Cần làm" — trang
      xem thử khi đó nói dối về diện mạo thật. */
   nav: { dashboard: "Trang chủ", exercises: "Thư viện bài tập", students: "Theo dõi học sinh",
-    practice: "Luyện tập", speak: "Nghe & Nói", progress: "Tiến bộ VIP", calendar: "Lịch", settings: "Cài đặt",
+    practice: "Luyện tập", speak: "Nghe & Nói", grammar: "Học ngữ pháp", progress: "Tiến bộ VIP", calendar: "Lịch", settings: "Cài đặt",
     todo: "Cần làm", done: "Đã nộp", assigned: "Bài tập được giao", account: "Tài khoản", stats: "Thống kê", exam: "Thi thử", exams: "Đề thi thử", results: "Kết quả thi", decks: "Flashcard",
     explanations: "Câu cần lời giải",
     anchors: "Neo ngữ liệu",
@@ -695,6 +696,7 @@ function Preview() {
     ["/etudiant/bo-the", "Thư viện bộ thẻ — tab dọc"],
     ["/etudiant/luyen-the", "Luyện Flashcard (thẻ mẫu)"],
     ["/etudiant/xem-lai-dau", "Thách đấu: xem lại câu sai"],
+    ["/etudiant/ngu-phap", "Học ngữ pháp"],
     ["/gioi-thieu/doi-ngu", "Đội ngũ chuyên môn"],
     ["/professeur/grille", "Soạn thang chấm"],
     ["/etudiant/tro-choi", "Màn chơi Lộ trình"],
@@ -820,6 +822,8 @@ function Preview() {
           <Route path="/etudiant/the-bo" element={<><Controls /><TheBoThu /></>} />
           <Route path="/etudiant/neo" element={<><Controls /><NeoThu /></>} />
           <Route path="/professeur/chon-doan" element={<><Controls /><ChonDoanThu /></>} />
+          <Route path="/etudiant/ngu-phap" element={<><Controls /><NguPhap /></>} />
+          <Route path="/etudiant/ngu-phap/:ma" element={<><Controls /><NguPhap /></>} />
           <Route path="/etudiant/xem-lai-dau" element={<><Controls /><XemLaiDau tranId="mau" doi="Minh Anh" duMau={DAU_MAU} onDong={() => {}} /></>} />
           <Route path="/etudiant/luyen-the" element={<><Controls /><LuyenBoThe bo={{ id: "mau", ten: "Bộ mẫu" }} theMau={THE_MAU} onThoat={() => {}} /></>} />
           <Route path="/etudiant/bo-the" element={<><Controls /><ThuVienBoThe ds={BO_THE_THU} onMo={() => {}} /></>} />

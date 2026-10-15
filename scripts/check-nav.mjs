@@ -92,6 +92,8 @@ const CO_Y_KHONG_CO_MUC = {
     "« Ma progression » đã rời menu theo yêu cầu; route giữ lại để không mất màn hình.",
   "/etudiant/resultats":
     "« Kết quả thi » vào bằng nút trong màn Thi thử (08/10), không nằm ở menu.",
+  "/etudiant/ngu-phap/:ma":
+    "Trang từng bài học, vào từ danh sách « Học ngữ pháp » (15/10).",
   "/etudiant/rendus":
     "Đường cũ của « Đã nộp », nay là tab trong « Bài tập được giao » (08/10).",
 };
