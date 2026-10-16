@@ -7,6 +7,7 @@ import { phat } from "../../shared/amThanh.js";
 import { Leon } from "../../shared/leon.jsx";
 import { usePracticeStore } from "../dashboard/PracticeRail.jsx";
 import { CHU_CAI, DAU, IPA, BAI_NHAP_MON } from "../../content/nguPhap/nhapMon.js";
+import { BAI_A1 } from "../../content/nguPhap/a1.js";
 import { BAI_A2_B1 } from "../../content/nguPhap/a2b1.js";
 import AM from "../../content/nguPhap/amThanh.json";
 
@@ -17,10 +18,10 @@ import AM from "../../content/nguPhap/amThanh.json";
  * chấp nhận được (học sinh tự học). Kết quả lưu qua RPC ghi_bai_hoc (migration 148).
  * Âm thanh Nhập môn: giọng tổng hợp, tạo bằng scripts/ngu-phap/tao-am.mjs. */
 
-const TAT_CA = [...BAI_NHAP_MON, ...BAI_A2_B1];
-const CAP = ["Nhập môn", "A2", "B1"];
-const MAU_CAP = { "Nhập môn": "from-emerald-500 to-teal-600", A2: "from-sky-500 to-blue-600", B1: "from-violet-500 to-indigo-600" };
-const tenCap = (c) => (c === "Nhập môn" ? tr("Nhập môn", "Débutant", "Beginner") : c);
+const TAT_CA = [...BAI_NHAP_MON, ...BAI_A1, ...BAI_A2_B1];
+const CAP = ["A0", "A1", "A2", "B1"];
+const MAU_CAP = { A0: "from-emerald-500 to-teal-600", A1: "from-amber-500 to-orange-600", A2: "from-sky-500 to-blue-600", B1: "from-violet-500 to-indigo-600" };
+const tenCap = (c) => (c === "A0" ? tr("A0 · Nhập môn", "A0 · Débutant", "A0 · Beginner") : c);
 
 const chuan = (s) => String(s ?? "").normalize("NFC").replace(/[’`´]/g, "'").replace(/\s+/g, " ").trim().toLowerCase();
 const boDau = (s) => chuan(s).normalize("NFD").replace(/[̀-ͯ]/g, "");
@@ -134,71 +135,169 @@ function Khoi({ k }) {
   return null;
 }
 
-/* ─────────── Thực hành ─────────── */
+/* ─────────── Thực hành ───────────
+ * Mỗi màn MỘT câu: chọn/gõ → « Kiểm tra » → báo đúng/sai ngay kèm lời giải →
+ * « Tiếp tục ». Hết lượt thì tổng kết + làm lại câu sai. Chỉ lượt ĐẦU, làm đủ
+ * mọi câu mới gọi onXong (lượt làm lại câu sai không ghi điểm). */
 function ThucHanh({ bai, onXong }) {
-  const [tl, setTl] = useState({});
-  const [cham, setCham] = useState(null);       // null | { dung:[bool], diem }
+  const tatCa = bai.baiTap;
+  const [ds, setDs] = useState(() => tatCa.map((_, i) => i));   // chỉ số câu trong lượt này
+  const [vong, setVong] = useState(0);                          // 0 = lượt đầu
+  const [vt, setVt] = useState(0);
+  const [tl, setTl] = useState(null);
+  const [kq, setKq] = useState([]);                             // [{ i, ok, tl }]
+  const [xem, setXem] = useState(false);
+  const oNhap = useRef(null);
   const dungCau = (c, v) => (c.loai === "qcm" ? v === c.dap : v != null && c.dap.some((d) => chuan(d) === chuan(v)));
   const gan = (c, v) => (c.loai === "dien" && v != null && !dungCau(c, v) && c.dap.some((d) => boDau(d) === boDau(v)));
 
+  const xong = vt >= ds.length;
+  const i = ds[vt];
+  const c = tatCa[i];
+  const ok = xem && dungCau(c, tl);
+  const coTl = tl != null && tl !== "";
+
+  useEffect(() => { if (!xong && c?.loai !== "qcm") oNhap.current?.focus(); }, [vt, xong, c]);
+
   const kiem = () => {
-    const dung = bai.baiTap.map((c, i) => dungCau(c, tl[i]));
-    const diem = dung.filter(Boolean).length;
-    setCham({ dung, diem });
-    phat(diem === dung.length ? "thang" : diem >= dung.length / 2 ? "dung" : "sai");
-    onXong(diem, dung.length);
+    if (!coTl || xem) return;
+    const d = dungCau(c, tl);
+    setXem(true);
+    setKq((x) => [...x, { i, ok: d, tl }]);
+    phat(d ? "dung" : "sai");
   };
-  const lamLai = () => { setTl({}); setCham(null); phat("bam"); };
-  const thieu = bai.baiTap.some((_, i) => tl[i] == null || tl[i] === "");
+  const tiep = () => {
+    setXem(false); setTl(null);
+    const sau = vt + 1;
+    setVt(sau);
+    if (sau >= ds.length) {
+      const diem = kq.filter((k) => k.ok).length;
+      phat(diem === ds.length ? "thang" : "bam");
+      if (vong === 0) onXong(diem, ds.length);
+    }
+  };
+  const batDau = (moi) => { setDs(moi); setVong((v) => v + 1); setVt(0); setTl(null); setKq([]); setXem(false); phat("bam"); };
+  const phim = (e) => { if (e.key === "Enter" && !xem) { e.preventDefault(); kiem(); } };
+  /* Đang xem lời giải: ô nhập đã khoá nên mất focus, bắt Enter ở cấp cửa sổ. */
+  const tiepRef = useRef(tiep);
+  tiepRef.current = tiep;
+  useEffect(() => {
+    if (!xem) return;
+    const h = (e) => { if (e.key === "Enter") { e.preventDefault(); tiepRef.current(); } };
+    const t = setTimeout(() => window.addEventListener("keydown", h), 0);
+    return () => { clearTimeout(t); window.removeEventListener("keydown", h); };
+  }, [xem]);
+
+  const diem = kq.filter((k) => k.ok).length;
+  const sai = kq.filter((k) => !k.ok);
 
   return (
-    <section className="mt-8 rounded-3xl border border-solid border-line bg-surface p-5">
-      <h2 className="m-0 flex items-center gap-2 text-lg font-extrabold text-ink"><Dumbbell size={18} className="text-primary" /> {tr("Thực hành", "Entraînement", "Practice")}</h2>
-      <ol className="m-0 mt-4 grid list-none gap-5 p-0">
-        {bai.baiTap.map((c, i) => {
-          const ok = cham?.dung[i];
-          return (
-            <li key={i} className={`rounded-2xl border-2 border-solid p-4 ${cham ? (ok ? "border-ok/40 bg-ok-soft/40" : "border-danger/40 bg-danger-soft/40") : "border-line"}`}>
-              <p className="m-0 flex gap-2 text-sm font-bold text-ink"><span className="text-soft">{i + 1}.</span><span lang="fr" className="min-w-0 flex-1">{c.de}</span>
-                {cham && (ok ? <Check size={18} className="shrink-0 text-ok" /> : <XCircle size={18} className="shrink-0 text-danger" />)}</p>
-              {c.loai === "qcm" ? (
-                <div className="mt-2 grid gap-2 sm:grid-cols-3">
-                  {c.pa.map((p, k) => {
-                    const chon = tl[i] === k, laDung = cham && k === c.dap;
-                    return (
-                      <button key={k} type="button" disabled={!!cham} onClick={() => setTl((x) => ({ ...x, [i]: k }))} lang="fr"
-                        className={`rounded-xl border-2 border-solid px-3 py-2 text-left font-sans text-sm transition-colors ${laDung ? "border-ok bg-ok-soft font-bold text-ink" : chon ? (cham ? "border-danger bg-danger-soft text-ink" : "border-primary bg-primary-soft font-bold text-ink") : "border-line bg-surface text-ink"} ${cham ? "" : "cursor-pointer hover:border-primary/50"}`}>
-                        {p}
-                      </button>
-                    );
-                  })}
-                </div>
-              ) : (
-                <div lang="fr" className="mt-2">
-                  <input value={tl[i] ?? ""} disabled={!!cham} onChange={(e) => setTl((x) => ({ ...x, [i]: e.target.value }))}
-                    placeholder={tr("Viết câu trả lời…", "Votre réponse…", "Your answer…")}
-                    className="w-full rounded-xl border border-solid border-line bg-surface2 px-3 py-2.5 font-sans text-sm text-ink outline-none focus:border-primary" />
-                  {cham && !ok && <p className="m-0 mt-1.5 text-sm"><span className="text-soft">{tr("Đáp án", "Réponse", "Answer")}:</span> <strong lang="fr" className="text-ok">{c.dap[0]}</strong>
-                    {gan(c, tl[i]) && <span className="ml-2 text-xs font-bold text-warn">{tr("(gần đúng: kiểm tra lại dấu)", "(presque : vérifiez les accents)", "(close: check the accents)")}</span>}</p>}
-                </div>
-              )}
-              {cham && <p className="m-0 mt-2 text-xs text-soft">{c.giai}</p>}
-            </li>
-          );
+    <section className="mt-8 overflow-hidden rounded-3xl border border-solid border-line bg-surface">
+      <div className="flex items-center gap-3 border-0 border-b border-solid border-line px-5 py-4">
+        <h2 className="m-0 flex items-center gap-2 text-lg font-extrabold text-ink"><Dumbbell size={18} className="text-primary" /> {tr("Thực hành", "Entraînement", "Practice")}</h2>
+        {vong > 0 && <span className="rounded-full bg-warn/15 px-2.5 py-0.5 text-xs font-bold text-warn">{tr("Làm lại", "Reprise", "Retry")}</span>}
+        <span className="ml-auto text-sm font-bold tabular-nums text-soft">{Math.min(vt + 1, ds.length)}/{ds.length}</span>
+      </div>
+      {/* Thanh tiến độ: mỗi câu một đoạn, tô theo kết quả */}
+      <div className="flex gap-1 px-5 pt-4">
+        {ds.map((_, k) => {
+          const r = kq[k];
+          return <span key={k} className={`h-1.5 flex-1 rounded-full ${r ? (r.ok ? "bg-ok" : "bg-danger") : k === vt ? "bg-primary" : "bg-surface2"}`} />;
         })}
-      </ol>
-      {!cham ? (
-        <button type="button" onClick={kiem} disabled={thieu}
-          className="mt-5 inline-flex cursor-pointer items-center gap-2 rounded-full border-0 bg-primary px-6 py-3 font-sans text-sm font-extrabold text-on-primary transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50">
-          <CircleCheck size={16} /> {thieu ? tr("Trả lời hết các câu để kiểm tra", "Répondez à tout pour vérifier", "Answer all to check") : tr("Kiểm tra", "Vérifier", "Check")}
-        </button>
+      </div>
+
+      {!xong ? (
+        <div className="p-5" onKeyDown={phim}>
+          <p className="m-0 text-xs font-extrabold uppercase tracking-wider text-soft">
+            {c.loai === "qcm" ? tr("Chọn đáp án đúng", "Choisissez la bonne réponse", "Choose the right answer") : tr("Điền vào chỗ trống", "Complétez", "Fill in the blank")}
+          </p>
+          <p lang="fr" className="m-0 mt-2 text-xl font-bold leading-snug text-ink">{c.de}</p>
+
+          {c.loai === "qcm" ? (
+            <div className="mt-5 grid gap-2.5">
+              {c.pa.map((p, k) => {
+                const chon = tl === k, laDung = xem && k === c.dap, laSai = xem && chon && !laDung;
+                return (
+                  <button key={k} type="button" disabled={xem} onClick={() => { setTl(k); phat("bam"); }}
+                    className={`flex items-center gap-3 rounded-2xl border-2 border-solid px-4 py-3 text-left font-sans text-base transition-colors ${laDung ? "border-ok bg-ok-soft" : laSai ? "border-danger bg-danger-soft" : chon ? "border-primary bg-primary-soft" : "border-line bg-surface"} ${xem ? "" : "cursor-pointer hover:border-primary/50"}`}>
+                    <span className={`grid h-8 w-8 shrink-0 place-items-center rounded-xl text-sm font-extrabold ${laDung ? "bg-ok text-white" : laSai ? "bg-danger text-white" : chon ? "bg-primary text-on-primary" : "bg-surface2 text-soft"}`}>
+                      {laDung ? <Check size={16} /> : laSai ? <XCircle size={16} /> : String.fromCharCode(65 + k)}
+                    </span>
+                    <span lang="fr" className="font-semibold text-ink">{p}</span>
+                  </button>
+                );
+              })}
+            </div>
+          ) : (
+            <input ref={oNhap} lang="fr" value={tl ?? ""} disabled={xem} onChange={(e) => setTl(e.target.value)}
+              placeholder={tr("Gõ câu trả lời rồi nhấn Enter…", "Tapez votre réponse puis Entrée…", "Type your answer, then Enter…")}
+              className={`mt-5 w-full rounded-2xl border-2 border-solid px-4 py-3.5 font-sans text-lg text-ink outline-none ${xem ? (ok ? "border-ok bg-ok-soft" : "border-danger bg-danger-soft") : "border-line bg-surface2 focus:border-primary"}`} />
+          )}
+
+          {xem && (
+            <div className={`mt-4 rounded-2xl p-4 ${ok ? "bg-ok-soft" : "bg-danger-soft"}`}>
+              <p className={`m-0 flex items-center gap-2 font-extrabold ${ok ? "text-ok" : "text-danger"}`}>
+                {ok ? <CircleCheck size={18} /> : <XCircle size={18} />}
+                {ok ? tr("Chính xác!", "Exact !", "Correct!") : tr("Chưa đúng", "Pas tout à fait", "Not quite")}
+              </p>
+              {!ok && c.loai === "dien" && (
+                <p className="m-0 mt-1.5 text-sm text-ink">{tr("Đáp án", "Réponse", "Answer")}: <strong lang="fr">{c.dap[0]}</strong>
+                  {gan(c, tl) && <span className="ml-2 text-xs font-bold text-warn">{tr("(gần đúng: kiểm tra lại dấu)", "(presque : vérifiez les accents)", "(close: check the accents)")}</span>}</p>
+              )}
+              {c.giai && <p className="m-0 mt-1.5 flex gap-1.5 text-sm text-soft"><Lightbulb size={15} className="mt-0.5 shrink-0" />{c.giai}</p>}
+            </div>
+          )}
+
+          <div className="mt-5 flex justify-end">
+            {!xem ? (
+              <button type="button" onClick={kiem} disabled={!coTl}
+                className="inline-flex cursor-pointer items-center gap-2 rounded-full border-0 bg-primary px-7 py-3 font-sans text-sm font-extrabold text-on-primary transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40">
+                {tr("Kiểm tra", "Vérifier", "Check")}
+              </button>
+            ) : (
+              <button type="button" onClick={tiep}
+                className={`inline-flex cursor-pointer items-center gap-2 rounded-full border-0 px-7 py-3 font-sans text-sm font-extrabold text-white transition-opacity hover:opacity-90 ${ok ? "bg-ok" : "bg-danger"}`}>
+                {vt + 1 >= ds.length ? tr("Xem kết quả", "Voir le résultat", "See results") : tr("Tiếp tục", "Continuer", "Continue")} <ArrowRight size={16} />
+              </button>
+            )}
+          </div>
+        </div>
       ) : (
-        <div className="mt-5 flex flex-wrap items-center gap-3">
-          <span className="rounded-full bg-surface2 px-4 py-2 text-sm font-extrabold tabular-nums text-ink">{cham.diem}/{cham.dung.length}</span>
-          <button type="button" onClick={lamLai}
-            className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-solid border-line bg-surface px-5 py-2.5 font-sans text-sm font-bold text-ink hover:border-primary">
-            <RotateCcw size={15} /> {tr("Làm lại", "Recommencer", "Try again")}
-          </button>
+        <div className="p-5">
+          <div className="flex items-center gap-4">
+            <span className={`grid h-16 w-16 shrink-0 place-items-center rounded-2xl text-xl font-extrabold tabular-nums ${diem === ds.length ? "bg-ok-soft text-ok" : "bg-primary-soft text-primary"}`}>{diem}/{ds.length}</span>
+            <div>
+              <p className="m-0 text-lg font-extrabold text-ink">
+                {diem === ds.length ? tr("Hoàn hảo!", "Parfait !", "Perfect!") : diem >= ds.length / 2 ? tr("Khá lắm!", "Bien joué !", "Well done!") : tr("Cố thêm chút nữa!", "Encore un effort !", "Keep going!")}
+              </p>
+              {vong > 0 && <p className="m-0 mt-0.5 text-xs text-soft">{tr("Lượt làm lại không thay đổi điểm đã lưu.", "La reprise ne modifie pas le score enregistré.", "Retries don't change the saved score.")}</p>}
+            </div>
+          </div>
+          {sai.length > 0 && (
+            <ul className="m-0 mt-5 grid list-none gap-2 p-0">
+              {sai.map((r) => {
+                const q = tatCa[r.i];
+                return (
+                  <li key={r.i} className="rounded-2xl border border-solid border-line p-3 text-sm">
+                    <p lang="fr" className="m-0 font-semibold text-ink">{q.de}</p>
+                    <p className="m-0 mt-1"><span lang="fr" className="text-danger line-through">{q.loai === "qcm" ? q.pa[r.tl] : r.tl}</span> → <strong lang="fr" className="text-ok">{q.loai === "qcm" ? q.pa[q.dap] : q.dap[0]}</strong></p>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+          <div className="mt-5 flex flex-wrap gap-3">
+            {sai.length > 0 && (
+              <button type="button" onClick={() => batDau(sai.map((r) => r.i))}
+                className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border-0 bg-primary px-5 py-2.5 font-sans text-sm font-extrabold text-on-primary hover:opacity-90">
+                <RotateCcw size={15} /> {tr("Làm lại câu sai", "Refaire les erreurs", "Retry mistakes")} ({sai.length})
+              </button>
+            )}
+            <button type="button" onClick={() => batDau(tatCa.map((_, k) => k))}
+              className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-solid border-line bg-surface px-5 py-2.5 font-sans text-sm font-bold text-ink hover:border-primary">
+              <RotateCcw size={15} /> {tr("Làm lại từ đầu", "Tout recommencer", "Start over")}
+            </button>
+          </div>
         </div>
       )}
     </section>
@@ -301,7 +400,7 @@ export default function NguPhap() {
         <section key={cap} className="mt-8">
           <h2 className="m-0 mb-3 flex items-center gap-2 text-lg font-extrabold text-ink">
             <span className={`rounded-xl bg-gradient-to-br ${MAU_CAP[cap]} px-3 py-1 text-sm text-white`}>{tenCap(cap)}</span>
-            {cap === "Nhập môn" && <span className="text-sm font-semibold text-soft">{tr("Bảng chữ cái, phát âm, quy tắc đọc", "Alphabet, sons, règles de lecture", "Alphabet, sounds, reading rules")}</span>}
+            {cap === "A0" && <span className="text-sm font-semibold text-soft">{tr("Bảng chữ cái, phát âm, quy tắc đọc", "Alphabet, sons, règles de lecture", "Alphabet, sounds, reading rules")}</span>}
           </h2>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {TAT_CA.filter((b) => b.cap === cap).map((b) => {
@@ -323,7 +422,7 @@ export default function NguPhap() {
           </div>
         </section>
       ))}
-      <p className="m-0 mt-8 text-center text-xs text-soft">{tr("Các bài A1, B2, C1 đang được soạn.", "Les leçons A1, B2 et C1 sont en préparation.", "A1, B2 and C1 lessons are coming soon.")}</p>
+      <p className="m-0 mt-8 text-center text-xs text-soft">{tr("Các bài B2, C1 đang được soạn.", "Les leçons B2 et C1 sont en préparation.", "B2 and C1 lessons are coming soon.")}</p>
     </div>
   );
 }

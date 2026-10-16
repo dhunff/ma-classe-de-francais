@@ -55,7 +55,7 @@ export const IPA = [
 
 /* Bài học Nhập môn: phần lý thuyết dùng khối đặc biệt (chuCai, dau, ipa). */
 export const BAI_NHAP_MON = [
-  { ma: "nm-chu-cai", cap: "Nhập môn", ten: "Bảng chữ cái và dấu", tenFr: "L'alphabet et les accents",
+  { ma: "nm-chu-cai", cap: "A0", ten: "Bảng chữ cái và dấu", tenFr: "L'alphabet et les accents",
     tomTat: "26 chữ cái, cách đọc tên từng chữ để đánh vần, và 5 loại dấu của tiếng Pháp.",
     phan: [
       { loai: "doan", html: "<p>Tiếng Pháp dùng <strong>26 chữ cái</strong> Latinh như tiếng Anh. Tên chữ cái dùng khi <strong>đánh vần</strong> (tên, email, địa chỉ), nên cần thuộc. Bấm vào từng chữ để nghe tên chữ và một từ ví dụ.</p>" },
@@ -73,7 +73,7 @@ export const BAI_NHAP_MON = [
       { loai: "qcm", de: "Từ nào có dấu tréma?", pa: ["Noël", "fête", "été"], dap: 0, giai: "ë trong Noël: đọc tách « no-en »." },
     ],
     tuKhoa: ["alphabet", "accent", "phonétique"] },
-  { ma: "nm-am", cap: "Nhập môn", ten: "Âm tiếng Pháp (IPA)", tenFr: "Les sons du français",
+  { ma: "nm-am", cap: "A0", ten: "Âm tiếng Pháp (IPA)", tenFr: "Les sons du français",
     tomTat: "Bảng ký hiệu phiên âm quốc tế (IPA) cho mọi âm tiếng Pháp: nguyên âm miệng, nguyên âm mũi, bán nguyên âm, phụ âm.",
     phan: [
       { loai: "doan", html: "<p>Từ điển ghi cách đọc bằng <strong>ký hiệu IPA</strong> đặt giữa hai dấu gạch chéo, ví dụ <em>rue</em> /ʁy/. Biết IPA thì tra từ nào cũng đọc được. Tiếng Pháp có khoảng <strong>36 âm</strong>. Bấm vào từng dòng để nghe từ ví dụ.</p>" },
@@ -89,7 +89,7 @@ export const BAI_NHAP_MON = [
       { loai: "qcm", de: "Từ nào có âm /ø/ ?", pa: ["deux", "dos", "doux"], dap: 0, giai: "deux /dø/; dos /do/; doux /du/." },
     ],
     tuKhoa: ["phonétique", "prononciation", "sons"] },
-  { ma: "nm-quy-tac-doc", cap: "Nhập môn", ten: "Quy tắc đọc: chữ câm và nối âm", tenFr: "Lettres muettes, liaison, élision",
+  { ma: "nm-quy-tac-doc", cap: "A0", ten: "Quy tắc đọc: chữ câm và nối âm", tenFr: "Lettres muettes, liaison, élision",
     tomTat: "Chữ cuối thường câm, e câm, nối âm (liaison), nối vần (enchaînement) và lược âm (élision).",
     phan: [
       { loai: "doan", html: "<h3>1. Phụ âm cuối thường câm</h3><p>Phần lớn phụ âm ở cuối từ <strong>không đọc</strong>: petit /pəti/, grand /ɡʁɑ̃/, vous /vu/, ils parlent /il paʁl/ (-ent của động từ câm). Ngoại lệ hay gặp: <strong>c, r, f, l</strong> thường được đọc (avec, mer, neuf, sel). Mẹo nhớ: <strong>CaReFuL</strong>.</p><h3>2. E câm</h3><p>e ở cuối từ không đọc: table /tabl/, Marie /maʁi/. Nhưng nó làm phụ âm trước nó được đọc: petit /pəti/ nhưng petite /pətit/.</p>" },
