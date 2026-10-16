@@ -18,8 +18,8 @@ import { tr } from "../../shared/i18n.jsx";
  * Mỗi nút giữ trạng thái « đang gửi » riêng, khoá lại trong lúc chờ: bấm liên
  * tiếp không gửi hai lời gọi. Hỏng thì tải lại danh sách từ máy chủ thay vì
  * đoán trạng thái. */
-export default function NetworkManager({ t, dong, onDoi }) {
-  const [tab, setTab] = useState("followers");
+export default function NetworkManager({ t, dong, onDoi, tabDau }) {
+  const [tab, setTab] = useState(tabDau ?? "followers");
   const [ds, setDs] = useState({ followers: undefined, following: undefined });
   const [dangGui, setDangGui] = useState({});
   const [loi, setLoi] = useState("");

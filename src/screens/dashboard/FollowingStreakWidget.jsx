@@ -3,7 +3,8 @@ import { useLocation } from "react-router-dom";
 import { Flame, UserPlus, X, Loader2, Users, UserMinus, Trophy, Star } from "lucide-react";
 import { AvatarOnline, NhanOnline } from "./ChamOnline.jsx";
 import { Avatar } from "../../shared/avatars.jsx";
-import { docDangTheoDoi, theoDoi, boTheoDoi, docBangXepHang } from "../../shared/xp.js";
+import { docDangTheoDoi, docNguoiTheoDoiToi, theoDoi, boTheoDoi, docBangXepHang } from "../../shared/xp.js";
+import { tr } from "../../shared/i18n.jsx";
 import NetworkManager from "./NetworkManager.jsx";
 
 /* « Đang theo dõi » — trang chủ học sinh (26/09).
@@ -24,7 +25,7 @@ export default function FollowingStreakWidget({ t, fixture, bxhFixture }) {
   const viTriTB = useLocation();
   useEffect(() => {
     if (!viTriTB.state?.moMang) return;
-    setMoMang(true);
+    setMoMang("followers");
     try { window.history.replaceState({ ...window.history.state, usr: null }, ""); } catch { /* bỏ qua */ }
   }, [viTriTB.state]);
   /* Tab « Xếp hạng XP » (26/09): mình + người mình theo dõi, hạng tính ở máy chủ. */
@@ -37,9 +38,12 @@ export default function FollowingStreakWidget({ t, fixture, bxhFixture }) {
     docBangXepHang().then(setBxh);
   }, [tab, ds, bxhFixture]);
 
+  /* Số người theo dõi mình (16/10): đọc cùng lúc với danh sách đang theo dõi. */
+  const [soNguoiTD, setSoNguoiTD] = useState(undefined);
   const nap = () => {
-    if (fixture !== undefined) { setDs(fixture); return; }
+    if (fixture !== undefined) { setDs(fixture); setSoNguoiTD(null); return; }
     docDangTheoDoi().then(setDs);
+    docNguoiTheoDoiToi().then((x) => setSoNguoiTD(Array.isArray(x) ? x.length : null));
   };
   useEffect(nap, [fixture]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -65,6 +69,17 @@ export default function FollowingStreakWidget({ t, fixture, bxhFixture }) {
         </button>
       </div>
 
+      {/* Hai con số (16/10): bấm vào mở bảng Mạng lưới đúng tab. */}
+      <div className="mt-3 grid grid-cols-2 gap-2">
+        {[["followers", tr("Người theo dõi", "Abonnés", "Followers"), soNguoiTD], ["following", tr("Đang theo dõi", "Abonnements", "Following"), Array.isArray(ds) ? ds.length : null]].map(([k, l, so]) => (
+          <button key={k} type="button" disabled={fixture !== undefined} onClick={() => setMoMang(k)}
+            className="flex cursor-pointer flex-col items-start rounded-2xl border-0 bg-surface2 px-3 py-2 text-left font-sans transition-colors hover:bg-primary-soft disabled:cursor-default">
+            <span className="text-xl font-extrabold tabular-nums text-ink">{so == null ? "–" : so}</span>
+            <span className="text-xs font-semibold text-soft">{l}</span>
+          </button>
+        ))}
+      </div>
+
       <div role="tablist" className="mt-3 flex gap-1 rounded-full bg-surface2 p-1">
         {[["hom_nay", t("follow.tab_today"), Flame], ["xep_hang", t("follow.tab_rank"), Trophy]].map(([k, l, Icon]) => (
           <button key={k} type="button" role="tab" aria-selected={tab === k} onClick={() => setTab(k)}
@@ -79,7 +94,7 @@ export default function FollowingStreakWidget({ t, fixture, bxhFixture }) {
           {bxh === undefined ? <p className="m-0 text-sm text-soft">{t("loading")}</p>
             : bxh === null ? <p className="m-0 text-sm text-danger">{t("follow.error")}</p>
             : (
-              <ol className="m-0 flex list-none flex-col gap-1 p-0">
+              <ol className="no-scrollbar m-0 flex max-h-[22rem] list-none flex-col gap-1 overflow-y-auto p-0">
                 {bxh.map((n) => (
                   <li key={n.id} className={`flex items-center gap-3 rounded-2xl px-2 py-2 ${n.la_toi ? "bg-primary-soft" : ""}`}>
                     <span className={`w-6 text-center text-sm font-extrabold tabular-nums ${n.hang === 1 ? "text-amber-500" : "text-soft"}`}>{n.hang}</span>
@@ -108,7 +123,7 @@ export default function FollowingStreakWidget({ t, fixture, bxhFixture }) {
             <p className="m-0 text-sm text-soft">{t("follow.empty")}</p>
           </div>
         ) : (
-          <ul className="m-0 flex list-none flex-col gap-1 p-0">
+          <ul className="m-0 flex max-h-[22rem] list-none flex-col gap-1 overflow-y-auto p-0 [scrollbar-width:thin]">
             {ds.map((n) => (
               <li key={n.id} className="group flex items-center gap-3 rounded-2xl px-2 py-2 transition-colors hover:bg-surface2">
                 <AvatarOnline n={n} size={36} />
@@ -134,7 +149,7 @@ export default function FollowingStreakWidget({ t, fixture, bxhFixture }) {
       </div>
       )}
 
-      {moMang && <NetworkManager t={t} dong={() => setMoMang(false)} onDoi={nap} />}
+      {moMang && <NetworkManager t={t} tabDau={typeof moMang === "string" ? moMang : undefined} dong={() => setMoMang(false)} onDoi={nap} />}
       {mo && <HopTheoDoi t={t} dong={() => setMo(false)} xong={() => { setMo(false); nap(); }} />}
     </section>
   );
