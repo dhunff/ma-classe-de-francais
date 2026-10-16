@@ -1,21 +1,14 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, ArrowRight, BookA, Check, XCircle, Volume2, AlertTriangle, Lightbulb, RotateCcw, Dumbbell, CircleCheck } from "lucide-react";
+import { ArrowLeft, ArrowRight, BookA, Check, XCircle, Volume2, AlertTriangle, Lightbulb, RotateCcw, Dumbbell, CircleCheck, Lock, LogIn } from "lucide-react";
 import { supabase } from "../../storageShim.js";
 import { tr } from "../../shared/i18n.jsx";
 import { phat } from "../../shared/amThanh.js";
 import { Leon } from "../../shared/leon.jsx";
 import { usePracticeStore } from "../dashboard/PracticeRail.jsx";
-import { CHU_CAI, DAU, IPA, BAI_NHAP_MON } from "../../content/nguPhap/nhapMon.js";
-import { BAI_A1 } from "../../content/nguPhap/a1.js";
-import { BAI_A2 } from "../../content/nguPhap/a2.js";
-import { BAI_B1 } from "../../content/nguPhap/b1.js";
-import { BAI_B2 } from "../../content/nguPhap/b2.js";
-import { BAI_C1 } from "../../content/nguPhap/c1.js";
-import { CAU_TRUC } from "../../content/nguPhap/cauTruc.js";
-import { BO_SUNG_A0_A1 } from "../../content/nguPhap/boSungA0A1.js";
-import { BO_SUNG_A2_B1 } from "../../content/nguPhap/boSungA2B1.js";
-const BO_SUNG = { ...BO_SUNG_A0_A1, ...BO_SUNG_A2_B1 };
+import { CHU_CAI, DAU, IPA } from "../../content/nguPhap/nhapMon.js";
+import { TAT_CA, CAP, chiaPhan, BAI_CONG_KHAI } from "../../content/nguPhap/index.js";
+import { ngayHomNay } from "../../shared/hoatDong.js";
 import AM from "../../content/nguPhap/amThanh.json";
 
 /* « Học ngữ pháp » (15/10, theo chủ dự án): học LÝ THUYẾT trước rồi mới luyện.
@@ -25,15 +18,25 @@ import AM from "../../content/nguPhap/amThanh.json";
  * chấp nhận được (học sinh tự học). Kết quả lưu qua RPC ghi_bai_hoc (migration 148).
  * Âm thanh Nhập môn: giọng tổng hợp, tạo bằng scripts/ngu-phap/tao-am.mjs. */
 
-/* A2 (16/10): 15 bài mới thay 5 bài A2 cũ trong a2b1.js; B1 vẫn lấy từ a2b1.js. */
-/* B1 (16/10): 16 bài mới (b1.js) thay 5 bài B1 cũ; a2b1.js không còn được dùng. */
-const TAT_CA = [...BAI_NHAP_MON, ...BAI_A1, ...BAI_A2, ...BAI_B1, ...BAI_B2, ...BAI_C1];
-const CAP = ["A0", "A1", "A2", "B1", "B2", "C1"];
 const MAU_CAP = { A0: "from-emerald-500 to-teal-600", A1: "from-amber-500 to-orange-600", A2: "from-sky-500 to-blue-600", B1: "from-violet-500 to-indigo-600", B2: "from-rose-500 to-pink-600", C1: "from-slate-600 to-slate-800" };
 const tenCap = (c) => (c === "A0" ? tr("A0 · Nhập môn", "A0 · Débutant", "A0 · Beginner") : c);
 
 const chuan = (s) => String(s ?? "").normalize("NFC").replace(/[’`´]/g, "'").replace(/\s+/g, " ").trim().toLowerCase();
 const boDau = (s) => chuan(s).normalize("NFD").replace(/[̀-ͯ]/g, "");
+/* Chấm linh hoạt (16/10): bỏ qua khác biệt dấu câu cuối câu, khoảng trắng quanh dấu
+ * câu, ngoặc kép, gạch nối thừa. Dấu thanh (é, è…) VẪN tính. */
+const chuanCham = (s) => chuan(s).replace(/[«»"“”]/g, "").replace(/\s*([?!:;,.])\s*/g, "$1 ").replace(/[.!?…\s]+$/, "").replace(/\s+/g, " ").trim();
+/* Khoảng cách sửa (Levenshtein) để báo « gần đúng: sai một ký tự ». */
+const khoangCach = (a, b) => {
+  if (Math.abs(a.length - b.length) > 2) return 9;
+  let truoc = Array.from({ length: b.length + 1 }, (_, j) => j);
+  for (let i = 1; i <= a.length; i++) {
+    const nay = [i];
+    for (let j = 1; j <= b.length; j++) nay[j] = Math.min(truoc[j] + 1, nay[j - 1] + 1, truoc[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+    truoc = nay;
+  }
+  return truoc[b.length];
+};
 
 let amDangPhat = null;
 const phatAm = (khoa) => {
@@ -42,19 +45,7 @@ const phatAm = (khoa) => {
   try { amDangPhat?.pause(); amDangPhat = new Audio(url); amDangPhat.play().catch(() => {}); } catch { /* bỏ qua */ }
 };
 
-/* Chia bài thành các phần a, b, c… (16/10, theo chủ dự án). Cấu trúc soạn TAY ở
- * content/nguPhap/cauTruc.js: mỗi phần có lời giải thích riêng, khối lý thuyết và
- * đúng những câu luyện thuộc về nó (+ câu bổ sung « them »). */
-function chiaPhan(bai) {
-  const ct = bai.cauTruc ?? CAU_TRUC[bai.ma] ?? [{ ten: bai.ten, khoi: bai.phan.map((_, i) => i), cau: bai.baiTap.map((_, i) => i) }];
-  /* boSung*.js: giải thích theo khung sư phạm + câu luyện thêm nhiều dạng, theo thứ tự phần. */
-  const bs = BO_SUNG[bai.ma] ?? [];
-  return ct.map((p, j) => ({
-    chu: String.fromCharCode(97 + j), ten: p.ten, giai: bs[j]?.giai ?? p.giai,
-    khoi: p.khoi.map((i) => bai.phan[i]),
-    cau: [...p.cau.map((i) => bai.baiTap[i]), ...(p.them ?? []), ...(bs[j]?.them ?? [])],
-  }));
-}
+/* Danh sách bài, chia phần: content/nguPhap/index.js. */
 /* Đảo thứ tự phương án trắc nghiệm mỗi lượt: đa số câu soạn với đáp án ở vị trí A. */
 /* Dạng bài (16/10): qcm, dien, vf (đúng/sai), sap (sắp xếp từ thành câu), sua (tìm và
  * sửa lỗi). vf quy về qcm hai phương án; sua là dien có câu sai điền sẵn; sap xáo ô từ. */
@@ -178,7 +169,7 @@ function Khoi({ k }) {
  * Mỗi màn MỘT câu: chọn/gõ → « Kiểm tra » → báo đúng/sai ngay kèm lời giải →
  * « Tiếp tục ». Hết lượt thì tổng kết + làm lại câu sai. Chỉ lượt ĐẦU, làm đủ
  * mọi câu mới gọi onXong (lượt làm lại câu sai không ghi điểm). */
-function ThucHanh({ bai, cau, tieuDe, onXong }) {
+export function ThucHanh({ bai, cau, tieuDe, onXong }) {
   const tatCa = useMemo(() => tronPa(cau ?? bai.baiTap), [cau, bai]);
   const [ds, setDs] = useState(() => tatCa.map((_, i) => i));   // chỉ số câu trong lượt này
   const [vong, setVong] = useState(0);                          // 0 = lượt đầu
@@ -187,11 +178,19 @@ function ThucHanh({ bai, cau, tieuDe, onXong }) {
   const [kq, setKq] = useState([]);                             // [{ i, ok, tl }]
   const [xem, setXem] = useState(false);
   const oNhap = useRef(null);
+  const [baoLoi, setBaoLoi] = useState(null);                   // null | { ghiChu, trangThai }
+  const guiBaoLoi = async () => {
+    setBaoLoi((x) => ({ ...x, trangThai: "dang" }));
+    const { data, error } = await supabase.rpc("bao_loi_ngu_phap", { p_ma: c.__ma ?? bai?.ma, p_cau: c.de, p_ghi_chu: baoLoi?.ghiChu ?? "" });
+    setBaoLoi((x) => ({ ...x, trangThai: data?.ok ? "xong" : String(error?.message ?? "").includes("HET_LUOT") ? "het" : "loi" }));
+  };
   const ghepSap = (c, v) => (v ?? []).map((k) => c.tu[k]).join(" ");
   const dungCau = (c, v) => (c.loai === "qcm" ? v === c.dap
-    : c.loai === "sap" ? c.dap.some((d) => chuan(d) === chuan(ghepSap(c, v)))
-    : v != null && c.dap.some((d) => chuan(d) === chuan(v)));
-  const gan = (c, v) => (c.loai === "dien" && v != null && !dungCau(c, v) && c.dap.some((d) => boDau(d) === boDau(v)));
+    : c.loai === "sap" ? c.dap.some((d) => chuanCham(d) === chuanCham(ghepSap(c, v)))
+    : v != null && c.dap.some((d) => chuanCham(d) === chuanCham(v)));
+  /* « gần đúng »: chỉ sai dấu thanh, hoặc câu dài sai đúng một ký tự. Vẫn tính SAI. */
+  const gan = (c, v) => (c.loai === "dien" && v != null && !dungCau(c, v) && c.dap.some((d) => chuanCham(boDau(d)) === chuanCham(boDau(v))));
+  const motKyTu = (c, v) => (c.loai === "dien" && v != null && !dungCau(c, v) && !gan(c, v) && c.dap.some((d) => chuanCham(d).length >= 8 && khoangCach(chuanCham(d), chuanCham(v)) === 1));
 
   const xong = vt >= ds.length;
   const i = ds[vt];
@@ -211,9 +210,12 @@ function ThucHanh({ bai, cau, tieuDe, onXong }) {
     setXem(true);
     setKq((x) => [...x, { i, ok: d, tl }]);
     phat(d ? "dung" : "sai");
+    /* Ôn câu sai (149): sai → vào danh sách ôn; đúng → giãn lịch nếu đã có. Chưa
+     * đăng nhập (trang công khai) thì RPC từ chối, bỏ qua im lặng. */
+    supabase.rpc("ghi_cau_ngu_phap", { p_ma: c.__ma ?? bai?.ma, p_cau: c.de, p_dung: d, p_ngay: ngayHomNay() }).then(() => {}, () => {});
   };
   const tiep = () => {
-    setXem(false); setTl(null);
+    setXem(false); setTl(null); setBaoLoi(null);
     const sau = vt + 1;
     setVt(sau);
     if (sau >= ds.length) {
@@ -229,7 +231,7 @@ function ThucHanh({ bai, cau, tieuDe, onXong }) {
   tiepRef.current = tiep;
   useEffect(() => {
     if (!xem) return;
-    const h = (e) => { if (e.key === "Enter") { e.preventDefault(); tiepRef.current(); } };
+    const h = (e) => { if (e.key === "Enter" && e.target?.tagName !== "TEXTAREA") { e.preventDefault(); tiepRef.current(); } };
     const t = setTimeout(() => window.addEventListener("keydown", h), 0);
     return () => { clearTimeout(t); window.removeEventListener("keydown", h); };
   }, [xem]);
@@ -311,9 +313,32 @@ function ThucHanh({ bai, cau, tieuDe, onXong }) {
               </p>
               {!ok && c.loai !== "qcm" && (
                 <p className="m-0 mt-1.5 text-sm text-ink">{tr("Đáp án", "Réponse", "Answer")}: <strong lang="fr">{c.dap[0]}</strong>
-                  {gan(c, tl) && <span className="ml-2 text-xs font-bold text-warn">{tr("(gần đúng: kiểm tra lại dấu)", "(presque : vérifiez les accents)", "(close: check the accents)")}</span>}</p>
+                  {gan(c, tl) && <span className="ml-2 text-xs font-bold text-warn">{tr("(gần đúng: kiểm tra lại dấu)", "(presque : vérifiez les accents)", "(close: check the accents)")}</span>}
+                  {motKyTu(c, tl) && <span className="ml-2 text-xs font-bold text-warn">{tr("(gần đúng: sai một ký tự)", "(presque : une lettre de différence)", "(close: one letter off)")}</span>}</p>
               )}
               {c.giai && <p className="m-0 mt-1.5 flex gap-1.5 text-sm text-soft"><Lightbulb size={15} className="mt-0.5 shrink-0" />{c.giai}</p>}
+              {/* Báo lỗi câu (149): giáo viên xem ở /professeur/bao-loi-ngu-phap. */}
+              {baoLoi?.trangThai === "xong" ? (
+                <p className="m-0 mt-2 text-xs font-bold text-ok">{tr("Đã gửi báo lỗi. Cảm ơn bạn!", "Signalement envoyé. Merci !", "Report sent. Thank you!")}</p>
+              ) : baoLoi ? (
+                <div className="mt-3 grid gap-2">
+                  <textarea value={baoLoi.ghiChu ?? ""} maxLength={1000} rows={2} onChange={(e) => setBaoLoi((x) => ({ ...x, ghiChu: e.target.value }))}
+                    placeholder={tr("Câu này sai ở đâu? (đề, đáp án, lời giải…)", "Qu'est-ce qui ne va pas ? (énoncé, réponse, explication…)", "What is wrong? (question, answer, explanation…)")}
+                    className="w-full resize-y rounded-xl border border-solid border-line bg-surface px-3 py-2 font-sans text-sm text-ink outline-none focus:border-primary" />
+                  <div className="flex flex-wrap items-center gap-2">
+                    <button type="button" onClick={guiBaoLoi} disabled={baoLoi.trangThai === "dang"}
+                      className="cursor-pointer rounded-full border-0 bg-primary px-4 py-1.5 font-sans text-xs font-bold text-on-primary disabled:opacity-50">{tr("Gửi báo lỗi", "Envoyer", "Send report")}</button>
+                    <button type="button" onClick={() => setBaoLoi(null)} className="cursor-pointer rounded-full border-0 bg-transparent px-2 py-1.5 font-sans text-xs font-bold text-soft">{tr("Huỷ", "Annuler", "Cancel")}</button>
+                    {baoLoi.trangThai === "loi" && <span className="text-xs font-bold text-danger">{tr("Không gửi được. Bạn cần đăng nhập.", "Échec de l'envoi. Connexion requise.", "Could not send. Please sign in.")}</span>}
+                    {baoLoi.trangThai === "het" && <span className="text-xs font-bold text-danger">{tr("Bạn đã gửi 20 báo lỗi trong 24 giờ.", "20 signalements en 24 h atteints.", "20 reports in 24 h reached.")}</span>}
+                  </div>
+                </div>
+              ) : (
+                <button type="button" onClick={() => setBaoLoi({ ghiChu: "" })}
+                  className="mt-2 inline-flex cursor-pointer items-center gap-1 border-0 bg-transparent p-0 font-sans text-xs font-semibold text-soft underline hover:text-ink">
+                  <AlertTriangle size={12} /> {tr("Báo lỗi câu này", "Signaler une erreur", "Report a mistake")}
+                </button>
+              )}
             </div>
           )}
 
@@ -400,7 +425,7 @@ function LuyenThem({ bai }) {
   );
 }
 
-function TrangBai({ bai, ketQua, onGhi }) {
+function TrangBai({ bai, ketQua, onGhi, goc, congKhai }) {
   const i = TAT_CA.findIndex((b) => b.ma === bai.ma);
   const sau = TAT_CA[i + 1];
   const dau = useRef(null);
@@ -427,7 +452,7 @@ function TrangBai({ bai, ketQua, onGhi }) {
 
   return (
     <div ref={dau} className="mx-auto max-w-6xl px-4 pb-24 pt-6">
-      <Link to="/etudiant/ngu-phap" className="inline-flex items-center gap-1.5 text-sm font-semibold text-soft no-underline hover:text-ink">
+      <Link to={goc} className="inline-flex items-center gap-1.5 text-sm font-semibold text-soft no-underline hover:text-ink">
         <ArrowLeft size={15} /> {tr("Tất cả bài học", "Toutes les leçons", "All lessons")}
       </Link>
       <header className={`mt-4 rounded-3xl bg-gradient-to-br ${MAU_CAP[bai.cap]} p-6 text-white shadow-lg`}>
@@ -500,9 +525,9 @@ function TrangBai({ bai, ketQua, onGhi }) {
           <div id="phan-on-tap" data-phan="on" className="mt-10 scroll-mt-16 lg:scroll-mt-4">
             <ThucHanh key={bai.ma} bai={bai} tieuDe={tr("Ôn tập cả bài", "Révision de la leçon", "Lesson review")} onXong={onGhi} />
           </div>
-          <LuyenThem bai={bai} />
+          {!congKhai && <LuyenThem bai={bai} />}
           {sau && (
-            <Link to={`/etudiant/ngu-phap/${sau.ma}`} className="mt-8 flex items-center justify-between gap-3 rounded-2xl bg-primary-soft p-4 text-primary no-underline hover:opacity-90">
+            <Link to={`${goc}/${sau.ma}`} className="mt-8 flex items-center justify-between gap-3 rounded-2xl bg-primary-soft p-4 text-primary no-underline hover:opacity-90">
               <span><span className="block text-xs font-bold uppercase tracking-wide">{tr("Bài tiếp theo", "Leçon suivante", "Next lesson")}</span><span className="block font-extrabold">{sau.ten}</span></span>
               <ArrowRight size={18} />
             </Link>
@@ -513,7 +538,38 @@ function TrangBai({ bai, ketQua, onGhi }) {
   );
 }
 
-export default function NguPhap() {
+/* Khung trang công khai (16/10): khách chưa đăng nhập đọc được 2–3 bài đầu mỗi trình độ
+ * (BAI_CONG_KHAI) ở /ngu-phap, ngoài vỏ app. Bài khác hiện khoá + nút đăng nhập. */
+function KhungCongKhai({ children }) {
+  return (
+    <div className="min-h-screen bg-bg">
+      <div className="sticky top-0 z-20 border-0 border-b border-solid border-line bg-surface/90 backdrop-blur">
+        <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-3">
+          <Link to="/gioi-thieu" className="flex items-center gap-2 text-lg font-extrabold text-primary no-underline"><Leon cam="dau" size={32} /> FRACILE</Link>
+          <Link to="/ngu-phap" className="text-sm font-bold text-ink no-underline">{tr("Ngữ pháp tiếng Pháp", "Grammaire française", "French grammar")}</Link>
+          <Link to="/login" className="ml-auto inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-sm font-bold text-on-primary no-underline hover:opacity-90"><LogIn size={15} /> {tr("Đăng nhập", "Connexion", "Sign in")}</Link>
+        </div>
+      </div>
+      {children}
+    </div>
+  );
+}
+function BaiKhoa({ bai }) {
+  return (
+    <div className="mx-auto max-w-xl px-4 py-16 text-center">
+      <span className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-primary-soft text-primary"><Lock size={26} /></span>
+      <h1 className="m-0 mt-4 text-2xl font-extrabold text-ink">{bai.cap} · {bai.ten}</h1>
+      <p className="m-0 mt-2 text-sm text-soft">{tr(`Bài này dành cho tài khoản FRACILE. Đăng nhập miễn phí để học toàn bộ ${TAT_CA.length} bài, luyện tập và lưu tiến độ.`, `Cette leçon est réservée aux comptes FRACILE. Connectez-vous gratuitement pour accéder aux ${TAT_CA.length} leçons.`, `This lesson is for FRACILE accounts. Sign in for free to access all ${TAT_CA.length} lessons.`)}</p>
+      <div className="mt-6 flex flex-wrap justify-center gap-3">
+        <Link to="/login" className="inline-flex items-center gap-1.5 rounded-full bg-primary px-5 py-2.5 text-sm font-bold text-on-primary no-underline"><LogIn size={15} /> {tr("Đăng nhập", "Connexion", "Sign in")}</Link>
+        <Link to="/ngu-phap" className="inline-flex items-center gap-1.5 rounded-full border border-solid border-line bg-surface px-5 py-2.5 text-sm font-bold text-ink no-underline">{tr("Xem bài mở miễn phí", "Leçons gratuites", "Free lessons")}</Link>
+      </div>
+    </div>
+  );
+}
+
+export default function NguPhap({ congKhai = false }) {
+  const goc = congKhai ? "/ngu-phap" : "/etudiant/ngu-phap";
   const { ma } = useParams();
   const [ketQua, setKetQua] = useState({});
   useEffect(() => {
@@ -530,10 +586,14 @@ export default function NguPhap() {
   };
 
   const bai = ma ? TAT_CA.find((b) => b.ma === ma) : null;
-  if (ma && bai) return <TrangBai bai={bai} ketQua={ketQua[bai.ma]} onGhi={(d, t) => ghi(bai.ma, d, t)} />;
+  const moDuoc = (b) => !congKhai || BAI_CONG_KHAI.has(b.ma);
+  if (ma && bai) {
+    const trang = moDuoc(bai) ? <TrangBai bai={bai} ketQua={ketQua[bai.ma]} onGhi={(d, t) => ghi(bai.ma, d, t)} goc={goc} congKhai={congKhai} /> : <BaiKhoa bai={bai} />;
+    return congKhai ? <KhungCongKhai>{trang}</KhungCongKhai> : trang;
+  }
 
   const daHoc = TAT_CA.filter((b) => ketQua[b.ma]).length;
-  return (
+  const danhSach = (
     <div className="mx-auto max-w-5xl px-4 pb-24 pt-6">
       <header className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-blue-600 via-primary to-indigo-600 p-6 text-white shadow-[0_20px_50px_rgba(37,99,235,0.3)]">
         <div className="relative flex items-center gap-4">
@@ -542,7 +602,9 @@ export default function NguPhap() {
             <p className="m-0 flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-[0.2em] text-white/80"><BookA size={14} /> {tr("Học trước, luyện sau", "Apprendre puis pratiquer", "Learn, then practise")}</p>
             <h1 className="m-0 mt-1 text-3xl font-extrabold tracking-tight">{tr("Học ngữ pháp", "Grammaire", "Grammar")}</h1>
             <p className="m-0 mt-1 text-sm text-white/85">{tr("Mỗi bài: lý thuyết dễ hiểu, ví dụ, lỗi hay mắc và vài câu thực hành ngay bên dưới.", "Chaque leçon : explications claires, exemples, erreurs fréquentes et exercices.", "Each lesson: clear explanations, examples, common mistakes and quick practice.")}</p>
-            <p className="m-0 mt-3 inline-flex rounded-full bg-white/20 px-3 py-1 text-xs font-extrabold tabular-nums">{tr("Đã học", "Leçons faites", "Done")}: {daHoc}/{TAT_CA.length}</p>
+            {congKhai
+              ? <p className="m-0 mt-3 inline-flex rounded-full bg-white/20 px-3 py-1 text-xs font-extrabold">{tr(`${BAI_CONG_KHAI.size} bài học miễn phí, không cần đăng nhập`, `${BAI_CONG_KHAI.size} leçons gratuites, sans compte`, `${BAI_CONG_KHAI.size} free lessons, no account needed`)}</p>
+              : <p className="m-0 mt-3 inline-flex rounded-full bg-white/20 px-3 py-1 text-xs font-extrabold tabular-nums">{tr("Đã học", "Leçons faites", "Done")}: {daHoc}/{TAT_CA.length}</p>}
           </div>
         </div>
       </header>
@@ -555,14 +617,17 @@ export default function NguPhap() {
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {TAT_CA.filter((b) => b.cap === cap).map((b, stt) => {
               const kq = ketQua[b.ma];
+              const khoa = !moDuoc(b);
               return (
-                <Link key={b.ma} to={`/etudiant/ngu-phap/${b.ma}`}
+                <Link key={b.ma} to={`${goc}/${b.ma}`}
                   className="group flex flex-col gap-2 rounded-2xl border border-solid border-line bg-surface p-4 no-underline transition-all hover:-translate-y-0.5 hover:border-primary hover:shadow-md">
                   <span className="flex items-start gap-2.5"><span className={`grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-gradient-to-br ${MAU_CAP[b.cap]} text-sm font-extrabold tabular-nums text-white`}>{stt + 1}</span><span className="text-base font-extrabold text-ink">{b.ten}</span></span>
                   <span lang="fr" className="text-xs italic text-soft">{b.tenFr}</span>
                   <span className="line-clamp-2 text-sm text-soft">{b.tomTat}</span>
                   <span className="mt-auto flex items-center justify-between pt-1">
-                    {kq ? <span className="inline-flex items-center gap-1 rounded-full bg-ok-soft px-2.5 py-0.5 text-[11px] font-extrabold text-ok"><Check size={12} /> {kq.diem}/{kq.tong}</span>
+                    {khoa ? <span className="inline-flex items-center gap-1 rounded-full bg-surface2 px-2.5 py-0.5 text-[11px] font-bold text-soft"><Lock size={11} /> {tr("Cần đăng nhập", "Compte requis", "Sign-in required")}</span>
+                      : congKhai ? <span className="rounded-full bg-ok-soft px-2.5 py-0.5 text-[11px] font-extrabold text-ok">{tr("Miễn phí", "Gratuit", "Free")}</span>
+                      : kq ? <span className="inline-flex items-center gap-1 rounded-full bg-ok-soft px-2.5 py-0.5 text-[11px] font-extrabold text-ok"><Check size={12} /> {kq.diem}/{kq.tong}</span>
                       : <span className="rounded-full bg-surface2 px-2.5 py-0.5 text-[11px] font-bold text-soft">{tr("Chưa học", "À découvrir", "Not started")}</span>}
                     <ArrowRight size={15} className="text-primary transition-transform group-hover:translate-x-0.5" />
                   </span>
@@ -574,4 +639,5 @@ export default function NguPhap() {
       ))}
     </div>
   );
+  return congKhai ? <KhungCongKhai>{danhSach}</KhungCongKhai> : danhSach;
 }

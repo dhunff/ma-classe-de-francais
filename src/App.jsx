@@ -21,6 +21,7 @@ import LoTrinh from './screens/student/LoTrinh.jsx'
 import ThachDau from './screens/student/ThachDau.jsx'
 import DatNeo from './screens/teacher/DatNeo.jsx'
 import DuyetNhap from './screens/teacher/DuyetNhap.jsx'
+import BaoLoiNguPhap from './screens/teacher/BaoLoiNguPhap.jsx'
 import SoanBoThe from './screens/teacher/SoanBoThe.jsx'
 import LandingPage from './screens/public/LandingPage.jsx'
 import { TrangFAQ, TrangDieuKhoan, TrangBaoMat } from './screens/public/TrangPhapLy.jsx'
@@ -288,6 +289,7 @@ function AppInner() {
               <Route path="/professeur/thong-bao" element={<GuiThongBao />} />
               <Route path="/professeur/bo-the" element={<SoanBoThe />} />
               <Route path="/professeur/duyet-nhap" element={<DuyetNhap />} />
+              <Route path="/professeur/bao-loi-ngu-phap" element={<BaoLoiNguPhap />} />
 
               <Route path="/professeur/*" element={<Navigate to="/professeur/dashboard" replace />} />
             </Route>
@@ -389,6 +391,10 @@ function AppInner() {
             <Route path="/faq" element={<TrangFAQ />} />
             <Route path="/dieu-khoan" element={<TrangDieuKhoan />} />
             <Route path="/bao-mat" element={<TrangBaoMat />} />
+            {/* Ngữ pháp công khai (16/10): 2–3 bài đầu mỗi trình độ đọc không cần đăng
+                nhập, bài khác hiện khoá. Kênh thu hút từ tìm kiếm như Vivoire. */}
+            <Route path="/ngu-phap" element={<NguPhap congKhai />} />
+            <Route path="/ngu-phap/:ma" element={<NguPhap congKhai />} />
 
             <Route path="*" element={
               <Navigate to={session ? (ROLE_HOME[session.role] || "/login") : "/gioi-thieu"} replace />

@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Headphones, BookOpen, PenLine, Puzzle, Languages, Mic, ArrowRight, Map, Swords, Layers, Timer, TrendingUp } from "lucide-react";
+import { Headphones, BookOpen, PenLine, Puzzle, Languages, Mic, ArrowRight, Map, Swords, Layers, Timer, TrendingUp, BookA } from "lucide-react";
+import { supabase } from "../../storageShim.js";
 import { tr } from "../../shared/i18n.jsx";
 import { exSkills } from "../../shared/exercises.js";
 import { Leon } from "../../shared/leon.jsx";
@@ -122,6 +123,59 @@ export function DeXuatBai({ dsDeXuat, onMo, coHoSo, level, goal, gon = false }) 
 }
 
 /* ─────────── Trò chơi & thử thách ─────────── */
+/* ─────────── Tiến độ « Học ngữ pháp » (16/10) ───────────
+ * Số bài đã làm phần « Ôn tập cả bài » (bảng bai_hoc_ket_qua, migration 148) trên tổng
+ * số bài trong mã nguồn. Nội dung bài nạp ĐỘNG để trang chủ không phải tải ~300 KB
+ * bài học. Bài học tiếp: bài đầu tiên chưa làm ở trình độ của người học. */
+export function TienDoNguPhap({ level }) {
+  const [tt, setTt] = useState(null);       // null = đang tải; { tong, xong, theoCap, tiep }
+  useEffect(() => {
+    let huy = false;
+    Promise.all([
+      import("../../content/nguPhap/index.js"),
+      supabase.from("bai_hoc_ket_qua").select("ma_bai").then((r) => r, () => ({ data: null })),
+    ]).then(([m, { data }]) => {
+      if (huy) return;
+      const daLam = new Set((data ?? []).map((r) => r.ma_bai));
+      const caps = m.CAP.map((c) => { const ds = m.TAT_CA.filter((b) => b.cap === c); return { c, tong: ds.length, xong: ds.filter((b) => daLam.has(b.ma)).length }; });
+      const capCua = String(level ?? "").toUpperCase().slice(0, 2);
+      const tiep = m.TAT_CA.find((b) => b.cap === capCua && !daLam.has(b.ma)) ?? m.TAT_CA.find((b) => !daLam.has(b.ma)) ?? null;
+      setTt({ tong: m.TAT_CA.length, xong: m.TAT_CA.filter((b) => daLam.has(b.ma)).length, caps, tiep, docDuoc: !!data });
+    });
+    return () => { huy = true; };
+  }, [level]);
+  return (
+    <section className="rounded-3xl bg-surface p-5 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+      <div className="flex flex-wrap items-center gap-3">
+        <span className="grid h-10 w-10 place-items-center rounded-xl bg-primary-soft text-primary"><BookA size={20} /></span>
+        <div className="min-w-0 flex-1">
+          <h2 className="m-0 text-lg font-extrabold text-ink">{tr("Học ngữ pháp", "Grammaire", "Grammar")}</h2>
+          <p className="m-0 text-sm text-soft">
+            {tt === null ? tr("Đang tải…", "Chargement…", "Loading…")
+              : !tt.docDuoc ? tr("Chưa đọc được tiến độ.", "Progression indisponible.", "Progress unavailable.")
+              : tr(`Đã học ${tt.xong}/${tt.tong} bài`, `${tt.xong}/${tt.tong} leçons faites`, `${tt.xong}/${tt.tong} lessons done`)}
+          </p>
+        </div>
+        <Link to={tt?.tiep ? `/etudiant/ngu-phap/${tt.tiep.ma}` : "/etudiant/ngu-phap"}
+          className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-sm font-bold text-on-primary no-underline hover:opacity-90">
+          {tt?.tiep ? tr("Học tiếp", "Continuer", "Continue") : tr("Mở", "Ouvrir", "Open")} <ArrowRight size={15} />
+        </Link>
+      </div>
+      {tt?.tiep && <p className="m-0 mt-3 text-sm text-ink"><span className="text-soft">{tr("Bài tiếp theo", "Leçon suivante", "Next lesson")}:</span> <strong>{tt.tiep.cap} · {tt.tiep.ten}</strong></p>}
+      {tt?.docDuoc && (
+        <div className="mt-3 grid grid-cols-3 gap-2 sm:grid-cols-6">
+          {tt.caps.map((x) => (
+            <div key={x.c} className="rounded-xl bg-surface2 p-2">
+              <div className="flex items-baseline justify-between text-xs"><strong className="text-ink">{x.c}</strong><span className="tabular-nums text-soft">{x.xong}/{x.tong}</span></div>
+              <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-line"><div className="h-full rounded-full bg-primary" style={{ width: `${Math.round((x.xong / Math.max(1, x.tong)) * 100)}%` }} /></div>
+            </div>
+          ))}
+        </div>
+      )}
+    </section>
+  );
+}
+
 export function TroChoi() {
   const o = [
     { to: "/etudiant/lo-trinh", Icon: Map, nen: "from-emerald-500 to-teal-600",

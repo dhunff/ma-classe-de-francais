@@ -7,6 +7,9 @@ import { PAYMENT_KEY } from "../../shared/access.js";
 import { goiVip } from "../../shared/vip.js";
 import { tr } from "../../shared/i18n.jsx";
 import PaymentModal from "./PaymentModal.jsx";
+import { ThucHanh } from "./NguPhap.jsx";
+import { timCau } from "../../content/nguPhap/index.js";
+import { ngayHomNay } from "../../shared/hoatDong.js";
 
 /* Tiến bộ VIP — 14/10 (migration 143, theo chủ dự án).
  *
@@ -150,6 +153,61 @@ function CauSai({ d }) {
   );
 }
 
+/* Ôn câu ngữ pháp sai (16/10, migration 149): câu « Học ngữ pháp » làm sai, lịch ôn
+ * giãn cách (sai → hôm nay; đúng → 1, 2, 4… ngày, tối đa 60). Ghi qua ghi_cau_ngu_phap
+ * ngay trong ThucHanh. Câu đã bị sửa / xoá khỏi nội dung thì timCau trả null: bỏ qua. */
+function OnNguPhap() {
+  const [ds, setDs] = useState(undefined);
+  const [dangOn, setDangOn] = useState(null);
+  const [lan, setLan] = useState(0);
+  useEffect(() => {
+    let huy = false;
+    supabase.from("ngu_phap_cau_sai").select("ma_bai, cau, lan_sai, han").order("han").limit(500)
+      .then(({ data, error }) => { if (!huy) setDs(error ? null : data ?? []); });
+    return () => { huy = true; };
+  }, [lan]);
+  if (ds === undefined) return <p className="m-0 mt-6 flex items-center gap-2 text-sm text-soft"><Loader2 size={16} className="mcf-spin" /> {tr("Đang tải…", "Chargement…", "Loading…")}</p>;
+  if (ds === null) return <p className="m-0 mt-6 rounded-2xl bg-danger-soft p-4 text-sm text-ink">{tr("Không đọc được dữ liệu. Tải lại trang (Ctrl+F5) rồi thử lại.", "Impossible de lire les données. Rechargez la page (Ctrl+F5).", "Couldn't load data. Reload the page (Ctrl+F5).")}</p>;
+  const homNay = ngayHomNay();
+  const conCau = ds.map((r) => ({ r, c: timCau(r.ma_bai, r.cau) })).filter((x) => x.c);
+  const denHan = conCau.filter((x) => x.r.han <= homNay);
+  const sapToi = conCau.length - denHan.length;
+  if (dangOn) return (
+    <div className="mt-5">
+      <ThucHanh cau={dangOn} tieuDe={tr("Ôn câu ngữ pháp sai", "Révision grammaire", "Grammar review")} />
+      <button type="button" onClick={() => { setDangOn(null); setLan((x) => x + 1); }}
+        className="mt-4 cursor-pointer rounded-full border border-solid border-line bg-surface px-4 py-2 font-sans text-sm font-bold text-ink hover:border-primary">{tr("Xong, quay lại danh sách", "Terminé, retour à la liste", "Done, back to list")}</button>
+    </div>
+  );
+  return (
+    <div className="mt-5">
+      <p className="m-0 text-sm text-soft">{tr("Câu trong « Học ngữ pháp » bạn từng làm sai. Làm đúng thì câu được hẹn ôn lại sau 1, 2, 4… ngày; sai thì quay lại ôn ngay.", "Questions de grammaire ratées. Bonne réponse : prochaine révision dans 1, 2, 4… jours ; erreur : à revoir tout de suite.", "Grammar questions you missed. Right answer: next review in 1, 2, 4… days; wrong: review again now.")}</p>
+      <div className="mt-4 grid gap-3 sm:grid-cols-2">
+        <div className="rounded-2xl bg-danger-soft p-4"><p className="m-0 text-3xl font-extrabold tabular-nums text-danger">{denHan.length}</p><p className="m-0 text-sm font-bold text-ink">{tr("câu cần ôn hôm nay", "à revoir aujourd'hui", "due today")}</p></div>
+        <div className="rounded-2xl bg-surface2 p-4"><p className="m-0 text-3xl font-extrabold tabular-nums text-ink">{sapToi}</p><p className="m-0 text-sm font-bold text-soft">{tr("câu đã hẹn ôn ngày sau", "programmées plus tard", "scheduled later")}</p></div>
+      </div>
+      {denHan.length ? (
+        <button type="button" onClick={() => setDangOn(denHan.slice(0, 20).map((x) => x.c))}
+          className="mt-4 inline-flex cursor-pointer items-center gap-2 rounded-full border-0 bg-primary px-6 py-3 font-sans text-sm font-extrabold text-on-primary hover:opacity-90">
+          <RotateCcw size={16} /> {tr(`Bắt đầu ôn (${Math.min(20, denHan.length)} câu)`, `Commencer (${Math.min(20, denHan.length)} questions)`, `Start review (${Math.min(20, denHan.length)})`)}
+        </button>
+      ) : (
+        <p className="m-0 mt-4 rounded-2xl bg-ok-soft p-4 text-sm font-bold text-ok">{conCau.length ? tr("Hôm nay không có câu nào cần ôn.", "Rien à revoir aujourd'hui.", "Nothing due today.") : tr("Chưa có câu ngữ pháp nào làm sai.", "Aucune erreur de grammaire enregistrée.", "No grammar mistakes yet.")}</p>
+      )}
+      {denHan.length > 0 && (
+        <ul className="m-0 mt-4 grid list-none gap-2 p-0">
+          {denHan.slice(0, 20).map(({ r, c }) => (
+            <li key={r.ma_bai + r.cau} className="rounded-2xl border border-solid border-line bg-surface p-3 text-sm">
+              <p lang="fr" className="m-0 text-ink">{c.loai === "sap" ? c.goiY : c.de}</p>
+              <p className="m-0 mt-1 text-xs text-soft">{c.__ten} · <span className="text-danger">{tr("sai", "raté", "missed")} {r.lan_sai} {tr("lần", "fois", "times")}</span></p>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
 export default function TienBoVip({ name }) {
   const [tab, setTab] = useState("bao_cao");
   const [baoCao, setBaoCao] = useState(undefined);
@@ -168,7 +226,7 @@ export default function TienBoVip({ name }) {
 
   const d = tab === "bao_cao" ? baoCao : cauSai;
   const canVip = baoCao?.ma === "CAN_VIP" || cauSai?.ma === "CAN_VIP";
-  const TABS = [["bao_cao", tr("Báo cáo tuần", "Bilan de la semaine", "Weekly report")], ["cau_sai", tr("Ôn câu sai", "Revoir mes erreurs", "Review mistakes")]];
+  const TABS = [["bao_cao", tr("Báo cáo tuần", "Bilan de la semaine", "Weekly report")], ["cau_sai", tr("Ôn câu sai", "Revoir mes erreurs", "Review mistakes")], ["ngu_phap", tr("Ôn ngữ pháp", "Réviser la grammaire", "Grammar review")]];
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-6">
@@ -183,7 +241,7 @@ export default function TienBoVip({ name }) {
               </button>
             ))}
           </div>
-          {d === undefined ? (
+          {tab === "ngu_phap" ? <OnNguPhap /> : d === undefined ? (
             <p className="m-0 mt-6 flex items-center gap-2 text-sm text-soft"><Loader2 size={16} className="mcf-spin" /> {tr("Đang tải…", "Chargement…", "Loading…")}</p>
           ) : !d?.ok ? (
             <p className="m-0 mt-6 rounded-2xl bg-danger-soft p-4 text-sm text-ink">{tr("Không đọc được dữ liệu. Tải lại trang (Ctrl+F5) rồi thử lại.", "Impossible de lire les données. Rechargez la page (Ctrl+F5).", "Couldn't load data. Reload the page (Ctrl+F5).")}</p>

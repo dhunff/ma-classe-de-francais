@@ -31,6 +31,7 @@ import TourGioiThieu from "./shared/TourGioiThieu.jsx";
 import { gradeRemote } from "./shared/gradeRemote.js";
 import { phat } from "./shared/amThanh.js";
 import { Leon } from "./shared/leon.jsx";
+import GoiYNguPhap from "./shared/GoiYNguPhap.jsx";
 import { PAYMENT_KEY, isPremium, hasAccess, fmtPrice, loadAccess } from "./shared/access.js";
 import ExerciseCard from "./screens/practice/ExerciseCard.jsx";
 import { supabase } from "./storageShim.js";
@@ -1517,6 +1518,8 @@ function PracticeWorkspace({ ex, back, onFinish }) {
           </p>
           {perfect && autos.length > 0 && <p className="m-0 text-sm font-semibold text-ok">{t("exercise.perfect")}</p>}
           {opens.length > 0 && <p className="m-0 mt-1 text-sm text-soft">{t("exercise.open_note", { n: opens.length })}</p>}
+          {/* Câu sai có nhãn point_gram → gợi ý bài « Học ngữ pháp » (16/10). */}
+          <GoiYNguPhap level={ex.level} nhan={autos.filter((q) => q.pointGram && !isGood(q)).map((q) => q.pointGram)} />
           <button type="button" onClick={retry}
             className="mt-5 flex cursor-pointer items-center justify-center gap-2 rounded-full border border-solid border-line bg-surface px-6 py-2.5 font-sans text-sm font-medium text-ink shadow-sm transition-all duration-200 hover:bg-surface2 hover:shadow-md active:scale-95 dark:shadow-none">
             <RotateCcw size={16} /> {t("exercise.retry")}

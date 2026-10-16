@@ -13,7 +13,7 @@ import StreakWidget from "./StreakWidget.jsx";
 import FollowingStreakWidget from "./FollowingStreakWidget.jsx";
 import GioHocWidget from "./GioHocWidget.jsx";
 import TourGioiThieu from "../../shared/TourGioiThieu.jsx";
-import { DeXuatBai, TroChoi, DongDeuKyNang, chonDeXuat } from "./TrangChuKhoi.jsx";
+import { DeXuatBai, TroChoi, DongDeuKyNang, chonDeXuat, TienDoNguPhap } from "./TrangChuKhoi.jsx";
 
 /* Trang chủ học sinh.
 
@@ -126,6 +126,9 @@ export default function StudentDashboard({
               onMo={(ex) => navigate("/etudiant/entrainement", { state: { moBai: ex.id } })} />
           </Rise>
 
+          <Rise delay={190}>
+            <TienDoNguPhap level={profile?.level} />
+          </Rise>
           <Rise delay={220}>
             <TroChoi />
           </Rise>

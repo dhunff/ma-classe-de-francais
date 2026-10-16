@@ -1,7 +1,7 @@
 import {
   LayoutDashboard, BookOpen, Users, BarChart3, Dumbbell, AudioLines, TrendingUp,
   ClipboardList, CheckSquare, CalendarDays, Settings, Lightbulb, Timer, Trophy, Layers, Lightbulb as Bulb, Anchor, Inbox,
-  Map, BookA, Swords, FileCheck2, Megaphone } from "lucide-react";
+  Map, BookA, Swords, FileCheck2, Megaphone, Flag } from "lucide-react";
 
 /* Điều hướng của vỏ app.
 
@@ -56,6 +56,8 @@ export const TEACHER_NAV = [
   { to: "/professeur/bo-the", nhom: "noi_dung", labelKey: "nav.decks", Icon: Layers },
   /* Duyệt bài nháp do scripts/nhap soạn sẵn, xuất bản một cú bấm. */
   { to: "/professeur/duyet-nhap", nhom: "noi_dung", labelKey: "nav.drafts", Icon: FileCheck2 },
+  /* Báo lỗi câu luyện « Học ngữ pháp » do học sinh gửi (16/10, migration 149). */
+  { to: "/professeur/bao-loi-ngu-phap", nhom: "noi_dung", labelKey: "nav.grammarReports", Icon: Flag },
 ];
 
 export const STUDENT_NAV = [
