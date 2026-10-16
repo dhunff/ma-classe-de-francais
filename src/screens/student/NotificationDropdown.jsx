@@ -45,12 +45,16 @@ const LOAI = () => ({
 function MotThongBao({ n, onClick }) {
   const kieu = LOAI()[n.loai] ?? LOAI().annonce;
   const { Icon } = kieu;
+  /* Thông báo của giáo viên không có đích riêng: bấm để mở rộng đọc đủ nội dung. */
+  const [moRong, setMoRong] = React.useState(false);
+  const laTin = !LOAI()[n.loai] || n.loai === "annonce";
 
   return (
     <li>
       <button
         type="button"
-        onClick={onClick}
+        onClick={laTin ? () => setMoRong((x) => !x) : onClick}
+        aria-expanded={laTin ? moRong : undefined}
         /* `text-left` bắt buộc: preflight đang TẮT nên `<button>` giữ
            `text-align: center` mặc định của trình duyệt, và mọi dòng chữ trong
            đây sẽ nằm giữa. Quy tắc 3 của dự án. */
@@ -92,7 +96,7 @@ function MotThongBao({ n, onClick }) {
               <span className="font-semibold text-ink">{n.actor.name}</span> {tr("đã bắt đầu theo dõi bạn.", "a commencé à vous suivre.", "started following you.")}
             </span>
           ) : (
-            <span className="mt-0.5 line-clamp-2 text-sm text-soft">{n.text}</span>
+            <span className={`mt-0.5 text-sm text-soft ${moRong ? "whitespace-pre-line" : "line-clamp-2"}`}>{n.text}</span>
           )}
           {n.ts && (
             <span className="mt-1 block text-xs text-soft/80">{thoiGianTuongDoi(n.ts)}</span>

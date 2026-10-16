@@ -3,6 +3,7 @@ import { C, S, LEVEL_COLORS, LEVEL_PASTEL, QTYPES, VF_OPTS } from "../../shared/
 import { load, save, del } from "../../shared/storage.js";
 import { docThongBao, danhDauDaDoc, docNguoiGui } from "../../shared/notifications.js";
 import NotificationDropdown from "./NotificationDropdown.jsx";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "../../storageShim.js";
 import { useT, tr } from "../../shared/i18n.jsx";
 import { SKILLS, fmtDate, isLate, exSkills, assignedTo, totalScore } from "../../shared/exercises.js";
@@ -19,6 +20,7 @@ import { BarChart, Bar, LineChart, Line, RadarChart, Radar, PolarGrid, PolarAngl
 
 /* ================= Notifications bell ================= */
 function Bell({ name, exercises, submissions }) {
+  const navigate = useNavigate();
   const t = useT();
   const bellRef = useRef(null);
   const [open, setOpen] = useState(false);
@@ -152,15 +154,15 @@ function Bell({ name, exercises, submissions }) {
       if (ex.deadline && !sub) {
         const dt = new Date(ex.deadline).getTime() - now;
         if (dt > 0 && dt < 24 * 3600 * 1000)
-          list.push({ id: "due-" + ex.id, loai: "due", chuaDoc: true, title: ex.title,
+          list.push({ id: "due-" + ex.id, loai: "due", chuaDoc: true, title: ex.title, exId: ex.id,
             text: `« ${ex.title} » est à rendre avant ${fmtDate(ex.deadline)} !` });
       }
       if (sub?.graded && !sub.redo)
-        list.push({ id: "graded-" + sub.id, loai: "graded", title: ex.title,
+        list.push({ id: "graded-" + sub.id, loai: "graded", title: ex.title, exId: ex.id,
           chuaDoc: !seen["graded-" + sub.id],
           text: tr(`Ta copie « ${ex.title} » a été corrigée.`, `Bài « ${ex.title} » của bạn đã được chấm.`, `Your work « ${ex.title} » has been graded.`) });
       if (sub?.redo)
-        list.push({ id: "redo-" + sub.id, loai: "redo", chuaDoc: true, title: ex.title,
+        list.push({ id: "redo-" + sub.id, loai: "redo", chuaDoc: true, title: ex.title, exId: ex.id,
           text: `Le professeur te demande de refaire « ${ex.title} »${sub.redoNote ? " : " + sub.redoNote : ""}.` });
     });
     /* Mới nhất trước. `ts` chỉ có ở thông báo của giáo viên; những mục sinh từ
@@ -185,6 +187,19 @@ function Bell({ name, exercises, submissions }) {
     await save(`mcf-seen-${name}`, next, false);
     const idThat = notifs.filter((n) => n.id.startsWith("ann-")).map((n) => n.id.slice(4));
     if (idThat.length) await danhDauDaDoc(idThat);
+  };
+
+  /* Bấm một thông báo → tới đúng chỗ (16/10, theo chủ dự án):
+   *   follow        → trang chủ, mở sẵn « Mạng lưới học tập » (tab người theo dõi)
+   *   due / redo    → Bài tập được giao, mở thẳng bài đó để làm
+   *   graded        → tab « Đã nộp » để xem điểm và lời chấm
+   *   annonce       → không có đích riêng: bảng tự mở rộng đọc đủ nội dung
+   *                   (xử lý trong NotificationDropdown, không gọi tới đây). */
+  const chon = (n) => {
+    setOpen(false);
+    if (n.loai === "follow") navigate("/etudiant/dashboard", { state: { moMang: true } });
+    else if (n.loai === "due" || n.loai === "redo") navigate("/etudiant/devoirs", { state: { moBai: n.exId } });
+    else if (n.loai === "graded") navigate("/etudiant/rendus");
   };
 
   const openBell = async () => {
@@ -217,6 +232,7 @@ function Bell({ name, exercises, submissions }) {
           dangTai={dangTai}
           soChuaDoc={soChuaDoc}
           onDocHet={docHet}
+          onChon={chon}
         />
       </FloatingLayer>
     </div>

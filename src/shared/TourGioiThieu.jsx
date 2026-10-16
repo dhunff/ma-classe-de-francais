@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { SU_KIEN_HO_SO, hoSoDangCho } from "./hoSoCho.js";
 import Joyride, { STATUS, ACTIONS, EVENTS } from "react-joyride";
 import { Leon } from "./leon.jsx";
 const CAM_TOUR = ["nhay-mat", "duoc-do", "hoc", "ok", "lam-viec", "co-len"];
@@ -84,13 +85,17 @@ export default function TourGioiThieu({ khoa, steps, sanSang = true, giao, choXo
   useEffect(() => {
     const nghe = () => setLuot((n) => n + 1);
     window.addEventListener(SU_KIEN_XONG, nghe);
-    return () => window.removeEventListener(SU_KIEN_XONG, nghe);
+    window.addEventListener(SU_KIEN_HO_SO, nghe);
+    return () => { window.removeEventListener(SU_KIEN_XONG, nghe); window.removeEventListener(SU_KIEN_HO_SO, nghe); };
   }, []);
 
   /* Chờ một nhịp cho hoạt ảnh vào trang xong rồi mới đo vị trí. */
   useEffect(() => {
+    /* Hộp hồ sơ mở ra khi tour đang chạy: tạm dừng (không đánh dấu đã xem). */
+    if (hoSoDangCho()) { setChay(false); return; }
     if (!sanSang || daXem(khoa) || (choXong && !daXem(choXong))) return;
-    const hen = setTimeout(() => setChay(true), 700);
+    /* Hộp « Hoàn thiện hồ sơ » đang xét / đang mở thì chờ; nó đóng sẽ báo SU_KIEN_HO_SO. */
+    const hen = setTimeout(() => { if (!hoSoDangCho()) setChay(true); }, 700);
     return () => clearTimeout(hen);
   }, [khoa, sanSang, choXong, luot]);
 

@@ -1,4 +1,5 @@
 ﻿import React, { useState, useEffect, useMemo, useRef, useCallback } from "react";
+import { useLocation } from "react-router-dom";
 import { C, S, LEVEL_COLORS, LEVEL_PASTEL, QTYPES, VF_OPTS } from "../../shared/tokens.js";
 import TongQuanBaiGiao from "./TongQuanBaiGiao.jsx";
 import { load, save, del } from "../../shared/storage.js";
@@ -33,6 +34,16 @@ function Student({ name, exercises, submissions, setSubmissions, accounts, setAc
      trên mọi trang của học sinh, ghi vào profiles thay vì blob mcf-presence. */
   /* `routeView` đến từ URL; xem chú thích tương ứng trong Teacher. */
   const [tab, setTab] = useState(routeView || "todo");
+  /* Mở thẳng một bài khi đến từ thông báo (16/10): state { moBai } do Bell gửi. Xoá
+     state sau khi dùng để quay lại trang không tự mở lại bài. */
+  const viTriTB = useLocation();
+  useEffect(() => {
+    const id = viTriTB.state?.moBai;
+    if (!id) return;
+    const ex = exercises.find((e) => e.id === id);
+    if (ex) setTaking(ex);
+    try { window.history.replaceState({ ...window.history.state, usr: null }, ""); } catch { /* bỏ qua */ }
+  }, [viTriTB.state, exercises]);
   useEffect(() => { if (routeView) setTab(routeView); }, [routeView]);
   const [showPw, setShowPw] = useState(false);
   const t = useT();

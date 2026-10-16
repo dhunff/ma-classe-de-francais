@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import { useLocation } from "react-router-dom";
 import { Flame, UserPlus, X, Loader2, Users, UserMinus, Trophy, Star } from "lucide-react";
 import { AvatarOnline, NhanOnline } from "./ChamOnline.jsx";
 import { Avatar } from "../../shared/avatars.jsx";
@@ -19,6 +20,13 @@ export default function FollowingStreakWidget({ t, fixture, bxhFixture }) {
   const [ds, setDs] = useState(undefined);   // undefined = đang tải, null = lỗi
   const [mo, setMo] = useState(false);
   const [moMang, setMoMang] = useState(false);
+  /* Đến từ thông báo « người theo dõi mới » (16/10): mở sẵn bảng mạng lưới. */
+  const viTriTB = useLocation();
+  useEffect(() => {
+    if (!viTriTB.state?.moMang) return;
+    setMoMang(true);
+    try { window.history.replaceState({ ...window.history.state, usr: null }, ""); } catch { /* bỏ qua */ }
+  }, [viTriTB.state]);
   /* Tab « Xếp hạng XP » (26/09): mình + người mình theo dõi, hạng tính ở máy chủ. */
   const [tab, setTab] = useState("hom_nay");
   const [bxh, setBxh] = useState(undefined);

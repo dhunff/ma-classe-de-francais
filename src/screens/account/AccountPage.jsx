@@ -454,7 +454,7 @@ export default function AccountPage({ name, role, email, emailVerified, onLogout
                   </Field>
                   <Field label={t("account.dob")}>
                     {/* Bộ chọn ngày cùng kiểu lịch nhỏ của thẻ Lịch (09/10). */}
-                    <ChonNgay className={INPUT} value={p.dob || ""} max={new Date().toISOString().slice(0, 10)}
+                    <ChonNgay className={INPUT} value={p.dob || ""} max={new Date().toISOString().slice(0, 10)} macDinh={`${new Date().getFullYear() - 16}-01-01`}
                       onChange={(v) => setP({ ...p, dob: v })} />
                     {errs.dob && <p className="m-0 mt-1 text-xs font-semibold text-danger">{errs.dob}</p>}
                   </Field>

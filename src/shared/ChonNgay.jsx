@@ -15,16 +15,17 @@ const ymd = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate(
 const doc = (s) => { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s || ""); return m ? new Date(+m[1], +m[2] - 1, +m[3]) : null; };
 const cung = (a, b) => a && b && a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
 
-export default function ChonNgay({ value, onChange, className = "", min, max, placeholder }) {
+/* macDinh: tháng mở sẵn khi chưa chọn gì (ví dụ ngày sinh: lùi về khoảng tuổi học sinh). */
+export default function ChonNgay({ value, onChange, className = "", min, max, placeholder, macDinh }) {
   const t = useT();
   const chon = doc(value);
   const [mo, setMo] = useState(false);
-  const [thang, setThang] = useState(() => chon ?? new Date());
+  const [thang, setThang] = useState(() => chon ?? doc(macDinh) ?? new Date());
   const [cheDo, setCheDo] = useState("ngay");   // ngay | nam
   const goc = useRef(null);
   const homNay = new Date();
 
-  useEffect(() => { if (mo) { setThang(chon ?? new Date()); setCheDo("ngay"); } }, [mo]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { if (mo) { setThang(chon ?? doc(macDinh) ?? new Date()); setCheDo("ngay"); } }, [mo]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (!mo) return undefined;
     const ngoai = (e) => { if (!goc.current?.contains(e.target)) setMo(false); };

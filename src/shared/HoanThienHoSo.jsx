@@ -6,6 +6,8 @@ import { emptyProfile, validateProfile, LEVELS_PROFILE, GOALS_PROFILE } from "./
 import { Leon } from "./leon.jsx";
 import { tr } from "./i18n.jsx";
 import { supabase } from "../storageShim.js";
+import ChonNgay from "./ChonNgay.jsx";
+import { hoSoBatDauXet, hoSoKetQua } from "./hoSoCho.js";
 
 /* Hoàn thiện hồ sơ ngay khi vào (13/10, theo chủ dự án).
  *
@@ -29,18 +31,22 @@ export default function HoanThienHoSo({ fixture }) {
   const [tt, setTt] = useState(null);
 
   useEffect(() => {
-    if (fixture) { setP({ ...emptyProfile(), ...fixture }); setMo(true); return; }
+    if (fixture) { setP({ ...emptyProfile(), ...fixture }); setMo(true); hoSoKetQua(true); return; }
     let con = true;
-    try { if (sessionStorage.getItem(KHOA_HOAN)) return; } catch { /* */ }
+    try { if (sessionStorage.getItem(KHOA_HOAN)) { hoSoKetQua(false); return; } } catch { /* */ }
+    /* Báo « đang xét » để phần hướng dẫn chờ (hoSoCho.js), tránh hai hộp đè nhau. */
+    hoSoBatDauXet();
     /* 13/10 (chủ dự án): CHỈ hỏi tài khoản đăng ký từ ngày tính năng ra mắt.
        Học sinh cũ không bị chặn bằng hộp này; họ vẫn tự điền ở trang Tài khoản. */
     Promise.all([supabase.auth.getUser(), loadHoSo()]).then(([{ data: u }, h]) => {
-      if (!con || !h) return;
-      if (!(Date.parse(u?.user?.created_at ?? "") >= MOC_TAI_KHOAN_MOI)) return;
+      if (!con) return;
+      if (!h || !(Date.parse(u?.user?.created_at ?? "") >= MOC_TAI_KHOAN_MOI)) { hoSoKetQua(false); return; }
       setP({ ...emptyProfile(), ...h });
-      if (BAT_BUOC.some((k) => !String(h[k] ?? "").trim())) setMo(true);
-    });
-    return () => { con = false; };
+      const canHoi = BAT_BUOC.some((k) => !String(h[k] ?? "").trim());
+      if (canHoi) setMo(true);
+      hoSoKetQua(canHoi);
+    }, () => { if (con) hoSoKetQua(false); });
+    return () => { con = false; hoSoKetQua(false); };
   }, [fixture]);
 
   if (!mo || !p || viTri.pathname.startsWith("/etudiant/examen")) return null;
@@ -57,9 +63,9 @@ export default function HoanThienHoSo({ fixture }) {
     const kq = await luuHoSo(p);
     if (!kq.ok) { setTt(kq.chiTiet || kq.loi || "loi"); return; }
     setTt("xong");
-    setTimeout(() => setMo(false), 900);
+    setTimeout(() => { setMo(false); hoSoKetQua(false); }, 900);
   };
-  const deSau = () => { try { sessionStorage.setItem(KHOA_HOAN, "1"); } catch { /* */ } setMo(false); };
+  const deSau = () => { try { sessionStorage.setItem(KHOA_HOAN, "1"); } catch { /* */ } setMo(false); hoSoKetQua(false); };
 
   const O = "w-full rounded-xl border border-solid border-line bg-surface px-3 py-2.5 font-sans text-sm text-ink outline-none focus:border-primary";
   const Nhan = ({ k, children, bb }) => (
@@ -96,7 +102,8 @@ export default function HoanThienHoSo({ fixture }) {
               {GOALS_PROFILE.map((g) => <option key={g} value={g}>{g}</option>)}
             </select></div>
           <div className="grid gap-1"><Nhan k="dob">{tr("Ngày sinh", "Date de naissance", "Date of birth")}</Nhan>
-            <input type="date" value={p.dob} onChange={(e) => doi("dob", e.target.value)} className={O} /></div>
+            {/* Bộ chọn ngày của dự án (cùng kiểu thẻ Lịch, chọn được năm) thay hộp mặc định của trình duyệt. */}
+            <ChonNgay value={p.dob || ""} onChange={(v) => doi("dob", v)} className={O} max={new Date().toISOString().slice(0, 10)} macDinh={`${new Date().getFullYear() - 16}-01-01`} /></div>
           <div className="grid gap-1"><Nhan k="phone">{tr("Số điện thoại", "Téléphone", "Phone")}</Nhan>
             <input data-khong-bang-dau type="tel" value={p.phone} onChange={(e) => doi("phone", e.target.value)} className={O} autoComplete="tel" /></div>
           <div className="grid gap-1 sm:col-span-2"><Nhan k="school">{tr("Trường / nơi làm việc", "École / travail", "School / workplace")}</Nhan>
