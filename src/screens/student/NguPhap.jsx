@@ -381,7 +381,7 @@ function TrangBai({ bai, ketQua, onGhi }) {
         <ArrowLeft size={15} /> {tr("Tất cả bài học", "Toutes les leçons", "All lessons")}
       </Link>
       <header className={`mt-4 rounded-3xl bg-gradient-to-br ${MAU_CAP[bai.cap]} p-6 text-white shadow-lg`}>
-        <p className="m-0 text-xs font-extrabold uppercase tracking-[0.18em] text-white/80">{tenCap(bai.cap)}</p>
+        <p className="m-0 text-xs font-extrabold uppercase tracking-[0.18em] text-white/80">{tenCap(bai.cap)} · {tr("Bài", "Leçon", "Lesson")} {TAT_CA.filter((b) => b.cap === bai.cap).findIndex((b) => b.ma === bai.ma) + 1}</p>
         <h1 className="m-0 mt-1 text-2xl font-extrabold tracking-tight sm:text-3xl">{bai.ten}</h1>
         <p lang="fr" className="m-0 mt-1 text-sm font-semibold italic text-white/85">{bai.tenFr}</p>
         <p className="m-0 mt-3 text-sm text-white/90">{bai.tomTat}</p>
@@ -503,12 +503,12 @@ export default function NguPhap() {
             {cap === "A0" && <span className="text-sm font-semibold text-soft">{tr("Bảng chữ cái, phát âm, quy tắc đọc", "Alphabet, sons, règles de lecture", "Alphabet, sounds, reading rules")}</span>}
           </h2>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {TAT_CA.filter((b) => b.cap === cap).map((b) => {
+            {TAT_CA.filter((b) => b.cap === cap).map((b, stt) => {
               const kq = ketQua[b.ma];
               return (
                 <Link key={b.ma} to={`/etudiant/ngu-phap/${b.ma}`}
                   className="group flex flex-col gap-2 rounded-2xl border border-solid border-line bg-surface p-4 no-underline transition-all hover:-translate-y-0.5 hover:border-primary hover:shadow-md">
-                  <span className="text-base font-extrabold text-ink">{b.ten}</span>
+                  <span className="flex items-start gap-2.5"><span className={`grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-gradient-to-br ${MAU_CAP[b.cap]} text-sm font-extrabold tabular-nums text-white`}>{stt + 1}</span><span className="text-base font-extrabold text-ink">{b.ten}</span></span>
                   <span lang="fr" className="text-xs italic text-soft">{b.tenFr}</span>
                   <span className="line-clamp-2 text-sm text-soft">{b.tomTat}</span>
                   <span className="mt-auto flex items-center justify-between pt-1">
