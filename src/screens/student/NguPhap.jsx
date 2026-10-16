@@ -9,7 +9,11 @@ import { usePracticeStore } from "../dashboard/PracticeRail.jsx";
 import { CHU_CAI, DAU, IPA, BAI_NHAP_MON } from "../../content/nguPhap/nhapMon.js";
 import { BAI_A1 } from "../../content/nguPhap/a1.js";
 import { BAI_A2_B1 } from "../../content/nguPhap/a2b1.js";
+import { BAI_A2 } from "../../content/nguPhap/a2.js";
 import { CAU_TRUC } from "../../content/nguPhap/cauTruc.js";
+import { BO_SUNG_A0_A1 } from "../../content/nguPhap/boSungA0A1.js";
+import { BO_SUNG_A2_B1 } from "../../content/nguPhap/boSungA2B1.js";
+const BO_SUNG = { ...BO_SUNG_A0_A1, ...BO_SUNG_A2_B1 };
 import AM from "../../content/nguPhap/amThanh.json";
 
 /* « Học ngữ pháp » (15/10, theo chủ dự án): học LÝ THUYẾT trước rồi mới luyện.
@@ -19,7 +23,8 @@ import AM from "../../content/nguPhap/amThanh.json";
  * chấp nhận được (học sinh tự học). Kết quả lưu qua RPC ghi_bai_hoc (migration 148).
  * Âm thanh Nhập môn: giọng tổng hợp, tạo bằng scripts/ngu-phap/tao-am.mjs. */
 
-const TAT_CA = [...BAI_NHAP_MON, ...BAI_A1, ...BAI_A2_B1];
+/* A2 (16/10): 15 bài mới thay 5 bài A2 cũ trong a2b1.js; B1 vẫn lấy từ a2b1.js. */
+const TAT_CA = [...BAI_NHAP_MON, ...BAI_A1, ...BAI_A2, ...BAI_A2_B1.filter((b) => b.cap === "B1")];
 const CAP = ["A0", "A1", "A2", "B1"];
 const MAU_CAP = { A0: "from-emerald-500 to-teal-600", A1: "from-amber-500 to-orange-600", A2: "from-sky-500 to-blue-600", B1: "from-violet-500 to-indigo-600" };
 const tenCap = (c) => (c === "A0" ? tr("A0 · Nhập môn", "A0 · Débutant", "A0 · Beginner") : c);
@@ -38,15 +43,27 @@ const phatAm = (khoa) => {
  * content/nguPhap/cauTruc.js: mỗi phần có lời giải thích riêng, khối lý thuyết và
  * đúng những câu luyện thuộc về nó (+ câu bổ sung « them »). */
 function chiaPhan(bai) {
-  const ct = CAU_TRUC[bai.ma] ?? [{ ten: bai.ten, khoi: bai.phan.map((_, i) => i), cau: bai.baiTap.map((_, i) => i) }];
+  const ct = bai.cauTruc ?? CAU_TRUC[bai.ma] ?? [{ ten: bai.ten, khoi: bai.phan.map((_, i) => i), cau: bai.baiTap.map((_, i) => i) }];
+  /* boSung*.js: giải thích theo khung sư phạm + câu luyện thêm nhiều dạng, theo thứ tự phần. */
+  const bs = BO_SUNG[bai.ma] ?? [];
   return ct.map((p, j) => ({
-    chu: String.fromCharCode(97 + j), ten: p.ten, giai: p.giai,
+    chu: String.fromCharCode(97 + j), ten: p.ten, giai: bs[j]?.giai ?? p.giai,
     khoi: p.khoi.map((i) => bai.phan[i]),
-    cau: [...p.cau.map((i) => bai.baiTap[i]), ...(p.them ?? [])],
+    cau: [...p.cau.map((i) => bai.baiTap[i]), ...(p.them ?? []), ...(bs[j]?.them ?? [])],
   }));
 }
 /* Đảo thứ tự phương án trắc nghiệm mỗi lượt: đa số câu soạn với đáp án ở vị trí A. */
+/* Dạng bài (16/10): qcm, dien, vf (đúng/sai), sap (sắp xếp từ thành câu), sua (tìm và
+ * sửa lỗi). vf quy về qcm hai phương án; sua là dien có câu sai điền sẵn; sap xáo ô từ. */
 const tronPa = (ds) => ds.map((c) => {
+  if (c.loai === "vf") return { ...c, loai: "qcm", dang: "vf", pa: [tr("Đúng", "Vrai", "True"), tr("Sai", "Faux", "False")], dap: c.dung ? 0 : 1 };
+  if (c.loai === "sua") return { ...c, loai: "dien", dang: "sua" };
+  if (c.loai === "sap") {
+    const tu = c.dap[0].split(" ");
+    let thuTu = tu.map((_, i) => i);
+    for (let n = 0; n < 5 && thuTu.every((x, i) => x === i); n++) thuTu = [...thuTu].sort(() => Math.random() - 0.5);
+    return { ...c, tu, thuTu };
+  }
   if (c.loai !== "qcm") return c;
   const thuTu = c.pa.map((_, i) => i).sort(() => Math.random() - 0.5);
   return { ...c, pa: thuTu.map((i) => c.pa[i]), dap: thuTu.indexOf(c.dap) };
@@ -167,16 +184,23 @@ function ThucHanh({ bai, cau, tieuDe, onXong }) {
   const [kq, setKq] = useState([]);                             // [{ i, ok, tl }]
   const [xem, setXem] = useState(false);
   const oNhap = useRef(null);
-  const dungCau = (c, v) => (c.loai === "qcm" ? v === c.dap : v != null && c.dap.some((d) => chuan(d) === chuan(v)));
+  const ghepSap = (c, v) => (v ?? []).map((k) => c.tu[k]).join(" ");
+  const dungCau = (c, v) => (c.loai === "qcm" ? v === c.dap
+    : c.loai === "sap" ? c.dap.some((d) => chuan(d) === chuan(ghepSap(c, v)))
+    : v != null && c.dap.some((d) => chuan(d) === chuan(v)));
   const gan = (c, v) => (c.loai === "dien" && v != null && !dungCau(c, v) && c.dap.some((d) => boDau(d) === boDau(v)));
 
   const xong = vt >= ds.length;
   const i = ds[vt];
   const c = tatCa[i];
   const ok = xem && dungCau(c, tl);
-  const coTl = tl != null && tl !== "";
+  const coTl = c?.loai === "sap" ? (tl ?? []).length === c.tu.length : tl != null && tl !== "" && tl !== c?.de;
 
-  useEffect(() => { if (!xong && c?.loai !== "qcm") oNhap.current?.focus(); }, [vt, xong, c]);
+  useEffect(() => {
+    if (xong) return;
+    if (c?.dang === "sua") setTl(c.de);       // câu sai điền sẵn để học sinh sửa tại chỗ
+    if (c?.loai === "dien") oNhap.current?.focus();
+  }, [vt, xong, c]);
 
   const kiem = () => {
     if (!coTl || xem) return;
@@ -228,11 +252,34 @@ function ThucHanh({ bai, cau, tieuDe, onXong }) {
       {!xong ? (
         <div className="p-5" onKeyDown={phim}>
           <p className="m-0 text-xs font-extrabold uppercase tracking-wider text-soft">
-            {c.loai === "qcm" ? tr("Chọn đáp án đúng", "Choisissez la bonne réponse", "Choose the right answer") : tr("Điền vào chỗ trống", "Complétez", "Fill in the blank")}
+            {c.dang === "vf" ? tr("Đúng hay sai?", "Vrai ou faux ?", "True or false?")
+              : c.dang === "sua" ? tr("Tìm và sửa lỗi trong câu", "Trouvez et corrigez l'erreur", "Find and fix the mistake")
+              : c.loai === "sap" ? tr("Sắp xếp các từ thành câu đúng", "Remettez les mots dans l'ordre", "Put the words in order")
+              : c.loai === "qcm" ? tr("Chọn đáp án đúng", "Choisissez la bonne réponse", "Choose the right answer")
+              : tr("Điền vào chỗ trống", "Complétez", "Fill in the blank")}
           </p>
-          <p lang="fr" className="m-0 mt-2 text-xl font-bold leading-snug text-ink">{c.de}</p>
+          <p lang="fr" className={`m-0 mt-2 text-xl font-bold leading-snug ${c.dang === "sua" ? "text-danger" : "text-ink"}`}>{c.loai === "sap" ? c.goiY : c.de}</p>
 
-          {c.loai === "qcm" ? (
+          {c.loai === "sap" ? (
+            <div className="mt-5">
+              <div className={`flex min-h-[3.5rem] flex-wrap gap-2 rounded-2xl border-2 border-dashed p-2.5 ${xem ? (ok ? "border-ok bg-ok-soft" : "border-danger bg-danger-soft") : "border-line"}`}>
+                {(tl ?? []).length === 0 && <span className="self-center px-2 text-sm text-soft">{tr("Bấm các từ bên dưới theo đúng thứ tự…", "Touchez les mots dans l'ordre…", "Tap the words below in order…")}</span>}
+                {(tl ?? []).map((k, j) => (
+                  <button key={j} type="button" disabled={xem} lang="fr" onClick={() => setTl((x) => x.filter((_, n) => n !== j))}
+                    className="cursor-pointer rounded-xl border-0 bg-primary px-3 py-2 font-sans text-base font-semibold text-on-primary disabled:cursor-default">{c.tu[k]}</button>
+                ))}
+              </div>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {c.thuTu.map((k) => {
+                  const daDung = (tl ?? []).includes(k);
+                  return (
+                    <button key={k} type="button" disabled={xem || daDung} lang="fr" onClick={() => { setTl((x) => [...(x ?? []), k]); phat("bam"); }}
+                      className={`rounded-xl border border-solid px-3 py-2 font-sans text-base font-semibold ${daDung ? "border-line bg-surface2 text-transparent" : "cursor-pointer border-line bg-surface text-ink hover:border-primary"}`}>{c.tu[k]}</button>
+                  );
+                })}
+              </div>
+            </div>
+          ) : c.loai === "qcm" ? (
             <div className="mt-5 grid gap-2.5">
               {c.pa.map((p, k) => {
                 const chon = tl === k, laDung = xem && k === c.dap, laSai = xem && chon && !laDung;
@@ -259,7 +306,7 @@ function ThucHanh({ bai, cau, tieuDe, onXong }) {
                 {ok ? <CircleCheck size={18} /> : <XCircle size={18} />}
                 {ok ? tr("Chính xác!", "Exact !", "Correct!") : tr("Chưa đúng", "Pas tout à fait", "Not quite")}
               </p>
-              {!ok && c.loai === "dien" && (
+              {!ok && c.loai !== "qcm" && (
                 <p className="m-0 mt-1.5 text-sm text-ink">{tr("Đáp án", "Réponse", "Answer")}: <strong lang="fr">{c.dap[0]}</strong>
                   {gan(c, tl) && <span className="ml-2 text-xs font-bold text-warn">{tr("(gần đúng: kiểm tra lại dấu)", "(presque : vérifiez les accents)", "(close: check the accents)")}</span>}</p>
               )}
@@ -299,7 +346,7 @@ function ThucHanh({ bai, cau, tieuDe, onXong }) {
                 return (
                   <li key={r.i} className="rounded-2xl border border-solid border-line p-3 text-sm">
                     <p lang="fr" className="m-0 font-semibold text-ink">{q.de}</p>
-                    <p className="m-0 mt-1"><span lang="fr" className="text-danger line-through">{q.loai === "qcm" ? q.pa[r.tl] : r.tl}</span> → <strong lang="fr" className="text-ok">{q.loai === "qcm" ? q.pa[q.dap] : q.dap[0]}</strong></p>
+                    <p className="m-0 mt-1"><span lang="fr" className="text-danger line-through">{q.loai === "qcm" ? q.pa[r.tl] : q.loai === "sap" ? ghepSap(q, r.tl) : r.tl}</span> → <strong lang="fr" className="text-ok">{q.loai === "qcm" ? q.pa[q.dap] : q.dap[0]}</strong></p>
                   </li>
                 );
               })}
@@ -436,7 +483,7 @@ function TrangBai({ bai, ketQua, onGhi }) {
                 {ph.giai && (
                   <div className="mt-4 rounded-2xl border border-solid border-primary/20 bg-primary-soft/50 p-4">
                     <p className="m-0 mb-1.5 flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-wider text-primary"><Lightbulb size={14} /> {tr("Giải thích", "Explication", "Explanation")}</p>
-                    <div className="leading-relaxed text-ink [&_p]:m-0 [&_p+p]:mt-2" dangerouslySetInnerHTML={{ __html: ph.giai }} />
+                    <div className="leading-relaxed text-ink [&_h4]:m-0 [&_h4]:mt-3 [&_h4]:text-[13px] [&_h4]:font-extrabold [&_h4]:uppercase [&_h4]:tracking-wide [&_h4]:text-primary [&_h4:first-child]:mt-0 [&_p]:m-0 [&_p]:mt-1" dangerouslySetInnerHTML={{ __html: ph.giai }} />
                   </div>
                 )}
                 {ph.khoi.map((k, j) => <Khoi key={j} k={j === 0 && k.tieuDe === ph.ten ? { ...k, tieuDe: null } : k} />)}
