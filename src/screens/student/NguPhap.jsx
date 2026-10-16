@@ -9,6 +9,7 @@ import { usePracticeStore } from "../dashboard/PracticeRail.jsx";
 import { CHU_CAI, DAU, IPA, BAI_NHAP_MON } from "../../content/nguPhap/nhapMon.js";
 import { BAI_A1 } from "../../content/nguPhap/a1.js";
 import { BAI_A2_B1 } from "../../content/nguPhap/a2b1.js";
+import { CAU_TRUC } from "../../content/nguPhap/cauTruc.js";
 import AM from "../../content/nguPhap/amThanh.json";
 
 /* « Học ngữ pháp » (15/10, theo chủ dự án): học LÝ THUYẾT trước rồi mới luyện.
@@ -33,36 +34,23 @@ const phatAm = (khoa) => {
   try { amDangPhat?.pause(); amDangPhat = new Audio(url); amDangPhat.play().catch(() => {}); } catch { /* bỏ qua */ }
 };
 
-/* Chia bài thành các phần a, b, c… (16/10, theo chủ dự án): mỗi phần một khối
- * lý thuyết chính (bang/doan/chuCai/dau/ipa), khối phụ (loi, luuY, vidu) dính vào
- * phần trước. Bài tập rải đều theo thứ tự (câu hỏi vốn soạn theo thứ tự lý thuyết),
- * phần nào cũng có ít nhất một câu: thừa phần thì gộp phần ngắn vào phần trước. */
-const KHOI_PHU = new Set(["loi", "luuY", "vidu"]);
-const tenKhoi = (k) => {
-  if (k.tieuDe) return k.tieuDe;
-  if (k.loai === "chuCai") return tr("Bảng chữ cái", "L'alphabet", "The alphabet");
-  if (k.loai === "dau") return tr("Dấu trong tiếng Pháp", "Les accents", "Accents");
-  if (k.loai === "ipa") return tr("Phiên âm IPA", "Les sons (API)", "IPA sounds");
-  const m = /<strong>(.*?)<\/strong>/.exec(k.html ?? "");
-  const t = (m?.[1] ?? "").replace(/<[^>]+>/g, "").trim();
-  return t ? t.charAt(0).toUpperCase() + t.slice(1) : tr("Ghi nhớ", "À retenir", "Key points");
-};
+/* Chia bài thành các phần a, b, c… (16/10, theo chủ dự án). Cấu trúc soạn TAY ở
+ * content/nguPhap/cauTruc.js: mỗi phần có lời giải thích riêng, khối lý thuyết và
+ * đúng những câu luyện thuộc về nó (+ câu bổ sung « them »). */
 function chiaPhan(bai) {
-  let ds = [];
-  for (const k of bai.phan) {
-    if (ds.length && KHOI_PHU.has(k.loai)) ds[ds.length - 1].khoi.push(k);
-    else ds.push({ ten: tenKhoi(k), khoi: [k] });
-  }
-  const n = bai.baiTap.length;
-  while (ds.length > Math.max(1, n)) {
-    let j = 1;
-    for (let x = 2; x < ds.length; x++) if (ds[x].khoi.length < ds[j].khoi.length) j = x;
-    ds[j - 1].khoi.push(...ds[j].khoi);
-    ds.splice(j, 1);
-  }
-  const p = ds.length;
-  return ds.map((ph, j) => ({ ...ph, chu: String.fromCharCode(97 + j), cau: bai.baiTap.slice(Math.floor((j * n) / p), Math.floor(((j + 1) * n) / p)) }));
+  const ct = CAU_TRUC[bai.ma] ?? [{ ten: bai.ten, khoi: bai.phan.map((_, i) => i), cau: bai.baiTap.map((_, i) => i) }];
+  return ct.map((p, j) => ({
+    chu: String.fromCharCode(97 + j), ten: p.ten, giai: p.giai,
+    khoi: p.khoi.map((i) => bai.phan[i]),
+    cau: [...p.cau.map((i) => bai.baiTap[i]), ...(p.them ?? [])],
+  }));
 }
+/* Đảo thứ tự phương án trắc nghiệm mỗi lượt: đa số câu soạn với đáp án ở vị trí A. */
+const tronPa = (ds) => ds.map((c) => {
+  if (c.loai !== "qcm") return c;
+  const thuTu = c.pa.map((_, i) => i).sort(() => Math.random() - 0.5);
+  return { ...c, pa: thuTu.map((i) => c.pa[i]), dap: thuTu.indexOf(c.dap) };
+});
 
 /* ─────────── Các khối lý thuyết ─────────── */
 function KhoiBang({ k }) {
@@ -171,7 +159,7 @@ function Khoi({ k }) {
  * « Tiếp tục ». Hết lượt thì tổng kết + làm lại câu sai. Chỉ lượt ĐẦU, làm đủ
  * mọi câu mới gọi onXong (lượt làm lại câu sai không ghi điểm). */
 function ThucHanh({ bai, cau, tieuDe, onXong }) {
-  const tatCa = cau ?? bai.baiTap;
+  const tatCa = useMemo(() => tronPa(cau ?? bai.baiTap), [cau, bai]);
   const [ds, setDs] = useState(() => tatCa.map((_, i) => i));   // chỉ số câu trong lượt này
   const [vong, setVong] = useState(0);                          // 0 = lượt đầu
   const [vt, setVt] = useState(0);
@@ -369,10 +357,26 @@ function TrangBai({ bai, ketQua, onGhi }) {
   useEffect(() => { dau.current?.scrollIntoView({ block: "start" }); }, [bai.ma]);
   const cacPhan = useMemo(() => chiaPhan(bai), [bai]);
   const [daLam, setDaLam] = useState({});
-  useEffect(() => { setDaLam({}); }, [bai.ma]);
+  const [dangXem, setDangXem] = useState("a");
+  useEffect(() => { setDaLam({}); setDangXem("a"); }, [bai.ma]);
+  /* Mục lục tô phần đang đọc: phần nào chạm vùng trên màn hình thì sáng lên. */
+  useEffect(() => {
+    if (typeof IntersectionObserver === "undefined") return;
+    const io = new IntersectionObserver((es) => {
+      for (const e of es) if (e.isIntersecting) setDangXem(e.target.dataset.phan);
+    }, { rootMargin: "-15% 0px -70% 0px" });
+    document.querySelectorAll("[data-phan]").forEach((el) => io.observe(el));
+    return () => io.disconnect();
+  }, [bai.ma, cacPhan]);
   const toi = (id) => document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+  const mucLuc = [
+    ...cacPhan.map((ph) => ({ id: `phan-${ph.chu}`, khoa: ph.chu, ten: ph.ten, nhan: ph.chu, xong: daLam[ph.chu],
+      phu: daLam[ph.chu] ? `${daLam[ph.chu].diem}/${daLam[ph.chu].tong}` : `${ph.cau.length} ${tr("câu", "q.", "q.")}` })),
+    { id: "phan-on-tap", khoa: "on", ten: tr("Ôn tập cả bài", "Révision de la leçon", "Lesson review"), nhan: null, phu: `${bai.baiTap.length} ${tr("câu", "q.", "q.")}` },
+  ];
+
   return (
-    <div ref={dau} className="mx-auto max-w-3xl px-4 pb-24 pt-6">
+    <div ref={dau} className="mx-auto max-w-6xl px-4 pb-24 pt-6">
       <Link to="/etudiant/ngu-phap" className="inline-flex items-center gap-1.5 text-sm font-semibold text-soft no-underline hover:text-ink">
         <ArrowLeft size={15} /> {tr("Tất cả bài học", "Toutes les leçons", "All lessons")}
       </Link>
@@ -383,53 +387,78 @@ function TrangBai({ bai, ketQua, onGhi }) {
         <p className="m-0 mt-3 text-sm text-white/90">{bai.tomTat}</p>
         {ketQua && <p className="m-0 mt-3 inline-flex items-center gap-1.5 rounded-full bg-white/20 px-3 py-1 text-xs font-extrabold"><Check size={13} /> {tr("Điểm tốt nhất", "Meilleur score", "Best score")}: {ketQua.diem}/{ketQua.tong}</p>}
       </header>
-      <nav className="mt-6 rounded-3xl border border-solid border-line bg-surface p-5">
-        <p className="m-0 text-xs font-extrabold uppercase tracking-wider text-soft">{tr("Các phần của bài", "Plan de la leçon", "Lesson outline")}</p>
-        <ol className="m-0 mt-3 grid list-none gap-1.5 p-0">
-          {cacPhan.map((ph) => (
-            <li key={ph.chu}>
-              <button type="button" onClick={() => toi(`phan-${ph.chu}`)}
-                className="flex w-full cursor-pointer items-center gap-3 rounded-xl border-0 bg-transparent px-2 py-2 text-left font-sans hover:bg-surface2">
-                <span className={`grid h-7 w-7 shrink-0 place-items-center rounded-lg text-sm font-extrabold ${daLam[ph.chu] ? "bg-ok text-white" : "bg-primary-soft text-primary"}`}>{daLam[ph.chu] ? <Check size={14} /> : ph.chu}</span>
-                <span className="min-w-0 flex-1 text-sm font-bold text-ink">{ph.ten}</span>
-                <span className="shrink-0 text-xs text-soft">{daLam[ph.chu] ? `${daLam[ph.chu].diem}/${daLam[ph.chu].tong}` : `${ph.cau.length} ${tr("câu", "q.", "q.")}`}</span>
-              </button>
-            </li>
-          ))}
-          <li>
-            <button type="button" onClick={() => toi("phan-on-tap")}
-              className="flex w-full cursor-pointer items-center gap-3 rounded-xl border-0 bg-transparent px-2 py-2 text-left font-sans hover:bg-surface2">
-              <span className="grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-surface2 text-soft"><Dumbbell size={14} /></span>
-              <span className="min-w-0 flex-1 text-sm font-bold text-ink">{tr("Ôn tập cả bài", "Révision de la leçon", "Lesson review")}</span>
-              <span className="shrink-0 text-xs text-soft">{bai.baiTap.length} {tr("câu", "q.", "q.")}</span>
-            </button>
-          </li>
-        </ol>
+
+      {/* Màn hẹp: dải chữ cái dính trên đầu khi cuộn */}
+      <nav className="no-scrollbar sticky top-0 z-10 -mx-4 mt-4 flex gap-2 overflow-x-auto bg-bg px-4 py-2 lg:hidden">
+        {mucLuc.map((m) => (
+          <button key={m.khoa} type="button" onClick={() => toi(m.id)} title={m.ten}
+            className={`flex shrink-0 cursor-pointer items-center gap-1.5 rounded-full border-0 px-3 py-1.5 font-sans text-sm font-extrabold ${dangXem === m.khoa ? "bg-primary text-on-primary" : m.xong ? "bg-ok-soft text-ok" : "bg-surface text-ink"}`}>
+            {m.nhan ? (m.xong ? <Check size={13} /> : m.nhan) : <Dumbbell size={13} />}
+            <span className="max-w-[9rem] truncate font-semibold">{m.ten}</span>
+          </button>
+        ))}
       </nav>
-      {cacPhan.map((ph) => (
-        <div key={`${bai.ma}-${ph.chu}`} id={`phan-${ph.chu}`} className="scroll-mt-4">
-          <article className="mt-6 rounded-3xl bg-surface p-5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] sm:p-7">
-            <h2 className="m-0 flex items-center gap-3 text-lg font-extrabold text-ink">
-              <span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-primary text-sm text-on-primary">{ph.chu}</span>{ph.ten}
-            </h2>
-            {ph.khoi.map((k, j) => <Khoi key={j} k={j === 0 && k.tieuDe === ph.ten ? { ...k, tieuDe: null } : k} />)}
-          </article>
-          {ph.cau.length > 0 && (
-            <ThucHanh bai={bai} cau={ph.cau} tieuDe={`${tr("Luyện tập phần", "Exercices partie", "Practice part")} ${ph.chu}`}
-              onXong={(diem, tong) => setDaLam((x) => ({ ...x, [ph.chu]: { diem, tong } }))} />
+
+      <div className="lg:mt-6 lg:grid lg:grid-cols-[250px_minmax(0,1fr)] lg:items-start lg:gap-6">
+        {/* Màn rộng: mục lục cột trái, dính theo khi cuộn */}
+        <aside className="hidden lg:sticky lg:top-4 lg:block">
+          <nav className="rounded-3xl border border-solid border-line bg-surface p-4">
+            <p className="m-0 px-2 text-xs font-extrabold uppercase tracking-wider text-soft">{tr("Các phần của bài", "Plan de la leçon", "Lesson outline")}</p>
+            <ol className="m-0 mt-2 grid list-none gap-1 p-0">
+              {mucLuc.map((m) => {
+                const dang = dangXem === m.khoa;
+                return (
+                  <li key={m.khoa}>
+                    <button type="button" onClick={() => toi(m.id)}
+                      className={`flex w-full cursor-pointer items-start gap-2.5 rounded-xl border-0 px-2 py-2 text-left font-sans transition-colors ${dang ? "bg-primary-soft" : "bg-transparent hover:bg-surface2"}`}>
+                      <span className={`grid h-6 w-6 shrink-0 place-items-center rounded-lg text-xs font-extrabold ${m.xong ? "bg-ok text-white" : dang ? "bg-primary text-on-primary" : m.nhan ? "bg-primary-soft text-primary" : "bg-surface2 text-soft"}`}>
+                        {m.nhan ? (m.xong ? <Check size={12} /> : m.nhan) : <Dumbbell size={12} />}
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span className={`block text-sm leading-snug ${dang ? "font-extrabold text-ink" : "font-semibold text-ink"}`}>{m.ten}</span>
+                        <span className="block text-xs text-soft">{m.phu}</span>
+                      </span>
+                    </button>
+                  </li>
+                );
+              })}
+            </ol>
+          </nav>
+        </aside>
+
+        <div className="min-w-0">
+          {cacPhan.map((ph) => (
+            <div key={`${bai.ma}-${ph.chu}`} id={`phan-${ph.chu}`} data-phan={ph.chu} className="scroll-mt-16 lg:scroll-mt-4">
+              <article className="mt-6 rounded-3xl bg-surface p-5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] first:mt-0 sm:p-7">
+                <h2 className="m-0 flex items-center gap-3 text-lg font-extrabold text-ink">
+                  <span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-primary text-sm text-on-primary">{ph.chu}</span>{ph.ten}
+                </h2>
+                {ph.giai && (
+                  <div className="mt-4 rounded-2xl border border-solid border-primary/20 bg-primary-soft/50 p-4">
+                    <p className="m-0 mb-1.5 flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-wider text-primary"><Lightbulb size={14} /> {tr("Giải thích", "Explication", "Explanation")}</p>
+                    <div className="leading-relaxed text-ink [&_p]:m-0 [&_p+p]:mt-2" dangerouslySetInnerHTML={{ __html: ph.giai }} />
+                  </div>
+                )}
+                {ph.khoi.map((k, j) => <Khoi key={j} k={j === 0 && k.tieuDe === ph.ten ? { ...k, tieuDe: null } : k} />)}
+              </article>
+              {ph.cau.length > 0 && (
+                <ThucHanh bai={bai} cau={ph.cau} tieuDe={`${tr("Luyện tập phần", "Exercices partie", "Practice part")} ${ph.chu}`}
+                  onXong={(diem, tong) => setDaLam((x) => ({ ...x, [ph.chu]: { diem, tong } }))} />
+              )}
+            </div>
+          ))}
+          <div id="phan-on-tap" data-phan="on" className="mt-10 scroll-mt-16 lg:scroll-mt-4">
+            <ThucHanh key={bai.ma} bai={bai} tieuDe={tr("Ôn tập cả bài", "Révision de la leçon", "Lesson review")} onXong={onGhi} />
+          </div>
+          <LuyenThem bai={bai} />
+          {sau && (
+            <Link to={`/etudiant/ngu-phap/${sau.ma}`} className="mt-8 flex items-center justify-between gap-3 rounded-2xl bg-primary-soft p-4 text-primary no-underline hover:opacity-90">
+              <span><span className="block text-xs font-bold uppercase tracking-wide">{tr("Bài tiếp theo", "Leçon suivante", "Next lesson")}</span><span className="block font-extrabold">{sau.ten}</span></span>
+              <ArrowRight size={18} />
+            </Link>
           )}
         </div>
-      ))}
-      <div id="phan-on-tap" className="mt-10 scroll-mt-4">
-        <ThucHanh key={bai.ma} bai={bai} tieuDe={tr("Ôn tập cả bài", "Révision de la leçon", "Lesson review")} onXong={onGhi} />
       </div>
-      <LuyenThem bai={bai} />
-      {sau && (
-        <Link to={`/etudiant/ngu-phap/${sau.ma}`} className="mt-8 flex items-center justify-between gap-3 rounded-2xl bg-primary-soft p-4 text-primary no-underline hover:opacity-90">
-          <span><span className="block text-xs font-bold uppercase tracking-wide">{tr("Bài tiếp theo", "Leçon suivante", "Next lesson")}</span><span className="block font-extrabold">{sau.ten}</span></span>
-          <ArrowRight size={18} />
-        </Link>
-      )}
     </div>
   );
 }
