@@ -60,6 +60,9 @@ export const TEACHER_NAV = [
 
 export const STUDENT_NAV = [
   { to: "/etudiant/dashboard", nhom: "hoc", labelKey: "nav.dashboard", Icon: LayoutDashboard },
+  /* « Học ngữ pháp » (15/10): lý thuyết theo trình độ + thực hành ngay. Đứng ngay
+     sau Trang chủ (16/10, theo chủ dự án). */
+  { to: "/etudiant/ngu-phap", nhom: "hoc", labelKey: "nav.grammar", Icon: BookA },
   /* Lộ trình học tập — cây kỹ năng A1 → C1. Không có `view`: route riêng
      trong App.jsx, không nằm trong Student.jsx.
 
@@ -75,8 +78,6 @@ export const STUDENT_NAV = [
   { to: "/etudiant/entrainement", nhom: "hoc", labelKey: "nav.practice", Icon: Dumbbell, view: "practice" },
   /* « Nghe & Nói » (10/10): chép chính tả + luyện phát âm, route riêng. */
   { to: "/etudiant/nghe-noi", nhom: "hoc", labelKey: "nav.speak", Icon: AudioLines },
-  /* « Học ngữ pháp » (15/10): lý thuyết theo trình độ + thực hành ngay. */
-  { to: "/etudiant/ngu-phap", nhom: "hoc", labelKey: "nav.grammar", Icon: BookA },
   /* Không có `view`: là route riêng trong App.jsx, giống « Sổ tay » bên giáo viên.
      Ban đầu tôi cố ý KHÔNG đưa vào đây với lý do "vào là bắt đầu tính giờ, không
      phải mục menu thường". Sai — kết quả là một màn hình không ai tới được, tức
