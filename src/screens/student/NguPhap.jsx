@@ -33,6 +33,37 @@ const phatAm = (khoa) => {
   try { amDangPhat?.pause(); amDangPhat = new Audio(url); amDangPhat.play().catch(() => {}); } catch { /* bỏ qua */ }
 };
 
+/* Chia bài thành các phần a, b, c… (16/10, theo chủ dự án): mỗi phần một khối
+ * lý thuyết chính (bang/doan/chuCai/dau/ipa), khối phụ (loi, luuY, vidu) dính vào
+ * phần trước. Bài tập rải đều theo thứ tự (câu hỏi vốn soạn theo thứ tự lý thuyết),
+ * phần nào cũng có ít nhất một câu: thừa phần thì gộp phần ngắn vào phần trước. */
+const KHOI_PHU = new Set(["loi", "luuY", "vidu"]);
+const tenKhoi = (k) => {
+  if (k.tieuDe) return k.tieuDe;
+  if (k.loai === "chuCai") return tr("Bảng chữ cái", "L'alphabet", "The alphabet");
+  if (k.loai === "dau") return tr("Dấu trong tiếng Pháp", "Les accents", "Accents");
+  if (k.loai === "ipa") return tr("Phiên âm IPA", "Les sons (API)", "IPA sounds");
+  const m = /<strong>(.*?)<\/strong>/.exec(k.html ?? "");
+  const t = (m?.[1] ?? "").replace(/<[^>]+>/g, "").trim();
+  return t ? t.charAt(0).toUpperCase() + t.slice(1) : tr("Ghi nhớ", "À retenir", "Key points");
+};
+function chiaPhan(bai) {
+  let ds = [];
+  for (const k of bai.phan) {
+    if (ds.length && KHOI_PHU.has(k.loai)) ds[ds.length - 1].khoi.push(k);
+    else ds.push({ ten: tenKhoi(k), khoi: [k] });
+  }
+  const n = bai.baiTap.length;
+  while (ds.length > Math.max(1, n)) {
+    let j = 1;
+    for (let x = 2; x < ds.length; x++) if (ds[x].khoi.length < ds[j].khoi.length) j = x;
+    ds[j - 1].khoi.push(...ds[j].khoi);
+    ds.splice(j, 1);
+  }
+  const p = ds.length;
+  return ds.map((ph, j) => ({ ...ph, chu: String.fromCharCode(97 + j), cau: bai.baiTap.slice(Math.floor((j * n) / p), Math.floor(((j + 1) * n) / p)) }));
+}
+
 /* ─────────── Các khối lý thuyết ─────────── */
 function KhoiBang({ k }) {
   return (
@@ -139,8 +170,8 @@ function Khoi({ k }) {
  * Mỗi màn MỘT câu: chọn/gõ → « Kiểm tra » → báo đúng/sai ngay kèm lời giải →
  * « Tiếp tục ». Hết lượt thì tổng kết + làm lại câu sai. Chỉ lượt ĐẦU, làm đủ
  * mọi câu mới gọi onXong (lượt làm lại câu sai không ghi điểm). */
-function ThucHanh({ bai, onXong }) {
-  const tatCa = bai.baiTap;
+function ThucHanh({ bai, cau, tieuDe, onXong }) {
+  const tatCa = cau ?? bai.baiTap;
   const [ds, setDs] = useState(() => tatCa.map((_, i) => i));   // chỉ số câu trong lượt này
   const [vong, setVong] = useState(0);                          // 0 = lượt đầu
   const [vt, setVt] = useState(0);
@@ -173,7 +204,7 @@ function ThucHanh({ bai, onXong }) {
     if (sau >= ds.length) {
       const diem = kq.filter((k) => k.ok).length;
       phat(diem === ds.length ? "thang" : "bam");
-      if (vong === 0) onXong(diem, ds.length);
+      if (vong === 0) onXong?.(diem, ds.length);
     }
   };
   const batDau = (moi) => { setDs(moi); setVong((v) => v + 1); setVt(0); setTl(null); setKq([]); setXem(false); phat("bam"); };
@@ -192,9 +223,9 @@ function ThucHanh({ bai, onXong }) {
   const sai = kq.filter((k) => !k.ok);
 
   return (
-    <section className="mt-8 overflow-hidden rounded-3xl border border-solid border-line bg-surface">
+    <section className="mt-6 overflow-hidden rounded-3xl border border-solid border-line bg-surface">
       <div className="flex items-center gap-3 border-0 border-b border-solid border-line px-5 py-4">
-        <h2 className="m-0 flex items-center gap-2 text-lg font-extrabold text-ink"><Dumbbell size={18} className="text-primary" /> {tr("Thực hành", "Entraînement", "Practice")}</h2>
+        <h2 className="m-0 flex items-center gap-2 text-lg font-extrabold text-ink"><Dumbbell size={18} className="text-primary" /> {tieuDe ?? tr("Thực hành", "Entraînement", "Practice")}</h2>
         {vong > 0 && <span className="rounded-full bg-warn/15 px-2.5 py-0.5 text-xs font-bold text-warn">{tr("Làm lại", "Reprise", "Retry")}</span>}
         <span className="ml-auto text-sm font-bold tabular-nums text-soft">{Math.min(vt + 1, ds.length)}/{ds.length}</span>
       </div>
@@ -336,6 +367,10 @@ function TrangBai({ bai, ketQua, onGhi }) {
   const sau = TAT_CA[i + 1];
   const dau = useRef(null);
   useEffect(() => { dau.current?.scrollIntoView({ block: "start" }); }, [bai.ma]);
+  const cacPhan = useMemo(() => chiaPhan(bai), [bai]);
+  const [daLam, setDaLam] = useState({});
+  useEffect(() => { setDaLam({}); }, [bai.ma]);
+  const toi = (id) => document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
   return (
     <div ref={dau} className="mx-auto max-w-3xl px-4 pb-24 pt-6">
       <Link to="/etudiant/ngu-phap" className="inline-flex items-center gap-1.5 text-sm font-semibold text-soft no-underline hover:text-ink">
@@ -348,10 +383,46 @@ function TrangBai({ bai, ketQua, onGhi }) {
         <p className="m-0 mt-3 text-sm text-white/90">{bai.tomTat}</p>
         {ketQua && <p className="m-0 mt-3 inline-flex items-center gap-1.5 rounded-full bg-white/20 px-3 py-1 text-xs font-extrabold"><Check size={13} /> {tr("Điểm tốt nhất", "Meilleur score", "Best score")}: {ketQua.diem}/{ketQua.tong}</p>}
       </header>
-      <article className="mt-6 rounded-3xl bg-surface p-5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] sm:p-7">
-        {bai.phan.map((k, j) => <Khoi key={j} k={k} />)}
-      </article>
-      <ThucHanh key={bai.ma} bai={bai} onXong={onGhi} />
+      <nav className="mt-6 rounded-3xl border border-solid border-line bg-surface p-5">
+        <p className="m-0 text-xs font-extrabold uppercase tracking-wider text-soft">{tr("Các phần của bài", "Plan de la leçon", "Lesson outline")}</p>
+        <ol className="m-0 mt-3 grid list-none gap-1.5 p-0">
+          {cacPhan.map((ph) => (
+            <li key={ph.chu}>
+              <button type="button" onClick={() => toi(`phan-${ph.chu}`)}
+                className="flex w-full cursor-pointer items-center gap-3 rounded-xl border-0 bg-transparent px-2 py-2 text-left font-sans hover:bg-surface2">
+                <span className={`grid h-7 w-7 shrink-0 place-items-center rounded-lg text-sm font-extrabold ${daLam[ph.chu] ? "bg-ok text-white" : "bg-primary-soft text-primary"}`}>{daLam[ph.chu] ? <Check size={14} /> : ph.chu}</span>
+                <span className="min-w-0 flex-1 text-sm font-bold text-ink">{ph.ten}</span>
+                <span className="shrink-0 text-xs text-soft">{daLam[ph.chu] ? `${daLam[ph.chu].diem}/${daLam[ph.chu].tong}` : `${ph.cau.length} ${tr("câu", "q.", "q.")}`}</span>
+              </button>
+            </li>
+          ))}
+          <li>
+            <button type="button" onClick={() => toi("phan-on-tap")}
+              className="flex w-full cursor-pointer items-center gap-3 rounded-xl border-0 bg-transparent px-2 py-2 text-left font-sans hover:bg-surface2">
+              <span className="grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-surface2 text-soft"><Dumbbell size={14} /></span>
+              <span className="min-w-0 flex-1 text-sm font-bold text-ink">{tr("Ôn tập cả bài", "Révision de la leçon", "Lesson review")}</span>
+              <span className="shrink-0 text-xs text-soft">{bai.baiTap.length} {tr("câu", "q.", "q.")}</span>
+            </button>
+          </li>
+        </ol>
+      </nav>
+      {cacPhan.map((ph) => (
+        <div key={`${bai.ma}-${ph.chu}`} id={`phan-${ph.chu}`} className="scroll-mt-4">
+          <article className="mt-6 rounded-3xl bg-surface p-5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] sm:p-7">
+            <h2 className="m-0 flex items-center gap-3 text-lg font-extrabold text-ink">
+              <span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-primary text-sm text-on-primary">{ph.chu}</span>{ph.ten}
+            </h2>
+            {ph.khoi.map((k, j) => <Khoi key={j} k={j === 0 && k.tieuDe === ph.ten ? { ...k, tieuDe: null } : k} />)}
+          </article>
+          {ph.cau.length > 0 && (
+            <ThucHanh bai={bai} cau={ph.cau} tieuDe={`${tr("Luyện tập phần", "Exercices partie", "Practice part")} ${ph.chu}`}
+              onXong={(diem, tong) => setDaLam((x) => ({ ...x, [ph.chu]: { diem, tong } }))} />
+          )}
+        </div>
+      ))}
+      <div id="phan-on-tap" className="mt-10 scroll-mt-4">
+        <ThucHanh key={bai.ma} bai={bai} tieuDe={tr("Ôn tập cả bài", "Révision de la leçon", "Lesson review")} onXong={onGhi} />
+      </div>
       <LuyenThem bai={bai} />
       {sau && (
         <Link to={`/etudiant/ngu-phap/${sau.ma}`} className="mt-8 flex items-center justify-between gap-3 rounded-2xl bg-primary-soft p-4 text-primary no-underline hover:opacity-90">
