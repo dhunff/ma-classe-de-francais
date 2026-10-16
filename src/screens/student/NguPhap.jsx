@@ -11,6 +11,7 @@ import { BAI_A1 } from "../../content/nguPhap/a1.js";
 import { BAI_A2 } from "../../content/nguPhap/a2.js";
 import { BAI_B1 } from "../../content/nguPhap/b1.js";
 import { BAI_B2 } from "../../content/nguPhap/b2.js";
+import { BAI_C1 } from "../../content/nguPhap/c1.js";
 import { CAU_TRUC } from "../../content/nguPhap/cauTruc.js";
 import { BO_SUNG_A0_A1 } from "../../content/nguPhap/boSungA0A1.js";
 import { BO_SUNG_A2_B1 } from "../../content/nguPhap/boSungA2B1.js";
@@ -26,9 +27,9 @@ import AM from "../../content/nguPhap/amThanh.json";
 
 /* A2 (16/10): 15 bài mới thay 5 bài A2 cũ trong a2b1.js; B1 vẫn lấy từ a2b1.js. */
 /* B1 (16/10): 16 bài mới (b1.js) thay 5 bài B1 cũ; a2b1.js không còn được dùng. */
-const TAT_CA = [...BAI_NHAP_MON, ...BAI_A1, ...BAI_A2, ...BAI_B1, ...BAI_B2];
-const CAP = ["A0", "A1", "A2", "B1", "B2"];
-const MAU_CAP = { A0: "from-emerald-500 to-teal-600", A1: "from-amber-500 to-orange-600", A2: "from-sky-500 to-blue-600", B1: "from-violet-500 to-indigo-600", B2: "from-rose-500 to-pink-600" };
+const TAT_CA = [...BAI_NHAP_MON, ...BAI_A1, ...BAI_A2, ...BAI_B1, ...BAI_B2, ...BAI_C1];
+const CAP = ["A0", "A1", "A2", "B1", "B2", "C1"];
+const MAU_CAP = { A0: "from-emerald-500 to-teal-600", A1: "from-amber-500 to-orange-600", A2: "from-sky-500 to-blue-600", B1: "from-violet-500 to-indigo-600", B2: "from-rose-500 to-pink-600", C1: "from-slate-600 to-slate-800" };
 const tenCap = (c) => (c === "A0" ? tr("A0 · Nhập môn", "A0 · Débutant", "A0 · Beginner") : c);
 
 const chuan = (s) => String(s ?? "").normalize("NFC").replace(/[’`´]/g, "'").replace(/\s+/g, " ").trim().toLowerCase();
@@ -571,7 +572,6 @@ export default function NguPhap() {
           </div>
         </section>
       ))}
-      <p className="m-0 mt-8 text-center text-xs text-soft">{tr("Các bài C1 đang được soạn.", "Les leçons C1 sont en préparation.", "C1 lessons are coming soon.")}</p>
     </div>
   );
 }
