@@ -8,8 +8,8 @@ import { Leon } from "../../shared/leon.jsx";
 import { usePracticeStore } from "../dashboard/PracticeRail.jsx";
 import { CHU_CAI, DAU, IPA, BAI_NHAP_MON } from "../../content/nguPhap/nhapMon.js";
 import { BAI_A1 } from "../../content/nguPhap/a1.js";
-import { BAI_A2_B1 } from "../../content/nguPhap/a2b1.js";
 import { BAI_A2 } from "../../content/nguPhap/a2.js";
+import { BAI_B1 } from "../../content/nguPhap/b1.js";
 import { CAU_TRUC } from "../../content/nguPhap/cauTruc.js";
 import { BO_SUNG_A0_A1 } from "../../content/nguPhap/boSungA0A1.js";
 import { BO_SUNG_A2_B1 } from "../../content/nguPhap/boSungA2B1.js";
@@ -24,7 +24,8 @@ import AM from "../../content/nguPhap/amThanh.json";
  * Âm thanh Nhập môn: giọng tổng hợp, tạo bằng scripts/ngu-phap/tao-am.mjs. */
 
 /* A2 (16/10): 15 bài mới thay 5 bài A2 cũ trong a2b1.js; B1 vẫn lấy từ a2b1.js. */
-const TAT_CA = [...BAI_NHAP_MON, ...BAI_A1, ...BAI_A2, ...BAI_A2_B1.filter((b) => b.cap === "B1")];
+/* B1 (16/10): 16 bài mới (b1.js) thay 5 bài B1 cũ; a2b1.js không còn được dùng. */
+const TAT_CA = [...BAI_NHAP_MON, ...BAI_A1, ...BAI_A2, ...BAI_B1];
 const CAP = ["A0", "A1", "A2", "B1"];
 const MAU_CAP = { A0: "from-emerald-500 to-teal-600", A1: "from-amber-500 to-orange-600", A2: "from-sky-500 to-blue-600", B1: "from-violet-500 to-indigo-600" };
 const tenCap = (c) => (c === "A0" ? tr("A0 · Nhập môn", "A0 · Débutant", "A0 · Beginner") : c);
