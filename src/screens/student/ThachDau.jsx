@@ -50,6 +50,7 @@ export default function ThachDau() {
   const [bo, setBo] = useState(undefined);      // danh sách CHỦ ĐỀ (giữ tên biến cũ)
   const [chonBan, setChonBan] = useState("");
   const [chonBo, setChonBo] = useState("");
+  const [nhomChon, setNhomChon] = useState("tu_vung");
   const [baoLoi, setBaoLoi] = useState("");
   const [dangTao, setDangTao] = useState(false);
   const [vuaGui, setVuaGui] = useState(false);
@@ -124,50 +125,49 @@ export default function ThachDau() {
             <p className="m-0 text-sm text-soft">{t("duel.no_friends")}</p>
           </div>
         ) : (
-          <div className="grid gap-4">
-            <div>
+          /* Gọn lại 18/10: bạn = dải ảnh nhỏ cuộn ngang; chủ đề = hai tab + chip
+             trong khung cao giới hạn. min-w-0 ở mọi cột: grid item mặc định
+             min-width auto nên dải cuộn ngang từng đẩy cả khối tràn khỏi viền. */
+          <div className="grid min-w-0 gap-4">
+            <div className="min-w-0">
               <p className="m-0 mb-2 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-soft"><Users size={13} /> {t("duel.pick_friend")}</p>
-              <div className="no-scrollbar -mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
+              <div className="no-scrollbar flex min-w-0 gap-1 overflow-x-auto pb-1">
                 {(ban || []).map((b) => {
                   const dang = chonBan === b.id;
                   return (
-                    <button key={b.id} type="button" onClick={() => { phat("bam"); setChonBan(b.id); }} aria-pressed={dang}
-                      className={`relative flex w-24 shrink-0 cursor-pointer flex-col items-center gap-1.5 rounded-2xl border-2 border-solid px-2 py-3 font-sans transition-all duration-200 ${dang ? "-translate-y-1 border-primary bg-primary-soft shadow-[0_10px_24px_rgba(37,99,235,0.2)]" : "border-line bg-surface hover:-translate-y-0.5 hover:border-primary/40"}`}>
-                      {dang && <span className="mcf-nay absolute right-1.5 top-1.5 grid h-5 w-5 place-items-center rounded-full bg-primary text-white"><Check size={12} strokeWidth={3} /></span>}
-                      <Avatar khoa={b.avatar || ""} ten={b.name} size={44} dungYen />
-                      <span className="w-full truncate text-center text-xs font-bold text-ink">{b.name}</span>
+                    <button key={b.id} type="button" onClick={() => { phat("bam"); setChonBan(b.id); }} aria-pressed={dang} title={b.name}
+                      className="relative flex w-16 shrink-0 cursor-pointer flex-col items-center gap-1 rounded-xl border-0 bg-transparent px-0.5 py-1 font-sans">
+                      <span className={`relative rounded-full p-0.5 transition-all ${dang ? "bg-primary" : "bg-transparent"}`}>
+                        <Avatar khoa={b.avatar || ""} ten={b.name} size={40} dungYen />
+                        {dang && <span className="mcf-nay absolute -bottom-0.5 -right-0.5 grid h-4 w-4 place-items-center rounded-full border-2 border-solid border-surface bg-primary text-white"><Check size={9} strokeWidth={3} /></span>}
+                      </span>
+                      <span className={`w-full truncate text-center text-[11px] ${dang ? "font-extrabold text-primary" : "font-semibold text-ink"}`}>{b.name}</span>
                     </button>
                   );
                 })}
               </div>
             </div>
-            <div>
+            <div className="min-w-0">
               <p className="m-0 mb-2 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-soft"><Layers size={13} /> {tr("Chọn chủ đề · 10 câu ngẫu nhiên", "Choisis un thème · 10 questions au hasard", "Pick a topic · 10 random questions")}</p>
-              <div className="grid gap-3">
-                {[["tu_vung", tr("Từ vựng", "Vocabulaire", "Vocabulary"), "from-amber-400 to-orange-500"], ["ngu_phap", tr("Ngữ pháp và diễn đạt", "Grammaire et expression", "Grammar and expression"), "from-indigo-500 to-violet-600"]].map(([nhom, nhan, mau]) => {
-                  const dsNhom = (bo || []).filter((c) => c.nhom === nhom);
-                  if (!dsNhom.length) return null;
+              <div className="mb-2 inline-flex rounded-xl bg-surface2 p-1">
+                {[["tu_vung", tr("Từ vựng", "Vocabulaire", "Vocabulary")], ["ngu_phap", tr("Ngữ pháp và diễn đạt", "Grammaire et expression", "Grammar and expression")]].map(([nhom, nhan]) => (
+                  <button key={nhom} type="button" onClick={() => setNhomChon(nhom)}
+                    className={`cursor-pointer rounded-lg border-0 px-3 py-1.5 font-sans text-xs font-extrabold ${nhomChon === nhom ? "bg-surface text-primary shadow-sm" : "bg-transparent text-soft hover:text-ink"}`}>
+                    {nhan} <span className="font-semibold opacity-70">{(bo || []).filter((c) => c.nhom === nhom).length}</span>
+                  </button>
+                ))}
+              </div>
+              <div className="no-scrollbar flex max-h-44 flex-wrap gap-1.5 overflow-y-auto">
+                {(bo || []).filter((c) => c.nhom === nhomChon).map((c) => {
+                  const dang = chonBo === c.ma;
                   return (
-                    <div key={nhom}>
-                      <p className="m-0 mb-1.5 text-[11px] font-extrabold text-ink">{nhan}</p>
-                      <div className="grid gap-2 sm:grid-cols-2">
-                        {dsNhom.map((c) => {
-                          const dang = chonBo === c.ma;
-                          return (
-                            <button key={c.ma} type="button" onClick={() => { phat("bam"); setChonBo(c.ma); }} aria-pressed={dang}
-                              className={`flex cursor-pointer items-center gap-3 rounded-2xl border-2 border-solid p-3 text-left font-sans transition-all duration-200 ${dang ? "-translate-y-0.5 border-primary bg-primary-soft shadow-[0_10px_24px_rgba(37,99,235,0.18)]" : "border-line bg-surface hover:-translate-y-0.5 hover:border-primary/40"}`}>
-                              <span className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-gradient-to-br ${mau} text-white shadow`}>
-                                {dang ? <Check size={18} strokeWidth={3} /> : <Layers size={18} />}
-                              </span>
-                              <span className="min-w-0 flex-1">
-                                <span className="block truncate text-sm font-extrabold text-ink">{tr(c.ten_vi, c.ten_fr, c.ten_en)}</span>
-                                <span className="block text-[11px] font-semibold text-soft">{c.so_the} {tr("thẻ", "cartes", "cards")} · {c.so_bo} {tr("bộ", "paquets", "decks")}</span>
-                              </span>
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
+                    <button key={c.ma} type="button" onClick={() => { phat("bam"); setChonBo(c.ma); }} aria-pressed={dang}
+                      title={`${c.so_the} ${tr("thẻ", "cartes", "cards")} · ${c.so_bo} ${tr("bộ", "paquets", "decks")}`}
+                      className={`inline-flex max-w-full cursor-pointer items-center gap-1.5 rounded-full border border-solid px-3 py-1.5 font-sans text-xs font-bold transition-colors ${dang ? "border-primary bg-primary text-white" : "border-line bg-surface text-ink hover:border-primary/50"}`}>
+                      {dang && <Check size={12} strokeWidth={3} />}
+                      <span className="truncate">{tr(c.ten_vi, c.ten_fr, c.ten_en)}</span>
+                      <span className={`tabular-nums ${dang ? "text-white/80" : "text-soft"}`}>{c.so_the}</span>
+                    </button>
                   );
                 })}
               </div>
