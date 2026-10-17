@@ -97,6 +97,9 @@ import ThuVienBoThe from "./screens/student/ThuVienBoThe.jsx";
 import LuyenBoThe from "./screens/student/LuyenBoThe.jsx";
 import XemLaiDau from "./screens/student/XemLaiDau.jsx";
 import NguPhap from "./screens/student/NguPhap.jsx";
+import { DanhSachHocSinh } from "./screens/teacher/TheoDoiHocSinh.jsx";
+/* 31 học sinh giả để xem bố cục danh sách gọn + chia trang (18/10). */
+const HS_GIA = Array.from({ length: 31 }, (_, i) => ({ id: null, name: `Học sinh ${i + 1}`, email: `hs${i + 1}@vidu.vn`, status: "active" }));
 const DAU_MAU = { cau: [{ chieu: "nghia", de: "du coup", luaChon: ["thế là, vậy nên", "tuy nhiên", "ngay lập tức", "dù sao"], dapAn: 0, chon: 0 }, { chieu: "nghia", de: "faire état de", luaChon: ["làm hỏng", "cho biết, nêu ra", "phủ nhận", "đề nghị"], dapAn: 1, chon: 3 }, { chieu: "tu", de: "do, vì (+ danh từ)", luaChon: ["grâce à", "pourtant", "en raison de", "bref"], dapAn: 2, chon: 0 }] };
 const THE_MAU = [["en raison de", "do, vì", "En raison de travaux, la ligne est fermée."], ["du coup", "thế là, vậy nên", "Il pleuvait, du coup je suis resté."], ["faire état de", "cho biết, nêu ra", "Le rapport fait état de retards."]].map(([a, b, c], i) => ({ card_id: "m" + i, matTruoc: a, matSau: b, viDu: c, due_at: "2026-10-15", interval_days: 1, ease: 2.5, reps: 0, lapses: 0 }));
 
@@ -697,6 +700,7 @@ function Preview() {
     ["/etudiant/luyen-the", "Luyện Flashcard (thẻ mẫu)"],
     ["/etudiant/xem-lai-dau", "Thách đấu: xem lại câu sai"],
     ["/etudiant/ngu-phap", "Học ngữ pháp"],
+    ["/professeur/theo-doi-thu", "Giáo viên: theo dõi học sinh (31 HS)"],
     ["/gioi-thieu/doi-ngu", "Đội ngũ chuyên môn"],
     ["/professeur/grille", "Soạn thang chấm"],
     ["/etudiant/tro-choi", "Màn chơi Lộ trình"],
@@ -823,6 +827,7 @@ function Preview() {
           <Route path="/etudiant/neo" element={<><Controls /><NeoThu /></>} />
           <Route path="/professeur/chon-doan" element={<><Controls /><ChonDoanThu /></>} />
           <Route path="/etudiant/ngu-phap" element={<><Controls /><NguPhap /></>} />
+          <Route path="/professeur/theo-doi-thu" element={<><Controls /><div className="p-6"><DanhSachHocSinh accounts={HS_GIA} exercises={[]} onMo={() => {}} onDoi={() => {}} /></div></>} />
           <Route path="/etudiant/ngu-phap/:ma" element={<><Controls /><NguPhap /></>} />
           <Route path="/etudiant/xem-lai-dau" element={<><Controls /><XemLaiDau tranId="mau" doi="Minh Anh" duMau={DAU_MAU} onDong={() => {}} /></>} />
           <Route path="/etudiant/luyen-the" element={<><Controls /><LuyenBoThe bo={{ id: "mau", ten: "Bộ mẫu" }} theMau={THE_MAU} onThoat={() => {}} /></>} />

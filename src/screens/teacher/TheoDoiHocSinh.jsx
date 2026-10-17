@@ -142,10 +142,17 @@ export function DanhSachHocSinh({ accounts, exercises, onMo, onDoi }) {
   const [loc, setLoc] = useState("tat_ca");
   const [tim, setTim] = useState("");
   const [hop, setHop] = useState(null);
+  /* Chia trang (18/10, theo chủ dự án): 31 học sinh = trang dài vô tận. Mỗi học
+     sinh một dòng gọn, 15 dòng một trang. */
+  const [trang, setTrang] = useState(0);
+  const MOI_TRANG = 15;
   const ds = useMemo(() => accounts.map((a) => ({ ...a, tq: a.id ? tq?.[a.id] : null }))
     .map((a) => ({ ...a, cb: a.tq ? canhBao(a.tq) : [] }))
     .filter((a) => (loc === "can" ? a.cb.length : true) && a.name.toLowerCase().includes(tim.trim().toLowerCase()))
     .sort((x, y) => (Date.parse(y.tq?.hoat_dong_cuoi || 0) || 0) - (Date.parse(x.tq?.hoat_dong_cuoi || 0) || 0)), [accounts, tq, loc, tim]);
+  useEffect(() => { setTrang(0); }, [loc, tim]);
+  const soTrang = Math.max(1, Math.ceil(ds.length / MOI_TRANG));
+  const dsTrang = ds.slice(trang * MOI_TRANG, (trang + 1) * MOI_TRANG);
   const soCan = accounts.filter((a) => a.id && tq?.[a.id] && canhBao(tq[a.id]).length).length;
 
   return (
@@ -163,56 +170,65 @@ export function DanhSachHocSinh({ accounts, exercises, onMo, onDoi }) {
       </div>
       {tq === null && <p className="m-0 rounded-2xl bg-danger-soft p-3 text-sm font-bold text-danger">{tr("Không đọc được số liệu học tập (migration 134).", "Statistiques indisponibles (migration 134).", "Couldn't load stats (migration 134).")}</p>}
 
-      {ds.map((a) => {
+      {ds.length > 0 && <div className="overflow-hidden rounded-3xl border border-solid border-line bg-surface">
+      {dsTrang.map((a) => {
         const r = a.tq;
         const kl = ketLuanThi(r?.thi);
         const online = r?.lan_cuoi_online && Date.now() - Date.parse(r.lan_cuoi_online) < 5 * 60000;
         const vip = r?.vip_den && Date.parse(r.vip_den) > Date.now();
+        const chip = "inline-flex items-center gap-1 rounded-full bg-surface2 px-2 py-0.5 text-ink";
         return (
-          <div key={a.id || a.name} className={`rounded-3xl border border-solid bg-surface p-4 shadow-sm ${a.cb.length ? "border-warn" : "border-line"}`}>
-            <div className="flex flex-wrap items-center gap-3">
-              <button type="button" onClick={() => onMo(a.name)} className="flex min-w-0 cursor-pointer items-center gap-3 border-0 bg-transparent p-0 text-left font-sans">
-                <span className="relative grid h-11 w-11 shrink-0 place-items-center rounded-full bg-primary-soft text-base font-extrabold text-primary">
-                  {a.name.charAt(0).toUpperCase()}
-                  <span className={`absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full border-2 border-solid border-surface ${online ? "bg-ok" : "bg-line-strong"}`} />
+          <div key={a.id || a.name} className={`flex flex-wrap items-center gap-x-3 gap-y-1.5 border-0 border-b border-solid border-line px-4 py-2.5 last:border-b-0 hover:bg-surface2/50 ${a.cb.length ? "border-l-4 border-l-warn" : ""}`}>
+            <button type="button" onClick={() => onMo(a.name)} className="flex w-60 min-w-0 shrink-0 cursor-pointer items-center gap-2.5 border-0 bg-transparent p-0 text-left font-sans">
+              <span className="relative grid h-9 w-9 shrink-0 place-items-center rounded-full bg-primary-soft text-sm font-extrabold text-primary">
+                {a.name.charAt(0).toUpperCase()}
+                <span className={`absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-solid border-surface ${online ? "bg-ok" : "bg-line-strong"}`} />
+              </span>
+              <span className="min-w-0">
+                <span className="flex items-center gap-1 truncate text-sm font-extrabold text-ink">{a.name}{vip && <Crown size={13} className="shrink-0 text-amber-500" />}</span>
+                <span className="block truncate text-[11px] text-soft" title={a.email || ""}>
+                  {a.status === "invited" ? tr("Chưa đăng ký", "Pas encore inscrit", "Not registered yet")
+                    : r?.hoat_dong_cuoi ? luc(r.hoat_dong_cuoi) : tr("Chưa hoạt động", "Aucune activité", "No activity")}
                 </span>
-                <span className="min-w-0">
-                  <span className="flex items-center gap-1.5 text-base font-extrabold text-ink">{a.name}{vip && <Crown size={14} className="text-amber-500" />}</span>
-                  <span className="block text-xs text-soft">
-                    {a.status === "invited" ? tr("Chưa đăng ký", "Pas encore inscrit", "Not registered yet")
-                      : r?.hoat_dong_cuoi ? `${tr("Hoạt động", "Actif", "Active")} ${luc(r.hoat_dong_cuoi)}` : tr("Chưa ghi nhận hoạt động", "Aucune activité enregistrée", "No activity recorded")}
-                    {a.email ? ` · ${a.email}` : ""}
-                  </span>
-                </span>
-              </button>
-              <div className="ml-auto flex flex-wrap gap-2">
-                {a.id && <button type="button" onClick={() => setHop({ loai: "nhan", hs: a })}
-                  className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-solid border-line bg-surface px-3 py-2 font-sans text-xs font-extrabold text-ink hover:border-primary hover:text-primary"><MessageCircle size={14} /> {tr("Nhắn tin", "Message", "Message")}</button>}
-                <button type="button" onClick={() => setHop({ loai: "giao", hs: a })}
-                  className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-solid border-line bg-surface px-3 py-2 font-sans text-xs font-extrabold text-ink hover:border-primary hover:text-primary"><ClipboardList size={14} /> {tr("Giao bài", "Assigner", "Assign")}</button>
-                <button type="button" onClick={() => onMo(a.name)}
-                  className="inline-flex cursor-pointer items-center gap-1 rounded-xl border-0 bg-primary px-3 py-2 font-sans text-xs font-extrabold text-white">{tr("Chi tiết", "Détails", "Details")} <ChevronRight size={14} /></button>
-              </div>
-            </div>
-            {r && (
-              <div className="mt-3 flex flex-wrap gap-2 text-xs font-bold">
-                <span className="inline-flex items-center gap-1 rounded-full bg-surface2 px-2.5 py-1 text-ink"><Flame size={13} className="text-orange-500" /> {tr(`${r.chuoi} ngày liên tiếp`, `${r.chuoi} j d'affilée`, `${r.chuoi}-day streak`)}</span>
-                <span className="inline-flex items-center gap-1 rounded-full bg-surface2 px-2.5 py-1 text-ink"><BookOpen size={13} className="text-primary" /> {tr(`${r.bai_7_ngay} bài / 7 ngày`, `${r.bai_7_ngay} exos / 7 j`, `${r.bai_7_ngay} exercises / 7 d`)}</span>
-                <span className="inline-flex items-center gap-1 rounded-full bg-surface2 px-2.5 py-1 text-ink"><Clock size={13} className="text-sky-600" /> {gio(r.giay_7_ngay)} / 7 {tr("ngày", "j", "d")}</span>
-                {r.diem_tb != null && <span className="inline-flex items-center gap-1 rounded-full bg-surface2 px-2.5 py-1 text-ink"><Trophy size={13} className="text-amber-500" /> {tr("TB", "Moy.", "Avg")} {r.diem_tb}%</span>}
-                <span className="inline-flex items-center gap-1 rounded-full bg-surface2 px-2.5 py-1 text-ink"><Star size={13} className="text-amber-500" /> {r.xp} XP</span>
+              </span>
+            </button>
+            {r ? (
+              <div className="flex min-w-0 flex-1 flex-wrap gap-1.5 text-[11px] font-bold">
+                <span className={chip} title={tr("Chuỗi ngày học", "Série", "Streak")}><Flame size={12} className="text-orange-500" /> {r.chuoi}</span>
+                <span className={chip} title={tr("Bài trong 7 ngày", "Exos sur 7 j", "Exercises in 7 d")}><BookOpen size={12} className="text-primary" /> {r.bai_7_ngay}</span>
+                <span className={chip} title={tr("Thời gian học 7 ngày", "Temps sur 7 j", "Time in 7 d")}><Clock size={12} className="text-sky-600" /> {gio(r.giay_7_ngay)}</span>
+                {r.diem_tb != null && <span className={chip} title={tr("Điểm trung bình", "Moyenne", "Average")}><Trophy size={12} className="text-amber-500" /> {r.diem_tb}%</span>}
+                <span className={chip}><Star size={12} className="text-amber-500" /> {r.xp}</span>
                 {r.thi && (
-                  <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 ${kl?.trang === "dat" ? "bg-ok-soft text-ok" : kl?.trang === "truot" ? "bg-danger-soft text-danger" : "bg-surface2 text-soft"}`}>
-                    {r.thi.title}: {kl?.trang === "dat" ? tr("Đạt", "Réussi", "Pass") : kl?.trang === "truot" ? tr("Trượt", "Échec", "Fail") : tr("chưa đủ điểm", "incomplet", "incomplete")}
+                  <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 ${kl?.trang === "dat" ? "bg-ok-soft text-ok" : kl?.trang === "truot" ? "bg-danger-soft text-danger" : "bg-surface2 text-soft"}`} title={r.thi.title}>
+                    {kl?.trang === "dat" ? tr("Đạt", "Réussi", "Pass") : kl?.trang === "truot" ? tr("Trượt", "Échec", "Fail") : tr("Thi chưa đủ", "Incomplet", "Incomplete")}
                     {kl?.tong != null && ` ${kl.tong}/${kl.max}`}
                   </span>
                 )}
-                {a.cb.map((c) => <span key={c} className="inline-flex items-center gap-1 rounded-full bg-warn-soft px-2.5 py-1 text-warn"><AlertTriangle size={13} /> {c}</span>)}
+                {a.cb.map((c) => <span key={c} className="inline-flex items-center gap-1 rounded-full bg-warn-soft px-2 py-0.5 text-warn"><AlertTriangle size={12} /> {c}</span>)}
               </div>
-            )}
+            ) : <span className="flex-1" />}
+            <div className="ml-auto flex shrink-0 gap-1.5">
+              {a.id && <button type="button" onClick={() => setHop({ loai: "nhan", hs: a })} title={tr("Nhắn tin", "Message", "Message")} aria-label={tr("Nhắn tin", "Message", "Message")}
+                className="grid h-8 w-8 cursor-pointer place-items-center rounded-lg border border-solid border-line bg-surface text-ink hover:border-primary hover:text-primary"><MessageCircle size={14} /></button>}
+              <button type="button" onClick={() => setHop({ loai: "giao", hs: a })} title={tr("Giao bài", "Assigner", "Assign")} aria-label={tr("Giao bài", "Assigner", "Assign")}
+                className="grid h-8 w-8 cursor-pointer place-items-center rounded-lg border border-solid border-line bg-surface text-ink hover:border-primary hover:text-primary"><ClipboardList size={14} /></button>
+              <button type="button" onClick={() => onMo(a.name)}
+                className="inline-flex h-8 cursor-pointer items-center gap-0.5 rounded-lg border-0 bg-primary px-2.5 font-sans text-xs font-extrabold text-white">{tr("Chi tiết", "Détails", "Details")} <ChevronRight size={13} /></button>
+            </div>
           </div>
         );
       })}
+      </div>}
+      {soTrang > 1 && (
+        <div className="flex flex-wrap items-center justify-center gap-1.5">
+          {Array.from({ length: soTrang }, (_, i) => (
+            <button key={i} type="button" onClick={() => setTrang(i)}
+              className={`h-8 min-w-8 cursor-pointer rounded-lg border-0 px-2.5 font-sans text-sm font-extrabold tabular-nums ${trang === i ? "bg-primary text-white" : "bg-surface2 text-ink hover:bg-primary-soft"}`}>{i + 1}</button>
+          ))}
+          <span className="ml-2 text-xs text-soft">{tr(`${ds.length} học sinh`, `${ds.length} élèves`, `${ds.length} students`)}</span>
+        </div>
+      )}
       {!ds.length && <p className="m-0 text-sm text-soft">{loc === "can" ? tr("Không có học sinh nào cần quan tâm.", "Aucun élève à suivre.", "No one needs attention.") : tr("Chưa có học sinh nào.", "Aucun élève.", "No students yet.")}</p>}
 
       {hop?.loai === "nhan" && <HopNhan hs={hop.hs} dong={() => setHop(null)} />}
