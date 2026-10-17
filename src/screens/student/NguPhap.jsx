@@ -9,6 +9,7 @@ import { usePracticeStore } from "../dashboard/PracticeRail.jsx";
 import { CHU_CAI, DAU, IPA } from "../../content/nguPhap/nhapMon.js";
 import { TAT_CA, CAP, chiaPhan, BAI_CONG_KHAI } from "../../content/nguPhap/index.js";
 import { ngayHomNay } from "../../shared/hoatDong.js";
+import { useSeo } from "../../shared/seo.js";
 import AM from "../../content/nguPhap/amThanh.json";
 
 /* « Học ngữ pháp » (15/10, theo chủ dự án): học LÝ THUYẾT trước rồi mới luyện.
@@ -587,6 +588,32 @@ export default function NguPhap({ congKhai = false }) {
 
   const bai = ma ? TAT_CA.find((b) => b.ma === ma) : null;
   const moDuoc = (b) => !congKhai || BAI_CONG_KHAI.has(b.ma);
+  /* SEO chỉ cho trang công khai (17/10). Nội dung tiếng Việt cho người Việt học
+     tiếng Pháp, nên tiêu đề / mô tả viết tiếng Việt, kèm tên bài tiếng Pháp. */
+  useSeo(!congKhai ? {} : bai ? {
+    tieuDe: `${bai.ten} (${bai.tenFr}) · Ngữ pháp tiếng Pháp ${bai.cap} | FRACILE`,
+    moTa: `${bai.tomTat} Bài học miễn phí có giải thích dễ hiểu, ví dụ và bài luyện chấm ngay.`,
+    duongDan: `/ngu-phap/${bai.ma}`,
+    jsonLd: moDuoc(bai) ? {
+      "@context": "https://schema.org", "@type": "LearningResource",
+      name: `${bai.ten} (${bai.tenFr})`, description: bai.tomTat, inLanguage: "vi",
+      educationalLevel: bai.cap === "A0" ? "A1" : bai.cap, learningResourceType: "Lesson",
+      teaches: bai.tenFr, isAccessibleForFree: true,
+      url: `https://fracile.vercel.app/ngu-phap/${bai.ma}`,
+      provider: { "@type": "Organization", name: "FRACILE", url: "https://fracile.vercel.app" },
+    } : null,
+  } : {
+    tieuDe: "Ngữ pháp tiếng Pháp miễn phí từ A1 đến C1 | FRACILE",
+    moTa: `Học ngữ pháp tiếng Pháp bằng tiếng Việt: ${TAT_CA.length} bài từ nhập môn đến C1, giải thích dễ hiểu, ví dụ, lỗi người Việt hay mắc và bài luyện chấm ngay. ${BAI_CONG_KHAI.size} bài học miễn phí không cần đăng nhập.`,
+    duongDan: "/ngu-phap",
+    jsonLd: {
+      "@context": "https://schema.org", "@type": "Course",
+      name: "Ngữ pháp tiếng Pháp từ A1 đến C1", inLanguage: "vi",
+      description: `${TAT_CA.length} bài ngữ pháp tiếng Pháp giải thích bằng tiếng Việt, kèm bài luyện.`,
+      provider: { "@type": "Organization", name: "FRACILE", url: "https://fracile.vercel.app" },
+      hasPart: TAT_CA.filter((b) => BAI_CONG_KHAI.has(b.ma)).map((b) => ({ "@type": "LearningResource", name: b.ten, url: `https://fracile.vercel.app/ngu-phap/${b.ma}` })),
+    },
+  });
   if (ma && bai) {
     const trang = moDuoc(bai) ? <TrangBai bai={bai} ketQua={ketQua[bai.ma]} onGhi={(d, t) => ghi(bai.ma, d, t)} goc={goc} congKhai={congKhai} /> : <BaiKhoa bai={bai} />;
     return congKhai ? <KhungCongKhai>{trang}</KhungCongKhai> : trang;
