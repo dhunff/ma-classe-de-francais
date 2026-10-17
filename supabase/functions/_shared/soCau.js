@@ -9,7 +9,33 @@
  * dau = true: tính dấu (chép chính tả). Phát âm đặt false: máy nghe không
  * phân biệt được « a » và « à », bắt học sinh chịu lỗi của máy là bất công. */
 
-const tachTu = (s) => String(s ?? "")
+/* Số viết bằng chữ số → chữ tiếng Pháp (18/10, theo chủ dự án): học sinh gõ « 9 »
+ * cho « neuf » vẫn được tính đúng, và máy nghe ra « 9 » khi chấm phát âm cũng vậy.
+ * Đổi ở CẢ HAI phía nên câu gốc có chữ số cũng khớp. Kiểu Pháp (soixante-dix,
+ * quatre-vingts), 0 đến 999 999. */
+const DON_VI = ["zéro", "un", "deux", "trois", "quatre", "cinq", "six", "sept", "huit", "neuf", "dix",
+  "onze", "douze", "treize", "quatorze", "quinze", "seize", "dix-sept", "dix-huit", "dix-neuf"];
+const CHUC = { 2: "vingt", 3: "trente", 4: "quarante", 5: "cinquante", 6: "soixante" };
+const duoi100 = (n) => {
+  if (n < 20) return DON_VI[n];
+  if (n < 70) { const t = CHUC[Math.floor(n / 10)], u = n % 10; return u === 0 ? t : u === 1 ? `${t} et un` : `${t}-${DON_VI[u]}`; }
+  if (n < 80) return n === 71 ? "soixante et onze" : `soixante-${DON_VI[n - 60]}`;
+  return n === 80 ? "quatre-vingts" : `quatre-vingt-${DON_VI[n - 80]}`;
+};
+const duoi1000 = (n) => {
+  const h = Math.floor(n / 100), r = n % 100;
+  if (!h) return duoi100(r);
+  const tram = h === 1 ? "cent" : `${DON_VI[h]} cent${r ? "" : "s"}`;
+  return r ? `${tram} ${duoi100(r)}` : tram;
+};
+export const soThanhChu = (n) => {
+  if (n < 1000) return duoi1000(n);
+  const k = Math.floor(n / 1000), r = n % 1000;
+  return `${k === 1 ? "mille" : `${duoi1000(k)} mille`}${r ? ` ${duoi1000(r)}` : ""}`;
+};
+const doiSo = (s) => s.replace(/\d+/g, (m) => (m.length <= 6 ? ` ${soThanhChu(Number(m))} ` : m));
+
+const tachTu = (s) => doiSo(String(s ?? ""))
   .toLowerCase()
   .replace(/[’`´]/g, "'")
   .replace(/œ/g, "oe").replace(/æ/g, "ae")
