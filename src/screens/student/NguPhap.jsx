@@ -11,6 +11,7 @@ import { TAT_CA, CAP, chiaPhan, BAI_CONG_KHAI } from "../../content/nguPhap/inde
 import { ngayHomNay } from "../../shared/hoatDong.js";
 import { useSeo } from "../../shared/seo.js";
 import AM from "../../content/nguPhap/amThanh.json";
+import AM_VD from "../../content/nguPhap/amThanhViDu.json";
 
 /* « Học ngữ pháp » (15/10, theo chủ dự án): học LÝ THUYẾT trước rồi mới luyện.
  *
@@ -40,8 +41,20 @@ const khoangCach = (a, b) => {
 };
 
 let amDangPhat = null;
-const phatAm = (khoa) => {
-  const url = AM[khoa];
+const phatAm = (khoa) => phatUrl(AM[khoa]);
+/* Âm thanh câu ví dụ / câu đúng A1–A2 (17/10, scripts/ngu-phap/tao-am-vidu.mjs):
+   tra theo chính câu tiếng Pháp; câu chưa có âm thanh thì không hiện nút loa. */
+function NutNghe({ cau }) {
+  const url = AM_VD[cau];
+  if (!url) return null;
+  return (
+    <button type="button" onClick={() => phatUrl(url)} aria-label={tr("Nghe câu này", "Écouter", "Listen")} title={tr("Nghe câu này", "Écouter", "Listen")}
+      className="ml-1.5 inline-grid h-6 w-6 shrink-0 cursor-pointer place-items-center rounded-full border-0 bg-primary-soft align-middle text-primary hover:bg-primary hover:text-on-primary">
+      <Volume2 size={13} />
+    </button>
+  );
+}
+function phatUrl(url) {
   if (!url) return;
   try { amDangPhat?.pause(); amDangPhat = new Audio(url); amDangPhat.play().catch(() => {}); } catch { /* bỏ qua */ }
 };
@@ -140,7 +153,7 @@ function Khoi({ k }) {
   if (k.loai === "vidu") return (
     <ul className="my-4 grid list-none gap-1.5 p-0">
       {k.ds.map(([fr, vi], i) => (
-        <li key={i} className="rounded-xl bg-surface2 px-4 py-2.5 text-sm"><span lang="fr" className="font-bold text-ink">{fr}</span> <span className="text-soft">· {vi}</span></li>
+        <li key={i} className="rounded-xl bg-surface2 px-4 py-2.5 text-sm"><span lang="fr" className="font-bold text-ink">{fr}</span><NutNghe cau={fr} /> <span className="text-soft">· {vi}</span></li>
       ))}
     </ul>
   );
@@ -156,7 +169,7 @@ function Khoi({ k }) {
       <ul className="m-0 grid list-none gap-2 p-0">
         {k.ds.map(([sai, dung, vi], i) => (
           <li key={i} className="text-sm">
-            <span lang="fr" className="text-danger line-through">{sai}</span> → <span lang="fr" className="font-bold text-ok">{dung}</span>
+            <span lang="fr" className="text-danger line-through">{sai}</span> → <span lang="fr" className="font-bold text-ok">{dung}</span><NutNghe cau={dung} />
             <span className="block text-xs text-soft">{vi}</span>
           </li>
         ))}
@@ -170,7 +183,7 @@ function Khoi({ k }) {
  * Mỗi màn MỘT câu: chọn/gõ → « Kiểm tra » → báo đúng/sai ngay kèm lời giải →
  * « Tiếp tục ». Hết lượt thì tổng kết + làm lại câu sai. Chỉ lượt ĐẦU, làm đủ
  * mọi câu mới gọi onXong (lượt làm lại câu sai không ghi điểm). */
-export function ThucHanh({ bai, cau, tieuDe, onXong }) {
+export function ThucHanh({ bai, cau, tieuDe, onXong, onKetQua }) {
   const tatCa = useMemo(() => tronPa(cau ?? bai.baiTap), [cau, bai]);
   const [ds, setDs] = useState(() => tatCa.map((_, i) => i));   // chỉ số câu trong lượt này
   const [vong, setVong] = useState(0);                          // 0 = lượt đầu
@@ -223,6 +236,8 @@ export function ThucHanh({ bai, cau, tieuDe, onXong }) {
       const diem = kq.filter((k) => k.ok).length;
       phat(diem === ds.length ? "thang" : "bam");
       if (vong === 0) onXong?.(diem, ds.length);
+      /* Kết quả từng câu của lượt đầu (bài xếp trình độ cần biết câu nào đúng). */
+      if (vong === 0) onKetQua?.([...kq].map((k) => ({ i: k.i, ok: k.ok })));
     }
   };
   const batDau = (moi) => { setDs(moi); setVong((v) => v + 1); setVt(0); setTl(null); setKq([]); setXem(false); phat("bam"); };
@@ -569,6 +584,59 @@ function BaiKhoa({ bai }) {
   );
 }
 
+/* ─────────── Bài kiểm tra xếp trình độ (17/10) ───────────
+ * 4 câu trắc nghiệm / đúng-sai ngẫu nhiên mỗi trình độ A1 → C1 (20 câu), lấy từ chính
+ * ngân hàng câu luyện. Trình độ đầu tiên có dưới 3/4 câu đúng là nơi nên bắt đầu;
+ * đúng hết thì gợi ý ôn C1. Kết quả lưu ở máy (localStorage) để trang chủ dùng khi
+ * hồ sơ chưa có trình độ. Đây là GỢI Ý, không đổi trình độ trong hồ sơ. */
+const CAP_XEP = ["A1", "A2", "B1", "B2", "C1"];
+export const KHOA_XEP = "mcf-xep-trinh-do";
+function XepTrinhDo({ goc }) {
+  const de = useMemo(() => CAP_XEP.flatMap((c) => {
+    const kho = TAT_CA.filter((b) => b.cap === c).flatMap((b) => chiaPhan(b).flatMap((p) => p.cau))
+      .filter((q) => q.loai === "qcm" || q.loai === "vf");
+    return [...kho].sort(() => Math.random() - 0.5).slice(0, 4).map((q) => ({ ...q, __cap: c }));
+  }), []);
+  const [kq, setKq] = useState(null);
+  const ketQua = (ds) => {
+    const theoCap = CAP_XEP.map((c) => ({ c, dung: ds.filter((r) => r.ok && de[r.i].__cap === c).length, tong: de.filter((q) => q.__cap === c).length }));
+    const yeu = theoCap.find((x) => x.dung < 3);
+    const nen = yeu ? yeu.c : "C1";
+    setKq({ theoCap, nen, vung: !yeu });
+    try { localStorage.setItem(KHOA_XEP, JSON.stringify({ cap: nen, luc: Date.now() })); } catch { /* bỏ qua */ }
+  };
+  const dau = kq && TAT_CA.find((b) => b.cap === kq.nen);
+  return (
+    <div className="mx-auto max-w-3xl px-4 pb-24 pt-6">
+      <Link to={goc} className="inline-flex items-center gap-1.5 text-sm font-semibold text-soft no-underline hover:text-ink"><ArrowLeft size={15} /> {tr("Tất cả bài học", "Toutes les leçons", "All lessons")}</Link>
+      <h1 className="m-0 mt-4 text-2xl font-extrabold text-ink">{tr("Kiểm tra xếp trình độ ngữ pháp", "Test de niveau en grammaire", "Grammar placement test")}</h1>
+      <p className="m-0 mt-1 text-sm text-soft">{tr("20 câu, 4 câu mỗi trình độ từ A1 đến C1. Làm trong khoảng 10 phút. Kết quả chỉ là gợi ý nơi nên bắt đầu học.", "20 questions, 4 par niveau de A1 à C1, environ 10 minutes. Le résultat indique où commencer.", "20 questions, 4 per level from A1 to C1, about 10 minutes. The result suggests where to start.")}</p>
+      {!kq ? (
+        <ThucHanh cau={de} tieuDe={tr("Bài xếp trình độ", "Test de niveau", "Placement test")} onKetQua={ketQua} />
+      ) : (
+        <section className="mt-6 rounded-3xl bg-surface p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+          <p className="m-0 text-xs font-extrabold uppercase tracking-wider text-soft">{tr("Kết quả", "Résultat", "Result")}</p>
+          <p className="m-0 mt-1 text-2xl font-extrabold text-ink">
+            {kq.vung ? tr("Bạn đã vững đến C1. Hãy ôn các bài C1.", "Vous maîtrisez jusqu'au C1. Révisez le C1.", "You are solid up to C1. Review C1.") : tr(`Bạn nên bắt đầu ở trình độ ${kq.nen}`, `Commencez au niveau ${kq.nen}`, `Start at level ${kq.nen}`)}
+          </p>
+          <div className="mt-4 grid grid-cols-5 gap-2">
+            {kq.theoCap.map((x) => (
+              <div key={x.c} className={`rounded-xl p-2 text-center ${x.c === kq.nen ? "bg-primary-soft" : "bg-surface2"}`}>
+                <p className="m-0 text-xs font-extrabold text-ink">{x.c}</p>
+                <p className={`m-0 text-lg font-extrabold tabular-nums ${x.dung >= 3 ? "text-ok" : "text-danger"}`}>{x.dung}/{x.tong}</p>
+              </div>
+            ))}
+          </div>
+          <div className="mt-5 flex flex-wrap gap-3">
+            {dau && <Link to={`${goc}/${dau.ma}`} className="inline-flex items-center gap-1.5 rounded-full bg-primary px-5 py-2.5 text-sm font-bold text-on-primary no-underline">{tr("Học bài đầu tiên", "Première leçon", "First lesson")}: {dau.ten} <ArrowRight size={15} /></Link>}
+            <Link to={goc} className="inline-flex items-center rounded-full border border-solid border-line bg-surface px-5 py-2.5 text-sm font-bold text-ink no-underline">{tr("Xem tất cả bài", "Toutes les leçons", "All lessons")}</Link>
+          </div>
+        </section>
+      )}
+    </div>
+  );
+}
+
 export default function NguPhap({ congKhai = false }) {
   const goc = congKhai ? "/ngu-phap" : "/etudiant/ngu-phap";
   const { ma } = useParams();
@@ -614,6 +682,8 @@ export default function NguPhap({ congKhai = false }) {
       hasPart: TAT_CA.filter((b) => BAI_CONG_KHAI.has(b.ma)).map((b) => ({ "@type": "LearningResource", name: b.ten, url: `https://fracile.vercel.app/ngu-phap/${b.ma}` })),
     },
   });
+  /* Bài xếp trình độ (17/10): sau mọi hook để giữ thứ tự hook. */
+  if (ma === "xep-trinh-do") return congKhai ? <KhungCongKhai><XepTrinhDo goc={goc} /></KhungCongKhai> : <XepTrinhDo goc={goc} />;
   if (ma && bai) {
     const trang = moDuoc(bai) ? <TrangBai bai={bai} ketQua={ketQua[bai.ma]} onGhi={(d, t) => ghi(bai.ma, d, t)} goc={goc} congKhai={congKhai} /> : <BaiKhoa bai={bai} />;
     return congKhai ? <KhungCongKhai>{trang}</KhungCongKhai> : trang;
@@ -635,6 +705,10 @@ export default function NguPhap({ congKhai = false }) {
           </div>
         </div>
       </header>
+      <Link to={`${goc}/xep-trinh-do`} className="mt-5 flex items-center justify-between gap-3 rounded-2xl border border-solid border-primary/30 bg-primary-soft p-4 text-primary no-underline hover:opacity-90">
+        <span><span className="block font-extrabold">{tr("Chưa biết bắt đầu từ đâu?", "Vous ne savez pas par où commencer ?", "Not sure where to start?")}</span><span className="block text-sm">{tr("Làm bài kiểm tra xếp trình độ 20 câu.", "Faites le test de niveau (20 questions).", "Take the 20-question placement test.")}</span></span>
+        <ArrowRight size={18} />
+      </Link>
       {CAP.map((cap) => (
         <section key={cap} className="mt-8">
           <h2 className="m-0 mb-3 flex items-center gap-2 text-lg font-extrabold text-ink">

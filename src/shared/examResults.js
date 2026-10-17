@@ -206,6 +206,9 @@ export async function loadMyExamResults() {
       examId: examId === "__khong_de__" ? null : examId,
       title: thongTinDe?.title ?? "Lượt thi cũ (không gắn đề)",
       level: thongTinDe?.level ?? "",
+      /* Mã các lượt làm bài của buổi thi: màn kết quả dùng để tìm câu sai có nhãn
+         point_gram và gợi ý bài « Học ngữ pháp » (17/10). */
+      attemptIds: list.map((r) => r.id),
       at: list.reduce((m, r) => (r.finished_at > m ? r.finished_at : m), ""),
       sections,
       ...verdict(sections),

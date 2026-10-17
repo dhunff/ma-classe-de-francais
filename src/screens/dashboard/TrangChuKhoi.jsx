@@ -138,7 +138,10 @@ export function TienDoNguPhap({ level }) {
       if (huy) return;
       const daLam = new Set((data ?? []).map((r) => r.ma_bai));
       const caps = m.CAP.map((c) => { const ds = m.TAT_CA.filter((b) => b.cap === c); return { c, tong: ds.length, xong: ds.filter((b) => daLam.has(b.ma)).length }; });
-      const capCua = String(level ?? "").toUpperCase().slice(0, 2);
+      /* Trình độ trong hồ sơ; chưa có thì dùng kết quả bài xếp trình độ (lưu ở máy). */
+      let capXep = "";
+      try { capXep = JSON.parse(localStorage.getItem("mcf-xep-trinh-do") || "null")?.cap ?? ""; } catch { /* bỏ qua */ }
+      const capCua = String(level || capXep).toUpperCase().slice(0, 2);
       const tiep = m.TAT_CA.find((b) => b.cap === capCua && !daLam.has(b.ma)) ?? m.TAT_CA.find((b) => !daLam.has(b.ma)) ?? null;
       setTt({ tong: m.TAT_CA.length, xong: m.TAT_CA.filter((b) => daLam.has(b.ma)).length, caps, tiep, docDuoc: !!data });
     });
@@ -162,6 +165,11 @@ export function TienDoNguPhap({ level }) {
         </Link>
       </div>
       {tt?.tiep && <p className="m-0 mt-3 text-sm text-ink"><span className="text-soft">{tr("Bài tiếp theo", "Leçon suivante", "Next lesson")}:</span> <strong>{tt.tiep.cap} · {tt.tiep.ten}</strong></p>}
+      {tt?.docDuoc && tt.xong === 0 && (
+        <Link to="/etudiant/ngu-phap/xep-trinh-do" className="mt-2 inline-flex items-center gap-1 text-sm font-bold text-primary no-underline hover:underline">
+          {tr("Chưa biết bắt đầu từ đâu? Làm bài xếp trình độ 20 câu", "Par où commencer ? Faites le test de niveau", "Where to start? Take the placement test")} <ArrowRight size={14} />
+        </Link>
+      )}
       {tt?.docDuoc && (
         <div className="mt-3 grid grid-cols-3 gap-2 sm:grid-cols-6">
           {tt.caps.map((x) => (

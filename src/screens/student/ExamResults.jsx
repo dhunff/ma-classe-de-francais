@@ -14,6 +14,23 @@ import { supabase } from "../../storageShim.js";
 import { Leon } from "../../shared/leon.jsx";
 import NutTieng from "../../shared/NutTieng.jsx";
 import { BangKetLuan, ThanhPhan } from "../exam/KetQuaVisual.jsx";
+import GoiYNguPhap from "../../shared/GoiYNguPhap.jsx";
+
+/* Gợi ý ôn ngữ pháp theo câu SAI của buổi thi (17/10): answers.correct = false và
+ * câu có nhãn point_gram. RLS answers_own chỉ trả câu của chính người xem. */
+function GoiYThi({ attemptIds, level }) {
+  const [nhan, setNhan] = useState([]);
+  useEffect(() => {
+    if (!attemptIds?.length) return undefined;
+    let huy = false;
+    supabase.from("answers").select("questions!inner (point_gram)")
+      .in("attempt_id", attemptIds).eq("correct", false).not("questions.point_gram", "is", null)
+      .then(({ data }) => { if (!huy) setNhan((data ?? []).map((r) => r.questions?.point_gram).filter(Boolean)); }, () => {});
+    return () => { huy = true; };
+  }, [attemptIds?.join(",")]); // eslint-disable-line react-hooks/exhaustive-deps
+  if (!nhan.length) return null;
+  return <div className="flex justify-center"><GoiYNguPhap nhan={nhan} level={level} /></div>;
+}
 
 /* Kết quả thi thử — màn hình của học sinh.
  *
@@ -152,6 +169,7 @@ function Luot({ s, onTuCham, i = 0 }) {
       <ul className="m-0 mt-4 grid list-none gap-3 p-0">
         {s.sections.map((x) => <Phan key={x.code + x.exerciseId} s={x} onTuCham={onTuCham} />)}
       </ul>
+      <GoiYThi attemptIds={s.attemptIds} level={s.level} />
     </li>
   );
 }
