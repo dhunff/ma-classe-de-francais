@@ -1147,6 +1147,11 @@ function PracticeWorkspace({ ex, back, onFinish }) {
   const t = useT();
   const [graded, setGraded] = useState(false);
   const [remote, setRemote] = useState(null);   // kết quả chấm từ máy chủ
+  /* Đang chờ máy chủ chấm (17/10). Trước đây `graded` bật NGAY khi bấm nộp, nên
+     trong lúc chờ màn hình chấm tại chỗ bằng `q.answer`, thứ học sinh không có
+     (migration 022): mọi câu tô đỏ « sai hết », vài giây sau điểm thật mới hiện.
+     Nay chỉ bật `graded` khi kết quả về; lúc chờ hiện « Đang chấm… ». */
+  const [dangCham, setDangCham] = useState(false);
   /* Mốc mở bài — giờ học thật (migration 106): giây từ lúc mở tới lúc nộp. */
   const moLuc = useRef(Date.now());
   const [diemMayChu, setDiemMayChu] = useState(null);  // { score, max } — điểm THẬT, xem chú thích dưới
@@ -1204,10 +1209,11 @@ function PracticeWorkspace({ ex, back, onFinish }) {
   const grade = async (timedOut = false) => {
     gradedRef.current = true;
     phat(timedOut ? "hetGio" : "nop");
-    setGraded(timedOut ? "timeout" : true);
+    setDangCham(true);
 
     const res = await gradeRemote(ex.id, answersRef.current,
       { giayLam: Math.round((Date.now() - moLuc.current) / 1000) });
+    setDangCham(false);
 
     /* Máy chủ không trả lời VÀ đáp án cũng không còn ở client → không ai chấm
        được. Từ migration 022, `payload` không còn `answer`/`accepted`, nên bộ
@@ -1226,7 +1232,10 @@ function PracticeWorkspace({ ex, back, onFinish }) {
       return;
     }
 
+    /* Đặt kết quả máy chủ CÙNG LÚC với bật `graded` (React gộp hai lần đặt state),
+       nên lần vẽ đầu tiên của màn kết quả đã có đúng/sai thật. */
     if (res) { setRemote(res.results); setDiemMayChu({ score: res.score, max: res.max }); }
+    setGraded(timedOut ? "timeout" : true);
     if (!res) phat("sai");
     else if (res.max) {
       const tl = res.score / res.max;
@@ -1323,7 +1332,7 @@ function PracticeWorkspace({ ex, back, onFinish }) {
                 }
               } else if (j === a) { bg = C.primarySoft; border = C.primary; }
               return (
-                <button key={j} disabled={!!graded} onClick={() => setAnswers({ ...answers, [q.id]: j })}
+                <button key={j} disabled={!!graded || dangCham} onClick={() => setAnswers({ ...answers, [q.id]: j })}
                   style={{ display: "flex", alignItems: "center", gap: 10, textAlign: "left", padding: "10px 14px", borderRadius: 10, fontSize: 15,
                     fontFamily: "inherit", cursor: graded ? "default" : "pointer", background: bg, border: `1.5px solid ${border}`, color: C.ink,
                     /* Gạch ngang CHỈ khi ô này là lựa chọn SAI. Điều kiện cũ
@@ -1374,7 +1383,7 @@ function PracticeWorkspace({ ex, back, onFinish }) {
                   }
                 }
                 return (
-                  <button key={j} disabled={!!graded}
+                  <button key={j} disabled={!!graded || dangCham}
                     onClick={() => setAnswers({ ...answers, [q.id]: { choice: j, just: j === 2 ? "" : (a?.just || "") } })}
                     style={{ padding: "10px 22px", borderRadius: 999, fontSize: 14.5, fontWeight: 700,
                       cursor: graded ? "default" : "pointer", fontFamily: "inherit",
@@ -1416,7 +1425,7 @@ function PracticeWorkspace({ ex, back, onFinish }) {
           </>
         ) : (
           <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-            <input lang="fr" disabled={!!graded} value={a || ""} placeholder={tr("Câu trả lời của bạn…", "Ta réponse…", "Your answer…")}
+            <input lang="fr" disabled={!!graded || dangCham} value={a || ""} placeholder={tr("Câu trả lời của bạn…", "Ta réponse…", "Your answer…")}
               onChange={(e) => setAnswers({ ...answers, [q.id]: e.target.value })}
               style={{ ...S.input, maxWidth: 320,
                 border: `1.5px solid ${graded ? (good ? C.ok : C.danger) : C.line}`,
@@ -1494,12 +1503,14 @@ function PracticeWorkspace({ ex, back, onFinish }) {
 
       {!graded ? (
         <>
-        <button style={{ ...S.btn(true), marginTop: 20 }}
+        <button style={{ ...S.btn(true), marginTop: 20, opacity: dangCham ? 0.6 : 1, cursor: dangCham ? "wait" : "pointer" }}
+          disabled={dangCham}
           onClick={() => {
+            if (dangCham) return;
             const n = getUnansweredQuestionsCount(answers, ex.questions);
             if (n > 0) setConfirmCount(n); else grade(false);
           }}>
-          {t("submit_button")}
+          {dangCham ? tr("Đang chấm…", "Correction en cours…", "Grading…") : t("submit_button")}
         </button>
         {confirmCount != null && (
           <ConfirmSubmitModal count={confirmCount}
