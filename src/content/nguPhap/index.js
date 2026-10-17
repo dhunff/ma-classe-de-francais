@@ -14,9 +14,10 @@ import { CHI_TIET_A0_A1 } from "./chiTietA0A1.js";
 import { CHI_TIET_A2 } from "./chiTietA2.js";
 import { CHI_TIET_B1 } from "./chiTietB1.js";
 import { CHI_TIET_B2 } from "./chiTietB2.js";
+import { CHI_TIET_C1 } from "./chiTietC1.js";
 
 /* Chia chi tiết (17/10): ghi đè cách chia phần cũ cho bài có mặt ở đây. */
-const CHI_TIET = { ...CHI_TIET_A0_A1, ...CHI_TIET_A2, ...CHI_TIET_B1, ...CHI_TIET_B2 };
+const CHI_TIET = { ...CHI_TIET_A0_A1, ...CHI_TIET_A2, ...CHI_TIET_B1, ...CHI_TIET_B2, ...CHI_TIET_C1 };
 
 const BO_SUNG = { ...BO_SUNG_A0_A1, ...BO_SUNG_A2_B1 };
 
