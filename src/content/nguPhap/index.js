@@ -10,6 +10,10 @@ import { BAI_C1 } from "./c1.js";
 import { CAU_TRUC } from "./cauTruc.js";
 import { BO_SUNG_A0_A1 } from "./boSungA0A1.js";
 import { BO_SUNG_A2_B1 } from "./boSungA2B1.js";
+import { CHI_TIET_A0_A1 } from "./chiTietA0A1.js";
+
+/* Chia chi tiết (17/10): ghi đè cách chia phần cũ cho bài có mặt ở đây. */
+const CHI_TIET = { ...CHI_TIET_A0_A1 };
 
 const BO_SUNG = { ...BO_SUNG_A0_A1, ...BO_SUNG_A2_B1 };
 
@@ -22,6 +26,12 @@ export const BAI_CONG_KHAI = new Set(CAP.flatMap((c) => TAT_CA.filter((b) => b.c
 /* Chia bài thành các phần a, b, c…: cấu trúc soạn tay (bai.cauTruc hoặc cauTruc.js),
  * giải thích và câu luyện bổ sung ở boSung*.js theo thứ tự phần. */
 export function chiaPhan(bai) {
+  const ct2 = CHI_TIET[bai.ma];
+  if (ct2) return ct2.map((p, j) => ({
+    chu: String.fromCharCode(97 + j), ten: p.ten, giai: p.giai,
+    khoi: p.khoi.map((k) => (typeof k === "number" ? bai.phan[k] : k)).filter(Boolean),
+    cau: p.cau.map((c) => (typeof c === "number" ? bai.baiTap[c] : c)).filter(Boolean),
+  }));
   const ct = bai.cauTruc ?? CAU_TRUC[bai.ma] ?? [{ ten: bai.ten, khoi: bai.phan.map((_, i) => i), cau: bai.baiTap.map((_, i) => i) }];
   const bs = BO_SUNG[bai.ma] ?? [];
   return ct.map((p, j) => ({
