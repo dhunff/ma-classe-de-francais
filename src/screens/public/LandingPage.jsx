@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
-  Wand2, ScrollText, Columns2, ClipboardList, ArrowRight, CheckCircle2, Headphones, BookOpen, PenLine, Mic,
-  Map, Swords, Layers, Timer, MessageCircle, LogIn, Bot,
+  Wand2, ArrowRight, CheckCircle2, Headphones, BookOpen, PenLine, Mic,
+  Map, Swords, Layers, Timer, MessageCircle, LogIn, Bot, BookA,
 } from "lucide-react";
 import { Leon } from "../../shared/leon.jsx";
 import { docSoLieu } from "../../shared/soLieuCongKhai.js";
@@ -125,23 +125,24 @@ const TINH_NANG = () => [
 /* Nội dung chủ dự án chốt 25/09. Ba chỗ được chỉnh cho khớp sản phẩm thật
    (quy tắc 1) — xem commit « Trang giới thiệu: nội dung mới ». */
 /* Hàm chứ không hằng: chữ phải đổi theo ngôn ngữ đang chọn (08/10). */
+/* Bốn thẻ « Vì sao chọn FRACILE » (viết lại 18/10: ngắn, đúng tính năng hiện có). */
 const LOI_THE = () => [
-  { Icon: Wand2, ten: tr("Hệ thống chấm điểm tự động, trả kết quả tức thì", "Correction automatique, résultats immédiats", "Automatic grading, instant results"),
-    mo: tr("Không còn phải chờ đợi mỏi mòn để biết mình làm đúng hay sai. Các dạng bài từ trắc nghiệm, điền từ cho đến chia động từ đều được hệ thống xử lý và chấm điểm ngay lập tức sau cú click nộp bài. Điều này giúp học viên nhanh chóng nhận ra lỗi sai để khắc phục, đồng thời giúp giáo viên loại bỏ hoàn toàn gánh nặng chấm bài thủ công.",
-      "Plus besoin d'attendre pour savoir si vous avez juste. QCM, textes à trous, conjugaison : tout est corrigé dès que vous cliquez sur « Rendre ». Les apprenants repèrent vite leurs erreurs, et les enseignants n'ont plus à corriger à la main.",
-      "No more waiting to find out if you got it right. Multiple choice, gap fills and conjugation are graded the moment you submit. Learners spot their mistakes fast, and teachers no longer grade by hand.") },
-  { Icon: ScrollText, ten: tr("Chữa bài Viết minh bạch, biết rõ điểm yếu", "Une correction de l'écrit transparente", "Transparent writing feedback"),
-    mo: tr("Sợ nhất là nhận về một con số điểm vô hồn và không biết mình sai ở đâu. Tại FRACILE, bài Viết được chấm theo thang điểm DELF chính thức (từ vựng, ngữ pháp, độ mạch lạc, đáp ứng đề bài), tiêu chí nào cũng có mô tả từng mức điểm. Học viên biết chính xác mình mất điểm ở tiêu chí nào để lập tức cải thiện.",
-      "Rien de pire qu'une note sans explication. Sur FRACILE, la production écrite est évaluée avec la grille officielle du DELF (lexique, grammaire, cohérence, respect de la consigne), avec un descriptif pour chaque niveau. L'apprenant sait exactement où il perd des points.",
-      "Nothing is worse than a bare score with no explanation. On FRACILE, writing is assessed against the official DELF grid (vocabulary, grammar, coherence, task completion), with a description for every band. Learners know exactly where they lose points.") },
-  { Icon: Columns2, ten: tr("Rèn luyện bản lĩnh áp lực phòng thi thật", "S'entraîner dans les conditions de l'examen", "Train under real exam pressure"),
-    mo: tr("Điểm số lúc luyện tập luôn cao hơn đi thi vì bạn thiếu áp lực thời gian. FRACILE áp dụng bộ đếm ngược nghiêm ngặt và giới hạn số lượt phát âm thanh y như kỳ thi thực tế. Trải nghiệm làm bài được tối ưu hóa sự tập trung, giúp học viên không bị bỡ ngỡ khi bước vào phòng thi chính thức.",
-      "On a toujours de meilleures notes à l'entraînement, faute de pression du temps. FRACILE applique un chronomètre strict et limite les écoutes comme à l'examen. Rien ne surprend le jour J.",
-      "Practice scores are always higher than exam scores because there's no time pressure. FRACILE uses a strict countdown and limits audio plays just like the real exam, so nothing surprises you on the day.") },
-  { Icon: ClipboardList, ten: tr("Quản lý tiến độ học tập sát sao, hiệu quả", "Un suivi des progrès rigoureux", "Close, effective progress tracking"),
-    mo: tr("Cung cấp một chu trình khép kín: Giao bài tập, Hẹn giờ nộp, Chấm điểm, Báo cáo thống kê. Giáo viên và trung tâm dễ dàng theo dõi được sự tiến bộ của từng cá nhân qua từng tuần, từ đó cam kết được chất lượng đầu ra với phụ huynh và học viên.",
-      "Un cycle complet : devoirs, échéances, correction, statistiques. Enseignants et centres suivent les progrès de chacun semaine après semaine.",
-      "A complete loop: assignments, deadlines, grading, statistics. Teachers and schools follow each learner's progress week by week.") },
+  { Icon: Wand2, ten: tr("Chấm ngay, sửa lỗi ngay", "Corrigé tout de suite", "Graded instantly"),
+    mo: tr("Bài làm được chấm ngay khi nộp, kèm đáp án và lời giải. Bài Viết, bài Nói có AI gợi ý điểm theo thang DELF chính thức để bạn biết mình mất điểm ở đâu.",
+      "Vos réponses sont corrigées dès l'envoi, avec explications. Pour l'écrit et l'oral, l'IA propose une note selon la grille officielle du DELF.",
+      "Answers are graded on submission, with explanations. For writing and speaking, AI suggests a score on the official DELF grid.") },
+  { Icon: BookA, ten: tr("Ngữ pháp từ A0 đến C1, giải thích bằng tiếng Việt", "La grammaire de A0 à C1, expliquée en vietnamien", "Grammar from A0 to C1, explained in Vietnamese"),
+    mo: tr("Hơn 80 bài chia thành phần nhỏ, mỗi phần có giải thích dễ hiểu và bài luyện chấm ngay. Có bài kiểm tra xếp trình độ để biết nên bắt đầu từ đâu.",
+      "Plus de 80 leçons découpées en petites parties, chacune avec explications et exercices corrigés. Un test de niveau indique par où commencer.",
+      "Over 80 lessons split into small parts, each with clear explanations and instant practice. A placement test shows where to start.") },
+  { Icon: Timer, ten: tr("Thi thử như phòng thi thật", "Un examen blanc comme le vrai", "Mock exams like the real thing"),
+    mo: tr("Đề DELF A1 đến DALF C1 đủ bốn kỹ năng: đồng hồ đếm ngược, giới hạn lượt nghe, bốc thăm đề nói. Kết quả quy về thang điểm và ngưỡng đạt như kỳ thi chính thức.",
+      "Sujets du DELF A1 au DALF C1 avec les quatre épreuves : chronomètre, écoutes limitées, tirage au sort de l'oral. Note et seuils comme à l'examen.",
+      "DELF A1 to DALF C1 papers with all four skills: countdown, limited listening, drawn speaking topics. Scored with the official scale and pass marks.") },
+  { Icon: Swords, ten: tr("Học mà chơi, nhớ lâu", "Apprendre en jouant", "Learn by playing"),
+    mo: tr("Lộ trình vượt màn, Thách đấu bạn bè, Flashcard ôn đúng lúc sắp quên, chuỗi ngày học và ôn lại câu sai giúp bạn học đều mỗi ngày.",
+      "Parcours par niveaux, défis entre amis, flashcards au bon moment, séries de jours et révision des erreurs : de quoi apprendre un peu chaque jour.",
+      "Level-based path, duels with friends, spaced-repetition flashcards, study streaks and mistake review keep you learning every day.") },
 ];
 
 
