@@ -14,7 +14,7 @@ import { tr } from "../../shared/i18n.jsx";
  * không phải thêm cột cho một trường chỉ cần đọc bằng mắt. */
 
 const VAI = () => [["hoc_sinh", tr("Học sinh", "Élève", "Student")], ["phu_huynh", tr("Phụ huynh", "Parent", "Parent")], ["giao_vien", tr("Giáo viên", "Enseignant", "Teacher")]];
-const MUC_TIEU = [["A2", "DELF A2"], ["B1", "DELF B1"], ["B2", "DELF B2"], ["C1", "DALF C1"]];
+const MUC_TIEU = [["A1", "DELF A1"], ["A2", "DELF A2"], ["B1", "DELF B1"], ["B2", "DELF B2"], ["C1", "DALF C1"]];
 
 const O = "w-full rounded-xl border border-solid border-line bg-bg px-3.5 py-2.5 font-sans text-sm text-ink "
   + "placeholder:text-soft outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/30";
