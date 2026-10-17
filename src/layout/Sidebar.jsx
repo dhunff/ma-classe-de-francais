@@ -83,7 +83,7 @@ function NavList({ role, t, expanded, onNavigate, onBlue = true }) {
   return (
     <nav className={`flex flex-1 flex-col ${onBlue ? "pl-3" : "px-3"}`} aria-label={t("nav.primary")}>
       {navTheoNhom(role).map(({ nhom, muc }, gi) => (
-        <div key={nhom} className={gi ? "mt-4" : ""}>
+        <div key={nhom} className={gi ? "mt-4 [@media(max-height:760px)]:mt-2" : ""}>
           {/* Tên nhóm khi mở rộng; khi thu gọn thì một vạch ngắn ngăn nhóm. */}
           {expanded ? (
             <span className={`mb-1.5 block px-3 text-[10px] font-extrabold uppercase tracking-[0.16em] ${onBlue ? "text-white/55" : "text-soft"}`}>{tenNhom(nhom)}</span>
@@ -98,7 +98,7 @@ function NavList({ role, t, expanded, onNavigate, onBlue = true }) {
                 onClick={onNavigate}
                 className={({ isActive }) =>
                   [
-                    "group relative flex items-center py-1.5 text-sm no-underline",
+                    "group relative flex items-center py-1.5 text-sm no-underline [@media(max-height:760px)]:py-1",
                     "transition-all duration-200 ease-out",
                     expanded ? "px-2" : "justify-center px-0",
                     /* Mục đang chọn trên nền xanh: liền khối với tấm thẻ (bo trái,
@@ -269,7 +269,7 @@ export default function Sidebar({
           bo góc — nó CHÍNH LÀ nền, tấm thẻ trắng bên phải mới là thứ nổi lên. */}
       <aside
         className={[
-          "mcf-rise relative hidden h-screen shrink-0 flex-col py-5 md:flex",
+          "mcf-rise relative hidden h-[100dvh] shrink-0 flex-col py-5 md:flex [@media(max-height:760px)]:py-3",
           "transition-[width] duration-300 ease-in-out",
           expanded ? "w-64" : "w-[5.5rem]",
         ].join(" ")}
@@ -294,12 +294,16 @@ export default function Sidebar({
           )}
         </div>
 
-        <div className="shrink-0 py-5">
+        <div className="shrink-0 py-5 [@media(max-height:760px)]:py-2">
           <Brand expanded={expanded} />
         </div>
 
-        <NavList role={role} t={t} expanded={expanded} />
-        {signedIn && <TroGiup expanded={expanded} />}
+        {/* Màn hình thấp (laptop nhỏ, 18/10): danh sách cuộn trong cột thay vì bị cắt.
+            Chỉ khi MỞ RỘNG: thu gọn cần overflow visible cho chú giải. */}
+        <div className={`flex min-h-0 flex-1 flex-col ${expanded ? "no-scrollbar overflow-y-auto overscroll-contain" : ""}`}>
+          <NavList role={role} t={t} expanded={expanded} />
+          {signedIn && <TroGiup expanded={expanded} />}
+        </div>
         {/* Khối « Lớp của bạn » gỡ 24/09 theo yêu cầu chủ dự án; PeopleCard
             còn đó nếu cần dựng lại. */}
 
@@ -321,7 +325,7 @@ export default function Sidebar({
         aria-hidden={!open}
         {...(open ? {} : { inert: "" })}
         className={[
-          "fixed inset-y-0 left-0 z-50 flex w-72 flex-col bg-surface",
+          "fixed left-0 top-0 z-50 flex h-[100dvh] w-72 max-w-[85vw] flex-col bg-surface",
           "border-0 border-r border-solid border-line",
           "transition-transform duration-200 md:hidden",
           open ? "translate-x-0" : "-translate-x-full",
@@ -338,16 +342,18 @@ export default function Sidebar({
           </button>
         </div>
 
-        <div className="shrink-0 py-5">
+        <div className="shrink-0 py-3">
           <Brand expanded onBlue={false} />
         </div>
 
-        {/* Ngăn kéo luôn mở rộng: thu gọn một tấm đã chiếm hết màn hình thì
-            chẳng tiết kiệm được gì. */}
-        <NavList role={role} t={t} expanded onNavigate={onClose} onBlue={false} />
-        {signedIn && <TroGiup expanded onNavigate={onClose} onBlue={false} />}
-
-        <Footer t={t} signedIn={signedIn} expanded onNavigate={onClose} onBlue={false} />
+        {/* Ngăn kéo luôn mở rộng. Toàn bộ phần dưới cuộn được (18/10): trên điện
+            thoại mục cuối (« Tài khoản ») từng bị thanh trình duyệt che mất.
+            pb theo safe-area để không nằm dưới thanh Home của iPhone. */}
+        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain pb-[max(1rem,env(safe-area-inset-bottom))]">
+          <NavList role={role} t={t} expanded onNavigate={onClose} onBlue={false} />
+          {signedIn && <TroGiup expanded onNavigate={onClose} onBlue={false} />}
+          <Footer t={t} signedIn={signedIn} expanded onNavigate={onClose} onBlue={false} />
+        </div>
       </aside>
     </>
   );
