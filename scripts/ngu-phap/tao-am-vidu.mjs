@@ -1,5 +1,5 @@
 /* Tạo âm thanh cho câu ví dụ (khối « vidu ») và câu đúng trong khối « Lỗi người Việt
- * hay mắc » (« loi ») của bài A1, A2 (17/10). Tệp kết quả dùng CHÍNH CÂU tiếng Pháp
+ * hay mắc » (« loi ») của bài A0, A1, A2 (17–18/10). Tệp kết quả dùng CHÍNH CÂU tiếng Pháp
  * làm khoá (trình duyệt tra thẳng, không cần băm), nên sửa câu thì câu đó tự mất âm
  * thanh cũ. Tên file âm thanh dùng 12 ký tự SHA-1 vì tao-audio chỉ nhận a-z0-9-.
  * Ghi src/content/nguPhap/amThanhViDu.json { câu: url }; chạy lại chỉ tạo câu mới.
@@ -15,7 +15,7 @@ if (!TK) { console.error("Thiếu TTS_TOKEN"); process.exit(1); }
 export const khoaCau = (fr) => createHash("sha1").update(fr.normalize("NFC")).digest("hex").slice(0, 12);
 
 const cau = new Set();
-for (const b of TAT_CA.filter((x) => x.cap === "A1" || x.cap === "A2")) {
+for (const b of TAT_CA.filter((x) => x.cap === "A0" || x.cap === "A1" || x.cap === "A2")) {
   for (const k of b.phan) {
     if (k.loai === "vidu") for (const [fr] of k.ds) cau.add(fr);
     if (k.loai === "loi") for (const [, dung] of k.ds) cau.add(dung);

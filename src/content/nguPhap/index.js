@@ -2,6 +2,7 @@
  * một câu luyện theo (mã bài, đề câu). Dùng ở NguPhap.jsx, trang Tiến bộ VIP (ôn câu
  * sai) và trang chủ (đếm tiến độ). Không gọi tr() ở đây: chỉ dữ liệu. */
 import { BAI_NHAP_MON } from "./nhapMon.js";
+import { BAI_A0_THEM } from "./a0them.js";
 import { BAI_A1 } from "./a1.js";
 import { BAI_A2 } from "./a2.js";
 import { BAI_B1 } from "./b1.js";
@@ -21,11 +22,14 @@ const CHI_TIET = { ...CHI_TIET_A0_A1, ...CHI_TIET_A2, ...CHI_TIET_B1, ...CHI_TIE
 
 const BO_SUNG = { ...BO_SUNG_A0_A1, ...BO_SUNG_A2_B1 };
 
-export const TAT_CA = [...BAI_NHAP_MON, ...BAI_A1, ...BAI_A2, ...BAI_B1, ...BAI_B2, ...BAI_C1];
+/* A0 (18/10): 3 bài cũ + 7 bài mới, xếp theo thứ tự học. */
+const THU_TU_A0 = ["nm-chu-cai", "nm-am", "nm-chu-ghep", "nm-quy-tac-doc", "nm-nhip-ngu-dieu", "nm-chinh-ta", "nm-ngoi", "nm-chao-hoi", "nm-so-dem", "nm-tu-goc-phap"];
+const BAI_A0 = THU_TU_A0.map((ma) => [...BAI_NHAP_MON, ...BAI_A0_THEM].find((b) => b.ma === ma)).filter(Boolean);
+export const TAT_CA = [...BAI_A0, ...BAI_A1, ...BAI_A2, ...BAI_B1, ...BAI_B2, ...BAI_C1];
 export const CAP = ["A0", "A1", "A2", "B1", "B2", "C1"];
 
 /* Bài mở cho khách chưa đăng nhập (16/10): 2–3 bài đầu mỗi trình độ. */
-export const BAI_CONG_KHAI = new Set(CAP.flatMap((c) => TAT_CA.filter((b) => b.cap === c).slice(0, c === "A0" ? 2 : 3).map((b) => b.ma)));
+export const BAI_CONG_KHAI = new Set(CAP.flatMap((c) => TAT_CA.filter((b) => b.cap === c).slice(0, c === "A0" ? 4 : 3).map((b) => b.ma)));
 
 /* Chia bài thành các phần a, b, c…: cấu trúc soạn tay (bai.cauTruc hoặc cauTruc.js),
  * giải thích và câu luyện bổ sung ở boSung*.js theo thứ tự phần. */
