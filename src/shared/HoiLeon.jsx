@@ -126,7 +126,7 @@ export default function HoiLeon() {
     <>
       {mo && (
         <section role="dialog" aria-label={tr("Hỏi Leon", "Demande à Leon", "Ask Leon")}
-          className="fixed bottom-24 right-4 z-[55] flex h-[min(560px,calc(100vh-8rem))] w-[min(380px,calc(100vw-2rem))] flex-col overflow-hidden rounded-3xl bg-surface shadow-[0_20px_60px_rgb(0,0,0,0.25)]">
+          className="fixed bottom-24 right-4 z-[55] flex h-[min(560px,calc(100dvh-8rem))] w-[min(380px,calc(100vw-2rem))] flex-col overflow-hidden rounded-3xl bg-surface shadow-[0_20px_60px_rgb(0,0,0,0.25)]">
           <header className="flex items-center gap-3 bg-primary px-4 py-3 text-on-primary">
             <Leon cam="dau" size={40} />
             <div className="min-w-0 flex-1">

@@ -30,6 +30,30 @@ export default function BangDauPhap() {
   const [o, setO] = useState(null);
   const hoa = useRef(false);
   const [hoaState, setHoa] = useState(false);
+  /* Điện thoại (18/10): bảng nổi ở đáy màn hình nằm đè lên đúng ô đang gõ khi bàn
+     phím bật (iOS co khung nhìn). Nên trên màn hẹp, bảng thành MỘT hàng cuộn ngang
+     đặt sát PHÍA TRÊN ô nhập (ô sát mép trên thì đặt phía dưới), tính lại khi bàn
+     phím đổi kích thước khung nhìn hoặc trang cuộn. */
+  const [viTri, setViTri] = useState(null);
+  useEffect(() => {
+    if (!o) return undefined;
+    const hep = () => window.matchMedia("(max-width: 640px), (pointer: coarse)").matches;
+    const tinh = () => {
+      if (!hep()) { setViTri(null); return; }
+      const r = o.getBoundingClientRect(), CAO = 52;
+      const vv = window.visualViewport, dinh = vv ? vv.offsetTop : 0;
+      const tren = r.top - CAO - 6;
+      setViTri(tren >= dinh + 4 ? tren : r.bottom + 6);
+    };
+    tinh();
+    const vv = window.visualViewport;
+    vv?.addEventListener("resize", tinh); vv?.addEventListener("scroll", tinh);
+    window.addEventListener("scroll", tinh, true); window.addEventListener("resize", tinh);
+    return () => {
+      vv?.removeEventListener("resize", tinh); vv?.removeEventListener("scroll", tinh);
+      window.removeEventListener("scroll", tinh, true); window.removeEventListener("resize", tinh);
+    };
+  }, [o]);
 
   useEffect(() => {
     const vao = (e) => { if (hopLe(e.target)) setO(e.target); };
@@ -49,13 +73,14 @@ export default function BangDauPhap() {
   return (
     <div role="toolbar" aria-label={tr("Ký tự tiếng Pháp", "Caractères français", "French characters")}
       onMouseDown={(e) => e.preventDefault()}
-      className="fixed bottom-3 left-1/2 z-[60] flex max-w-[calc(100vw-24px)] -translate-x-1/2 flex-wrap justify-center gap-1.5 rounded-2xl border border-solid border-line bg-surface p-2 shadow-[0_12px_32px_rgba(0,0,0,0.18)]">
+      style={viTri != null ? { top: viTri } : undefined}
+      className={`fixed left-1/2 z-[70] flex max-w-[calc(100vw-24px)] -translate-x-1/2 gap-1.5 rounded-2xl border border-solid border-line bg-surface p-1.5 shadow-[0_12px_32px_rgba(0,0,0,0.18)] ${viTri != null ? "no-scrollbar flex-nowrap overflow-x-auto" : "bottom-3 flex-wrap justify-center p-2"}`}>
       <button type="button" onClick={() => { hoa.current = !hoa.current; setHoa(hoa.current); }}
         title={tr("Chữ hoa", "Majuscules", "Uppercase")}
-        className={`h-9 cursor-pointer rounded-xl border border-solid px-2.5 font-sans text-xs font-extrabold ${hoaState ? "border-primary bg-primary text-white" : "border-line bg-surface text-soft"}`}>⇧</button>
+        className={`h-9 shrink-0 cursor-pointer rounded-xl border border-solid px-2.5 font-sans text-xs font-extrabold ${hoaState ? "border-primary bg-primary text-white" : "border-line bg-surface text-soft"}`}>⇧</button>
       {DAU.map((c) => (
         <button key={c} type="button" onClick={() => chen(c)}
-          className="h-9 w-9 cursor-pointer rounded-xl border border-solid border-line bg-surface font-sans text-base font-bold text-ink hover:border-primary hover:text-primary">
+          className="h-9 w-9 shrink-0 cursor-pointer rounded-xl border border-solid border-line bg-surface font-sans text-base font-bold text-ink hover:border-primary hover:text-primary">
           {hoaState ? c.toUpperCase() : c}
         </button>
       ))}
