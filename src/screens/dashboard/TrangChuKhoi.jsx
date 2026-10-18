@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Headphones, BookOpen, PenLine, Puzzle, Languages, Mic, ArrowRight, Map, Swords, Layers, Timer, TrendingUp, BookA } from "lucide-react";
 import { supabase } from "../../storageShim.js";
 import { tr } from "../../shared/i18n.jsx";
+import { nhanHoSo } from "../../shared/nhanHoSo.js";
 import { exSkills } from "../../shared/exercises.js";
 import { Leon } from "../../shared/leon.jsx";
 import { keHoach, CAP } from "../../shared/deXuat.js";
@@ -49,7 +50,7 @@ export function DongKeHoach({ level, goal }) {
   return (
     <p className="m-0 mt-3 flex flex-wrap items-center gap-1.5 rounded-2xl bg-primary-soft px-3 py-2 text-xs text-ink">
       <span>
-        <strong>{tu}</strong>{goal ? <> → <strong>{goal}</strong></> : null}
+        <strong>{nhanHoSo(tu)}</strong>{goal ? <> → <strong>{nhanHoSo(goal)}</strong></> : null}
         {": "}{tr("ưu tiên bài", "priorité aux exercices", "focus on")} <strong>{CAP[kh.capChinh]}</strong>
         {kh.capThu != null && <>, {tr("thử sức", "puis", "then try")} <strong>{CAP[kh.capThu]}</strong></>}
         {kh.thi && <>; {tr("luyện đủ kỹ năng thi", "toutes les compétences de l'examen", "all exam skills")}</>}

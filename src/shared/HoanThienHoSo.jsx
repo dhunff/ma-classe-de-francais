@@ -3,6 +3,7 @@ import { useLocation } from "react-router-dom";
 import { Loader2, Check } from "lucide-react";
 import { loadHoSo, luuHoSo } from "./profileStore.js";
 import { emptyProfile, validateProfile, LEVELS_PROFILE, GOALS_PROFILE } from "./profile.js";
+import { nhanHoSo } from "./nhanHoSo.js";
 import { Leon } from "./leon.jsx";
 import { tr } from "./i18n.jsx";
 import { supabase } from "../storageShim.js";
@@ -94,12 +95,12 @@ export default function HoanThienHoSo({ fixture }) {
           <div className="grid gap-1"><Nhan k="level" bb>{tr("Trình độ hiện tại", "Niveau actuel", "Current level")}</Nhan>
             <select value={p.level} onChange={(e) => doi("level", e.target.value)} className={O}>
               <option value="">{tr("Chọn trình độ", "Choisir", "Choose")}</option>
-              {LEVELS_PROFILE.map((l) => <option key={l} value={l}>{l}</option>)}
+              {LEVELS_PROFILE.map((l) => <option key={l} value={l}>{nhanHoSo(l)}</option>)}
             </select></div>
           <div className="grid gap-1"><Nhan k="goal" bb>{tr("Mục tiêu", "Objectif", "Goal")}</Nhan>
             <select value={p.goal} onChange={(e) => doi("goal", e.target.value)} className={O}>
               <option value="">{tr("Chọn mục tiêu", "Choisir", "Choose")}</option>
-              {GOALS_PROFILE.map((g) => <option key={g} value={g}>{g}</option>)}
+              {GOALS_PROFILE.map((g) => <option key={g} value={g}>{nhanHoSo(g)}</option>)}
             </select></div>
           <div className="grid gap-1"><Nhan k="dob">{tr("Ngày sinh", "Date de naissance", "Date of birth")}</Nhan>
             {/* Bộ chọn ngày của dự án (cùng kiểu thẻ Lịch, chọn được năm) thay hộp mặc định của trình duyệt. */}

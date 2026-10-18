@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, Target, GraduationCap, Timer } from "lucide-react";
 import { tr } from "../../shared/i18n.jsx";
+import { nhanHoSo } from "../../shared/nhanHoSo.js";
 import { Leon } from "../../shared/leon.jsx";
 
 /* Khối dùng chung cho Dashboard — phong cách Soft UI.
@@ -160,14 +161,14 @@ export function HeroBanner({ t, signedIn, name, note, goal, level, hocTiep = "/d
             <div className="mt-4 flex flex-wrap items-center gap-2">
               {goal ? (
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-400 px-3 py-1 text-xs font-extrabold text-amber-950 shadow-sm">
-                  <Target size={13} /> {tr("Mục tiêu", "Objectif", "Goal")}: {goal}
+                  <Target size={13} /> {tr("Mục tiêu", "Objectif", "Goal")}: {nhanHoSo(goal)}
                 </span>
               ) : note ? (
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-xs font-bold">{note}</span>
               ) : null}
               {level && (
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-xs font-bold">
-                  <GraduationCap size={13} /> {tr("Trình độ", "Niveau", "Level")}: {level}
+                  <GraduationCap size={13} /> {tr("Trình độ", "Niveau", "Level")}: {nhanHoSo(level)}
                 </span>
               )}
             </div>

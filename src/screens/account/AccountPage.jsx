@@ -4,6 +4,7 @@ import { useT, tr } from "../../shared/i18n.jsx";
 import { Leon } from "../../shared/leon.jsx";
 import { loadHoSo, luuHoSo } from "../../shared/profileStore.js";
 import { emptyProfile, calculateProfileCompletion, validateProfile, LEVELS_PROFILE, GOALS_PROFILE } from "../../shared/profile.js";
+import { nhanHoSo } from "../../shared/nhanHoSo.js";
 import { Avatar } from "../../shared/avatars.jsx";
 import { supabase } from "../../storageShim.js";
 import { ChonAvatar, ONhapUsername } from "./DanhTinh.jsx";
@@ -468,13 +469,13 @@ export default function AccountPage({ name, role, email, emailVerified, onLogout
                     <Field label={t("account.level")}>
                       <select className={INPUT} value={p.level || ""} onChange={set("level")}>
                         <option value="">—</option>
-                        {LEVELS_PROFILE.map((l) => <option key={l} value={l}>{l}</option>)}
+                        {LEVELS_PROFILE.map((l) => <option key={l} value={l}>{nhanHoSo(l)}</option>)}
                       </select>
                     </Field>
                     <Field label={t("account.goal")}>
                       <select className={INPUT} value={p.goal || ""} onChange={set("goal")}>
                         <option value="">—</option>
-                        {GOALS_PROFILE.map((g) => <option key={g} value={g}>{g}</option>)}
+                        {GOALS_PROFILE.map((g) => <option key={g} value={g}>{nhanHoSo(g)}</option>)}
                       </select>
                     </Field>
                   </div>
