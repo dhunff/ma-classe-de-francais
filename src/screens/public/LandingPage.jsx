@@ -10,6 +10,7 @@ import TeamSection from "./TeamSection.jsx";
 import ContactDrawer from "./ContactDrawer.jsx";
 import { tr } from "../../shared/i18n.jsx";
 import { useSeo } from "../../shared/seo.js";
+import { MANG_XA_HOI } from "../../shared/mangXaHoi.js";
 
 /* Trang giới thiệu công khai — phễu marketing của FRACILE.
  *
@@ -157,7 +158,7 @@ export default function LandingPage({ imgSrc = "/images/hero-preview.png" }) {
     /* Tên thương hiệu dễ bị Google sửa thành « fragile »: khai rõ tên, tên khác và
        trang web để máy tìm kiếm (và AI tìm kiếm) nối đúng thực thể. */
     jsonLd: { "@context": "https://schema.org", "@graph": [
-      { "@type": "EducationalOrganization", "@id": "https://www.fracile.vn/#org", name: "FRACILE", alternateName: ["Fracile", "fracile.vn", "FRACILE tiếng Pháp"], url: "https://www.fracile.vn/", logo: "https://www.fracile.vn/logo.png", email: "contact.fracile@gmail.com",
+      { "@type": "EducationalOrganization", "@id": "https://www.fracile.vn/#org", name: "FRACILE", alternateName: ["Fracile", "fracile.vn", "FRACILE tiếng Pháp"], url: "https://www.fracile.vn/", logo: "https://www.fracile.vn/logo.png", email: "contact.fracile@gmail.com", sameAs: MANG_XA_HOI.map(([, u]) => u),
         description: "Nền tảng học tiếng Pháp và luyện thi DELF, DALF bằng tiếng Việt: ngữ pháp A0 đến C1, đề thi thử DELF A1 đến DALF C1 có chấm điểm." },
       { "@type": "WebSite", "@id": "https://www.fracile.vn/#web", name: "FRACILE", alternateName: "Fracile", url: "https://www.fracile.vn/", inLanguage: "vi", publisher: { "@id": "https://www.fracile.vn/#org" } },
     ] },
@@ -345,6 +346,12 @@ export default function LandingPage({ imgSrc = "/images/hero-preview.png" }) {
           <div>
             <span className="flex items-center gap-2 text-xl font-extrabold"><img src="/leon/dau.webp" alt="" width={36} height={36} className="h-9 w-9 object-contain" />FRACILE</span>
             <p className="m-0 mt-3 max-w-sm text-sm leading-relaxed text-blue-100">{tr("Nền tảng luyện thi DELF cho học sinh và giáo viên Việt Nam.", "La plateforme de préparation au DELF pour les élèves et enseignants au Vietnam.", "The DELF prep platform for students and teachers in Vietnam.")}</p>
+            <div className="mt-4 flex flex-wrap gap-2">
+              {MANG_XA_HOI.map(([ten, url]) => (
+                <a key={ten} href={url} target="_blank" rel="noopener noreferrer me"
+                  className="rounded-full border border-solid border-white/30 px-3 py-1 text-xs font-bold text-white no-underline transition-colors hover:bg-white/10">{ten}</a>
+              ))}
+            </div>
           </div>
           <div className="grid content-start gap-2 text-sm">
             <p className="m-0 text-xs font-extrabold uppercase tracking-wider text-blue-200">{tr("Sản phẩm", "Produit", "Product")}</p>
