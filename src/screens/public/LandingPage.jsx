@@ -9,6 +9,7 @@ import { docSoLieu } from "../../shared/soLieuCongKhai.js";
 import TeamSection from "./TeamSection.jsx";
 import ContactDrawer from "./ContactDrawer.jsx";
 import { tr } from "../../shared/i18n.jsx";
+import { useSeo } from "../../shared/seo.js";
 
 /* Trang giới thiệu công khai — phễu marketing của FRACILE.
  *
@@ -149,6 +150,12 @@ const LOI_THE = () => [
 export default function LandingPage({ imgSrc = "/images/hero-preview.png" }) {
   const [so, setSo] = useState(null);
   const [isContactFormOpen, setIsContactFormOpen] = useState(false);
+  useSeo({
+    tieuDe: "FRACILE: học tiếng Pháp và luyện thi DELF, DALF bằng tiếng Việt",
+    moTa: "Ngữ pháp tiếng Pháp A0 đến C1 giải thích bằng tiếng Việt, đề thi thử DELF A1 đến DALF C1 đủ bốn kỹ năng có chấm điểm, luyện nghe nói, flashcard và thách đấu.",
+    duongDan: "/gioi-thieu",
+    jsonLd: { "@context": "https://schema.org", "@type": "EducationalOrganization", name: "FRACILE", url: "https://www.fracile.vn", logo: "https://www.fracile.vn/logo.png" },
+  });
 
   useEffect(() => {
     let con = true;

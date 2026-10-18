@@ -9,8 +9,13 @@ Deploy tự động lên Vercel khi push `main` → https://www.fracile.vn (frac
 
 ```bash
 npm run dev              # ứng dụng thật, cần đăng nhập
-npm run build
+npm run build            # vite build + dựng sẵn HTML trang công khai (scripts/prerender.mjs)
 ```
+
+Trang công khai (giới thiệu, ngữ pháp công khai, grille, FAQ, pháp lý) được
+dựng sẵn thành dist/<route>/index.html lúc build (18/10). Thêm trang công khai
+mới thì thêm vào DUONG_DAN + Routes trong src/prerender.jsx, và module nào chạm
+window/document lúc NẠP sẽ làm build dừng.
 
 `/preview.html` là trang xem thử **không cần đăng nhập** — dựng vỏ app thật với
 dữ liệu giả. Đây là cách duy nhất xem được các màn hình sau cổng đăng nhập.

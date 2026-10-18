@@ -29,3 +29,4 @@ supabase/.temp/
 *.backup.json
 _*.json
 scripts/i18n/tam/
+dist-ssr

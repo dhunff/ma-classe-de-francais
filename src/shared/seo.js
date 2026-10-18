@@ -17,8 +17,14 @@ function datMeta(thuocTinh, khoa, giaTri) {
 }
 
 export function useSeo({ tieuDe, moTa, duongDan, jsonLd }) {
+  /* Lúc dựng sẵn HTML (scripts/prerender.mjs) không có document: ghi lại để
+     script chèn thẻ vào <head>. Một nguồn duy nhất cho thẻ SEO, khỏi chép hai nơi. */
+  if (typeof document === "undefined" && globalThis.__SEO__) globalThis.__SEO__.push({ tieuDe, moTa, duongDan, jsonLd });
   useEffect(() => {
     if (!tieuDe) return undefined;
+    /* Bản dựng sẵn (scripts/prerender.mjs) có sẵn một khối JSON-LD tĩnh: gỡ đi để
+       không trùng với khối dưới đây, và không đi theo khi chuyển trang. */
+    document.getElementById("seo-jsonld-tinh")?.remove();
     const tieuDeCu = document.title;
     document.title = tieuDe;
     const tra = [

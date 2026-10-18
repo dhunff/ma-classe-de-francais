@@ -1,5 +1,6 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
+import { useSeo } from "../../shared/seo.js";
 import { AlertTriangle } from "lucide-react";
 import { tr } from "../../shared/i18n.jsx";
 
@@ -60,6 +61,8 @@ function LienHe() {
 }
 
 function Khung({ tieuDe, children }) {
+  const { pathname } = useLocation();
+  useSeo({ tieuDe: `${tieuDe} · FRACILE`, moTa: `${tieuDe} của FRACILE, nền tảng học tiếng Pháp và luyện thi DELF bằng tiếng Việt.`, duongDan: pathname });
   return (
     <div className="min-h-screen bg-bg">
       <div className="mx-auto max-w-3xl px-5 py-12 sm:py-16">
