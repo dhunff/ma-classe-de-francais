@@ -24,6 +24,10 @@ globalThis.addEventListener ??= () => {};
 globalThis.removeEventListener ??= () => {};
 const { render, DUONG_DAN } = await import(pathToFileURL(path.resolve("dist-ssr/prerender.js")).href);
 const khuon = readFileSync("dist/index.html", "utf8");
+/* Trang chủ « / » cũng dựng sẵn (18/10): trước đó Google nhận một trang trắng ở đúng
+   địa chỉ người ta tìm tên thương hiệu. Nhưng dist/index.html còn là bản dự phòng cho
+   MỌI route SPA, nên giữ bản sạch ở dist/app.html và vercel.json rewrite về đó. */
+writeFileSync("dist/app.html", khuon);
 if (!khuon.includes('<div id="root"></div>')) throw new Error("dist/index.html không có <div id=\"root\"></div>");
 
 const thoat = (s) => String(s ?? "").replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");

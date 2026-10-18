@@ -153,8 +153,14 @@ export default function LandingPage({ imgSrc = "/images/hero-preview.png" }) {
   useSeo({
     tieuDe: "FRACILE: học tiếng Pháp và luyện thi DELF, DALF bằng tiếng Việt",
     moTa: "Ngữ pháp tiếng Pháp A0 đến C1 giải thích bằng tiếng Việt, đề thi thử DELF A1 đến DALF C1 đủ bốn kỹ năng có chấm điểm, luyện nghe nói, flashcard và thách đấu.",
-    duongDan: "/gioi-thieu",
-    jsonLd: { "@context": "https://schema.org", "@type": "EducationalOrganization", name: "FRACILE", url: "https://www.fracile.vn", logo: "https://www.fracile.vn/logo.png" },
+    duongDan: "/",
+    /* Tên thương hiệu dễ bị Google sửa thành « fragile »: khai rõ tên, tên khác và
+       trang web để máy tìm kiếm (và AI tìm kiếm) nối đúng thực thể. */
+    jsonLd: { "@context": "https://schema.org", "@graph": [
+      { "@type": "EducationalOrganization", "@id": "https://www.fracile.vn/#org", name: "FRACILE", alternateName: ["Fracile", "fracile.vn", "FRACILE tiếng Pháp"], url: "https://www.fracile.vn/", logo: "https://www.fracile.vn/logo.png", email: "contact.fracile@gmail.com",
+        description: "Nền tảng học tiếng Pháp và luyện thi DELF, DALF bằng tiếng Việt: ngữ pháp A0 đến C1, đề thi thử DELF A1 đến DALF C1 có chấm điểm." },
+      { "@type": "WebSite", "@id": "https://www.fracile.vn/#web", name: "FRACILE", alternateName: "Fracile", url: "https://www.fracile.vn/", inLanguage: "vi", publisher: { "@id": "https://www.fracile.vn/#org" } },
+    ] },
   });
 
   useEffect(() => {

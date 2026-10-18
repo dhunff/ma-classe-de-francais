@@ -4,5 +4,6 @@ Disallow: /etudiant/
 Disallow: /professeur/
 Disallow: /examen/
 Disallow: /preview.html
+Disallow: /app.html
 
 Sitemap: https://www.fracile.vn/sitemap.xml

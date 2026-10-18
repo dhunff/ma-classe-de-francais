@@ -7,7 +7,7 @@ import { TAT_CA, BAI_CONG_KHAI } from "../../src/content/nguPhap/index.js";
 const GOC = "https://www.fracile.vn";
 const homNay = new Date().toISOString().slice(0, 10);
 const trang = [
-  ["/gioi-thieu", "1.0", "weekly"],
+  ["/", "1.0", "weekly"],
   ["/ngu-phap", "0.9", "weekly"],
   ...TAT_CA.filter((b) => BAI_CONG_KHAI.has(b.ma)).map((b) => [`/ngu-phap/${b.ma}`, "0.8", "monthly"]),
   ["/grille-delf", "0.8", "monthly"],
@@ -27,6 +27,7 @@ Disallow: /etudiant/
 Disallow: /professeur/
 Disallow: /examen/
 Disallow: /preview.html
+Disallow: /app.html
 
 Sitemap: ${GOC}/sitemap.xml
 `);

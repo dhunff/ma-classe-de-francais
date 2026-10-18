@@ -12,7 +12,7 @@ import { TAT_CA, BAI_CONG_KHAI } from "./content/nguPhap/index.js";
  * main.jsx vẫn createRoot và dựng lại từ đầu (không hydrate), nên lệch giữa bản
  * chụp và bản chạy không làm hỏng gì. Danh sách route PHẢI khớp App.jsx. */
 export const DUONG_DAN = [
-  "/gioi-thieu", "/ngu-phap", "/grille-delf", "/faq", "/dieu-khoan", "/bao-mat",
+  "/", "/gioi-thieu", "/ngu-phap", "/grille-delf", "/faq", "/dieu-khoan", "/bao-mat",
   ...TAT_CA.filter((b) => BAI_CONG_KHAI.has(b.ma)).map((b) => `/ngu-phap/${b.ma}`),
 ];
 
@@ -21,6 +21,7 @@ export function render(url) {
   const html = renderToString(
     <StaticRouter location={url}>
       <Routes>
+        <Route path="/" element={<LandingPage />} />
         <Route path="/gioi-thieu" element={<LandingPage />} />
         <Route path="/grille-delf" element={<GrilleDelf />} />
         <Route path="/faq" element={<TrangFAQ />} />
