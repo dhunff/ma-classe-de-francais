@@ -667,8 +667,8 @@ export default function NguPhap({ congKhai = false }) {
       name: `${bai.ten} (${bai.tenFr})`, description: bai.tomTat, inLanguage: "vi",
       educationalLevel: bai.cap === "A0" ? "A1" : bai.cap, learningResourceType: "Lesson",
       teaches: bai.tenFr, isAccessibleForFree: true,
-      url: `https://fracile.vercel.app/ngu-phap/${bai.ma}`,
-      provider: { "@type": "Organization", name: "FRACILE", url: "https://fracile.vercel.app" },
+      url: `https://www.fracile.vn/ngu-phap/${bai.ma}`,
+      provider: { "@type": "Organization", name: "FRACILE", url: "https://www.fracile.vn" },
     } : null,
   } : {
     tieuDe: "Ngữ pháp tiếng Pháp miễn phí từ A1 đến C1 | FRACILE",
@@ -678,8 +678,8 @@ export default function NguPhap({ congKhai = false }) {
       "@context": "https://schema.org", "@type": "Course",
       name: "Ngữ pháp tiếng Pháp từ A1 đến C1", inLanguage: "vi",
       description: `${TAT_CA.length} bài ngữ pháp tiếng Pháp giải thích bằng tiếng Việt, kèm bài luyện.`,
-      provider: { "@type": "Organization", name: "FRACILE", url: "https://fracile.vercel.app" },
-      hasPart: TAT_CA.filter((b) => BAI_CONG_KHAI.has(b.ma)).map((b) => ({ "@type": "LearningResource", name: b.ten, url: `https://fracile.vercel.app/ngu-phap/${b.ma}` })),
+      provider: { "@type": "Organization", name: "FRACILE", url: "https://www.fracile.vn" },
+      hasPart: TAT_CA.filter((b) => BAI_CONG_KHAI.has(b.ma)).map((b) => ({ "@type": "LearningResource", name: b.ten, url: `https://www.fracile.vn/ngu-phap/${b.ma}` })),
     },
   });
   /* Bài xếp trình độ (17/10): sau mọi hook để giữ thứ tự hook. */

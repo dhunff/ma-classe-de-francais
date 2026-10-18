@@ -5,4 +5,4 @@ Disallow: /professeur/
 Disallow: /examen/
 Disallow: /preview.html
 
-Sitemap: https://fracile.vercel.app/sitemap.xml
+Sitemap: https://www.fracile.vn/sitemap.xml

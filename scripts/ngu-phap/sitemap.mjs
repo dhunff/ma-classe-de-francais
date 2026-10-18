@@ -4,7 +4,7 @@
 import { writeFileSync } from "node:fs";
 import { TAT_CA, BAI_CONG_KHAI } from "../../src/content/nguPhap/index.js";
 
-const GOC = "https://fracile.vercel.app";
+const GOC = "https://www.fracile.vn";
 const homNay = new Date().toISOString().slice(0, 10);
 const trang = [
   ["/gioi-thieu", "1.0", "weekly"],

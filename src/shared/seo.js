@@ -6,7 +6,7 @@ import { useEffect } from "react";
  * Rời trang thì trả lại tiêu đề / mô tả cũ và gỡ JSON-LD, để trang khác không mang
  * nhầm thẻ của bài trước. JSON-LD là khối dữ liệu, không chạy như mã, nên CSP
  * script-src 'self' không chặn. */
-const GOC = "https://fracile.vercel.app";
+const GOC = "https://www.fracile.vn";
 
 function datMeta(thuocTinh, khoa, giaTri) {
   let el = document.head.querySelector(`meta[${thuocTinh}="${khoa}"]`);
