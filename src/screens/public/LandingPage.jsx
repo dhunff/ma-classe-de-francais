@@ -176,6 +176,7 @@ export default function LandingPage({ imgSrc = "/images/hero-preview.png" }) {
             <a href="#ky-nang" className="text-soft no-underline hover:text-ink">{tr("4 kỹ năng DELF", "Les 4 compétences", "The 4 skills")}</a>
             <Link to="/decouvrir" className="text-soft no-underline hover:text-ink">{tr("Thư viện bài tập", "Bibliothèque", "Library")}</Link>
             <Link to="/ngu-phap" className="text-soft no-underline hover:text-ink">{tr("Ngữ pháp", "Grammaire", "Grammar")}</Link>
+            <Link to="/grille-delf" className="text-soft no-underline hover:text-ink">Grille DELF</Link>
             <Link to="/faq" className="text-soft no-underline hover:text-ink">FAQ</Link>
           </div>
           <div className="ml-auto flex items-center gap-2">
@@ -339,7 +340,7 @@ export default function LandingPage({ imgSrc = "/images/hero-preview.png" }) {
           </div>
           <div className="grid content-start gap-2 text-sm">
             <p className="m-0 text-xs font-extrabold uppercase tracking-wider text-blue-200">{tr("Hỗ trợ", "Aide", "Support")}</p>
-            {[["/ngu-phap", tr("Ngữ pháp tiếng Pháp miễn phí", "Grammaire française gratuite", "Free French grammar")], ["/faq", tr("Câu hỏi thường gặp", "Questions fréquentes", "FAQ")], ["/dieu-khoan", tr("Điều khoản sử dụng", "Conditions d'utilisation", "Terms of use")], ["/bao-mat", tr("Chính sách bảo mật", "Politique de confidentialité", "Privacy policy")]].map(([to, ten]) => (
+            {[["/ngu-phap", tr("Ngữ pháp tiếng Pháp miễn phí", "Grammaire française gratuite", "Free French grammar")], ["/grille-delf", tr("Grille DELF giải thích", "Grilles DELF expliquées", "DELF grids explained")], ["/faq", tr("Câu hỏi thường gặp", "Questions fréquentes", "FAQ")], ["/dieu-khoan", tr("Điều khoản sử dụng", "Conditions d'utilisation", "Terms of use")], ["/bao-mat", tr("Chính sách bảo mật", "Politique de confidentialité", "Privacy policy")]].map(([to, ten]) => (
               <Link key={to} to={to} className="text-white no-underline transition-colors hover:text-blue-100">{ten}</Link>
             ))}
           </div>
