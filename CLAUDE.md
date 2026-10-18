@@ -1,7 +1,7 @@
 # FRACILE — ghi chú cho phiên làm việc
 
 LMS tự học tiếng Pháp, nhắm DELF B1/B2. React 18 + Vite + Tailwind + Supabase.
-Deploy tự động lên Vercel khi push `main` → https://fracile.vercel.app
+Deploy tự động lên Vercel khi push `main` → https://www.fracile.vn (fracile.vercel.app vẫn chạy song song)
 
 ---
 

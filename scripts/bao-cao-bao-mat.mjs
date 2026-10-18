@@ -56,8 +56,8 @@ const N = [
   { ma: "CORS", muc: "LOW → đã sửa trang web",
     thay: ["Trước: trang và file tĩnh trả Access-Control-Allow-Origin: * (mặc định Vercel).", "Edge Function trả `*` (supabase/functions/_shared/cors.ts) nhưng xác thực bằng Bearer token, không cookie: trang lạ gọi được nhưng không mang quyền của ai."],
     an: ["Allow-Methods của Edge Function chỉ POST, OPTIONS."],
-    de: ["(LOW) Có thể giới hạn origin của Edge Function về fracile.vercel.app + localhost (cần giữ preflight chạy ở môi trường dev)."],
-    sua: ["`vercel.json`: Access-Control-Allow-Origin = https://fracile.vercel.app."], muc_tieu: ["Trang trả origin cụ thể (ĐÃ ĐO)"] },
+    de: ["(LOW) Có thể giới hạn origin của Edge Function về www.fracile.vn + localhost (cần giữ preflight chạy ở môi trường dev)."],
+    sua: ["`vercel.json`: Access-Control-Allow-Origin = https://www.fracile.vn."], muc_tieu: ["Trang trả origin cụ thể (ĐÃ ĐO)"] },
   { ma: "RATE_LIMITING", muc: "LOW",
     thay: ["Đăng nhập do Supabase Auth (Google OAuth) có giới hạn sẵn.", "Mọi Edge Function tốn tiền có hạn mức: cham-pe 3/ngày, cham-po & nhan-xet-noi 6/24 giờ, cham-phat-am 20/ngày, hoi-leon 10/ngày (VIP không giới hạn), viet-mau chỉ VIP + mỗi bài một bản; gui_lien_he 3/ngày/email + 10/giờ/IP."],
     an: [], de: ["(LOW) `grade` không giới hạn lượt gọi (chỉ tốn tính toán, không tốn tiền AI).", "(LOW) Tài khoản VIP không giới hạn lượt AI: một tài khoản VIP bị lộ có thể đốt chi phí; cân nhắc trần cứng ví dụ 100 lượt/ngày."],
@@ -110,7 +110,7 @@ Date: 2026-10-15 · Công cụ: vibe-check (live scan + AI-CHECKLIST)
 |---|----------|--------|--------|------|
 ${so.join("\n")}
 
-## Live scan (https://fracile.vercel.app)
+## Live scan (https://www.fracile.vn)
 
 - Trước: fail 3 · warn 4 · pass 7
 - Sau: fail 0 · warn 1 · pass 19 (warn còn lại: img-src https có chủ ý)

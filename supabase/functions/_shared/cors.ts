@@ -21,7 +21,7 @@
  * không thì phải gửi đúng cái preflight mà nó gửi:
  *
  *   curl -X OPTIONS "$URL/functions/v1/<tên>" \
- *     -H "Origin: https://fracile.vercel.app" \
+ *     -H "Origin: https://www.fracile.vn" \
  *     -H "Access-Control-Request-Method: POST" \
  *     -H "Access-Control-Request-Headers: authorization, x-client-info, apikey, content-type"
  *

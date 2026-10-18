@@ -57,7 +57,7 @@ for (const ten of ham) {
     res = await fetch(`${URL_BASE}/functions/v1/${ten}`, {
       method: "OPTIONS",
       headers: {
-        Origin: "https://fracile.vercel.app",
+        Origin: "https://www.fracile.vn",
         "Access-Control-Request-Method": "POST",
         "Access-Control-Request-Headers": PHAI_CHO_PHEP.join(", "),
       },
