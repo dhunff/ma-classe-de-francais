@@ -1,5 +1,6 @@
 import { supabase } from "../storageShim.js";
 import { loiTranVip } from "./loiTranVip.js";
+import { baoHetLuot } from "./HetLuot.jsx";
 
 /* Xin gợi ý chấm Production écrite từ AI.
  *
@@ -66,6 +67,7 @@ export async function xinGoiYAI(answerId, rubric) {
     let than = null;
     try { than = await error.context?.json?.(); } catch { /* không đọc được thì thôi */ }
     const ma = than?.ma ?? "KHONG_RO";
+    if (ma === "HET_LUOT") baoHetLuot({ loai: "pe", hanMuc: than?.han_muc, cuaSoGio: than?.cua_so_gio });
     return {
       ok: false,
       ma,

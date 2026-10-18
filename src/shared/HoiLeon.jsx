@@ -4,6 +4,7 @@ import { Send, Smile, X, Crown } from "lucide-react";
 import { supabase } from "../storageShim.js";
 import { LangCtx, tr } from "./i18n.jsx";
 import { loiTranVip } from "./loiTranVip.js";
+import { baoHetLuot } from "./HetLuot.jsx";
 import { Leon, BangSticker, nhanSticker } from "./leon.jsx";
 
 /* Hỏi Leon (09/10): khung chat nổi góc phải dưới, chỉ cho học sinh.
@@ -111,7 +112,7 @@ export default function HoiLeon() {
       setConLai(d.vip ? null : d.con_lai);
     } else {
       setTin((t) => [...t, { ai: "leon", chu: loiMa(d?.ma, d), cam: d?.ma === "HET_LUOT" ? "buon" : "xin-loi", loi: true }]);
-      if (d?.ma === "HET_LUOT") setConLai(0);
+      if (d?.ma === "HET_LUOT") { setConLai(0); baoHetLuot({ loai: "leon", hanMuc: d?.han_muc }); }
     }
     setCho(false);
   };
