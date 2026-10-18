@@ -11,6 +11,7 @@ const trang = [
   ["/ngu-phap", "0.9", "weekly"],
   ...TAT_CA.filter((b) => BAI_CONG_KHAI.has(b.ma)).map((b) => [`/ngu-phap/${b.ma}`, "0.8", "monthly"]),
   ["/grille-delf", "0.8", "monthly"],
+  ["/lich-thi-delf", "0.9", "weekly"],
   ["/faq", "0.5", "monthly"],
   ["/dieu-khoan", "0.2", "yearly"],
   ["/bao-mat", "0.2", "yearly"],

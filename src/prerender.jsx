@@ -3,6 +3,7 @@ import { renderToString } from "react-dom/server";
 import { StaticRouter, Routes, Route } from "react-router-dom";
 import LandingPage from "./screens/public/LandingPage.jsx";
 import GrilleDelf from "./screens/public/GrilleDelf.jsx";
+import LichThiDelf from "./screens/public/LichThiDelf.jsx";
 import NguPhap from "./screens/student/NguPhap.jsx";
 import { TrangFAQ, TrangDieuKhoan, TrangBaoMat } from "./screens/public/TrangPhapLy.jsx";
 import { TAT_CA, BAI_CONG_KHAI } from "./content/nguPhap/index.js";
@@ -12,7 +13,7 @@ import { TAT_CA, BAI_CONG_KHAI } from "./content/nguPhap/index.js";
  * main.jsx vẫn createRoot và dựng lại từ đầu (không hydrate), nên lệch giữa bản
  * chụp và bản chạy không làm hỏng gì. Danh sách route PHẢI khớp App.jsx. */
 export const DUONG_DAN = [
-  "/", "/gioi-thieu", "/ngu-phap", "/grille-delf", "/faq", "/dieu-khoan", "/bao-mat",
+  "/", "/gioi-thieu", "/ngu-phap", "/grille-delf", "/lich-thi-delf", "/faq", "/dieu-khoan", "/bao-mat",
   ...TAT_CA.filter((b) => BAI_CONG_KHAI.has(b.ma)).map((b) => `/ngu-phap/${b.ma}`),
 ];
 
@@ -24,6 +25,7 @@ export function render(url) {
         <Route path="/" element={<LandingPage />} />
         <Route path="/gioi-thieu" element={<LandingPage />} />
         <Route path="/grille-delf" element={<GrilleDelf />} />
+        <Route path="/lich-thi-delf" element={<LichThiDelf />} />
         <Route path="/faq" element={<TrangFAQ />} />
         <Route path="/dieu-khoan" element={<TrangDieuKhoan />} />
         <Route path="/bao-mat" element={<TrangBaoMat />} />

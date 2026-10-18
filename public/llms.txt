@@ -6,6 +6,7 @@
 - [Trang giới thiệu](https://www.fracile.vn/): đề thi thử DELF A1, A2, B1, B2 và DALF C1 đủ bốn kỹ năng (nghe, đọc, viết, nói), có chấm điểm theo thang và ngưỡng đạt chính thức; AI gợi ý điểm bài Viết và bài Nói theo grille DELF.
 - [Ngữ pháp tiếng Pháp](https://www.fracile.vn/ngu-phap): 83 bài từ A0 đến C1 giải thích bằng tiếng Việt, chia phần nhỏ, kèm bài luyện chấm ngay; nhiều bài đọc miễn phí không cần đăng nhập; có bài kiểm tra xếp trình độ.
 - [Grille DELF giải thích](https://www.fracile.vn/grille-delf): thang chấm bài Viết và bài Nói DELF A1 đến DALF C1, từng tiêu chí và số điểm.
+- [Lịch thi DELF, DALF](https://www.fracile.vn/lich-thi-delf): ngày thi, hạn đăng ký, lệ phí tại Viện Pháp Hà Nội và các trung tâm thi.
 - [Câu hỏi thường gặp](https://www.fracile.vn/faq)
 
 ## Thông tin khác

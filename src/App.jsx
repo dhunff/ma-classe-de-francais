@@ -26,6 +26,7 @@ import SoanBoThe from './screens/teacher/SoanBoThe.jsx'
 import LandingPage from './screens/public/LandingPage.jsx'
 import { TrangFAQ, TrangDieuKhoan, TrangBaoMat } from './screens/public/TrangPhapLy.jsx'
 import GrilleDelf from './screens/public/GrilleDelf.jsx'
+import LichThiDelf from './screens/public/LichThiDelf.jsx'
 import ExamResults from './screens/student/ExamResults.jsx'
 
 import { C } from './shared/tokens.js'
@@ -395,6 +396,7 @@ function AppInner() {
             {/* Ngữ pháp công khai (16/10): 2–3 bài đầu mỗi trình độ đọc không cần đăng
                 nhập, bài khác hiện khoá. Kênh thu hút từ tìm kiếm như Vivoire. */}
             <Route path="/grille-delf" element={<GrilleDelf />} />
+            <Route path="/lich-thi-delf" element={<LichThiDelf />} />
             <Route path="/ngu-phap" element={<NguPhap congKhai />} />
             <Route path="/ngu-phap/:ma" element={<NguPhap congKhai />} />
 
