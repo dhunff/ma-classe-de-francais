@@ -11,7 +11,7 @@
         { "key": "X-Content-Type-Options", "value": "nosniff" },
         { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
         { "key": "Permissions-Policy", "value": "camera=(), geolocation=(), microphone=(self)" },
-        { "key": "Access-Control-Allow-Origin", "value": "https://fracile.vercel.app" }
+        { "key": "Access-Control-Allow-Origin", "value": "https://www.fracile.vn" }
       ]
     }
   ]
