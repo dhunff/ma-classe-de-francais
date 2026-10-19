@@ -126,6 +126,8 @@ export async function saveExam(exam, sections) {
     duration_min: [...new Map(sections.map((s) => [s.code, Number(s.minutes) || 0])).values()]
       .reduce((n, m) => n + m, 0) || null,
     is_published: !!exam.is_published,
+    /* Đề VIP hay đề thường (19/10): máy chủ chặn thật ở bat_dau_thi / exam_start (143). */
+    chi_vip: !!exam.chi_vip,
   };
   if (exam.id) row.id = exam.id;
   /* Chỉ gửi `grille` khi có thật. Gửi `null` cũng chạm vào cột, nên trước

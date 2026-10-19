@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Plus, Trash2, Eye, EyeOff, Save, Headphones, BookOpen, PenLine, Mic, ChevronUp, ChevronDown, Pencil, FileText } from "lucide-react";
+import { Plus, Trash2, Eye, EyeOff, Save, Headphones, BookOpen, PenLine, Mic, ChevronUp, ChevronDown, Pencil, FileText, Crown, Gift } from "lucide-react";
 import { loadExercises, saveExercise } from "../../shared/exerciseStore.js";
 import { uid } from "../../shared/questions.js";
 import Builder from "./Builder.jsx";
@@ -65,7 +65,7 @@ const nhanBai = (ex) => {
  * hiện đủ, nhưng nó dựng từ EXAM_STRUCTURE chứ không từ dữ liệu — cấu trúc kỳ
  * thi là hằng số, không phải thứ nằm trong bản nháp. */
 function DeMoi(level) {
-  return { exam: { title: "", level, is_published: false }, sections: [] };
+  return { exam: { title: "", level, is_published: false, chi_vip: false }, sections: [] };
 }
 
 export default function ExamComposer({ t }) {
@@ -169,6 +169,9 @@ export default function ExamComposer({ t }) {
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-bold text-ink">{e.title}</span>
                     <span className="rounded-full bg-surface2 px-2 py-0.5 text-xs font-bold text-soft">{e.level}</span>
+                    {e.chi_vip
+                      ? <span className="inline-flex items-center gap-1 rounded-full bg-warn-soft px-2 py-0.5 text-xs font-bold text-warn"><Crown size={12} /> VIP</span>
+                      : <span className="rounded-full bg-surface2 px-2 py-0.5 text-xs font-bold text-soft">{tr("Thường", "Gratuit", "Free")}</span>}
                     {e.is_published
                       ? <span className="inline-flex items-center gap-1 text-xs font-bold text-ok"><Eye size={12} /> {tr("đã phát hành", "publié(s)", "published")}</span>
                       : <span className="inline-flex items-center gap-1 text-xs font-bold text-warn"><EyeOff size={12} /> nháp</span>}
@@ -203,7 +206,7 @@ export default function ExamComposer({ t }) {
                          Lưu là thang riêng biến mất — không cảnh báo, không dấu
                          vết, và giáo viên chỉ phát hiện khi học sinh tự chấm. */
                       exam: { id: e.id, title: e.title, level: e.level,
-                              is_published: e.is_published, grille: e.grille ?? null },
+                              is_published: e.is_published, chi_vip: !!e.chi_vip, grille: e.grille ?? null },
                       /* Mang theo MỌI dòng, không gom về một dòng mỗi kỹ năng.
                          Bản cũ dùng `find` nên đề có ba bài CO mở ra chỉ còn
                          bài đầu — và bấm Lưu là hai bài kia biến mất. */
@@ -326,6 +329,28 @@ export default function ExamComposer({ t }) {
                 {lv}
               </button>
             ))}
+          </div>
+        </div>
+
+        {/* Loại đề (19/10): thường hay VIP. Đề VIP: tài khoản thường thấy đề kèm nhãn
+            VIP và nút nâng cấp, máy chủ từ chối bắt đầu thi (CAN_VIP). */}
+        <div>
+          <span className="text-xs font-bold uppercase tracking-wide text-soft">{tr("Loại đề", "Accès", "Access")}</span>
+          <div className="mt-1 grid gap-2 sm:grid-cols-2">
+            {[[false, Gift, tr("Đề thường", "Sujet gratuit", "Free exam"), tr("Mọi học sinh đều làm được.", "Ouvert à tous les élèves.", "Open to every student.")],
+              [true, Crown, tr("Đề VIP", "Sujet VIP", "VIP exam"), tr("Chỉ tài khoản VIP làm được; tài khoản thường thấy nhãn VIP và nút nâng cấp.", "Réservé aux membres VIP.", "VIP members only.")]].map(([gt, Icon, ten, mo]) => {
+              const on = !!draft.exam.chi_vip === gt;
+              return (
+                <button key={String(gt)} type="button" onClick={() => setDraft({ ...draft, exam: { ...draft.exam, chi_vip: gt } })} aria-pressed={on}
+                  className={`flex items-start gap-3 rounded-2xl border-2 border-solid p-3 text-left ${on ? (gt ? "border-amber-400 bg-warn-soft" : "border-primary bg-primary-soft") : "border-line bg-surface hover:border-primary/40"}`}>
+                  <Icon size={18} className={`mt-0.5 shrink-0 ${gt ? "text-amber-500" : "text-primary"}`} />
+                  <span className="min-w-0">
+                    <span className="block text-sm font-extrabold text-ink">{ten}</span>
+                    <span className="block text-xs text-soft">{mo}</span>
+                  </span>
+                </button>
+              );
+            })}
           </div>
         </div>
       </div>
