@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { Plus, Trash2, Eye, EyeOff, Save, AlertTriangle, Headphones, BookOpen, PenLine, Mic, ChevronUp, ChevronDown } from "lucide-react";
-import { loadExercises } from "../../shared/exerciseStore.js";
+import { Plus, Trash2, Eye, EyeOff, Save, Headphones, BookOpen, PenLine, Mic, ChevronUp, ChevronDown, Pencil, FileText } from "lucide-react";
+import { loadExercises, saveExercise } from "../../shared/exerciseStore.js";
+import { uid } from "../../shared/questions.js";
+import Builder from "./Builder.jsx";
 import { nhomTheoTrinhDo } from "../../shared/trinhDoDe.js";
 import { loadExams, saveExam, deleteExam, cotGrilleSanSang } from "../../shared/examStore.js";
 import { EXAM_STRUCTURE, khongCham } from "../exam/examPaper.js";
@@ -11,8 +13,11 @@ import { tr } from "../../shared/i18n.jsx";
  *
  * ══ Ý CHÍNH ══
  *
- * Đề thi KHÔNG chứa câu hỏi; nó CHỌN ba bài đã có trong thư viện. Giáo viên
- * soạn nội dung bằng Builder như thường, rồi vào đây ghép ba bài thành một đề.
+ * 19/10 (theo chủ dự án): soạn nội dung đề thi NGAY TẠI ĐÂY, không lấy bài từ
+ * thư viện luyện tập. Mỗi phần thi có « Soạn bài mới » và « Sửa nội dung »; cả
+ * hai mở Builder và lưu vào kho RIÊNG của đề thi (store 'exam', migration 140).
+ * Đề vẫn chỉ THAM CHIẾU bài qua exam_sections (không chép câu hỏi), nên đáp án
+ * vẫn khoá ở answer_key và Edge Function grade chấm như cũ.
  *
  * Nhờ vậy không có trình soạn thứ hai phải bảo trì song song, đáp án vẫn nằm
  * nguyên chỗ bị khoá, và Edge Function `grade` chấm đề thi bằng đúng đường nó
@@ -37,35 +42,15 @@ const ICON = { CO: Headphones, CE: BookOpen, PE: PenLine, PO: Mic };
 const soPhanCham = (sections) =>
   new Set((sections ?? []).filter((s) => !khongCham(s)).map((s) => s.code)).size;
 
-const coSkill = (ex, skill) =>
-  Array.isArray(ex?.skills) ? ex.skills.includes(skill) : ex?.skill === skill;
-
-/* Nhãn cho một bài trong ô chọn.
- *
- * ══ VÌ SAO KHÔNG THÊM TRÌNH ĐỘ ══
- *
- * Danh sách đã lọc `ex.level === draft.exam.level`, nên mọi dòng đều cùng một
- * trình độ. In nó ra thì mỗi dòng đều "B1" — tốn chỗ, không phân biệt được gì,
- * và làm loãng phần thật sự khác nhau.
- *
- * ══ THỨ THẬT SỰ PHÂN BIỆT ══
- *
- * Thư viện có hai bài cùng tên « Activité 1 »: một bài kèm ảnh, bài kia không.
- * Ô chọn cũ chỉ hiện tên và số câu, nên hai dòng trông y hệt — giáo viên chọn
- * nhầm thì học sinh vào phòng thi mới biết, và không ai truy được vì sao.
- *
- * Nên: đánh dấu NGỮ LIỆU (ảnh / bài đọc / nghe). Đó là thứ khác nhau giữa hai
- * bài trùng tên, và cũng là thứ giáo viên cần biết khi ghép đề.
- *
- * Mã id chỉ hiện khi tên bị TRÙNG trong chính danh sách này. Hiện mọi lúc là
- * thêm nhiễu cho trường hợp không có gì để phân biệt. */
-const nhanBai = (ex, trungTen) => {
-  const phan = [tr(`${ex.questions.length} câu`, `${ex.questions.length} questions`, `${ex.questions.length} questions`)];
-  if (ex.imageUrl) phan.push(tr("ảnh", "image", "image"));
+/* Nhãn ngắn cho một bài trong đề: phần Viết / Nói không có câu hỏi (đề bài nằm
+   ở consigne), nên ghi « đề bài » thay vì « 0 câu ». */
+const nhanBai = (ex) => {
+  const so = ex.questions?.length ?? 0;
+  const phan = [so ? tr(`${so} câu`, `${so} questions`, `${so} questions`) : tr("đề bài", "sujet", "prompt")];
   if (ex.readingText) phan.push(tr("bài đọc", "texte", "text"));
   if (ex.audioUrl) phan.push(tr("âm thanh", "audio", "audio"));
-  if (trungTen) phan.push(`#${String(ex.id).slice(-4)}`);
-  return `${ex.title} — ${phan.join(" · ")}`;
+  if (ex.bocTham) phan.push(tr("bốc thăm", "tirage", "draw"));
+  return phan.join(" · ");
 };
 
 /* `sections` giờ chỉ chứa những bài ĐÃ CHỌN, mỗi bài một dòng.
@@ -89,6 +74,8 @@ export default function ExamComposer({ t }) {
   const [dangLuu, setDangLuu] = useState(false);
   const [toast, setToast] = useState("");
   const [tab, setTab] = useState("de");
+  /* Bài đang soạn trong Builder: { bai, code, moi }. */
+  const [soan, setSoan] = useState(null);
 
   const taiLai = () => loadExams().then(setDsDe);
   /* 13/10: đề thi thử chỉ ghép bài trong kho thi thử (store 'exam'), không lấy từ thư viện luyện tập. */
@@ -130,7 +117,7 @@ export default function ExamComposer({ t }) {
   };
 
   const xoa = async (id) => {
-    if (!confirm(tr("Xoá hẳn đề này? Bài tập bên trong vẫn còn nguyên trong thư viện.", "Supprimer ce sujet ? Les exercices restent dans la bibliothèque.", "Delete this exam? Its exercises stay in the library."))) return;
+    if (!confirm(tr("Xoá hẳn đề này? Nội dung các bài vẫn được giữ trong kho đề thi.", "Supprimer ce sujet ? Le contenu des épreuves est conservé.", "Delete this exam? Its exercise content is kept."))) return;
     const r = await deleteExam(id);
     if (!r.ok) { alert(tr("❌ Không xoá được: ", "❌ Suppression impossible : ", "❌ Couldn't delete: ") + (r.error?.message ?? "")); return; }
     taiLai();
@@ -144,7 +131,7 @@ export default function ExamComposer({ t }) {
           <div>
             <h1 className="m-0 text-2xl font-extrabold text-ink">{tr("Đề thi thử", "Examens blancs", "Mock exams")}</h1>
             <p className="m-0 mt-1 text-sm text-soft">
-              {tr("Ghép ba bài trong thư viện thành một đề CO + CE + PE.", "Assemblez des exercices de la bibliothèque en un sujet CO + CE + PE.", "Combine library exercises into a CO + CE + PE exam.")}
+              {tr("Soạn trọn một đề: Nghe, Đọc, Viết, Nói. Nội dung đề thi nằm riêng, không lẫn với thư viện luyện tập.", "Rédigez un sujet complet : CO, CE, PE, PO. Le contenu des examens est séparé de la bibliothèque.", "Write a full exam: listening, reading, writing, speaking. Exam content is kept apart from the practice library.")}
             </p>
           </div>
           <button type="button" onClick={() => { setTab("de"); setDraft(DeMoi("B1")); }}
@@ -235,6 +222,23 @@ export default function ExamComposer({ t }) {
     );
   }
 
+  /* ── Soạn / sửa NỘI DUNG một bài của đề (Builder) ── */
+  if (draft && soan) {
+    return <Builder draft={soan.bai} setDraft={(b) => setSoan((x) => ({ ...x, bai: typeof b === "function" ? b(x.bai) : b }))} accounts={[]}
+      publish={async () => {
+        const bai = { ...soan.bai, usageType: "practice", level: draft.exam.level };
+        const ket = await saveExercise(bai, "exam");
+        if (!ket.ok) { alert(tr("❌ Không lưu được bài: ", "❌ Épreuve non enregistrée : ", "❌ Couldn't save: ") + (ket.error?.message ?? "")); return; }
+        setKho((k) => [...k.filter((x) => x.id !== bai.id), bai]);
+        if (soan.moi) {
+          const p = EXAM_STRUCTURE[draft.exam.level].find((x) => x.code === soan.code);
+          setDraft((d) => ({ ...d, sections: [...d.sections, { code: soan.code, minutes: p.minutes, points: p.points, exercise_id: bai.id }] }));
+        }
+        setSoan(null);
+      }}
+      cancel={() => setSoan(null)} />;
+  }
+
   /* ── Trình soạn ── */
   /* Kỹ năng CHƯA CÓ BÀI NÀO. Bản cũ đếm dòng có exercise_id rỗng — hình dạng
      đó không còn tồn tại từ khi sections chỉ chứa bài đã chọn. */
@@ -320,43 +324,14 @@ export default function ExamComposer({ t }) {
         {EXAM_STRUCTURE[draft.exam.level].map((phan) => {
           const daChon = draft.sections.filter((s) => s.code === phan.code);
           const Icon = ICON[phan.code];
-          /* Bài không có câu hỏi nào thì vô dụng — TRỪ phần không chấm.
-             Bài nói không có câu để trả lời: đề bài nằm ở `consigne`, và màn
-             thi thay danh sách câu hỏi bằng bộ ghi âm. Giữ nguyên điều kiện cũ
-             cho PO thì thư viện luôn báo "chưa có bài" dù bài đã soạn xong, và
-             không có gì chỉ ra vì sao. */
-          const ungVien = kho.filter(
-            (ex) => ex.level === draft.exam.level && coSkill(ex, phan.skill)
-                 && (khongCham(phan) || (ex.questions?.length ?? 0) > 0),
-          );
-          /* Tên nào xuất hiện quá một lần TRONG CHÍNH danh sách này. Tính theo
-             danh sách đã lọc, không theo cả thư viện: hai bài trùng tên nhưng
-             khác kỹ năng thì không bao giờ đứng cạnh nhau, và gắn mã id cho
-             chúng chỉ là nhiễu. */
-          const demTen = {};
-          for (const ex of ungVien) {
-            const t = String(ex.title).trim();
-            demTen[t] = (demTen[t] ?? 0) + 1;
-          }
-          const tenTrung = new Set(Object.keys(demTen).filter((t) => demTen[t] > 1));
+          /* Bài mới: đúng trình độ + kỹ năng của phần, lưu vào kho đề thi. */
+          const soanMoi = () => setSoan({ moi: true, code: phan.code, bai: {
+            id: uid(), title: `${phan.label} ${draft.exam.level} · ${draft.exam.title || tr("đề mới", "nouveau sujet", "new exam")}`,
+            level: draft.exam.level, skill: phan.skill, skills: [phan.skill], consigne: "", usageType: "practice",
+            deadline: "", audioUrl: "", readingText: "", imageUrl: "", timeLimit: "", targeted: false,
+            assignedClasses: [], assignedExtra: [], assignedTo: null, createdAt: Date.now(), questions: [] } });
+          const suaBai = (ex) => setSoan({ moi: false, code: phan.code, bai: JSON.parse(JSON.stringify(ex)) });
 
-          /* Bài đã chọn rồi thì không hiện lại trong ô thêm. Ràng buộc ở
-             migration 044 chặn trùng ở tầng database, nhưng để giáo viên chọn
-             được rồi mới báo lỗi khoá trùng là bắt họ đoán. */
-          const daChonId = new Set(daChon.map((s) => s.exercise_id));
-          const conLai = ungVien.filter((ex) => !daChonId.has(ex.id));
-
-          const them = (id) => {
-            if (!id) return;
-            setDraft({
-              ...draft,
-              /* Nối vào CUỐI: thứ tự chọn là thứ tự học sinh sẽ làm, và giáo
-                 viên chọn theo thứ tự họ muốn. `ord` sinh lúc lưu. */
-              sections: [...draft.sections, {
-                code: phan.code, minutes: phan.minutes, points: phan.points, exercise_id: id,
-              }],
-            });
-          };
           const bo = (id) => setDraft({
             ...draft,
             sections: draft.sections.filter((s) => !(s.code === phan.code && s.exercise_id === id)),
@@ -409,10 +384,16 @@ export default function ExamComposer({ t }) {
                       <li key={s.exercise_id}
                           className="flex items-center gap-2 rounded-xl bg-surface2 px-3 py-2">
                         <span className="shrink-0 text-xs font-bold tabular-nums text-soft">{j + 1}.</span>
-                        <span className="min-w-0 flex-1 truncate text-sm text-ink">
-                          {ex ? nhanBai(ex, tenTrung.has(String(ex.title).trim()))
-                              : tr(`(bài ${s.exercise_id} không còn trong thư viện)`, `(exercice ${s.exercise_id} retiré de la bibliothèque)`, `(exercise ${s.exercise_id} no longer in the library)`)}
+                        <span className="min-w-0 flex-1">
+                          <span className="block truncate text-sm font-semibold text-ink">{ex ? ex.title : tr("(bài này đã bị xoá)", "(épreuve supprimée)", "(deleted)")}</span>
+                          {ex && <span className="block text-xs text-soft">{nhanBai(ex)}</span>}
                         </span>
+                        {ex && (
+                          <button type="button" onClick={() => suaBai(ex)} title={tr("Sửa nội dung", "Modifier le contenu", "Edit content")}
+                            className="inline-flex shrink-0 items-center gap-1 rounded-full border-0 bg-primary-soft px-3 py-1.5 text-xs font-bold text-primary hover:bg-primary hover:text-white">
+                            <Pencil size={12} /> {tr("Sửa nội dung", "Modifier", "Edit")}
+                          </button>
+                        )}
                         <button type="button" onClick={() => doiCho(s.exercise_id, -1)}
                           disabled={j === 0} title={tr("Đưa lên trên", "Monter", "Move up")}
                           className="shrink-0 rounded-full border-0 bg-transparent px-1.5 py-1 text-soft hover:text-ink disabled:opacity-30">
@@ -423,7 +404,7 @@ export default function ExamComposer({ t }) {
                           className="shrink-0 rounded-full border-0 bg-transparent px-1.5 py-1 text-soft hover:text-ink disabled:opacity-30">
                           <ChevronDown size={15} />
                         </button>
-                        <button type="button" onClick={() => bo(s.exercise_id)} title={tr("Bỏ khỏi đề", "Retirer du sujet", "Remove from exam")}
+                        <button type="button" onClick={() => { if (confirm(tr("Bỏ bài này khỏi đề? Nội dung bài vẫn được giữ trong kho đề thi.", "Retirer cette épreuve du sujet ? Son contenu est conservé.", "Remove from this exam? Its content is kept."))) bo(s.exercise_id); }} title={tr("Bỏ khỏi đề", "Retirer du sujet", "Remove from exam")}
                           className="shrink-0 rounded-full border-0 bg-transparent px-1.5 py-1 text-soft hover:text-danger">
                           <Trash2 size={14} />
                         </button>
@@ -433,31 +414,11 @@ export default function ExamComposer({ t }) {
                 </ol>
               )}
 
-              {ungVien.length === 0 ? (
-                <p className="m-0 mt-3 flex items-start gap-2 text-xs text-danger">
-                  <AlertTriangle size={13} className="mt-0.5 shrink-0" />
-                  {tr("Thư viện chưa có bài «", "La bibliothèque n'a pas d'exercice «", "The library has no «")} {phan.skill} {tr("» trình độ", "» de niveau", "» exercise at level")} {draft.exam.level}{tr(". Soạn một bài ở mục Luyện tập trước đã.", ". Créez d'abord un exercice.", ". Create one first.")}
-                </p>
-              ) : conLai.length === 0 ? (
-                <p className="m-0 mt-3 text-xs text-soft">
-                  {tr("Đã dùng hết", "Tous utilisés :", "All used:")} {ungVien.length} {tr("bài «", "exercice «", "exercise «")} {phan.skill} » {draft.exam.level} {tr("của thư viện.", "de la bibliothèque.", "from the library.")}
-                </p>
-              ) : (
-                /* `value=""` và reset ngay sau khi chọn: ô này là NÚT THÊM, không
-                   phải ô hiển thị lựa chọn hiện tại. Để nó giữ giá trị thì chọn
-                   lại cùng một bài lần nữa sẽ không kích hoạt onChange. */
-                <select value="" onChange={(e) => them(e.target.value)}
-                  className="mt-3 w-full rounded-xl border border-line bg-surface2 px-4 py-2.5 text-sm text-ink">
-                  <option value="">
-                    {daChon.length ? tr("+ thêm bài nữa vào phần này —", "+ ajouter un exercice à cette partie —", "+ add another exercise to this part —") : tr("— chọn bài —", "— choisir —", "— choose —")}
-                  </option>
-                  {conLai.map((ex) => (
-                    <option key={ex.id} value={ex.id}>
-                      {nhanBai(ex, tenTrung.has(String(ex.title).trim()))}
-                    </option>
-                  ))}
-                </select>
-              )}
+              <button type="button" onClick={soanMoi}
+                className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-line bg-transparent px-4 py-2.5 text-sm font-bold text-primary hover:border-primary hover:bg-primary-soft">
+                {daChon.length ? <Plus size={15} /> : <FileText size={15} />}
+                {daChon.length ? tr("Thêm bài cho phần này", "Ajouter une épreuve", "Add an exercise") : tr("Soạn nội dung phần này", "Rédiger cette partie", "Write this part")}
+              </button>
             </div>
           );
         })}

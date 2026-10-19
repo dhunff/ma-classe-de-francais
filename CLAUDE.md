@@ -742,6 +742,8 @@ Xem `docs/roadmap-delf.md` — có nhật ký quyết định ở §5.
   chỗ khác là tách đôi cả ba thứ: đáp án bị khoá ở answer_key, đường chấm của
   Edge Function, và trình soạn Builder. Màn thi nằm NGOÀI vỏ app (không thanh
   bên); soạn đề ở /professeur/examens.
+  19/10: KHÔNG chọn bài từ thư viện nữa. Mỗi phần thi có « Soạn nội dung / Thêm bài » và
+  « Sửa nội dung », mở Builder ngay trong ExamComposer, lưu vào kho `exam`.
 - ~~Tự chấm Production écrite~~ — xong 2026-08-27, đã chạy qua người dùng thật.
 
   Màn chia đôi (`PESelfEvaluation.jsx`): trái là đề + bài làm cuộn độc lập,
