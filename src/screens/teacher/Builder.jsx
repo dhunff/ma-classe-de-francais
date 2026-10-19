@@ -5,6 +5,7 @@ import { SKILLS, exSkills } from "../../shared/exercises.js";
 import { uid, stripHtml, autoQ, tableauCells, fillAccepted } from "../../shared/questions.js";
 import { useT, tr } from "../../shared/i18n.jsx";
 import RichTextEditor from "../../editor/RichTextEditor.jsx";
+import SoanBocTham from "./SoanBocTham.jsx";
 import { Image as ImageIcon, X, Trash2, FileText, Target, Users, Check, Copy } from "lucide-react";
 
 /* Tên kỹ năng hiển thị theo ngôn ngữ giao diện. Giá trị LƯU vẫn là chuỗi Pháp
@@ -443,6 +444,12 @@ function Builder({ draft, setDraft, publish, cancel, accounts, classes = [] }) {
             placeholder={t("bd.reading_ph")}
             onChange={(e) => setDraft({ ...draft, readingText: e.target.value })} />
         </div>
+        )}
+
+        {/* Bốc thăm đề nói (19/10): chỉ bài Production orale. */}
+        {dSkills.includes("Production orale") && (
+          <SoanBocTham bocTham={draft.bocTham} level={draft.level}
+            onChange={(bt) => setDraft({ ...draft, bocTham: bt })} />
         )}
 
         {accounts.length > 0 && (draft.usageType || "assignment") !== "practice" && (
