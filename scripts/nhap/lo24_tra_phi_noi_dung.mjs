@@ -1,0 +1,206 @@
+/* Lô 24 (20/10): 14 bài LUYỆN TẬP TRẢ PHÍ (kho practice), theo bảng giá FRACILE_bang-gia-va-bai-tap.xlsx.
+ * Giá đề xuất 29 000 đ/bài (đổi 290 XP theo gia_xp = giá ÷ 100); gói VIP mở tất cả.
+ * Ưu tiên chỗ thư viện mỏng: A2, Đọc hiểu, Viết, C1, Nghe có audio.
+ * Nội dung do FRACILE soạn; không dấu gạch dài (quy tắc 7). Máy dựng: lo24_tra_phi.mjs. */
+let dem = 0;
+export const id = (t) => `${t}${Date.now().toString(36)}${(dem++).toString(36).padStart(3, "0")}`;
+let hat = 20261020;
+const nn = () => ((hat = (hat * 1103515245 + 12345) % 2147483648) / 2147483648);
+const qcm = (prompt, dung, sai, explanation) => {
+  const o = [dung, ...sai].map((x, i) => ({ x, d: i === 0 }));
+  for (let i = o.length - 1; i > 0; i--) { const k = Math.floor(nn() * (i + 1)); [o[i], o[k]] = [o[k], o[i]]; }
+  return { id: id("q"), type: "qcm", prompt, options: o.map((y) => y.x), answer: o.findIndex((y) => y.d), explanation };
+};
+const fill = (prompt, accepted, explanation) => ({ id: id("q"), type: "fill", prompt, accepted, explanation });
+const vf = (prompt, dung, justification) => ({ id: id("q"), type: "vf", prompt, answer: dung ? 0 : 1, justification });
+const open = (prompt, model) => ({ id: id("q"), type: "open", prompt, model });
+const p = (...ds) => ds.map((x) => `<p>${x}</p>`).join("");
+const d = (giong, cach, chu) => ({ giong, cach, chu });
+const VUA = "Parle en français de France, débit modéré et clair.";
+const RADIO = "Parle en français de France, comme un journaliste de radio, débit naturel et posé.";
+const KHACH = "Parle en français de France, comme une personne interviewée à la radio, débit naturel.";
+
+export const BAI = [
+  /* ── A2 ── */
+  { skill: "Grammaire", level: "A2", title: "L'imparfait : décrire le passé",
+    consigne: p("Choisissez ou écrivez la bonne forme de l'imparfait.", "<em>Rappel : radical de « nous » au présent + -ais, -ais, -ait, -ions, -iez, -aient. Être : j'étais.</em>"),
+    questions: [
+      fill("Quand j'______ (être) petit, j'habitais à la campagne.", "étais", "Être à l'imparfait : j'étais."),
+      fill("Nous ______ (aller) à la plage tous les étés.", "allions", "Nous allons → all- + -ions."),
+      fill("Mes grands-parents ______ (avoir) un grand jardin.", "avaient", "Avoir : nous avons → av- + -aient."),
+      fill("Tu ______ (faire) du vélo le dimanche ?", "faisais", "Faire : nous faisons → fais- + -ais."),
+      qcm("Hier, il ______ beau quand je suis sorti.", "faisait", ["a fait", "fait"], "Description du décor : imparfait."),
+      qcm("Avant, on ______ pas de téléphone portable.", "n'avait", ["n'a eu", "n'aura"], "Habitude ou situation passée : imparfait."),
+      qcm("Pendant que je ______, le téléphone a sonné.", "dormais", ["ai dormi", "dors"], "Action en cours interrompue : imparfait."),
+      qcm("Quelle phrase décrit une habitude passée ?", "Le samedi, nous jouions au football.", ["Samedi, nous avons joué au football.", "Samedi, nous jouerons au football."], "« Le samedi » + imparfait = habitude."),
+    ] },
+  { skill: "Grammaire", level: "A2", title: "Comparer : plus, moins, aussi, meilleur",
+    consigne: p("Complétez avec la bonne forme du comparatif."),
+    questions: [
+      qcm("Le train est ______ rapide que le bus.", "plus", ["plus de", "autant"], "Comparatif de supériorité avec un adjectif : plus + adjectif + que."),
+      qcm("Ce gâteau est ______ que l'autre.", "meilleur", ["plus bon", "mieux"], "Bon → meilleur (on ne dit pas « plus bon »)."),
+      qcm("Paul chante ______ que son frère.", "mieux", ["meilleur", "plus bien"], "Bien (adverbe) → mieux."),
+      qcm("Il y a ______ voitures en ville qu'à la campagne.", "plus de", ["plus", "aussi"], "Avec un nom : plus de + nom."),
+      fill("Marie est ______ grande que Léa : elles mesurent toutes les deux 1,65 m.", "aussi", "Égalité avec un adjectif : aussi + adjectif + que."),
+      fill("Je travaille ______ que toi : seulement 20 heures par semaine.", "moins", "Infériorité avec un verbe : verbe + moins que."),
+      vf("« Mon café est plus bon que le tien » est correct.", false, "On dit « meilleur que »."),
+      qcm("C'est le restaurant ______ cher de la ville.", "le moins", ["moins", "plus moins"], "Superlatif : le moins + adjectif."),
+    ] },
+  { skill: "Vocabulaire", level: "A2", title: "Vocabulaire : la santé et le corps",
+    consigne: p("Choisissez le mot qui convient."),
+    questions: [
+      qcm("J'ai mal à la ______ : j'ai trop lu.", "tête", ["jambe", "main"], "Lire longtemps → mal à la tête."),
+      qcm("Pour une ordonnance, je vais chez le ______.", "médecin", ["boulanger", "dentiste"], "L'ordonnance est écrite par le médecin."),
+      qcm("J'achète des médicaments à la ______.", "pharmacie", ["librairie", "boucherie"], "Médicaments → pharmacie."),
+      qcm("Il a de la ______ : 39 °C.", "fièvre", ["toux", "faim"], "39 °C = fièvre."),
+      qcm("Pour une carie, je prends rendez-vous chez le ______.", "dentiste", ["pharmacien", "kiné"], "Les dents → dentiste."),
+      qcm("Je ne peux pas marcher : je me suis cassé la ______.", "jambe", ["oreille", "tête"], "Marcher → jambe."),
+      fill("Quand on est très fatigué, il faut se ______ (verbe, se coucher pour récupérer).", "reposer", "Se reposer = récupérer."),
+      qcm("« Je tousse et j'ai le nez qui coule », j'ai probablement…", "un rhume", ["une fracture", "une allergie au soleil"], "Toux + nez qui coule = rhume."),
+    ] },
+  { skill: "Lecture", level: "A2", title: "Lecture A2 : une annonce de stage d'été",
+    consigne: p("Lisez l'annonce puis répondez aux questions."),
+    readingText: p("<strong>Stage d'été : animateur ou animatrice de centre de loisirs</strong>",
+      "Le centre de loisirs « Les Petits Explorateurs » cherche des jeunes de 18 à 25 ans pour s'occuper d'enfants de 6 à 10 ans, du 7 juillet au 15 août.",
+      "Horaires : du lundi au vendredi, de 8 h 30 à 17 h. Repas du midi offert.",
+      "Activités : jeux en plein air, sorties à la piscine, ateliers de cuisine et de peinture.",
+      "Le BAFA (diplôme d'animateur) est un plus, mais il n'est pas obligatoire. Une formation de deux jours est proposée fin juin.",
+      "Envoyez votre CV et une courte lettre avant le 30 mai à recrutement@petits-explorateurs.fr."),
+    questions: [
+      qcm("Le centre cherche des jeunes de…", "18 à 25 ans", ["6 à 10 ans", "16 à 18 ans"], "« des jeunes de 18 à 25 ans »."),
+      qcm("Les enfants ont entre…", "6 et 10 ans", ["3 et 6 ans", "10 et 14 ans"], "« enfants de 6 à 10 ans »."),
+      qcm("Le travail se fait…", "en semaine", ["le week-end", "tous les jours"], "« du lundi au vendredi »."),
+      vf("Le repas du midi est payant.", false, "« Repas du midi offert »."),
+      vf("Il faut obligatoirement avoir le BAFA.", false, "« il n'est pas obligatoire »."),
+      qcm("Quelle activité n'est PAS citée ?", "l'équitation", ["la piscine", "la peinture"], "Sont citées : jeux, piscine, cuisine, peinture."),
+      qcm("La formation a lieu…", "fin juin", ["début juillet", "le 30 mai"], "« proposée fin juin »."),
+      qcm("Avant quelle date faut-il envoyer sa candidature ?", "le 30 mai", ["le 7 juillet", "le 15 août"], "« avant le 30 mai »."),
+    ] },
+  { skill: "Écoute", level: "A2", title: "Écoute A2 : réserver une table au restaurant", audio: true,
+    consigne: p("Écoutez le dialogue puis répondez aux questions. Vous pouvez écouter deux fois."),
+    doan: [d("nova", VUA, "Restaurant Le Jardin, bonjour !"), d("echo", VUA, "Bonjour, je voudrais réserver une table pour samedi soir, s'il vous plaît."),
+      d("nova", VUA, "Pour combien de personnes ?"), d("echo", VUA, "Pour six personnes. C'est l'anniversaire de ma mère."),
+      d("nova", VUA, "Samedi, nous avons une table à dix-neuf heures trente ou à vingt et une heures."), d("echo", VUA, "Dix-neuf heures trente, c'est parfait. Est-ce que c'est possible en terrasse ?"),
+      d("nova", VUA, "Oui, s'il fait beau. Sinon, vous serez près de la fenêtre. À quel nom ?"), d("echo", VUA, "Martin. Et est-ce que je peux apporter un gâteau ?"),
+      d("nova", VUA, "Bien sûr, nous le gardons au frais. Merci, monsieur Martin, à samedi !")],
+    questions: [
+      qcm("Pour quel jour est la réservation ?", "samedi", ["vendredi", "dimanche"], "« pour samedi soir »."),
+      qcm("Combien de personnes ?", "6", ["5", "16"], "« Pour six personnes »."),
+      qcm("Pourquoi cette sortie ?", "l'anniversaire de sa mère", ["un mariage", "un repas d'affaires"], "« C'est l'anniversaire de ma mère »."),
+      qcm("À quelle heure est la réservation ?", "19 h 30", ["21 h", "20 h 30"], "« Dix-neuf heures trente, c'est parfait »."),
+      qcm("S'il ne fait pas beau, la table sera…", "près de la fenêtre", ["en terrasse", "au premier étage"], "« Sinon, vous serez près de la fenêtre »."),
+      qcm("Que veut apporter le client ?", "un gâteau", ["des fleurs", "du vin"], "« est-ce que je peux apporter un gâteau ? »."),
+    ] },
+  /* ── B1 ── */
+  { skill: "Lecture", level: "B1", title: "Lecture B1 : les repair cafés",
+    consigne: p("Lisez l'article puis répondez aux questions."),
+    readingText: p("<strong>Réparer plutôt que jeter : le succès des repair cafés</strong>",
+      "Une lampe qui ne s'allume plus, un grille-pain en panne, un pantalon déchiré : au lieu de les jeter, de plus en plus d'habitants les apportent dans un repair café. Le principe est simple : des bénévoles, souvent retraités, aident les visiteurs à réparer eux-mêmes leurs objets, gratuitement.",
+      "Pour les organisateurs, l'objectif n'est pas seulement d'économiser de l'argent. Il s'agit aussi de réduire les déchets et de transmettre un savoir-faire. « Les gens repartent fiers, ils ont compris comment fonctionne leur objet », explique une bénévole.",
+      "Tous les objets ne peuvent pas être sauvés. Certains fabricants utilisent des pièces collées ou des vis spéciales qui rendent la réparation difficile. Les bénévoles le regrettent et demandent que les objets soient conçus pour durer.",
+      "Le repair café est aussi un lieu de rencontre. Autour d'un café, voisins et inconnus discutent. Pour beaucoup de personnes seules, c'est un rendez-vous important du mois."),
+    questions: [
+      qcm("Dans un repair café, qui répare les objets ?", "les visiteurs, aidés par des bénévoles", ["des techniciens payés", "les fabricants"], "« aident les visiteurs à réparer eux-mêmes »."),
+      vf("Le service est payant.", false, "« gratuitement »."),
+      qcm("Selon les organisateurs, quel est AUSSI un objectif ?", "réduire les déchets", ["vendre des objets d'occasion", "former des techniciens"], "« réduire les déchets et transmettre un savoir-faire »."),
+      qcm("Comment repartent les visiteurs ?", "fiers", ["déçus", "pressés"], "« Les gens repartent fiers »."),
+      qcm("Pourquoi certains objets sont-ils difficiles à réparer ?", "à cause de pièces collées ou de vis spéciales", ["parce qu'ils sont trop vieux", "parce que les bénévoles manquent"], "« pièces collées ou des vis spéciales »."),
+      qcm("Que demandent les bénévoles ?", "des objets conçus pour durer", ["plus d'argent", "des locaux plus grands"], "« que les objets soient conçus pour durer »."),
+      vf("Pour certaines personnes seules, le repair café est un moment social important.", true, "« un rendez-vous important du mois »."),
+      qcm("Le ton de l'article est plutôt…", "positif", ["inquiet", "ironique"], "Il présente un succès et ses bienfaits."),
+    ] },
+  { skill: "Production écrite", level: "B1", title: "Écrit B1 : lettre de réclamation",
+    consigne: p("<strong>Production écrite : 45 minutes, 160 mots minimum.</strong>", "Vous avez commandé un ordinateur sur un site Internet. Il est arrivé avec deux semaines de retard et l'écran est rayé. Vous écrivez au service client : vous racontez le problème, vous exprimez votre mécontentement et vous demandez une solution."),
+    questions: [open("Rédigez votre lettre de réclamation (160 mots minimum).", "Madame, Monsieur, Le 2 octobre, j'ai commandé sur votre site un ordinateur portable… Je vous demande donc de remplacer cet appareil ou de me rembourser… Veuillez agréer, Madame, Monsieur, mes salutations distinguées.")] },
+  { skill: "Grammaire", level: "B1", title: "Le plus-que-parfait",
+    consigne: p("Complétez avec le plus-que-parfait (avoir ou être à l'imparfait + participe passé)."),
+    questions: [
+      fill("Quand je suis arrivé, le film ______ déjà ______ (commencer). Écrivez les deux mots.", "avait commencé", "Action antérieure : avait + participe."),
+      fill("Elle était fatiguée parce qu'elle ______ (mal dormir).", "avait mal dormi", "Avoir à l'imparfait + participe."),
+      fill("Nous ______ (partir) avant la pluie.", "étions partis|étions parties", "Partir se conjugue avec être : accord."),
+      fill("Ils m'ont dit qu'ils ______ (déjà visiter) Paris.", "avaient déjà visité", "Discours rapporté au passé."),
+      qcm("Il a retrouvé les clés qu'il ______.", "avait perdues", ["a perdu", "perdait"], "Action antérieure à « a retrouvé » ; accord avec « les clés » placé avant."),
+      qcm("Si j'______, je serais venu.", "avais su", ["ai su", "savais"], "Hypothèse sur le passé : si + plus-que-parfait."),
+      qcm("Quelle phrase est correcte ?", "Elle s'était levée tôt.", ["Elle avait levée tôt.", "Elle s'avait levé tôt."], "Verbe pronominal : être."),
+      vf("Le plus-que-parfait exprime une action antérieure à une autre action passée.", true, "C'est son emploi principal."),
+    ] },
+  /* ── B2 ── */
+  { skill: "Lecture", level: "B2", title: "Lecture B2 : la fin des notes à l'école ?",
+    consigne: p("Lisez l'article puis répondez aux questions."),
+    readingText: p("<strong>Évaluer sans noter : une bonne idée ?</strong>",
+      "Dans plusieurs collèges, les notes sur 20 ont laissé place à des couleurs ou à des appréciations : « acquis », « en cours d'acquisition », « non acquis ». Leurs défenseurs avancent un argument central : la note chiffrée stresse les élèves et les pousse à se comparer plutôt qu'à progresser.",
+      "Les enseignants qui ont adopté ce système affirment que les élèves s'intéressent davantage aux commentaires. Une professeure de mathématiques raconte que ses élèves lui demandent désormais « ce qu'il faut revoir » plutôt que « combien j'ai eu ».",
+      "Les critiques ne manquent pas pour autant. Certains parents jugent les appréciations floues : comment savoir si son enfant est proche de la réussite ou très loin ? D'autres rappellent que le baccalauréat, les concours et l'orientation reposent toujours sur des notes, et craignent que les élèves soient mal préparés à ce retour brutal.",
+      "Entre les deux camps, une voie médiane se dessine : conserver les notes pour les évaluations finales, mais privilégier les appréciations détaillées pendant l'apprentissage. L'essentiel, selon les spécialistes, n'est pas l'outil mais l'usage qu'on en fait : une note accompagnée d'une explication vaut mieux qu'une couleur sans commentaire."),
+    questions: [
+      qcm("Par quoi les notes sur 20 sont-elles remplacées dans ces collèges ?", "des couleurs ou des appréciations", ["des notes sur 100", "aucune évaluation"], "« laissé place à des couleurs ou à des appréciations »."),
+      qcm("Quel est l'argument principal des défenseurs ?", "La note chiffrée stresse et pousse à se comparer.", ["Les notes coûtent cher.", "Les parents ne comprennent pas les notes."], "« la note chiffrée stresse les élèves et les pousse à se comparer »."),
+      qcm("Selon la professeure de mathématiques, les élèves…", "s'intéressent à ce qu'ils doivent revoir", ["ne travaillent plus", "réclament leurs notes"], "« ce qu'il faut revoir »."),
+      qcm("Que reprochent certains parents ?", "le manque de précision des appréciations", ["la sévérité des enseignants", "le coût du système"], "« appréciations floues »."),
+      qcm("Pourquoi certains craignent-ils un « retour brutal » ?", "Les examens et l'orientation reposent toujours sur des notes.", ["Les élèves changent d'école.", "Les enseignants partent à la retraite."], "« le baccalauréat, les concours et l'orientation reposent toujours sur des notes »."),
+      qcm("Quelle est la « voie médiane » proposée ?", "notes pour l'évaluation finale, appréciations pendant l'apprentissage", ["supprimer toutes les évaluations", "noter chaque exercice"], "Expliqué dans l'avant-dernier paragraphe."),
+      vf("Selon les spécialistes, l'outil d'évaluation compte plus que l'usage qu'on en fait.", false, "« L'essentiel… n'est pas l'outil mais l'usage »."),
+      qcm("Le ton de l'article est…", "nuancé", ["polémique", "humoristique"], "Il présente les deux camps et une synthèse."),
+    ] },
+  { skill: "Production écrite", level: "B2", title: "Écrit B2 : article argumenté sur le télétravail",
+    consigne: p("<strong>Production écrite : 60 minutes, 250 mots minimum.</strong>", "Le journal de votre ville prépare un dossier : « Le télétravail, une chance pour tous ? ». Vous écrivez un article argumenté dans lequel vous présentez les avantages et les limites du télétravail, avec des exemples, puis vous donnez votre position."),
+    questions: [open("Rédigez votre article (250 mots minimum).", "Titre accrocheur, introduction avec problématique, deux parties argumentées (avantages / limites) avec exemples concrets, conclusion avec votre position et une ouverture.")] },
+  { skill: "Grammaire", level: "B2", title: "La concordance des temps",
+    consigne: p("Choisissez la forme correcte selon la concordance des temps."),
+    questions: [
+      qcm("Il m'a dit qu'il ______ le lendemain.", "viendrait", ["viendra", "vient"], "Discours rapporté au passé : futur → conditionnel présent."),
+      qcm("Elle pensait que tu ______ déjà.", "étais parti", ["es parti", "partiras"], "Antériorité dans le passé : plus-que-parfait."),
+      qcm("Je savais qu'il ______ malade depuis une semaine.", "était", ["est", "sera"], "Simultanéité dans le passé : imparfait."),
+      qcm("Il a demandé si nous ______ le dossier.", "avions terminé", ["avons terminé", "terminerons"], "Action antérieure : plus-que-parfait."),
+      qcm("On m'a assuré que les résultats ______ publiés avant midi.", "seraient", ["seront", "sont"], "Futur dans le passé : conditionnel."),
+      qcm("Elle a promis qu'elle ______ avant notre retour.", "aurait fini", ["aura fini", "finit"], "Futur antérieur dans le passé : conditionnel passé."),
+      fill("Il croyait que je ______ (comprendre, simultanéité) la situation.", "comprenais", "Simultanéité : imparfait."),
+      vf("« Il a dit qu'il viendra demain » est toujours incorrect.", false, "Le futur est toléré si l'action est encore à venir au moment où l'on parle."),
+    ] },
+  { skill: "Écoute", level: "B2", title: "Écoute B2 : la seconde main, nouvelle norme ?", audio: true,
+    consigne: p("Écoutez l'entretien puis répondez aux questions. Vous pouvez écouter deux fois."),
+    doan: [d("sage", RADIO, "Vêtements, téléphones, meubles : acheter d'occasion n'est plus réservé aux petits budgets. Nous recevons une sociologue de la consommation. Comment expliquer cet engouement ?"),
+      d("shimmer", KHACH, "Il y a trois moteurs. Le premier, c'est le prix, évidemment, surtout quand le pouvoir d'achat se tend. Le deuxième, c'est l'écologie : prolonger la vie d'un objet évite d'en fabriquer un nouveau. Le troisième est plus inattendu : la recherche de pièces uniques. Beaucoup de jeunes veulent se distinguer et ne pas porter les mêmes vêtements que tout le monde."),
+      d("sage", RADIO, "Les plateformes en ligne ont-elles tout changé ?"),
+      d("shimmer", KHACH, "Elles ont surtout rendu l'occasion facile et presque invisible. Mais attention à un effet pervers : certains achètent plus qu'avant, en se disant que ce n'est pas grave puisque c'est d'occasion. Or la consommation la plus écologique reste celle qu'on n'a pas faite."),
+      d("sage", RADIO, "Que conseilleriez-vous ?"),
+      d("shimmer", KHACH, "De se poser une question simple avant chaque achat, neuf ou d'occasion : en ai-je vraiment besoin ? Et de privilégier la réparation quand c'est possible.")],
+    questions: [
+      qcm("Selon la sociologue, acheter d'occasion est aujourd'hui…", "pratiqué au-delà des petits budgets", ["réservé aux étudiants", "en recul"], "Introduction : n'est plus réservé aux petits budgets."),
+      qcm("Quel moteur est qualifié d'« inattendu » ?", "la recherche de pièces uniques", ["le prix", "l'écologie"], "« Le troisième est plus inattendu »."),
+      qcm("Pourquoi l'occasion est-elle écologique ?", "Elle évite de fabriquer un nouvel objet.", ["Elle se fait près de chez soi.", "Elle utilise moins d'emballages."], "« évite d'en fabriquer un nouveau »."),
+      qcm("Quel « effet pervers » est évoqué ?", "Certains achètent davantage.", ["Les prix augmentent.", "La qualité baisse."], "« certains achètent plus qu'avant »."),
+      qcm("Selon elle, la consommation la plus écologique est…", "celle qu'on n'a pas faite", ["l'occasion", "le neuf de qualité"], "Phrase clé de l'entretien."),
+      qcm("Que conseille-t-elle ?", "se demander si l'on a vraiment besoin de l'objet", ["acheter uniquement en ligne", "revendre tout ce qu'on possède"], "« en ai-je vraiment besoin ? »."),
+    ] },
+  /* ── C1 ── */
+  { skill: "Lecture", level: "C1", title: "Lecture C1 : la lenteur, un luxe ?",
+    consigne: p("Lisez le texte puis répondez aux questions."),
+    readingText: p("<strong>Éloge paradoxal de la lenteur</strong>",
+      "Il est devenu de bon ton de faire l'éloge de la lenteur. Livres, retraites méditatives et applications promettent de nous apprendre à « ralentir ». Le paradoxe saute aux yeux : on nous vend, avec une efficacité redoutable, des méthodes pour échapper à la logique d'efficacité.",
+      "Cette contradiction ne disqualifie pas pour autant l'aspiration qu'elle exploite. Le sentiment d'accélération, que tant de sociologues ont décrit, n'a rien d'une illusion : nous faisons davantage de choses en moins de temps, et cette densification produit une fatigue diffuse que le repos ne suffit plus à dissiper.",
+      "Encore faut-il se demander qui peut réellement ralentir. Pour le cadre qui choisit de travailler quatre jours par semaine, la lenteur est un choix ; pour la caissière dont les horaires sont fixés au dernier moment, elle est un horizon inaccessible. À force d'en faire une affaire de volonté individuelle, on risque d'oublier qu'elle dépend largement des conditions de travail.",
+      "Peut-être faudrait-il alors cesser de considérer la lenteur comme une vertu personnelle pour l'envisager comme une question collective : celle du temps que nos sociétés laissent à chacun pour vivre, penser et ne rien faire."),
+    questions: [
+      qcm("Quel paradoxe l'auteur relève-t-il au début ?", "On vend efficacement des méthodes pour échapper à l'efficacité.", ["La lenteur rend plus productif.", "Les livres sur la lenteur sont trop longs."], "Premier paragraphe."),
+      qcm("Que signifie « ne disqualifie pas pour autant » ?", "ne rend pas illégitime malgré tout", ["confirme totalement", "interdit"], "Concession : la contradiction n'annule pas l'aspiration."),
+      vf("Pour l'auteur, le sentiment d'accélération est une illusion.", false, "« n'a rien d'une illusion »."),
+      qcm("Qu'est-ce que la « densification » évoquée ?", "faire plus de choses en moins de temps", ["vivre en ville", "travailler plus longtemps"], "Défini dans la même phrase."),
+      qcm("Pourquoi l'auteur oppose-t-il le cadre et la caissière ?", "pour montrer que ralentir dépend des conditions sociales", ["pour critiquer les cadres", "pour décrire deux métiers difficiles"], "Troisième paragraphe."),
+      qcm("Quel risque l'auteur souligne-t-il ?", "réduire la lenteur à une question de volonté individuelle", ["perdre son emploi", "devenir paresseux"], "« À force d'en faire une affaire de volonté individuelle… »."),
+      qcm("Que propose l'auteur en conclusion ?", "faire de la lenteur une question collective", ["interdire les applications", "travailler quatre jours"], "Dernier paragraphe."),
+      qcm("Quel est le registre du texte ?", "argumentatif et réflexif", ["narratif", "publicitaire"], "Essai qui discute une idée."),
+    ] },
+  { skill: "Grammaire", level: "C1", title: "La mise en relief et l'emphase",
+    consigne: p("Choisissez la tournure qui met correctement en relief l'élément demandé."),
+    questions: [
+      qcm("Mettez en relief « la ville » : « La ville m'attire. »", "C'est la ville qui m'attire.", ["C'est la ville que m'attire.", "La ville, c'est qui m'attire."], "Sujet mis en relief : c'est… qui."),
+      qcm("Mettez en relief « ce livre » (COD) : « J'ai lu ce livre. »", "C'est ce livre que j'ai lu.", ["C'est ce livre qui j'ai lu.", "Ce livre, c'est que j'ai lu."], "COD : c'est… que."),
+      qcm("Choisissez la phrase avec dislocation à gauche :", "Ce projet, je n'y crois pas.", ["Je ne crois pas à ce projet.", "C'est ce projet que je ne crois pas."], "Élément détaché en tête, repris par un pronom (y)."),
+      qcm("« Ce qui me dérange, ______ son manque de sincérité. »", "c'est", ["ce qu'il est", "qui est"], "Pseudo-clivée : ce qui… c'est…"),
+      qcm("« Ce dont il a besoin, c'est ______ calme. »", "du", ["le", "de le"], "Avoir besoin de → reprise avec « de » (du calme)."),
+      qcm("Mettez en relief « à Marie » : « J'ai parlé à Marie. »", "C'est à Marie que j'ai parlé.", ["C'est Marie à qui que j'ai parlé.", "C'est à Marie qui j'ai parlé."], "Complément prépositionnel : c'est à… que."),
+      fill("« ______ m'inquiète, c'est l'absence de réponse. » (pronom démonstratif + relatif)", "Ce qui", "Sujet de « m'inquiète » : ce qui."),
+      vf("« Moi, je pense que… » est une forme de mise en relief.", true, "Pronom tonique détaché : emphase sur le sujet."),
+    ] },
+];
