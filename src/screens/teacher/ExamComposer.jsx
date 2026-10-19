@@ -3,6 +3,7 @@ import { Plus, Trash2, Eye, EyeOff, Save, Headphones, BookOpen, PenLine, Mic, Ch
 import { loadExercises, saveExercise } from "../../shared/exerciseStore.js";
 import { uid } from "../../shared/questions.js";
 import Builder from "./Builder.jsx";
+import XemDeThu from "./XemDeThu.jsx";
 import { nhomTheoTrinhDo } from "../../shared/trinhDoDe.js";
 import { loadExams, saveExam, deleteExam, cotGrilleSanSang } from "../../shared/examStore.js";
 import { EXAM_STRUCTURE, khongCham } from "../exam/examPaper.js";
@@ -76,6 +77,9 @@ export default function ExamComposer({ t }) {
   const [tab, setTab] = useState("de");
   /* Bài đang soạn trong Builder: { bai, code, moi }. */
   const [soan, setSoan] = useState(null);
+  /* « Xem như học sinh » (19/10): đề đang xem thử, dạng { title, id, sections }. */
+  const [xemThu, setXemThu] = useState(null);
+  const lopXem = xemThu && <XemDeThu exam={xemThu} kho={kho} dong={() => setXemThu(null)} />;
 
   const taiLai = () => loadExams().then(setDsDe);
   /* 13/10: đề thi thử chỉ ghép bài trong kho thi thử (store 'exam'), không lấy từ thư viện luyện tập. */
@@ -141,6 +145,7 @@ export default function ExamComposer({ t }) {
         </div>
 
         {toast && <p className="m-0 mt-4 text-sm font-semibold text-ok">{toast}</p>}
+        {lopXem}
 
         {dsDe.length === 0 ? (
           <div className="mt-8 rounded-2xl border border-line bg-surface p-8 text-center">
@@ -188,6 +193,10 @@ export default function ExamComposer({ t }) {
                   </div>
                 </div>
                 <div className="flex shrink-0 gap-2">
+                  <button type="button" onClick={() => setXemThu(e)} title={tr("Xem đề như học sinh", "Voir comme un élève", "View as a student")}
+                    className="inline-flex items-center gap-1.5 rounded-full border-0 bg-primary-soft px-4 py-2 text-sm font-semibold text-primary hover:bg-primary hover:text-white">
+                    <Eye size={15} /> {tr("Xem như học sinh", "Aperçu élève", "Student view")}
+                  </button>
                   <button type="button"
                     onClick={() => { setTab("de"); setDraft({
                       /* `grille` phải mang theo. Bỏ sót nó thì mở đề ra rồi bấm
@@ -247,9 +256,17 @@ export default function ExamComposer({ t }) {
 
   return (
     <div className="mx-auto max-w-3xl py-6">
-      <h1 className="m-0 text-2xl font-extrabold text-ink">
-        {draft.exam.id ? tr("Sửa đề thi", "Modifier le sujet", "Edit exam") : tr("Soạn đề thi mới", "Nouveau sujet", "New exam")}
-      </h1>
+      {lopXem}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h1 className="m-0 text-2xl font-extrabold text-ink">
+          {draft.exam.id ? tr("Sửa đề thi", "Modifier le sujet", "Edit exam") : tr("Soạn đề thi mới", "Nouveau sujet", "New exam")}
+        </h1>
+        {/* Xem bản ĐANG SOẠN (chưa cần lưu): dùng sections của bản nháp. */}
+        <button type="button" onClick={() => setXemThu({ id: draft.exam.id, title: draft.exam.title || tr("Đề đang soạn", "Sujet en cours", "Draft exam"), sections: draft.sections.map((x, i) => ({ ...x, ord: i })) })}
+          className="inline-flex items-center gap-1.5 rounded-full border-0 bg-primary-soft px-4 py-2 text-sm font-bold text-primary hover:bg-primary hover:text-white">
+          <Eye size={15} /> {tr("Xem như học sinh", "Aperçu élève", "Student view")}
+        </button>
+      </div>
 
       {/* Hai tab. Cấu trúc đề và thang chấm là hai việc khác nhau, làm ở hai
           lúc khác nhau — nhồi chung một trang thì thang chấm nằm dưới cùng, sau

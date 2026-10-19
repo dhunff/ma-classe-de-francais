@@ -744,6 +744,8 @@ Xem `docs/roadmap-delf.md` — có nhật ký quyết định ở §5.
   bên); soạn đề ở /professeur/examens.
   19/10: KHÔNG chọn bài từ thư viện nữa. Mỗi phần thi có « Soạn nội dung / Thêm bài » và
   « Sửa nội dung », mở Builder ngay trong ExamComposer, lưu vào kho `exam`.
+  « Xem như học sinh » (XemDeThu.jsx): PhanThi với cờ `xemThu` (nghe đếm lượt tại chỗ, tắt ghi
+  âm), KHÔNG tạo attempt, không lưu gì. Xem được cả đề đã lưu lẫn bản đang soạn.
 - ~~Tự chấm Production écrite~~ — xong 2026-08-27, đã chạy qua người dùng thật.
 
   Màn chia đôi (`PESelfEvaluation.jsx`): trái là đề + bài làm cuộn độc lập,

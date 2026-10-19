@@ -412,7 +412,7 @@ const chuDiem = (d) => `${String(d).replace(".", ",")} ${d > 1 ? "points" : "poi
 const khoaNghe = { dang: null, nghe: new Set() };
 const datKhoaNghe = (k) => { khoaNghe.dang = k; khoaNghe.nghe.forEach((fn) => fn(k)); };
 
-function AudioGioiHan({ src, attemptId, questionId, luot = 2 }) {
+function AudioGioiHan({ src, attemptId, questionId, luot = 2, xemThu = false }) {
   const [baiDangPhat, setBaiDangPhat] = useState(khoaNghe.dang);
   useEffect(() => {
     khoaNghe.nghe.add(setBaiDangPhat);
@@ -428,7 +428,7 @@ function AudioGioiHan({ src, attemptId, questionId, luot = 2 }) {
   const ref = useRef(null);
 
   const het = conLai !== null && conLai <= 0;
-  const chuaSanSang = !attemptId;
+  const chuaSanSang = !attemptId && !xemThu;
 
   /* Đọc bộ đếm THẬT khi vào, đừng mặc định "còn 2 lượt".
    *
@@ -437,7 +437,7 @@ function AudioGioiHan({ src, attemptId, questionId, luot = 2 }) {
    * vào bị từ chối là kiểu sai lệch khiến người dùng nghĩ hệ thống hỏng, chứ
    * không nghĩ mình đã hết lượt. */
   useEffect(() => {
-    if (!attemptId) return;
+    if (!attemptId || xemThu) return;
     let huy = false;
     supabase.from("attempts").select("audio_plays").eq("id", attemptId).maybeSingle()
       .then(({ data }) => {
@@ -450,6 +450,8 @@ function AudioGioiHan({ src, attemptId, questionId, luot = 2 }) {
 
   const phat = async () => {
     if (het || dangXin || chuaSanSang || biKhoa) return;
+    /* Xem thử (giáo viên, 19/10): giữ đúng giới hạn lượt nghe nhưng đếm tại chỗ, không có lượt thi nào để ghi. */
+    if (xemThu) { setConLai((c) => (c === null ? luot : c) - 1); ref.current?.play(); return; }
     setDangXin(true); setLoi("");
     try {
       const { data, error } = await supabase.rpc("exam_play_audio", {
@@ -551,7 +553,7 @@ function NutTiengThi() {
   );
 }
 
-export function PhanThi({ section, attemptId, attemptTheoBai = {}, answers, setAnswers, onDone, onBlur, onDoiBai, examId, onThoat }) {
+export function PhanThi({ section, attemptId, attemptTheoBai = {}, answers, setAnswers, onDone, onBlur, onDoiBai, examId, onThoat, xemThu = false }) {
   /* Phần nói: đồng hồ = thời gian thi + thời gian chuẩn bị (13/10, bocTham). */
   const phutChuanBi = section.code === "PO" ? Number((section.exercises ?? [section.exercise])[0]?.bocTham?.chuanBi) || 0 : 0;
   const tongPhut = section.minutes + phutChuanBi;
@@ -722,7 +724,7 @@ export function PhanThi({ section, attemptId, attemptTheoBai = {}, answers, setA
           {dsBai.map((b) => b.audioUrl && (
             <div key={b.id} hidden={b.id !== ex.id} className="mb-6 sm:ml-9">
               <AudioGioiHan src={b.audioUrl} attemptId={attemptTheoBai[b.id] ?? (b.id === ex.id ? attemptId : null)}
-                questionId={`ex:${b.id}`} luot={b.ngheKieuThi ? 1 : 2} />
+                questionId={`ex:${b.id}`} luot={b.ngheKieuThi ? 1 : 2} xemThu={xemThu} />
             </div>
           ))}
 
@@ -749,8 +751,14 @@ export function PhanThi({ section, attemptId, attemptTheoBai = {}, answers, setA
       {section.code === "PO" ? (
         /* 13/10: bốc thăm + chuẩn bị trước khi ghi âm (BocThamNoi). */
         <BocThamNoi ex={ex} khoa={`${examId}:${ex.id}`}>
+          {xemThu ? (
+            <p className="m-0 rounded-xl border border-dashed border-line p-4 text-sm text-soft">
+              {tr("Chế độ xem thử: đây là chỗ học sinh ghi âm bài nói. Ghi âm được tắt để không lưu bản ghi nào.", "Mode aperçu : l'élève s'enregistre ici. L'enregistrement est désactivé.", "Preview mode: students record here. Recording is disabled.")}
+            </p>
+          ) : (
           <GhiAmBaiNoi examId={examId} exerciseId={ex.id}
             gioiHanGiay={Math.max(60, (section.minutes ?? 15) * 60)} />
+          )}
         </BocThamNoi>
       ) : (
       <ol className="m-0 list-none space-y-7 p-0 text-[15.5px] leading-snug text-[#111]">

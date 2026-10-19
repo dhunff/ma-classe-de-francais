@@ -129,6 +129,7 @@ import ChonDoanVan from "./screens/teacher/ChonDoanVan.jsx";
 import TeamSection from "./screens/public/TeamSection.jsx";
 import TroChoiMan from "./screens/student/TroChoiMan.jsx";
 import Builder from "./screens/teacher/Builder.jsx";
+import XemDeThu from "./screens/teacher/XemDeThu.jsx";
 const THE_CHOI = [["le vent","gió"],["la pluie","mưa"],["l'arbre","cây"],["la montagne","núi"],["la mer","biển"],["le soleil","mặt trời"],["la neige","tuyết"],["le nuage","mây"]].map(([a,b],k)=>({id:"t"+k,matTruoc:a,matSau:b,loai:"n",chuDe:"thoi-tiet"}));
 import { Lightbulb, PenLine } from "lucide-react";
 import { Avatar, DS_AVATAR } from "./shared/avatars.jsx";
@@ -710,6 +711,7 @@ function Preview() {
     ["/etudiant/ngu-phap", "Học ngữ pháp"],
     ["/professeur/theo-doi-thu", "Giáo viên: theo dõi học sinh (31 HS)"],
     ["/professeur/soan-bai-thu", "Giáo viên: soạn bài (Builder)"],
+    ["/professeur/xem-de-thu", "Giáo viên: xem đề như học sinh"],
     ["/gioi-thieu/doi-ngu", "Đội ngũ chuyên môn"],
     ["/professeur/grille", "Soạn thang chấm"],
     ["/etudiant/tro-choi", "Màn chơi Lộ trình"],
@@ -829,6 +831,11 @@ function Preview() {
               chia đôi mà không cần đăng nhập và không cần thi thử trước. */}
           <Route path="/professeur/grille" element={<><Controls /><GrilleThu /></>} />
           <Route path="/professeur/soan-bai-thu" element={<><Controls /><SoanBaiThu /></>} />
+          <Route path="/professeur/xem-de-thu" element={<XemDeThu kho={PHAN_THI_MAU.exercises} dong={() => history.back()}
+            exam={{ id: "thu", title: "DELF B1 · Đề thử", sections: [
+              { code: "CE", exercise_id: "xem-thu", minutes: 45, points: 25, ord: 0 },
+              { code: "CE", exercise_id: "xem-thu-2", minutes: 0, points: 0, ord: 1 },
+              { code: "PO", exercise_id: "xem-thu", minutes: 15, points: 25, ord: 2 }] }} />} />
           <Route path="/etudiant/phan-thi" element={<><Controls /><PhanThiThu /></>} />
           <Route path="/etudiant/nhan-xet-ai" element={<><Controls /><div className="mx-auto max-w-2xl py-6"><NhanXetAI level="A1" rubric={grilleToRubric("A1")} mau={NHAN_XET_MAU} /></div></>} />
           <Route path="/etudiant/tro-choi" element={<TroChoiMan tieuDe="Thời tiết · Màn 1" the={THE_CHOI} onXong={async (sao) => ({ sao, xp: 15 })} onDong={() => history.back()} t={t} />} />
