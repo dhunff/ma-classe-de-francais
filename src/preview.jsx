@@ -99,6 +99,13 @@ import XemLaiDau from "./screens/student/XemLaiDau.jsx";
 import NguPhap from "./screens/student/NguPhap.jsx";
 import { DanhSachHocSinh } from "./screens/teacher/TheoDoiHocSinh.jsx";
 /* 31 học sinh giả để xem bố cục danh sách gọn + chia trang (18/10). */
+function SoanBaiThu() {
+  const [draft, setDraft] = React.useState({ id: "thu", title: "", level: "B1", skill: "Écoute", skills: ["Écoute"], consigne: "", usageType: "assignment",
+    deadline: "", audioUrl: "", readingText: "", imageUrl: "", timeLimit: "", targeted: false, assignedClasses: [], assignedExtra: [], assignedTo: null, createdAt: 0,
+    questions: [{ id: "q1", type: "qcm", prompt: "Où se passe la scène ?", options: ["À la gare", "Au marché"], answer: 0 }, { id: "q2", type: "fill", prompt: "Je ______ au cinéma.", accepted: "vais" }] });
+  return <div className="mx-auto max-w-5xl py-4"><Builder draft={draft} setDraft={setDraft} accounts={[{ name: "Học sinh 1" }, { name: "Học sinh 2" }]} publish={() => alert("lưu")} cancel={() => history.back()} /></div>;
+}
+
 const HS_GIA = Array.from({ length: 31 }, (_, i) => ({ id: null, name: `Học sinh ${i + 1}`, email: `hs${i + 1}@vidu.vn`, status: "active" }));
 const DAU_MAU = { cau: [{ chieu: "nghia", de: "du coup", luaChon: ["thế là, vậy nên", "tuy nhiên", "ngay lập tức", "dù sao"], dapAn: 0, chon: 0 }, { chieu: "nghia", de: "faire état de", luaChon: ["làm hỏng", "cho biết, nêu ra", "phủ nhận", "đề nghị"], dapAn: 1, chon: 3 }, { chieu: "tu", de: "do, vì (+ danh từ)", luaChon: ["grâce à", "pourtant", "en raison de", "bref"], dapAn: 2, chon: 0 }] };
 const THE_MAU = [["en raison de", "do, vì", "En raison de travaux, la ligne est fermée."], ["du coup", "thế là, vậy nên", "Il pleuvait, du coup je suis resté."], ["faire état de", "cho biết, nêu ra", "Le rapport fait état de retards."]].map(([a, b, c], i) => ({ card_id: "m" + i, matTruoc: a, matSau: b, viDu: c, due_at: "2026-10-15", interval_days: 1, ease: 2.5, reps: 0, lapses: 0 }));
@@ -121,6 +128,7 @@ import NeoNguLieu from "./screens/student/NeoNguLieu.jsx";
 import ChonDoanVan from "./screens/teacher/ChonDoanVan.jsx";
 import TeamSection from "./screens/public/TeamSection.jsx";
 import TroChoiMan from "./screens/student/TroChoiMan.jsx";
+import Builder from "./screens/teacher/Builder.jsx";
 const THE_CHOI = [["le vent","gió"],["la pluie","mưa"],["l'arbre","cây"],["la montagne","núi"],["la mer","biển"],["le soleil","mặt trời"],["la neige","tuyết"],["le nuage","mây"]].map(([a,b],k)=>({id:"t"+k,matTruoc:a,matSau:b,loai:"n",chuDe:"thoi-tiet"}));
 import { Lightbulb, PenLine } from "lucide-react";
 import { Avatar, DS_AVATAR } from "./shared/avatars.jsx";
@@ -701,6 +709,7 @@ function Preview() {
     ["/etudiant/xem-lai-dau", "Thách đấu: xem lại câu sai"],
     ["/etudiant/ngu-phap", "Học ngữ pháp"],
     ["/professeur/theo-doi-thu", "Giáo viên: theo dõi học sinh (31 HS)"],
+    ["/professeur/soan-bai-thu", "Giáo viên: soạn bài (Builder)"],
     ["/gioi-thieu/doi-ngu", "Đội ngũ chuyên môn"],
     ["/professeur/grille", "Soạn thang chấm"],
     ["/etudiant/tro-choi", "Màn chơi Lộ trình"],
@@ -819,6 +828,7 @@ function Preview() {
               quả thi thử, không phải từ thanh bên. Đặt ở đây để xem được bố cục
               chia đôi mà không cần đăng nhập và không cần thi thử trước. */}
           <Route path="/professeur/grille" element={<><Controls /><GrilleThu /></>} />
+          <Route path="/professeur/soan-bai-thu" element={<><Controls /><SoanBaiThu /></>} />
           <Route path="/etudiant/phan-thi" element={<><Controls /><PhanThiThu /></>} />
           <Route path="/etudiant/nhan-xet-ai" element={<><Controls /><div className="mx-auto max-w-2xl py-6"><NhanXetAI level="A1" rubric={grilleToRubric("A1")} mau={NHAN_XET_MAU} /></div></>} />
           <Route path="/etudiant/tro-choi" element={<TroChoiMan tieuDe="Thời tiết · Màn 1" the={THE_CHOI} onXong={async (sao) => ({ sao, xp: 15 })} onDong={() => history.back()} t={t} />} />

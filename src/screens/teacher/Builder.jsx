@@ -267,6 +267,8 @@ function Builder({ draft, setDraft, publish, cancel, accounts, classes = [] }) {
   });
   const ready = missing.length === 0;
 
+  const tenDang = (type) => ({ qcm: t("bd.t_qcm"), fill: t("bd.t_fill"), conj: t("bd.t_conj"), open: t("bd.t_open"), vf: t("bd.t_vf"),
+    tableau: t("bd.t_tableau"), ordre: t("bd.t_ordre"), apparier: tr("Nối cặp", "Appariement", "Matching"), formulaire: tr("Điền phiếu", "Formulaire", "Form") }[type] ?? QTYPES[type]);
   const hint = {
     fill: t("bd.fill_hint"),
     conj: t("bd.conj_hint"),
@@ -281,10 +283,15 @@ function Builder({ draft, setDraft, publish, cancel, accounts, classes = [] }) {
           🪄 Import JSON
         </button>
       </div>
-      <div className="mcf-card" style={{ ...S.card, marginBottom: 16 }}>
-        {/* Type d'utilisation : Devoir vs Entraînement */}
-        <div style={{ marginBottom: 16 }}>
-          <div style={S.label}>{t("bd.type_label")}</div>
+      <section className="mcf-card" style={{ ...S.card, marginBottom: 16 }}>
+        <div className="mb-4 flex items-start gap-3">
+          <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-primary text-sm font-extrabold text-white">1</span>
+          <div className="min-w-0">
+            <h3 className="m-0 text-base font-extrabold text-ink">{tr("Thông tin chung", "Informations générales", "General")}</h3>
+            <p className="m-0 mt-0.5 text-xs text-soft">{tr("Loại bài, tiêu đề, trình độ và kỹ năng.", "Type, titre, niveau et compétences.", "Type, title, level and skills.")}</p>
+          </div>
+        </div>
+        <div style={S.label}>{t("bd.type_label")}</div>
           <div style={{ display: "flex", gap: 10, marginTop: 8, flexWrap: "wrap" }}>
             {[["assignment", t("bd.type_homework"), FileText], ["practice", t("bd.type_practice"), Target]].map(([v, l, Icon]) => {
               const on = (draft.usageType || "assignment") === v;
@@ -303,34 +310,12 @@ function Builder({ draft, setDraft, publish, cancel, accounts, classes = [] }) {
           {(draft.usageType || "assignment") === "practice" && (
             <div style={{ fontSize: 12.5, color: C.soft, marginTop: 6 }}>{t("bd.practice_note")}</div>
           )}
-        {(draft.usageType || "assignment") === "practice" && (
-          <div style={{ marginTop: 12, display: "grid", gap: 12, background: "var(--mcf-surface2)", border: `1px solid ${C.line}`, borderRadius: 16, padding: "14px 16px" }}>
-            <div>
-              <div style={S.label}>{t("bd.vocab_label")}</div>
-              <textarea style={{ ...S.input, marginTop: 6, minHeight: 80, resize: "vertical" }}
-                value={draft.vocabulaire || ""} placeholder={"la forêt = khu rừng\nprotéger = bảo vệ\u2026"}
-                onChange={(e) => setDraft({ ...draft, vocabulaire: e.target.value })} />
-            </div>
-            <div>
-              <div style={S.label}>{t("bd.tips_label")}</div>
-              <textarea data-khong-bang-dau style={{ ...S.input, marginTop: 6, minHeight: 80, resize: "vertical" }}
-                value={draft.explications || ""} placeholder={"Rappel : « grâce à » = cause positive ; « à cause de » = cause négative\u2026"}
-                onChange={(e) => setDraft({ ...draft, explications: e.target.value })} />
-            </div>
-          </div>
-        )}
-        </div>
 
-        <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-          <div style={{ flex: "2 1 240px" }}>
+        <div className="mt-4 grid gap-3 sm:grid-cols-[1fr_auto]">
+          <div className="min-w-0">
             <div style={S.label}>{t("bd.title_label")}</div>
-            <input style={{ ...S.input, marginTop: 6 }} value={draft.title} placeholder="ex. Passé composé — les transports"
+            <input style={{ ...S.input, marginTop: 6 }} value={draft.title} placeholder="ex. Passé composé : les transports"
               onChange={(e) => setDraft({ ...draft, title: e.target.value })} />
-            <div style={{ ...S.label, marginTop: 12 }}>{t("bd.instruction_label")}</div>
-            <div style={{ marginTop: 6 }}>
-              <RichTextEditor minHeight={110} value={draft.consigne || ""}
-                onChange={(html) => setDraft({ ...draft, consigne: stripHtml(html) ? html : "" })} />
-            </div>
           </div>
           <div>
             <div style={S.label}>{t("bd.level_label")}</div>
@@ -338,8 +323,9 @@ function Builder({ draft, setDraft, publish, cancel, accounts, classes = [] }) {
               {Object.keys(LEVEL_COLORS).map((l) => <option key={l}>{l}</option>)}
             </select>
           </div>
-          <div style={{ flex: "1 1 100%" }}>
-            <div style={S.label}>{t("bd.skills_label")}</div>
+        </div>
+        <div className="mt-4">
+          <div style={S.label}>{t("bd.skills_label")}</div>
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 8 }}>
               {SKILLS.map((sk) => {
                 const on = dSkills.includes(sk);
@@ -354,41 +340,45 @@ function Builder({ draft, setDraft, publish, cancel, accounts, classes = [] }) {
                 );
               })}
             </div>
-          </div>
-          {(draft.usageType || "assignment") !== "practice" && (
-          <div>
-            <div style={S.label}>{t("bd.deadline_label")}</div>
-            <input type="datetime-local" style={{ ...S.input, marginTop: 6 }} value={draft.deadline}
-              onChange={(e) => setDraft({ ...draft, deadline: e.target.value })} />
-          </div>
-          )}
-          <div>
-            <div style={S.label}>{t("bd.time_limit_label")}</div>
-            <input type="number" min="1" style={{ ...S.input, marginTop: 6, width: 110 }} value={draft.timeLimit || ""}
-              placeholder="∞" onChange={(e) => setDraft({ ...draft, timeLimit: e.target.value })} />
-          </div>
-
-          {/* Bài trả phí. Giá chỉ hiện khi đã bật, để không ai vô tình đặt giá
-              cho một bài đang miễn phí. */}
-          <div>
-            <label className="flex cursor-pointer items-center gap-2 text-sm font-semibold text-ink">
-              <input type="checkbox" checked={!!draft.isPremium}
-                onChange={(e) => setDraft({ ...draft, isPremium: e.target.checked, price: e.target.checked ? draft.price : "" })} />
-              {t("pay.premium")}
-            </label>
-            {draft.isPremium && (
-              <input type="number" min="0" step="1000" style={{ ...S.input, marginTop: 6, width: 150 }}
-                value={draft.price || ""} placeholder={t("pay.price")}
-                onChange={(e) => setDraft({ ...draft, price: e.target.value })} />
-            )}
-            {draft.isPremium && (
-              /* Để trống = bài này KHÔNG đổi bằng XP được, chỉ mua. */
-              <input type="number" min="1" step="10" style={{ ...S.input, marginTop: 6, width: 150 }}
-                value={draft.xpCost || ""} placeholder={t("xp.cost_ph")}
-                onChange={(e) => setDraft({ ...draft, xpCost: e.target.value === "" ? undefined : Math.max(1, Math.round(Number(e.target.value))) })} />
-            )}
+        </div>
+      </section>
+      <section className="mcf-card" style={{ ...S.card, marginBottom: 16 }}>
+        <div className="mb-4 flex items-start gap-3">
+          <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-primary text-sm font-extrabold text-white">2</span>
+          <div className="min-w-0">
+            <h3 className="m-0 text-base font-extrabold text-ink">{tr("Đề bài và tài liệu", "Consigne et documents", "Instructions and materials")}</h3>
+            <p className="m-0 mt-0.5 text-xs text-soft">{tr("Hướng dẫn cho học sinh, rồi tài liệu đi kèm theo kỹ năng đã chọn.", "Consigne, puis documents selon les compétences choisies.", "Instructions, then materials for the chosen skills.")}</p>
           </div>
         </div>
+        <div style={S.label}>{t("bd.instruction_label")}</div>
+        <div style={{ marginTop: 6 }}>
+          <RichTextEditor minHeight={110} value={draft.consigne || ""}
+            onChange={(html) => setDraft({ ...draft, consigne: stripHtml(html) ? html : "" })} />
+        </div>
+        {dSkills.includes("Écoute") && (
+        <div style={{ marginTop: 12 }}>
+          <div style={S.label}>{t("bd.audio_label")}</div>
+          <input style={{ ...S.input, marginTop: 6 }} value={draft.audioUrl} placeholder="https://…/audio.mp3"
+            onChange={(e) => setDraft({ ...draft, audioUrl: e.target.value })} />
+          <div style={{ fontSize: 12, color: C.soft, marginTop: 5 }}>{t("bd.audio_hint")}</div>
+        </div>
+        )}
+
+        {dSkills.includes("Lecture") && (
+        <div style={{ marginTop: 12 }}>
+          <div style={S.label}>{t("bd.reading_label")}</div>
+          <textarea style={{ ...S.input, marginTop: 6, minHeight: 110, resize: "vertical" }} value={draft.readingText || ""}
+            placeholder={t("bd.reading_ph")}
+            onChange={(e) => setDraft({ ...draft, readingText: e.target.value })} />
+        </div>
+        )}
+
+        {/* Bốc thăm đề nói (19/10): chỉ bài Production orale. */}
+        {dSkills.includes("Production orale") && (
+          <SoanBocTham bocTham={draft.bocTham} level={draft.level}
+            onChange={(bt) => setDraft({ ...draft, bocTham: bt })} />
+        )}
+
         {/* 🖼 Image d'illustration (optionnel) — URL hoặc kéo thả file */}
         <div style={{ marginTop: 14 }}>
           <div style={{ ...S.label, display: "flex", alignItems: "center", gap: 6 }}><ImageIcon size={14} /> {t("bd.image_label")}</div>
@@ -428,30 +418,66 @@ function Builder({ draft, setDraft, publish, cancel, accounts, classes = [] }) {
           )}
         </div>
 
-        {dSkills.includes("Écoute") && (
-        <div style={{ marginTop: 12 }}>
-          <div style={S.label}>{t("bd.audio_label")}</div>
-          <input style={{ ...S.input, marginTop: 6 }} value={draft.audioUrl} placeholder="https://…/audio.mp3"
-            onChange={(e) => setDraft({ ...draft, audioUrl: e.target.value })} />
-          <div style={{ fontSize: 12, color: C.soft, marginTop: 5 }}>{t("bd.audio_hint")}</div>
+        {(draft.usageType || "assignment") === "practice" && (
+          <div style={{ marginTop: 12, display: "grid", gap: 12, background: "var(--mcf-surface2)", border: `1px solid ${C.line}`, borderRadius: 16, padding: "14px 16px" }}>
+            <div>
+              <div style={S.label}>{t("bd.vocab_label")}</div>
+              <textarea style={{ ...S.input, marginTop: 6, minHeight: 80, resize: "vertical" }}
+                value={draft.vocabulaire || ""} placeholder={"la forêt = khu rừng\nprotéger = bảo vệ\u2026"}
+                onChange={(e) => setDraft({ ...draft, vocabulaire: e.target.value })} />
+            </div>
+            <div>
+              <div style={S.label}>{t("bd.tips_label")}</div>
+              <textarea data-khong-bang-dau style={{ ...S.input, marginTop: 6, minHeight: 80, resize: "vertical" }}
+                value={draft.explications || ""} placeholder={"Rappel : « grâce à » = cause positive ; « à cause de » = cause négative\u2026"}
+                onChange={(e) => setDraft({ ...draft, explications: e.target.value })} />
+            </div>
+          </div>
+        )}
+      </section>
+      <section className="mcf-card" style={{ ...S.card, marginBottom: 16 }}>
+        <div className="mb-4 flex items-start gap-3">
+          <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-primary text-sm font-extrabold text-white">3</span>
+          <div className="min-w-0">
+            <h3 className="m-0 text-base font-extrabold text-ink">{tr("Cài đặt", "Paramètres", "Settings")}</h3>
+            <p className="m-0 mt-0.5 text-xs text-soft">{tr("Hạn nộp, thời gian làm bài, bài trả phí và người nhận.", "Échéance, durée, accès payant et destinataires.", "Deadline, time limit, paid access and recipients.")}</p>
+          </div>
         </div>
-        )}
+        <div className="flex flex-wrap items-start gap-4">
+          {(draft.usageType || "assignment") !== "practice" && (
+          <div>
+            <div style={S.label}>{t("bd.deadline_label")}</div>
+            <input type="datetime-local" style={{ ...S.input, marginTop: 6 }} value={draft.deadline}
+              onChange={(e) => setDraft({ ...draft, deadline: e.target.value })} />
+          </div>
+          )}
+          <div>
+            <div style={S.label}>{t("bd.time_limit_label")}</div>
+            <input type="number" min="1" style={{ ...S.input, marginTop: 6, width: 110 }} value={draft.timeLimit || ""}
+              placeholder="∞" onChange={(e) => setDraft({ ...draft, timeLimit: e.target.value })} />
+          </div>
 
-        {dSkills.includes("Lecture") && (
-        <div style={{ marginTop: 12 }}>
-          <div style={S.label}>{t("bd.reading_label")}</div>
-          <textarea style={{ ...S.input, marginTop: 6, minHeight: 110, resize: "vertical" }} value={draft.readingText || ""}
-            placeholder={t("bd.reading_ph")}
-            onChange={(e) => setDraft({ ...draft, readingText: e.target.value })} />
+          {/* Bài trả phí. Giá chỉ hiện khi đã bật, để không ai vô tình đặt giá
+              cho một bài đang miễn phí. */}
+          <div>
+            <label className="flex cursor-pointer items-center gap-2 text-sm font-semibold text-ink">
+              <input type="checkbox" checked={!!draft.isPremium}
+                onChange={(e) => setDraft({ ...draft, isPremium: e.target.checked, price: e.target.checked ? draft.price : "" })} />
+              {t("pay.premium")}
+            </label>
+            {draft.isPremium && (
+              <input type="number" min="0" step="1000" style={{ ...S.input, marginTop: 6, width: 150 }}
+                value={draft.price || ""} placeholder={t("pay.price")}
+                onChange={(e) => setDraft({ ...draft, price: e.target.value })} />
+            )}
+            {draft.isPremium && (
+              /* Để trống = bài này KHÔNG đổi bằng XP được, chỉ mua. */
+              <input type="number" min="1" step="10" style={{ ...S.input, marginTop: 6, width: 150 }}
+                value={draft.xpCost || ""} placeholder={t("xp.cost_ph")}
+                onChange={(e) => setDraft({ ...draft, xpCost: e.target.value === "" ? undefined : Math.max(1, Math.round(Number(e.target.value))) })} />
+            )}
+          </div>
         </div>
-        )}
-
-        {/* Bốc thăm đề nói (19/10): chỉ bài Production orale. */}
-        {dSkills.includes("Production orale") && (
-          <SoanBocTham bocTham={draft.bocTham} level={draft.level}
-            onChange={(bt) => setDraft({ ...draft, bocTham: bt })} />
-        )}
-
         {accounts.length > 0 && (draft.usageType || "assignment") !== "practice" && (
         <div style={{ marginTop: 14 }}>
           <div style={S.label}>{t("bd.assignees_label")}</div>
@@ -501,12 +527,20 @@ function Builder({ draft, setDraft, publish, cancel, accounts, classes = [] }) {
           )}
         </div>
         )}
+      </section>
+      <div className="mb-3 mt-6 flex items-center gap-3">
+        <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-primary text-sm font-extrabold text-white">4</span>
+        <h3 className="m-0 text-base font-extrabold text-ink">{tr("Câu hỏi", "Questions", "Questions")} ({draft.questions.length})</h3>
       </div>
-
+      {!draft.questions.length && (
+        <p className="m-0 mb-4 rounded-2xl bg-surface2 p-4 text-sm text-soft">{dSkills.some((k) => k === "Production écrite" || k === "Production orale")
+          ? tr("Bài Viết / Nói không bắt buộc có câu hỏi: đề bài nằm ở phần 2. Có thể thêm một câu « Tự luận » để học sinh nộp bài.", "Pour la PE / PO, la consigne suffit ; ajoutez une « Réponse libre » si besoin.", "Writing/speaking tasks don't need questions; add an Open answer if needed.")
+          : tr("Chưa có câu hỏi. Chọn dạng câu ở khung bên dưới.", "Aucune question. Choisissez un type ci-dessous.", "No questions yet. Pick a type below.")}</p>
+      )}
       {draft.questions.map((q, i) => (
         <div key={q.id} className="mcf-card" style={{ ...S.card, marginBottom: 14 }}>
           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
-            <span style={S.label}>Question {i + 1} — {QTYPES[q.type]}{autoQ(q) && " (corrigé automatique)"}</span>
+            <span style={S.label}>{tr("Câu", "Question", "Question")} {i + 1} · {tenDang(q.type)}{autoQ(q) ? tr(" · chấm tự động", " · corrigé automatique", " · auto-graded") : ""}</span>
             <div style={{ display: "flex", gap: 14 }}>
               <button style={{ background: "none", border: "none", color: C.primary, cursor: "pointer", fontWeight: 700, fontFamily: "inherit" }} onClick={() => duplicateQuestion(q.id)}><Copy size={13} style={{ verticalAlign: -2 }} /> {t("bd.duplicate")}</button>
               <button style={{ background: "none", border: "none", color: C.danger, cursor: "pointer", fontWeight: 700, fontFamily: "inherit" }} onClick={() => delQ(q.id)}>{t("bd.remove")}</button>
@@ -547,7 +581,7 @@ function Builder({ draft, setDraft, publish, cancel, accounts, classes = [] }) {
                 <button type="button" disabled={q.options.length >= 6}
                   onClick={() => setQ(q.id, { options: [...q.options, ""] })}
                   style={{ ...S.btn(false), padding: "7px 16px", fontSize: 13, opacity: q.options.length >= 6 ? 0.4 : 1 }}>
-                  + Ajouter une option
+                  + {tr("Thêm phương án", "Ajouter une option", "Add an option")}
                 </button>
                 <button type="button" onClick={() => setQ(q.id, { optionImages: Array.isArray(q.optionImages) ? undefined : q.options.map(() => "") })}
                   style={{ ...S.btn(false), padding: "7px 16px", fontSize: 13 }}>
@@ -726,16 +760,46 @@ function Builder({ draft, setDraft, publish, cancel, accounts, classes = [] }) {
         </div>
       ))}
 
-      <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 24 }}>
-        <button style={S.btn(false)} onClick={() => addQ("qcm")}>+ {t("bd.t_qcm")}</button>
-        <button style={S.btn(false)} onClick={() => addQ("fill")}>+ {t("bd.t_fill")}</button>
-        <button style={S.btn(false)} onClick={() => addQ("conj")}>+ {t("bd.t_conj")}</button>
-        <button style={S.btn(false)} onClick={() => addQ("open")}>+ {t("bd.t_open")}</button>
-        <button style={S.btn(false)} onClick={() => setDraft({ ...draft, questions: [...draft.questions, { id: uid(), type: "vf", prompt: "", answer: 0, justification: "" }] })}>+ {t("bd.t_vf")}</button>
-        <button style={S.btn(false)} onClick={() => setDraft({ ...draft, questions: [...draft.questions, { id: uid(), type: "tableau", prompt: "Pour chaque élément, cochez OUI ou NON selon le critère.", colonnes: [{ id: uid(), titre: "Élément 1" }, { id: uid(), titre: "Élément 2" }], criteres: [{ id: uid(), texte: "Critère 1" }], answers: {} }] })}>+ {t("bd.t_tableau")}</button>
-        <button style={S.btn(false)} onClick={() => setDraft({ ...draft, questions: [...draft.questions, { id: uid(), type: "ordre", prompt: "Mettez les mots dans le bon ordre pour former une phrase.", sentence: "", elements: [] }] })}>+ {t("bd.t_ordre")}</button>
-        <button style={S.btn(false)} onClick={() => setDraft({ ...draft, questions: [...draft.questions, moiGhepCap()] })}>+ {QTYPES.apparier}</button>
-        <button style={S.btn(false)} onClick={() => setDraft({ ...draft, questions: [...draft.questions, moiPhieu()] })}>+ {QTYPES.formulaire}</button>
+      {/* Thêm câu hỏi (19/10): chia 3 nhóm theo cách học sinh trả lời, mỗi dạng một dòng mô tả.
+          « Điền chỗ trống » và « Chia động từ » cùng cách soạn nhưng giữ cả hai: chúng là hai dạng
+          khác nhau trong dữ liệu và trong bộ lọc bài. */}
+      <div className="mcf-card mb-6" style={{ ...S.card }}>
+        <p className="m-0 text-sm font-extrabold text-ink">{tr("Thêm câu hỏi", "Ajouter une question", "Add a question")}</p>
+        <div className="mt-3 grid gap-4 md:grid-cols-3">
+          {[
+            [tr("Chọn đáp án", "Choisir", "Choose"), [
+              [t("bd.t_qcm"), tr("Chọn 1 trong 2 đến 6 phương án", "1 bonne réponse parmi 2 à 6", "Pick 1 of 2 to 6"), () => addQ("qcm")],
+              [t("bd.t_vf"), tr("Đúng, sai hay không rõ, kèm căn cứ", "Vrai, faux ou on ne sait pas", "True, false or unknown"), () => setDraft({ ...draft, questions: [...draft.questions, { id: uid(), type: "vf", prompt: "", answer: 0, justification: "" }] })],
+              [t("bd.t_tableau"), tr("Tích CÓ / KHÔNG theo từng tiêu chí", "OUI / NON par critère", "YES / NO per criterion"), () => setDraft({ ...draft, questions: [...draft.questions, { id: uid(), type: "tableau", prompt: "Pour chaque élément, cochez OUI ou NON selon le critère.", colonnes: [{ id: uid(), titre: "Élément 1" }, { id: uid(), titre: "Élément 2" }], criteres: [{ id: uid(), texte: "Critère 1" }], answers: {} }] })],
+            ]],
+            [tr("Điền và viết", "Compléter et écrire", "Fill and write"), [
+              [t("bd.t_fill"), tr("Một ô trống, nhiều cách viết đúng", "Un trou, plusieurs réponses", "One blank, several answers"), () => addQ("fill")],
+              [t("bd.t_conj"), tr("Điền dạng đúng của động từ", "Forme correcte du verbe", "Correct verb form"), () => addQ("conj")],
+              [tr("Điền phiếu", "Formulaire", "Form"), tr("Điền các ô của một tờ phiếu", "Remplir les champs d'une fiche", "Fill in a form"), () => setDraft({ ...draft, questions: [...draft.questions, moiPhieu()] })],
+              [t("bd.t_open"), tr("Viết tự do, dịch, bài viết dài", "Réponse libre, traduction, rédaction", "Free answer, translation, essay"), () => addQ("open")],
+            ]],
+            [tr("Sắp xếp và nối", "Ordonner et associer", "Order and match"), [
+              [t("bd.t_ordre"), tr("Xếp các khối thành câu đúng", "Remettre les mots en ordre", "Put words in order"), () => setDraft({ ...draft, questions: [...draft.questions, { id: uid(), type: "ordre", prompt: "Mettez les mots dans le bon ordre pour former une phrase.", sentence: "", elements: [] }] })],
+              [tr("Nối cặp", "Appariement", "Matching"), tr("Nối mỗi mục với một phương án", "Associer chaque élément", "Match each item"), () => setDraft({ ...draft, questions: [...draft.questions, moiGhepCap()] })],
+            ]],
+          ].map(([nhom, ds]) => (
+            <div key={nhom}>
+              <p className="m-0 mb-2 text-[11px] font-extrabold uppercase tracking-wide text-soft">{nhom}</p>
+              <div className="grid gap-1.5">
+                {ds.map(([ten, mo, bam]) => (
+                  <button key={ten} type="button" onClick={bam}
+                    className="flex cursor-pointer items-start gap-2 rounded-xl border border-solid border-line bg-surface px-3 py-2 text-left font-sans hover:border-primary hover:bg-primary-soft">
+                    <span className="mt-0.5 text-base font-extrabold leading-none text-primary">+</span>
+                    <span className="min-w-0">
+                      <span className="block text-sm font-bold text-ink">{ten}</span>
+                      <span className="block text-xs text-soft">{mo}</span>
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
       {/* 🪄 Modal Import JSON */}
       {jsonModal && (
@@ -784,12 +848,12 @@ function Builder({ draft, setDraft, publish, cancel, accounts, classes = [] }) {
         </div>
       )}
 
-      <div style={{ display: "flex", gap: 10 }}>
+      <div className="sticky bottom-0 z-10 -mx-1 flex flex-wrap items-center gap-3 border-0 border-t border-solid border-line bg-bg/95 px-1 py-3 backdrop-blur" style={{ display: "flex" }}>
         <button style={{ ...S.btn(true), opacity: ready ? 1 : 0.4 }} disabled={!ready}
           aria-describedby={ready ? undefined : "builder-missing"} onClick={publish}>{t("bd.publish")}</button>
         {!ready && (
           <p id="builder-missing" role="status"
-            className="mt-2 rounded-md bg-warn-soft px-3 py-2.5 text-sm leading-relaxed text-warn">
+            className="m-0 min-w-0 flex-1 rounded-md bg-warn-soft px-3 py-2 text-sm leading-relaxed text-warn">
             <span className="font-bold">{t("builder.missing")}</span>{" "}
             {missing.join(" · ")}
           </p>
