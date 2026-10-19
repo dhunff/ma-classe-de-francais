@@ -1,5 +1,5 @@
 /* Lô 24 (20/10): 14 bài LUYỆN TẬP TRẢ PHÍ (kho practice), theo bảng giá FRACILE_bang-gia-va-bai-tap.xlsx.
- * Giá đề xuất 29 000 đ/bài (đổi 290 XP theo gia_xp = giá ÷ 100); gói VIP mở tất cả.
+ * Giá 19 000 đ/bài (chủ dự án chốt 20/10; đổi 190 XP theo gia_xp = giá ÷ 100); gói VIP mở tất cả.
  * Ưu tiên chỗ thư viện mỏng: A2, Đọc hiểu, Viết, C1, Nghe có audio.
  * Nội dung do FRACILE soạn; không dấu gạch dài (quy tắc 7). Máy dựng: lo24_tra_phi.mjs. */
 let dem = 0;

@@ -1,12 +1,12 @@
 /* Lô 24 (20/10): MÁY DỰNG 14 bài luyện tập trả phí từ lo24_tra_phi_noi_dung.mjs.
  * Bài Nghe tạo audio bằng Edge Function tao-audio (một file, không khoảng nghỉ). Ghi vào kho
- * 'practice' với isPremium = true, price = 29000 (đổi 290 XP, khớp gia_xp). In SQL ra stdout.
+ * 'practice' với isPremium = true, price = 19000 (đổi 190 XP, khớp gia_xp). In SQL ra stdout.
  * Chạy: TTS_ADMIN_TOKEN=… node scripts/nhap/lo24_tra_phi.mjs > lo24.sql */
 import { readFileSync } from "node:fs";
 import { toRows } from "../../src/shared/exerciseMap.js";
 import { BAI, id } from "./lo24_tra_phi_noi_dung.mjs";
 
-const GIA = 29000;
+const GIA = 19000;
 const env = Object.fromEntries(readFileSync(".env", "utf8").split(/\r?\n/).filter((l) => l.includes("=")).map((l) => [l.slice(0, l.indexOf("=")), l.slice(l.indexOf("=") + 1)]));
 const URL_FN = `${env.VITE_SUPABASE_URL}/functions/v1/tao-audio`, ANON = env.VITE_SUPABASE_ANON_KEY, TOKEN = process.env.TTS_ADMIN_TOKEN;
 if (!TOKEN) { console.error("Thiếu TTS_ADMIN_TOKEN"); process.exit(1); }
