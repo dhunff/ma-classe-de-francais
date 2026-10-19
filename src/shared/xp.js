@@ -91,3 +91,29 @@ export async function docXpTongQuan() {
     return error ? null : data;
   } catch { return null; }
 }
+
+/* ── Kết bạn dễ hơn (19/10, migration 150) ──
+ * Tìm theo TÊN hoặc @username (không cần dấu, không cần gõ đúng), gợi ý kèm lý do,
+ * và theo dõi bằng id. Ba trạng thái: undefined đang tải / null lỗi / mảng. */
+export async function timBan(q) {
+  try {
+    const { data, error } = await supabase.rpc("tim_ban", { p_q: q });
+    return error ? null : (Array.isArray(data) ? data : []);
+  } catch { return null; }
+}
+
+/* → [{ id, name, username, avatar, ly_do, ban_chung, theo_doi_toi }] | null */
+export async function goiYBan() {
+  try {
+    const { data, error } = await supabase.rpc("goi_y_ban");
+    return error ? null : (Array.isArray(data) ? data : []);
+  } catch { return null; }
+}
+
+export async function theoDoiId(id) {
+  try {
+    const { data, error } = await supabase.rpc("theo_doi_id", { p_id: id });
+    if (error) return { ok: false, loi: "mang" };
+    return data ?? { ok: false, loi: "mang" };
+  } catch { return { ok: false, loi: "mang" }; }
+}

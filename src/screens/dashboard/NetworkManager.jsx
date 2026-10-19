@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { X, Loader2, Users, UserPlus, UserMinus, Check } from "lucide-react";
 import { AvatarOnline, NhanOnline } from "./ChamOnline.jsx";
 import { datAnTrangThai, docAnTrangThai } from "../../shared/hienDien.js";
@@ -52,8 +53,9 @@ export default function NetworkManager({ t, dong, onDoi, tabDau }) {
 
   const hienTai = ds[tab];
 
-  return (
-    <div className="fixed inset-0 z-50 grid place-items-center bg-black/40 p-4 font-sans" onMouseDown={(e) => { if (e.target === e.currentTarget) dong(); }}>
+  /* Portal ra body (19/10): thẻ chứa có backdrop-blur nên `fixed` bị kẹt trong thẻ. */
+  return createPortal(
+    <div className="fixed inset-0 z-[80] grid place-items-center bg-black/40 p-4 font-sans" onMouseDown={(e) => { if (e.target === e.currentTarget) dong(); }}>
       <div role="dialog" aria-modal="true" aria-label={t("network.title")}
         className="flex max-h-[80vh] w-full max-w-md flex-col overflow-hidden rounded-3xl border border-solid border-line bg-surface shadow-2xl">
         <div className="flex items-center justify-between gap-3 px-5 pt-5">
@@ -120,6 +122,7 @@ export default function NetworkManager({ t, dong, onDoi, tabDau }) {
           </label>
         )}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

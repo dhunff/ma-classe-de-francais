@@ -1,15 +1,16 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
-import { Flame, UserPlus, X, Loader2, Users, UserMinus, Trophy, Star } from "lucide-react";
+import { Flame, UserPlus, Users, UserMinus, Trophy, Star, Sparkles } from "lucide-react";
 import { AvatarOnline, NhanOnline } from "./ChamOnline.jsx";
 import { Avatar } from "../../shared/avatars.jsx";
-import { docDangTheoDoi, docNguoiTheoDoiToi, theoDoi, boTheoDoi, docBangXepHang } from "../../shared/xp.js";
+import { docDangTheoDoi, docNguoiTheoDoiToi, boTheoDoi, docBangXepHang, goiYBan } from "../../shared/xp.js";
+import TimBan, { DongBan, LY_DO } from "./TimBan.jsx";
 import { tr } from "../../shared/i18n.jsx";
 import NetworkManager from "./NetworkManager.jsx";
 
 /* « Đang theo dõi » — trang chủ học sinh (26/09).
  *
- * Theo dõi MỘT CHIỀU bằng @username, như GitHub. Danh sách và trạng thái
+ * Theo dõi MỘT CHIỀU, như GitHub. Từ 19/10 tìm theo tên + gợi ý (TimBan.jsx), không cần biết trước @username. Danh sách và trạng thái
  * "hôm nay đã học chưa" tính ở máy chủ (get_following_streaks, giờ VN); máy
  * chủ chỉ trả tên, @username, ảnh và một cờ true/false — không email, không
  * điểm của người khác.
@@ -21,6 +22,21 @@ export default function FollowingStreakWidget({ t, fixture, bxhFixture }) {
   const [ds, setDs] = useState(undefined);   // undefined = đang tải, null = lỗi
   const [mo, setMo] = useState(false);
   const [moMang, setMoMang] = useState(false);
+  /* Link kết bạn (19/10): /etudiant/dashboard?ket_ban=<username> mở sẵn khung tìm
+     bạn với username đó, để người nhận chỉ còn bấm « Theo dõi ». */
+  const [tuKhoa, setTuKhoa] = useState("");
+  useEffect(() => {
+    try {
+      const u = new URLSearchParams(window.location.search).get("ket_ban");
+      if (!u) return;
+      setTuKhoa(u); setMo(true);
+      const url = new URL(window.location.href); url.searchParams.delete("ket_ban");
+      window.history.replaceState(window.history.state, "", url.pathname + url.search + url.hash);
+    } catch { /* bỏ qua */ }
+  }, []);
+  /* Gợi ý ngay trên thẻ (19/10): 3 người, để không ai phải biết trước @username. */
+  const [goiY, setGoiY] = useState(undefined);
+  const [daTD, setDaTD] = useState(() => new Set());
   /* Đến từ thông báo « người theo dõi mới » (16/10): mở sẵn bảng mạng lưới. */
   const viTriTB = useLocation();
   useEffect(() => {
@@ -44,6 +60,7 @@ export default function FollowingStreakWidget({ t, fixture, bxhFixture }) {
     if (fixture !== undefined) { setDs(fixture); setSoNguoiTD(null); return; }
     docDangTheoDoi().then(setDs);
     docNguoiTheoDoiToi().then((x) => setSoNguoiTD(Array.isArray(x) ? x.length : null));
+    goiYBan().then(setGoiY);
   };
   useEffect(nap, [fixture]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -65,7 +82,7 @@ export default function FollowingStreakWidget({ t, fixture, bxhFixture }) {
         )}
         <button type="button" onClick={() => setMo(true)}
           className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border-0 bg-primary-soft px-3 py-1.5 font-sans text-xs font-bold text-primary transition-colors hover:bg-primary hover:text-white">
-          <UserPlus size={14} /> {t("follow.follow")}
+          <UserPlus size={14} /> {tr("Tìm bạn", "Trouver", "Find")}
         </button>
       </div>
 
@@ -149,58 +166,22 @@ export default function FollowingStreakWidget({ t, fixture, bxhFixture }) {
       </div>
       )}
 
-      {moMang && <NetworkManager t={t} tabDau={typeof moMang === "string" ? moMang : undefined} dong={() => setMoMang(false)} onDoi={nap} />}
-      {mo && <HopTheoDoi t={t} dong={() => setMo(false)} xong={() => { setMo(false); nap(); }} />}
-    </section>
-  );
-}
-
-function HopTheoDoi({ t, dong, xong }) {
-  const [ten, setTen] = useState("");
-  const [dang, setDang] = useState(false);
-  const [loi, setLoi] = useState("");
-  const o = useRef(null);
-  useEffect(() => {
-    o.current?.focus();
-    const esc = (e) => { if (e.key === "Escape") dong(); };
-    window.addEventListener("keydown", esc);
-    return () => window.removeEventListener("keydown", esc);
-  }, [dong]);
-
-  const gui = async (e) => {
-    e.preventDefault();
-    if (!ten.trim()) return;
-    setDang(true); setLoi("");
-    const kq = await theoDoi(ten.trim());
-    setDang(false);
-    if (kq.ok) xong();
-    else setLoi(t(`follow.err_${kq.loi}`) || t("follow.error"));
-  };
-
-  return (
-    <div className="fixed inset-0 z-50 grid place-items-center bg-black/50 p-4"
-      onMouseDown={(e) => { if (e.target === e.currentTarget) dong(); }}>
-      <form onSubmit={gui} role="dialog" aria-modal="true"
-        className="w-full max-w-sm rounded-3xl border border-solid border-line bg-surface p-6 font-sans shadow-2xl">
-        <div className="flex items-start justify-between gap-3">
-          <h3 className="m-0 text-lg font-bold text-ink">{t("follow.modal_title")}</h3>
-          <button type="button" onClick={dong} aria-label={t("identity.close")}
-            className="grid h-8 w-8 cursor-pointer place-items-center rounded-full border-0 bg-surface2 text-soft hover:text-ink">
-            <X size={16} />
-          </button>
+      {fixture === undefined && Array.isArray(goiY) && goiY.length > 0 && (
+        <div className="mt-4 border-0 border-t border-solid border-line pt-3">
+          <div className="flex items-center justify-between gap-2">
+            <p className="m-0 flex items-center gap-1.5 text-xs font-bold uppercase tracking-[0.14em] text-soft"><Sparkles size={13} />{tr("Gợi ý theo dõi", "Suggestions", "Suggested")}</p>
+            <button type="button" onClick={() => setMo(true)} className="cursor-pointer border-0 bg-transparent p-0 font-sans text-xs font-bold text-primary hover:underline">{tr("Xem thêm", "Voir plus", "See more")}</button>
+          </div>
+          <ul className="m-0 mt-1 flex list-none flex-col p-0">
+            {goiY.filter((n) => !daTD.has(n.id)).slice(0, 3).map((n) => (
+              <DongBan key={n.id} n={n} gon phu={LY_DO(n)} onTheoDoi={(id) => { setDaTD((x) => new Set(x).add(id)); nap(); }} />
+            ))}
+          </ul>
         </div>
-        <p className="m-0 mt-1 text-sm text-soft">{t("follow.modal_help")}</p>
-        <label className="mt-4 flex items-center rounded-xl border border-solid border-line bg-bg px-3 focus-within:border-primary">
-          <span className="text-sm font-bold text-soft">@</span>
-          <input ref={o} value={ten} onChange={(e) => setTen(e.target.value)} placeholder="vidu_2026" autoCapitalize="none"
-            className="w-full border-0 bg-transparent px-1.5 py-2.5 font-sans text-sm text-ink outline-none" />
-        </label>
-        {loi && <p className="m-0 mt-2 text-sm text-danger">{loi}</p>}
-        <button type="submit" disabled={dang || !ten.trim()}
-          className="mt-4 flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border-0 bg-primary px-4 py-2.5 font-sans text-sm font-bold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60">
-          {dang ? <Loader2 size={15} className="animate-spin" /> : <UserPlus size={15} />} {t("follow.follow")}
-        </button>
-      </form>
-    </div>
+      )}
+
+      {moMang && <NetworkManager t={t} tabDau={typeof moMang === "string" ? moMang : undefined} dong={() => setMoMang(false)} onDoi={nap} />}
+      {mo && <TimBan tuKhoaDau={tuKhoa} onDoi={nap} dong={() => { setMo(false); setTuKhoa(""); nap(); }} />}
+    </section>
   );
 }
