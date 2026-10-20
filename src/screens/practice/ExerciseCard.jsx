@@ -39,7 +39,7 @@ function TrainButton({ onStart, onPickMaterial }) {
       <button
         type="button"
         onClick={onStart}
-        className="cursor-pointer border-0 bg-primary py-2.5 pl-5 pr-4 font-[inherit] text-sm font-bold text-on-primary transition-opacity hover:opacity-90"
+        className="cursor-pointer border-0 bg-primary py-1.5 pl-4 pr-3 font-[inherit] text-[13px] font-bold text-on-primary transition-opacity hover:opacity-90"
         style={{ borderRadius: "999px 0 0 999px" }}
       >
         {tr("Luyện tập", "S'entraîner", "Practice")}
@@ -53,7 +53,7 @@ function TrainButton({ onStart, onPickMaterial }) {
         className="ml-px cursor-pointer border-0 bg-primary px-3 font-[inherit] text-on-primary transition-opacity hover:opacity-90"
         style={{ borderRadius: "0 999px 999px 0" }}
       >
-        <ChevronDown size={17} className={open ? "rotate-180 transition-transform" : "transition-transform"} />
+        <ChevronDown size={15} className={open ? "rotate-180 transition-transform" : "transition-transform"} />
       </button>
 
       <FloatingLayer anchorRef={ref} open={open} onClose={() => setOpen(false)} width={210} radius={20} padding={6}>
@@ -77,7 +77,7 @@ function TrainButton({ onStart, onPickMaterial }) {
    `Default`, 06/10) — hình minh hoạ chung, không phải ngữ liệu. Ảnh mặc định
    tải hỏng thì lùi về ô trung tính mang ký hiệu kỹ năng như trước. */
 function Thumb({ ex }) {
-  const base = "aspect-video w-full shrink-0 overflow-hidden rounded-xl sm:w-56 lg:w-64";
+  const base = "aspect-video w-full shrink-0 overflow-hidden rounded-lg sm:w-32 lg:w-36";
   const [hong, setHong] = useState(false);
 
   if (ex.imageUrl) {
@@ -88,7 +88,7 @@ function Thumb({ ex }) {
       className={`${base} border-0 object-cover`} />;
   }
   return (
-    <div aria-hidden className={`${base} grid place-items-center bg-surface2 text-3xl text-soft`}>
+    <div aria-hidden className={`${base} grid place-items-center bg-surface2 text-2xl text-soft`}>
       {ex.audioUrl ? "🎧" : ex.readingText ? "📖" : "✎"}
     </div>
   );
@@ -112,7 +112,7 @@ export default function ExerciseCard({
   const nQ = ex.questions?.length ?? 0;
 
   return (
-    <article className="flex flex-col gap-4 rounded-3xl bg-surface p-4 shadow-sm transition-shadow hover:shadow-md sm:flex-row">
+    <article className="flex flex-col gap-3 rounded-2xl bg-surface p-3 shadow-sm transition-shadow hover:shadow-md sm:flex-row">
       <div className={`relative ${locked ? "opacity-75" : ""}`}>
         <Thumb ex={ex} />
         {locked && (
@@ -123,7 +123,7 @@ export default function ExerciseCard({
       </div>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <div className="mb-2 flex flex-wrap items-center gap-2">
+        <div className="mb-1.5 flex flex-wrap items-center gap-1.5">
           <span style={S.badge(ex.level)}>{ex.level}</span>
 
           {/* Bài đã mở khoá không hiện nhãn nào — nhắc "đã mua" trên mọi thẻ chỉ làm nhiễu. */}
@@ -149,7 +149,7 @@ export default function ExerciseCard({
           )}
         </div>
 
-        <strong className="mb-1 block text-[15px] leading-snug text-ink">{ex.title}</strong>
+        <strong className="mb-0.5 block text-sm leading-snug text-ink">{ex.title}</strong>
 
         <div className="text-xs leading-relaxed text-soft">
           {nQ} {tr("câu", "question", "question")}{nQ > 1 ? "s" : ""}
@@ -165,10 +165,10 @@ export default function ExerciseCard({
           </div>
         )}
 
-        <div className="mt-auto flex items-center justify-end gap-2 pt-4">
+        <div className="mt-auto flex items-center justify-end gap-2 pt-2">
           {locked && giaXp && onDoiXp && (
             <button type="button" onClick={onDoiXp}
-              className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-solid border-primary bg-transparent px-4 py-2.5 font-[inherit] text-sm font-bold text-primary transition-colors hover:bg-primary-soft">
+              className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-solid border-primary bg-transparent px-3.5 py-1.5 font-[inherit] text-[13px] font-bold text-primary transition-colors hover:bg-primary-soft">
               <Star size={15} /> {t("xp.unlock_btn", { n: giaXp })}
             </button>
           )}
@@ -176,7 +176,7 @@ export default function ExerciseCard({
             <button
               type="button"
               onClick={onBuy}
-              className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border-0 bg-primary px-5 py-2.5 font-[inherit] text-sm font-bold text-on-primary transition-opacity hover:opacity-90"
+              className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border-0 bg-primary px-4 py-1.5 font-[inherit] text-[13px] font-bold text-on-primary transition-opacity hover:opacity-90"
             >
               <Lock size={15} /> {t("pay.buy")}
             </button>
