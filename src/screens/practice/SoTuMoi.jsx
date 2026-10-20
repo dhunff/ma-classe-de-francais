@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback, useRef } from "react";
+import React, { useEffect, useState, useCallback, useRef, createContext } from "react";
 import { createPortal } from "react-dom";
 import { Highlighter, BookMarked, X, Trash2, Eraser } from "lucide-react";
 import { tr } from "../../shared/i18n.jsx";
@@ -14,8 +14,8 @@ import { docSoTu, themTu, xoaTu } from "../../shared/soTu.js";
  * bằng dangerouslySetInnerHTML, sửa DOM ở đó thì React có ngày ghi đè hoặc vỡ.
  * Trình duyệt chưa có API này thì vẫn lưu được, chỉ không tô màu. */
 
-/* Từ bề rộng này sổ từ nằm thành cột cạnh bài; hẹp hơn thì là nút nổi + ngăn kéo. */
-const RONG = 1280;
+/* Hai nút nhỏ (bút tô + sổ từ) đặt ngay dưới văn bản đọc: SplitPane đọc context này. */
+export const SoTuCtx = createContext(null);
 
 const coHighlight = () => typeof CSS !== "undefined" && "highlights" in CSS && typeof window.Highlight !== "undefined";
 
@@ -33,7 +33,7 @@ function timRange(goc, chuoi) {
   return ra;
 }
 
-export default function SoTuMoi({ ex, children, stickyTop = 8 }) {
+export default function SoTuMoi({ ex, children }) {
   const vungRef = useRef(null);
   const [ds, setDs] = useState(null);
   const [thanh, setThanh] = useState(null);     // { chu, x, y }
@@ -41,6 +41,9 @@ export default function SoTuMoi({ ex, children, stickyTop = 8 }) {
   const [form, setForm] = useState(null);       // { tu, nghia }
   const [tatCa, setTatCa] = useState(null);     // sổ từ mọi bài, nạp khi bấm
   const [loi, setLoi] = useState("");
+  const [but, setBut] = useState(false);   // bật bút: bôi đen là tô luôn
+  const butRef = useRef(false); butRef.current = but;
+  const ghiRef = useRef(null);
 
   useEffect(() => { let con = true; docSoTu(ex.id).then((d) => { if (con) setDs(d); }); return () => { con = false; }; }, [ex.id]);
 
@@ -63,6 +66,7 @@ export default function SoTuMoi({ ex, children, stickyTop = 8 }) {
       const goc = vungRef.current;
       if (!chu || chu.length > 300 || !goc || !sel.rangeCount || !goc.contains(sel.anchorNode) || !goc.contains(sel.focusNode)) { setThanh(null); return; }
       const r = sel.getRangeAt(0).getBoundingClientRect();
+      if (butRef.current) { ghiRef.current?.("to", chu); sel.removeAllRanges(); setThanh(null); return; }
       setThanh({ chu, x: r.left + r.width / 2, y: r.top });
     }, 0);
     document.addEventListener("mouseup", xet);
@@ -80,6 +84,8 @@ export default function SoTuMoi({ ex, children, stickyTop = 8 }) {
     return true;
   }, [ex.id, ex.title]);
 
+  ghiRef.current = ghi;
+
   const xoa = async (id) => {
     if (await xoaTu(id)) { setDs((d) => (d ?? []).filter((x) => x.id !== id)); setTatCa((t) => t && t.filter((x) => x.id !== id)); }
     else setLoi(tr("Chưa xoá được, thử lại nhé.", "Échec de la suppression.", "Could not delete."));
@@ -90,11 +96,27 @@ export default function SoTuMoi({ ex, children, stickyTop = 8 }) {
   const soTu = (ds ?? []).filter((d) => d.loai !== "to");
   const nutThanh = "inline-flex cursor-pointer items-center gap-1.5 rounded-lg border-0 bg-transparent px-2.5 py-1.5 font-sans text-xs font-bold text-white hover:bg-white/15";
 
+  const nutNho = "relative grid h-9 w-9 cursor-pointer place-items-center rounded-full border border-solid";
+  const congCu = (
+    <div className="flex shrink-0 items-center gap-2">
+      <button type="button" onClick={() => setBut((x) => !x)} aria-pressed={but}
+        title={but ? tr("Tắt bút tô", "Désactiver le surligneur", "Turn off highlighter") : tr("Bút tô: bôi đen chữ để tô sáng", "Surligneur : sélectionne du texte", "Highlighter: select text to highlight")}
+        className={nutNho + (but ? " border-warn bg-warn-soft text-warn" : " border-line bg-surface text-soft hover:text-ink")}>
+        <Highlighter size={17} />
+      </button>
+      <button type="button" onClick={() => setMoSo(true)} title={tr("Sổ từ", "Carnet de mots", "Word list")}
+        className={nutNho + " border-line bg-surface text-soft hover:text-ink"}>
+        <BookMarked size={17} />
+        {soTu.length > 0 && <span className="absolute -right-1 -top-1 grid h-4 min-w-4 place-items-center rounded-full bg-primary px-1 text-[10px] font-bold text-on-primary">{soTu.length}</span>}
+      </button>
+    </div>
+  );
+
   const noiDung = (
     <>
       <div className="flex items-center justify-between border-0 border-b border-solid border-line px-5 py-4">
         <p className="m-0 text-base font-extrabold text-ink">{tatCa ? tr("Sổ từ của tôi", "Mon carnet", "My word list") : tr("Sổ từ của bài này", "Carnet de l'exercice", "This exercise's words")}</p>
-        <button type="button" onClick={() => setMoSo(false)} className="xl:hidden grid h-9 w-9 cursor-pointer place-items-center rounded-full border-0 bg-surface2 text-ink"><X size={18} /></button>
+        <button type="button" onClick={() => setMoSo(false)} className="grid h-9 w-9 cursor-pointer place-items-center rounded-full border-0 bg-surface2 text-ink"><X size={18} /></button>
       </div>
 
       <div className="mcf-scroll flex-1 overflow-y-auto px-5 py-4">
@@ -160,30 +182,20 @@ export default function SoTuMoi({ ex, children, stickyTop = 8 }) {
             ? <button type="button" className={nutThanh} onClick={() => { xoa(daTo.id); boChon(); }}><Eraser size={14} />{tr("Bỏ tô", "Effacer", "Remove")}</button>
             : <button type="button" className={nutThanh} onClick={() => { ghi("to", thanh.chu); boChon(); }}><Highlighter size={14} />{tr("Tô sáng", "Surligner", "Highlight")}</button>}
           {thanh.chu.length <= 120 && (
-            <button type="button" className={nutThanh} onClick={() => { setForm({ tu: thanh.chu, nghia: "" }); setTatCa(null); if (window.innerWidth < RONG) setMoSo(true); boChon(); }}>
+            <button type="button" className={nutThanh} onClick={() => { setForm({ tu: thanh.chu, nghia: "" }); setTatCa(null); setMoSo(true); boChon(); }}>
               <BookMarked size={14} />{tr("Ghi vào sổ từ", "Ajouter au carnet", "Add to word list")}
             </button>
           )}
         </div>, document.body)}
 
-      <div className="flex items-start gap-5">
-        <div ref={vungRef} className="min-w-0 flex-1">{children}</div>
-        {/* Cột sổ từ cạnh bài (màn rộng): luôn trong tầm mắt, không phải bấm mở. */}
-        <aside className="sticky hidden w-72 shrink-0 flex-col overflow-hidden rounded-3xl border border-solid border-line bg-surface shadow-sm xl:flex"
-          style={{ top: stickyTop, maxHeight: "calc(100dvh - 120px)" }}>
-          {noiDung}
-        </aside>
-      </div>
-
-      {createPortal(
-        <button type="button" onClick={() => setMoSo(true)}
-          className="fixed bottom-24 left-4 z-[120] inline-flex cursor-pointer items-center gap-2 rounded-full border border-solid border-line bg-surface px-4 py-2.5 font-sans text-sm font-bold text-ink shadow-lg hover:bg-surface2 xl:hidden">
-          <BookMarked size={16} className="text-primary" />{tr("Sổ từ", "Carnet", "Word list")}
-          <span className="rounded-full bg-primary-soft px-2 text-xs text-primary">{soTu.length}</span>
-        </button>, document.body)}
+      {/* Bài không có văn bản đọc: hai nút nằm ngay trên câu hỏi. */}
+      {!ex.readingText && <div className="mb-3">{congCu}</div>}
+      <SoTuCtx.Provider value={ex.readingText ? congCu : null}>
+        <div ref={vungRef}>{children}</div>
+      </SoTuCtx.Provider>
 
       {moSo && createPortal(
-        <div className="fixed inset-0 z-[450] flex justify-end bg-black/40 xl:hidden" onClick={() => setMoSo(false)}>
+        <div className="fixed inset-0 z-[450] flex justify-end bg-black/40" onClick={() => setMoSo(false)}>
           <div onClick={(e) => e.stopPropagation()} className="flex h-full w-full max-w-md flex-col bg-surface shadow-2xl" style={{ height: "100dvh" }}>
             {noiDung}
           </div>
@@ -193,6 +205,6 @@ export default function SoTuMoi({ ex, children, stickyTop = 8 }) {
 }
 
 /* Bọc vùng bài: `bat` tắt (khách, giáo viên) thì trả nguyên nội dung. */
-export function BocSoTu({ bat, ex, stickyTop, children }) {
-  return bat ? <SoTuMoi ex={ex} stickyTop={stickyTop}>{children}</SoTuMoi> : children;
+export function BocSoTu({ bat, ex, children }) {
+  return bat ? <SoTuMoi ex={ex}>{children}</SoTuMoi> : children;
 }

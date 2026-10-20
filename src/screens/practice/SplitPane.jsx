@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useContext } from "react";
+import { SoTuCtx } from "./SoTuMoi.jsx";
 import { Headphones } from "lucide-react";
 import ReadingPanel from "../../editor/ReadingPanel.jsx";
 import AudioBar from "./AudioBar.jsx";
@@ -37,6 +38,7 @@ function AudioCard({ src }) {
 }
 
 export default function SplitPane({ audioUrl, readingText, stickyTop = 8, children }) {
+  const congCu = useContext(SoTuCtx);   // bút tô + sổ từ, đặt dưới văn bản
   const hasMaterial = Boolean(audioUrl || readingText);
 
   if (!hasMaterial) {
@@ -64,6 +66,7 @@ export default function SplitPane({ audioUrl, readingText, stickyTop = 8, childr
       >
         {audioUrl && <AudioCard src={audioUrl} />}
         {readingText && <ReadingPanel text={readingText} embedded />}
+        {congCu}
       </div>
 
       <div
