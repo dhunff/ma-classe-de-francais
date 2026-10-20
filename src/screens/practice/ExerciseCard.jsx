@@ -77,7 +77,7 @@ function TrainButton({ onStart, onPickMaterial }) {
    `Default`, 06/10) — hình minh hoạ chung, không phải ngữ liệu. Ảnh mặc định
    tải hỏng thì lùi về ô trung tính mang ký hiệu kỹ năng như trước. */
 function Thumb({ ex }) {
-  const base = "aspect-video w-full shrink-0 overflow-hidden rounded-lg sm:w-32 lg:w-36";
+  const base = "aspect-video w-full shrink-0 overflow-hidden rounded-2xl";
   const [hong, setHong] = useState(false);
 
   if (ex.imageUrl) {
@@ -88,7 +88,7 @@ function Thumb({ ex }) {
       className={`${base} border-0 object-cover`} />;
   }
   return (
-    <div aria-hidden className={`${base} grid place-items-center bg-surface2 text-2xl text-soft`}>
+    <div aria-hidden className={`${base} grid place-items-center bg-surface2 text-4xl text-soft`}>
       {ex.audioUrl ? "🎧" : ex.readingText ? "📖" : "✎"}
     </div>
   );
@@ -112,7 +112,7 @@ export default function ExerciseCard({
   const nQ = ex.questions?.length ?? 0;
 
   return (
-    <article className="flex flex-col gap-3 rounded-2xl bg-surface p-3 shadow-sm transition-shadow hover:shadow-md sm:flex-row">
+    <article className="flex h-full flex-col gap-3 rounded-3xl border border-solid border-line bg-surface p-4 shadow-sm transition-shadow hover:shadow-md">
       <div className={`relative ${locked ? "opacity-75" : ""}`}>
         <Thumb ex={ex} />
         {locked && (
@@ -149,7 +149,7 @@ export default function ExerciseCard({
           )}
         </div>
 
-        <strong className="mb-0.5 block text-sm leading-snug text-ink">{ex.title}</strong>
+        <strong className="mb-1 block text-base font-extrabold leading-snug text-ink">{ex.title}</strong>
 
         <div className="text-xs leading-relaxed text-soft">
           {nQ} {tr("câu", "question", "question")}{nQ > 1 ? "s" : ""}
@@ -165,7 +165,7 @@ export default function ExerciseCard({
           </div>
         )}
 
-        <div className="mt-auto flex items-center justify-end gap-2 pt-2">
+        <div className="mt-auto flex items-center justify-end gap-2 pt-3">
           {locked && giaXp && onDoiXp && (
             <button type="button" onClick={onDoiXp}
               className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-solid border-primary bg-transparent px-3.5 py-1.5 font-[inherit] text-[13px] font-bold text-primary transition-colors hover:bg-primary-soft">

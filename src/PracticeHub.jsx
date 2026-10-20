@@ -671,7 +671,7 @@ Autres — Catégories
 
              Toàn bộ thân thẻ nằm trong ExerciseCard; ở đây chỉ còn việc dẫn
              dữ liệu và hành động vào. */
-          <div className="mx-auto grid max-w-6xl gap-3 xl:grid-cols-2">
+          <div className="mx-auto grid max-w-6xl gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {list.map((ex) => {
               const h = hist[ex.id];
               const types = [...new Set(ex.questions.map((q) => QTYPES[q.type]))].join(" + ");
