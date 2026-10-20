@@ -18,6 +18,7 @@ import { GhepCap, DienPhieu, AnhLuaChon } from "./screens/student/dangMoi.jsx";
 import KhungViet from "./screens/practice/KhungViet.jsx";
 import SplitPane from "./screens/practice/SplitPane.jsx";
 import FocusShell, { FOCUS_TOP } from "./screens/practice/FocusShell.jsx";
+import SoTuMoi from "./screens/practice/SoTuMoi.jsx";
 import Builder from "./screens/teacher/Builder.jsx";
 import PaymentModal from "./screens/student/PaymentModal.jsx";
 import VipBanner from "./screens/practice/VipBanner.jsx";
@@ -333,7 +334,7 @@ ${r.error?.message ?? ""}`); return; }
         price={ex.price ? fmtPrice(ex.price) : ""} />;
     }
 
-    return <PracticeWorkspace ex={ex} back={back}
+    return <PracticeWorkspace ex={ex} back={back} soTu={role === "eleve" && !!name}
       onFinish={(score, max) => saveHist(ex.id, score, max)} />;
   }
 
@@ -1141,7 +1142,8 @@ function HubMenu({ onEdit, onDup, onDel, onMove }) {
 }
 
 /* ============ Workspace tự luyện — chấm ngay ============ */
-function PracticeWorkspace({ ex, back, onFinish }) {
+function PracticeWorkspace({ ex, back, onFinish, soTu = false }) {
+  const vungRef = useRef(null);   // vùng bôi đen để tô sáng / ghi sổ từ
   const [answers, setAnswers] = useState({});
   const [confirmCount, setConfirmCount] = useState(null);   // ⚠️ copie incomplète
   const t = useT();
@@ -1465,6 +1467,8 @@ function PracticeWorkspace({ ex, back, onFinish }) {
         </div>
       )}
 
+      {soTu && <SoTuMoi ex={ex} vungRef={vungRef} />}
+      <div ref={vungRef}>
       {ex.consigne && (
         <div className="mcf-card" style={{ ...S.card, marginBottom: 16, borderLeft: "3px solid var(--mcf-primary)" }}>
           <div style={S.label}>{tr("Đề bài", "Consigne", "Instructions")}</div>
@@ -1500,6 +1504,7 @@ function PracticeWorkspace({ ex, back, onFinish }) {
       <SplitPane audioUrl={ex.audioLuyen || ex.audioUrl} readingText={ex.readingText} stickyTop={zen ? FOCUS_TOP : 8}>
         {questionCards}
       </SplitPane>
+      </div>
 
       {!graded ? (
         <>
