@@ -18,7 +18,7 @@ import { GhepCap, DienPhieu, AnhLuaChon } from "./screens/student/dangMoi.jsx";
 import KhungViet from "./screens/practice/KhungViet.jsx";
 import SplitPane from "./screens/practice/SplitPane.jsx";
 import FocusShell, { FOCUS_TOP } from "./screens/practice/FocusShell.jsx";
-import SoTuMoi from "./screens/practice/SoTuMoi.jsx";
+import { BocSoTu } from "./screens/practice/SoTuMoi.jsx";
 import Builder from "./screens/teacher/Builder.jsx";
 import PaymentModal from "./screens/student/PaymentModal.jsx";
 import VipBanner from "./screens/practice/VipBanner.jsx";
@@ -1143,7 +1143,6 @@ function HubMenu({ onEdit, onDup, onDel, onMove }) {
 
 /* ============ Workspace tự luyện — chấm ngay ============ */
 function PracticeWorkspace({ ex, back, onFinish, soTu = false }) {
-  const vungRef = useRef(null);   // vùng bôi đen để tô sáng / ghi sổ từ
   const [answers, setAnswers] = useState({});
   const [confirmCount, setConfirmCount] = useState(null);   // ⚠️ copie incomplète
   const t = useT();
@@ -1467,8 +1466,7 @@ function PracticeWorkspace({ ex, back, onFinish, soTu = false }) {
         </div>
       )}
 
-      {soTu && <SoTuMoi ex={ex} vungRef={vungRef} />}
-      <div ref={vungRef}>
+      <BocSoTu bat={soTu} ex={ex} stickyTop={zen ? FOCUS_TOP : 8}>
       {ex.consigne && (
         <div className="mcf-card" style={{ ...S.card, marginBottom: 16, borderLeft: "3px solid var(--mcf-primary)" }}>
           <div style={S.label}>{tr("Đề bài", "Consigne", "Instructions")}</div>
@@ -1504,7 +1502,7 @@ function PracticeWorkspace({ ex, back, onFinish, soTu = false }) {
       <SplitPane audioUrl={ex.audioLuyen || ex.audioUrl} readingText={ex.readingText} stickyTop={zen ? FOCUS_TOP : 8}>
         {questionCards}
       </SplitPane>
-      </div>
+      </BocSoTu>
 
       {!graded ? (
         <>

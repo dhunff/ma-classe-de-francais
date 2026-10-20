@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import { createPortal } from "react-dom";
 import { Highlighter, BookMarked, X, Trash2, Eraser } from "lucide-react";
 import { tr } from "../../shared/i18n.jsx";
@@ -13,6 +13,9 @@ import { docSoTu, themTu, xoaTu } from "../../shared/soTu.js";
  * Tô màu bằng CSS Custom Highlight API, KHÔNG chèn <mark> vào DOM: văn bản dựng
  * bằng dangerouslySetInnerHTML, sửa DOM ở đó thì React có ngày ghi đè hoặc vỡ.
  * Trình duyệt chưa có API này thì vẫn lưu được, chỉ không tô màu. */
+
+/* Từ bề rộng này sổ từ nằm thành cột cạnh bài; hẹp hơn thì là nút nổi + ngăn kéo. */
+const RONG = 1280;
 
 const coHighlight = () => typeof CSS !== "undefined" && "highlights" in CSS && typeof window.Highlight !== "undefined";
 
@@ -30,7 +33,8 @@ function timRange(goc, chuoi) {
   return ra;
 }
 
-export default function SoTuMoi({ ex, vungRef }) {
+export default function SoTuMoi({ ex, children, stickyTop = 8 }) {
+  const vungRef = useRef(null);
   const [ds, setDs] = useState(null);
   const [thanh, setThanh] = useState(null);     // { chu, x, y }
   const [moSo, setMoSo] = useState(false);
@@ -86,6 +90,63 @@ export default function SoTuMoi({ ex, vungRef }) {
   const soTu = (ds ?? []).filter((d) => d.loai !== "to");
   const nutThanh = "inline-flex cursor-pointer items-center gap-1.5 rounded-lg border-0 bg-transparent px-2.5 py-1.5 font-sans text-xs font-bold text-white hover:bg-white/15";
 
+  const noiDung = (
+    <>
+      <div className="flex items-center justify-between border-0 border-b border-solid border-line px-5 py-4">
+        <p className="m-0 text-base font-extrabold text-ink">{tatCa ? tr("Sổ từ của tôi", "Mon carnet", "My word list") : tr("Sổ từ của bài này", "Carnet de l'exercice", "This exercise's words")}</p>
+        <button type="button" onClick={() => setMoSo(false)} className="xl:hidden grid h-9 w-9 cursor-pointer place-items-center rounded-full border-0 bg-surface2 text-ink"><X size={18} /></button>
+      </div>
+
+      <div className="mcf-scroll flex-1 overflow-y-auto px-5 py-4">
+        {!tatCa && (
+          <form className="mb-4 grid gap-2 rounded-2xl bg-surface2 p-3"
+            onSubmit={async (e) => { e.preventDefault(); if (!form?.tu?.trim()) return; if (await ghi("tu", form.tu, form.nghia)) setForm({ tu: "", nghia: "" }); }}>
+            <input lang="fr" value={form?.tu ?? ""} maxLength={120} onChange={(e) => setForm({ ...(form ?? {}), tu: e.target.value })}
+              placeholder={tr("Từ mới (tiếng Pháp)", "Mot nouveau", "New word")}
+              className="rounded-lg border border-solid border-line bg-surface px-3 py-2 font-sans text-sm text-ink" />
+            <input value={form?.nghia ?? ""} maxLength={300} onChange={(e) => setForm({ ...(form ?? {}), nghia: e.target.value })}
+              placeholder={tr("Nghĩa (không bắt buộc)", "Sens (facultatif)", "Meaning (optional)")}
+              className="rounded-lg border border-solid border-line bg-surface px-3 py-2 font-sans text-sm text-ink" />
+            <button type="submit" className="cursor-pointer rounded-lg border-0 bg-primary px-3 py-2 font-sans text-sm font-bold text-on-primary disabled:opacity-50" disabled={!form?.tu?.trim()}>
+              {tr("Lưu vào sổ", "Enregistrer", "Save")}
+            </button>
+            <p className="m-0 text-xs text-soft">{tr("Mẹo: bôi đen một từ trong bài để ghi nhanh.", "Astuce : sélectionne un mot dans l'exercice.", "Tip: select a word in the exercise.")}</p>
+          </form>
+        )}
+        {loi && <p className="m-0 mb-3 text-sm font-semibold text-danger">{loi}</p>}
+
+        {(() => {
+          const list = tatCa ?? soTu;
+          if (ds === null && !tatCa) return <p className="m-0 text-sm text-danger">{tr("Không đọc được sổ từ.", "Impossible de lire le carnet.", "Could not load the word list.")}</p>;
+          if (!list.length) return <p className="m-0 text-sm text-soft">{tr("Chưa có từ nào.", "Aucun mot pour l'instant.", "No words yet.")}</p>;
+          return (
+            <ul className="m-0 grid list-none gap-2 p-0">
+              {list.map((d) => (
+                <li key={d.id} className="flex items-start gap-3 rounded-xl border border-solid border-line px-3 py-2.5">
+                  <div className="min-w-0 flex-1">
+                    <p lang="fr" className="m-0 break-words text-sm font-bold text-ink">{d.tu}</p>
+                    {d.nghia && <p className="m-0 mt-0.5 break-words text-sm text-soft">{d.nghia}</p>}
+                    {tatCa && d.ten_bai && <p className="m-0 mt-1 text-[11px] text-soft">{d.ten_bai}</p>}
+                  </div>
+                  <button type="button" onClick={() => xoa(d.id)} title={tr("Xoá", "Supprimer", "Delete")}
+                    className="grid h-8 w-8 shrink-0 cursor-pointer place-items-center rounded-full border-0 bg-transparent text-soft hover:bg-danger-soft hover:text-danger"><Trash2 size={15} /></button>
+                </li>
+              ))}
+            </ul>
+          );
+        })()}
+      </div>
+
+      <div className="border-0 border-t border-solid border-line px-5 py-3">
+        <button type="button"
+          onClick={async () => { if (tatCa) { setTatCa(null); return; } const d = await docSoTu(); setTatCa((d ?? []).filter((x) => x.loai !== "to")); }}
+          className="w-full cursor-pointer rounded-lg border border-solid border-line bg-surface px-3 py-2 font-sans text-sm font-bold text-primary hover:bg-surface2">
+          {tatCa ? tr("Chỉ xem bài này", "Cet exercice seulement", "This exercise only") : tr("Xem sổ từ mọi bài", "Voir tout mon carnet", "See all my words")}
+        </button>
+      </div>
+    </>
+  );
+
   return (
     <>
       <style>{`::highlight(mcf-to-sang){background-color:rgb(250 204 21 / .45);color:inherit}
@@ -99,76 +160,39 @@ export default function SoTuMoi({ ex, vungRef }) {
             ? <button type="button" className={nutThanh} onClick={() => { xoa(daTo.id); boChon(); }}><Eraser size={14} />{tr("Bỏ tô", "Effacer", "Remove")}</button>
             : <button type="button" className={nutThanh} onClick={() => { ghi("to", thanh.chu); boChon(); }}><Highlighter size={14} />{tr("Tô sáng", "Surligner", "Highlight")}</button>}
           {thanh.chu.length <= 120 && (
-            <button type="button" className={nutThanh} onClick={() => { setForm({ tu: thanh.chu, nghia: "" }); setMoSo(true); boChon(); }}>
+            <button type="button" className={nutThanh} onClick={() => { setForm({ tu: thanh.chu, nghia: "" }); setTatCa(null); if (window.innerWidth < RONG) setMoSo(true); boChon(); }}>
               <BookMarked size={14} />{tr("Ghi vào sổ từ", "Ajouter au carnet", "Add to word list")}
             </button>
           )}
         </div>, document.body)}
 
+      <div className="flex items-start gap-5">
+        <div ref={vungRef} className="min-w-0 flex-1">{children}</div>
+        {/* Cột sổ từ cạnh bài (màn rộng): luôn trong tầm mắt, không phải bấm mở. */}
+        <aside className="sticky hidden w-72 shrink-0 flex-col overflow-hidden rounded-3xl border border-solid border-line bg-surface shadow-sm xl:flex"
+          style={{ top: stickyTop, maxHeight: "calc(100dvh - 120px)" }}>
+          {noiDung}
+        </aside>
+      </div>
+
       {createPortal(
         <button type="button" onClick={() => setMoSo(true)}
-          className="fixed bottom-24 left-4 z-[120] inline-flex cursor-pointer items-center gap-2 rounded-full border border-solid border-line bg-surface px-4 py-2.5 font-sans text-sm font-bold text-ink shadow-lg hover:bg-surface2">
+          className="fixed bottom-24 left-4 z-[120] inline-flex cursor-pointer items-center gap-2 rounded-full border border-solid border-line bg-surface px-4 py-2.5 font-sans text-sm font-bold text-ink shadow-lg hover:bg-surface2 xl:hidden">
           <BookMarked size={16} className="text-primary" />{tr("Sổ từ", "Carnet", "Word list")}
           <span className="rounded-full bg-primary-soft px-2 text-xs text-primary">{soTu.length}</span>
         </button>, document.body)}
 
       {moSo && createPortal(
-        <div className="fixed inset-0 z-[450] flex justify-end bg-black/40" onClick={() => setMoSo(false)}>
+        <div className="fixed inset-0 z-[450] flex justify-end bg-black/40 xl:hidden" onClick={() => setMoSo(false)}>
           <div onClick={(e) => e.stopPropagation()} className="flex h-full w-full max-w-md flex-col bg-surface shadow-2xl" style={{ height: "100dvh" }}>
-            <div className="flex items-center justify-between border-0 border-b border-solid border-line px-5 py-4">
-              <p className="m-0 text-base font-extrabold text-ink">{tatCa ? tr("Sổ từ của tôi", "Mon carnet", "My word list") : tr("Sổ từ của bài này", "Carnet de l'exercice", "This exercise's words")}</p>
-              <button type="button" onClick={() => setMoSo(false)} className="grid h-9 w-9 cursor-pointer place-items-center rounded-full border-0 bg-surface2 text-ink"><X size={18} /></button>
-            </div>
-
-            <div className="mcf-scroll flex-1 overflow-y-auto px-5 py-4">
-              {!tatCa && (
-                <form className="mb-4 grid gap-2 rounded-2xl bg-surface2 p-3"
-                  onSubmit={async (e) => { e.preventDefault(); if (!form?.tu?.trim()) return; if (await ghi("tu", form.tu, form.nghia)) setForm({ tu: "", nghia: "" }); }}>
-                  <input lang="fr" value={form?.tu ?? ""} maxLength={120} onChange={(e) => setForm({ ...(form ?? {}), tu: e.target.value })}
-                    placeholder={tr("Từ mới (tiếng Pháp)", "Mot nouveau", "New word")}
-                    className="rounded-lg border border-solid border-line bg-surface px-3 py-2 font-sans text-sm text-ink" />
-                  <input value={form?.nghia ?? ""} maxLength={300} onChange={(e) => setForm({ ...(form ?? {}), nghia: e.target.value })}
-                    placeholder={tr("Nghĩa (không bắt buộc)", "Sens (facultatif)", "Meaning (optional)")}
-                    className="rounded-lg border border-solid border-line bg-surface px-3 py-2 font-sans text-sm text-ink" />
-                  <button type="submit" className="cursor-pointer rounded-lg border-0 bg-primary px-3 py-2 font-sans text-sm font-bold text-on-primary disabled:opacity-50" disabled={!form?.tu?.trim()}>
-                    {tr("Lưu vào sổ", "Enregistrer", "Save")}
-                  </button>
-                  <p className="m-0 text-xs text-soft">{tr("Mẹo: bôi đen một từ trong bài để ghi nhanh.", "Astuce : sélectionne un mot dans l'exercice.", "Tip: select a word in the exercise.")}</p>
-                </form>
-              )}
-              {loi && <p className="m-0 mb-3 text-sm font-semibold text-danger">{loi}</p>}
-
-              {(() => {
-                const list = tatCa ?? soTu;
-                if (ds === null && !tatCa) return <p className="m-0 text-sm text-danger">{tr("Không đọc được sổ từ.", "Impossible de lire le carnet.", "Could not load the word list.")}</p>;
-                if (!list.length) return <p className="m-0 text-sm text-soft">{tr("Chưa có từ nào.", "Aucun mot pour l'instant.", "No words yet.")}</p>;
-                return (
-                  <ul className="m-0 grid list-none gap-2 p-0">
-                    {list.map((d) => (
-                      <li key={d.id} className="flex items-start gap-3 rounded-xl border border-solid border-line px-3 py-2.5">
-                        <div className="min-w-0 flex-1">
-                          <p lang="fr" className="m-0 break-words text-sm font-bold text-ink">{d.tu}</p>
-                          {d.nghia && <p className="m-0 mt-0.5 break-words text-sm text-soft">{d.nghia}</p>}
-                          {tatCa && d.ten_bai && <p className="m-0 mt-1 text-[11px] text-soft">{d.ten_bai}</p>}
-                        </div>
-                        <button type="button" onClick={() => xoa(d.id)} title={tr("Xoá", "Supprimer", "Delete")}
-                          className="grid h-8 w-8 shrink-0 cursor-pointer place-items-center rounded-full border-0 bg-transparent text-soft hover:bg-danger-soft hover:text-danger"><Trash2 size={15} /></button>
-                      </li>
-                    ))}
-                  </ul>
-                );
-              })()}
-            </div>
-
-            <div className="border-0 border-t border-solid border-line px-5 py-3">
-              <button type="button"
-                onClick={async () => { if (tatCa) { setTatCa(null); return; } const d = await docSoTu(); setTatCa((d ?? []).filter((x) => x.loai !== "to")); }}
-                className="w-full cursor-pointer rounded-lg border border-solid border-line bg-surface px-3 py-2 font-sans text-sm font-bold text-primary hover:bg-surface2">
-                {tatCa ? tr("Chỉ xem bài này", "Cet exercice seulement", "This exercise only") : tr("Xem sổ từ mọi bài", "Voir tout mon carnet", "See all my words")}
-              </button>
-            </div>
+            {noiDung}
           </div>
         </div>, document.body)}
     </>
   );
+}
+
+/* Bọc vùng bài: `bat` tắt (khách, giáo viên) thì trả nguyên nội dung. */
+export function BocSoTu({ bat, ex, stickyTop, children }) {
+  return bat ? <SoTuMoi ex={ex} stickyTop={stickyTop}>{children}</SoTuMoi> : children;
 }

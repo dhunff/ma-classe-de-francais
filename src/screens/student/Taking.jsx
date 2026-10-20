@@ -13,6 +13,7 @@ import { GhepCap, DienPhieu, AnhLuaChon } from "./dangMoi.jsx";
 import KhungViet from "../practice/KhungViet.jsx";
 import SplitPane from "../practice/SplitPane.jsx";
 import FocusShell, { FOCUS_TOP } from "../practice/FocusShell.jsx";
+import { BocSoTu } from "../practice/SoTuMoi.jsx";
 import RichTextEditor from "../../editor/RichTextEditor.jsx";
 import { BookOpen, GraduationCap, MoreVertical, Pencil, Copy, Trash2, RotateCcw, Image as ImageIcon, X, Phone, Calendar, Target, Briefcase, ChevronLeft, TrendingUp, Clock, CheckCircle } from "lucide-react";
 import { BarChart, Bar, LineChart, Line, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from "recharts";
@@ -260,6 +261,7 @@ function Taking({ ex, name, setSubmissions, done }) {
           {tr("Hết giờ: bài của bạn đã được nộp tự động.", "Temps écoulé : ta copie a été rendue automatiquement.", "Time's up: your work was submitted automatically.")}
         </div>
       )}
+      <BocSoTu bat ex={ex} stickyTop={zen ? FOCUS_TOP : 8}>
       {ex.consigne && (
         <div className="mcf-card" style={{ ...S.card, marginBottom: 16, borderLeft: "3px solid var(--mcf-primary)" }}>
           <div style={S.label}>{tr("Đề bài", "Consigne", "Instructions")}</div>
@@ -295,6 +297,7 @@ function Taking({ ex, name, setSubmissions, done }) {
       <SplitPane audioUrl={ex.audioLuyen || ex.audioUrl} readingText={ex.readingText} stickyTop={zen ? FOCUS_TOP : 8}>
         {questionCards}
       </SplitPane>
+      </BocSoTu>
 
       {err && <p style={{ color: C.danger, fontSize: 13 }}>{err}</p>}
       {/* Nút nộp nay nằm ở thanh trạng thái nổi; ở đây chỉ còn lối thoát.
