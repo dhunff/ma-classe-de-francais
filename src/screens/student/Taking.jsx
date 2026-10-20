@@ -145,19 +145,24 @@ function Taking({ ex, name, setSubmissions, done }) {
   };
 
   const questionCards = ex.questions.map((q, i) => (
-    <div key={q.id} className="mcf-card" style={S.card}>
-      <div style={{ fontWeight: 700, marginBottom: 10 }}>
-        <span style={S.chip(C.primarySoft, C.primary)}>{QTYPES[q.type]}</span> {i + 1}. {q.prompt}
+    <div key={q.id} className={"mcf-card rounded-3xl border border-solid bg-surface p-5 shadow-[0_6px_24px_rgba(15,23,42,0.05)] transition-colors " + (isQuestionAnswered(q, answers[q.id]) ? "border-primary/40" : "border-line")}>
+      <div className="mb-3.5 flex items-start gap-3">
+        <span className={"grid h-8 w-8 shrink-0 place-items-center rounded-xl text-sm font-extrabold tabular-nums " + (isQuestionAnswered(q, answers[q.id]) ? "bg-gradient-to-br from-primary to-indigo-600 text-white shadow-[0_4px_12px_rgba(37,99,235,0.3)]" : "bg-primary-soft text-primary")}>{i + 1}</span>
+        <div className="min-w-0 flex-1">
+          <span className="mb-1 inline-block rounded-full bg-surface2 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-soft">{QTYPES[q.type]}</span>
+          <p className="m-0 text-[15.5px] font-bold leading-snug text-ink">{q.prompt}</p>
+        </div>
       </div>
       {q.type === "qcm" ? (
         <div style={{ display: "grid", gap: 8 }}>
           {q.options.map((o, j) => (
-            <label key={j} style={{ fontSize: 15, display: "flex", gap: 10, alignItems: "center", padding: "9px 13px", borderRadius: 10, cursor: "pointer",
+            <label key={j} className={locked ? "" : "transition-all duration-150 hover:-translate-y-px hover:shadow-[0_4px_14px_rgba(37,99,235,0.12)]"}
+              style={{ fontSize: 15, display: "flex", gap: 12, alignItems: "center", padding: "9px 12px", borderRadius: 14, cursor: "pointer",
               border: `1.5px solid ${answers[q.id] === j ? C.primary : C.line}`,
               background: answers[q.id] === j ? C.primarySoft : "var(--mcf-surface)",
               color: answers[q.id] === j ? C.primary : C.ink }}>
-              <input type="radio" name={q.id} disabled={locked} checked={answers[q.id] === j} onChange={() => setAnswers({ ...answers, [q.id]: j })} />
-              <strong>{String.fromCharCode(65 + j)}.</strong> <AnhLuaChon q={q} j={j} /> {o}
+              <input type="radio" className="sr-only" name={q.id} disabled={locked} checked={answers[q.id] === j} onChange={() => setAnswers({ ...answers, [q.id]: j })} />
+              <span className={"grid h-7 w-7 shrink-0 place-items-center rounded-lg text-xs font-extrabold " + (answers[q.id] === j ? "bg-primary text-on-primary" : "bg-surface2 text-soft")}>{String.fromCharCode(65 + j)}</span> <AnhLuaChon q={q} j={j} /> {o}
             </label>
           ))}
         </div>
