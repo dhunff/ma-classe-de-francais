@@ -19,6 +19,7 @@ import KhungViet from "./screens/practice/KhungViet.jsx";
 import SplitPane from "./screens/practice/SplitPane.jsx";
 import FocusShell, { FOCUS_TOP } from "./screens/practice/FocusShell.jsx";
 import { BocSoTu } from "./screens/practice/SoTuMoi.jsx";
+import KhoiDeBai from "./screens/practice/KhoiDeBai.jsx";
 import Builder from "./screens/teacher/Builder.jsx";
 import PaymentModal from "./screens/student/PaymentModal.jsx";
 import VipBanner from "./screens/practice/VipBanner.jsx";
@@ -1300,9 +1301,13 @@ function PracticeWorkspace({ ex, back, onFinish, soTu = false }) {
     const a = answers[q.id];
     const good = graded && autoQ(q) ? isGood(q) : null;
     return (
-      <div key={q.id} className="mcf-card" style={S.card}>
-        <div style={{ fontWeight: 700, marginBottom: 10 }}>
-          <span style={S.chip(C.primarySoft, C.primary)}>{QTYPES[q.type]}</span> {i + 1}. {q.prompt}
+      <div key={q.id} className={"mcf-card rounded-3xl border border-solid bg-surface p-5 shadow-[0_6px_24px_rgba(15,23,42,0.05)] transition-colors " + (graded ? (good === true ? "border-ok/50" : good === false ? "border-danger/50" : "border-line") : isQuestionAnswered(q, a) ? "border-primary/40" : "border-line")}>
+        <div className="mb-3.5 flex items-start gap-3">
+          <span className={"grid h-8 w-8 shrink-0 place-items-center rounded-xl text-sm font-extrabold tabular-nums " + (graded ? (good === true ? "bg-ok text-white" : good === false ? "bg-danger text-white" : "bg-surface2 text-ink") : isQuestionAnswered(q, a) ? "bg-gradient-to-br from-primary to-indigo-600 text-white shadow-[0_4px_12px_rgba(37,99,235,0.3)]" : "bg-primary-soft text-primary")}>{i + 1}</span>
+          <div className="min-w-0 flex-1">
+            <span className="mb-1 inline-block rounded-full bg-surface2 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-soft">{QTYPES[q.type]}</span>
+            <p className="m-0 text-[15.5px] font-bold leading-snug text-ink">{q.prompt}</p>
+          </div>
         </div>
 
         {q.type === "qcm" ? (
@@ -1334,14 +1339,15 @@ function PracticeWorkspace({ ex, back, onFinish, soTu = false }) {
               } else if (j === a) { bg = C.primarySoft; border = C.primary; }
               return (
                 <button key={j} disabled={!!graded || dangCham} onClick={() => setAnswers({ ...answers, [q.id]: j })}
-                  style={{ display: "flex", alignItems: "center", gap: 10, textAlign: "left", padding: "10px 14px", borderRadius: 10, fontSize: 15,
+                  className={graded ? "" : "transition-all duration-150 hover:-translate-y-px hover:shadow-[0_4px_14px_rgba(37,99,235,0.12)]"}
+                  style={{ display: "flex", alignItems: "center", gap: 12, textAlign: "left", padding: "9px 12px", borderRadius: 14, fontSize: 15,
                     fontFamily: "inherit", cursor: graded ? "default" : "pointer", background: bg, border: `1.5px solid ${border}`, color: C.ink,
                     /* Gạch ngang CHỈ khi ô này là lựa chọn SAI. Điều kiện cũ
                        `j !== q.answer` luôn đúng với học sinh (q.answer rỗng),
                        nên ô họ chọn bị gạch cả khi làm đúng — chữ gạch ngang
                        trên một ô đang tô xanh đọc ra hai nghĩa trái nhau. */
                     textDecoration: graded && j === a && !isGood(q) ? "line-through" : "none" }}>
-                  <strong>{String.fromCharCode(65 + j)}.</strong> <AnhLuaChon q={q} j={j} /> {o}<span style={{ marginLeft: "auto" }}>{icon}</span>
+                  <span className={"grid h-7 w-7 shrink-0 place-items-center rounded-lg text-xs font-extrabold " + (j === a ? (graded ? (isGood(q) ? "bg-ok text-white" : "bg-danger text-white") : "bg-primary text-on-primary") : "bg-surface2 text-soft")}>{String.fromCharCode(65 + j)}</span> <AnhLuaChon q={q} j={j} /> {o}<span style={{ marginLeft: "auto" }}>{icon}</span>
                 </button>
               );
             })}
@@ -1467,12 +1473,7 @@ function PracticeWorkspace({ ex, back, onFinish, soTu = false }) {
       )}
 
       <BocSoTu bat={soTu} ex={ex} stickyTop={zen ? FOCUS_TOP : 8}>
-      {ex.consigne && (
-        <div className="mcf-card" style={{ ...S.card, marginBottom: 16, borderLeft: "3px solid var(--mcf-primary)" }}>
-          <div style={S.label}>{tr("Đề bài", "Consigne", "Instructions")}</div>
-          <div style={{ fontSize: 15.5, lineHeight: 1.75, marginTop: 6, fontWeight: 500 }} dangerouslySetInnerHTML={{ __html: ex.consigne }} />
-        </div>
-      )}
+      {ex.consigne && <KhoiDeBai html={ex.consigne} />}
 
       {ex.imageUrl && (
         <div style={{ marginBottom: 16 }}>
