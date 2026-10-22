@@ -65,7 +65,7 @@ export default function StreakWidget({ t, fixture }) {
           {/* 13/10: còn lượt đóng băng thì ngày lỡ không làm đứt chuỗi. */}
           {d.conLaiBang > 0
             ? tr(<><em>Ohlala !</em> Hôm nay chưa học. Bỏ lỡ thì Leon sẽ đóng băng ngày này để giữ chuỗi {d.chuoi} ngày (còn {d.conLaiBang} lần tháng này). Làm một bài nhỏ cho chắc nhé!</>, <><em>Ohlala !</em> Pas encore étudié aujourd'hui. Sinon, Leon gèlera ce jour pour garder ta série de {d.chuoi} jours (encore {d.conLaiBang} ce mois-ci).</>, <><em>Ohlala!</em> No study yet today. If you skip, Leon will freeze this day to keep your {d.chuoi}-day streak ({d.conLaiBang} freezes left this month).</>)
-            : tr(<><em>Ohlala !</em> Hết lượt đóng băng tháng này: không học hôm nay là chuỗi {d.chuoi} ngày tắt đó. <em>Allez</em>!</>, <><em>Ohlala !</em> Plus de gel ce mois-ci : sans exercice aujourd'hui, ta série de {d.chuoi} jours s'éteint. <em>Allez</em> !</>, <><em>Ohlala!</em> No freezes left this month: skip today and your {d.chuoi}-day streak ends. <em>Allez</em>!</>)}
+            : tr(<><em>Ohlala !</em> Hết lượt đóng băng tháng này: không học hôm nay là chuỗi {d.chuoi} ngày tắt đó. <em>Allez</em>!</>, <><em>Ohlala !</em> Plus de gel ce mois-ci : sans activité aujourd'hui, ta série de {d.chuoi} jours s'éteint. <em>Allez</em> !</>, <><em>Ohlala!</em> No freezes left this month: skip today and your {d.chuoi}-day streak ends. <em>Allez</em>!</>)}
         </LeonNoi>
       ) : null)}
 
@@ -104,7 +104,7 @@ export default function StreakWidget({ t, fixture }) {
         </div>
         {/* Đóng băng chuỗi (13/10): 5 lần mỗi tháng, tự dùng khi lỡ một ngày. */}
         {d?.conLaiBang != null && (
-          <p className="m-0 mt-3 flex items-center justify-center gap-1.5 text-xs text-soft" title={tr("Ngày không làm bài được tự đóng băng để giữ chuỗi. Lỡ quá 5 ngày trong một tháng thì chuỗi đứt.", "Un jour sans exercice est gelé automatiquement. Au-delà de 5 par mois, la série s'arrête.", "A day without study is frozen automatically. More than 5 in a month and the streak ends.")}>
+          <p className="m-0 mt-3 flex items-center justify-center gap-1.5 text-xs text-soft" title={tr("Ngày không học (bài tập, thi thử, Flashcard, Thách đấu, Lộ trình, Nghe & Nói, Ngữ pháp) được tự đóng băng để giữ chuỗi. Lỡ quá 5 ngày trong một tháng thì chuỗi đứt.", "Un jour sans activité (exercice, examen, flashcards, défi, parcours, écoute, grammaire) est gelé automatiquement. Au-delà de 5 par mois, la série s'arrête.", "A day without any activity (exercise, exam, flashcards, duel, path, listening, grammar) is frozen automatically. More than 5 in a month and the streak ends.")}>
             <Snowflake size={13} className="text-sky-500" />
             {tr(`Đóng băng: còn ${d.conLaiBang}/${d.bangMoiThang} lần tháng này`, `Gel de série : ${d.conLaiBang}/${d.bangMoiThang} ce mois-ci`, `Streak freezes: ${d.conLaiBang}/${d.bangMoiThang} left this month`)}
           </p>
