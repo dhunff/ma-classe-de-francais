@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Check, Lock, Play, Crown, Star, BookOpen, Volume2, VolumeX } from "lucide-react";
+import { Check, Lock, Play, Crown, Star, BookOpen, Volume2, VolumeX, Sparkles, Trophy, Layers, Flag, Cloud, Leaf } from "lucide-react";
 import { batNhac, tatNhac } from "../../shared/nhacNen.js";
 import { docKetQua, ghiKetQua, docLoTrinh } from "../../shared/loTrinhStore.js";
 import { useT, tr } from "../../shared/i18n.jsx";
@@ -259,6 +259,19 @@ function Chuong({ chuong, onMo, t }) {
         </div>
       </div>
 
+      {/* 23/10 (theo chủ dự án: « trống trải, đơn điệu »): đường đi nằm trên một tấm
+          bản đồ nhuộm màu chủ đề, có hoạ tiết hai bên; cột phải là bảng tóm tắt
+          chương (số liệu thật từ lo_trinh_ket_qua + kho từ). */}
+      <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_17rem]">
+      <div className="relative overflow-hidden rounded-[2rem] border border-solid border-line py-6"
+        style={{ background: `radial-gradient(circle at 1px 1px, color-mix(in srgb, ${mau} 22%, transparent) 1.2px, transparent 0) 0 0 / 22px 22px, linear-gradient(180deg, color-mix(in srgb, ${mau} 10%, rgb(var(--mcf-surface-rgb))), rgb(var(--mcf-surface-rgb)))` }}>
+        {diem.map((p, i) => {
+          const HOA = [Sparkles, Cloud, Leaf, Star];
+          const H = HOA[i % HOA.length];
+          const benTrai = p.x > RONG / 2;
+          return <H key={i} aria-hidden size={i % 3 === 0 ? 30 : 22} className="pointer-events-none absolute opacity-25"
+            style={{ top: 24 + p.y + (i % 2 ? 20 : -10), [benTrai ? "left" : "right"]: `${8 + ((i * 37) % 14)}%`, color: mau }} />;
+        })}
       <div className="relative mx-auto" style={{ width: RONG, height: cao }}>
         <svg width={RONG} height={cao} className="absolute inset-0" aria-hidden="true">
           <path d={duong(diem)} fill="none" strokeWidth="8" strokeLinecap="round" className="stroke-line" strokeDasharray="2 16" />
@@ -274,7 +287,84 @@ function Chuong({ chuong, onMo, t }) {
         <Nut m={{ ...trum, tieuDe: t("path.boss") }} pos={toaDo(man.length, true)} mau={mau} trum thuTu={man.length}
           onClick={() => onMo(trum, true)} t={t} />
       </div>
+      </div>
+      <TomTatChuong chuong={chuong} onMo={onMo} t={t} />
+      </div>
     </section>
+  );
+}
+
+/* Bảng tóm tắt chương (23/10): sao, màn đã qua, số từ; màn tiếp theo kèm vài từ
+   sẽ gặp; từ đã học ở các màn đã qua để ôn nhanh. */
+function TomTatChuong({ chuong, onMo, t }) {
+  const { man, trum, mau } = chuong;
+  const sao = man.reduce((n, m) => n + m.sao, 0) + trum.sao;
+  const toiDa = (man.length + 1) * 3;
+  const qua = man.filter((m) => m.sao > 0).length;
+  const soTu = new Set(man.flatMap((m) => m.the.map((x) => x.matTruoc))).size;
+  const tiep = man.find((m) => m.trangThai === "hienTai") || (trum.trangThai === "hienTai" ? { ...trum, tieuDe: t("path.boss"), laTrum: true } : null);
+  const daHoc = man.filter((m) => m.sao > 0).flatMap((m) => m.the).slice(0, 10);
+  const o = (Icon, so, nhan) => (
+    <div className="rounded-2xl bg-surface2 px-3 py-2.5 text-center">
+      <Icon size={16} className="mx-auto" style={{ color: mau }} />
+      <p className="m-0 mt-1 text-lg font-extrabold tabular-nums text-ink">{so}</p>
+      <p className="m-0 text-[10px] font-bold uppercase tracking-wide text-soft">{nhan}</p>
+    </div>
+  );
+  return (
+    <aside className="grid gap-4 xl:sticky xl:top-24">
+      <div className="rounded-3xl border border-solid border-line bg-surface p-4">
+        <p className="m-0 text-[11px] font-extrabold uppercase tracking-[0.14em] text-soft">{tr("Chương này", "Ce chapitre", "This chapter")}</p>
+        <div className="mt-3 grid grid-cols-3 gap-2">
+          {o(Star, `${sao}/${toiDa}`, tr("Sao", "Étoiles", "Stars"))}
+          {o(Flag, `${qua}/${man.length}`, tr("Màn", "Étapes", "Levels"))}
+          {o(Layers, soTu, tr("Từ", "Mots", "Words"))}
+        </div>
+      </div>
+
+      {tiep ? (
+        <div className="overflow-hidden rounded-3xl border border-solid border-line bg-surface">
+          <div className="px-4 py-3 text-white" style={{ backgroundImage: `linear-gradient(135deg, ${mau}, color-mix(in srgb, ${mau} 70%, black))` }}>
+            <p className="m-0 text-[11px] font-extrabold uppercase tracking-[0.14em] opacity-85">{tr("Màn tiếp theo", "Prochaine étape", "Next level")}</p>
+            <p className="m-0 mt-0.5 text-base font-extrabold">{tiep.tieuDe}</p>
+            {!tiep.laTrum && <p className="m-0 text-xs opacity-90">{tiep.cap} · {t("path.cards_n", { n: tiep.soThe })}</p>}
+          </div>
+          <div className="p-4">
+            <div className="flex flex-wrap gap-1.5">
+              {tiep.the.slice(0, 6).map((x) => (
+                <span key={x.id} lang="fr" className="rounded-lg bg-surface2 px-2 py-1 text-xs font-bold text-ink">{x.matTruoc}</span>
+              ))}
+              {tiep.the.length > 6 && <span className="px-1 py-1 text-xs font-bold text-soft">+{tiep.the.length - 6}</span>}
+            </div>
+            <button type="button" onClick={() => onMo(tiep, !!tiep.laTrum)}
+              className="mt-3 inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-2xl border-0 px-4 py-2.5 font-sans text-sm font-extrabold text-white transition-transform hover:-translate-y-0.5"
+              style={{ backgroundColor: mau, boxShadow: `0 5px 0 color-mix(in srgb, ${mau} 65%, black)` }}>
+              <Play size={15} fill="currentColor" /> {tr("Chơi ngay", "Jouer", "Play now")}
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className="rounded-3xl border border-solid border-line bg-surface p-4 text-center">
+          <Trophy size={28} className="mx-auto text-warn" />
+          <p className="m-0 mt-2 text-sm font-extrabold text-ink">{tr("Đã hoàn thành chương!", "Chapitre terminé !", "Chapter complete!")}</p>
+          <p className="m-0 mt-1 text-xs text-soft">{tr("Chơi lại màn bất kỳ để lấy thêm sao.", "Rejoue une étape pour gagner des étoiles.", "Replay any level for more stars.")}</p>
+        </div>
+      )}
+
+      {daHoc.length > 0 && (
+        <div className="rounded-3xl border border-solid border-line bg-surface p-4">
+          <p className="m-0 text-[11px] font-extrabold uppercase tracking-[0.14em] text-soft">{tr("Ôn nhanh từ đã học", "Révision express", "Quick review")}</p>
+          <ul className="m-0 mt-2 grid list-none gap-1.5 p-0">
+            {daHoc.map((x) => (
+              <li key={x.id} className="flex items-baseline justify-between gap-2 border-0 border-b border-dashed border-line pb-1.5 text-xs last:border-b-0">
+                <span lang="fr" className="font-bold text-ink">{x.matTruoc}</span>
+                <span className="truncate text-right text-soft">{x.matSau}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </aside>
   );
 }
 
