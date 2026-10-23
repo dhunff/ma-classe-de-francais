@@ -41,6 +41,7 @@ import { supabase } from "./storageShim.js";
 import { Lock } from "lucide-react";
 import { anhMacDinh } from "./shared/anhMacDinh.js";
 import { choTrong } from "./shared/choTrong.jsx";
+import OTraLoi from "./screens/practice/OTraLoi.jsx";
 
 /* ============================================================
    PRACTICE HUB v3 — Tự luyện tập
@@ -1434,15 +1435,8 @@ function PracticeWorkspace({ ex, back, onFinish, soTu = false }) {
           </>
         ) : (
           <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-            <input lang="fr" disabled={!!graded || dangCham} value={a || ""} placeholder={tr("Câu trả lời của bạn…", "Ta réponse…", "Your answer…")}
-              onChange={(e) => setAnswers({ ...answers, [q.id]: e.target.value })}
-              style={{ ...S.input, maxWidth: 320,
-                border: `1.5px solid ${graded ? (good ? C.ok : C.danger) : C.line}`,
-                background: graded ? (good ? C.okSoft : C.dangerSoft) : "var(--mcf-surface2)",
-                textDecoration: graded && !good ? "line-through" : "none" }} />
-            {graded && (good
-              ? <CheckCircle2 size={18} color={C.ok} />
-              : dapAnFill(q) && <XCircle size={18} color={C.danger} />)}
+            <OTraLoi value={a || ""} disabled={!!graded || dangCham} dung={graded && good != null ? good : null}
+              onChange={(v) => setAnswers({ ...answers, [q.id]: v })} />
             {/* Chỉ hiện khi THẬT SỰ có đáp án. `fillAccepted` đọc `q.accepted`,
                 mà migration 022 gỡ trường đó khỏi payload của học sinh — khối
                 này vì thế từng hiện « Réponse attendue : » rồi bỏ trống. */}

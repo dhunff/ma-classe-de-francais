@@ -20,6 +20,7 @@ import { BookOpen, GraduationCap, MoreVertical, Pencil, Copy, Trash2, RotateCcw,
 import { BarChart, Bar, LineChart, Line, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from "recharts";
 import { leonChucMung } from "../../shared/leon.jsx";
 import { choTrong } from "../../shared/choTrong.jsx";
+import OTraLoi from "../practice/OTraLoi.jsx";
 
 
 /* ================= Taking (with auto-save) ================= */
@@ -203,8 +204,7 @@ function Taking({ ex, name, setSubmissions, done }) {
       ) : q.type === "open" ? (
         <KhungViet value={answers[q.id] || ""} readOnly={locked} onChange={(html) => setAnswers({ ...answers, [q.id]: html })} />
       ) : (
-        <input lang="fr" style={S.input} disabled={locked} placeholder={tr("Câu trả lời của bạn…", "Ta réponse…", "Your answer…")} value={answers[q.id] || ""}
-          onChange={(e) => setAnswers({ ...answers, [q.id]: e.target.value })} />
+        <OTraLoi value={answers[q.id] || ""} disabled={locked} onChange={(v) => setAnswers({ ...answers, [q.id]: v })} />
       )}
     </div>
   ));
