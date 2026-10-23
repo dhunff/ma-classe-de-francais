@@ -110,7 +110,8 @@ const tronNgauNhien = (a) => { const b = [...a]; for (let i = b.length - 1; i > 
 const ngayNgan = (s) => (s ? `${s.slice(8, 10)}/${s.slice(5, 7)}` : "");
 
 /* `theMau`: chỉ /preview.html dùng: thẻ mẫu, KHÔNG gọi máy chủ, không ghi. */
-export default function LuyenBoThe({ bo, onThoat, theMau }) {
+/* `nguon` (23/10): nguồn thẻ khác bộ giáo viên, vd Sổ từ: { doc(): Promise<thẻ[]|null>, cham(the, q): Promise<{ok, moi, loi}> }. */
+export default function LuyenBoThe({ bo, onThoat, theMau, nguon }) {
   const [tatCa, setTatCa] = useState(undefined);   // undefined tải · null lỗi · [] rỗng
   const [hang, setHang] = useState([]);            // thẻ đến hạn, theo thứ tự SM-2
   const [lat, setLat] = useState(false);
@@ -129,7 +130,7 @@ export default function LuyenBoThe({ bo, onThoat, theMau }) {
   useEffect(() => {
     let con = true;
     setTatCa(undefined); setHang([]); setLat(false); setXong(0); setLoi(""); setKetQua(new Map()); setCheDo("on");
-    (theMau ? Promise.resolve(theMau) : hocBo(bo?.id)).then((v) => {
+    (theMau ? Promise.resolve(theMau) : nguon ? nguon.doc() : hocBo(bo?.id)).then((v) => {
       if (!con) return;
       setTatCa(v);
       if (Array.isArray(v)) {
@@ -157,7 +158,7 @@ export default function LuyenBoThe({ bo, onThoat, theMau }) {
       return;
     }
     setDangGhi(true); setLoi("");
-    const kq = theMau ? { ok: true, moi: {} } : await chamThe(the, MUC[khoa].q);
+    const kq = theMau ? { ok: true, moi: {} } : nguon ? await nguon.cham(the, MUC[khoa].q) : await chamThe(the, MUC[khoa].q);
     setDangGhi(false);
 
     /* Ghi hỏng thì DỪNG LẠI ở thẻ này, không lật sang thẻ sau. Lật sang là nói

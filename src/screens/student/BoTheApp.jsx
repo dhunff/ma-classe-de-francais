@@ -9,6 +9,11 @@ import { PAYMENT_KEY, memoSafe } from "../../shared/access.js";
 import { tr } from "../../shared/i18n.jsx";
 import { Leon } from "../../shared/leon.jsx";
 import { phat } from "../../shared/amThanh.js";
+import { docTheSoTu, onTheSoTu } from "../../shared/soTu.js";
+import { xepLichOn, ngayCong } from "../../shared/sm2.js";
+import { BookMarked, ChevronRight } from "lucide-react";
+
+const NGUON_SO_TU = { doc: docTheSoTu, cham: onTheSoTu };
 
 /* Vỏ chứa hai màn: thư viện và màn luyện, trượt ngang giữa hai bên.
  *
@@ -78,6 +83,13 @@ export default function BoTheApp({ name }) {
 
   const oGame = man === "GAME";
 
+  /* Sổ từ của tôi (23/10): từ học sinh tự ghi khi làm bài, ôn bằng SM-2. */
+  const [soTu, setSoTu] = useState(undefined);
+  useEffect(() => { if (man === "LIBRARY") docTheSoTu().then(setSoTu); }, [man]);
+  const denHanSoTu = Array.isArray(soTu) ? xepLichOn(soTu, ngayCong(0)).length : 0;
+  const moSoTu = () => { phat("batDau"); setBo({ id: "so-tu", ten: tr("Sổ từ của tôi", "Mon carnet", "My word list"), soTu: true }); setMan("GAME"); };
+  useEffect(() => { if (new URLSearchParams(window.location.search).has("so-tu")) moSoTu(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   const [boKhoa, setBoKhoa] = useState(null);
   const [muaBo, setMuaBo] = useState(null);
   const [payCfg, setPayCfg] = useState(null);
@@ -98,6 +110,21 @@ export default function BoTheApp({ name }) {
           ? "pointer-events-none -translate-x-full opacity-0"
           : "translate-x-0 opacity-100"}`}
       >
+        {Array.isArray(soTu) && soTu.length > 0 && (
+          <div className="mx-auto max-w-5xl px-4 pt-6">
+            <button type="button" onClick={moSoTu}
+              className="group flex w-full cursor-pointer items-center gap-4 rounded-3xl border-0 bg-gradient-to-r from-violet-500 to-indigo-600 p-4 text-left font-sans text-white shadow-[0_12px_28px_rgba(79,70,229,0.3)] transition-transform hover:-translate-y-0.5">
+              <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-white/20"><BookMarked size={24} /></span>
+              <span className="min-w-0 flex-1">
+                <span className="block text-base font-extrabold">{tr("Sổ từ của tôi", "Mon carnet de mots", "My word list")}</span>
+                <span className="block text-sm text-white/85">
+                  {tr(`${soTu.length} từ đã ghi · ${denHanSoTu} từ cần ôn hôm nay`, `${soTu.length} mots · ${denHanSoTu} à réviser aujourd'hui`, `${soTu.length} words · ${denHanSoTu} due today`)}
+                </span>
+              </span>
+              <ChevronRight size={22} className="shrink-0 transition-transform group-hover:translate-x-1" />
+            </button>
+          </div>
+        )}
         <ThuVienBoThe ds={ds} onMo={moBo} />
       </div>
 
@@ -111,7 +138,7 @@ export default function BoTheApp({ name }) {
           ? "translate-x-0 opacity-100"
           : "pointer-events-none translate-x-full opacity-0"}`}
       >
-        {bo && <LuyenBoThe bo={bo} onThoat={() => setMan("LIBRARY")} />}
+        {bo && <LuyenBoThe key={bo.id} bo={bo} nguon={bo.soTu ? NGUON_SO_TU : undefined} onThoat={() => setMan("LIBRARY")} />}
       </div>
 
       {muaBo && <PaymentModal ex={muaBo} student={name} config={payCfg} onClose={() => setMuaBo(null)} onUnlocked={daMua} />}
