@@ -20,6 +20,7 @@ import SplitPane from "./screens/practice/SplitPane.jsx";
 import FocusShell, { FOCUS_TOP } from "./screens/practice/FocusShell.jsx";
 import { BocSoTu } from "./screens/practice/SoTuMoi.jsx";
 import KhoiDeBai from "./screens/practice/KhoiDeBai.jsx";
+import { TuVungBai, GiaiThichBai } from "./screens/practice/TaiLieuBai.jsx";
 import Builder from "./screens/teacher/Builder.jsx";
 import PaymentModal from "./screens/student/PaymentModal.jsx";
 import VipBanner from "./screens/practice/VipBanner.jsx";
@@ -720,7 +721,7 @@ Autres — Catégories
       <div className="mcf-float" style={{ position: "fixed", inset: 0, background: "rgba(15,23,42,.45)", backdropFilter: "blur(4px)",
         display: "grid", placeItems: "center", padding: 16, zIndex: 9999 }}
         onClick={() => setMatModal(null)}>
-        <div className="mcf-scroll" style={{ ...S.card, width: "100%", maxWidth: 640, maxHeight: "86vh", overflowY: "auto",
+        <div className="mcf-scroll" style={{ ...S.card, width: "100%", maxWidth: kind === "vocab" ? 760 : 640, maxHeight: "86vh", overflowY: "auto",
           background: "var(--mcf-card, #FFFFFF)", color: "var(--mcf-ink, #111827)", opacity: 1,
           border: "1px solid var(--mcf-line, #EEF0F4)", boxShadow: "0 24px 60px rgba(15,23,42,.35)" }} onClick={(e) => e.stopPropagation()}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, marginBottom: 4 }}>
@@ -734,7 +735,7 @@ Autres — Catégories
 
           {kind !== "corrige" ? (
             content && content.trim() ? (
-              <div style={{ whiteSpace: "pre-wrap", lineHeight: 1.85, fontSize: 15 }}>{content}</div>
+              kind === "vocab" ? <TuVungBai noiDung={content} ex={ex} /> : <GiaiThichBai noiDung={content} />
             ) : (
               <div style={{ textAlign: "center", padding: "34px 16px", color: C.soft }}>
                 <div style={{ fontSize: 38, marginBottom: 8 }}>{kind === "vocab" ? "📖" : "💡"}</div>
