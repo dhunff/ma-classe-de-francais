@@ -53,7 +53,7 @@ export async function docTienDo() {
 export async function docLoTrinh() {
   const [cd, mn, tu] = await Promise.all([
     supabase.from("lo_trinh_chu_de").select("id, ten_fr, ten_vi, mau, ord").order("ord"),
-    supabase.from("lo_trinh_man").select("id, chu_de_id, ord, ten, cap, bat, so_cau").order("ord"),
+    supabase.from("lo_trinh_man").select("id, chu_de_id, ord, ten, cap, bat, so_cau, chuong").order("ord"),
     supabase.from("lo_trinh_tu").select("id, man_id, ord, fr, vi, loai").order("ord").limit(5000),
   ]);
   if (cd.error || mn.error || tu.error) return null;
@@ -62,7 +62,7 @@ export async function docLoTrinh() {
   const chuDe = (cd.data ?? []).map((c) => ({
     id: c.id, tenFr: c.ten_fr, tenVi: c.ten_vi, mau: c.mau,
     man: (mn.data ?? []).filter((m) => m.chu_de_id === c.id).map((m) => ({
-      id: m.id, ten: m.ten, cap: m.cap, bat: m.bat, soCau: m.so_cau, tu: kho.filter((t) => t.man === m.id),
+      id: m.id, ten: m.ten, cap: m.cap, bat: m.bat, soCau: m.so_cau, chuong: m.chuong ?? 1, tu: kho.filter((t) => t.man === m.id),
     })),
   }));
   return { chuDe, kho };

@@ -63,6 +63,7 @@ export default function LoTrinh() {
   const [lt, setLt] = useState(null);           // null = đang tải, false = lỗi
   const [ketQua, setKetQua] = useState(new Map());
   const [chon, setChon] = useState(null);       // id chủ đề đang xem
+  const [chonCh, setChonCh] = useState({});     // chủ đề → số chương đang xem (23/10)
   const [dangChoi, setDangChoi] = useState(null);
 
   useEffect(() => {
@@ -98,28 +99,43 @@ export default function LoTrinh() {
   /* Mỗi chủ đề: màn đang bật + trạng thái tuần tự riêng. */
   const chuongs = useMemo(() => {
     if (!lt) return [];
+    /* 23/10: mỗi chủ đề có nhiều CHƯƠNG (cột lo_trinh_man.chuong). Mở tuần tự trong
+       chương; chương sau mở khi đã qua thử thách cuối chương trước. Thử thách chương 1
+       giữ khoá cũ 'trum:<id>' để kết quả cũ không mất; chương n > 1 là 'trum:<id>:n'. */
     return lt.chuDe.map((c) => {
-      let truocDaQua = true, daGapHienTai = false;
-      const trangThai = (sao) => {
-        if (sao > 0) { truocDaQua = true; return "xong"; }
-        if (truocDaQua && !daGapHienTai) { daGapHienTai = true; truocDaQua = false; return "hienTai"; }
-        truocDaQua = false;
-        return "khoa";
-      };
-      const man = c.man.filter((m) => m.bat && m.tu.length >= 4).map((m) => {
-        const sao = ketQua.get("man:" + m.id) || 0;
-        return { maMan: "man:" + m.id, tieuDe: m.ten, cap: m.cap, the: m.tu, soCau: m.soCau, soThe: m.tu.length, sao, trangThai: trangThai(sao) };
+      const soCh = [...new Set(c.man.filter((m) => m.bat && m.tu.length >= 4).map((m) => m.chuong ?? 1))].sort((a, b) => a - b);
+      let moChuong = true;
+      const cacChuong = soCh.map((so) => {
+        let truocDaQua = moChuong, daGapHienTai = false;
+        const trangThai = (sao) => {
+          if (sao > 0) { truocDaQua = true; return "xong"; }
+          if (truocDaQua && !daGapHienTai) { daGapHienTai = true; truocDaQua = false; return "hienTai"; }
+          truocDaQua = false;
+          return "khoa";
+        };
+        const man = c.man.filter((m) => m.bat && m.tu.length >= 4 && (m.chuong ?? 1) === so).map((m) => {
+          const sao = ketQua.get("man:" + m.id) || 0;
+          return { maMan: "man:" + m.id, tieuDe: m.ten, cap: m.cap, the: m.tu, soCau: m.soCau, soThe: m.tu.length, sao, trangThai: trangThai(sao) };
+        });
+        const khoaTrum = so === 1 ? "trum:" + c.id : `trum:${c.id}:${so}`;
+        const saoTrum = ketQua.get(khoaTrum) || 0;
+        const trum = { maMan: khoaTrum, sao: saoTrum, trangThai: trangThai(saoTrum), the: man.flatMap((m) => m.the) };
+        const daMo = moChuong;
+        moChuong = saoTrum > 0;
+        return { so, man, trum, daMo, caps: [...new Set(man.map((m) => m.cap))] };
       });
-      const saoTrum = ketQua.get("trum:" + c.id) || 0;
-      const trum = { maMan: "trum:" + c.id, sao: saoTrum, trangThai: trangThai(saoTrum), the: man.flatMap((m) => m.the) };
-      return { ma: c.id, ten: c.tenVi, tenFr: c.tenFr, mau: c.mau, man, trum };
+      const cuoi = cacChuong[cacChuong.length - 1];
+      return { ma: c.id, ten: c.tenVi, tenFr: c.tenFr, mau: c.mau, cacChuong, man: cacChuong.flatMap((x) => x.man), trum: cuoi?.trum ?? { sao: 0 } };
     }).filter((c) => c.man.length);
   }, [lt, ketQua]);
 
   /* Mặc định mở chủ đề đầu tiên chưa hạ thử thách. */
   const dangXem = chuongs.find((c) => c.ma === chon) || chuongs.find((c) => !(c.trum.sao > 0)) || chuongs[0];
-  const tongSao = chuongs.reduce((n, c) => n + c.man.reduce((a, m) => a + m.sao, 0) + c.trum.sao, 0);
-  const tongMan = chuongs.reduce((n, c) => n + c.man.length + 1, 0);
+  const tongSao = chuongs.reduce((n, c) => n + c.cacChuong.reduce((s, ch) => s + ch.man.reduce((a, m) => a + m.sao, 0) + ch.trum.sao, 0), 0);
+  const tongMan = chuongs.reduce((n, c) => n + c.cacChuong.reduce((s, ch) => s + ch.man.length + 1, 0), 0);
+  /* Chương đang xem của chủ đề: chọn tay, nếu không thì chương đầu tiên chưa hạ thử thách. */
+  const chDangXem = dangXem && (dangXem.cacChuong.find((x) => x.so === chonCh[dangXem.ma])
+    || dangXem.cacChuong.find((x) => x.daMo && !(x.trum.sao > 0)) || dangXem.cacChuong[0]);
 
   const mo = (m, laTrum, c) => {
     if (m.trangThai === "khoa") { phat("sai"); return; }
@@ -177,7 +193,7 @@ export default function LoTrinh() {
           <Leon cam="phap" size={112} className="mcf-leon-bay shrink-0 drop-shadow-[0_12px_18px_rgba(0,0,0,0.3)] max-sm:h-20 max-sm:w-20" />
           <div className="min-w-0 flex-1">
             <h1 className="m-0 text-3xl font-extrabold tracking-tight">{t("nav.path")}</h1>
-            <p className="m-0 mt-1 text-sm text-white/85">{t("path.subtitle_topics", { n: tongMan - chuongs.length, c: chuongs.length })}</p>
+            <p className="m-0 mt-1 text-sm text-white/85">{t("path.subtitle_topics", { n: tongMan - chuongs.reduce((n, c) => n + c.cacChuong.length, 0), c: chuongs.length })}</p>
             <div className="mt-3 flex items-center gap-3">
               <div className="h-3 flex-1 overflow-hidden rounded-full bg-white/20">
                 <div className="relative h-full overflow-hidden rounded-full bg-gradient-to-r from-amber-300 to-amber-400 transition-[width] duration-1000 ease-out" style={{ width: `${Math.max(3, (tongSao / (tongMan * 3)) * 100)}%` }}>
@@ -225,7 +241,32 @@ export default function LoTrinh() {
         </nav>
 
         <div className="min-w-0">
-          <Chuong key={dangXem.ma} chuong={dangXem} onMo={(m, laTrum) => mo(m, laTrum, dangXem)} t={t} />
+          {dangXem.cacChuong.length > 1 && (
+            <div role="tablist" className="mb-3 flex gap-2 overflow-x-auto no-scrollbar">
+              {dangXem.cacChuong.map((ch) => {
+                const dang = ch.so === chDangXem.so;
+                const qua = ch.man.filter((m) => m.sao > 0).length;
+                return (
+                  <button key={ch.so} type="button" role="tab" aria-selected={dang}
+                    onClick={() => { phat("tiep"); setChonCh((x) => ({ ...x, [dangXem.ma]: ch.so })); }}
+                    className={"flex shrink-0 cursor-pointer items-center gap-2 rounded-2xl border-2 border-solid px-4 py-2 text-left font-sans transition-all " + (dang ? "text-white shadow-md" : "border-line bg-surface text-ink hover:bg-surface2")}
+                    style={dang ? { backgroundColor: dangXem.mau, borderColor: dangXem.mau } : undefined}>
+                    {!ch.daMo && <Lock size={14} className={dang ? "" : "text-soft"} />}
+                    <span>
+                      <span className="block text-sm font-extrabold">{tr(`Chương ${ch.so}`, `Chapitre ${ch.so}`, `Chapter ${ch.so}`)}</span>
+                      <span className={"block text-[11px] font-semibold " + (dang ? "opacity-90" : "text-soft")}>{ch.caps.join(" · ")} · {qua}/{ch.man.length}{ch.trum.sao > 0 ? " · ★" : ""}</span>
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+          {!chDangXem.daMo && (
+            <p className="m-0 mb-3 flex items-center gap-2 rounded-2xl bg-warn-soft px-4 py-2.5 text-sm font-semibold text-warn">
+              <Lock size={15} /> {tr("Qua thử thách cuối chương trước để mở chương này.", "Réussis le défi final du chapitre précédent pour l'ouvrir.", "Beat the previous chapter's final challenge to unlock.")}
+            </p>
+          )}
+          <Chuong key={dangXem.ma + ":" + chDangXem.so} chuong={{ ...dangXem, man: chDangXem.man, trum: chDangXem.trum }} onMo={(m, laTrum) => mo(m, laTrum, dangXem)} t={t} />
         </div>
       </div>
 
