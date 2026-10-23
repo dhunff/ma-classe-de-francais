@@ -299,26 +299,45 @@ function CauGhep({ cau, onSai, onXong, chuoi, t }) {
   );
 }
 
+/* Dải phản hồi sau mỗi câu, làm lại 23/10 (theo chủ dự án: « đơn điệu »):
+   nền chuyển màu đậm, Leon nhô lên khỏi mép dải, đốm sáng khi đúng, đáp án
+   đúng trong ô trắng nổi khi sai, nút trắng chữ màu. */
+const DOM = [[6, 30, 0], [14, 70, 120], [26, 20, 260], [44, 78, 60], [62, 18, 200], [78, 64, 320], [90, 28, 140]];
 function PhanHoi({ dung, dapAn, leon, onTiep, t }) {
   const [cam, loi] = leon ?? (dung ? ["tuyet-voi", t("path.g_correct")] : ["buon", t("path.g_wrong")]);
   return (
-    <div className={`mcf-dai-len border-0 border-t-2 border-solid ${dung ? "border-ok bg-ok-soft" : "border-danger bg-danger-soft"}`}>
-      <div className="mx-auto flex max-w-3xl flex-wrap items-center gap-4 px-4 py-4">
-        <Leon cam={cam} size={72} className="mcf-nay shrink-0" />
+    <div className={`mcf-dai-len relative overflow-visible text-white shadow-[0_-12px_30px_rgba(15,23,42,0.15)] ${dung ? "bg-gradient-to-r from-emerald-500 via-green-600 to-teal-600" : "bg-gradient-to-r from-rose-500 via-red-600 to-orange-600"}`}>
+      {/* Hoạ tiết: vòng tròn mờ + đốm sáng (chỉ khi đúng). */}
+      <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
+        <span className="absolute -left-10 -top-16 h-40 w-40 rounded-full bg-white/10" />
+        <span className="absolute -bottom-20 right-24 h-48 w-48 rounded-full bg-white/10" />
+        {dung && DOM.map(([x, y, tre], k) => (
+          <span key={k} className="absolute h-2 w-2 animate-ping rounded-full bg-white/70 motion-reduce:animate-none"
+            style={{ left: `${x}%`, top: `${y}%`, animationDelay: `${tre}ms`, animationDuration: "1.4s" }} />
+        ))}
+      </div>
+      <div className="relative mx-auto flex max-w-3xl flex-wrap items-center gap-4 px-4 py-4 sm:flex-nowrap">
+        <div className="relative -mt-12 shrink-0">
+          <span aria-hidden className="absolute inset-2 rounded-full bg-white/25 blur-md" />
+          <Leon cam={cam} size={96} className="mcf-nay relative drop-shadow-[0_10px_14px_rgba(0,0,0,0.25)]" />
+        </div>
         <div className="min-w-0 flex-1">
-          <p className={`m-0 flex items-center gap-1.5 text-xl font-extrabold ${dung ? "text-ok" : "text-danger"}`}>
-            {dung ? <CheckCircle2 size={22} /> : <XCircle size={22} />}
+          <p className="m-0 flex items-center gap-2 text-2xl font-extrabold tracking-tight">
+            <span className="grid h-9 w-9 place-items-center rounded-full bg-white text-current shadow-sm">
+              {dung ? <Check size={20} strokeWidth={3.5} className="text-ok" /> : <X size={20} strokeWidth={3.5} className="text-danger" />}
+            </span>
             {dung ? t("path.g_correct") : t("path.g_wrong")}
           </p>
-          <p className="m-0 mt-0.5 text-sm font-semibold text-ink">{loi}</p>
+          <p className="m-0 mt-1 text-sm font-semibold text-white/90">{loi}</p>
           {!dung && (
-            <p className="m-0 mt-1 text-sm text-ink">
-              {tr("Đáp án đúng:", "Bonne réponse :", "Correct answer:")} <strong>{dapAn}</strong>
+            <p className="m-0 mt-2 inline-flex flex-wrap items-center gap-2 rounded-xl bg-white px-3 py-1.5 text-sm text-ink shadow-sm">
+              <span className="text-xs font-bold uppercase tracking-wide text-soft">{tr("Đáp án đúng", "Bonne réponse", "Correct answer")}</span>
+              <strong className="text-ok">{dapAn}</strong>
             </p>
           )}
         </div>
         <button type="button" onClick={onTiep} autoFocus
-          className={`cursor-pointer rounded-2xl border-0 border-b-4 border-solid px-8 py-3 font-sans text-sm font-extrabold uppercase tracking-wide text-white shadow-sm transition-transform hover:-translate-y-0.5 active:translate-y-0.5 active:border-b-0 ${dung ? "border-green-700 bg-ok" : "border-red-800 bg-danger"}`}>
+          className={`w-full cursor-pointer rounded-2xl border-0 border-b-4 border-solid bg-white px-8 py-3 font-sans text-sm font-extrabold uppercase tracking-wide shadow-md transition-transform hover:-translate-y-0.5 active:translate-y-0.5 active:border-b-0 sm:w-auto ${dung ? "border-green-200 text-green-700" : "border-red-200 text-red-700"}`}>
           {t("path.g_continue")}
         </button>
       </div>
