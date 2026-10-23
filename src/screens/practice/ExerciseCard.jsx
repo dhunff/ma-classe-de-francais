@@ -1,5 +1,5 @@
 import React, { useRef, useState } from "react";
-import { Lock, ChevronDown, BookOpen, Lightbulb, FileCheck, Folder, Star, Trophy } from "lucide-react";
+import { Lock, ChevronDown, Play, BookOpen, Lightbulb, FileCheck, Folder, Star, Trophy } from "lucide-react";
 import { FloatingLayer, KebabMenu } from "../../shared/ui.jsx";
 import { S } from "../../shared/tokens.js";
 import { fmtPrice } from "../../shared/access.js";
@@ -35,13 +35,15 @@ function TrainButton({ onStart, onPickMaterial }) {
   const [open, setOpen] = useState(false);
 
   return (
-    <div ref={ref} className="relative inline-flex">
+    /* 23/10: nút trải hết ngang thẻ, nền chuyển màu + gờ dưới kiểu nút bấm nổi;
+       nút tài liệu tách thành ô vuông riêng bên phải. */
+    <div ref={ref} className="relative flex w-full items-stretch gap-2">
       <button
         type="button"
         onClick={onStart}
-        className="cursor-pointer border-0 bg-primary py-1.5 pl-4 pr-3 font-[inherit] text-[13px] font-bold text-on-primary transition-opacity hover:opacity-90"
-        style={{ borderRadius: "999px 0 0 999px" }}
+        className="group inline-flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-2xl border-0 border-b-4 border-solid border-blue-800 bg-gradient-to-r from-primary to-indigo-600 px-4 py-2.5 font-[inherit] text-sm font-extrabold text-white shadow-[0_8px_18px_rgba(37,99,235,0.28)] transition-transform hover:-translate-y-0.5 active:translate-y-0.5 active:border-b-0"
       >
+        <span className="grid h-6 w-6 place-items-center rounded-full bg-white/20 transition-transform group-hover:scale-110"><Play size={13} fill="currentColor" /></span>
         {tr("Luyện tập", "S'entraîner", "Practice")}
       </button>
       <button
@@ -50,10 +52,11 @@ function TrainButton({ onStart, onPickMaterial }) {
         aria-haspopup="menu"
         aria-expanded={open}
         aria-label={tr("Tài liệu của bài", "Ressources de l'exercice", "Exercise resources")}
-        className="ml-px cursor-pointer border-0 bg-primary px-3 font-[inherit] text-on-primary transition-opacity hover:opacity-90"
-        style={{ borderRadius: "0 999px 999px 0" }}
+        title={tr("Từ vựng, giải thích, đáp án", "Vocabulaire, explications, corrigé", "Vocabulary, tips, answer key")}
+        className="inline-flex shrink-0 cursor-pointer items-center gap-1 rounded-2xl border border-solid border-line bg-surface px-3 font-[inherit] text-primary transition-colors hover:bg-primary-soft"
       >
-        <ChevronDown size={15} className={open ? "rotate-180 transition-transform" : "transition-transform"} />
+        <BookOpen size={17} />
+        <ChevronDown size={14} className={open ? "rotate-180 transition-transform" : "transition-transform"} />
       </button>
 
       <FloatingLayer anchorRef={ref} open={open} onClose={() => setOpen(false)} width={210} radius={20} padding={6}>
@@ -165,10 +168,10 @@ export default function ExerciseCard({
           </div>
         )}
 
-        <div className="mt-auto flex items-center justify-end gap-2 pt-3">
+        <div className="mt-auto flex items-stretch gap-2 pt-3">
           {locked && giaXp && onDoiXp && (
             <button type="button" onClick={onDoiXp}
-              className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-solid border-primary bg-transparent px-3.5 py-1.5 font-[inherit] text-[13px] font-bold text-primary transition-colors hover:bg-primary-soft">
+              className="inline-flex cursor-pointer items-center gap-1.5 rounded-2xl border border-solid border-primary bg-transparent px-3 py-2 font-[inherit] text-[13px] font-bold text-primary transition-colors hover:bg-primary-soft">
               <Star size={15} /> {t("xp.unlock_btn", { n: giaXp })}
             </button>
           )}
@@ -176,7 +179,7 @@ export default function ExerciseCard({
             <button
               type="button"
               onClick={onBuy}
-              className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border-0 bg-primary px-4 py-1.5 font-[inherit] text-[13px] font-bold text-on-primary transition-opacity hover:opacity-90"
+              className="inline-flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-2xl border-0 border-b-4 border-solid border-amber-700 bg-gradient-to-r from-amber-400 to-orange-500 px-4 py-2.5 font-[inherit] text-sm font-extrabold text-white shadow-[0_8px_18px_rgba(245,158,11,0.3)] transition-transform hover:-translate-y-0.5"
             >
               <Lock size={15} /> {t("pay.buy")}
             </button>
