@@ -29,6 +29,12 @@ const KY_NANG = {
   "Traduction": { Icon: Languages, ten: () => tr("Dịch", "Traduction", "Translation") },
 };
 const tenKN = (k) => KY_NANG[k]?.ten() ?? k;
+/* Màu theo kỹ năng, khớp thẻ kỹ năng ở Thư viện luyện tập (23/10). */
+const MAU_KN = {
+  "Écoute": "from-blue-500 to-indigo-600", "Lecture": "from-emerald-500 to-teal-600", "Production écrite": "from-rose-500 to-pink-600",
+  "Production orale": "from-fuchsia-500 to-purple-600", "Grammaire": "from-violet-500 to-purple-600", "Vocabulaire": "from-amber-400 to-orange-500",
+};
+const mauKN = (k) => MAU_KN[k] ?? "from-cyan-500 to-sky-600";
 const IconKN = (k) => KY_NANG[k]?.Icon ?? BookOpen;
 /* ─────────── Đề xuất bài ───────────
    Thuật toán ở shared/deXuat.js (15/10): theo trình độ + mục tiêu + kỹ năng yếu. */
@@ -97,20 +103,24 @@ export function DeXuatBai({ dsDeXuat, onMo, coHoSo, level, goal, gon = false }) 
             return (
               <li key={ex.id}>
                 <button type="button" onClick={() => onMo(ex)}
-                  className="group flex h-full w-full cursor-pointer flex-col gap-3 rounded-2xl border border-solid border-line bg-surface p-4 text-left font-sans transition-all duration-200 hover:-translate-y-0.5 hover:border-primary hover:shadow-md">
-                  <span className="flex items-center gap-2.5">
-                    <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-primary-soft text-primary"><Icon size={19} /></span>
+                  className="group relative flex h-full w-full cursor-pointer flex-col gap-3 overflow-hidden rounded-3xl border border-solid border-line bg-surface p-4 text-left font-sans shadow-[0_4px_16px_rgba(15,23,42,0.04)] transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_14px_30px_rgba(15,23,42,0.1)]">
+                  {/* Vệt màu kỹ năng ở góc, mờ, chỉ để thẻ có sắc riêng. */}
+                  <span aria-hidden className={`pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full bg-gradient-to-br ${mauKN(kn)} opacity-15 transition-transform duration-300 group-hover:scale-125`} />
+                  <span className="relative flex items-start gap-3">
+                    <span className={`grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-gradient-to-br ${mauKN(kn)} text-white shadow-[0_8px_16px_rgba(15,23,42,0.15)]`}><Icon size={22} /></span>
                     <span className="min-w-0 flex-1">
-                      <span className="block text-[11px] font-bold uppercase tracking-wide text-soft">{tenKN(kn)} · {ex.level}</span>
-                      <span className="line-clamp-2 block text-sm font-bold leading-snug text-ink">{ex.title}</span>
+                      <span className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wide text-soft">
+                        {tenKN(kn)} <span className="rounded-md bg-surface2 px-1.5 py-px text-ink">{ex.level}</span>
+                      </span>
+                      <span className="mt-1 line-clamp-2 block text-[15px] font-extrabold leading-snug text-ink">{ex.title}</span>
                     </span>
                   </span>
-                  <span className="mt-auto flex flex-wrap items-center gap-1.5">
+                  <span className="relative mt-auto flex flex-wrap items-center gap-1.5">
                     {ly.slice(0, 2).map((k) => (
                       <span key={k} className={`rounded-full px-2 py-0.5 text-[11px] font-bold ${k === "yeu" ? "bg-warn-soft text-warn" : k === "moi" ? "bg-surface2 text-soft" : "bg-ok-soft text-ok"}`}>{NHAN_LY_DO[k]()}</span>
                     ))}
-                    <span className="ml-auto inline-flex items-center gap-1 text-xs font-bold text-primary">
-                      {tr("Làm ngay", "Commencer", "Start")} <ArrowRight size={13} className="transition-transform group-hover:translate-x-0.5" />
+                    <span className={`ml-auto grid h-9 w-9 place-items-center rounded-full bg-gradient-to-br ${mauKN(kn)} text-white shadow-md transition-transform group-hover:translate-x-0.5 group-hover:scale-110`} aria-label={tr("Làm ngay", "Commencer", "Start")}>
+                      <ArrowRight size={16} />
                     </span>
                   </span>
                 </button>

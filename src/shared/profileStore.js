@@ -178,6 +178,7 @@ export async function luuHoSo(p) {
     if (!ten) return { ok: false, loi: "not_signed_in" };
     const all = await load("mcf-profiles", {});
     const xong = await save("mcf-profiles", { ...all, [ten]: { ...(all[ten] || {}), ...v } });
+    if (xong) baoDoiHoSo();
     return xong ? { ok: true, duongCu: true } : { ok: false, loi: "mang" };
   }
 
@@ -198,6 +199,14 @@ export async function luuHoSo(p) {
      nên nói cả hai khả năng thay vì đoán một. */
   if (error?.code === "PGRST202") return { ok: false, loi: "chua_co_ham" };
   if (error) return { ok: false, loi: "mang", chiTiet: error.message };
-  if (data?.ok) return { ok: true };
+  if (data?.ok) { baoDoiHoSo(); return { ok: true }; }
   return { ok: false, loi: data?.error || "khong_ro" };
+}
+
+/* 23/10: App.jsx nạp hồ sơ MỘT lần lúc đăng nhập, nên đổi trình độ ở Tài khoản
+   mà trang chủ vẫn hiện trình độ cũ tới khi tải lại trang. Lưu xong thì báo để
+   App đọc lại. */
+export const SU_KIEN_HO_SO = "mcf:ho-so-doi";
+function baoDoiHoSo() {
+  if (typeof window !== "undefined") window.dispatchEvent(new Event(SU_KIEN_HO_SO));
 }

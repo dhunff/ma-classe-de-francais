@@ -32,7 +32,7 @@ import ExamResults from './screens/student/ExamResults.jsx'
 import { C } from './shared/tokens.js'
 import { load } from './shared/storage.js'
 import { loadSubmissions } from './shared/submissions.js'
-import { loadHoSo } from './shared/profileStore.js'
+import { loadHoSo, SU_KIEN_HO_SO } from './shared/profileStore.js'
 import { loadAssignments } from './shared/exerciseStore.js'
 import { supabase } from './storageShim.js'
 import { resolveRole } from './shared/authRole.js'
@@ -176,6 +176,12 @@ function AppInner() {
      Xem src/shared/profileStore.js. */
   const [profile, setProfile] = useState(null);
   useEffect(() => { loadHoSo().then(setProfile); }, [session?.name]);
+  /* Lưu hồ sơ ở bất kỳ đâu (Tài khoản, Hoàn thiện hồ sơ) → đọc lại ngay. */
+  useEffect(() => {
+    const nap = () => loadHoSo().then(setProfile);
+    window.addEventListener(SU_KIEN_HO_SO, nap);
+    return () => window.removeEventListener(SU_KIEN_HO_SO, nap);
+  }, []);
 
   if (loading || !authChecked) {
     return (
