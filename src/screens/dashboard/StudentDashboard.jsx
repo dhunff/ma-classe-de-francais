@@ -133,11 +133,6 @@ export default function StudentDashboard({
             <TroChoi />
           </Rise>
 
-          <Rise id="tour-tc-ky-nang" delay={280}>
-            <DongDeuKyNang skills={skills}
-              ghiChu={skills.sources?.assigned && skills.sources?.practice ? t("dash.skills_note_both")
-                : skills.sources?.practice ? t("dash.skills_note_practice") : t("dash.skills_note")} />
-          </Rise>
 
           {/* Kho luyện tập, mới nhất trước — cùng khối với trang chủ chung.
               Không có nó thì hôm nào giáo viên chưa giao bài, trang này trắng
@@ -163,6 +158,13 @@ export default function StudentDashboard({
             <Card title={t("home.hours_title")}>
               <GioHocWidget t={t} fixture={gioHocFixture} />
             </Card>
+          </Rise>
+
+          {/* 23/10 (theo chủ dự án): ô nhỏ ở cột phải, cạnh Giờ học. */}
+          <Rise id="tour-tc-ky-nang" delay={130}>
+            <DongDeuKyNang gon skills={skills}
+              ghiChu={skills.sources?.assigned && skills.sources?.practice ? t("dash.skills_note_both")
+                : skills.sources?.practice ? t("dash.skills_note_practice") : t("dash.skills_note")} />
           </Rise>
 
         </div>

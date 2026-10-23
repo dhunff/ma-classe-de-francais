@@ -223,7 +223,7 @@ const muc = (v) => (v >= 80 ? ["ok", () => tr("Vững", "Solide", "Strong")]
       : ["danger", () => tr("Yếu", "Fragile", "Weak")]);
 const MAU = { ok: ["bg-ok", "text-ok", "bg-ok-soft"], primary: ["bg-primary", "text-primary", "bg-primary-soft"], warn: ["bg-warn", "text-warn", "bg-warn-soft"], danger: ["bg-danger", "text-danger", "bg-danger-soft"] };
 
-export function DongDeuKyNang({ skills, ghiChu }) {
+export function DongDeuKyNang({ skills, ghiChu, gon = false }) {
   const ds = [...(skills ?? [])].sort((a, b) => b.value - a.value);
   const tb = ds.length ? Math.round(ds.reduce((n, s) => n + s.value, 0) / ds.length) : null;
   const chenh = ds.length > 1 ? ds[0].value - ds[ds.length - 1].value : 0;
@@ -233,12 +233,12 @@ export function DongDeuKyNang({ skills, ghiChu }) {
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="m-0 flex items-center gap-1.5 text-xs font-bold uppercase tracking-[0.14em] text-soft"><TrendingUp size={14} /> {tr("Hồ sơ kỹ năng", "Profil de compétences", "Skill profile")}</p>
-          <h2 className="m-0 mt-1 text-lg font-extrabold text-ink">{tr("Mức độ đồng đều theo kỹ năng", "Équilibre entre les compétences", "Balance across skills")}</h2>
+          <h2 className={"m-0 mt-1 font-extrabold text-ink " + (gon ? "hidden" : "text-lg")}>{tr("Mức độ đồng đều theo kỹ năng", "Équilibre entre les compétences", "Balance across skills")}</h2>
         </div>
         {tb != null && (
           <div className="flex gap-4 text-right">
-            <div><p className="m-0 text-2xl font-extrabold tabular-nums text-ink">{tb}%</p><p className="m-0 text-[11px] text-soft">{tr("Trung bình", "Moyenne", "Average")}</p></div>
-            <div><p className={`m-0 text-2xl font-extrabold tabular-nums ${chenh > 30 ? "text-warn" : "text-ok"}`}>{chenh}</p><p className="m-0 text-[11px] text-soft">{tr("Độ chênh", "Écart", "Gap")}</p></div>
+            <div><p className={"m-0 font-extrabold tabular-nums text-ink " + (gon ? "text-lg" : "text-2xl")}>{tb}%</p><p className="m-0 text-[11px] text-soft">{tr("Trung bình", "Moyenne", "Average")}</p></div>
+            <div><p className={`m-0 font-extrabold tabular-nums ${gon ? "text-lg" : "text-2xl"} ${chenh > 30 ? "text-warn" : "text-ok"}`}>{chenh}</p><p className="m-0 text-[11px] text-soft">{tr("Độ chênh", "Écart", "Gap")}</p></div>
           </div>
         )}
       </div>
@@ -248,29 +248,29 @@ export function DongDeuKyNang({ skills, ghiChu }) {
         </p>
       ) : (
         <>
-          <ul className="m-0 mt-5 grid list-none gap-3.5 p-0">
+          <ul className={"m-0 grid list-none p-0 " + (gon ? "mt-3 gap-2.5" : "mt-5 gap-3.5")}>
             {ds.map(({ skill, value }) => {
               const [m, nhan] = muc(value);
               const Icon = IconKN(skill);
               return (
                 <li key={skill} className="grid grid-cols-[auto_1fr_auto] items-center gap-3">
-                  <span className={`grid h-9 w-9 place-items-center rounded-xl ${MAU[m][2]} ${MAU[m][1]}`}><Icon size={17} /></span>
+                  <span className={`grid place-items-center rounded-xl ${gon ? "h-7 w-7" : "h-9 w-9"} ${MAU[m][2]} ${MAU[m][1]}`}><Icon size={gon ? 14 : 17} /></span>
                   <div className="min-w-0">
                     <div className="flex items-baseline justify-between gap-2">
                       <span className="truncate text-sm font-bold text-ink">{tenKN(skill)}</span>
-                      <span className={`text-[11px] font-bold ${MAU[m][1]}`}>{nhan()}</span>
+                      {!gon && <span className={`text-[11px] font-bold ${MAU[m][1]}`}>{nhan()}</span>}
                     </div>
                     <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-surface2">
                       <div className={`h-full rounded-full ${MAU[m][0]} transition-[width] duration-700`} style={{ width: `${Math.max(value, 3)}%` }} />
                     </div>
                   </div>
-                  <span className="w-11 text-right text-sm font-extrabold tabular-nums text-ink">{value}%</span>
+                  <span className={"text-right font-extrabold tabular-nums text-ink " + (gon ? "w-9 text-xs" : "w-11 text-sm")}>{value}%</span>
                 </li>
               );
             })}
           </ul>
           {ds.length > 1 && yeu && (
-            <p className="m-0 mt-4 rounded-2xl bg-surface2 px-4 py-3 text-xs leading-relaxed text-ink">
+            <p className={"m-0 rounded-2xl bg-surface2 text-xs leading-relaxed text-ink " + (gon ? "mt-3 px-3 py-2" : "mt-4 px-4 py-3")}>
               {tr(`Gợi ý: kỹ năng ${tenKN(yeu.skill)} đang thấp nhất. Các bài đề xuất phía trên ưu tiên kỹ năng này.`,
                 `Conseil : ${tenKN(yeu.skill)} est votre point faible. Les recommandations ci-dessus le privilégient.`,
                 `Tip: ${tenKN(yeu.skill)} is your weakest skill. The recommendations above focus on it.`)}
