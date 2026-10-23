@@ -3,6 +3,8 @@
  * Kiểm trước khi in: đủ 16 chủ đề × 10 màn × 8 mục, loại hợp lệ, không trùng từ với
  * chương 1 cùng chủ đề, không trùng trong chương 2 cùng chủ đề, không dấu gạch dài.
  * Upsert màn theo id `<chủ đề>-c2-<n>`; mục từ của màn thì xoá rồi chèn lại. */
+/* ĐÃ THAY bởi sinh-ba-chuong.mjs (23/10): màn <cd>-c2-n nay là CHƯƠNG 3 (B2). Đừng chạy file này. */
+if (!process.env.CHAY_CU) { console.error("Dùng scripts/lo-trinh/sinh-ba-chuong.mjs"); process.exit(1); }
 import { CHU_DE } from "./chu-de.mjs";
 import { CHUONG2_A } from "./chuong2-a.mjs";
 import { CHUONG2_B } from "./chuong2-b.mjs";
