@@ -13,6 +13,7 @@ import { calculateProfileCompletion } from "../../shared/profile.js";
 import StreakWidget from "./StreakWidget.jsx";
 import FollowingStreakWidget from "./FollowingStreakWidget.jsx";
 import GioHocWidget from "./GioHocWidget.jsx";
+import KeHoachThi from "./KeHoachThi.jsx";
 import TourGioiThieu from "../../shared/TourGioiThieu.jsx";
 import { DeXuatBai, TroChoi, DongDeuKyNang, chonDeXuat, TienDoNguPhap } from "./TrangChuKhoi.jsx";
 
@@ -121,6 +122,12 @@ export default function StudentDashboard({
           {/* 08/10: trang chủ là ĐỀ XUẤT + TRÒ CHƠI. Ô Đã nộp / Điểm TB / Đang chờ
               làm / % hoàn thành / Học tiếp đã sang trang « Bài tập được giao »
               (TongQuanBaiGiao.jsx). */}
+          {/* 23/10: kế hoạch tới ngày thi (migration 160). Không đăng nhập thì không có. */}
+          {chuoiFixture === undefined && (
+            <Rise delay={140}>
+              <KeHoachThi capGoiY={(profile?.goal || "").match(/A1|A2|B1|B2|C1/)?.[0]} />
+            </Rise>
+          )}
           <Rise delay={150}>
             <Link to="/etudiant/bai-luyen"
               className="group flex items-center gap-4 rounded-3xl bg-gradient-to-r from-rose-500 via-pink-600 to-violet-600 p-4 text-white no-underline shadow-[0_12px_28px_rgba(219,39,119,0.25)] transition-transform hover:-translate-y-0.5">
