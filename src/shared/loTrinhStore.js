@@ -50,11 +50,25 @@ export async function docTienDo() {
    → { chuDe: [{ id, tenFr, tenVi, mau, man: [{ id, ten, cap, bat, soCau, tu: [...] }] }],
        kho: [mục…] } | null khi không đọc được.
    Mục có dạng troChoiThe cần: { id, matTruoc, matSau, loai, chuDe }. */
+/* 23/10: PostgREST trả TỐI ĐA 1.000 dòng mỗi lần (max-rows của Supabase), `.limit(5000)`
+   không vượt được. Khi kho lên 3.712 mục, mỗi màn chỉ nhận 2–3 từ đầu, bị lọc bỏ vì < 4
+   thẻ, và cả Lộ trình hiện « còn trống ». Đọc theo trang 1.000 dòng tới khi hết. */
+async function docHetTu() {
+  const ra = [];
+  for (let tu = 0; ; tu += 1000) {
+    const { data, error } = await supabase.from("lo_trinh_tu").select("id, man_id, ord, fr, vi, loai")
+      .order("man_id").order("ord").range(tu, tu + 999);
+    if (error) return { error };
+    ra.push(...(data ?? []));
+    if (!data || data.length < 1000) return { data: ra };
+  }
+}
+
 export async function docLoTrinh() {
   const [cd, mn, tu] = await Promise.all([
     supabase.from("lo_trinh_chu_de").select("id, ten_fr, ten_vi, mau, ord").order("ord"),
     supabase.from("lo_trinh_man").select("id, chu_de_id, ord, ten, cap, bat, so_cau, chuong").order("ord"),
-    supabase.from("lo_trinh_tu").select("id, man_id, ord, fr, vi, loai").order("ord").limit(5000),
+    docHetTu(),
   ]);
   if (cd.error || mn.error || tu.error) return null;
   const chuDeCuaMan = new Map((mn.data ?? []).map((m) => [m.id, m.chu_de_id]));
