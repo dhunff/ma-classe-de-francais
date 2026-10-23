@@ -1,14 +1,13 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
-import { Map, BookA, Languages } from "lucide-react";
+import { Map, BookA } from "lucide-react";
 import { tr } from "../../shared/i18n.jsx";
 
-/* Thanh tab của mục « Học tập » (23/10): Lộ trình · Ngữ pháp · Từ vựng là ba màn
+/* Thanh tab của mục « Học tập » (23/10): Lộ trình · Ngữ pháp là hai màn
    riêng (đường dẫn cũ giữ nguyên), chung một mục trên thanh bên. */
 const TAB = () => [
   { to: "/etudiant/lo-trinh", Icon: Map, nhan: tr("Lộ trình", "Parcours", "Path") },
   { to: "/etudiant/ngu-phap", Icon: BookA, nhan: tr("Ngữ pháp", "Grammaire", "Grammar") },
-  { to: "/etudiant/tu-vung", Icon: Languages, nhan: tr("Từ vựng", "Vocabulaire", "Vocabulary") },
 ];
 
 export default function HocTapTab() {

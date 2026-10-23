@@ -70,10 +70,10 @@ export const STUDENT_NAV = [
      Đứng ngay sau Trang chủ và TRƯỚC « Cần làm » vì nó là màn nhìn tổng thể:
      mở ra để biết mình đang ở đâu trong cả chặng, khác với các mục bên dưới
      vốn là chỗ làm từng việc. */
-  /* 23/10 (theo chủ dự án): « Học tập » gộp Lộ trình + Học ngữ pháp + Từ vựng thành MỘT
-     mục, ba tab ở đầu màn (HocTapTab.jsx). Đường dẫn cũ giữ nguyên; `khop` để mục
-     sáng lên ở cả ba. */
-  { to: "/etudiant/lo-trinh", nhom: "hoc", labelKey: "nav.learn", Icon: Map, khop: ["/etudiant/lo-trinh", "/etudiant/ngu-phap", "/etudiant/tu-vung"] },
+  /* 23/10 (theo chủ dự án): « Học tập » gộp Lộ trình + Học ngữ pháp thành MỘT
+     mục, hai tab ở đầu màn (HocTapTab.jsx). Đường dẫn cũ giữ nguyên; `khop` để mục
+     sáng lên ở cả hai. Tab Từ vựng bỏ 23/10 theo chủ dự án. */
+  { to: "/etudiant/lo-trinh", nhom: "hoc", labelKey: "nav.learn", Icon: Map, khop: ["/etudiant/lo-trinh", "/etudiant/ngu-phap"] },
   /* Từ điển tra nhanh — nguồn là thẻ flashcard công khai (TuDien.jsx). */
   /* Thách đấu bạn bè — đứng ngay sau Lộ trình vì cùng là phần game. */
   { to: "/etudiant/thach-dau", nhom: "thi", labelKey: "nav.duel", Icon: Swords },
