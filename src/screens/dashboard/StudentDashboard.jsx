@@ -2,7 +2,8 @@ import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   CheckCircle, Target, Clock, PartyPopper, AlertTriangle, Inbox,
-  UserCircle, ChevronRight, } from "lucide-react";
+  UserCircle, ChevronRight, ArrowRight, } from "lucide-react";
+import { tr } from "../../shared/i18n.jsx";
 import { Card, StatTile, EmptyState, HeroBanner, Rise, Ring } from "./parts.jsx";
 import { NewestPracticeRail, usePracticeStore, usePracticeHistory } from "./PracticeRail.jsx";
 import {
@@ -120,6 +121,17 @@ export default function StudentDashboard({
           {/* 08/10: trang chủ là ĐỀ XUẤT + TRÒ CHƠI. Ô Đã nộp / Điểm TB / Đang chờ
               làm / % hoàn thành / Học tiếp đã sang trang « Bài tập được giao »
               (TongQuanBaiGiao.jsx). */}
+          <Rise delay={150}>
+            <Link to="/etudiant/bai-luyen"
+              className="group flex items-center gap-4 rounded-3xl bg-gradient-to-r from-rose-500 via-pink-600 to-violet-600 p-4 text-white no-underline shadow-[0_12px_28px_rgba(219,39,119,0.25)] transition-transform hover:-translate-y-0.5">
+              <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-white/20"><Target size={24} /></span>
+              <span className="min-w-0 flex-1">
+                <span className="block text-base font-extrabold">{tr("Bài luyện của tôi", "Mon entraînement perso", "My practice set")}</span>
+                <span className="block text-sm text-white/85">{tr("10 câu ghép từ chính những câu bạn từng làm sai", "10 questions tirées de vos propres erreurs", "10 questions built from your own mistakes")}</span>
+              </span>
+              <ArrowRight size={20} className="shrink-0 transition-transform group-hover:translate-x-1" />
+            </Link>
+          </Rise>
           <Rise delay={160}>
             <DeXuatBai coHoSo={!!(profile?.level && profile?.goal)} level={profile?.level} goal={profile?.goal}
               dsDeXuat={practiceStore ? chonDeXuat({ practice: practiceStore, hist: practiceHist, skills, level: profile?.level, goal: profile?.goal }) : null}

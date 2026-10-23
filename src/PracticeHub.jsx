@@ -1146,7 +1146,9 @@ function HubMenu({ onEdit, onDup, onDel, onMove }) {
 }
 
 /* ============ Workspace tự luyện — chấm ngay ============ */
-function PracticeWorkspace({ ex, back, onFinish, soTu = false }) {
+/* `chamBang` (23/10): hàm chấm thay cho gradeRemote, cùng hình dạng kết quả, dùng cho
+   « Bài luyện của tôi » (câu ghép từ nhiều bài, chấm bằng cham-on-tap). */
+export function PracticeWorkspace({ ex, back, onFinish, soTu = false, chamBang = null }) {
   const [answers, setAnswers] = useState({});
   const [confirmCount, setConfirmCount] = useState(null);   // ⚠️ copie incomplète
   const t = useT();
@@ -1216,7 +1218,7 @@ function PracticeWorkspace({ ex, back, onFinish, soTu = false }) {
     phat(timedOut ? "hetGio" : "nop");
     setDangCham(true);
 
-    const res = await gradeRemote(ex.id, answersRef.current,
+    const res = chamBang ? await chamBang(answersRef.current) : await gradeRemote(ex.id, answersRef.current,
       { giayLam: Math.round((Date.now() - moLuc.current) / 1000) });
     setDangCham(false);
 

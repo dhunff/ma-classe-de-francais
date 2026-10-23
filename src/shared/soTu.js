@@ -31,10 +31,10 @@ export async function xoaTu(id) {
  * `null` = không đọc được. */
 export async function docTheSoTu() {
   const { data, error } = await supabase.from("so_tu")
-    .select("id, tu, nghia, ten_bai, due_at, interval_days, ease, reps, lapses")
+    .select("id, tu, nghia, ghi_chu, ten_bai, due_at, interval_days, ease, reps, lapses")
     .eq("loai", "tu").order("due_at");
   if (error) return null;
-  return (data ?? []).map((r) => ({ card_id: r.id, id: r.id, matTruoc: r.tu, matSau: r.nghia || "(chưa ghi nghĩa)", viDu: r.ten_bai || "",
+  return (data ?? []).map((r) => ({ card_id: r.id, id: r.id, matTruoc: r.tu, matSau: r.nghia || "(chưa ghi nghĩa)", viDu: r.ghi_chu || r.ten_bai || "",
     due_at: r.due_at, interval_days: r.interval_days, ease: r.ease, reps: r.reps, lapses: r.lapses }));
 }
 

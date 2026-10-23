@@ -9,9 +9,9 @@ import { PAYMENT_KEY, memoSafe } from "../../shared/access.js";
 import { tr } from "../../shared/i18n.jsx";
 import { Leon } from "../../shared/leon.jsx";
 import { phat } from "../../shared/amThanh.js";
-import { docTheSoTu, onTheSoTu } from "../../shared/soTu.js";
+import { docTheSoTu, onTheSoTu, themTu } from "../../shared/soTu.js";
 import { xepLichOn, ngayCong } from "../../shared/sm2.js";
-import { BookMarked, ChevronRight } from "lucide-react";
+import { BookMarked, ChevronRight, Plus } from "lucide-react";
 
 const NGUON_SO_TU = { doc: docTheSoTu, cham: onTheSoTu };
 
@@ -87,6 +87,17 @@ export default function BoTheApp({ name }) {
   const [soTu, setSoTu] = useState(undefined);
   useEffect(() => { if (man === "LIBRARY") docTheSoTu().then(setSoTu); }, [man]);
   const denHanSoTu = Array.isArray(soTu) ? xepLichOn(soTu, ngayCong(0)).length : 0;
+  /* Học sinh TỰ TẠO thẻ (23/10, theo chủ dự án). Thẻ vào Sổ từ (bảng so_tu, RLS chỉ
+     chủ dòng), ôn bằng SM-2 như thẻ giáo viên. Khác đường tao_the_tu_viet đã gỡ 09/09:
+     không đụng bảng cards dùng chung, không có hạn mức vì chỉ người tạo thấy. */
+  const [taoThe, setTaoThe] = useState(null);   // null đóng · { tu, nghia, viDu, loi, dang }
+  const luuThe = async () => {
+    if (!taoThe?.tu?.trim() || !taoThe?.nghia?.trim()) { setTaoThe((x) => ({ ...x, loi: tr("Cần cả mặt trước và mặt sau.", "Il faut le recto et le verso.", "Both sides are required.") })); return; }
+    setTaoThe((x) => ({ ...x, dang: true, loi: "" }));
+    const d = await themTu({ tu: taoThe.tu, nghia: taoThe.nghia, ghiChu: taoThe.viDu, tenBai: tr("Thẻ tự tạo", "Carte perso", "My card") });
+    if (!d) { setTaoThe((x) => ({ ...x, dang: false, loi: tr("Chưa lưu được, thử lại nhé.", "Échec, réessayez.", "Couldn't save, try again.") })); return; }
+    phat("dung"); setTaoThe({ tu: "", nghia: "", viDu: "", ok: d.tu }); docTheSoTu().then(setSoTu);
+  };
   const moSoTu = () => { phat("batDau"); setBo({ id: "so-tu", ten: tr("Sổ từ của tôi", "Mon carnet", "My word list"), soTu: true }); setMan("GAME"); };
   useEffect(() => { if (new URLSearchParams(window.location.search).has("so-tu")) moSoTu(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -110,8 +121,14 @@ export default function BoTheApp({ name }) {
           ? "pointer-events-none -translate-x-full opacity-0"
           : "translate-x-0 opacity-100"}`}
       >
+        <div className="mx-auto flex max-w-5xl justify-end px-4 pt-6">
+          <button type="button" onClick={() => setTaoThe({ tu: "", nghia: "", viDu: "" })}
+            className="inline-flex cursor-pointer items-center gap-2 rounded-2xl border-0 border-b-4 border-solid border-emerald-800 bg-gradient-to-r from-emerald-500 to-teal-600 px-4 py-2.5 font-sans text-sm font-extrabold text-white shadow-md transition-transform hover:-translate-y-0.5">
+            <Plus size={17} /> {tr("Tạo thẻ của tôi", "Créer une carte", "Create a card")}
+          </button>
+        </div>
         {Array.isArray(soTu) && soTu.length > 0 && (
-          <div className="mx-auto max-w-5xl px-4 pt-6">
+          <div className="mx-auto max-w-5xl px-4 pt-3">
             <button type="button" onClick={moSoTu}
               className="group flex w-full cursor-pointer items-center gap-4 rounded-3xl border-0 bg-gradient-to-r from-violet-500 to-indigo-600 p-4 text-left font-sans text-white shadow-[0_12px_28px_rgba(79,70,229,0.3)] transition-transform hover:-translate-y-0.5">
               <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-white/20"><BookMarked size={24} /></span>
@@ -140,6 +157,33 @@ export default function BoTheApp({ name }) {
       >
         {bo && <LuyenBoThe key={bo.id} bo={bo} nguon={bo.soTu ? NGUON_SO_TU : undefined} onThoat={() => setMan("LIBRARY")} />}
       </div>
+
+      {taoThe && (
+        <div className="fixed inset-0 z-[450] grid place-items-center bg-black/40 p-4" onClick={() => setTaoThe(null)}>
+          <form onClick={(e) => e.stopPropagation()} onSubmit={(e) => { e.preventDefault(); luuThe(); }}
+            className="w-full max-w-md rounded-3xl bg-surface p-5 shadow-2xl">
+            <p className="m-0 text-lg font-extrabold text-ink">{tr("Tạo thẻ của tôi", "Créer une carte", "Create a card")}</p>
+            <p className="m-0 mt-1 text-xs text-soft">{tr("Thẻ vào « Sổ từ của tôi » và được hẹn lịch ôn tự động.", "La carte rejoint « Mon carnet » avec révisions programmées.", "Goes to « My word list » with scheduled reviews.")}</p>
+            <div className="mt-4 grid gap-2.5">
+              <input lang="fr" autoFocus maxLength={120} value={taoThe.tu} onChange={(e) => setTaoThe({ ...taoThe, tu: e.target.value, ok: null })}
+                placeholder={tr("Mặt trước: từ / câu tiếng Pháp", "Recto : mot ou phrase", "Front: French word or phrase")}
+                className="rounded-xl border-2 border-solid border-line bg-surface2 px-3 py-2.5 font-sans text-[15px] font-semibold text-ink outline-none focus:border-primary" />
+              <input maxLength={300} value={taoThe.nghia} onChange={(e) => setTaoThe({ ...taoThe, nghia: e.target.value, ok: null })}
+                placeholder={tr("Mặt sau: nghĩa", "Verso : sens", "Back: meaning")}
+                className="rounded-xl border-2 border-solid border-line bg-surface2 px-3 py-2.5 font-sans text-[15px] text-ink outline-none focus:border-primary" />
+              <input lang="fr" maxLength={300} value={taoThe.viDu} onChange={(e) => setTaoThe({ ...taoThe, viDu: e.target.value })}
+                placeholder={tr("Ví dụ (không bắt buộc)", "Exemple (facultatif)", "Example (optional)")}
+                className="rounded-xl border-2 border-solid border-line bg-surface2 px-3 py-2.5 font-sans text-sm text-ink outline-none focus:border-primary" />
+            </div>
+            {taoThe.loi && <p className="m-0 mt-2 text-sm font-semibold text-danger">{taoThe.loi}</p>}
+            {taoThe.ok && <p className="m-0 mt-2 text-sm font-semibold text-ok">{tr(`Đã thêm « ${taoThe.ok} ». Tạo tiếp nhé!`, `« ${taoThe.ok} » ajoutée.`, `Added « ${taoThe.ok} ».`)}</p>}
+            <div className="mt-4 flex gap-2">
+              <button type="button" onClick={() => setTaoThe(null)} className="flex-1 cursor-pointer rounded-xl border border-solid border-line bg-surface px-4 py-2.5 font-sans text-sm font-bold text-ink">{tr("Đóng", "Fermer", "Close")}</button>
+              <button type="submit" disabled={taoThe.dang} className="flex-1 cursor-pointer rounded-xl border-0 bg-primary px-4 py-2.5 font-sans text-sm font-bold text-on-primary disabled:opacity-60">{taoThe.dang ? "…" : tr("Lưu thẻ", "Enregistrer", "Save card")}</button>
+            </div>
+          </form>
+        </div>
+      )}
 
       {muaBo && <PaymentModal ex={muaBo} student={name} config={payCfg} onClose={() => setMuaBo(null)} onUnlocked={daMua} />}
 
