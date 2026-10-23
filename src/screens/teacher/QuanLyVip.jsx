@@ -60,7 +60,11 @@ export default function QuanLyVip() {
               const con = vipConHan(p.vip_den);
               return (
                 <tr key={p.id} className="border-0 border-t border-solid border-line">
-                  <td className="py-2 pr-3 font-semibold text-ink">{p.display_name || p.name}</td>
+                  <td className="py-2 pr-3 font-semibold text-ink">
+                    {/* Tên thật trước, biệt danh trong ngoặc (23/10, theo chủ dự án). */}
+                    {p.name || p.display_name}
+                    {p.display_name && p.name && p.display_name !== p.name && <span className="font-normal text-soft"> ({p.display_name})</span>}
+                  </td>
                   <td className="py-2 pr-3">
                     {con ? <span className="rounded-full bg-ok-soft px-2.5 py-0.5 text-xs font-bold text-ok">{tr("VIP đến", "VIP jusqu'au", "VIP until")} {ngay(p.vip_den)}</span>
                       : <span className="text-xs text-soft">{p.vip_den ? tr(`Hết hạn ${ngay(p.vip_den)}`, `Expiré le ${ngay(p.vip_den)}`, `Expired ${ngay(p.vip_den)}`) : tr("Chưa VIP", "Pas VIP", "Not VIP")}</span>}
