@@ -29,6 +29,7 @@ import { phat, amThanhBat, datAmThanh } from "../../shared/amThanh.js";
 import PaymentModal from "../student/PaymentModal.jsx";
 import { goiVip } from "../../shared/vip.js";
 import { PAYMENT_KEY } from "../../shared/access.js";
+import { choTrong } from "../../shared/choTrong.jsx";
 
 /* Mode Examen — thi thử có tính giờ.
  *
@@ -772,7 +773,7 @@ export function PhanThi({ section, attemptId, attemptTheoBai = {}, answers, setA
             <span className="de-tron mt-0.5 grid h-[22px] w-[22px] shrink-0 place-items-center rounded-full text-[12px] font-bold">{i + 1}</span>
             <div className="min-w-0 flex-1">
             <div className="flex gap-3">
-              <div className="m-0 min-w-0 flex-1 whitespace-pre-line">{q.type === "vf" ? q.prompt.replace(/\s*Cochez la bonne réponse.*$/s, "") : q.prompt}</div>
+              <div className="m-0 min-w-0 flex-1 whitespace-pre-line">{choTrong(q.type === "vf" ? q.prompt.replace(/\s*Cochez la bonne réponse.*$/s, "") : q.prompt)}</div>
               {q.type !== "open" && <span className="shrink-0 pt-0.5 text-[11.5px] italic">{chuDiem(diemCauHien(q))}</span>}
             </div>
 

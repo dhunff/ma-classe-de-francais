@@ -7,6 +7,7 @@ import { docDangTheoDoi } from "../../shared/xp.js";
 import { dsThachDau, layDe, nopThachDau, dsChuDe, taoThachDauChuDe } from "../../shared/thachDau.js";
 import { useT, tr } from "../../shared/i18n.jsx";
 import { Leon } from "../../shared/leon.jsx";
+import { choTrong } from "../../shared/choTrong.jsx";
 
 /* Thách đấu bạn bè (30/09) — hai người làm CÙNG một đề 8 câu rút từ một bộ
  * flashcard; ai đúng nhiều hơn thắng, bằng nhau thì ai nhanh hơn thắng.
@@ -425,7 +426,7 @@ function ManDau({ tran, onDong, onXemLai, t, loiChu }) {
               <Leon cam="lam-viec" size={104} className="shrink-0 max-sm:h-20 max-sm:w-20" />
               <div className="mb-4 min-w-0 flex-1 rounded-3xl rounded-bl-md border-2 border-solid border-violet-200 bg-surface px-6 py-5 shadow-[0_10px_30px_rgba(124,58,237,0.08)] dark:border-violet-500/30">
                 <p className="m-0 text-sm font-bold text-soft">{cau.chieu === "nghia" ? t("path.g_meaning") : t("path.g_french")}</p>
-                <p className="m-0 mt-1 text-3xl font-extrabold tracking-tight text-ink" lang={cau.chieu === "nghia" ? "fr" : "vi"}>{cau.de}</p>
+                <p className="m-0 mt-1 text-3xl font-extrabold tracking-tight text-ink" lang={cau.chieu === "nghia" ? "fr" : "vi"}>{choTrong(cau.de)}</p>
               </div>
             </div>
             <div className="grid gap-3 sm:grid-cols-2">

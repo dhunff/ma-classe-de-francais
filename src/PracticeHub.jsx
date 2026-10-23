@@ -40,6 +40,7 @@ import ExerciseCard from "./screens/practice/ExerciseCard.jsx";
 import { supabase } from "./storageShim.js";
 import { Lock } from "lucide-react";
 import { anhMacDinh } from "./shared/anhMacDinh.js";
+import { choTrong } from "./shared/choTrong.jsx";
 
 /* ============================================================
    PRACTICE HUB v3 — Tự luyện tập
@@ -749,7 +750,7 @@ Autres — Catégories
               {dsCau.map((q, i) => (
                 <div key={q.id} style={{ background: "var(--mcf-surface2)", borderRadius: 14, padding: "12px 15px", border: `1px solid ${C.line}` }}>
                   <div style={{ fontWeight: 700, marginBottom: 6 }}>
-                    <span style={S.chip(C.primarySoft, C.primary)}>{QTYPES[q.type]}</span> {i + 1}. {q.prompt}
+                    <span style={S.chip(C.primarySoft, C.primary)}>{QTYPES[q.type]}</span> {i + 1}. {choTrong(q.prompt)}
                   </div>
                   {q.type === "qcm" && (
                     <div style={{ fontSize: 14 }}>✅ <strong style={{ color: C.ok }}>{String.fromCharCode(65 + q.answer)}. {q.options[q.answer]}</strong></div>
@@ -1307,7 +1308,7 @@ function PracticeWorkspace({ ex, back, onFinish, soTu = false }) {
           <span className={"grid h-8 w-8 shrink-0 place-items-center rounded-xl text-sm font-extrabold tabular-nums " + (graded ? (good === true ? "bg-ok text-white" : good === false ? "bg-danger text-white" : "bg-surface2 text-ink") : isQuestionAnswered(q, a) ? "bg-gradient-to-br from-primary to-indigo-600 text-white shadow-[0_4px_12px_rgba(37,99,235,0.3)]" : "bg-primary-soft text-primary")}>{i + 1}</span>
           <div className="min-w-0 flex-1">
             <span className="mb-1 inline-block rounded-full bg-surface2 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-soft">{QTYPES[q.type]}</span>
-            <p className="m-0 text-[15.5px] font-bold leading-snug text-ink">{q.prompt}</p>
+            <p className="m-0 text-[15.5px] font-bold leading-snug text-ink">{choTrong(q.prompt)}</p>
           </div>
         </div>
 

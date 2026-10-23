@@ -19,6 +19,7 @@ import RichTextEditor from "../../editor/RichTextEditor.jsx";
 import { BookOpen, GraduationCap, MoreVertical, Pencil, Copy, Trash2, RotateCcw, Image as ImageIcon, X, Phone, Calendar, Target, Briefcase, ChevronLeft, TrendingUp, Clock, CheckCircle } from "lucide-react";
 import { BarChart, Bar, LineChart, Line, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from "recharts";
 import { leonChucMung } from "../../shared/leon.jsx";
+import { choTrong } from "../../shared/choTrong.jsx";
 
 
 /* ================= Taking (with auto-save) ================= */
@@ -150,7 +151,7 @@ function Taking({ ex, name, setSubmissions, done }) {
         <span className={"grid h-8 w-8 shrink-0 place-items-center rounded-xl text-sm font-extrabold tabular-nums " + (isQuestionAnswered(q, answers[q.id]) ? "bg-gradient-to-br from-primary to-indigo-600 text-white shadow-[0_4px_12px_rgba(37,99,235,0.3)]" : "bg-primary-soft text-primary")}>{i + 1}</span>
         <div className="min-w-0 flex-1">
           <span className="mb-1 inline-block rounded-full bg-surface2 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-soft">{QTYPES[q.type]}</span>
-          <p className="m-0 text-[15.5px] font-bold leading-snug text-ink">{q.prompt}</p>
+          <p className="m-0 text-[15.5px] font-bold leading-snug text-ink">{choTrong(q.prompt)}</p>
         </div>
       </div>
       {q.type === "qcm" ? (

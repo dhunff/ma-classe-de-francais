@@ -4,6 +4,7 @@ import { sinhLuot, tinhSao, SO_TIM } from "../../shared/troChoiThe.js";
 import { tr } from "../../shared/i18n.jsx";
 import { Leon } from "../../shared/leon.jsx";
 import { phat, amThanhBat, datAmThanh } from "../../shared/amThanh.js";
+import { choTrong } from "../../shared/choTrong.jsx";
 
 /* Một màn chơi của Lộ trình — phủ kín màn hình, dựng từ thẻ THẬT của bộ.
  *
@@ -212,7 +213,7 @@ function CauChon({ cau, chon, onChon, chuoi, so, tong, t }) {
           <p className="m-0 text-sm font-bold text-soft">
             {cau.kieu === "nghia" ? t("path.g_meaning") : t("path.g_french")}
           </p>
-          <p className="m-0 mt-1 text-3xl font-extrabold tracking-tight text-ink" lang={cau.kieu === "nghia" ? "fr" : "vi"}>{cau.de}</p>
+          <p className="m-0 mt-1 text-3xl font-extrabold tracking-tight text-ink" lang={cau.kieu === "nghia" ? "fr" : "vi"}>{choTrong(cau.de)}</p>
         </div>
       </div>
 

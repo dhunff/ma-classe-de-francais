@@ -10,6 +10,7 @@ import PaymentModal from "./PaymentModal.jsx";
 import { ThucHanh } from "./NguPhap.jsx";
 import { timCau } from "../../content/nguPhap/index.js";
 import { ngayHomNay } from "../../shared/hoatDong.js";
+import { choTrong } from "../../shared/choTrong.jsx";
 
 /* Tiến bộ VIP — 14/10 (migration 143, theo chủ dự án).
  *
@@ -198,7 +199,7 @@ function OnNguPhap() {
         <ul className="m-0 mt-4 grid list-none gap-2 p-0">
           {denHan.slice(0, 20).map(({ r, c }) => (
             <li key={r.ma_bai + r.cau} className="rounded-2xl border border-solid border-line bg-surface p-3 text-sm">
-              <p lang="fr" className="m-0 text-ink">{c.loai === "sap" ? c.goiY : c.de}</p>
+              <p lang="fr" className="m-0 text-ink">{choTrong(c.loai === "sap" ? c.goiY : c.de)}</p>
               <p className="m-0 mt-1 text-xs text-soft">{c.__ten} · <span className="text-danger">{tr("sai", "raté", "missed")} {r.lan_sai} {tr("lần", "fois", "times")}</span></p>
             </li>
           ))}

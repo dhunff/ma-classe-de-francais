@@ -24,6 +24,7 @@ import { ChuCoSticker, Leon } from "../../shared/leon.jsx";
 import NutTieng from "../../shared/NutTieng.jsx";
 import { lamSachHtml } from "../../shared/lamSachHtml.js";
 import { phat } from "../../shared/amThanh.js";
+import { choTrong } from "../../shared/choTrong.jsx";
 
 
 /* ================= Student ================= */
@@ -221,7 +222,7 @@ function Student({ name, exercises, submissions, setSubmissions, accounts, setAc
                 const a = sub.answers[q.id];
                 if (q.type === "open") return (
                   <div key={q.id} style={{ background: "var(--mcf-surface2)", borderRadius: 14, padding: "12px 15px", border: `1px solid ${C.line}` }}>
-                    <div style={{ fontWeight: 700, marginBottom: 6 }}>{i + 1}. {q.prompt}</div>
+                    <div style={{ fontWeight: 700, marginBottom: 6 }}>{i + 1}. {choTrong(q.prompt)}</div>
                     <div style={{ fontSize: 12, color: C.soft, fontWeight: 700, marginBottom: 4 }}>MA RÉPONSE</div>
                     <div style={{ lineHeight: 1.7 }} dangerouslySetInnerHTML={{ __html: lamSachHtml(a) || "—" }} />
                     {q.model && (
@@ -245,7 +246,7 @@ function Student({ name, exercises, submissions, setSubmissions, accounts, setAc
                   const good = biet ? vfOk(q, a) : null;
                   return (
                     <div key={q.id} style={{ background: "var(--mcf-surface2)", borderRadius: 14, padding: "12px 15px", border: `1px solid ${C.line}` }}>
-                      <div style={{ fontWeight: 700, marginBottom: 6 }}>{i + 1}. {q.prompt}</div>
+                      <div style={{ fontWeight: 700, marginBottom: 6 }}>{i + 1}. {choTrong(q.prompt)}</div>
                       {tr("Lựa chọn của tôi:", "Mon choix :", "My choice:")} <strong style={{ color: good === null ? C.ink : good ? C.ok : C.danger }}>{a?.choice != null ? VF_OPTS[a.choice] : "—"}</strong>
                       {good === false && <span> {tr("· Đáp án đúng:", "· Bonne réponse :", "· Correct answer:")} <strong>{VF_OPTS[q.answer]}</strong></span>}
                       {a?.just && <div style={{ fontStyle: "italic", marginTop: 4 }}>{tr("Căn cứ của tôi: «", "Ma justification : «", "My justification: «")} {a.just} »</div>}
@@ -271,7 +272,7 @@ function Student({ name, exercises, submissions, setSubmissions, accounts, setAc
                   const chon = typeof a === "number" ? a : (a?.choice ?? null);
                   return (
                     <div key={q.id} style={{ background: "var(--mcf-surface2)", borderRadius: 14, padding: "12px 15px", border: `1px solid ${C.line}` }}>
-                      <div style={{ fontWeight: 700, marginBottom: 6 }}>{i + 1}. {q.prompt}</div>
+                      <div style={{ fontWeight: 700, marginBottom: 6 }}>{i + 1}. {choTrong(q.prompt)}</div>
                       <div>{tr("Lựa chọn của tôi:", "Mon choix :", "My choice:")} <strong>{chon != null ? (q.options?.[chon] ?? "—") : "—"}</strong></div>
                       <NeoCauHoi exerciseId={ex.id} questionId={q.id}
                         vanBan={ex.readingText} chonSai={chon} />
@@ -280,7 +281,7 @@ function Student({ name, exercises, submissions, setSubmissions, accounts, setAc
                 }
                 if (q.type === "tableau") return (
                   <div key={q.id} style={{ background: "var(--mcf-surface2)", borderRadius: 14, padding: "12px 15px", border: `1px solid ${C.line}` }}>
-                    <div style={{ fontWeight: 700, marginBottom: 8 }}>{i + 1}. {q.prompt}</div>
+                    <div style={{ fontWeight: 700, marginBottom: 8 }}>{i + 1}. {choTrong(q.prompt)}</div>
                     <TableauCompare q={q} value={a || {}} readOnly correction />
                   </div>
                 );
@@ -288,7 +289,7 @@ function Student({ name, exercises, submissions, setSubmissions, accounts, setAc
                   const good = fillOk(q, a);
                   return (
                     <div key={q.id} style={{ background: "var(--mcf-surface2)", borderRadius: 14, padding: "12px 15px", border: `1px solid ${C.line}` }}>
-                      <div style={{ fontWeight: 700, marginBottom: 6 }}>{i + 1}. {q.prompt}</div>
+                      <div style={{ fontWeight: 700, marginBottom: 6 }}>{i + 1}. {choTrong(q.prompt)}</div>
                       <div>{tr("Câu trả lời của tôi:", "Ma réponse :", "My answer:")} <strong style={{ color: good ? C.ok : C.danger }}>{a || "—"}</strong></div>
                       <div style={{ marginTop: 6, background: C.okSoft, border: `1.5px solid ${C.ok}55`, borderRadius: 12, padding: "8px 12px", fontSize: 13.5 }}>
                         💡 <strong style={{ color: C.ok }}>{tr("Đáp án đúng:", "Réponse attendue :", "Expected answer:")}</strong> {String(fillAccepted(q)).split("|").join(" / ")}
@@ -305,7 +306,7 @@ function Student({ name, exercises, submissions, setSubmissions, accounts, setAc
                 }
                 if (q.type === "ordre") return (
                   <div key={q.id} style={{ background: "var(--mcf-surface2)", borderRadius: 14, padding: "12px 15px", border: `1px solid ${C.line}` }}>
-                    <div style={{ fontWeight: 700, marginBottom: 8 }}>{i + 1}. {q.prompt}</div>
+                    <div style={{ fontWeight: 700, marginBottom: 8 }}>{i + 1}. {choTrong(q.prompt)}</div>
                     <OrdreBlocks q={q} value={a || []} readOnly correction />
                   </div>
                 );
@@ -313,7 +314,7 @@ function Student({ name, exercises, submissions, setSubmissions, accounts, setAc
                    chọn của mình, không tô đúng/sai — cùng lý do nhánh qcm. */
                 if (q.type === "apparier" || q.type === "formulaire") return (
                   <div key={q.id} style={{ background: "var(--mcf-surface2)", borderRadius: 14, padding: "12px 15px", border: `1px solid ${C.line}` }}>
-                    <div style={{ fontWeight: 700, marginBottom: 8 }}>{i + 1}. {q.prompt}</div>
+                    <div style={{ fontWeight: 700, marginBottom: 8 }}>{i + 1}. {choTrong(q.prompt)}</div>
                     {q.type === "formulaire" ? <DienPhieu q={q} value={a || {}} readOnly />
                       : <div>{tr("Lựa chọn của tôi:", "Mon choix :", "My choice:")} <strong>{tomTatDangMoi(q, a)}</strong></div>}
                   </div>

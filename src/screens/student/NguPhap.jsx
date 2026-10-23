@@ -13,6 +13,7 @@ import { useSeo } from "../../shared/seo.js";
 import AM from "../../content/nguPhap/amThanh.json";
 import HocTapTab from "./HocTapTab.jsx";
 import AM_VD from "../../content/nguPhap/amThanhViDu.json";
+import { choTrong } from "../../shared/choTrong.jsx";
 
 /* « Học ngữ pháp » (15/10, theo chủ dự án): học LÝ THUYẾT trước rồi mới luyện.
  *
@@ -280,7 +281,7 @@ export function ThucHanh({ bai, cau, tieuDe, onXong, onKetQua }) {
               : c.loai === "qcm" ? tr("Chọn đáp án đúng", "Choisissez la bonne réponse", "Choose the right answer")
               : tr("Điền vào chỗ trống", "Complétez", "Fill in the blank")}
           </p>
-          <p lang="fr" className={`m-0 mt-2 text-xl font-bold leading-snug ${c.dang === "sua" ? "text-danger" : "text-ink"}`}>{c.loai === "sap" ? c.goiY : c.de}</p>
+          <p lang="fr" className={`m-0 mt-2 text-xl font-bold leading-snug ${c.dang === "sua" ? "text-danger" : "text-ink"}`}>{choTrong(c.loai === "sap" ? c.goiY : c.de)}</p>
 
           {c.loai === "sap" ? (
             <div className="mt-5">
@@ -390,7 +391,7 @@ export function ThucHanh({ bai, cau, tieuDe, onXong, onKetQua }) {
                 const q = tatCa[r.i];
                 return (
                   <li key={r.i} className="rounded-2xl border border-solid border-line p-3 text-sm">
-                    <p lang="fr" className="m-0 font-semibold text-ink">{q.de}</p>
+                    <p lang="fr" className="m-0 font-semibold text-ink">{choTrong(q.de)}</p>
                     <p className="m-0 mt-1"><span lang="fr" className="text-danger line-through">{q.loai === "qcm" ? q.pa[r.tl] : q.loai === "sap" ? ghepSap(q, r.tl) : r.tl}</span> → <strong lang="fr" className="text-ok">{q.loai === "qcm" ? q.pa[q.dap] : q.dap[0]}</strong></p>
                   </li>
                 );

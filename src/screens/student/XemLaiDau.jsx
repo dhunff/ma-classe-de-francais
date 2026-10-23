@@ -4,6 +4,7 @@ import { xemLaiThachDau } from "../../shared/thachDau.js";
 import { tr } from "../../shared/i18n.jsx";
 import { phat } from "../../shared/amThanh.js";
 import { Leon } from "../../shared/leon.jsx";
+import { choTrong } from "../../shared/choTrong.jsx";
 
 /* Xem lại một trận Thách đấu + làm lại câu sai (15/10, theo chủ dự án).
  *
@@ -55,7 +56,7 @@ function LamLai({ ds, onXong }) {
     <div key={i} className="mcf-cau-vao flex flex-col gap-5">
       <p className="m-0 text-xs font-bold uppercase tracking-[0.14em] text-soft">{tr("Làm lại câu sai", "Refaire les erreurs", "Redo mistakes")} · {i + 1}/{ds.length}</p>
       <div className="rounded-3xl border-2 border-solid border-violet-200 bg-surface px-6 py-5 dark:border-violet-500/30">
-        <p className="m-0 text-3xl font-extrabold tracking-tight text-ink" lang={cau.chieu === "nghia" ? "fr" : "vi"}>{cau.de}</p>
+        <p className="m-0 text-3xl font-extrabold tracking-tight text-ink" lang={cau.chieu === "nghia" ? "fr" : "vi"}>{choTrong(cau.de)}</p>
       </div>
       <div className="grid gap-3 sm:grid-cols-2">
         {cau.luaChon.map((p, k) => {

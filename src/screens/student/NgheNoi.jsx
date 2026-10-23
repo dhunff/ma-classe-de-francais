@@ -8,6 +8,7 @@ import NutTieng from "../../shared/NutTieng.jsx";
 import { loiTranVip } from "../../shared/loiTranVip.js";
 import { baoHetLuot } from "../../shared/HetLuot.jsx";
 import { soCau } from "../../../supabase/functions/_shared/soCau.js";
+import { choTrong } from "../../shared/choTrong.jsx";
 
 /* « Nghe & Nói » (10/10): chép chính tả + luyện phát âm.
  *
@@ -106,7 +107,7 @@ function ChepChinhTa({ cau, onXong }) {
             </div>
           </div>
           <TuDaSo kq={kq} />
-          <p className="m-0 text-sm text-ink"><strong lang="fr">{cau.cau}</strong></p>
+          <p className="m-0 text-sm text-ink"><strong lang="fr">{choTrong(cau.cau)}</strong></p>
           {cau.nghia && <p className="m-0 text-sm text-soft">{cau.nghia}</p>}
           <button type="button" onClick={() => { setKq(null); setGo(""); }}
             className="inline-flex w-fit cursor-pointer items-center gap-1.5 rounded-xl border-0 bg-transparent px-0 font-sans text-sm font-bold text-primary"><RotateCcw size={14} /> {tr("Làm lại câu này", "Refaire", "Try again")}</button>
@@ -378,7 +379,7 @@ export default function NgheNoi() {
           </div>
           {loai === "phat_am" && (
             <div className="mb-4">
-              <p className="m-0 text-2xl font-extrabold leading-snug text-ink" lang="fr">{cau.cau}</p>
+              <p className="m-0 text-2xl font-extrabold leading-snug text-ink" lang="fr">{choTrong(cau.cau)}</p>
               {cau.nghia && <p className="m-0 mt-1 text-sm text-soft">{cau.nghia}</p>}
             </div>
           )}
@@ -403,7 +404,7 @@ export default function NgheNoi() {
                   </span>
                   <span className="min-w-0 flex-1">
                     <span className="block truncate text-sm font-bold text-ink" lang="fr">
-                      {loai === "chinh_ta" ? (d != null ? c.cau : tr("Câu chép chính tả", "Dictée", "Dictation") + ` ${i + 1}`) : loai === "dien_tu" ? (d != null ? c.cau : tr("Câu điền từ", "Texte à trous", "Gap fill") + ` ${i + 1}`) : c.cau}
+                      {loai === "chinh_ta" ? (d != null ? choTrong(c.cau) : tr("Câu chép chính tả", "Dictée", "Dictation") + ` ${i + 1}`) : loai === "dien_tu" ? (d != null ? choTrong(c.cau) : tr("Câu điền từ", "Texte à trous", "Gap fill") + ` ${i + 1}`) : c.cau}
                     </span>
                     <span className="block truncate text-xs text-soft">{loai === "chinh_ta" && d == null ? tr("Nghe rồi gõ lại", "Écoutez puis écrivez", "Listen then type") : loai === "dien_tu" && d == null ? tr("Nghe rồi điền từ còn thiếu", "Écoutez et complétez", "Listen and fill in") : c.nghia}</span>
                   </span>
