@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
-import { Flame, UserPlus, Users, UserMinus, Trophy, Star, Sparkles } from "lucide-react";
+import { Flame, UserPlus, Users, UserMinus, Trophy, Star, Sparkles, ChevronDown, ChevronUp } from "lucide-react";
 import { AvatarOnline, NhanOnline } from "./ChamOnline.jsx";
 import { Avatar } from "../../shared/avatars.jsx";
 import { docDangTheoDoi, docNguoiTheoDoiToi, boTheoDoi, docBangXepHang, goiYBan } from "../../shared/xp.js";
@@ -22,6 +22,8 @@ export default function FollowingStreakWidget({ t, fixture, bxhFixture }) {
   const [ds, setDs] = useState(undefined);   // undefined = đang tải, null = lỗi
   const [mo, setMo] = useState(false);
   const [moMang, setMoMang] = useState(false);
+  /* 23/10 (theo chủ dự án): mặc định THU GỌN thành một dòng tóm tắt; bấm mới mở bảng đầy đủ. */
+  const [moRong, setMoRong] = useState(false);
   /* Link kết bạn (19/10): /etudiant/dashboard?ket_ban=<username> mở sẵn khung tìm
      bạn với username đó, để người nhận chỉ còn bấm « Theo dõi ». */
   const [tuKhoa, setTuKhoa] = useState("");
@@ -86,6 +88,25 @@ export default function FollowingStreakWidget({ t, fixture, bxhFixture }) {
         </button>
       </div>
 
+      {!moRong && (
+        <button type="button" onClick={() => setMoRong(true)} aria-expanded={false}
+          className="mt-3 flex w-full cursor-pointer items-center gap-3 rounded-2xl border-0 bg-surface2 px-3 py-2.5 text-left font-sans transition-colors hover:bg-primary-soft">
+          <span className="flex shrink-0 -space-x-2">
+            {(Array.isArray(ds) ? ds.slice(0, 4) : []).map((n) => (
+              <span key={n.id} className="rounded-full ring-2 ring-surface"><Avatar khoa={n.avatar || ""} ten={n.name} size={28} dungYen /></span>
+            ))}
+            {(!Array.isArray(ds) || !ds.length) && <span className="grid h-7 w-7 place-items-center rounded-full bg-surface text-soft"><Users size={14} /></span>}
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block text-sm font-bold text-ink">
+              {Array.isArray(ds) ? tr(`${ds.filter((n) => n.has_studied_today).length}/${ds.length} bạn đã học hôm nay`, `${ds.filter((n) => n.has_studied_today).length}/${ds.length} ont étudié aujourd'hui`, `${ds.filter((n) => n.has_studied_today).length}/${ds.length} studied today`) : t("loading")}
+            </span>
+            <span className="block text-xs text-soft">{tr(`${soNguoiTD ?? "–"} người theo dõi · bấm để xem`, `${soNguoiTD ?? "–"} abonnés · voir`, `${soNguoiTD ?? "–"} followers · tap to view`)}</span>
+          </span>
+          <ChevronDown size={18} className="shrink-0 text-soft" />
+        </button>
+      )}
+      {moRong && (<>
       {/* Hai con số (16/10): bấm vào mở bảng Mạng lưới đúng tab. */}
       <div className="mt-3 grid grid-cols-2 gap-2">
         {[["followers", tr("Người theo dõi", "Abonnés", "Followers"), soNguoiTD], ["following", tr("Đang theo dõi", "Abonnements", "Following"), Array.isArray(ds) ? ds.length : null]].map(([k, l, so]) => (
@@ -179,6 +200,12 @@ export default function FollowingStreakWidget({ t, fixture, bxhFixture }) {
           </ul>
         </div>
       )}
+
+      <button type="button" onClick={() => setMoRong(false)} aria-expanded
+        className="mt-3 flex w-full cursor-pointer items-center justify-center gap-1 rounded-full border-0 bg-transparent py-1 font-sans text-xs font-bold text-soft hover:text-ink">
+        {tr("Thu gọn", "Réduire", "Collapse")} <ChevronUp size={14} />
+      </button>
+      </>)}
 
       {moMang && <NetworkManager t={t} tabDau={typeof moMang === "string" ? moMang : undefined} dong={() => setMoMang(false)} onDoi={nap} />}
       {mo && <TimBan tuKhoaDau={tuKhoa} onDoi={nap} dong={() => { setMo(false); setTuKhoa(""); nap(); }} />}
