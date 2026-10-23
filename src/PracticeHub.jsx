@@ -347,7 +347,7 @@ ${r.error?.message ?? ""}`); return; }
     // les exercices sans catégorie sont listés directement sous les dossiers.
     const folders = cats.map((c) => ({ name: c, count: autresEx.filter((e) => e.customCat === c).length }));
     return (
-      <div>
+      <div className="mx-auto max-w-5xl">
         {MatModal()}
         <button style={{ ...S.btn(false), marginBottom: 16 }} onClick={() => setView({ page: "home" })}><ChevronLeft size={16} /> {t("practice.back")}</button>
         <h2 style={{ ...S.display, margin: "0 0 18px", display: "flex", alignItems: "center", gap: 10 }}>
@@ -479,7 +479,7 @@ Autres — Catégories
     const folderName = (id) => catFolders.find((f) => f.id === id)?.name;
     const list = all.filter((e) => e.level === niveau && inFolder(e));
     return (
-      <div>
+      <div className="mx-auto max-w-5xl">
         {MatModal()}
         {Toast}
         {/* Sau khi trả tiền: nạp lại CẢ quyền LẪN bài — xem sauKhiMoKhoa. */}
@@ -802,7 +802,7 @@ Autres — Catégories
     );
     const soHs = new Set(suivi.map((r) => r.student)).size;
     return (
-      <div>
+      <div className="mx-auto max-w-5xl">
         <div className="mb-3 flex items-center justify-between gap-2">
           <span className="text-sm text-soft">{t("suivi.summary", { n: suivi.length, hs: soHs })}</span>
           <button type="button" onClick={loadSuivi} title={t("actions.refresh")} aria-label={t("actions.refresh")}
@@ -860,7 +860,7 @@ Autres — Catégories
 
   /* -------- Home dashboard -------- */
   return (
-    <div>
+    <div className="mx-auto max-w-5xl">
       {MatModal()}
       {/* Khung đầu (10/10): Leon + số liệu THẬT từ exercises / hist. */}
       {(() => {
