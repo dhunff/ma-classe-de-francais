@@ -11,6 +11,7 @@ import { TAT_CA, CAP, chiaPhan, BAI_CONG_KHAI } from "../../content/nguPhap/inde
 import { ngayHomNay } from "../../shared/hoatDong.js";
 import { useSeo } from "../../shared/seo.js";
 import AM from "../../content/nguPhap/amThanh.json";
+import HocTapTab from "./HocTapTab.jsx";
 import AM_VD from "../../content/nguPhap/amThanhViDu.json";
 
 /* « Học ngữ pháp » (15/10, theo chủ dự án): học LÝ THUYẾT trước rồi mới luyện.
@@ -692,6 +693,7 @@ export default function NguPhap({ congKhai = false }) {
   const daHoc = TAT_CA.filter((b) => ketQua[b.ma]).length;
   const danhSach = (
     <div className="mx-auto max-w-5xl px-4 pb-24 pt-6">
+      {!congKhai && <HocTapTab />}
       <header className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-blue-600 via-primary to-indigo-600 p-6 text-white shadow-[0_20px_50px_rgba(37,99,235,0.3)]">
         <div className="relative flex items-center gap-4">
           <Leon cam="hoc" size={110} className="mcf-leon-bay shrink-0 max-sm:h-20 max-sm:w-20" />

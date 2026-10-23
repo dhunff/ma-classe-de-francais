@@ -64,14 +64,16 @@ export const STUDENT_NAV = [
   { to: "/etudiant/dashboard", nhom: "hoc", labelKey: "nav.dashboard", Icon: LayoutDashboard },
   /* « Học ngữ pháp » (15/10): lý thuyết theo trình độ + thực hành ngay. Đứng ngay
      sau Trang chủ (16/10, theo chủ dự án). */
-  { to: "/etudiant/ngu-phap", nhom: "hoc", labelKey: "nav.grammar", Icon: BookA },
   /* Lộ trình học tập — cây kỹ năng A1 → C1. Không có `view`: route riêng
      trong App.jsx, không nằm trong Student.jsx.
 
      Đứng ngay sau Trang chủ và TRƯỚC « Cần làm » vì nó là màn nhìn tổng thể:
      mở ra để biết mình đang ở đâu trong cả chặng, khác với các mục bên dưới
      vốn là chỗ làm từng việc. */
-  { to: "/etudiant/lo-trinh", nhom: "hoc", labelKey: "nav.path", Icon: Map },
+  /* 23/10 (theo chủ dự án): « Học tập » gộp Lộ trình + Học ngữ pháp + Từ vựng thành MỘT
+     mục, ba tab ở đầu màn (HocTapTab.jsx). Đường dẫn cũ giữ nguyên; `khop` để mục
+     sáng lên ở cả ba. */
+  { to: "/etudiant/lo-trinh", nhom: "hoc", labelKey: "nav.learn", Icon: Map, khop: ["/etudiant/lo-trinh", "/etudiant/ngu-phap", "/etudiant/tu-vung"] },
   /* Từ điển tra nhanh — nguồn là thẻ flashcard công khai (TuDien.jsx). */
   /* Thách đấu bạn bè — đứng ngay sau Lộ trình vì cùng là phần game. */
   { to: "/etudiant/thach-dau", nhom: "thi", labelKey: "nav.duel", Icon: Swords },

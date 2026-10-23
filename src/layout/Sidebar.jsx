@@ -1,5 +1,5 @@
 ﻿import React, { useEffect, useRef } from "react";
-import { NavLink, Link } from "react-router-dom";
+import { NavLink, Link, useLocation } from "react-router-dom";
 import { LogIn, X, ChevronLeft, ChevronRight, LifeBuoy } from "lucide-react";
 import { navTheoNhom } from "./navItems.js";
 import { tr } from "../shared/i18n.jsx";
@@ -80,6 +80,7 @@ function Tip({ show, children }) {
    `onBlue` phân biệt hai chỗ dùng: cột bên trái nằm trên nền xanh, ngăn kéo
    mobile nằm trên nền `surface`. Cùng một danh sách, hai bảng màu. */
 function NavList({ role, t, expanded, onNavigate, onBlue = true }) {
+  const { pathname } = useLocation();   // mục có `khop` sáng lên ở nhiều đường dẫn
   return (
     <nav className={`flex flex-1 flex-col ${onBlue ? "pl-3" : "px-3"}`} aria-label={t("nav.primary")}>
       {navTheoNhom(role).map(({ nhom, muc }, gi) => (
@@ -91,13 +92,12 @@ function NavList({ role, t, expanded, onNavigate, onBlue = true }) {
             <span aria-hidden className={`mx-auto mb-3 block h-px w-8 ${onBlue ? "bg-white/25" : "bg-line"}`} />
           )}
           <div className="flex flex-col gap-0.5">
-            {muc.map(({ to, labelKey, Icon }) => (
+            {muc.map(({ to, labelKey, Icon, khop }) => { const them = !!khop?.some((p) => pathname.startsWith(p)); return (
               <NavLink
                 key={to}
                 to={to}
                 onClick={onNavigate}
-                className={({ isActive }) =>
-                  [
+                className={({ isActive: dung }) => { const isActive = dung || them; return [
                     "group relative flex items-center py-1.5 text-sm no-underline [@media(max-height:760px)]:py-1",
                     "transition-all duration-200 ease-out",
                     expanded ? "px-2" : "justify-center px-0",
@@ -110,10 +110,9 @@ function NavList({ role, t, expanded, onNavigate, onBlue = true }) {
                       : isActive
                         ? "rounded-2xl bg-primary-soft font-bold text-primary"
                         : "rounded-2xl font-medium text-soft hover:bg-surface2/70 hover:text-ink",
-                  ].join(" ")
-                }
+                  ].join(" "); }}
               >
-                {({ isActive }) => (
+                {({ isActive: dung }) => { const isActive = dung || them; return (
                   <>
                     {/* Biểu tượng trong ô vuông bo góc: đang chọn thì ô đặc màu chính. */}
                     <span className={[
@@ -127,9 +126,9 @@ function NavList({ role, t, expanded, onNavigate, onBlue = true }) {
                     <Label expanded={expanded} className="truncate">{t(labelKey)}</Label>
                     <Tip show={!expanded}>{t(labelKey)}</Tip>
                   </>
-                )}
+                ); }}
               </NavLink>
-            ))}
+            ); })}
           </div>
         </div>
       ))}

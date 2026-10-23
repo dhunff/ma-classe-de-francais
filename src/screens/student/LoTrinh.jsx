@@ -6,6 +6,7 @@ import { useT, tr } from "../../shared/i18n.jsx";
 import { Leon } from "../../shared/leon.jsx";
 import { phat, amThanhBat, datAmThanh } from "../../shared/amThanh.js";
 import TroChoiMan from "./TroChoiMan.jsx";
+import HocTapTab from "./HocTapTab.jsx";
 
 /* Lộ trình học tập — THEO CHỦ ĐỀ XÃ HỘI (06/10), không theo kỹ năng nữa.
  *
@@ -161,6 +162,7 @@ export default function LoTrinh() {
 
   return (
     <div className="mx-auto max-w-5xl px-4 pb-24 pt-6">
+      <HocTapTab />
       {/* Khung đầu trang (09/10): Leon + tổng sao + thanh tiến độ. */}
       <header className="mcf-cau-vao relative mb-5 overflow-hidden rounded-3xl bg-gradient-to-br from-blue-600 via-primary to-indigo-600 p-6 text-white shadow-[0_20px_50px_rgba(37,99,235,0.3)]">
         <span aria-hidden className="absolute -right-12 -top-12 h-48 w-48 rounded-full bg-white/10" />

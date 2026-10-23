@@ -17,6 +17,7 @@ import BoTheApp from './screens/student/BoTheApp.jsx'
 import NgheNoi from './screens/student/NgheNoi.jsx'
 import TienBoVip from './screens/student/TienBoVip.jsx'
 import NguPhap from './screens/student/NguPhap.jsx'
+import TuVung from "./screens/student/TuVung.jsx";
 import LoTrinh from './screens/student/LoTrinh.jsx'
 import ThachDau from './screens/student/ThachDau.jsx'
 import DatNeo from './screens/teacher/DatNeo.jsx'
@@ -338,6 +339,7 @@ function AppInner() {
               <Route path="/etudiant/bo-the" element={<BoTheApp name={session?.name} />} />
               <Route path="/etudiant/nghe-noi" element={<NgheNoi />} />
               <Route path="/etudiant/ngu-phap" element={<NguPhap />} />
+              <Route path="/etudiant/tu-vung" element={<TuVung />} />
               <Route path="/etudiant/ngu-phap/:ma" element={<NguPhap />} />
               <Route path="/etudiant/tien-bo" element={<TienBoVip name={session?.name} />} />
 
