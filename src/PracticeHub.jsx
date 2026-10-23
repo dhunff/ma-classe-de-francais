@@ -1473,6 +1473,8 @@ function PracticeWorkspace({ ex, back, onFinish, soTu = false }) {
         </div>
       )}
 
+      {/* Thu vào giữa, chừa hai bên (23/10, theo chủ dự án). */}
+      <div className="mx-auto max-w-6xl">
       <BocSoTu bat={soTu} ex={ex} stickyTop={zen ? FOCUS_TOP : 8}>
       {ex.consigne && <KhoiDeBai html={ex.consigne} />}
 
@@ -1542,6 +1544,7 @@ function PracticeWorkspace({ ex, back, onFinish, soTu = false }) {
           </button>
         </div>
       )}
+      </div>
     </FocusShell>
     </>
   );

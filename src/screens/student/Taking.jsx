@@ -267,6 +267,7 @@ function Taking({ ex, name, setSubmissions, done }) {
           {tr("Hết giờ: bài của bạn đã được nộp tự động.", "Temps écoulé : ta copie a été rendue automatiquement.", "Time's up: your work was submitted automatically.")}
         </div>
       )}
+      <div className="mx-auto max-w-6xl">
       <BocSoTu bat ex={ex} stickyTop={zen ? FOCUS_TOP : 8}>
       {ex.consigne && <KhoiDeBai html={ex.consigne} />}
 
@@ -299,6 +300,7 @@ function Taking({ ex, name, setSubmissions, done }) {
         {questionCards}
       </SplitPane>
       </BocSoTu>
+      </div>
 
       {err && <p style={{ color: C.danger, fontSize: 13 }}>{err}</p>}
       {/* Nút nộp nay nằm ở thanh trạng thái nổi; ở đây chỉ còn lối thoát.
