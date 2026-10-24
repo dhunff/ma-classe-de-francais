@@ -16,6 +16,19 @@ import { CHI_TIET_A2 } from "./chiTietA2.js";
 import { CHI_TIET_B1 } from "./chiTietB1.js";
 import { CHI_TIET_B2 } from "./chiTietB2.js";
 import { CHI_TIET_C1 } from "./chiTietC1.js";
+import { VI_DU_A0_A1 } from "./viDuA0A1.js";
+import { VI_DU_A2 } from "./viDuA2.js";
+import { VI_DU_B1 } from "./viDuB1.js";
+import { VI_DU_B2 } from "./viDuB2.js";
+import { VI_DU_C1 } from "./viDuC1.js";
+
+/* Ví dụ bổ sung (24/10, theo chủ dự án: phần học thiếu ví dụ). Khoá "mã#chỉ-số-phần";
+   mỗi mục "tiếng Pháp | nghĩa". Gắn thành khối « vidu » ở CUỐI phần, sau giải thích. */
+const VI_DU = { ...VI_DU_A0_A1, ...VI_DU_A2, ...VI_DU_B1, ...VI_DU_B2, ...VI_DU_C1 };
+const themViDu = (ma, ds) => ds.map((p, j) => {
+  const vd = VI_DU[`${ma}#${j}`];
+  return vd ? { ...p, khoi: [...p.khoi, { loai: "vidu", nhan: true, ds: vd.map((x) => x.split("|").map((y) => y.trim())) }] } : p;
+});
 
 /* Chia chi tiết (17/10): ghi đè cách chia phần cũ cho bài có mặt ở đây. */
 const CHI_TIET = { ...CHI_TIET_A0_A1, ...CHI_TIET_A2, ...CHI_TIET_B1, ...CHI_TIET_B2, ...CHI_TIET_C1 };
@@ -34,6 +47,9 @@ export const BAI_CONG_KHAI = new Set(CAP.flatMap((c) => TAT_CA.filter((b) => b.c
 /* Chia bài thành các phần a, b, c…: cấu trúc soạn tay (bai.cauTruc hoặc cauTruc.js),
  * giải thích và câu luyện bổ sung ở boSung*.js theo thứ tự phần. */
 export function chiaPhan(bai) {
+  return themViDu(bai.ma, chiaPhanGoc(bai));
+}
+function chiaPhanGoc(bai) {
   const ct2 = CHI_TIET[bai.ma];
   /* cau: số = bai.baiTap[số]; "b:j" = mọi câu bổ sung của phần cũ j (boSung*.js). */
   const bsCu = BO_SUNG[bai.ma] ?? [];

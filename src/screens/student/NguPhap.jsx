@@ -153,11 +153,14 @@ function Khoi({ k }) {
   if (k.loai === "dau") return <KhoiDau />;
   if (k.loai === "ipa") return <KhoiIpa />;
   if (k.loai === "vidu") return (
-    <ul className="my-4 grid list-none gap-1.5 p-0">
+    <>
+    {k.nhan && <p className="m-0 mt-5 flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-wider text-ok"><Volume2 size={14} /> {tr("Ví dụ", "Exemples", "Examples")}</p>}
+    <ul className={"grid list-none gap-1.5 p-0 " + (k.nhan ? "mb-2 mt-2" : "my-4")}>
       {k.ds.map(([fr, vi], i) => (
-        <li key={i} className="rounded-xl bg-surface2 px-4 py-2.5 text-sm"><span lang="fr" className="font-bold text-ink">{fr}</span><NutNghe cau={fr} /> <span className="text-soft">· {vi}</span></li>
+        <li key={i} className={"rounded-xl px-4 py-2.5 text-sm " + (k.nhan ? "border-0 border-l-4 border-solid border-ok bg-ok-soft/60" : "bg-surface2")}><span lang="fr" className="font-bold text-ink">{fr}</span><NutNghe cau={fr} /> <span className="text-soft">· {vi}</span></li>
       ))}
     </ul>
+    </>
   );
   if (k.loai === "luuY") return (
     <div className="my-4 rounded-2xl bg-primary-soft p-4">
