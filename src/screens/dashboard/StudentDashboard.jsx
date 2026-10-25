@@ -5,7 +5,7 @@ import {
   UserCircle, ChevronRight, ArrowRight, } from "lucide-react";
 import { tr } from "../../shared/i18n.jsx";
 import { Card, StatTile, EmptyState, HeroBanner, Rise, Ring } from "./parts.jsx";
-import { NewestPracticeRail, usePracticeStore, usePracticeHistory } from "./PracticeRail.jsx";
+import { usePracticeStore, usePracticeHistory } from "./PracticeRail.jsx";
 import {
   studentWorkload, averageScore, skillBreakdown, nextUp, isLate, exSkills, fmtDate,
 } from "../../shared/exercises.js";
@@ -155,13 +155,8 @@ export default function StudentDashboard({
           </Rise>
 
 
-          {/* Kho luyện tập, mới nhất trước — cùng khối với trang chủ chung.
-              Không có nó thì hôm nào giáo viên chưa giao bài, trang này trắng
-              trơn trong khi thư viện vẫn đầy bài học sinh tự làm được. */}
-          <Rise delay={320}>
-            <NewestPracticeRail t={t} practice={practice}
-              onOpen={() => navigate("/decouvrir/entrainement")} />
-          </Rise>
+          {/* 26/10 (chủ dự án): bỏ băng « Mới ra · Luyện tập »; bài mới trong 30 ngày
+              mang nhãn « Mới » ngay trên thẻ bài ở thư viện (ExerciseCard). */}
         </div>
 
         {/* ─────────────── Cột phải ─────────────── */}
