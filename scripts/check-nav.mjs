@@ -90,8 +90,8 @@ for (const m of muc) {
 const CO_Y_KHONG_CO_MUC = {
   "/etudiant/bai-luyen":
     "« Bài luyện của tôi » (23/10): vào từ thẻ trên Trang chủ, không có mục menu riêng.",
-  "/etudiant/ngu-phap":
-    "Tab « Ngữ pháp » của mục « Học tập » (23/10): vào bằng HocTapTab.jsx; mục menu trỏ /etudiant/lo-trinh, `khop` gồm đường này.",
+  "/etudiant/lo-trinh":
+    "Tab « Lộ trình » của mục « Học tập » (26/10: Ngữ pháp đứng đầu): vào bằng HocTapTab.jsx; mục menu trỏ /etudiant/ngu-phap, `khop` gồm đường này.",
   "/etudiant/progression":
     "« Ma progression » đã rời menu theo yêu cầu; route giữ lại để không mất màn hình.",
   "/etudiant/resultats":

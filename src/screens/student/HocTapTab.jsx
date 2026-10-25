@@ -6,8 +6,9 @@ import { tr } from "../../shared/i18n.jsx";
 /* Thanh tab của mục « Học tập » (23/10): Lộ trình · Ngữ pháp là hai màn
    riêng (đường dẫn cũ giữ nguyên), chung một mục trên thanh bên. */
 const TAB = () => [
-  { to: "/etudiant/lo-trinh", Icon: Map, nhan: tr("Lộ trình", "Parcours", "Path") },
+  /* 26/10 (theo chủ dự án): Ngữ pháp đứng đầu. */
   { to: "/etudiant/ngu-phap", Icon: BookA, nhan: tr("Ngữ pháp", "Grammaire", "Grammar") },
+  { to: "/etudiant/lo-trinh", Icon: Map, nhan: tr("Lộ trình", "Parcours", "Path") },
 ];
 
 export default function HocTapTab() {
