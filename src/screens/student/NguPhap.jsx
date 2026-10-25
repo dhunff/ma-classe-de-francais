@@ -253,7 +253,7 @@ export function ThucHanh({ bai, cau, tieuDe, onXong, onKetQua }) {
   const guiBaoLoi = async () => {
     setBaoLoi((x) => ({ ...x, trangThai: "dang" }));
     const { data, error } = await supabase.rpc("bao_loi_ngu_phap", { p_ma: c.__ma ?? bai?.ma, p_cau: c.de, p_ghi_chu: baoLoi?.ghiChu ?? "" });
-    setBaoLoi((x) => ({ ...x, trangThai: data?.ok ? "xong" : String(error?.message ?? "").includes("HET_LUOT") ? "het" : "loi" }));
+    setBaoLoi((x) => ({ ...x, trangThai: data?.ok ? "xong" : String(error?.message ?? "").includes("HET_LUOT") ? "het" : String(error?.message ?? "").includes("CHUA_DANG_NHAP") ? "loi" : "hong", chiTiet: error?.message ?? "" }));
   };
   const ghepSap = (c, v) => (v ?? []).map((k) => c.tu[k]).join(" ");
   const dungCau = (c, v) => (c.loai === "qcm" ? v === c.dap
@@ -402,7 +402,8 @@ export function ThucHanh({ bai, cau, tieuDe, onXong, onKetQua }) {
                     <button type="button" onClick={guiBaoLoi} disabled={baoLoi.trangThai === "dang"}
                       className="cursor-pointer rounded-full border-0 bg-primary px-4 py-1.5 font-sans text-xs font-bold text-on-primary disabled:opacity-50">{tr("Gửi báo lỗi", "Envoyer", "Send report")}</button>
                     <button type="button" onClick={() => setBaoLoi(null)} className="cursor-pointer rounded-full border-0 bg-transparent px-2 py-1.5 font-sans text-xs font-bold text-soft">{tr("Huỷ", "Annuler", "Cancel")}</button>
-                    {baoLoi.trangThai === "loi" && <span className="text-xs font-bold text-danger">{tr("Không gửi được. Bạn cần đăng nhập.", "Échec de l'envoi. Connexion requise.", "Could not send. Please sign in.")}</span>}
+                    {baoLoi.trangThai === "hong" && <span className="text-xs font-semibold text-danger">{tr("Không gửi được", "Échec de l'envoi", "Could not send")}{baoLoi.chiTiet ? ` (${baoLoi.chiTiet})` : ""}</span>}
+            {baoLoi.trangThai === "loi" && <span className="text-xs font-bold text-danger">{tr("Không gửi được. Bạn cần đăng nhập.", "Échec de l'envoi. Connexion requise.", "Could not send. Please sign in.")}</span>}
                     {baoLoi.trangThai === "het" && <span className="text-xs font-bold text-danger">{tr("Bạn đã gửi 20 báo lỗi trong 24 giờ.", "20 signalements en 24 h atteints.", "20 reports in 24 h reached.")}</span>}
                   </div>
                 </div>
@@ -650,7 +651,7 @@ const CAP_XEP = ["A1", "A2", "B1", "B2", "C1"];
 export const KHOA_XEP = "mcf-xep-trinh-do";
 function XepTrinhDo({ goc }) {
   const de = useMemo(() => CAP_XEP.flatMap((c) => {
-    const kho = TAT_CA.filter((b) => b.cap === c).flatMap((b) => chiaPhan(b).flatMap((p) => p.cau))
+    const kho = TAT_CA.filter((b) => b.cap === c).flatMap((b) => chiaPhan(b).flatMap((p) => p.cau.map((q) => ({ ...q, __ma: q.__ma ?? b.ma }))))
       .filter((q) => q.loai === "qcm" || q.loai === "vf");
     return [...kho].sort(() => Math.random() - 0.5).slice(0, 4).map((q) => ({ ...q, __cap: c }));
   }), []);
