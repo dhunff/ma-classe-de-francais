@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
-import { User, Lock, LogOut, Calendar, Pencil, CheckCircle2, Loader2, AlertTriangle, AtSign, IdCard, Phone, GraduationCap, ShieldCheck } from "lucide-react";
+import { User, Lock, LogOut, Calendar, Pencil, CheckCircle2, Loader2, AlertTriangle, AtSign, IdCard, Phone, GraduationCap, ShieldCheck, Mail } from "lucide-react";
+import CaiDatMail from "./CaiDatMail.jsx";
 import { useT, tr } from "../../shared/i18n.jsx";
 import { Leon } from "../../shared/leon.jsx";
 import { loadHoSo, luuHoSo } from "../../shared/profileStore.js";
@@ -315,6 +316,11 @@ export default function AccountPage({ name, role, email, emailVerified, onLogout
             <TabButton Icon={Lock} active={tab === "security"} onClick={() => setTab("security")}>
               {t("account.nav_security")}
             </TabButton>
+            {role !== "prof" && (
+              <TabButton Icon={Mail} active={tab === "mail"} onClick={() => setTab("mail")}>
+                {tr("Thông báo email", "Notifications e-mail", "Email notifications")}
+              </TabButton>
+            )}
             <TabButton Icon={LogOut} danger onClick={onLogout}>
               {t("account.logout")}
             </TabButton>
@@ -519,6 +525,8 @@ export default function AccountPage({ name, role, email, emailVerified, onLogout
               </>
             )}
           </form>
+        ) : tab === "mail" ? (
+          <CaiDatMail />
         ) : (
           <SecurityTab changePw={changePw} />
         )}

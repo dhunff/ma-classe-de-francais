@@ -26,6 +26,7 @@ import BaoLoiNguPhap from './screens/teacher/BaoLoiNguPhap.jsx'
 import SoanBoThe from './screens/teacher/SoanBoThe.jsx'
 import LandingPage from './screens/public/LandingPage.jsx'
 import { TrangFAQ, TrangDieuKhoan, TrangBaoMat } from './screens/public/TrangPhapLy.jsx'
+import HuyNhanMail from './screens/public/HuyNhanMail.jsx'
 import GrilleDelf from './screens/public/GrilleDelf.jsx'
 import LichThiDelf from './screens/public/LichThiDelf.jsx'
 import ExamResults from './screens/student/ExamResults.jsx'
@@ -402,6 +403,7 @@ function AppInner() {
             <Route path="/faq" element={<TrangFAQ />} />
             <Route path="/dieu-khoan" element={<TrangDieuKhoan />} />
             <Route path="/bao-mat" element={<TrangBaoMat />} />
+            <Route path="/huy-nhan-mail" element={<HuyNhanMail />} />
             {/* Ngữ pháp công khai (16/10): 2–3 bài đầu mỗi trình độ đọc không cần đăng
                 nhập, bài khác hiện khoá. Kênh thu hút từ tìm kiếm như Vivoire. */}
             <Route path="/grille-delf" element={<GrilleDelf />} />
