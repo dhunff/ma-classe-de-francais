@@ -352,85 +352,98 @@ ${r.error?.message ?? ""}`); return; }
     return (
       <div className="mx-auto max-w-5xl">
         {MatModal()}
+        {payFor && <PaymentModal ex={payFor} student={name} config={payCfg}
+          onClose={() => setPayFor(null)}
+          onUnlocked={sauKhiMoKhoa} />}
+        {doiXp && <DoiXpModal ex={doiXp} xp={xp} t={t}
+          onClose={() => setDoiXp(null)}
+          onBuy={() => { const e = doiXp; setDoiXp(null); setPayFor(e); }}
+          onVip={() => { setDoiXp(null); setPayFor(goiVip(t("vip.pay_title"))); }}
+          onDone={(soDu) => { setXp(soDu); setDoiXp(null); baoXpDoi(); sauKhiMoKhoa(); }} />}
         <button style={{ ...S.btn(false), marginBottom: 16 }} onClick={() => setView({ page: "home" })}><ChevronLeft size={16} /> {t("practice.back")}</button>
-        <h2 style={{ ...S.display, margin: "0 0 18px", display: "flex", alignItems: "center", gap: 10 }}>
-Autres — Catégories
-        </h2>
+        {/* 26/10 (chủ dự án): làm lại cho bớt đơn điệu. Banner màu như các mục kỹ năng,
+            thư mục là thẻ màu xoay vòng kèm tiến độ đã làm, bài lẻ dùng chung ExerciseCard. */}
+        {(() => {
+          const meta = CATS.find((c) => c.skill === "__autres__");
+          const MAU = ["linear-gradient(135deg,#22D3EE,#0891B2)", "linear-gradient(135deg,#F472B6,#DB2777)", "linear-gradient(135deg,#A78BFA,#7C3AED)",
+            "linear-gradient(135deg,#FBBF24,#EA580C)", "linear-gradient(135deg,#34D399,#059669)", "linear-gradient(135deg,#60A5FA,#2563EB)"];
+          return (<>
+            <div className="mcf-cau-vao relative mb-6 flex flex-wrap items-center justify-between gap-3 overflow-hidden rounded-3xl p-5 text-white shadow-[0_16px_40px_rgba(0,0,0,0.12)]" style={{ background: meta.tuoi }}>
+              <span aria-hidden className="absolute -right-10 -top-12 h-40 w-40 rounded-full bg-white/15" />
+              <span aria-hidden className="absolute -bottom-16 right-24 h-32 w-32 rounded-full bg-white/10" />
+              <h2 className="relative m-0 flex items-center gap-3 text-2xl font-extrabold tracking-tight">
+                <span className="grid h-12 w-12 place-items-center rounded-2xl bg-white/25"><meta.Icon size={24} /></span>
+                <span>
+                  {t(`skill.${meta.key}`)}
+                  <span className="block text-xs font-bold text-white/80">{folders.length} {tr("chủ đề", "catégories", "topics")} · {autresEx.length} {tr("bài", "exercices", "exercises")}</span>
+                </span>
+              </h2>
+            </div>
 
-        {folders.length === 0 && !teacher ? (
-          <div className="mcf-card" style={{ ...S.card, padding: 50, textAlign: "center" }}>
-            <div style={{ fontSize: 40, marginBottom: 10 }}>🗂️</div>
-            <div style={{ fontWeight: 800, fontSize: 17 }}>{tr("Chưa có bài nào trong mục này", "Aucun exercice dans cette section", "No exercises in this section")}</div>
-            <div style={{ fontSize: 13.5, color: C.soft, marginTop: 6 }}>{tr("Giáo viên chưa tạo mục nào. Quay lại sau nhé!", "Le professeur n'a pas encore créé de catégorie. Reviens bientôt !", "The teacher hasn't created a category yet. Come back soon!")}</div>
-          </div>
-        ) : (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(230px,1fr))", gap: 16 }}>
-            {folders.map((f) => (
-              <div key={f.name} className="mcf-card"
-                onClick={() => setView({ page: "category", cat: "__autres__", folder: f.name })}
-                style={{ ...S.card, padding: 22, cursor: "pointer" }}>
-                <div style={{ width: 48, height: 48, borderRadius: 14, background: "var(--mcf-surface2)", border: "1px solid var(--mcf-line)", display: "grid", placeItems: "center", marginBottom: 12 }}>
-                  <Folder size={24} color="#6E7691" />
+            {folders.length === 0 && !teacher ? (
+              unclassified.length === 0 && (
+                <div className="rounded-3xl border border-solid border-line bg-surface px-6 py-14 text-center">
+                  <Shapes size={40} strokeWidth={1.5} className="text-soft" />
+                  <p className="m-0 mt-3 text-lg font-extrabold text-ink">{tr("Chưa có bài nào trong mục này", "Aucun exercice dans cette section", "No exercises in this section")}</p>
+                  <p className="m-0 mt-1 text-sm text-soft">{tr("Giáo viên chưa tạo mục nào. Quay lại sau nhé!", "Le professeur n'a pas encore créé de catégorie. Reviens bientôt !", "The teacher hasn't created a category yet. Come back soon!")}</p>
                 </div>
-                <div style={{ fontWeight: 800, fontSize: 16 }}>{f.label || f.name}</div>
-                <div style={{ fontSize: 13, color: C.soft, marginTop: 3 }}>{f.count} {tr("bài", "exercice", "exercise")}{f.count > 1 ? "s" : ""}</div>
-              </div>
-            ))}
-            {/* Thẻ + chỉ dành cho giáo viên */}
-            {teacher && (
-              <div onClick={() => setCatPopup(true)}
-                style={{ borderRadius: 32, border: `2px dashed ${C.line}`, background: "transparent", cursor: "pointer",
-                  padding: 22, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-                  gap: 10, minHeight: 150, color: C.soft }}>
-                <FolderPlus size={30} color={C.primary} />
-                <div style={{ fontWeight: 700, fontSize: 14.5, color: C.primary }}>+ Créer une catégorie</div>
+              )
+            ) : (
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {folders.map((f, i) => {
+                  const daLam = autresEx.filter((e) => e.customCat === f.name && hist[e.id]).length;
+                  return (
+                    <button key={f.name} type="button" onClick={() => setView({ page: "category", cat: "__autres__", folder: f.name })}
+                      className="group relative flex min-h-[150px] cursor-pointer flex-col overflow-hidden rounded-3xl border-0 p-5 text-left font-sans text-white shadow-[0_12px_28px_rgba(0,0,0,0.10)] transition-transform duration-200 ease-out hover:-translate-y-1 active:scale-[0.985]"
+                      style={{ background: MAU[i % MAU.length] }}>
+                      <span aria-hidden className="absolute -right-8 -top-8 h-28 w-28 rounded-full bg-white/15" />
+                      <Folder aria-hidden size={88} strokeWidth={1.25} className="absolute -bottom-4 -right-3 text-white/20" />
+                      <span className="relative grid h-11 w-11 place-items-center rounded-2xl bg-white/25"><Folder size={22} /></span>
+                      <span className="relative mt-auto pt-6 text-lg font-extrabold leading-tight">{f.label || f.name}</span>
+                      <span className="relative mt-1 text-xs font-bold text-white/85">{f.count} {tr("bài", "exercices", "exercises")}{daLam > 0 ? ` · ${tr(`đã làm ${daLam}`, `${daLam} fait${daLam > 1 ? "s" : ""}`, `${daLam} done`)}` : ""}</span>
+                      {f.count > 0 && (
+                        <span className="relative mt-2 block h-1.5 overflow-hidden rounded-full bg-white/25">
+                          <span className="block h-full w-full rounded-full bg-white transition-transform duration-500 ease-out" style={{ transform: `translateX(${(daLam / f.count) * 100 - 100}%)` }} />
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+                {teacher && (
+                  <button type="button" onClick={() => setCatPopup(true)}
+                    className="flex min-h-[150px] cursor-pointer flex-col items-center justify-center gap-2 rounded-3xl border-2 border-dashed border-line bg-transparent font-sans text-primary">
+                    <FolderPlus size={30} />
+                    <span className="text-sm font-bold">+ Créer une catégorie</span>
+                  </button>
+                )}
               </div>
             )}
-          </div>
-        )}
 
-        {/* Exercices sans catégorie : listés directement sous les dossiers */}
-        {unclassified.length > 0 && (
-          <div style={{ marginTop: 26 }}>
-            <div style={{ ...S.label, marginBottom: 12 }}>Exercices sans catégorie</div>
-            <div style={{ display: "grid", gap: 12 }}>
-              {unclassified.map((ex) => {
-                const hh = hist[ex.id];
-                return (
-                  <div key={ex.id} className="mcf-card" style={{ ...S.card, padding: "18px 20px", display: "flex", flexDirection: "column", width: "100%",
-                    position: "relative" }}>
-                    <div style={{ display: "flex", flexDirection: "column", gap: 4, marginBottom: 14 }}>
-                    <div>
-                    <span style={S.badge(ex.level)}>{ex.level}</span>
-                    <div style={{ flex: 1, minWidth: 160 }}>
-                      <div style={{ fontWeight: 800, fontSize: 15.5 }}>{ex.title}</div>
-                      <div style={{ fontSize: 12.5, color: C.soft, marginTop: 2 }}>
-                        {ex.questions.length} {tr("câu", "question", "question")}{ex.questions.length > 1 ? "s" : ""}
-                        {hh && <> · {tr(`Tốt nhất: ${hh.best}/${hh.max} (${hh.tries} lượt)`, `Meilleur : ${hh.best}/${hh.max} (${hh.tries} essai${hh.tries > 1 ? "s" : ""})`, `Best: ${hh.best}/${hh.max} (${hh.tries} tr${hh.tries > 1 ? "ies" : "y"})`)}</>}
-                      </div>
-                    </div>
-    </div>
-                    </div>
-                    {/* Bài không có ảnh → ảnh mặc định theo kỹ năng (06/10, shared/anhMacDinh.js). */}
-                    <img src={ex.imageUrl || anhMacDinh(ex)} alt="" loading="lazy"
-                      style={{ width: 240, maxWidth: "100%", aspectRatio: "16/9", objectFit: "cover", borderRadius: 12,
-                      border: `1px solid ${C.line}`, marginBottom: 14, alignSelf: "flex-start" }} />
-                    <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 8, marginTop: "auto" }}>
-                      <SplitTrain open={trainMenu === ex.id} setOpen={(v) => setTrainMenu(v ? ex.id : null)} teacher={teacher}
+            {unclassified.length > 0 && (
+              <div className="mt-8">
+                <h3 className="m-0 mb-3 text-lg font-extrabold text-ink">{tr("Bài lẻ", "Exercices divers", "Other exercises")} <span className="text-sm font-bold text-soft">({unclassified.length})</span></h3>
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  {unclassified.map((ex) => {
+                    const types = [...new Set(ex.questions.map((q) => QTYPES[q.type]))].join(" + ");
+                    const locked = !teacher && !fullAccess && isPremium(ex) && !hasAccess(access, name, ex.id);
+                    return (
+                      <ExerciseCard key={ex.id} ex={ex} premium={isPremium(ex)} locked={locked} best={hist[ex.id]} typesLabel={types} folderLabel={null} t={t}
                         onStart={() => { if (isGuest) return requireLogin(); setView({ page: "quiz", cat: "__autres__", exId: ex.id }); }}
-                        onPick={(kind) => setMatModal({ exId: ex.id, kind })} />
-                      {teacher && <HubMenu
-                        onEdit={() => { const c = JSON.parse(JSON.stringify(ex)); if (!c.skills || !c.skills.length) c.skills = c.skill ? [c.skill] : []; if (c.consigne === undefined) c.consigne = ""; if (!c.usageType) c.usageType = "practice"; setDraft(c); setView({ page: "builder" }); }}
-                        onDup={() => duplicate(ex)}
-                        onMove={null}
-                        onDel={() => removeEx(ex.id)} />}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
+                        onPickMaterial={(kind) => setMatModal({ exId: ex.id, kind })}
+                        onBuy={() => setPayFor(ex)}
+                        onDoiXp={role === "eleve" ? () => setDoiXp(ex) : null}
+                        teacherActions={!teacher ? null : [
+                          { label: "Modifier", icon: <Pencil size={16} />, onClick: () => { const c = JSON.parse(JSON.stringify(ex)); if (!c.skills || !c.skills.length) c.skills = c.skill ? [c.skill] : []; if (c.consigne === undefined) c.consigne = ""; if (!c.usageType) c.usageType = "practice"; setDraft(c); setView({ page: "builder" }); } },
+                          { label: "Dupliquer", icon: <Copy size={16} />, onClick: () => duplicate(ex) },
+                          { label: "Supprimer", icon: <Trash2 size={16} />, danger: true, onClick: () => removeEx(ex.id) },
+                        ]} />
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </>);
+        })()}
 
         {/* Popup tạo danh mục */}
         {catPopup && (

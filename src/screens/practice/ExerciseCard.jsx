@@ -128,8 +128,8 @@ export default function ExerciseCard({
       <div className="flex min-w-0 flex-1 flex-col">
         <div className="mb-1.5 flex flex-wrap items-center gap-1.5">
           <span style={S.badge(ex.level)}>{ex.level}</span>
-          {/* 26/10: bài tạo trong 30 ngày gần nhất. */}
-          {Number(ex.createdAt) > Date.now() - 30 * 864e5 && (
+          {/* 26/10: bài tạo trong 14 ngày gần nhất. */}
+          {Number(ex.createdAt) > Date.now() - 14 * 864e5 && (
             <span className="rounded-full bg-danger px-2.5 py-0.5 text-[11px] font-extrabold text-white">{tr("Mới", "Nouveau", "New")}</span>
           )}
 
