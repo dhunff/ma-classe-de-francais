@@ -127,11 +127,14 @@ export default function ExamComposer({ t }) {
     const j = i + huong;
     if (j < 0 || j >= nhom.length) return;
     const moi = [...nhom]; [moi[i], moi[j]] = [moi[j], moi[i]];
-    const viTri = new Map(moi.map((e, k) => [e.id, k]));
-    setDsDe((ds) => [...ds].sort((a, b) => (a.level === b.level && viTri.has(a.id) && viTri.has(b.id) ? viTri.get(a.id) - viTri.get(b.id) : 0)));
+    /* Thay các đề của nhóm vào ĐÚNG các vị trí cũ của chúng theo thứ tự mới. (Bản đầu dùng
+       sort với hàm so sánh trả 0 cho đề khác nhóm: không nhất quán, danh sách không đổi.) */
+    const trongNhom = new Set(moi.map((e) => e.id));
+    setDsDe((ds) => { let k = 0; return ds.map((e) => (trongNhom.has(e.id) ? moi[k++] : e)); });
     const n = await luuThuTuDe(moi.map((e) => e.id));
-    if (n !== moi.length) { setLoiThuTu(tr("Chưa lưu được thứ tự, đã tải lại.", "Ordre non enregistré.", "Order not saved.")); taiLai(); }
+    if (n !== moi.length) setLoiThuTu(tr("Chưa lưu được thứ tự, đã tải lại.", "Ordre non enregistré.", "Order not saved."));
     else setLoiThuTu("");
+    taiLai();
   };
 
   const xoa = async (id) => {
