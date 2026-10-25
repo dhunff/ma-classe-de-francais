@@ -5,7 +5,7 @@ import { uid } from "../../shared/questions.js";
 import Builder from "./Builder.jsx";
 import XemDeThu from "./XemDeThu.jsx";
 import { nhomTheoTrinhDo } from "../../shared/trinhDoDe.js";
-import { loadExams, saveExam, deleteExam, cotGrilleSanSang } from "../../shared/examStore.js";
+import { loadExams, saveExam, deleteExam, cotGrilleSanSang, luuThuTuDe } from "../../shared/examStore.js";
 import { EXAM_STRUCTURE, khongCham } from "../exam/examPaper.js";
 import GrilleEditor, { grilleLuuDuoc } from "./GrilleEditor.jsx";
 import { tr } from "../../shared/i18n.jsx";
@@ -120,6 +120,20 @@ export default function ExamComposer({ t }) {
     taiLai();
   };
 
+  /* Đổi chỗ đề trong cùng trình độ (25/10). Cập nhật tại chỗ trước, lưu sau; lưu hỏng
+     thì báo và tải lại thứ tự thật từ máy chủ. */
+  const [loiThuTu, setLoiThuTu] = useState("");
+  const doiCho = async (nhom, i, huong) => {
+    const j = i + huong;
+    if (j < 0 || j >= nhom.length) return;
+    const moi = [...nhom]; [moi[i], moi[j]] = [moi[j], moi[i]];
+    const viTri = new Map(moi.map((e, k) => [e.id, k]));
+    setDsDe((ds) => [...ds].sort((a, b) => (a.level === b.level && viTri.has(a.id) && viTri.has(b.id) ? viTri.get(a.id) - viTri.get(b.id) : 0)));
+    const n = await luuThuTuDe(moi.map((e) => e.id));
+    if (n !== moi.length) { setLoiThuTu(tr("Chưa lưu được thứ tự, đã tải lại.", "Ordre non enregistré.", "Order not saved.")); taiLai(); }
+    else setLoiThuTu("");
+  };
+
   const xoa = async (id) => {
     if (!confirm(tr("Xoá hẳn đề này? Nội dung các bài vẫn được giữ trong kho đề thi.", "Supprimer ce sujet ? Le contenu des épreuves est conservé.", "Delete this exam? Its exercise content is kept."))) return;
     const r = await deleteExam(id);
@@ -147,6 +161,7 @@ export default function ExamComposer({ t }) {
         {toast && <p className="m-0 mt-4 text-sm font-semibold text-ok">{toast}</p>}
         {lopXem}
 
+        {loiThuTu && <p className="m-0 mt-4 text-sm font-semibold text-danger">{loiThuTu}</p>}
         {dsDe.length === 0 ? (
           <div className="mt-8 rounded-2xl border border-line bg-surface p-8 text-center">
             <p className="m-0 font-bold text-ink">{tr("Chưa có đề nào", "Aucun sujet", "No exams yet")}</p>
@@ -163,9 +178,15 @@ export default function ExamComposer({ t }) {
             </h3>
             {g.de.length === 0 && <p className="m-0 rounded-2xl bg-surface2 px-4 py-3 text-xs text-soft">{tr("Chưa có đề", "Aucun sujet", "No exam at")} {g.level}.</p>}
           <ul className="m-0 list-none space-y-3 p-0">
-            {g.de.map((e) => (
+            {g.de.map((e, i) => (
               <li key={e.id} className="flex items-center justify-between gap-3 rounded-2xl border border-line bg-surface p-4">
-                <div className="min-w-0">
+                <div className="flex shrink-0 flex-col gap-1">
+                  <button type="button" onClick={() => doiCho(g.de, i, -1)} disabled={i === 0} title={tr("Lên trên", "Monter", "Move up")}
+                    className="grid h-7 w-7 cursor-pointer place-items-center rounded-lg border-0 bg-surface2 text-soft hover:text-primary disabled:cursor-default disabled:opacity-30"><ChevronUp size={15} /></button>
+                  <button type="button" onClick={() => doiCho(g.de, i, 1)} disabled={i === g.de.length - 1} title={tr("Xuống dưới", "Descendre", "Move down")}
+                    className="grid h-7 w-7 cursor-pointer place-items-center rounded-lg border-0 bg-surface2 text-soft hover:text-primary disabled:cursor-default disabled:opacity-30"><ChevronDown size={15} /></button>
+                </div>
+                <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-bold text-ink">{e.title}</span>
                     <span className="rounded-full bg-surface2 px-2 py-0.5 text-xs font-bold text-soft">{e.level}</span>

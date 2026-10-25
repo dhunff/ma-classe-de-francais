@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Megaphone, Send, Loader2, Search, Bell, RotateCcw, Users, CheckCircle2 } from "lucide-react";
+import { Megaphone, Send, Loader2, Search, Bell, RotateCcw, Users, CheckCircle2, Trash2 } from "lucide-react";
 import { supabase } from "../../storageShim.js";
 import { guiThongBao } from "../../shared/notifications.js";
 import { trangThaiOnline } from "../../shared/hienDien.js";
@@ -51,6 +51,16 @@ export default function GuiThongBao() {
       setLichSu([...nhom.values()].slice(0, 30));
     });
   useEffect(() => { taiHs(); taiLichSu(); }, []);
+
+  /* Xoá (thu hồi) một lần gửi: RPC xoa_thong_bao_gui (165). Hỏi lại trước khi xoá vì
+     không hoàn tác được và học sinh sẽ không còn thấy thông báo đó. */
+  const [loiXoa, setLoiXoa] = useState("");
+  const xoaGui = async (g) => {
+    if (!window.confirm(tr(`Xoá thông báo này? Học sinh (${g.tong} người) sẽ không còn thấy nó trong chuông. Không hoàn tác được.`, `Supprimer cette annonce pour les ${g.tong} élèves ? Action irréversible.`, `Delete this announcement for ${g.tong} students? This can't be undone.`))) return;
+    const { data, error } = await supabase.rpc("xoa_thong_bao_gui", { p_luc: g.created_at, p_noi_dung: g.message });
+    if (error || !data) { setLoiXoa(tr("Chưa xoá được: ", "Échec : ", "Couldn't delete: ") + (error?.message ?? tr("không có dòng nào", "aucune ligne", "no rows"))); return; }
+    setLoiXoa(""); setLichSu((ls) => (ls ?? []).filter((x) => x !== g));
+  };
 
   const loc = useMemo(() => {
     const k = tim.trim().toLowerCase();
@@ -173,6 +183,7 @@ export default function GuiThongBao() {
             : lichSu === null ? <p className="m-0 mt-3 text-sm text-danger">{tr("Không đọc được lịch sử.", "Impossible de charger l'historique.", "Couldn't load history.")}</p>
             : !lichSu.length ? <p className="m-0 mt-3 text-sm text-soft">{tr("Chưa gửi thông báo nào.", "Aucune annonce envoyée.", "No announcements sent yet.")}</p>
             : (
+              <>{loiXoa && <p className="m-0 mt-3 text-sm font-semibold text-danger">{loiXoa}</p>}
               <ul className="mcf-scroll m-0 mt-3 grid max-h-[70vh] list-none gap-3 overflow-y-auto p-0">
                 {lichSu.map((g) => (
                   <li key={`${g.created_at}${g.message}`} className="rounded-2xl bg-surface2 p-3.5">
@@ -187,10 +198,14 @@ export default function GuiThongBao() {
                         className="ml-auto inline-flex cursor-pointer items-center gap-1 rounded-full border-0 bg-surface px-2.5 py-1 font-sans text-xs font-bold text-ink hover:text-primary">
                         <RotateCcw size={12} /> {tr("Dùng lại", "Réutiliser", "Reuse")}
                       </button>
+                      <button type="button" onClick={() => xoaGui(g)} title={tr("Xoá thông báo này", "Supprimer", "Delete")}
+                        className="inline-flex cursor-pointer items-center rounded-full border-0 bg-surface px-2 py-1 font-sans text-danger hover:bg-danger-soft">
+                        <Trash2 size={13} />
+                      </button>
                     </div>
                   </li>
                 ))}
-              </ul>
+              </ul></>
             )}
         </aside>
       </div>

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import HoatDongChuoi from "./HoatDongChuoi.jsx";
 import { MessageCircle, ClipboardList, ChevronRight, ChevronLeft, Flame, Clock, BookOpen, Trophy, AlertTriangle, Loader2, X, Send, Check, Star, Crown, Search } from "lucide-react";
 import { supabase } from "../../storageShim.js";
 import { tr } from "../../shared/i18n.jsx";
@@ -343,6 +344,7 @@ export function ChiTietHocSinh({ acc, exercises, onDoi, back }) {
           )}
         </>
       )}
+      {acc.id && <HoatDongChuoi uid={acc.id} />}
       {hop === "nhan" && <HopNhan hs={acc} dong={() => setHop(null)} />}
       {hop === "giao" && <HopGiaoBai hs={acc} exercises={exercises} onDoi={onDoi} dong={() => setHop(null)} />}
     </div>

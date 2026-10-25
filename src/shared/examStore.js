@@ -52,10 +52,11 @@ export const cotGrilleSanSang = () => cotGrilleCoSan;
 export async function loadExams() {
   const { data, error, coGrille } = await chonCoGrille((coGrille) => supabase
     .from("exams")
-    .select("id, title, level, duration_min, is_published, created_at, chi_vip, "
+    .select("id, title, level, duration_min, is_published, created_at, chi_vip, ord, "
           + (coGrille ? "grille, " : "")
           + "exam_sections (id, code, exercise_id, minutes, points, ord)")
-    .order("created_at", { ascending: false }));
+    /* 25/10 (migration 164): thứ tự do giáo viên sắp, trong từng trình độ. */
+    .order("ord", { ascending: true }).order("created_at", { ascending: false }));
   cotGrilleCoSan = coGrille;
   if (error) { console.error("[exam] không đọc được danh sách đề:", error.message); return []; }
   return (data ?? []).map((e) => ({
@@ -70,6 +71,13 @@ export async function loadExams() {
  * chuyện đó xảy ra thật: bài trả phí mà học sinh chưa mua sẽ bị RLS 019 giấu,
  * và khi đó phần thi rỗng. Giao diện cần biết để nói rõ, chứ không phải hiện
  * một phần thi trắng không lời giải thích. */
+/* Ghi lại thứ tự đề của MỘT trình độ: ord = vị trí trong danh sách. Trả số dòng máy chủ
+   xác nhận đã ghi (RLS chỉ cho giáo viên); khác số đề nghĩa là chưa lưu hết. */
+export async function luuThuTuDe(ids) {
+  const kq = await Promise.all(ids.map((id, i) => supabase.from("exams").update({ ord: i }).eq("id", id).select("id")));
+  return kq.reduce((n, r) => n + (r.error ? 0 : (r.data ?? []).length), 0);
+}
+
 export async function loadExam(examId) {
   const { data: exam, error, coGrille } = await chonCoGrille((coGrille) => supabase
     .from("exams")
