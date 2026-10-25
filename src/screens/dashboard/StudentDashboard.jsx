@@ -97,6 +97,11 @@ export default function StudentDashboard({
               hocTiep="/etudiant/entrainement" note={goal ? null : t("dash.no_goal")} />
           </Rise>
 
+          {/* 26/10 (chủ dự án): Trò chơi & thử thách lên đầu, ngay dưới banner. */}
+          <Rise delay={60}>
+            <TroChoi />
+          </Rise>
+
           {/* Hồ sơ chưa đầy thì mời điền. Đầy rồi thì biến mất — một thanh
               đứng mãi ở 100% không còn nói điều gì. */}
           {profilePct < 100 && (
@@ -147,9 +152,6 @@ export default function StudentDashboard({
 
           <Rise delay={190}>
             <TienDoNguPhap level={profile?.level} />
-          </Rise>
-          <Rise delay={220}>
-            <TroChoi />
           </Rise>
 
 
