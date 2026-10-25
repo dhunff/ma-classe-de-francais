@@ -68,7 +68,7 @@ export default function KeHoachThi({ capGoiY }) {
   const dong = (Icon, ten, lam, can, con, to, mau) => {
     const xong = can > 0 && lam >= can;
     return (
-      <Link to={to} className="group block rounded-2xl bg-surface2 px-3 py-2.5 no-underline transition-colors hover:bg-primary-soft">
+      <Link to={to} className="group block rounded-2xl bg-surface2 px-3 py-2.5 no-underline transition-[background-color,transform] duration-200 ease-out hover:bg-primary-soft active:scale-[0.985]">
         <div className="flex items-center gap-2.5">
           <span className={`grid h-8 w-8 shrink-0 place-items-center rounded-xl text-white ${mau}`}><Icon size={16} /></span>
           <span className="min-w-0 flex-1">

@@ -103,7 +103,7 @@ export function DeXuatBai({ dsDeXuat, onMo, coHoSo, level, goal, gon = false }) 
             return (
               <li key={ex.id}>
                 <button type="button" onClick={() => onMo(ex)}
-                  className="group relative flex h-full w-full cursor-pointer flex-col gap-3 overflow-hidden rounded-3xl border border-solid border-line bg-surface p-4 text-left font-sans shadow-[0_4px_16px_rgba(15,23,42,0.04)] transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_14px_30px_rgba(15,23,42,0.1)]">
+                  className="group relative flex h-full w-full cursor-pointer flex-col gap-3 overflow-hidden rounded-3xl border border-solid border-line bg-surface p-4 text-left font-sans shadow-[0_4px_16px_rgba(15,23,42,0.04)] transition-[transform,box-shadow] duration-200 ease-out hover:-translate-y-1 hover:shadow-[0_14px_30px_rgba(15,23,42,0.1)] active:scale-[0.985]">
                   {/* Vệt màu kỹ năng ở góc, mờ, chỉ để thẻ có sắc riêng. */}
                   <span aria-hidden className={`pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full bg-gradient-to-br ${mauKN(kn)} opacity-15 transition-transform duration-300 group-hover:scale-125`} />
                   <span className="relative flex items-start gap-3">
@@ -212,7 +212,7 @@ export function TroChoi() {
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {o.map((x) => (
           <Link key={x.to} to={x.to}
-            className={`group relative flex min-h-[132px] flex-col justify-between overflow-hidden rounded-3xl bg-gradient-to-br ${x.nen} p-4 text-white no-underline shadow-md transition-transform duration-200 hover:-translate-y-1`}>
+            className={`group relative flex min-h-[132px] flex-col justify-between overflow-hidden rounded-3xl bg-gradient-to-br ${x.nen} p-4 text-white no-underline shadow-md transition-transform duration-200 ease-out hover:-translate-y-1 active:scale-[0.985]`}>
             <x.Icon size={64} strokeWidth={1.4} className="pointer-events-none absolute -bottom-3 -right-3 opacity-20" />
             <span className="grid h-10 w-10 place-items-center rounded-xl bg-white/20"><x.Icon size={20} /></span>
             <span>
@@ -271,7 +271,7 @@ export function DongDeuKyNang({ skills, ghiChu, gon = false }) {
                       {!gon && <span className={`text-[11px] font-bold ${MAU[m][1]}`}>{nhan()}</span>}
                     </div>
                     <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-surface2">
-                      <div className={`h-full rounded-full ${MAU[m][0]} transition-[width] duration-700`} style={{ width: `${Math.max(value, 3)}%` }} />
+                      <div className={`h-full w-full rounded-full ${MAU[m][0]} transition-transform duration-[550ms] ease-out`} style={{ transform: `translateX(${Math.max(value, 3) - 100}%)` }} />
                     </div>
                   </div>
                   <span className={"text-right font-extrabold tabular-nums text-ink " + (gon ? "w-9 text-xs" : "w-11 text-sm")}>{value}%</span>

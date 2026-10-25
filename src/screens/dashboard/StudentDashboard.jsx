@@ -102,7 +102,7 @@ export default function StudentDashboard({
           {profilePct < 100 && (
             <Rise delay={80}>
               <Link to="/etudiant/compte"
-                className="group flex items-center gap-4 rounded-3xl bg-surface/80 p-5 no-underline shadow-[0_8px_30px_rgb(0,0,0,0.04)] backdrop-blur-md transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-lg">
+                className="group flex items-center gap-4 rounded-3xl bg-surface/80 p-5 no-underline shadow-[0_8px_30px_rgb(0,0,0,0.04)] backdrop-blur-md transition-[transform,box-shadow] duration-300 ease-out hover:-translate-y-1 hover:shadow-lg active:scale-[0.985]">
                 <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-primary-soft text-primary">
                   <UserCircle size={22} />
                 </span>
@@ -110,8 +110,8 @@ export default function StudentDashboard({
                   <p className="m-0 text-sm font-bold text-ink">{t("dash.profile_completion", { pct: profilePct })}</p>
                   <p className="m-0 mt-0.5 text-xs text-soft">{t("dash.profile_hint")}</p>
                   <div className="mt-2.5 h-1.5 w-full overflow-hidden rounded-full bg-surface2">
-                    <div className="h-full rounded-full bg-primary transition-[width] duration-1000 ease-out"
-                      style={{ width: `${profilePct}%` }} />
+                    <div className="h-full w-full rounded-full bg-primary transition-transform duration-[550ms] ease-out"
+                      style={{ transform: `translateX(${profilePct - 100}%)` }} />
                   </div>
                 </div>
                 <ChevronRight size={18} className="shrink-0 text-soft transition-transform duration-300 group-hover:translate-x-1 group-hover:text-primary" />
@@ -130,7 +130,7 @@ export default function StudentDashboard({
           )}
           <Rise delay={150}>
             <Link to="/etudiant/bai-luyen"
-              className="group flex items-center gap-4 rounded-3xl bg-gradient-to-r from-rose-500 via-pink-600 to-violet-600 p-4 text-white no-underline shadow-[0_12px_28px_rgba(219,39,119,0.25)] transition-transform hover:-translate-y-0.5">
+              className="group flex items-center gap-4 rounded-3xl bg-gradient-to-r from-rose-500 via-pink-600 to-violet-600 p-4 text-white no-underline shadow-[0_12px_28px_rgba(219,39,119,0.25)] transition-transform duration-200 ease-out hover:-translate-y-0.5 active:scale-[0.985]">
               <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-white/20"><Target size={24} /></span>
               <span className="min-w-0 flex-1">
                 <span className="block text-base font-extrabold">{tr("Bài luyện của tôi", "Mon entraînement perso", "My practice set")}</span>

@@ -45,8 +45,11 @@ export default function GioHocWidget({ t, fixture }) {
           return (
             <div key={x.d} className="group flex h-full flex-1 flex-col items-center justify-end gap-1.5"
               title={`${x.d}: ${dinhDang(x.phut, t)}`}>
-              <div className={`w-full max-w-[28px] rounded-full transition-all duration-500 ${x.phut ? "bg-primary" : "bg-surface2"}`}
-                style={{ height: `${x.phut ? Math.max(8, (x.phut / max) * 100) : 6}%` }} />
+              {/* Cột: dịch bằng transform trong khung cắt, không đổi height (25/10). */}
+              <div className="h-full w-full max-w-[28px] overflow-hidden rounded-full">
+                <div className={`h-full w-full rounded-full transition-transform duration-500 ease-out ${x.phut ? "bg-primary" : "bg-surface2"}`}
+                  style={{ transform: `translateY(${100 - (x.phut ? Math.max(8, (x.phut / max) * 100) : 6)}%)` }} />
+              </div>
               <span className="text-[10px] font-semibold text-soft">{t(`cal.${thu[hom.getDay()]}`)}</span>
             </div>
           );

@@ -34,7 +34,7 @@ export default function StreakWidget({ t, fixture }) {
   return (
     <section className="w-full rounded-3xl bg-surface/80 p-5 font-sans shadow-[0_8px_30px_rgb(0,0,0,0.04)] backdrop-blur-md transition-colors duration-300">
       <div className="flex items-center gap-4">
-        <span className="grid h-14 w-14 shrink-0 cursor-default place-items-center rounded-2xl bg-orange-50 transition-all duration-300 ease-out hover:-translate-y-1.5 hover:shadow-lg hover:shadow-orange-500/20 motion-reduce:transition-none motion-reduce:hover:translate-y-0 dark:bg-orange-500/10">
+        <span className="grid h-14 w-14 shrink-0 cursor-default place-items-center rounded-2xl bg-orange-50 dark:bg-orange-500/10">
           <Flame size={32} strokeWidth={2.2}
             className={`text-orange-500 ${d?.chuoi ? "mcf-lua fill-orange-500" : "fill-orange-500/30 opacity-60"}`} />
         </span>
@@ -82,7 +82,7 @@ export default function StreakWidget({ t, fixture }) {
                     trong lo hoạt ảnh bật vào. Tách hai lớp vì hoạt ảnh
                     `mcf-tich` giữ `transform` ở khung cuối và sẽ nuốt mất
                     `hover:-translate-y` nếu đặt chung một phần tử. */}
-                <span className="flex w-full cursor-default justify-center rounded-full transition-transform duration-300 ease-out hover:-translate-y-1.5 motion-reduce:transition-none motion-reduce:hover:translate-y-0">
+                <span className="flex w-full cursor-default justify-center rounded-full">
                 <span
                   style={style}
                   className={[

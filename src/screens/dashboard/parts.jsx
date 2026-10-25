@@ -22,8 +22,9 @@ const SOFT_SHADOW = "shadow-[0_8px_30px_rgb(0,0,0,0.04)]";
    thẻ nổi lên dứt khoát mà không nảy. Bóng đổ mượn màu chủ đạo ở độ mờ rất
    thấp: giữ đúng tông Soft UI, và tự đổi theo bản sáng/tối vì primary là
    token chứ không phải mã màu cứng. */
+/* 25/10 (rà soát animate-ui): chỉ chuyển transform + bóng, không transition-all. */
 const LIFT =
-  "transition-all duration-300 ease-[cubic-bezier(.25,.8,.25,1)] " +
+  "transition-[transform,box-shadow] duration-300 ease-out " +
   "hover:-translate-y-1 hover:shadow-[0_18px_40px_rgb(0,0,0,0.10)]";
 
 /* Vỏ ứng dụng vào trước nội dung: thanh bên 0ms, topbar 60ms. Mọi khối nội
@@ -269,7 +270,6 @@ export function StatTile({ Icon, label, value, unit, hint, tone = "ink", animate
         className={[
           "rounded-3xl p-5 text-white",
           STAT_GRADIENTS[gradient] || STAT_GRADIENTS.indigo,
-          "transition-all duration-300 ease-[cubic-bezier(.25,.8,.25,1)] hover:-translate-y-1",
         ].join(" ")}
       >
         {Icon && (
@@ -288,7 +288,7 @@ export function StatTile({ Icon, label, value, unit, hint, tone = "ink", animate
   }
 
   return (
-    <div className={`rounded-3xl bg-surface/80 p-4 backdrop-blur-md ${SOFT_SHADOW} ${LIFT}`}>
+    <div className={`rounded-3xl bg-surface/80 p-4 backdrop-blur-md ${SOFT_SHADOW}`}>
       <div className="flex items-center gap-2 text-soft">
         {Icon && <Icon size={15} />}
         <span className="text-xs font-bold uppercase tracking-wider">{label}</span>
@@ -342,8 +342,8 @@ export function ProgressBar({ value, max, label }) {
         aria-label={label}
         className="h-2 w-full overflow-hidden rounded-full bg-primary-soft"
       >
-        <div className="h-full rounded-full bg-primary transition-[width] duration-1000 ease-out"
-          style={{ width: `${w}%` }} />
+        <div className="h-full w-full rounded-full bg-primary transition-transform duration-[550ms] ease-out"
+          style={{ transform: `translateX(${w - 100}%)` }} />
       </div>
     </div>
   );

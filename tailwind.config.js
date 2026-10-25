@@ -8,6 +8,11 @@ const token = (name) => `rgb(var(--mcf-${name}-rgb) / <alpha-value>)`;
 export default {
   content: ["./index.html", "./src/**/*.{js,jsx}"],
 
+  // 25/10 (rà soát chuyển động theo animate-ui): `hover:` chỉ chạy trên thiết bị có chuột
+  // thật (@media (hover: hover)). Trước đó chạm vào thẻ trên điện thoại là thẻ nhấc lên
+  // và ĐỨNG YÊN như vậy tới khi chạm chỗ khác. Áp cho toàn app.
+  future: { hoverOnlyWhenSupported: true },
+
   // App bật bản tối bằng cách gắn class lên <html> (App.jsx quản lý).
   darkMode: ["selector", "html.mcf-dark-root"],
 

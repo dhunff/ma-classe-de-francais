@@ -110,7 +110,7 @@ export function Carousel({ title, action, children, t, count }) {
     el.scrollBy({ left: dir * Math.max(240, el.clientWidth - 120), behavior: "smooth" });
   };
 
-  const arrow = "grid h-8 w-8 place-items-center rounded-full border-0 bg-surface text-soft shadow-sm transition-all duration-200 enabled:cursor-pointer enabled:hover:scale-105 enabled:hover:text-primary disabled:opacity-30";
+  const arrow = "grid h-8 w-8 place-items-center rounded-full border-0 bg-surface text-soft shadow-sm transition-[color,transform] duration-150 ease-out enabled:cursor-pointer enabled:hover:text-primary enabled:active:scale-[0.97] disabled:opacity-30";
 
   return (
     <section>
@@ -147,8 +147,8 @@ export function Carousel({ title, action, children, t, count }) {
 export const CARD_SHELL =
   "snap-start shrink-0 rounded-3xl bg-surface/80 backdrop-blur-md " +
   "shadow-[0_8px_30px_rgb(0,0,0,0.04)] " +
-  "transition-all duration-300 ease-[cubic-bezier(.25,.8,.25,1)] " +
-  "hover:-translate-y-1 hover:shadow-[0_18px_40px_rgb(0,0,0,0.10)]";
+  "transition-[transform,box-shadow] duration-300 ease-out " +
+  "hover:-translate-y-1 hover:shadow-[0_18px_40px_rgb(0,0,0,0.10)] active:scale-[0.985]";
 
 /* Thẻ bài luyện tập. Bốn tầng thông tin theo đúng thứ tự mắt quét:
    kỹ năng → trình độ → tên bài → số câu và thời lượng.
@@ -195,7 +195,7 @@ export function PracticeCard({ ex, t, onOpen }) {
       <button
         type="button"
         onClick={() => onOpen?.(ex)}
-        className="mt-4 flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-full border-0 bg-surface2 px-4 py-2 font-[inherit] text-xs font-bold text-ink transition-all duration-200 hover:scale-[1.02] hover:bg-primary-soft hover:text-primary"
+        className="mt-4 flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-full border-0 bg-surface2 px-4 py-2 font-[inherit] text-xs font-bold text-ink transition-[color,background-color,transform] duration-200 ease-out hover:bg-primary-soft hover:text-primary active:scale-[0.97]"
       >
         {t("home.start")}
         <ArrowRight size={14} />
