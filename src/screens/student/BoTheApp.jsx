@@ -9,7 +9,7 @@ import { PAYMENT_KEY, memoSafe } from "../../shared/access.js";
 import { tr } from "../../shared/i18n.jsx";
 import { Leon } from "../../shared/leon.jsx";
 import { phat } from "../../shared/amThanh.js";
-import { docTheSoTu, onTheSoTu, themTu } from "../../shared/soTu.js";
+import { docTheSoTu, onTheSoTu, themTu, xoaTu } from "../../shared/soTu.js";
 import { xepLichOn, ngayCong } from "../../shared/sm2.js";
 import { BookMarked, ChevronRight, Plus } from "lucide-react";
 
@@ -98,6 +98,12 @@ export default function BoTheApp({ name }) {
     if (!d) { setTaoThe((x) => ({ ...x, dang: false, loi: tr("Chưa lưu được, thử lại nhé.", "Échec, réessayez.", "Couldn't save, try again.") })); return; }
     phat("dung"); setTaoThe({ tu: "", nghia: "", viDu: "", ok: d.tu }); docTheSoTu().then(setSoTu);
   };
+  /* Xoá thẻ của tôi: hỏi lại, xoá trên máy chủ (RLS chỉ chủ dòng), đối chiếu số dòng. */
+  const xoaThe = async (x) => {
+    if (!window.confirm(tr(`Xoá thẻ « ${x.matTruoc} »? Lịch ôn của thẻ cũng mất.`, `Supprimer « ${x.matTruoc} » ?`, `Delete « ${x.matTruoc} »?`))) return;
+    if (await xoaTu(x.id)) setSoTu((ds) => (ds ?? []).filter((y) => y.id !== x.id));
+    else window.alert(tr("Chưa xoá được, thử lại nhé.", "Échec de la suppression.", "Couldn't delete."));
+  };
   const moSoTu = () => { phat("batDau"); setBo({ id: "so-tu", ten: tr("Sổ từ của tôi", "Mon carnet", "My word list"), soTu: true }); setMan("GAME"); };
   useEffect(() => { if (new URLSearchParams(window.location.search).has("so-tu")) moSoTu(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -121,28 +127,9 @@ export default function BoTheApp({ name }) {
           ? "pointer-events-none -translate-x-full opacity-0"
           : "translate-x-0 opacity-100"}`}
       >
-        <div className="mx-auto flex max-w-5xl justify-end px-4 pt-6">
-          <button type="button" onClick={() => setTaoThe({ tu: "", nghia: "", viDu: "" })}
-            className="inline-flex cursor-pointer items-center gap-2 rounded-2xl border-0 border-b-4 border-solid border-emerald-800 bg-gradient-to-r from-emerald-500 to-teal-600 px-4 py-2.5 font-sans text-sm font-extrabold text-white shadow-md transition-transform hover:-translate-y-0.5">
-            <Plus size={17} /> {tr("Tạo thẻ của tôi", "Créer une carte", "Create a card")}
-          </button>
-        </div>
-        {Array.isArray(soTu) && soTu.length > 0 && (
-          <div className="mx-auto max-w-5xl px-4 pt-3">
-            <button type="button" onClick={moSoTu}
-              className="group flex w-full cursor-pointer items-center gap-4 rounded-3xl border-0 bg-gradient-to-r from-violet-500 to-indigo-600 p-4 text-left font-sans text-white shadow-[0_12px_28px_rgba(79,70,229,0.3)] transition-transform hover:-translate-y-0.5">
-              <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-white/20"><BookMarked size={24} /></span>
-              <span className="min-w-0 flex-1">
-                <span className="block text-base font-extrabold">{tr("Sổ từ của tôi", "Mon carnet de mots", "My word list")}</span>
-                <span className="block text-sm text-white/85">
-                  {tr(`${soTu.length} từ đã ghi · ${denHanSoTu} từ cần ôn hôm nay`, `${soTu.length} mots · ${denHanSoTu} à réviser aujourd'hui`, `${soTu.length} words · ${denHanSoTu} due today`)}
-                </span>
-              </span>
-              <ChevronRight size={22} className="shrink-0 transition-transform group-hover:translate-x-1" />
-            </button>
-          </div>
-        )}
-        <ThuVienBoThe ds={ds} onMo={moBo} />
+        {/* 26/10: « Thẻ của tôi » và « Bộ thẻ có sẵn » là hai tab ngang trong ThuVienBoThe. */}
+        <ThuVienBoThe ds={ds} onMo={moBo} soTu={soTu} onOnSoTu={moSoTu}
+          onTaoThe={() => setTaoThe({ tu: "", nghia: "", viDu: "" })} onXoaThe={xoaThe} />
       </div>
 
       {/* ── MÀN LUYỆN ──
