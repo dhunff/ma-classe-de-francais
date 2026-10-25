@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, ArrowRight, BookA, Check, XCircle, Volume2, AlertTriangle, Lightbulb, RotateCcw, Dumbbell, CircleCheck, Lock, LogIn, Mic } from "lucide-react";
 import { PhatAm } from "./NgheNoi.jsx";
 import { supabase } from "../../storageShim.js";
@@ -8,7 +8,8 @@ import { phat } from "../../shared/amThanh.js";
 import { Leon } from "../../shared/leon.jsx";
 import { usePracticeStore } from "../dashboard/PracticeRail.jsx";
 import { CHU_CAI, DAU, IPA } from "../../content/nguPhap/nhapMon.js";
-import { TAT_CA, CAP, chiaPhan, BAI_CONG_KHAI } from "../../content/nguPhap/index.js";
+import { TAT_CA, CAP, chiaPhan, BAI_CONG_KHAI, napSuaNguPhap } from "../../content/nguPhap/index.js";
+import SuaCauNguPhap from "../teacher/SuaCauNguPhap.jsx";
 import { ngayHomNay } from "../../shared/hoatDong.js";
 import { useSeo } from "../../shared/seo.js";
 import AM from "../../content/nguPhap/amThanh.json";
@@ -250,9 +251,12 @@ export function ThucHanh({ bai, cau, tieuDe, onXong, onKetQua }) {
   const [xem, setXem] = useState(false);
   const oNhap = useRef(null);
   const [baoLoi, setBaoLoi] = useState(null);                   // null | { ghiChu, trangThai }
+  /* Giáo viên (đường /professeur) sửa câu ngay tại chỗ (25/10, migration 166). */
+  const laGv = useLocation().pathname.startsWith("/professeur");
+  const [suaCau, setSuaCau] = useState(false);
   const guiBaoLoi = async () => {
     setBaoLoi((x) => ({ ...x, trangThai: "dang" }));
-    const { data, error } = await supabase.rpc("bao_loi_ngu_phap", { p_ma: c.__ma ?? bai?.ma, p_cau: c.de, p_ghi_chu: baoLoi?.ghiChu ?? "" });
+    const { data, error } = await supabase.rpc("bao_loi_ngu_phap", { p_ma: c.__ma ?? bai?.ma, p_cau: c.__goc ?? c.de, p_ghi_chu: baoLoi?.ghiChu ?? "" });
     setBaoLoi((x) => ({ ...x, trangThai: data?.ok ? "xong" : String(error?.message ?? "").includes("HET_LUOT") ? "het" : String(error?.message ?? "").includes("CHUA_DANG_NHAP") ? "loi" : "hong", chiTiet: error?.message ?? "" }));
   };
   const ghepSap = (c, v) => (v ?? []).map((k) => c.tu[k]).join(" ");
@@ -283,7 +287,7 @@ export function ThucHanh({ bai, cau, tieuDe, onXong, onKetQua }) {
     phat(d ? "dung" : "sai");
     /* Ôn câu sai (149): sai → vào danh sách ôn; đúng → giãn lịch nếu đã có. Chưa
      * đăng nhập (trang công khai) thì RPC từ chối, bỏ qua im lặng. */
-    supabase.rpc("ghi_cau_ngu_phap", { p_ma: c.__ma ?? bai?.ma, p_cau: c.de, p_dung: d, p_ngay: ngayHomNay() }).then(() => {}, () => {});
+    supabase.rpc("ghi_cau_ngu_phap", { p_ma: c.__ma ?? bai?.ma, p_cau: c.__goc ?? c.de, p_dung: d, p_ngay: ngayHomNay() }).then(() => {}, () => {});
   };
   const tiep = () => {
     setXem(false); setTl(null); setBaoLoi(null);
@@ -408,10 +412,14 @@ export function ThucHanh({ bai, cau, tieuDe, onXong, onKetQua }) {
                   </div>
                 </div>
               ) : (
+                <span className="flex flex-wrap items-center gap-3">
+                {laGv && <button type="button" onClick={() => setSuaCau(true)} className="mt-2 inline-flex cursor-pointer items-center gap-1 border-0 bg-transparent p-0 font-sans text-xs font-bold text-primary underline">{tr("Sửa câu này", "Modifier", "Edit")}</button>}
+                {suaCau && <SuaCauNguPhap ma={c.__ma ?? bai?.ma} goc={c.__goc ?? c.de} onDong={() => setSuaCau(false)} onXong={() => { setSuaCau(false); window.location.reload(); }} />}
                 <button type="button" onClick={() => setBaoLoi({ ghiChu: "" })}
                   className="mt-2 inline-flex cursor-pointer items-center gap-1 border-0 bg-transparent p-0 font-sans text-xs font-semibold text-soft underline hover:text-ink">
                   <AlertTriangle size={12} /> {tr("Báo lỗi câu này", "Signaler une erreur", "Report a mistake")}
                 </button>
+                </span>
               )}
             </div>
           )}
@@ -699,6 +707,9 @@ export default function NguPhap({ congKhai = false }) {
   const goc = congKhai ? "/ngu-phap" : "/etudiant/ngu-phap";
   const { ma } = useParams();
   const [ketQua, setKetQua] = useState({});
+  /* Lớp đè giáo viên sửa (migration 166): nạp xong thì dựng lại bài bằng key. */
+  const [pbSua, setPbSua] = useState(0);
+  useEffect(() => { napSuaNguPhap(supabase).then(setPbSua); }, []);
   useEffect(() => {
     let con = true;
     supabase.from("bai_hoc_ket_qua").select("ma_bai, diem, tong").then(({ data }) => {
@@ -741,9 +752,9 @@ export default function NguPhap({ congKhai = false }) {
     },
   });
   /* Bài xếp trình độ (17/10): sau mọi hook để giữ thứ tự hook. */
-  if (ma === "xep-trinh-do") return congKhai ? <KhungCongKhai><XepTrinhDo goc={goc} /></KhungCongKhai> : <XepTrinhDo goc={goc} />;
+  if (ma === "xep-trinh-do") return congKhai ? <KhungCongKhai><XepTrinhDo key={pbSua} goc={goc} /></KhungCongKhai> : <XepTrinhDo key={pbSua} goc={goc} />;
   if (ma && bai) {
-    const trang = moDuoc(bai) ? <TrangBai bai={bai} ketQua={ketQua[bai.ma]} onGhi={(d, t) => ghi(bai.ma, d, t)} goc={goc} congKhai={congKhai} /> : <BaiKhoa bai={bai} />;
+    const trang = moDuoc(bai) ? <TrangBai key={pbSua} bai={bai} ketQua={ketQua[bai.ma]} onGhi={(d, t) => ghi(bai.ma, d, t)} goc={goc} congKhai={congKhai} /> : <BaiKhoa bai={bai} />;
     return congKhai ? <KhungCongKhai>{trang}</KhungCongKhai> : trang;
   }
 

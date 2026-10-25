@@ -1,9 +1,10 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { Flag, Check, RotateCcw, ExternalLink } from "lucide-react";
+import { Flag, Check, RotateCcw, ExternalLink, Pencil } from "lucide-react";
 import { supabase } from "../../storageShim.js";
 import { tr } from "../../shared/i18n.jsx";
-import { TAT_CA, timCau } from "../../content/nguPhap/index.js";
+import { TAT_CA, timCau, laySua, napSuaNguPhap } from "../../content/nguPhap/index.js";
+import SuaCauNguPhap from "./SuaCauNguPhap.jsx";
 
 /* « Báo lỗi ngữ pháp » (16/10, migration 149): học sinh bấm « Báo lỗi câu này » ở
  * phần luyện tập của Học ngữ pháp; giáo viên xem, sửa nội dung trong mã nguồn
@@ -13,6 +14,11 @@ export default function BaoLoiNguPhap() {
   const [ds, setDs] = useState(null);
   const [loi, setLoi] = useState("");
   const [loc, setLoc] = useState("mo");          // mo | xong | tat
+  const [, setPbSua] = useState(0);              // lớp đè giáo viên sửa (166): nạp xong thì vẽ lại
+  const [dangSua, setDangSua] = useState(null);  // báo cáo đang mở khung sửa
+  useEffect(() => { napSuaNguPhap(supabase).then(setPbSua); }, []);
+  const veVe = (r) => supabase.from("ngu_phap_sua").delete().eq("ma_bai", r.ma_bai).eq("cau_goc", r.cau)
+    .then(() => napSuaNguPhap(supabase, { lamMoi: true })).then(setPbSua);
   const tenBai = useMemo(() => Object.fromEntries(TAT_CA.map((b) => [b.ma, `${b.cap} · ${b.ten}`])), []);
 
   const tai = async () => {
@@ -34,7 +40,7 @@ export default function BaoLoiNguPhap() {
   return (
     <div className="mx-auto max-w-4xl px-4 pb-24 pt-6">
       <h1 className="m-0 flex items-center gap-2 text-2xl font-extrabold text-ink"><Flag size={22} className="text-primary" /> {tr("Báo lỗi ngữ pháp", "Signalements de grammaire", "Grammar reports")}</h1>
-      <p className="m-0 mt-1 text-sm text-soft">{tr("Câu luyện trong « Học ngữ pháp » bị học sinh báo sai. Sửa nội dung trong src/content/nguPhap rồi đánh dấu đã xử lý.", "Exercices signalés dans « Grammaire ». Corrigez le contenu dans src/content/nguPhap puis marquez comme traité.", "Exercises reported in Grammar. Fix the content in src/content/nguPhap, then mark as handled.")}</p>
+      <p className="m-0 mt-1 text-sm text-soft">{tr("Câu luyện trong « Học ngữ pháp » bị học sinh báo sai. Bấm « Sửa câu » để sửa ngay, rồi đánh dấu đã xử lý.", "Exercices signalés dans « Grammaire ». Cliquez sur « Modifier », puis marquez comme traité.", "Exercises reported in Grammar. Click Edit to fix, then mark as handled.")}</p>
 
       <div className="mt-5 flex flex-wrap gap-2">
         {[["mo", tr(`Chưa xử lý (${soMo})`, `À traiter (${soMo})`, `Open (${soMo})`)], ["xong", tr("Đã xử lý", "Traités", "Handled")], ["tat", tr("Tất cả", "Tous", "All")]].map(([k, t]) => (
@@ -60,11 +66,15 @@ export default function BaoLoiNguPhap() {
                   <p lang="fr" className="m-0 mt-2 font-bold text-ink">{r.cau}</p>
                   {cau ? (
                     <p className="m-0 mt-1 text-xs text-soft">{tr("Đáp án hiện tại", "Réponse actuelle", "Current answer")}: <strong lang="fr" className="text-ink">{cau.loai === "qcm" ? cau.pa[cau.dap] : cau.loai === "vf" ? (cau.dung ? "Vrai" : "Faux") : cau.dap[0]}</strong></p>
+                  ) : laySua(r.ma_bai, r.cau)?.an ? (
+                    <p className="m-0 mt-1 text-xs font-bold text-soft">{tr("Câu này đang bị ẩn.", "Question masquée.", "Question hidden.")} <button type="button" onClick={() => veVe(r)} className="cursor-pointer border-0 bg-transparent p-0 font-sans text-xs font-bold text-primary underline">{tr("Hiện lại", "Réafficher", "Show again")}</button></p>
                   ) : (
                     <p className="m-0 mt-1 text-xs font-bold text-ok">{tr("Câu này không còn trong nội dung (đã sửa hoặc xoá).", "Cette question n'existe plus (corrigée ou supprimée).", "This question no longer exists (fixed or removed).")}</p>
                   )}
                   {r.ghi_chu && <p className="m-0 mt-2 rounded-xl bg-surface2 p-2.5 text-sm text-ink">{r.ghi_chu}</p>}
-                  <div className="mt-3">
+                  {dangSua === r.id && <SuaCauNguPhap ma={r.ma_bai} goc={r.cau} onDong={() => setDangSua(null)} onXong={() => { setDangSua(null); setPbSua((x) => x + 1); }} />}
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {cau && <button type="button" onClick={() => setDangSua(r.id)} className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border-0 bg-primary px-3 py-1.5 font-sans text-xs font-bold text-on-primary"><Pencil size={13} /> {tr("Sửa câu", "Modifier", "Edit")}</button>}
                     {r.da_xu_ly ? (
                       <button type="button" onClick={() => danhDau(r.id, false)} className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-solid border-line bg-surface px-3 py-1.5 font-sans text-xs font-bold text-ink"><RotateCcw size={13} /> {tr("Mở lại", "Rouvrir", "Reopen")}</button>
                     ) : (

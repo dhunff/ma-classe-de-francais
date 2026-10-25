@@ -52,7 +52,36 @@ export const BAI_CONG_KHAI = new Set(CAP.flatMap((c) => TAT_CA.filter((b) => b.c
 /* Chia bài thành các phần a, b, c…: cấu trúc soạn tay (bai.cauTruc hoặc cauTruc.js),
  * giải thích và câu luyện bổ sung ở boSung*.js theo thứ tự phần. */
 export function chiaPhan(bai) {
-  return themViDu(bai.ma, chiaPhanGoc(bai));
+  return apSua(bai.ma, themViDu(bai.ma, chiaPhanGoc(bai)));
+}
+
+/* Lớp đè do giáo viên sửa trên web (25/10, migration 166, bảng ngu_phap_sua).
+ * Khoá = (mã bài, đề GỐC). napSuaNguPhap() nạp một lần; màn nào cần vẽ lại sau khi
+ * nạp thì dùng phiên bản trả về làm phụ thuộc. Câu bị đè mang __goc = đề gốc. */
+let SUA = new Map();
+let phienBanSua = 0;
+let dangNap = null;
+export const laySua = (ma, goc) => SUA.get(`${ma}\u0000${goc}`) ?? null;
+export function napSuaNguPhap(supabase, { lamMoi = false } = {}) {
+  if (dangNap && !lamMoi) return dangNap;
+  dangNap = Promise.resolve(supabase.from("ngu_phap_sua").select("ma_bai, cau_goc, noi_dung, an")).then(({ data, error }) => {
+    if (error || !Array.isArray(data)) { dangNap = null; return phienBanSua; }
+    SUA = new Map(data.map((r) => [`${r.ma_bai}\u0000${r.cau_goc}`, r]));
+    chiMuc = null; phienBanSua += 1;
+    return phienBanSua;
+  }, () => { dangNap = null; return phienBanSua; });
+  return dangNap;
+}
+function apSua(ma, ds) {
+  if (!SUA.size) return ds;
+  return ds.map((p) => (!p.cau ? p : { ...p, cau: p.cau.flatMap((c) => {
+    const r = c && SUA.get(`${ma}\u0000${c.de}`);
+    if (!r) return [c];
+    if (r.an) return [];
+    const m = { ...c, ...r.noi_dung, __goc: c.de };
+    if (m.loai === "sap") m.goiY = m.de;
+    return [m];
+  }) }));
 }
 function chiaPhanGoc(bai) {
   const ct2 = CHI_TIET[bai.ma];
@@ -79,7 +108,11 @@ let chiMuc = null;
 export function timCau(ma, de) {
   if (!chiMuc) {
     chiMuc = new Map();
-    for (const b of TAT_CA) for (const p of chiaPhan(b)) for (const c of p.cau) chiMuc.set(`${b.ma}\u0000${c.de}`, { ...c, __ma: b.ma, __ten: b.ten });
+    for (const b of TAT_CA) for (const p of chiaPhan(b)) for (const c of p.cau) {
+      const x = { ...c, __ma: b.ma, __ten: b.ten };
+      chiMuc.set(`${b.ma}\u0000${c.de}`, x);
+      if (c.__goc) chiMuc.set(`${b.ma}\u0000${c.__goc}`, x);   // báo lỗi / lịch ôn ghi theo đề gốc
+    }
   }
   return chiMuc.get(`${ma}\u0000${de}`) ?? null;
 }
