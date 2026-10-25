@@ -210,7 +210,7 @@ function DienTu({ cau, onXong }) {
   );
 }
 
-function PhatAm({ cau, onXong }) {
+export function PhatAm({ cau, onXong }) {
   const [trangThai, setTT] = useState("cho");   // cho | ghi | gui | xong
   const [giay, setGiay] = useState(0);
   const [kq, setKq] = useState(null);

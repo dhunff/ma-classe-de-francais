@@ -1,0 +1,118 @@
+/* Luyện nói trong các bài PHÁT ÂM A0 (25/10, theo chủ dự án): mỗi phần 5 từ / cụm ngắn
+ * để học sinh nghe mẫu, đọc, được máy chép lại và chữa. Khoá "mã-bài#chỉ-số-phần".
+ * Mỗi mục: [mã cau_luyen, tiếng Pháp, nghĩa, mẹo chữa phát âm]. Câu nạp vào bảng
+ * cau_luyen (loai 'phat_am', cap 'A0') bởi scripts/nghe-noi/nap-a0.mjs, kèm audio mẫu. */
+export const LUYEN_NOI_A0 = {
+  "nm-am#0": [
+    ["pa-a0-01", "le beau gâteau", "chiếc bánh đẹp", "eau, au đều đọc /o/ như « ô »."],
+    ["pa-a0-02", "une fille gentille", "một cô gái dễ thương", "ill đọc /j/ như « i-ơ » lướt: « phi-i-ơ »."],
+    ["pa-a0-03", "la femme", "người phụ nữ", "e trước mm đọc /a/: « phăm »."],
+    ["pa-a0-04", "un oiseau", "một con chim", "oi đọc /wa/: « oa-dô »."],
+    ["pa-a0-05", "le monsieur", "quý ông", "mon trong monsieur đọc /mə/: « mơ-xi-ơ »."],
+  ],
+  "nm-am#1": [
+    ["pa-a0-06", "l'été", "mùa hè", "é khép, miệng hẹp, cười nhẹ: « ê-tê »."],
+    ["pa-a0-07", "la mère", "người mẹ", "è mở, miệng mở rộng hơn é."],
+    ["pa-a0-08", "deux", "hai", "eu khép: môi tròn chu, lưỡi như « ê »."],
+    ["pa-a0-09", "la peur", "nỗi sợ", "eu mở trước r: môi tròn, miệng mở hơn « deux »."],
+    ["pa-a0-10", "vous avez vu", "các bạn đã thấy", "ou /u/ khác u /y/: u là môi tròn, lưỡi như « i »."],
+  ],
+  "nm-am#2": [
+    ["pa-a0-11", "le temps", "thời gian", "an, en, em: âm mũi /ɑ̃/, không bật n cuối."],
+    ["pa-a0-12", "bonjour", "xin chào", "on: âm mũi /ɔ̃/, môi tròn, không đọc n."],
+    ["pa-a0-13", "le pain", "bánh mì", "ain: âm mũi /ɛ̃/, gần « anh » nhưng không ngậm."],
+    ["pa-a0-14", "bon et bonne", "tốt (đực) và tốt (cái)", "bon mũi, bonne không mũi vì sau n là nguyên âm: « bon », « bon-nơ »."],
+    ["pa-a0-15", "un vin blanc", "rượu vang trắng", "ba âm mũi liền nhau: in, an; giữ hơi qua mũi."],
+  ],
+  "nm-am#3": [
+    ["pa-a0-16", "la rue", "con phố", "u /y/: nói « i » rồi tròn môi, không đọc thành « ru »."],
+    ["pa-a0-17", "Paris", "Paris", "r xát ở cuống họng như « gh » nhẹ, không rung đầu lưỡi."],
+    ["pa-a0-18", "rouge", "màu đỏ", "r cuống họng, j /ʒ/ như « gi » kéo dài."],
+    ["pa-a0-19", "huit", "số tám", "ui /ɥi/: lướt nhanh từ « uy » sang « i »."],
+    ["pa-a0-20", "oui, merci", "vâng, cảm ơn", "oui /wi/ một nhịp; r trong merci ở cuống họng."],
+  ],
+  "nm-chu-ghep#0": [
+    ["pa-a0-21", "la bouche", "cái miệng", "ou đọc /u/ như « u »."],
+    ["pa-a0-22", "le roi", "nhà vua", "oi đọc /wa/: « roa »."],
+    ["pa-a0-23", "aussi", "cũng vậy", "au đọc /o/: « ô-xi »."],
+    ["pa-a0-24", "l'eau", "nước", "eau đọc /o/, không đọc từng chữ."],
+    ["pa-a0-25", "trois oiseaux", "ba con chim", "oi + nối âm z: « troa-doa-dô »."],
+  ],
+  "nm-chu-ghep#1": [
+    ["pa-a0-26", "la maison", "ngôi nhà", "ai đọc /ɛ/ như « e » mở; s giữa hai nguyên âm đọc /z/."],
+    ["pa-a0-27", "la neige", "tuyết", "ei đọc /ɛ/: « ne-giơ »."],
+    ["pa-a0-28", "le frère", "anh / em trai", "è mở, r cuống họng."],
+    ["pa-a0-29", "le feu", "lửa", "eu khép: môi tròn chu."],
+    ["pa-a0-30", "le cœur", "trái tim", "œu mở: môi tròn, miệng mở rộng."],
+  ],
+  "nm-chu-ghep#2": [
+    ["pa-a0-31", "l'enfant", "đứa trẻ", "en, an đều /ɑ̃/, t cuối câm."],
+    ["pa-a0-32", "le jardin", "khu vườn", "in /ɛ̃/, không đọc n."],
+    ["pa-a0-33", "la main", "bàn tay", "ain /ɛ̃/ giống in."],
+    ["pa-a0-34", "le pont", "cây cầu", "on /ɔ̃/, t cuối câm."],
+    ["pa-a0-35", "un lundi", "một ngày thứ Hai", "un /œ̃/ (nhiều người đọc như in)."],
+  ],
+  "nm-chu-ghep#3": [
+    ["pa-a0-36", "le chat", "con mèo", "ch đọc /ʃ/ như « s » uốn lưỡi, không phải « ch » Việt."],
+    ["pa-a0-37", "la photo", "bức ảnh", "ph đọc /f/."],
+    ["pa-a0-38", "la montagne", "ngọn núi", "gn đọc /ɲ/ như « nh »."],
+    ["pa-a0-39", "quatre", "số bốn", "qu đọc /k/, không đọc « qu » Việt."],
+    ["pa-a0-40", "le soleil", "mặt trời", "eil cuối đọc /ɛj/: « xô-le-i »."],
+  ],
+  "nm-chu-ghep#4": [
+    ["pa-a0-41", "le café", "cà phê", "c trước a, o, u đọc /k/."],
+    ["pa-a0-42", "le citron", "quả chanh", "c trước i, e đọc /s/."],
+    ["pa-a0-43", "le garçon", "cậu bé", "g trước a đọc /g/; ç đọc /s/."],
+    ["pa-a0-44", "la page", "trang sách", "g trước e đọc /ʒ/ « gi »."],
+    ["pa-a0-45", "la rose et le poisson", "hoa hồng và con cá", "s giữa hai nguyên âm /z/; ss đọc /s/."],
+  ],
+  "nm-quy-tac-doc#0": [
+    ["pa-a0-46", "un petit chat", "một con mèo nhỏ", "t cuối của petit và chat đều câm."],
+    ["pa-a0-47", "très grand", "rất cao", "s, d cuối câm."],
+    ["pa-a0-48", "avec le chef", "với ông chủ", "c, f cuối được đọc (CaReFuL)."],
+    ["pa-a0-49", "ils parlent", "họ nói", "-ent cuối câm: đọc như « il parle »."],
+    ["pa-a0-50", "parler et finir", "nói và kết thúc", "-er đọc « ê »; -ir đọc rõ r."],
+  ],
+  "nm-quy-tac-doc#1": [
+    ["pa-a0-51", "une table", "cái bàn", "e cuối câm: « tabl »."],
+    ["pa-a0-52", "petit, petite", "nhỏ (đực, cái)", "giống cái đọc t: « pơ-ti », « pơ-tít »."],
+    ["pa-a0-53", "grand, grande", "cao (đực, cái)", "giống cái đọc d: « grăng », « grăngđ »."],
+    ["pa-a0-54", "samedi", "thứ Bảy", "e giữa từ thường lướt: « xam-đi »."],
+    ["pa-a0-55", "je ne sais pas", "tôi không biết", "nói nhanh, e lướt: « giơn-xê-pa »."],
+  ],
+  "nm-quy-tac-doc#2": [
+    ["pa-a0-56", "les amis", "những người bạn", "nối s thành /z/: « lê-da-mi »."],
+    ["pa-a0-57", "vous avez", "các bạn có", "nối /z/: « vu-da-vê »."],
+    ["pa-a0-58", "un enfant", "một đứa trẻ", "nối n: « ơ-năng-phăng »."],
+    ["pa-a0-59", "ils ont", "họ có", "nối /z/: « in-dông », khác « ils sont »."],
+    ["pa-a0-60", "deux heures", "hai giờ", "nối x thành /z/: « đơ-dơ »."],
+  ],
+  "nm-quy-tac-doc#3": [
+    ["pa-a0-61", "j'aime", "tôi thích", "je + aime đọc liền: « giem »."],
+    ["pa-a0-62", "l'homme", "người đàn ông", "h câm, le → l': « lom »."],
+    ["pa-a0-63", "c'est l'école", "đó là trường học", "đọc liền: « xê-lê-côl »."],
+    ["pa-a0-64", "il n'est pas là", "anh ấy không có ở đó", "n'est đọc liền: « in-nê-pa-la »."],
+    ["pa-a0-65", "un verre d'eau", "một cốc nước", "de → d' đọc liền với eau: « đô »."],
+  ],
+  "nm-nhip-ngu-dieu#0": [
+    ["pa-a0-66", "bonjour", "xin chào", "nhấn âm tiết CUỐI: bon-JOUR."],
+    ["pa-a0-67", "le restaurant", "nhà hàng", "nhấn cuối: res-tau-RANT."],
+    ["pa-a0-68", "un café noir", "một cà phê đen", "cả nhóm chỉ nhấn ở cuối: un ca-fé NOIR."],
+    ["pa-a0-69", "je m'appelle Marie", "tôi tên Marie", "nhấn cuối nhóm: je m'ap-pelle Ma-RIE."],
+    ["pa-a0-70", "à la gare", "ở nhà ga", "các âm tiết đều nhau, nhấn cuối: à la GARE."],
+  ],
+  "nm-nhip-ngu-dieu#1": [
+    ["pa-a0-71", "il habite à Paris", "anh ấy sống ở Paris", "đọc liền mạch, không ngắt từng từ: « i-la-bi-ta-pa-ri »."],
+    ["pa-a0-72", "elle arrive", "cô ấy đến", "nối liền: « e-la-ri-vơ »."],
+    ["pa-a0-73", "une amie italienne", "một người bạn Ý", "đọc thành một hơi: « uy-na-mi-i-ta-li-en »."],
+    ["pa-a0-74", "quatre enfants", "bốn đứa trẻ", "tr nối với en: « ca-trăng-phăng »."],
+    ["pa-a0-75", "avec elle", "với cô ấy", "c nối với e: « a-ve-kel »."],
+  ],
+  "nm-nhip-ngu-dieu#2": [
+    ["pa-a0-76", "Tu viens ?", "Bạn đến không?", "câu hỏi: lên giọng ở cuối."],
+    ["pa-a0-77", "Tu viens.", "Bạn đến.", "câu kể: xuống giọng ở cuối."],
+    ["pa-a0-78", "Ça va ?", "Khoẻ không?", "lên giọng ở « va »."],
+    ["pa-a0-79", "Où est la gare ?", "Nhà ga ở đâu?", "câu có từ để hỏi: giọng cao ở đầu rồi hạ dần."],
+    ["pa-a0-80", "C'est super !", "Tuyệt quá!", "câu cảm thán: nhấn mạnh và cao ở « super »."],
+  ],
+};

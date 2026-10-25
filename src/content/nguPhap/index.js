@@ -21,13 +21,18 @@ import { VI_DU_A2 } from "./viDuA2.js";
 import { VI_DU_B1 } from "./viDuB1.js";
 import { VI_DU_B2 } from "./viDuB2.js";
 import { VI_DU_C1 } from "./viDuC1.js";
+import { LUYEN_NOI_A0 } from "./luyenNoiA0.js";
 
 /* Ví dụ bổ sung (24/10, theo chủ dự án: phần học thiếu ví dụ). Khoá "mã#chỉ-số-phần";
    mỗi mục "tiếng Pháp | nghĩa". Gắn thành khối « vidu » ở CUỐI phần, sau giải thích. */
 const VI_DU = { ...VI_DU_A0_A1, ...VI_DU_A2, ...VI_DU_B1, ...VI_DU_B2, ...VI_DU_C1 };
 const themViDu = (ma, ds) => ds.map((p, j) => {
   const vd = VI_DU[`${ma}#${j}`];
-  return vd ? { ...p, khoi: [...p.khoi, { loai: "vidu", nhan: true, ds: vd.map((x) => x.split("|").map((y) => y.trim())) }] } : p;
+  const ln = LUYEN_NOI_A0[`${ma}#${j}`];
+  return { ...p, khoi: [...p.khoi,
+    ...(vd ? [{ loai: "vidu", nhan: true, ds: vd.map((x) => x.split("|").map((y) => y.trim())) }] : []),
+    /* 25/10: bài phát âm A0 có khối « Luyện nói »: đọc, máy chép lại và chữa. */
+    ...(ln ? [{ loai: "luyenNoi", ds: ln.map(([maCau, cau, nghia, meo]) => ({ ma: maCau, cau, nghia, meo })) }] : [])] };
 });
 
 /* Chia chi tiết (17/10): ghi đè cách chia phần cũ cho bài có mặt ở đây. */

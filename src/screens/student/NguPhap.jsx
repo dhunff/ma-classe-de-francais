@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, ArrowRight, BookA, Check, XCircle, Volume2, AlertTriangle, Lightbulb, RotateCcw, Dumbbell, CircleCheck, Lock, LogIn } from "lucide-react";
+import { ArrowLeft, ArrowRight, BookA, Check, XCircle, Volume2, AlertTriangle, Lightbulb, RotateCcw, Dumbbell, CircleCheck, Lock, LogIn, Mic } from "lucide-react";
+import { PhatAm } from "./NgheNoi.jsx";
 import { supabase } from "../../storageShim.js";
 import { tr } from "../../shared/i18n.jsx";
 import { phat } from "../../shared/amThanh.js";
@@ -146,9 +147,60 @@ function KhoiIpa() {
   );
 }
 
+/* Luyện nói trong bài phát âm A0 (25/10). Câu và audio mẫu ở bảng cau_luyen (161, nạp bởi
+   scripts/nghe-noi/nap-a0.mjs); chấm bằng cham-phat-am qua đúng component PhatAm của
+   « Nghe & Nói » (máy chép lại, tô từ nghe sai, mẹo chữa). Cần đăng nhập để chấm. */
+function KhoiLuyenNoi({ k }) {
+  const [ds, setDs] = useState(null);
+  const [chon, setChon] = useState(0);
+  const [dangNhap, setDangNhap] = useState(null);
+  const [xong, setXong] = useState({});
+  useEffect(() => {
+    let con = true;
+    supabase.from("cau_luyen").select("id, ma, cau, nghia, meo, audio_url").in("ma", k.ds.map((x) => x.ma))
+      .then(({ data }) => { if (con) setDs(Array.isArray(data) ? k.ds.map((x) => data.find((d) => d.ma === x.ma)).filter(Boolean) : []); });
+    supabase.auth.getSession().then(({ data }) => { if (con) setDangNhap(!!data?.session); });
+    return () => { con = false; };
+  }, [k]);
+  const cau = ds?.[chon];
+  return (
+    <div className="mt-5 rounded-2xl border-2 border-solid border-rose-200 bg-rose-50/60 p-4 dark:border-rose-500/30 dark:bg-rose-500/10">
+      <p className="m-0 flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-wider text-rose-600 dark:text-rose-300"><Mic size={14} /> {tr("Luyện nói", "À vous de parler", "Speaking practice")}</p>
+      <p className="m-0 mt-1 text-sm text-soft">{tr("Nghe mẫu, bấm ghi âm và đọc. Máy chép lại những gì nó nghe được, từ đỏ là chỗ cần sửa.", "Écoutez, enregistrez-vous : la machine transcrit, les mots en rouge sont à corriger.", "Listen, record yourself: red words need fixing.")}</p>
+      {ds === null ? <p className="m-0 mt-3 text-sm text-soft">{tr("Đang tải…", "Chargement…", "Loading…")}</p> : !ds.length ? null : (
+        <>
+          <div className="mt-3 flex flex-wrap gap-1.5">
+            {ds.map((c, i) => (
+              <button key={c.id} type="button" onClick={() => setChon(i)}
+                className={"cursor-pointer rounded-xl border-2 border-solid px-3 py-1.5 font-sans text-sm font-bold transition-colors " + (i === chon ? "border-rose-500 bg-rose-500 text-white" : "border-line bg-surface text-ink hover:border-rose-300")}>
+                <span lang="fr">{c.cau}</span>{xong[c.id] != null && <span className="ml-1">{xong[c.id] >= 0.9 ? "✓" : "·"}</span>}
+              </button>
+            ))}
+          </div>
+          {cau && (
+            <div className="mt-4 rounded-2xl bg-surface p-4">
+              <p lang="fr" className="m-0 text-2xl font-extrabold text-ink">{cau.cau}</p>
+              <p className="m-0 mt-0.5 text-sm text-soft">{cau.nghia}</p>
+              <div className="mt-3">
+                {dangNhap === false ? (
+                  <>
+                    {cau.audio_url && <audio controls src={cau.audio_url} className="w-full" />}
+                    <p className="m-0 mt-2 text-sm font-semibold text-primary">{tr("Đăng nhập để ghi âm và được chữa phát âm.", "Connectez-vous pour être corrigé.", "Sign in to record and get feedback.")}</p>
+                  </>
+                ) : <PhatAm key={cau.id} cau={cau} onXong={(d) => setXong((x) => ({ ...x, [cau.id]: d }))} />}
+              </div>
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
 function Khoi({ k }) {
   if (k.loai === "doan") return <div className="mcf-bai-hoc text-[15px] leading-relaxed text-ink [&_h3]:m-0 [&_h3]:mb-1 [&_h3]:mt-4 [&_h3]:text-base [&_h3]:font-extrabold [&_p]:m-0 [&_p]:mb-2" dangerouslySetInnerHTML={{ __html: k.html }} />;
   if (k.loai === "bang") return <KhoiBang k={k} />;
+  if (k.loai === "luyenNoi") return <KhoiLuyenNoi k={k} />;
   if (k.loai === "chuCai") return <KhoiChuCai />;
   if (k.loai === "dau") return <KhoiDau />;
   if (k.loai === "ipa") return <KhoiIpa />;
