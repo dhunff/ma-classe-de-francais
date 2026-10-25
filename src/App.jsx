@@ -299,6 +299,7 @@ function AppInner() {
               <Route path="/professeur/bo-the" element={<SoanBoThe />} />
               <Route path="/professeur/duyet-nhap" element={<DuyetNhap />} />
               <Route path="/professeur/bao-loi-ngu-phap" element={<BaoLoiNguPhap />} />
+              <Route path="/professeur/ngu-phap/:ma" element={<NguPhap />} />
 
               <Route path="/professeur/*" element={<Navigate to="/professeur/dashboard" replace />} />
             </Route>

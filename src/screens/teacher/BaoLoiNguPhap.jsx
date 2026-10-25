@@ -55,7 +55,7 @@ export default function BaoLoiNguPhap() {
                   <div className="flex flex-wrap items-center gap-2 text-xs text-soft">
                     <span className="font-bold text-ink">{tenBai[r.ma_bai] ?? r.ma_bai}</span>
                     <span>· {new Date(r.tao_luc).toLocaleString()}</span>
-                    <Link to={`/etudiant/ngu-phap/${r.ma_bai}`} className="inline-flex items-center gap-1 font-bold text-primary no-underline"><ExternalLink size={12} /> {tr("Mở bài", "Ouvrir", "Open")}</Link>
+                    <Link to={`/professeur/ngu-phap/${r.ma_bai}`} className="inline-flex items-center gap-1 font-bold text-primary no-underline"><ExternalLink size={12} /> {tr("Mở bài", "Ouvrir", "Open")}</Link>
                   </div>
                   <p lang="fr" className="m-0 mt-2 font-bold text-ink">{r.cau}</p>
                   {cau ? (
