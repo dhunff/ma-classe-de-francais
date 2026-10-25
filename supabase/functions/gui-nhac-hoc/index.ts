@@ -76,6 +76,18 @@ Deno.serve(async (req) => {
   const ngay: string = data.ngay;
   const ds: Nguoi[] = data.ds ?? [];
 
+  /* guiThu: gửi MỘT mail mẫu tới địa chỉ chỉ định (dữ liệu minh hoạ, không ghi nhật ký). */
+  if (typeof body?.guiThu === "string" && /^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i.test(body.guiThu)) {
+    const khoaThu = Deno.env.get("RESEND_API_KEY");
+    if (!khoaThu) return json(503, { error: "CHUA_CAU_HINH_KHOA" });
+    const m = soanMail(loai, { uid: "", email: body.guiThu, ten: "bạn", token: "00000000-0000-0000-0000-000000000000", chuoi: 7, ngay_tuan: 4, xp_tuan: 120 });
+    const r = await fetch("https://api.resend.com/emails", {
+      method: "POST", headers: { Authorization: `Bearer ${khoaThu}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ from: NGUOI_GUI, to: [body.guiThu], reply_to: TRA_LOI, subject: `[Thử] ${m.subject}`, html: m.html }),
+    });
+    return json(r.ok ? 200 : 502, { guiThu: body.guiThu, ketQua: await r.json().catch(() => null) });
+  }
+
   if (body?.xemThu) {
     const m = ds[0] ? soanMail(loai, ds[0]) : null;
     return json(200, { ngay, soNguoi: ds.length, mau: m && { subject: m.subject, html: m.html } });
