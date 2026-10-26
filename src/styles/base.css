@@ -227,6 +227,38 @@ button, input, select, textarea { font-family: inherit; }
  * chấm để viết. CỐ Ý không đảo theo bản tối (như tờ đề thật), nên màu viết
  * thẳng ở đây thay vì đi qua token, ngoại lệ có chủ đích như STAT_GRADIENTS. */
 .de-ban { background: #d9d9d9; }
+/* 26/10: tờ đề luôn sáng. Bản tối đảo token nên chữ consigne (text-soft) thành
+ * xám nhạt trên giấy trắng, nút âm thanh (bg-surface2) thành đen. Trong .de-ban
+ * đặt lại mọi token về bộ sáng của :root (chép tự động từ tokens.css). */
+html.mcf-dark-root .de-ban, .mcf-dark .de-ban {
+  --mcf-bg: #F1F5F9;             --mcf-bg-rgb: 241 245 249;
+  --mcf-surface: #FFFFFF;        --mcf-surface-rgb: 255 255 255;
+  --mcf-card: #FFFFFF;
+  --mcf-surface2: #FAFAFC;       --mcf-surface2-rgb: 250 250 252;
+  --mcf-ink: #23232E;            --mcf-ink-rgb: 35 35 46;
+  --mcf-soft: #6E7280;           --mcf-soft-rgb: 110 114 128;
+  --mcf-line: #EDF0F5;           --mcf-line-rgb: 237 240 245;
+  --mcf-line-strong: #8E8E99;    --mcf-line-strong-rgb: 142 142 153;
+  --mcf-primary: #2563EB;        --mcf-primary-rgb: 37 99 235;
+  --mcf-primarysoft: #EFF6FF;    --mcf-primarysoft-rgb: 239 246 255;
+  --mcf-on-primary: #FFFFFF;     --mcf-on-primary-rgb: 255 255 255;
+  --mcf-ok: #2F7D5C;             --mcf-ok-rgb: 47 125 92;
+  --mcf-oksoft: #E6F3EC;         --mcf-oksoft-rgb: 230 243 236;
+  --mcf-warn: #9A6111;           --mcf-warn-rgb: 154 97 17;
+  --mcf-warnsoft: #FBF1E0;       --mcf-warnsoft-rgb: 251 241 224;
+  --mcf-danger: #C43636;         --mcf-danger-rgb: 196 54 54;
+  --mcf-dangersoft: #FBEAEA;     --mcf-dangersoft-rgb: 251 234 234;
+  --mcf-ok-ring: rgba(47, 125, 92, .55);
+  --f-display: 'Plus Jakarta Sans', -apple-system, 'Segoe UI', sans-serif;
+  --f-ui: 'Plus Jakarta Sans', -apple-system, 'Segoe UI', sans-serif;
+  --f-read: 'Plus Jakarta Sans', -apple-system, 'Segoe UI', sans-serif;
+  --sp-1: 4px;  --sp-2: 8px;  --sp-3: 12px; --sp-4: 16px; --sp-5: 24px;
+  --sp-6: 32px; --sp-7: 40px; --sp-8: 48px; --sp-9: 64px; --sp-10: 80px;
+  --r-sm: 14px; --r-md: 22px; --r-full: 999px;
+  --sh-1: 0 2px 8px rgba(35,35,46,.04), 0 8px 24px rgba(35,35,46,.05);
+  --sh-2: 0 12px 40px rgba(35,35,46,.10), 0 2px 8px rgba(35,35,46,.04);
+  color-scheme: light;
+}
 .de-giay { background: #fff; color: #111; font-family: "Roboto Condensed", "Arial Narrow", Arial, sans-serif; box-shadow: 0 2px 14px rgba(0,0,0,.18); }
 .de-giay * { font-family: inherit; }
 .de-dau-trang { background: #efefef; border-bottom: 2px solid #111; color: #222; letter-spacing: .02em; }
