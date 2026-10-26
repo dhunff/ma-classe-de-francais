@@ -28,6 +28,8 @@ export function deDaChon(ex, id) {
 
 const mmss = (s) => `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
 
+const BOC_GIAY = 30;
+
 export default function BocThamNoi({ ex, khoa, children }) {
   const bt = ex?.bocTham;
   const k = khoaBoc(khoa);
@@ -48,6 +50,31 @@ export default function BocThamNoi({ ex, khoa, children }) {
     }, 250);
     return () => clearInterval(t);
   }, [bt, st.batDau, st.noi]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  /* 26/10 (chủ dự án): bốc thăm + chọn đề chỉ trong 30 giây. Mốc lưu cùng trạng thái
+     nên tải lại trang không được thêm giờ. Hết giờ: phần nào chưa bốc thì bốc hộ,
+     chưa chọn thì lấy đề đầu, rồi tự vào giờ chuẩn bị. */
+  const [conBoc, setConBoc] = useState(BOC_GIAY);
+  useEffect(() => {
+    if (!bt || st.batDau) return;
+    if (!st.bocLuc) { capNhat({ ...st, bocLuc: Date.now() }); return; }
+    const het = st.bocLuc + BOC_GIAY * 1000;
+    const t = setInterval(() => {
+      const c = Math.max(0, Math.ceil((het - Date.now()) / 1000));
+      setConBoc(c);
+      if (c === 0) {
+        clearInterval(t);
+        const rutMoi = { ...st.rut }, chonMoi = { ...st.chon };
+        bt.phan.forEach((ph, i) => {
+          if (!rutMoi[i]) rutMoi[i] = [...ph.sujets].sort(() => Math.random() - 0.5).slice(0, ph.soRut).map((x) => x.ma);
+          if (!chonMoi[i]) chonMoi[i] = rutMoi[i][0];
+        });
+        phat("batDau");
+        capNhat({ ...st, rut: rutMoi, chon: chonMoi, batDau: Date.now() });
+      }
+    }, 250);
+    return () => clearInterval(t);
+  }, [bt, st]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!bt) return children;
 
@@ -104,6 +131,11 @@ export default function BocThamNoi({ ex, khoa, children }) {
   /* ── 1. BỐC THĂM ── */
   return (
     <div className="grid gap-6">
+      <div className={`flex items-center gap-3 border-[1.5px] border-solid p-3 ${conBoc <= 10 ? "border-[#c00] bg-[#fff1f1] text-[#c00]" : "border-[#111] bg-[#f4f4f4] text-[#111]"}`}>
+        <Shuffle size={18} />
+        <p className="m-0 min-w-0 flex-1 text-[13px] font-bold">{tr("Bốc thăm và chọn đề trong 30 giây. Hết giờ sẽ tự chọn đề đầu tiên.", "Tirez et choisissez en 30 secondes. Ensuite, le premier sujet est retenu.", "Draw and choose within 30 seconds. Then the first task is kept.")}</p>
+        <span className="text-[26px] font-bold tabular-nums">{mmss(conBoc)}</span>
+      </div>
       {bt.phan.map((ph, i) => {
         const daRut = st.rut?.[i];
         return (
