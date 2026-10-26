@@ -70,7 +70,7 @@ export default function NhanXetAI({ answerId, rubric, level, feedback, mau }) {
         <span className="grid h-9 w-9 place-items-center rounded-xl bg-primary text-white"><Award size={18} /></span>
         <div className="min-w-0 flex-1">
           <p className="m-0 text-sm font-extrabold text-ink">{tr("Phiếu nhận xét · DELF", "Fiche d'évaluation · DELF", "Assessment sheet · DELF")} {level}</p>
-          <p className="m-0 text-[11px] text-soft">{tr("Giám khảo AI chấm theo grille chính thức ·", "Correcteur IA, grille officielle ·", "AI examiner, official grid ·")} {d.model}</p>
+          <p className="m-0 text-[11px] text-soft">{tr("Giám khảo AI chấm theo grille chính thức", "Correcteur IA, grille officielle", "AI examiner, official grid")}</p>
         </div>
         <span className="text-xl font-extrabold tabular-nums text-ink">{g.tong}<span className="text-sm text-soft">/{g.tong_toi_da}</span></span>
       </header>
