@@ -22,7 +22,7 @@ function khung(anh: string, tieuDe: string, than: string, nut: string, link: str
   return `<!doctype html><html lang="vi"><body style="margin:0;background:#eef3fb;font-family:'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#1c2333">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="padding:24px 12px"><tr><td align="center">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background:#ffffff;border-radius:24px;padding:32px 28px">
-<tr><td align="center"><img src="${WEB}/leon/mail/${anh}.png" width="120" height="120" alt="Leon" style="display:block;border:0"></td></tr>
+<tr><td align="center"><img src="${WEB}/leon/mail/${anh}.png?v=2" width="120" height="120" alt="Leon" style="display:block;border:0"></td></tr>
 <tr><td style="padding-top:16px;font-size:22px;font-weight:700;text-align:center">${tieuDe}</td></tr>
 <tr><td style="padding-top:12px;font-size:15px;line-height:1.6;text-align:center;color:#4a5468">${than}</td></tr>
 <tr><td align="center" style="padding-top:24px"><a href="${link}" style="display:inline-block;background:#2563eb;color:#ffffff;text-decoration:none;font-weight:700;font-size:16px;padding:14px 32px;border-radius:999px">${nut}</a></td></tr>
