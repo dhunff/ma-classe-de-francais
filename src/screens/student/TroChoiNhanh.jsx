@@ -1,6 +1,9 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Heart, Headphones, CloudRain, VenusAndMars, Play, RotateCcw, Trophy, Volume2, Loader2, Shuffle, Crosshair, Check, X } from "lucide-react";
+import { ArrowLeft, Heart, Headphones, CloudRain, VenusAndMars, Play, RotateCcw, Trophy, Volume2, Loader2, Shuffle, Crosshair, Check, X, Keyboard, DoorOpen, DoorClosed, Search, Landmark, MapPinned } from "lucide-react";
+import { PhatAm } from "./NgheNoi.jsx";
+import { soCau } from "../../../supabase/functions/_shared/soCau.js";
+import { THAM_TU, DO_VUI, PHIEU_LUU } from "../../content/troChoi/docVanHoa.js";
 import { tr } from "../../shared/i18n.jsx";
 import { phat } from "../../shared/amThanh.js";
 import { Leon } from "../../shared/leon.jsx";
@@ -14,7 +17,7 @@ const TRO_CHOI = () => [
   { ma: "gioi_tinh", nhom: "tu", Icon: VenusAndMars, nen: "from-sky-500 to-pink-500",
     ten: tr("Le hay La?", "Le ou La ?", "Le or La?"),
     mo: tr("60 giây đoán giống đực / giống cái của danh từ. Đúng liên tiếp để nhân điểm.", "60 secondes pour trouver le genre des noms. Enchaînez pour multiplier.", "60 seconds to guess noun gender. Streaks multiply points.") },
-  { ma: "nghe_chon", nhom: "tu", Icon: Headphones, nen: "from-indigo-500 to-violet-600",
+  { ma: "nghe_chon", nhom: "ng", Icon: Headphones, nen: "from-indigo-500 to-violet-600",
     ten: tr("Nghe và chọn", "Écoute et choisis", "Listen and pick"),
     mo: tr("10 câu: nghe audio rồi chọn đúng câu vừa nghe. Trả lời càng nhanh càng nhiều điểm.", "10 phrases : écoutez puis choisissez la bonne. Plus vite, plus de points.", "10 sentences: listen, then pick the one you heard. Faster means more points.") },
   { ma: "mua_chu", nhom: "tu", Icon: CloudRain, nen: "from-emerald-500 to-cyan-600",
@@ -29,6 +32,21 @@ const TRO_CHOI = () => [
   { ma: "dung_sai", nhom: "np", Icon: Check, nen: "from-teal-500 to-blue-600",
     ten: tr("Đúng hay sai, 60 giây", "Vrai ou faux, 60 s", "True or false, 60 s"),
     mo: tr("Lướt thật nhanh: câu này đúng hay sai? Đúng liên tiếp để nhân điểm.", "Vite : la phrase est-elle correcte ? Enchaînez pour multiplier.", "Quick: is it right or wrong? Streaks multiply points.") },
+  { ma: "chep_nhanh", nhom: "ng", Icon: Keyboard, nen: "from-fuchsia-500 to-purple-600",
+    ten: tr("Chép chính tả tốc độ", "Dictée express", "Speed dictation"),
+    mo: tr("5 câu: nghe rồi gõ lại. Điểm theo độ chính xác (tính cả dấu) và tốc độ.", "5 phrases : écoutez et tapez. Précision et vitesse comptent.", "5 sentences: listen and type. Accuracy and speed count.") },
+  { ma: "noi_mo_khoa", nhom: "ng", Icon: DoorOpen, nen: "from-rose-500 to-red-600",
+    ten: tr("Nói để mở cửa", "Parle pour ouvrir", "Speak to unlock"),
+    mo: tr("3 cánh cửa, mỗi cửa một câu. Đọc to cho Leon nghe, đúng từ 70% là cửa mở. Dùng lượt chấm phát âm trong ngày.", "3 portes, une phrase chacune. Lisez à voix haute : 70 % de mots reconnus pour ouvrir.", "3 doors, one sentence each. Read aloud: 70% of words recognised opens the door.") },
+  { ma: "tham_tu", nhom: "dv", Icon: Search, nen: "from-slate-600 to-indigo-700",
+    ten: tr("Thám tử đọc", "Détective lecture", "Reading detective"),
+    mo: tr("Đọc tin nhắn, thông báo, quảng cáo ngắn rồi tìm manh mối trả lời câu hỏi.", "Lisez messages et annonces, trouvez les indices.", "Read short messages and notices, find the clues.") },
+  { ma: "do_vui", nhom: "dv", Icon: Landmark, nen: "from-blue-600 to-red-500",
+    ten: tr("Đố vui nước Pháp", "Quiz France", "France quiz"),
+    mo: tr("10 câu về văn hoá, địa lý, ẩm thực Pháp. Trả lời nhanh để được thêm điểm.", "10 questions sur la culture française.", "10 questions on French culture.") },
+  { ma: "phieu_luu", nhom: "dv", Icon: MapPinned, nen: "from-amber-500 to-orange-600",
+    ten: tr("Phiêu lưu ở Paris", "Aventure à Paris", "Paris adventure"),
+    mo: tr("Một ngày ở Paris: chọn câu tiếng Pháp hợp tình huống ở quán café, métro, khách sạn… 3 mạng.", "Une journée à Paris : choisissez la bonne réplique. 3 vies.", "A day in Paris: pick the right reply. 3 lives.") },
 ];
 
 export default function TroChoiNhanh() {
@@ -52,7 +70,7 @@ function Sanh({ ds }) {
           <p className="m-0 text-sm text-soft">{tr("Mỗi ván 1–2 phút. Có XP và tính vào chuỗi ngày học.", "1 à 2 minutes par partie. XP et série inclus.", "1–2 minutes per round. Earns XP and counts for your streak.")}</p>
         </div>
       </div>
-      {[["tu", tr("Từ vựng và nghe", "Vocabulaire et écoute", "Vocabulary and listening")], ["np", tr("Ngữ pháp", "Grammaire", "Grammar")]].map(([nhom, tenNhom]) => (
+      {[["tu", tr("Từ vựng", "Vocabulaire", "Vocabulary")], ["ng", tr("Nghe và nói", "Écoute et oral", "Listening and speaking")], ["np", tr("Ngữ pháp", "Grammaire", "Grammar")], ["dv", tr("Đọc hiểu và văn hoá", "Lecture et culture", "Reading and culture")]].map(([nhom, tenNhom]) => (
       <section key={nhom} className="mt-6">
       <h2 className="m-0 mb-3 text-lg font-extrabold text-ink">{tenNhom}</h2>
       <div className="grid gap-4 md:grid-cols-3">
@@ -92,7 +110,8 @@ function ManChoi({ tc }) {
     setGhi(await ghiTroChoi(tc.ma, r.diem, r.dung, Math.max(1, r.tong)));
   }, [tc.ma]);
 
-  const Game = { gioi_tinh: GioiTinh, nghe_chon: NgheChon, mua_chu: MuaChu, xep_cau: XepCau, san_loi: SanLoi, dung_sai: DungSai }[tc.ma];
+  const Game = { gioi_tinh: GioiTinh, nghe_chon: NgheChon, mua_chu: MuaChu, xep_cau: XepCau, san_loi: SanLoi, dung_sai: DungSai,
+    chep_nhanh: ChepNhanh, noi_mo_khoa: NoiMoKhoa, tham_tu: ThamTu, do_vui: DoVui, phieu_luu: PhieuLuu }[tc.ma];
   return (
     <div className="mx-auto max-w-3xl px-4 pb-16 pt-4">
       <button type="button" onClick={() => (buoc === "choi" ? setBuoc("chon") : nav("/etudiant/tro-choi"))}
@@ -577,6 +596,210 @@ function DungSai({ cap, onXong }) {
         <button type="button" onClick={() => tra(false)} className="flex cursor-pointer items-center justify-center gap-2 rounded-3xl border-0 bg-danger py-5 font-sans text-xl font-extrabold text-white shadow-[0_10px_22px_rgba(0,0,0,0.12)] active:scale-[0.96]"><X size={24} /> {tr("Sai", "Faux", "False")}</button>
       </div>
       <p className="m-0 mt-3 text-center text-xs text-soft">{tr("Phím tắt: ← đúng · → sai", "Raccourcis : ← vrai · → faux", "Shortcuts: ← true · → false")}</p>
+    </div>
+  );
+}
+
+/* Câu hỏi trắc nghiệm dùng chung cho Thám tử, Đố vui, Phiêu lưu: pa[0] là đáp án đúng,
+   xáo một lần cho mỗi câu. */
+function CauTracNghiem({ pa, onTra, daChon, laPhap }) {
+  const thuTu = React.useMemo(() => tron(pa.map((x, k) => ({ x, k }))), [pa]);
+  return (
+    <div className="mt-4 grid gap-2.5">
+      {thuTu.map(({ x, k }) => {
+        const dung = daChon != null && k === 0, sai = daChon === k && k !== 0;
+        return (
+          <button key={k} type="button" onClick={() => onTra(k)} lang={laPhap ? "fr" : undefined}
+            className={`cursor-pointer rounded-2xl border-2 border-solid px-4 py-3 text-left font-sans text-base transition-colors duration-150 ${dung ? "border-ok bg-ok-soft text-ink" : sai ? "border-danger bg-danger-soft text-ink" : "border-line bg-surface text-ink hover:border-primary/50"}`}>
+            {x}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+const KhungDiem = ({ trai, giua, phai }) => (
+  <div className="flex items-center justify-between text-sm font-bold"><span>{trai}</span><span className="text-soft">{giua}</span><span className="tabular-nums text-ink">{phai}</span></div>
+);
+const Tim = ({ mang }) => <span className="flex gap-1">{[0, 1, 2].map((k) => <Heart key={k} size={18} className={k < mang ? "fill-danger text-danger" : "text-line"} />)}</span>;
+const capPhu = (cap) => (x) => !cap || x.cap === cap;
+
+/* ─────────── 7. Chép chính tả tốc độ ─────────── */
+function ChepNhanh({ cap, onXong }) {
+  const SO = 5;
+  const [kho, setKho] = useState(null);
+  const [i, setI] = useState(0);
+  const [go, setGo] = useState("");
+  const [kq, setKq] = useState(null);
+  const tong = useRef({ diem: 0, dung: 0 });
+  const batDau = useRef(Date.now());
+  const am = useRef(null);
+  const o = useRef(null);
+  useEffect(() => { docCauNghe(cap, ["chinh_ta"]).then((d) => setKho(d ? d.filter((c) => c.cau.length <= 90) : []), () => setKho([])); }, [cap]);
+  const cau = kho?.[i];
+  const nghe = useCallback(() => { if (!cau) return; am.current?.pause(); am.current = new Audio(cau.audio_url); am.current.play().catch(() => {}); }, [cau]);
+  useEffect(() => { if (!cau) return; setGo(""); setKq(null); batDau.current = Date.now(); const t = setTimeout(() => { nghe(); o.current?.focus(); }, 300); return () => { clearTimeout(t); am.current?.pause(); }; }, [cau, nghe]);
+  if (!kho) return <Dang chu={tr("Đang tải audio…", "Chargement de l'audio…", "Loading audio…")} />;
+  if (kho.length < SO) return <TrongKho />;
+  const nop = () => {
+    if (kq || !go.trim()) return;
+    const r = soCau(cau.cau, go, { dau: true });
+    const giay = (Date.now() - batDau.current) / 1000;
+    const them = Math.round(r.diem * 100) + (r.diem >= 0.8 ? Math.max(0, Math.round(40 - giay)) : 0);
+    tong.current.diem += them; if (r.diem >= 0.8) tong.current.dung++;
+    setKq({ ...r, them }); phat(r.diem >= 0.8 ? "dung" : "sai");
+  };
+  const tiep = () => { if (i + 1 >= SO) onXong({ diem: tong.current.diem, dung: tong.current.dung, tong: SO }); else setI(i + 1); };
+  return (
+    <div className="mt-6 rounded-3xl bg-surface p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+      <KhungDiem trai={<span className="text-soft">{tr("Câu", "Phrase", "Item")} {i + 1}/{SO}</span>} giua={cau.cap} phai={`${tong.current.diem} ${tr("điểm", "pts", "pts")}`} />
+      <div className="mt-5 flex items-center gap-3">
+        <button type="button" onClick={nghe} aria-label={tr("Nghe lại", "Réécouter", "Replay")}
+          className="grid h-14 w-14 shrink-0 cursor-pointer place-items-center rounded-full border-0 bg-gradient-to-br from-fuchsia-500 to-purple-600 text-white active:scale-[0.94]"><Volume2 size={26} /></button>
+        <input ref={o} lang="fr" value={go} onChange={(e) => setGo(e.target.value)} disabled={!!kq}
+          onKeyDown={(e) => { if (e.key === "Enter") (kq ? tiep() : nop()); }}
+          placeholder={tr("Gõ câu bạn nghe được…", "Tapez ce que vous entendez…", "Type what you hear…")}
+          className="min-w-0 flex-1 rounded-2xl border-2 border-solid border-line bg-surface2 px-4 py-3 font-sans text-base text-ink outline-none focus:border-primary" />
+      </div>
+      {kq && (
+        <div className="mt-4 rounded-2xl bg-surface2 p-4">
+          <p lang="fr" className="m-0 flex flex-wrap gap-x-1.5 text-base">
+            {kq.tu.map((t, k) => <span key={k} className={t.khop === "dung" ? "text-ok" : t.khop === "sai_dau" ? "text-warn" : "text-danger underline"}>{t.goc}</span>)}
+          </p>
+          <p className="m-0 mt-2 text-sm text-soft">{cau.nghia} · <strong className="text-ink">+{kq.them}</strong></p>
+        </div>
+      )}
+      <div className="mt-4 flex justify-end">
+        <button type="button" onClick={kq ? tiep : nop} className="cursor-pointer rounded-full border-0 bg-primary px-6 py-2.5 font-sans text-sm font-extrabold text-on-primary active:scale-[0.97]">
+          {kq ? (i + 1 >= SO ? tr("Xem kết quả", "Résultat", "See result") : tr("Câu tiếp", "Suivante", "Next")) : tr("Chấm", "Valider", "Check")}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/* ─────────── 8. Nói để mở cửa (dùng PhatAm + Edge Function cham-phat-am) ─────────── */
+function NoiMoKhoa({ cap, onXong }) {
+  const SO = 3;
+  const [kho, setKho] = useState(null);
+  const [i, setI] = useState(0);
+  const [mo, setMo] = useState([]);              // điểm từng cửa đã thử
+  useEffect(() => { docCauNghe(cap, ["phat_am"]).then((d) => setKho(d ? d.filter((c) => c.cau.length <= 70) : []), () => setKho([])); }, [cap]);
+  if (!kho) return <Dang chu={tr("Đang chuẩn bị cửa…", "Préparation…", "Preparing…")} />;
+  if (kho.length < SO) return <TrongKho />;
+  const cau = kho[i];
+  const xongCua = (diem) => {
+    const ds = [...mo, diem]; setMo(ds);
+    setTimeout(() => {
+      if (ds.length >= SO) onXong({ diem: Math.round(ds.reduce((a, b) => a + b, 0) * 100), dung: ds.filter((d) => d >= 0.7).length, tong: SO });
+      else setI(i + 1);
+    }, 2200);
+  };
+  return (
+    <div className="mt-6 rounded-3xl bg-surface p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+      <div className="flex justify-center gap-4">
+        {Array.from({ length: SO }, (_, k) => {
+          const d = mo[k]; const Ic = d != null && d >= 0.7 ? DoorOpen : DoorClosed;
+          return <span key={k} className={`grid h-16 w-14 place-items-center rounded-2xl ${d == null ? (k === i ? "bg-primary-soft text-primary ring-2 ring-primary" : "bg-surface2 text-soft") : d >= 0.7 ? "bg-ok-soft text-ok" : "bg-danger-soft text-danger"}`}><Ic size={28} /></span>;
+        })}
+      </div>
+      <p className="m-0 mt-5 text-center text-xs font-bold uppercase tracking-wider text-soft">{tr(`Cửa ${i + 1}: đọc to câu này`, `Porte ${i + 1} : lisez à voix haute`, `Door ${i + 1}: read aloud`)}</p>
+      <p lang="fr" className="m-0 mt-2 text-center text-2xl font-extrabold text-ink">{cau.cau}</p>
+      {cau.nghia && <p className="m-0 mt-1 text-center text-sm text-soft">{cau.nghia}</p>}
+      {/* Giữ PhatAm hiện tới khi sang cửa sau để người chơi đọc được kết quả từng từ;
+          chỉ lần chấm ĐẦU của mỗi cửa được tính. */}
+      <div className="mt-5"><PhatAm key={cau.id} cau={cau} onXong={(d) => { if (mo.length === i) xongCua(d); }} /></div>
+    </div>
+  );
+}
+
+/* ─────────── 9. Thám tử đọc ─────────── */
+function ThamTu({ cap, onXong }) {
+  const [ds] = useState(() => {
+    const vb = tron(THAM_TU.filter(capPhu(cap))).slice(0, 3);
+    return vb.flatMap((v) => v.hoi.map((h) => ({ v, h })));
+  });
+  const [i, setI] = useState(0);
+  const [chon, setChon] = useState(null);
+  const kq = useRef({ diem: 0, dung: 0 });
+  if (ds.length < 2) return <TrongKho />;
+  const { v, h } = ds[i];
+  const tra = (k) => {
+    if (chon != null) return;
+    setChon(k); const ok = k === 0; phat(ok ? "dung" : "sai");
+    if (ok) { kq.current.dung++; kq.current.diem += 100; }
+    setTimeout(() => { setChon(null); if (i + 1 >= ds.length) onXong({ ...kq.current, tong: ds.length }); else setI(i + 1); }, ok ? 800 : 1800);
+  };
+  return (
+    <div className="mt-6 rounded-3xl bg-surface p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+      <KhungDiem trai={<span className="text-soft">{tr("Câu", "Question", "Question")} {i + 1}/{ds.length}</span>} giua={v.cap} phai={`${kq.current.diem} ${tr("điểm", "pts", "pts")}`} />
+      <div className="mt-4 rounded-2xl border-2 border-dashed border-line bg-surface2 p-4">
+        <p className="m-0 flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-wider text-soft"><Search size={13} /> {v.tieuDe}</p>
+        <p lang="fr" className="m-0 mt-2 text-base leading-relaxed text-ink">{v.van}</p>
+      </div>
+      <p lang="fr" className="m-0 mt-5 text-lg font-extrabold text-ink">{h.q}</p>
+      <CauTracNghiem key={i} pa={h.pa} onTra={tra} daChon={chon} laPhap />
+    </div>
+  );
+}
+
+/* ─────────── 10. Đố vui nước Pháp ─────────── */
+function DoVui({ onXong }) {
+  const SO = 10;
+  const [ds] = useState(() => tron(DO_VUI).slice(0, SO));
+  const [i, setI] = useState(0);
+  const [chon, setChon] = useState(null);
+  const kq = useRef({ diem: 0, dung: 0 });
+  const batDau = useRef(Date.now());
+  useEffect(() => { batDau.current = Date.now(); }, [i]);
+  const c = ds[i];
+  const tra = (k) => {
+    if (chon != null) return;
+    setChon(k); const ok = k === 0; phat(ok ? "dung" : "sai");
+    if (ok) { kq.current.dung++; kq.current.diem += 100 + Math.max(0, Math.round(50 - (Date.now() - batDau.current) / 200)); }
+    setTimeout(() => { setChon(null); if (i + 1 >= SO) onXong({ ...kq.current, tong: SO }); else setI(i + 1); }, ok ? 1400 : 2400);
+  };
+  return (
+    <div className="mt-6 rounded-3xl bg-surface p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+      <KhungDiem trai={<span className="text-soft">{i + 1}/{SO}</span>} giua="" phai={`${kq.current.diem} ${tr("điểm", "pts", "pts")}`} />
+      <p className="m-0 mt-5 text-xl font-extrabold leading-snug text-ink">{c.q}</p>
+      <CauTracNghiem key={i} pa={c.pa} onTra={tra} daChon={chon} />
+      {chon != null && <p className="m-0 mt-3 rounded-2xl bg-primary-soft px-4 py-3 text-sm text-ink">💡 {c.gt}</p>}
+    </div>
+  );
+}
+
+/* ─────────── 11. Phiêu lưu ở Paris ─────────── */
+function PhieuLuu({ onXong }) {
+  const [i, setI] = useState(0);
+  const [mang, setMang] = useState(3);
+  const [chon, setChon] = useState(null);
+  const kq = useRef({ diem: 0, dung: 0, tong: 0, mang: 3 });
+  const c = PHIEU_LUU[i];
+  const tra = (k) => {
+    const st = kq.current; if (chon != null) return;
+    setChon(k); const ok = k === 0; st.tong++; phat(ok ? "dung" : "sai");
+    if (ok) { st.dung++; st.diem += 100; } else { st.mang--; setMang(st.mang); }
+    setTimeout(() => {
+      setChon(null);
+      if (st.mang <= 0 || i + 1 >= PHIEU_LUU.length) onXong({ diem: st.diem + (st.mang > 0 ? st.mang * 50 : 0), dung: st.dung, tong: st.tong });
+      else setI(i + 1);
+    }, ok ? 1200 : 2400);
+  };
+  return (
+    <div className="mt-6 rounded-3xl bg-surface p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+      <KhungDiem trai={<Tim mang={mang} />} giua={`${i + 1}/${PHIEU_LUU.length}`} phai={`${kq.current.diem} ${tr("điểm", "pts", "pts")}`} />
+      <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-surface2"><div className="h-full rounded-full bg-gradient-to-r from-amber-500 to-orange-600 transition-[width] duration-500" style={{ width: `${(i / PHIEU_LUU.length) * 100}%` }} /></div>
+      <div className="mt-5 flex items-start gap-3">
+        <Leon cam="hoi" size={64} className="shrink-0" />
+        <div className="rounded-2xl rounded-tl-none bg-surface2 px-4 py-3">
+          <p className="m-0 text-xs font-extrabold uppercase tracking-wider text-soft">{c.canh}</p>
+          <p className="m-0 mt-1 text-base text-ink">{c.tinh}</p>
+        </div>
+      </div>
+      <p className="m-0 mt-4 text-sm font-bold text-soft">{tr("Bạn nói gì?", "Que dites-vous ?", "What do you say?")}</p>
+      <CauTracNghiem key={i} pa={c.pa} onTra={tra} daChon={chon} laPhap />
+      {chon != null && <p className="m-0 mt-3 rounded-2xl bg-primary-soft px-4 py-3 text-sm text-ink">💡 {c.gt}</p>}
     </div>
   );
 }

@@ -52,9 +52,9 @@ export function phuongAnNghia(tu, tatCa) {
 }
 
 /* Nghe và chọn: câu có audio. Nhiễu là câu cùng trình độ, độ dài gần nhất. */
-export async function docCauNghe(cap) {
-  let q = supabase.from("cau_luyen").select("id, cap, cau, nghia, audio_url").eq("cong_khai", true)
-    .in("loai", ["chinh_ta", "phat_am"]).not("audio_url", "is", null);
+export async function docCauNghe(cap, loai = ["chinh_ta", "phat_am"]) {
+  let q = supabase.from("cau_luyen").select("id, loai, cap, cau, nghia, meo, audio_url").eq("cong_khai", true)
+    .in("loai", loai).not("audio_url", "is", null);
   if (cap) q = q.eq("cap", cap);
   const { data, error } = await q.limit(1000);
   if (error) return null;
