@@ -77,7 +77,7 @@ export const STUDENT_NAV = [
   { to: "/etudiant/ngu-phap", nhom: "hoc", labelKey: "nav.learn", Icon: GraduationCap, khop: ["/etudiant/ngu-phap", "/etudiant/lo-trinh", "/etudiant/nghe-noi"] },
   /* Từ điển tra nhanh — nguồn là thẻ flashcard công khai (TuDien.jsx). */
   /* Thách đấu bạn bè — đứng ngay sau Lộ trình vì cùng là phần game. */
-  { to: "/etudiant/tro-choi", nhom: "on", labelKey: "nav.games", Icon: Gamepad2, khop: ["/etudiant/tro-choi", "/etudiant/thach-dau"] },
+  { to: "/etudiant/tro-choi", nhom: "on", labelKey: "nav.games", Icon: Gamepad2, khop: ["/etudiant/tro-choi", "/etudiant/thach-dau", "/etudiant/bo-the"] },
   /* « Từ điển » GỠ 08/10 theo chủ dự án: nó chỉ tra lại đúng các thẻ Flashcard
      công khai (~130 mục), trùng với mục Flashcard. Lấy lại TuDien.jsx từ git. */
   { to: "/etudiant/entrainement", nhom: "on", labelKey: "nav.practice", Icon: Dumbbell, view: "practice" },
@@ -97,7 +97,6 @@ export const STUDENT_NAV = [
      mất. Đường GHI cũng tắt cùng lúc (xem gradeRemote.js): để nguyên nó thì
      mỗi lần chấm bài lại ghi thêm thẻ vào chỗ không màn nào mở được — một
      đường ghi còn sống sau khi đường đọc đã chết. */
-  { to: "/etudiant/bo-the", nhom: "on", labelKey: "nav.decks", Icon: Layers },
   /* « Ma progression » đã rời khỏi menu theo yêu cầu. Route
      /etudiant/progression VẪN sống trong App.jsx nên hành trình tới Paris và
      biểu đồ điểm không mất — chỉ là hiện không còn lối vào từ thanh bên.

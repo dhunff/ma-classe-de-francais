@@ -96,6 +96,8 @@ const CO_Y_KHONG_CO_MUC = {
     "« Bài luyện của tôi » (23/10): vào từ thẻ trên Trang chủ, không có mục menu riêng.",
   "/etudiant/lo-trinh":
     "Tab « Lộ trình » của mục « Học tập » (26/10: Ngữ pháp đứng đầu): vào bằng HocTapTab.jsx; mục menu trỏ /etudiant/ngu-phap, `khop` gồm đường này.",
+  "/etudiant/bo-the":
+    "Flashcard (28/10): thẻ nhóm Ôn luyện trong sảnh Trò chơi; `khop` của mục Trò chơi gồm đường này.",
   "/etudiant/thach-dau":
     "Thách đấu PvP (28/10): thẻ trong sảnh Trò chơi, nhóm Từ vựng; `khop` của mục Trò chơi gồm đường này.",
   "/etudiant/nghe-noi":

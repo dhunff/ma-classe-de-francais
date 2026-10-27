@@ -299,3 +299,14 @@ mark.de-to:hover { background: #facc15; }
 .de-nhap textarea, .mcf-dark .de-nhap textarea { color: #111; caret-color: #111; }
 .de-giay input::placeholder, .de-giay textarea::placeholder,
 .de-nhap textarea::placeholder { color: #8a8a8a; opacity: 1; }
+
+/* Trò chơi nhanh (28/10): hiệu ứng riêng từng trò. */
+@keyframes mcfDong { 0% { opacity: 0; transform: scale(2.2) rotate(-18deg); } 60% { opacity: 1; transform: scale(.92) rotate(-12deg); } 100% { opacity: 1; transform: scale(1) rotate(-12deg); } }
+.mcf-dong { animation: mcfDong .35s cubic-bezier(.22,1,.36,1) both; }
+@keyframes mcfSong { 0%,100% { transform: scaleY(.25); } 50% { transform: scaleY(1); } }
+.mcf-song { animation: mcfSong .9s ease-in-out infinite; transform-origin: bottom; }
+@keyframes mcfToaVao { from { opacity: 0; transform: translateX(40px); } to { opacity: 1; transform: none; } }
+.mcf-toa-vao { animation: mcfToaVao .3s cubic-bezier(.22,1,.36,1) both; }
+@keyframes mcfTauChay { to { transform: translateX(120%); } }
+.mcf-tau-chay { animation: mcfTauChay .9s cubic-bezier(.55,0,.8,.2) forwards; }
+@media (prefers-reduced-motion: reduce) { .mcf-dong, .mcf-song, .mcf-toa-vao, .mcf-tau-chay { animation: none; } }
