@@ -97,7 +97,7 @@ function Sanh({ ds }) {
             <span className="relative mt-1 text-sm leading-snug text-white/90">{mo}</span>
             <span className="relative mt-auto flex items-center justify-between pt-4 text-sm font-bold">
               <span className="inline-flex items-center gap-1.5 rounded-full bg-white/20 px-3 py-1">{den ? <Icon size={14} /> : <Trophy size={14} />} {den ? (ma === "thach_dau" ? "PvP" : tr("Ôn", "Révision", "Review")) : kl[ma] != null ? kl[ma] : "—"}</span>
-              <span className="inline-flex items-center gap-1 rounded-full bg-white px-4 py-1.5 text-ink transition-transform group-hover:translate-x-0.5"><Play size={14} /> {tr("Chơi", "Jouer", "Play")}</span>
+              <span className="inline-flex items-center gap-1 rounded-full bg-white px-4 py-1.5 text-[#111] transition-transform group-hover:translate-x-0.5"><Play size={14} /> {tr("Chơi", "Jouer", "Play")}</span>
             </span>
           </Link>
         ))}
