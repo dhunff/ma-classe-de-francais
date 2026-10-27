@@ -5,6 +5,11 @@ import { supabase } from "../storageShim.js";
 import { docLoTrinh } from "./loTrinhStore.js";
 
 export const CAP_CHOI = ["A1", "A2", "B1", "B2"];
+/* 28/10 (chủ dự án): người chơi chọn MỨC Dễ / Vừa / Khó thay vì trình độ. Mỗi mức là
+   một nhóm trình độ (gối nhau để mức nào cũng đủ dữ liệu) + hệ số thời gian/tốc độ. */
+export const MUC_CHOI = { de: { cap: ["A1", "A2"], gio: 1.3, toc: 0.75 }, vua: { cap: ["A2", "B1"], gio: 1, toc: 1 }, kho: { cap: ["B1", "B2"], gio: 0.75, toc: 1.35 } };
+/* `cap` nhận null (mọi trình độ), một mã, hoặc một mảng mã. */
+export const khopCap = (cap, c) => !cap || (Array.isArray(cap) ? cap.includes(c) : c === cap);
 export const tron = (a) => { const b = [...a]; for (let i = b.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [b[i], b[j]] = [b[j], b[i]]; } return b; };
 
 /* Từ vựng Lộ trình kèm trình độ của màn chứa nó. Nhớ một lần cho cả phiên. */
@@ -27,7 +32,7 @@ export async function docDanhTuGioi(cap) {
   const ra = [];
   const daCo = new Set();
   for (const t of ds) {
-    if (t.loai !== "n" || (cap && t.cap !== cap)) continue;
+    if (t.loai !== "n" || !khopCap(cap, t.cap)) continue;
     const m = /^(le|la)\s+(.+)$/i.exec(String(t.fr).trim());
     if (!m || daCo.has(m[2].toLowerCase())) continue;
     daCo.add(m[2].toLowerCase());
@@ -40,7 +45,7 @@ export async function docDanhTuGioi(cap) {
 export async function docMuaChu(cap) {
   const ds = await docTuVung();
   if (!ds) return null;
-  const kho = ds.filter((t) => !cap || t.cap === cap);
+  const kho = ds.filter((t) => khopCap(cap, t.cap));
   return { kho: tron(kho), tatCa: ds };
 }
 export function phuongAnNghia(tu, tatCa) {
@@ -55,7 +60,7 @@ export function phuongAnNghia(tu, tatCa) {
 export async function docCauNghe(cap, loai = ["chinh_ta", "phat_am"]) {
   let q = supabase.from("cau_luyen").select("id, loai, cap, cau, nghia, meo, audio_url").eq("cong_khai", true)
     .in("loai", loai).not("audio_url", "is", null);
-  if (cap) q = q.eq("cap", cap);
+  if (cap) q = Array.isArray(cap) ? q.in("cap", cap) : q.eq("cap", cap);
   const { data, error } = await q.limit(1000);
   if (error) return null;
   return tron((data ?? []).filter((c) => c.audio_url && c.cau));
@@ -86,7 +91,7 @@ async function docCauNguPhap() {
 /* Xếp câu: câu « sap » có ≥3 từ, bỏ câu đánh vần (toàn chữ cái lẻ). */
 export async function docXepCau(cap) {
   const ds = await docCauNguPhap(); if (!ds) return null;
-  return tron(ds.filter((c) => c.loai === "sap" && (!cap || c.cap === cap)).map((c) => ({ goiY: c.goiY ?? c.de, tu: tachTu(c.dap?.[0]), giai: c.giai }))
+  return tron(ds.filter((c) => c.loai === "sap" && khopCap(cap, c.cap)).map((c) => ({ goiY: c.goiY ?? c.de, tu: tachTu(c.dap?.[0]), giai: c.giai }))
     .filter((c) => c.tu.length >= 3 && c.tu.length <= 12 && !c.tu.every((w) => w.length === 1)));
 }
 /* Săn lỗi: câu « sua » khác bản đúng ĐÚNG MỘT từ, cùng số từ. */
@@ -94,7 +99,7 @@ export async function docSanLoi(cap) {
   const ds = await docCauNguPhap(); if (!ds) return null;
   const ra = [];
   for (const c of ds) {
-    if (c.loai !== "sua" || (cap && c.cap !== cap)) continue;
+    if (c.loai !== "sua" || !khopCap(cap, c.cap)) continue;
     const sai = tachTu(c.de), dung = tachTu(c.dap?.[0]);
     if (sai.length !== dung.length || sai.length < 3) continue;
     const lech = sai.map((w, i) => (w !== dung[i] ? i : -1)).filter((i) => i >= 0);
@@ -107,7 +112,7 @@ export async function docDungSai(cap) {
   const ds = await docCauNguPhap(); if (!ds) return null;
   const ra = [];
   for (const c of ds) {
-    if (cap && c.cap !== cap) continue;
+    if (!khopCap(cap, c.cap)) continue;
     if (c.loai === "vf") ra.push({ cau: c.de, dung: !!c.dung, giai: c.giai, kieu: "vf" });
     else if (c.loai === "sua" && c.dap?.[0]) {
       const laDung = Math.random() < 0.5;

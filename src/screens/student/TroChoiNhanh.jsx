@@ -7,7 +7,7 @@ import { THAM_TU, DO_VUI, PHIEU_LUU } from "../../content/troChoi/docVanHoa.js";
 import { tr } from "../../shared/i18n.jsx";
 import { phat } from "../../shared/amThanh.js";
 import { Leon } from "../../shared/leon.jsx";
-import { CAP_CHOI, docDanhTuGioi, docMuaChu, phuongAnNghia, docCauNghe, phuongAnCau, ghiTroChoi, docKyLuc, docXepCau, docSanLoi, docDungSai, tron } from "../../shared/troChoiNhanh.js";
+import { MUC_CHOI, khopCap, docDanhTuGioi, docMuaChu, phuongAnNghia, docCauNghe, phuongAnCau, ghiTroChoi, docKyLuc, docXepCau, docSanLoi, docDungSai, tron } from "../../shared/troChoiNhanh.js";
 
 /* Ba trò chơi nhanh (27/10, migration 168). /etudiant/tro-choi là sảnh, /etudiant/tro-choi/:ma
  * là một trò. Câu hỏi dựng từ kho có sẵn (xem shared/troChoiNhanh.js); điểm, kỷ lục và XP
@@ -24,21 +24,26 @@ const TRO_CHOI = () => [
     mo: tr("Đấu từ vựng 1 chọi 1 với bạn bè, ai nhanh và đúng hơn thì thắng.", "Duel de vocabulaire en 1 contre 1 avec vos amis.", "1-on-1 vocabulary duel against friends.") },
   { ma: "gioi_tinh", nhom: "tu", Icon: VenusAndMars, nen: "from-sky-500 to-pink-500",
     ten: tr("Le hay La?", "Le ou La ?", "Le or La?"),
-    mo: tr("60 giây đoán giống đực / giống cái của danh từ. Đúng liên tiếp để nhân điểm.", "60 secondes pour trouver le genre des noms. Enchaînez pour multiplier.", "60 seconds to guess noun gender. Streaks multiply points.") },
+    mo: tr("Đua giờ đoán giống đực / giống cái của danh từ. Đúng liên tiếp để nhân điểm.", "Contre la montre : trouvez le genre des noms. Enchaînez pour multiplier.", "Beat the clock guessing noun gender. Streaks multiply points.") },
   { ma: "nghe_chon", nhom: "ng", Icon: Headphones, nen: "from-indigo-500 to-violet-600",
     ten: tr("Nghe và chọn", "Écoute et choisis", "Listen and pick"),
     mo: tr("10 câu: nghe audio rồi chọn đúng câu vừa nghe. Trả lời càng nhanh càng nhiều điểm.", "10 phrases : écoutez puis choisissez la bonne. Plus vite, plus de points.", "10 sentences: listen, then pick the one you heard. Faster means more points.") },
   { ma: "mua_chu", nhom: "tu", Icon: CloudRain, nen: "from-emerald-500 to-cyan-600",
     ten: tr("Mưa chữ", "Pluie de mots", "Word rain"),
-    mo: tr("Từ tiếng Pháp rơi xuống, chọn đúng nghĩa trước khi chạm đất. 3 mạng, càng lâu càng nhanh.", "Les mots tombent : trouvez le sens avant qu'ils touchent le sol. 3 vies.", "French words fall: pick the meaning before they land. 3 lives.") },
+    mo: tr("Ba cách chơi: chọn nghĩa, bắt đúng giọt, hoặc gõ từ trước khi nó chạm đất. 3 mạng.", "Trois modes : choisir le sens, attraper le mot ou le taper avant qu'il tombe. 3 vies.", "Three modes: pick the meaning, catch the word, or type it before it lands. 3 lives."),
+    kieu: [
+      { ma: "nghia", get ten() { return tr("Chọn nghĩa", "Le sens", "Meaning"); }, get mo() { return tr("Từ Pháp rơi, chọn nghĩa đúng.", "Le mot tombe, choisissez son sens.", "French falls, pick its meaning."); } },
+      { ma: "bat", get ten() { return tr("Bắt từ", "Attrape-mot", "Catch"); }, get mo() { return tr("Nghĩa hiện ở dưới, chạm đúng giọt tiếng Pháp.", "Le sens s'affiche, touchez le bon mot.", "Meaning shown, tap the right word."); } },
+      { ma: "go", get ten() { return tr("Gõ chữ", "Tape-mot", "Type it"); }, get mo() { return tr("Nghĩa rơi, gõ từ tiếng Pháp.", "Le sens tombe, tapez le mot.", "Meaning falls, type the French."); } },
+    ] },
   { ma: "xep_cau", nhom: "np", Icon: Shuffle, nen: "from-orange-500 to-rose-500",
     ten: tr("Xếp câu tốc độ", "Phrases en vrac", "Sentence builder"),
-    mo: tr("90 giây: chạm các từ theo đúng thứ tự để thành câu. Xếp được càng nhiều câu càng nhiều điểm.", "90 secondes : remettez les mots dans l'ordre, un maximum de phrases.", "90 seconds: tap words in order to build as many sentences as you can.") },
+    mo: tr("Đua giờ: chạm các từ theo đúng thứ tự để thành câu. Xếp được càng nhiều câu càng nhiều điểm.", "Contre la montre : remettez les mots dans l'ordre, un maximum de phrases.", "Beat the clock: tap words in order to build as many sentences as you can.") },
   { ma: "san_loi", nhom: "np", Icon: Crosshair, nen: "from-red-500 to-amber-500",
     ten: tr("Săn lỗi sai", "Chasse à l'erreur", "Error hunt"),
     mo: tr("Mỗi câu có đúng một từ sai: chạm vào nó. 3 mạng, chạm nhầm là mất mạng.", "Chaque phrase cache une erreur : touchez-la. 3 vies.", "Each sentence hides one wrong word: tap it. 3 lives.") },
   { ma: "dung_sai", nhom: "np", Icon: Check, nen: "from-teal-500 to-blue-600",
-    ten: tr("Đúng hay sai, 60 giây", "Vrai ou faux, 60 s", "True or false, 60 s"),
+    ten: tr("Đúng hay sai", "Vrai ou faux", "True or false"),
     mo: tr("Lướt thật nhanh: câu này đúng hay sai? Đúng liên tiếp để nhân điểm.", "Vite : la phrase est-elle correcte ? Enchaînez pour multiplier.", "Quick: is it right or wrong? Streaks multiply points.") },
   { ma: "chep_nhanh", nhom: "ng", Icon: Keyboard, nen: "from-fuchsia-500 to-purple-600",
     ten: tr("Chép chính tả tốc độ", "Dictée express", "Speed dictation"),
@@ -106,7 +111,8 @@ function Sanh({ ds }) {
 /* ─────────── Khung một trò: chọn trình độ → chơi → kết quả ─────────── */
 function ManChoi({ tc }) {
   const nav = useNavigate();
-  const [cap, setCap] = useState(null);           // null = mọi trình độ
+  const [muc, setMuc] = useState("vua");          // de | vua | kho (MUC_CHOI)
+  const [kieu, setKieu] = useState(tc.kieu?.[0]?.ma ?? null);
   const [buoc, setBuoc] = useState("chon");       // chon | choi | xong
   const [kq, setKq] = useState(null);             // { diem, dung, tong }
   const [ghi, setGhi] = useState(null);           // kết quả RPC
@@ -137,12 +143,25 @@ function ManChoi({ tc }) {
 
       {buoc === "chon" && (
         <div className="mt-6 rounded-3xl bg-surface p-6 text-center shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
-          <p className="m-0 text-sm font-bold text-soft">{tr("Chọn trình độ", "Choisissez le niveau", "Pick a level")}</p>
-          <div className="mt-3 flex flex-wrap justify-center gap-2">
-            {[null, ...CAP_CHOI].map((c) => (
-              <button key={c ?? "tat"} type="button" onClick={() => setCap(c)}
-                className={`cursor-pointer rounded-full border-0 px-4 py-2 font-sans text-sm font-bold transition-colors ${cap === c ? "bg-primary text-on-primary" : "bg-surface2 text-ink hover:bg-primary-soft"}`}>
-                {c ?? tr("Tất cả", "Tous", "All")}
+          {tc.kieu && <>
+            <p className="m-0 text-sm font-bold text-soft">{tr("Cách chơi", "Mode", "Mode")}</p>
+            <div className="mb-5 mt-3 grid gap-2 sm:grid-cols-3">
+              {tc.kieu.map((k) => (
+                <button key={k.ma} type="button" onClick={() => setKieu(k.ma)}
+                  className={`cursor-pointer rounded-2xl border-2 border-solid px-3 py-3 text-left font-sans transition-colors ${kieu === k.ma ? "border-primary bg-primary-soft" : "border-line bg-surface hover:border-primary/40"}`}>
+                  <span className="block text-sm font-extrabold text-ink">{k.ten}</span>
+                  <span className="mt-0.5 block text-xs text-soft">{k.mo}</span>
+                </button>
+              ))}
+            </div>
+          </>}
+          <p className="m-0 text-sm font-bold text-soft">{tr("Mức độ", "Difficulté", "Difficulty")}</p>
+          <div className="mx-auto mt-3 grid max-w-md grid-cols-3 gap-2">
+            {[["de", tr("Dễ", "Facile", "Easy"), "A1–A2", "bg-ok"], ["vua", tr("Vừa", "Moyen", "Medium"), "A2–B1", "bg-warn"], ["kho", tr("Khó", "Difficile", "Hard"), "B1–B2", "bg-danger"]].map(([m, ten, mo, nen]) => (
+              <button key={m} type="button" onClick={() => setMuc(m)}
+                className={`cursor-pointer rounded-2xl border-0 px-2 py-3 font-sans transition-[transform,opacity] ${muc === m ? `${nen} scale-105 text-white shadow-md` : "bg-surface2 text-ink opacity-80 hover:opacity-100"}`}>
+                <span className="block text-base font-extrabold">{ten}</span>
+                <span className="block text-[11px] font-bold opacity-80">{mo}</span>
               </button>
             ))}
           </div>
@@ -153,7 +172,7 @@ function ManChoi({ tc }) {
         </div>
       )}
 
-      {buoc === "choi" && <Game key={van} cap={cap} onXong={xong} />}
+      {buoc === "choi" && <Game key={van} cap={MUC_CHOI[muc].cap} he={MUC_CHOI[muc]} kieu={kieu} onXong={xong} />}
 
       {buoc === "xong" && kq && (
         <div className="mt-6 rounded-3xl bg-surface p-6 text-center shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
@@ -193,8 +212,8 @@ const TrongKho = () => (
 );
 
 /* ─────────── 1. Le hay La ─────────── */
-function GioiTinh({ cap, onXong }) {
-  const GIAY = 60;
+function GioiTinh({ cap, he, onXong }) {
+  const GIAY = Math.round(60 * (he?.gio ?? 1));
   const [ds, setDs] = useState(null);
   const [i, setI] = useState(0);
   const [chuoi, setChuoi] = useState(0);
@@ -366,22 +385,43 @@ function NgheChon({ cap, onXong }) {
 }
 
 /* ─────────── 3. Mưa chữ ─────────── */
-function MuaChu({ cap, onXong }) {
+/* Ba cách chơi (28/10, theo chủ dự án), chung một vòng rơi:
+   · nghia: từ Pháp rơi, chọn NGHĨA của giọt thấp nhất (cách cũ);
+   · bat:   nghĩa tiếng Việt hiện ở dưới, CHẠM đúng giọt tiếng Pháp đang rơi; giọt khác
+            chạm đất thì thôi, chỉ để rơi mất giọt cần bắt mới mất mạng;
+   · go:    NGHĨA rơi, GÕ từ tiếng Pháp; mạo từ không bắt buộc, dấu vẫn tính. */
+const boMao = (x) => String(x ?? "").toLowerCase().replace(/\(.*?\)/g, " ").replace(/\s+/g, " ").trim()
+  .replace(/^(le|la|les|un|une|des|se|s')\s+/, "").replace(/^l['’]\s*/, "").replace(/^s['’]\s*/, "");
+function MuaChu({ cap, he, kieu = "nghia", onXong }) {
   const [du, setDu] = useState(null);             // { kho, tatCa }
   const [roi, setRoi] = useState([]);              // [{ id, tu, x, y }]
   const [mang, setMang] = useState(3);
   const [diem, setDiem] = useState(0);
   const [pa, setPa] = useState([]);
+  const [dich, setDich] = useState(null);          // id giọt cần bắt (kiểu bat)
+  const [go, setGo] = useState("");
   const [nhay, setNhay] = useState(null);
-  const s = useRef({ roi: [], mang: 3, diem: 0, dung: 0, tong: 0, k: 0, sinh: 0, tocDo: 0.045, het: false, khoaPa: null });
+  const o = useRef(null);
+  const s = useRef({ roi: [], mang: 3, diem: 0, dung: 0, tong: 0, k: 0, sinh: 0, het: false, khoaPa: null, dich: null });
+  const toc = he?.toc ?? 1;
 
   useEffect(() => { docMuaChu(cap).then(setDu, () => setDu({ kho: [], tatCa: [] })); }, [cap]);
+  useEffect(() => { if (kieu === "go") o.current?.focus(); }, [du, kieu]);
 
   const duoiCung = () => s.current.roi.reduce((a, b) => (!a || b.y > a.y ? b : a), null);
-  const datPa = () => {
-    const d = duoiCung();
-    if (d && d.id !== s.current.khoaPa) { s.current.khoaPa = d.id; setPa(phuongAnNghia(d.tu, du.tatCa)); }
-    if (!d) { s.current.khoaPa = null; setPa([]); }
+  const ketThuc = () => { const st = s.current; st.het = true; onXong({ diem: st.diem, dung: st.dung, tong: Math.max(1, st.tong) }); };
+  const matMang = () => { const st = s.current; st.mang--; setMang(st.mang); phat("sai"); if (st.mang <= 0) ketThuc(); };
+  const capNhat = () => {
+    const st = s.current;
+    if (kieu === "nghia") {
+      const d = duoiCung();
+      if (d && d.id !== st.khoaPa) { st.khoaPa = d.id; setPa(phuongAnNghia(d.tu, du.tatCa)); }
+      if (!d) { st.khoaPa = null; setPa([]); }
+    } else if (kieu === "bat" && !st.roi.some((w) => w.id === st.dich)) {
+      const ung = st.roi.filter((w) => w.y > 4);
+      st.dich = ung.length ? ung[Math.floor(Math.random() * ung.length)].id : null;
+      setDich(st.dich);
+    }
   };
 
   useEffect(() => {
@@ -391,18 +431,25 @@ function MuaChu({ cap, onXong }) {
       const st = s.current; if (st.het) return;
       const dt = Math.min(50, now - truoc); truoc = now;
       st.sinh -= dt;
-      if (st.sinh <= 0 && st.roi.length < 4) {
-        const tu = du.kho[st.k++ % du.kho.length];
-        st.roi.push({ id: st.k, tu, x: 8 + Math.random() * 64, y: -6 });
-        st.sinh = Math.max(900, 2600 - st.dung * 60);
+      const toiDa = kieu === "bat" ? 5 : 4;
+      if (st.sinh <= 0 && st.roi.length < toiDa) {
+        // Kiểu bat: không cho hai giọt cùng nghĩa rơi một lúc, kẻo bắt « đúng » mà bị chấm sai.
+        let tu = du.kho[st.k++ % du.kho.length];
+        for (let n = 0; n < 5 && st.roi.some((w) => w.tu.vi === tu.vi); n++) tu = du.kho[st.k++ % du.kho.length];
+        st.roi.push({ id: st.k, tu, x: 6 + Math.random() * 66, y: -6 });
+        st.sinh = Math.max(800, (kieu === "bat" ? 1900 : 2600) - st.dung * 60) / toc;
       }
-      st.tocDo = 0.045 + st.dung * 0.0015;
+      const tocDo = (kieu === "go" ? 0.032 : 0.045) * toc + st.dung * 0.0015;
       let mat = false;
-      st.roi = st.roi.filter((w) => { w.y += st.tocDo * dt / 10; if (w.y >= 92) { mat = true; st.tong++; return false; } return true; });
-      if (mat) { st.mang--; setMang(st.mang); phat("sai"); }
+      st.roi = st.roi.filter((w) => {
+        w.y += tocDo * dt / 10;
+        if (w.y < 92) return true;
+        if (kieu !== "bat" || w.id === st.dich) { mat = true; st.tong++; }
+        return false;
+      });
       setRoi(st.roi.map((w) => ({ ...w })));
-      datPa();
-      if (st.mang <= 0) { st.het = true; onXong({ diem: st.diem, dung: st.dung, tong: Math.max(1, st.tong) }); return; }
+      if (mat) { matMang(); if (st.het) return; }
+      capNhat();
       raf = requestAnimationFrame(vong);
     };
     raf = requestAnimationFrame(vong);
@@ -412,46 +459,82 @@ function MuaChu({ cap, onXong }) {
   if (!du) return <Dang chu={tr("Đang chuẩn bị từ…", "Préparation…", "Preparing…")} />;
   if (du.kho.length < 10) return <TrongKho />;
 
-  const tra = (vi) => {
-    const st = s.current; const d = duoiCung(); if (!d || st.het) return;
-    st.tong++;
-    if (vi === d.tu.vi) {
-      st.dung++; st.diem += 10 + Math.round(d.y / 4);
-      st.roi = st.roi.filter((w) => w.id !== d.id);
-      setDiem(st.diem); setNhay({ id: d.id, ok: true }); phat("ghep");
-    } else {
-      st.mang--; setMang(st.mang); setNhay({ id: d.id, ok: false }); phat("sai");
-      if (st.mang <= 0) { st.het = true; onXong({ diem: st.diem, dung: st.dung, tong: st.tong }); return; }
-    }
-    st.khoaPa = null; datPa();
+  const trung = (w) => {
+    const st = s.current;
+    st.dung++; st.tong++; st.diem += 10 + Math.round(w.y / 4) + (kieu === "go" ? 10 : 0);
+    st.roi = st.roi.filter((x) => x.id !== w.id);
+    setDiem(st.diem); setNhay({ id: w.id, ok: true }); phat("ghep");
+    st.khoaPa = null; capNhat();
     setTimeout(() => setNhay(null), 300);
   };
-  const dichId = duoiCung()?.id;
+  const tra = (vi) => {
+    const st = s.current; const d = duoiCung(); if (!d || st.het) return;
+    if (vi === d.tu.vi) return trung(d);
+    st.tong++; setNhay({ id: d.id, ok: false }); setTimeout(() => setNhay(null), 300);
+    st.khoaPa = null; capNhat(); matMang();
+  };
+  const bat = (w) => {
+    const st = s.current; if (st.het) return;
+    const can = st.roi.find((x) => x.id === st.dich);
+    if (can && w.tu.vi === can.tu.vi) { st.dich = null; return trung(w); }
+    st.tong++; setNhay({ id: w.id, ok: false }); setTimeout(() => setNhay(null), 300); matMang();
+  };
+  const goChu = (v) => {
+    setGo(v);
+    const st = s.current; if (st.het) return;
+    const g = boMao(v); if (!g) return;
+    const w = st.roi.filter((x) => boMao(x.tu.fr) === g).sort((a, b) => b.y - a.y)[0];
+    if (w) { trung(w); setGo(""); }
+  };
+
+  const dichId = kieu === "nghia" ? duoiCung()?.id : kieu === "bat" ? dich : null;
+  const can = kieu === "bat" ? roi.find((w) => w.id === dich) : null;
+  const MAU = { nghia: "#0b1530", bat: "#2a0f2f", go: "#06251f" }[kieu];
   return (
-    <div className="mt-6 overflow-hidden rounded-[2rem] bg-[#0b1530] shadow-[0_20px_40px_rgba(11,21,48,0.35)]">
-      <div className="relative h-[360px] overflow-hidden bg-[radial-gradient(circle_at_20%_10%,#1e3a8a_0,transparent_45%),radial-gradient(circle_at_80%_0,#155e75_0,transparent_40%)]">
+    <div className="mt-6 overflow-hidden rounded-[2rem] shadow-[0_20px_40px_rgba(11,21,48,0.35)]" style={{ background: MAU }}>
+      <div className={`relative h-[360px] overflow-hidden ${kieu === "bat" ? "bg-[radial-gradient(circle_at_50%_0,#86198f_0,transparent_55%)]" : kieu === "go" ? "bg-[radial-gradient(circle_at_30%_0,#047857_0,transparent_50%)]" : "bg-[radial-gradient(circle_at_20%_10%,#1e3a8a_0,transparent_45%),radial-gradient(circle_at_80%_0,#155e75_0,transparent_40%)]"}`}>
         <div className="absolute inset-x-0 top-0 z-10 flex items-center justify-between p-4 text-sm font-bold text-white">
           <span className="flex gap-1">{[0, 1, 2].map((k) => <Heart key={k} size={18} className={k < mang ? "fill-rose-400 text-rose-400" : "text-white/25"} />)}</span>
           <span className="rounded-full bg-white/10 px-3 py-1 tabular-nums">{diem}</span>
         </div>
-        {roi.map((w) => (
-          <span key={w.id} lang="fr"
-            className={`absolute whitespace-nowrap rounded-b-full rounded-t-[60%] px-3 pb-2 pt-3 text-sm font-extrabold ${w.id === dichId ? "bg-cyan-300 text-[#0b1530] shadow-[0_0_24px_rgba(103,232,249,0.8)]" : "bg-white/15 text-white backdrop-blur"} ${nhay?.id === w.id && !nhay.ok ? "!bg-rose-500 text-white" : ""}`}
-            style={{ left: `${w.x}%`, top: `${w.y}%` }}>
-            {w.tu.fr}
-          </span>
-        ))}
-        <span aria-hidden className="absolute inset-x-0 bottom-0 h-[8%] bg-[repeating-linear-gradient(90deg,#0e7490_0_18px,#155e75_18px_36px)] opacity-80" />
+        {roi.map((w) => {
+          const sang = w.id === dichId, nham = nhay?.id === w.id && !nhay.ok;
+          const chu = kieu === "go" ? w.tu.vi : w.tu.fr;
+          const lop = `absolute whitespace-nowrap rounded-b-full rounded-t-[60%] border-0 px-3 pb-2 pt-3 font-sans text-sm font-extrabold ${nham ? "!bg-rose-500 text-white" : sang && kieu === "nghia" ? "bg-cyan-300 text-[#0b1530] shadow-[0_0_24px_rgba(103,232,249,0.8)]" : kieu === "go" ? "bg-emerald-300/90 text-[#06251f]" : "bg-white/15 text-white backdrop-blur"}`;
+          return kieu === "bat"
+            ? <button key={w.id} type="button" lang="fr" onClick={() => bat(w)} className={`${lop} cursor-pointer hover:bg-fuchsia-300 hover:text-[#2a0f2f]`} style={{ left: `${w.x}%`, top: `${w.y}%` }}>{chu}</button>
+            : <span key={w.id} lang={kieu === "go" ? undefined : "fr"} className={lop} style={{ left: `${w.x}%`, top: `${w.y}%` }}>{chu}</span>;
+        })}
+        <span aria-hidden className="absolute inset-x-0 bottom-0 h-[8%] bg-[repeating-linear-gradient(90deg,rgba(255,255,255,0.12)_0_18px,rgba(255,255,255,0.05)_18px_36px)]" />
       </div>
-      <div className="grid grid-cols-2 gap-2 bg-[#0f1d40] p-3">
-        {pa.map((vi) => (
-          <button key={vi} type="button" onClick={() => tra(vi)}
-            className="cursor-pointer rounded-xl border border-solid border-cyan-300/30 bg-white/5 px-3 py-3 font-sans text-sm font-bold text-white transition-colors duration-150 hover:bg-cyan-300/20 active:scale-[0.97]">
-            {vi}
-          </button>
-        ))}
-      </div>
-      <p className="m-0 bg-[#0f1d40] pb-3 text-center text-xs text-cyan-100/70">{tr("Bắn giọt đang sáng (thấp nhất) bằng nghĩa đúng trước khi nó chạm đất.", "Touchez le sens de la goutte lumineuse avant qu'elle tombe.", "Hit the glowing drop's meaning before it lands.")}</p>
+      {kieu === "nghia" && (
+        <div className="grid grid-cols-2 gap-2 bg-black/20 p-3">
+          {pa.map((vi) => (
+            <button key={vi} type="button" onClick={() => tra(vi)}
+              className="cursor-pointer rounded-xl border border-solid border-cyan-300/30 bg-white/5 px-3 py-3 font-sans text-sm font-bold text-white transition-colors duration-150 hover:bg-cyan-300/20 active:scale-[0.97]">
+              {vi}
+            </button>
+          ))}
+        </div>
+      )}
+      {kieu === "bat" && (
+        <div className="bg-black/25 p-4 text-center">
+          <p className="m-0 text-[11px] font-bold uppercase tracking-[0.2em] text-fuchsia-200/80">{tr("Bắt giọt mang nghĩa", "Attrapez le mot qui veut dire", "Catch the word meaning")}</p>
+          <p className="m-0 mt-1 min-h-[32px] text-2xl font-extrabold text-white">{can ? can.tu.vi : "…"}</p>
+        </div>
+      )}
+      {kieu === "go" && (
+        <div className="bg-black/25 p-3">
+          <input ref={o} lang="fr" value={go} onChange={(e) => goChu(e.target.value)} autoComplete="off" spellCheck={false}
+            placeholder={tr("Gõ từ tiếng Pháp (mạo từ không bắt buộc)…", "Tapez le mot français (article facultatif)…", "Type the French word (article optional)…")}
+            className="w-full rounded-xl border-2 border-solid border-emerald-300/40 bg-black/30 px-4 py-3 font-mono text-base text-white caret-emerald-300 outline-none placeholder:text-emerald-100/50 focus:border-emerald-300" />
+        </div>
+      )}
+      <p className="m-0 bg-black/25 pb-3 text-center text-xs text-white/60">
+        {kieu === "nghia" ? tr("Chọn nghĩa của giọt đang sáng (thấp nhất) trước khi nó chạm đất.", "Choisissez le sens de la goutte lumineuse avant qu'elle tombe.", "Pick the glowing drop's meaning before it lands.")
+          : kieu === "bat" ? tr("Chạm đúng giọt tiếng Pháp. Chạm nhầm hoặc để nó rơi mất là mất mạng.", "Touchez le bon mot. Erreur ou mot perdu : une vie en moins.", "Tap the right French drop. Wrong tap or missed drop costs a life.")
+          : tr("Gõ đúng là giọt vỡ ngay, không cần Enter.", "Bien tapé, la goutte éclate, sans Entrée.", "Type it right and the drop pops, no Enter needed.")}
+      </p>
     </div>
   );
 }
@@ -474,8 +557,8 @@ function useDemNguoc(giay, chay, onHet) {
 }
 
 /* ─────────── 4. Xếp câu tốc độ ─────────── */
-function XepCau({ cap, onXong }) {
-  const GIAY = 90;
+function XepCau({ cap, he, onXong }) {
+  const GIAY = Math.round(90 * (he?.gio ?? 1));
   const [ds, setDs] = useState(null);
   const [i, setI] = useState(0);
   const [chon, setChon] = useState([]);          // chỉ số mảnh đã chạm, theo thứ tự
@@ -600,8 +683,8 @@ function SanLoi({ cap, onXong }) {
 }
 
 /* ─────────── 6. Đúng hay sai, 60 giây ─────────── */
-function DungSai({ cap, onXong }) {
-  const GIAY = 60;
+function DungSai({ cap, he, onXong }) {
+  const GIAY = Math.round(60 * (he?.gio ?? 1));
   const [ds, setDs] = useState(null);
   const [i, setI] = useState(0);
   const [chuoi, setChuoi] = useState(0);
@@ -709,7 +792,7 @@ function CauTracNghiem({ pa, onTra, daChon, laPhap, kieu }) {
   );
 }
 const Tim = ({ mang }) => <span className="flex gap-1">{[0, 1, 2].map((k) => <Heart key={k} size={18} className={k < mang ? "fill-danger text-danger" : "text-line"} />)}</span>;
-const capPhu = (cap) => (x) => !cap || x.cap === cap;
+const capPhu = (cap) => (x) => khopCap(cap, x.cap);
 
 /* ─────────── 7. Chép chính tả tốc độ ─────────── */
 function ChepNhanh({ cap, onXong }) {
