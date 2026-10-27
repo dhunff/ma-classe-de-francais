@@ -67,6 +67,56 @@ export function phuongAnCau(cau, kho) {
   return tron([cau.cau, ...[...new Set(khac)].slice(0, 3)]);
 }
 
+/* ─── Ba trò ngữ pháp (27/10, migration 169): câu lấy từ bài « Học ngữ pháp »
+   (src/content/nguPhap), đã áp bản giáo viên sửa / ẩn (napSuaNguPhap). ─── */
+const tachTu = (x) => String(x ?? "").trim().split(/\s+/).filter(Boolean);
+let nguPhapHua = null;
+async function docCauNguPhap() {
+  if (!nguPhapHua) {
+    nguPhapHua = (async () => {
+      const m = await import("../content/nguPhap/index.js");
+      try { await m.napSuaNguPhap(supabase); } catch { /* không đọc được bản sửa: dùng bản gốc */ }
+      return m.TAT_CA.flatMap((b) => m.chiaPhan(b).flatMap((p) => (p.cau ?? []).filter(Boolean)
+        .map((c) => ({ ...c, cap: b.cap === "A0" ? "A1" : b.cap, bai: b.ten }))));
+    })().catch(() => { nguPhapHua = null; return null; });
+  }
+  return nguPhapHua;
+}
+
+/* Xếp câu: câu « sap » có ≥3 từ, bỏ câu đánh vần (toàn chữ cái lẻ). */
+export async function docXepCau(cap) {
+  const ds = await docCauNguPhap(); if (!ds) return null;
+  return tron(ds.filter((c) => c.loai === "sap" && (!cap || c.cap === cap)).map((c) => ({ goiY: c.goiY ?? c.de, tu: tachTu(c.dap?.[0]), giai: c.giai }))
+    .filter((c) => c.tu.length >= 3 && c.tu.length <= 12 && !c.tu.every((w) => w.length === 1)));
+}
+/* Săn lỗi: câu « sua » khác bản đúng ĐÚNG MỘT từ, cùng số từ. */
+export async function docSanLoi(cap) {
+  const ds = await docCauNguPhap(); if (!ds) return null;
+  const ra = [];
+  for (const c of ds) {
+    if (c.loai !== "sua" || (cap && c.cap !== cap)) continue;
+    const sai = tachTu(c.de), dung = tachTu(c.dap?.[0]);
+    if (sai.length !== dung.length || sai.length < 3) continue;
+    const lech = sai.map((w, i) => (w !== dung[i] ? i : -1)).filter((i) => i >= 0);
+    if (lech.length === 1) ra.push({ tu: sai, vt: lech[0], sua: dung[lech[0]], dung: c.dap[0], giai: c.giai });
+  }
+  return tron(ra);
+}
+/* Đúng hay sai: câu « vf » có sẵn, cộng câu « sua » hiện ngẫu nhiên bản sai hoặc bản đúng. */
+export async function docDungSai(cap) {
+  const ds = await docCauNguPhap(); if (!ds) return null;
+  const ra = [];
+  for (const c of ds) {
+    if (cap && c.cap !== cap) continue;
+    if (c.loai === "vf") ra.push({ cau: c.de, dung: !!c.dung, giai: c.giai, kieu: "vf" });
+    else if (c.loai === "sua" && c.dap?.[0]) {
+      const laDung = Math.random() < 0.5;
+      ra.push({ cau: laDung ? c.dap[0] : c.de, dung: laDung, giai: laDung ? "" : `${c.dap[0]}. ${c.giai ?? ""}`, kieu: "sua" });
+    }
+  }
+  return tron(ra);
+}
+
 export async function ghiTroChoi(ma, diem, dung, tong) {
   const { data, error } = await supabase.rpc("ghi_tro_choi", { p_tro_choi: ma, p_diem: diem, p_dung: dung, p_tong: tong });
   if (error) return { loi: error.message };

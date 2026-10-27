@@ -202,7 +202,7 @@ export function TroChoi() {
     { to: "/etudiant/thach-dau", Icon: Swords, nen: "from-rose-500 to-orange-500",
       ten: tr("Thách đấu", "Défis", "Duels"), mo: tr("Đấu từ vựng với bạn học", "Affrontez vos camarades", "Vocabulary duels with classmates") },
     { to: "/etudiant/tro-choi", Icon: Gamepad2, nen: "from-amber-500 to-pink-500",
-      ten: tr("Trò chơi nhanh", "Jeux rapides", "Quick games"), mo: tr("Le hay La, Nghe và chọn, Mưa chữ", "Le ou La, Écoute, Pluie de mots", "Le or La, Listen, Word rain") },
+      ten: tr("Trò chơi nhanh", "Jeux rapides", "Quick games"), mo: tr("6 trò từ vựng, nghe và ngữ pháp", "6 jeux : vocabulaire, écoute, grammaire", "6 games: vocabulary, listening, grammar") },
     { to: "/etudiant/bo-the", Icon: Layers, nen: "from-violet-500 to-indigo-600",
       ten: "Flashcard", mo: tr("Ôn thẻ đến hạn hôm nay", "Révisez les cartes du jour", "Review today's due cards") },
     { to: "/etudiant/examen", Icon: Timer, nen: "from-sky-500 to-blue-600",
