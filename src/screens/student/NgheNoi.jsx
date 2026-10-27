@@ -9,6 +9,7 @@ import { loiTranVip } from "../../shared/loiTranVip.js";
 import { baoHetLuot } from "../../shared/HetLuot.jsx";
 import { soCau } from "../../../supabase/functions/_shared/soCau.js";
 import { choTrong } from "../../shared/choTrong.jsx";
+import HocTapTab from "./HocTapTab.jsx";
 
 /* « Nghe & Nói » (10/10): chép chính tả + luyện phát âm.
  *
@@ -339,6 +340,7 @@ export default function NgheNoi() {
 
   return (
     <div className="mx-auto max-w-3xl px-4 pb-24 pt-6">
+      <HocTapTab />
       <header className="mcf-cau-vao relative overflow-hidden rounded-3xl bg-gradient-to-br from-rose-500 via-fuchsia-600 to-indigo-600 p-6 text-white shadow-[0_20px_50px_rgba(192,38,211,0.3)]">
         <span aria-hidden className="absolute -right-12 -top-12 h-48 w-48 rounded-full bg-white/10" />
         <div className="relative flex items-center gap-4">

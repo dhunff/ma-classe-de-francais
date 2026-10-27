@@ -1,6 +1,6 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
-import { Map, BookA } from "lucide-react";
+import { Map, BookA, AudioLines } from "lucide-react";
 import { tr } from "../../shared/i18n.jsx";
 
 /* Thanh tab của mục « Học tập » (23/10): Lộ trình · Ngữ pháp là hai màn
@@ -9,6 +9,8 @@ const TAB = () => [
   /* 26/10 (theo chủ dự án): Ngữ pháp đứng đầu. */
   { to: "/etudiant/ngu-phap", Icon: BookA, nhan: tr("Ngữ pháp", "Grammaire", "Grammar") },
   { to: "/etudiant/lo-trinh", Icon: Map, nhan: tr("Lộ trình", "Parcours", "Path") },
+  /* 27/10 (theo chủ dự án): Nghe & Nói vào mục Học tập, rời thanh bên. */
+  { to: "/etudiant/nghe-noi", Icon: AudioLines, nhan: tr("Nghe & Nói", "Écouter & parler", "Listen & speak") },
 ];
 
 export default function HocTapTab() {

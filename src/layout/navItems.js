@@ -74,7 +74,7 @@ export const STUDENT_NAV = [
   /* 23/10 (theo chủ dự án): « Học tập » gộp Lộ trình + Học ngữ pháp thành MỘT
      mục, hai tab ở đầu màn (HocTapTab.jsx). Đường dẫn cũ giữ nguyên; `khop` để mục
      sáng lên ở cả hai. Tab Từ vựng bỏ 23/10 theo chủ dự án. */
-  { to: "/etudiant/ngu-phap", nhom: "hoc", labelKey: "nav.learn", Icon: GraduationCap, khop: ["/etudiant/ngu-phap", "/etudiant/lo-trinh"] },
+  { to: "/etudiant/ngu-phap", nhom: "hoc", labelKey: "nav.learn", Icon: GraduationCap, khop: ["/etudiant/ngu-phap", "/etudiant/lo-trinh", "/etudiant/nghe-noi"] },
   /* Từ điển tra nhanh — nguồn là thẻ flashcard công khai (TuDien.jsx). */
   /* Thách đấu bạn bè — đứng ngay sau Lộ trình vì cùng là phần game. */
   { to: "/etudiant/tro-choi", nhom: "on", labelKey: "nav.games", Icon: Gamepad2 },
@@ -83,7 +83,6 @@ export const STUDENT_NAV = [
      công khai (~130 mục), trùng với mục Flashcard. Lấy lại TuDien.jsx từ git. */
   { to: "/etudiant/entrainement", nhom: "on", labelKey: "nav.practice", Icon: Dumbbell, view: "practice" },
   /* « Nghe & Nói » (10/10): chép chính tả + luyện phát âm, route riêng. */
-  { to: "/etudiant/nghe-noi", nhom: "hoc", labelKey: "nav.speak", Icon: AudioLines },
   /* Không có `view`: là route riêng trong App.jsx, giống « Sổ tay » bên giáo viên.
      Ban đầu tôi cố ý KHÔNG đưa vào đây với lý do "vào là bắt đầu tính giờ, không
      phải mục menu thường". Sai — kết quả là một màn hình không ai tới được, tức

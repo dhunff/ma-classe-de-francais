@@ -96,6 +96,8 @@ const CO_Y_KHONG_CO_MUC = {
     "« Bài luyện của tôi » (23/10): vào từ thẻ trên Trang chủ, không có mục menu riêng.",
   "/etudiant/lo-trinh":
     "Tab « Lộ trình » của mục « Học tập » (26/10: Ngữ pháp đứng đầu): vào bằng HocTapTab.jsx; mục menu trỏ /etudiant/ngu-phap, `khop` gồm đường này.",
+  "/etudiant/nghe-noi":
+    "Tab « Nghe & Nói » của mục « Học tập » (27/10): vào bằng HocTapTab.jsx; `khop` của mục Học tập gồm đường này.",
   "/etudiant/progression":
     "« Ma progression » đã rời menu theo yêu cầu; route giữ lại để không mất màn hình.",
   "/etudiant/resultats":
