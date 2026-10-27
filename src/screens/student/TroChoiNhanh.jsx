@@ -744,7 +744,7 @@ function ChepNhanh({ cap, onXong }) {
       <div className="mx-auto h-3 w-[85%] rounded-full bg-[#9ca3af]" aria-hidden />
       <div className="mx-auto -mt-1 w-[78%] rounded-b-sm bg-[#fdfbf5] px-5 pb-5 pt-6 font-mono text-[#1f2937] shadow-inner" onClick={() => o.current?.focus()}>
         <div className="flex justify-between text-[11px] uppercase tracking-widest text-[#9ca3af]"><span>{tr("Bài chép", "Dictée", "Dictation")} {i + 1}/{SO} · {cau.cap}</span><span className="tabular-nums">{tong.current.diem} pts</span></div>
-        <input ref={o} lang="fr" value={go} onChange={(e) => { setGo(e.target.value); if (!kq) phat("bam"); }} disabled={!!kq}
+        <input ref={o} lang="fr" value={go} onChange={(e) => setGo(e.target.value)} disabled={!!kq}
           onKeyDown={(e) => { if (e.key === "Enter") (kq ? tiep() : nop()); }}
           placeholder={tr("gõ câu bạn nghe…", "tapez ce que vous entendez…", "type what you hear…")}
           className="mt-4 w-full border-0 border-b border-dashed border-[#d1d5db] bg-transparent py-2 font-mono text-lg text-[#111] caret-red-600 outline-none placeholder:text-[#b0b0b0]" />
