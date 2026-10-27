@@ -1,4 +1,5 @@
 import {
+  House, GraduationCap, ChartNoAxesCombined, UserRound,
   LayoutDashboard, BookOpen, Users, BarChart3, Dumbbell, AudioLines, TrendingUp,
   ClipboardList, CheckSquare, CalendarDays, Settings, Lightbulb, Timer, Trophy, Layers, Lightbulb as Bulb, Anchor, Inbox,
   Map, BookA, Swords, FileCheck2, Megaphone, Flag } from "lucide-react";
@@ -61,7 +62,7 @@ export const TEACHER_NAV = [
 ];
 
 export const STUDENT_NAV = [
-  { to: "/etudiant/dashboard", nhom: "hoc", labelKey: "nav.dashboard", Icon: LayoutDashboard },
+  { to: "/etudiant/dashboard", nhom: "hoc", labelKey: "nav.dashboard", Icon: House },
   /* « Học ngữ pháp » (15/10): lý thuyết theo trình độ + thực hành ngay. Đứng ngay
      sau Trang chủ (16/10, theo chủ dự án). */
   /* Lộ trình học tập — cây kỹ năng A1 → C1. Không có `view`: route riêng
@@ -73,7 +74,7 @@ export const STUDENT_NAV = [
   /* 23/10 (theo chủ dự án): « Học tập » gộp Lộ trình + Học ngữ pháp thành MỘT
      mục, hai tab ở đầu màn (HocTapTab.jsx). Đường dẫn cũ giữ nguyên; `khop` để mục
      sáng lên ở cả hai. Tab Từ vựng bỏ 23/10 theo chủ dự án. */
-  { to: "/etudiant/ngu-phap", nhom: "hoc", labelKey: "nav.learn", Icon: Map, khop: ["/etudiant/ngu-phap", "/etudiant/lo-trinh"] },
+  { to: "/etudiant/ngu-phap", nhom: "hoc", labelKey: "nav.learn", Icon: GraduationCap, khop: ["/etudiant/ngu-phap", "/etudiant/lo-trinh"] },
   /* Từ điển tra nhanh — nguồn là thẻ flashcard công khai (TuDien.jsx). */
   /* Thách đấu bạn bè — đứng ngay sau Lộ trình vì cùng là phần game. */
   { to: "/etudiant/thach-dau", nhom: "thi", labelKey: "nav.duel", Icon: Swords },
@@ -103,12 +104,12 @@ export const STUDENT_NAV = [
      biểu đồ điểm không mất — chỉ là hiện không còn lối vào từ thanh bên.
      Muốn dựng lại thì thêm một dòng ở đây, không phải viết lại màn hình. */
   /* « Tiến bộ VIP » (14/10, migration 143): báo cáo tuần + ôn câu sai. */
-  { to: "/etudiant/tien-bo", nhom: "toi", labelKey: "nav.progress", Icon: TrendingUp },
+  { to: "/etudiant/tien-bo", nhom: "toi", labelKey: "nav.progress", Icon: ChartNoAxesCombined },
   { to: "/etudiant/calendrier", nhom: "toi", labelKey: "nav.calendar", Icon: CalendarDays },
   /* « Bài tập được giao » (08/10): gộp « Cần làm » + « Đã nộp » thành hai tab
      của một mục, đặt ngay dưới Lịch theo yêu cầu chủ dự án. */
   { to: "/etudiant/devoirs", nhom: "toi", labelKey: "nav.assigned", Icon: ClipboardList, view: "todo" },
-  { to: "/etudiant/compte", nhom: "toi", labelKey: "nav.account", Icon: Settings, view: "settings" },
+  { to: "/etudiant/compte", nhom: "toi", labelKey: "nav.account", Icon: UserRound, view: "settings" },
 ];
 
 /* 13/10: thanh bên chia NHÓM (trường `nhom`). Danh sách giữ nguyên thứ tự

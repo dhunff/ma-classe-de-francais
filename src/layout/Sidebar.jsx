@@ -1,6 +1,7 @@
 ﻿import React, { useEffect, useRef } from "react";
 import { NavLink, Link, useLocation } from "react-router-dom";
 import { LogIn, X, ChevronLeft, ChevronRight, LifeBuoy } from "lucide-react";
+import { motion, MotionConfig } from "framer-motion";
 import { navTheoNhom } from "./navItems.js";
 import { tr } from "../shared/i18n.jsx";
 
@@ -47,8 +48,10 @@ function Label({ expanded, children, className = "" }) {
   return (
     <span
       className={[
-        "overflow-hidden whitespace-nowrap transition-all duration-300 ease-in-out",
-        expanded ? "ml-3 w-auto opacity-100" : "ml-0 w-0 opacity-0",
+        /* 27/10: max-width thay cho width auto (auto không nội suy được nên chữ
+           bật/tắt chứ không trượt). Đường cong ease-out mạnh, mở 300ms. */
+        "overflow-hidden whitespace-nowrap transition-[max-width,opacity,margin] duration-300 ease-[cubic-bezier(.23,1,.32,1)]",
+        expanded ? "ml-3 max-w-[12rem] opacity-100" : "ml-0 max-w-0 opacity-0",
         className,
       ].join(" ")}
     >
@@ -65,7 +68,7 @@ function Tip({ show, children }) {
   return (
     <span
       role="tooltip"
-      className="pointer-events-none absolute left-full top-1/2 z-50 ml-3 -translate-y-1/2 scale-95 whitespace-nowrap rounded-full bg-surface px-3 py-1.5 text-xs font-bold text-primary opacity-0 shadow-lg transition-all duration-200 group-hover:scale-100 group-hover:opacity-100"
+      className="pointer-events-none absolute left-full top-1/2 z-50 ml-3 -translate-y-1/2 -translate-x-1 whitespace-nowrap rounded-full bg-surface px-3 py-1.5 text-xs font-bold text-primary opacity-0 shadow-lg transition-[opacity,transform] duration-150 ease-[cubic-bezier(.23,1,.32,1)] group-hover:translate-x-0 group-hover:opacity-100 group-hover:delay-100"
     >
       {children}
     </span>
@@ -82,6 +85,7 @@ function Tip({ show, children }) {
 function NavList({ role, t, expanded, onNavigate, onBlue = true }) {
   const { pathname } = useLocation();   // mục có `khop` sáng lên ở nhiều đường dẫn
   return (
+    <MotionConfig reducedMotion="user">
     <nav className={`flex flex-1 flex-col ${onBlue ? "pl-3" : "px-3"}`} aria-label={t("nav.primary")}>
       {navTheoNhom(role).map(({ nhom, muc }, gi) => (
         <div key={nhom} className={gi ? "mt-4 [@media(max-height:760px)]:mt-2" : ""}>
@@ -98,32 +102,36 @@ function NavList({ role, t, expanded, onNavigate, onBlue = true }) {
                 to={to}
                 onClick={onNavigate}
                 className={({ isActive: dung }) => { const isActive = dung || them; return [
-                    "group relative flex items-center py-1.5 text-sm no-underline [@media(max-height:760px)]:py-1",
-                    "transition-all duration-200 ease-out",
+                    "group relative flex items-center rounded-2xl py-1.5 text-sm no-underline outline-none [@media(max-height:760px)]:py-1",
+                    "transition-[color,background-color,transform] duration-200 ease-[cubic-bezier(.23,1,.32,1)] active:scale-[0.98]",
+                    "focus-visible:ring-2 focus-visible:ring-white/60",
                     expanded ? "px-2" : "justify-center px-0",
-                    /* Mục đang chọn trên nền xanh: liền khối với tấm thẻ (bo trái,
-                       kéo -mr-3 chạm mép thẻ). Xem chú thích đầu file. */
+                    onBlue ? "mr-3" : "",
                     onBlue
-                      ? isActive
-                        ? "-mr-3 rounded-l-2xl bg-bg pr-5 font-bold text-primary"
-                        : "mr-3 rounded-2xl font-medium text-white/75 hover:bg-white/10 hover:text-white"
-                      : isActive
-                        ? "rounded-2xl bg-primary-soft font-bold text-primary"
-                        : "rounded-2xl font-medium text-soft hover:bg-surface2/70 hover:text-ink",
+                      ? isActive ? "font-bold text-primary" : "font-medium text-white/75 hover:bg-white/[0.08] hover:text-white"
+                      : isActive ? "font-bold text-primary" : "font-medium text-soft hover:bg-surface2/70 hover:text-ink",
                   ].join(" "); }}
               >
                 {({ isActive: dung }) => { const isActive = dung || them; return (
                   <>
-                    {/* Biểu tượng trong ô vuông bo góc: đang chọn thì ô đặc màu chính. */}
+                    {/* 27/10: nền « đang chọn » trượt từ mục cũ sang mục mới (layoutId).
+                        Trên nền khung: bo trái, kéo -right-3 chạm mép tấm thẻ cho liền
+                        khối (xem chú thích đầu file). */}
+                    {isActive && (
+                      <motion.span aria-hidden layoutId={onBlue ? "nav-dang-chon" : "nav-dang-chon-m"}
+                        transition={{ type: "spring", stiffness: 500, damping: 40, mass: 0.8 }}
+                        className={onBlue ? "absolute inset-y-0 left-0 -right-3 rounded-l-2xl bg-bg" : "absolute inset-0 rounded-2xl bg-primary-soft"} />
+                    )}
+                    {/* Biểu tượng trong ô bo góc: đang chọn thì ô đặc màu chính, có quầng. */}
                     <span className={[
-                      "grid h-9 w-9 shrink-0 place-items-center rounded-xl transition-all duration-200",
+                      "relative grid h-9 w-9 shrink-0 place-items-center rounded-xl transition-[background-color,color,box-shadow] duration-200 ease-[cubic-bezier(.23,1,.32,1)]",
                       isActive
-                        ? "bg-primary text-white shadow-[0_6px_14px_rgba(37,99,235,0.35)]"
-                        : onBlue ? "bg-white/10 group-hover:bg-white/20 group-hover:scale-105" : "bg-surface2 group-hover:scale-105",
+                        ? "bg-primary text-white shadow-[0_6px_16px_rgb(var(--mcf-primary-rgb)/0.35)]"
+                        : onBlue ? "bg-white/[0.08] text-white/85 group-hover:bg-white/[0.16] group-hover:text-white" : "bg-surface2 group-hover:text-ink",
                     ].join(" ")}>
-                      <Icon size={18} strokeWidth={isActive ? 2.4 : 2} />
+                      <Icon size={18} strokeWidth={isActive ? 2.25 : 1.85} className="transition-transform duration-200 ease-[cubic-bezier(.23,1,.32,1)] group-hover:-translate-y-px" />
                     </span>
-                    <Label expanded={expanded} className="truncate">{t(labelKey)}</Label>
+                    <Label expanded={expanded} className="relative truncate">{t(labelKey)}</Label>
                     <Tip show={!expanded}>{t(labelKey)}</Tip>
                   </>
                 ); }}
@@ -133,6 +141,7 @@ function NavList({ role, t, expanded, onNavigate, onBlue = true }) {
         </div>
       ))}
     </nav>
+    </MotionConfig>
   );
 }
 
@@ -269,7 +278,7 @@ export default function Sidebar({
       <aside
         className={[
           "mcf-rise relative hidden h-[100dvh] shrink-0 flex-col py-5 md:flex [@media(max-height:760px)]:py-3",
-          "transition-[width] duration-300 ease-in-out",
+          "transition-[width] duration-300 ease-[cubic-bezier(.23,1,.32,1)]",
           expanded ? "w-64" : "w-[5.5rem]",
         ].join(" ")}
       >
@@ -312,7 +321,7 @@ export default function Sidebar({
       {/* Mobile: lớp phủ + ngăn kéo trượt từ trái */}
       <div
         className={[
-          "fixed inset-0 z-40 bg-ink/40 transition-opacity md:hidden",
+          "fixed inset-0 z-40 bg-ink/40 transition-opacity duration-200 md:hidden",
           open ? "opacity-100" : "pointer-events-none opacity-0",
         ].join(" ")}
         onClick={onClose}
@@ -326,7 +335,7 @@ export default function Sidebar({
         className={[
           "fixed left-0 top-0 z-50 flex h-[100dvh] w-72 max-w-[85vw] flex-col bg-surface",
           "border-0 border-r border-solid border-line",
-          "transition-transform duration-200 md:hidden",
+          "transition-transform duration-300 ease-[cubic-bezier(.23,1,.32,1)] md:hidden",
           open ? "translate-x-0" : "-translate-x-full",
         ].join(" ")}
       >
