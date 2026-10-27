@@ -4,7 +4,8 @@ import { ArrowLeft, Heart, Headphones, CloudRain, VenusAndMars, Play, RotateCcw,
 import { PhatAm } from "./NgheNoi.jsx";
 import { soCau } from "../../../supabase/functions/_shared/soCau.js";
 import { VU_AN } from "../../content/troChoi/thamTu.js";
-import { DO_VUI, PHIEU_LUU } from "../../content/troChoi/docVanHoa.js";
+import { CHANG } from "../../content/troChoi/doVui.js";
+import { PHIEU_LUU } from "../../content/troChoi/docVanHoa.js";
 import { tr } from "../../shared/i18n.jsx";
 import { phat } from "../../shared/amThanh.js";
 import { Leon } from "../../shared/leon.jsx";
@@ -56,8 +57,8 @@ const TRO_CHOI = () => [
     ten: tr("Thám tử Léon", "Détective Léon", "Detective Léon"),
     mo: tr("Làm trợ lý cho Thanh tra Léon: 9 vụ án, đọc manh mối tiếng Pháp và lần ra kẻ bí ẩn P.G.", "Assistez l'inspecteur Léon : 9 affaires, des indices en français et le mystérieux P.G.", "Assist Inspector Léon: 9 cases, French clues and the mysterious P.G.") },
   { ma: "do_vui", nhom: "dv", Icon: Landmark, nen: "from-blue-600 to-red-500",
-    ten: tr("Đố vui nước Pháp", "Quiz France", "France quiz"),
-    mo: tr("10 câu về văn hoá, địa lý, ẩm thực Pháp. Trả lời nhanh để được thêm điểm.", "10 questions sur la culture française.", "10 questions on French culture.") },
+    ten: tr("Le Grand Quiz de France", "Le Grand Quiz de France", "Le Grand Quiz de France"),
+    mo: tr("Gameshow 9 chặng vòng quanh nước Pháp: Léon đấu bà Minette, thắng chặng để đóng dấu hộ chiếu.", "Un jeu télé en 9 étapes à travers la France : Léon contre Mme Minette.", "A 9-stage TV quiz around France: Léon vs Mme Minette.") },
   { ma: "phieu_luu", nhom: "dv", Icon: MapPinned, nen: "from-amber-500 to-orange-600",
     ten: tr("Phiêu lưu ở Paris", "Aventure à Paris", "Paris adventure"),
     mo: tr("Một ngày ở Paris: chọn câu tiếng Pháp hợp tình huống ở quán café, métro, khách sạn… 3 mạng.", "Une journée à Paris : choisissez la bonne réplique. 3 vies.", "A day in Paris: pick the right reply. 3 lives.") },
@@ -1087,35 +1088,152 @@ function ThamTu({ muc = "vua", onXong }) {
   return null;
 }
 
-/* ─────────── 10. Đố vui nước Pháp ─────────── */
-function DoVui({ onXong }) {
-  const SO = 10;
-  const [ds] = useState(() => tron(DO_VUI).slice(0, SO));
+/* ─────────── 10. Đố vui: « Le Grand Quiz de France » ───────────
+   Chọn mức → hộ chiếu ba chặng của mức đó → một tập gameshow: 5 câu, mỗi câu có đồng hồ,
+   Léon đấu với bà Minette. Đạt `dat` câu thì thắng chặng, được đóng dấu. Tiến độ chặng
+   chỉ lưu ở trình duyệt (mở khoá chặng sau); điểm thật ghi qua ghi_tro_choi. */
+const KHOA_DV = "mcf-do-vui-v1";
+const docDauDV = () => { try { return JSON.parse(localStorage.getItem(KHOA_DV)) || {}; } catch { return {}; } };
+const luuDauDV = (id, diem) => { try { const t = docDauDV(); t[id] = Math.max(t[id] ?? 0, diem); localStorage.setItem(KHOA_DV, JSON.stringify(t)); } catch { /* bỏ qua */ } };
+
+function DoVui({ muc = "vua", he, onXong }) {
+  const GIAY = Math.round(20 * (he?.gio ?? 1));
+  const [dau, setDau] = useState(docDauDV);
+  const [ch, setCh] = useState(null);             // chặng đang chơi
+  const [buoc, setBuoc] = useState("mo");         // mo | hoi | xong
   const [i, setI] = useState(0);
-  const [chon, setChon] = useState(null);
+  const [chon, setChon] = useState(null);         // chỉ số đã chọn, -1 = hết giờ
+  const [con, setCon] = useState(GIAY);
+  const [minette, setMinette] = useState(0);
   const kq = useRef({ diem: 0, dung: 0 });
   const batDau = useRef(Date.now());
-  useEffect(() => { batDau.current = Date.now(); }, [i]);
-  const c = ds[i];
-  const tra = (k) => {
-    if (chon != null) return;
+  const ds = CHANG.filter((c) => c.muc === muc);
+
+  const tra = useCallback((k) => {
+    if (chon != null || !ch) return;
     setChon(k); const ok = k === 0; phat(ok ? "dung" : "sai");
-    if (ok) { kq.current.dung++; kq.current.diem += 100 + Math.max(0, Math.round(50 - (Date.now() - batDau.current) / 200)); }
-    setTimeout(() => { setChon(null); if (i + 1 >= SO) onXong({ ...kq.current, tong: SO }); else setI(i + 1); }, ok ? 1400 : 2400);
-  };
+    if (ok) { kq.current.dung++; kq.current.diem += 100 + Math.max(0, Math.round(con * 5)); }
+    // Bà Minette trả lời đúng khoảng 60%: đủ để là đối thủ, không đủ để không thể thắng.
+    if (Math.random() < 0.6) setMinette((m) => m + 1);
+  }, [chon, ch, con]);
+
+  useEffect(() => {
+    if (buoc !== "hoi" || chon != null) return;
+    batDau.current = Date.now(); setCon(GIAY);
+    const t = setInterval(() => {
+      const c = Math.max(0, GIAY - Math.floor((Date.now() - batDau.current) / 1000));
+      setCon(c);
+      if (c === 0) { clearInterval(t); tra(-1); }
+    }, 250);
+    return () => clearInterval(t);
+  }, [buoc, i, chon == null]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const LoiLeon = ({ cam, children }) => (
+    <div className="mcf-cau-vao mt-4 flex items-start gap-3">
+      <Leon cam={cam} size={60} className="shrink-0" />
+      <p className="m-0 rounded-3xl rounded-tl-md bg-white/10 px-4 py-3 text-sm leading-relaxed text-white">{children}</p>
+    </div>
+  );
+  const nen = "mt-6 rounded-[2rem] bg-[#140b33] bg-[radial-gradient(ellipse_at_top,#3b1d8f_0,transparent_60%)] p-5 text-white";
+
+  /* Hộ chiếu: ba trang = ba chặng của mức, dấu đóng lên chặng đã thắng. */
+  if (!ch) return (
+    <div className={nen}>
+      <LoiLeon cam="phap">{muc === "de" ? tr("Ta được mời thi « Le Grand Quiz de France »! Đối thủ là bà Minette, vô địch ba mùa. Trợ lý nhắc bài cho ta nhé.", "Je participe au « Grand Quiz de France » ! Mon adversaire : Mme Minette, triple championne.", "I'm on « Le Grand Quiz de France »! My rival: Mme Minette, three-time champion.")
+        : muc === "vua" ? tr("Hạng « Moyen »: từ giờ người dẫn hỏi bằng tiếng Pháp. Bình tĩnh đọc kỹ nhé.", "Niveau « Moyen » : l'animateur pose les questions en français.", "“Medium” tier: the host now asks in French.")
+        : tr("Hạng « Difficile »: lịch sử, văn học, và trận chung kết với bà Minette!", "Niveau « Difficile » : histoire, littérature, et la grande finale !", "“Hard” tier: history, literature, and the grand final!")}</LoiLeon>
+      <div className="mt-5 grid gap-4 sm:grid-cols-3">
+        {ds.map((c, k) => {
+          const thang = dau[c.id] != null, khoa = k > 0 && dau[ds[k - 1].id] == null;
+          return (
+            <button key={c.id} type="button" disabled={khoa}
+              onClick={() => { phat("batDau"); setCh(c); setBuoc("mo"); setI(0); setChon(null); setMinette(0); kq.current = { diem: 0, dung: 0 }; }}
+              className="relative cursor-pointer overflow-hidden rounded-2xl border-2 border-solid border-[#7c2d12] bg-[#fef3c7] p-4 text-left font-sans text-[#431407] shadow-[0_10px_24px_rgba(0,0,0,0.35)] transition-transform hover:-translate-y-1 disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:translate-y-0">
+              <span className="block font-mono text-[10px] font-bold uppercase tracking-widest text-[#9a3412]">{tr("Hộ chiếu · chặng", "Passeport · étape", "Passport · stage")} {c.so}</span>
+              <span className="mt-2 block text-3xl" aria-hidden>{c.co}</span>
+              <span className="mt-1 block text-base font-extrabold">{c.noi}</span>
+              <span lang="fr" className="block text-xs italic text-[#9a3412]">{c.ten}</span>
+              <span className="mt-2 block text-xs font-bold">{khoa ? `🔒 ${tr("Thắng chặng trước để mở", "Gagnez l'étape précédente", "Win the previous stage")}` : thang ? `${tr("Kỷ lục", "Record", "Best")}: ${dau[c.id]}` : tr(`Cần đúng ${c.dat}/5`, `${c.dat}/5 pour gagner`, `${c.dat}/5 to win`)}</span>
+              {thang && <span className="mcf-dong absolute right-2 top-6 grid h-16 w-16 place-items-center rounded-full border-4 border-double border-[#b91c1c] text-center font-mono text-[10px] font-black uppercase leading-tight text-[#b91c1c]">{c.noi.split(" ")[0]}<br />✓</span>}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+
+  if (buoc === "mo") return (
+    <div className={nen}>
+      <p className="m-0 text-center font-mono text-xs font-bold uppercase tracking-[0.3em] text-amber-300">Le Grand Quiz de France · {ch.co} {ch.noi}</p>
+      <LoiLeon cam="quyet-tam">{ch.mo}</LoiLeon>
+      <div className="mt-5 text-center">
+        <button type="button" onClick={() => { phat("batDau"); setBuoc("hoi"); }} className="cursor-pointer rounded-full border-0 bg-amber-400 px-8 py-3 font-sans text-base font-extrabold text-[#140b33] shadow-[0_6px_0_#b45309] active:translate-y-1 active:shadow-none">{tr("Bắt đầu ghi hình!", "Moteur, ça tourne !", "Roll the cameras!")}</button>
+      </div>
+    </div>
+  );
+
+  const c = ch.cau[i];
+  if (buoc === "hoi") {
+    const tiep = () => {
+      if (i + 1 < ch.cau.length) { setChon(null); setI(i + 1); return; }
+      const thang = kq.current.dung >= ch.dat;
+      if (thang) { luuDauDV(ch.id, kq.current.diem); setDau(docDauDV()); phat("thang"); }
+      setBuoc("xong");
+    };
+    return (
+      <div className={nen}>
+        {/* Bục thi: Léon (người chơi) và bà Minette */}
+        <div className="grid grid-cols-[1fr_auto_1fr] items-end gap-3">
+          <div className="rounded-xl bg-amber-400/90 p-2 text-center text-[#140b33]">
+            <Leon cam={chon == null ? "suy-nghi" : chon === 0 ? "yeah" : "buon"} size={44} className="mx-auto block" />
+            <p className="m-0 text-xs font-extrabold">Léon · {kq.current.dung}</p>
+          </div>
+          <span className="relative grid h-14 w-14 place-items-center">
+            <svg viewBox="0 0 36 36" className="absolute inset-0 -rotate-90" aria-hidden><circle cx="18" cy="18" r="15" fill="none" strokeWidth="3" stroke="rgba(255,255,255,0.15)" /><circle cx="18" cy="18" r="15" fill="none" strokeWidth="3" strokeLinecap="round" stroke={con <= 5 ? "#f87171" : "#fbbf24"} strokeDasharray="94.2" strokeDashoffset={94.2 * (1 - con / GIAY)} /></svg>
+            <span className="text-sm font-extrabold tabular-nums">{con}</span>
+          </span>
+          <div className="rounded-xl bg-white/15 p-2 text-center">
+            <span className="mx-auto block text-[34px] leading-[44px]" aria-hidden>🐱</span>
+            <p className="m-0 text-xs font-extrabold">Minette · {minette}</p>
+          </div>
+        </div>
+        <div className="mt-4 flex items-center gap-1.5" aria-hidden>
+          {ch.cau.map((_, k) => <span key={k} className={`h-2 flex-1 rounded-full ${k < i ? "bg-amber-400" : k === i ? "bg-white" : "bg-white/15"}`} />)}
+        </div>
+        <div className="mt-4 rounded-2xl border-2 border-solid border-violet-400/60 bg-[#22145a] px-5 py-6 text-center shadow-[0_0_40px_rgba(139,92,246,0.35)]">
+          <p lang={ch.muc === "de" ? undefined : "fr"} className="m-0 text-xl font-extrabold leading-snug">{c.q}</p>
+        </div>
+        <CauTracNghiem key={i} pa={c.pa} onTra={tra} daChon={chon} laPhap kieu="tv" />
+        {chon != null && <>
+          <LoiLeon cam={chon === 0 ? "tuyet-voi" : chon === -1 ? "buon-ngu" : "xin-loi"}>
+            {chon === 0 ? tr("Chính xác! ", "Exact ! ", "Correct! ") : chon === -1 ? tr("Hết giờ rồi! ", "Temps écoulé ! ", "Time's up! ") : tr("Tiếc quá! ", "Dommage ! ", "Too bad! ")}
+            {chon !== 0 && <><strong lang="fr">{c.pa[0]}</strong>. </>}{c.gt}
+          </LoiLeon>
+          <div className="mt-4 text-right">
+            <button type="button" onClick={tiep} className="cursor-pointer rounded-full border-0 bg-amber-400 px-6 py-2.5 font-sans text-sm font-extrabold text-[#140b33]">
+              {i + 1 < ch.cau.length ? tr("Câu tiếp", "Question suivante", "Next question") : tr("Kết quả tập", "Résultat", "Results")} →
+            </button>
+          </div>
+        </>}
+      </div>
+    );
+  }
+
+  const thang = kq.current.dung >= ch.dat;
   return (
-    /* Trường quay gameshow: sân khấu tối, bảng câu hỏi phát sáng, thang câu hỏi
-       bên cạnh, bốn ô màu A–D. */
-    <div className="mt-6 rounded-[2rem] bg-[#140b33] bg-[radial-gradient(ellipse_at_top,#3b1d8f_0,transparent_60%)] p-5 text-white">
-      <div className="flex items-center gap-1.5" aria-hidden>
-        {Array.from({ length: SO }, (_, k) => <span key={k} className={`h-2 flex-1 rounded-full ${k < i ? "bg-amber-400" : k === i ? "bg-white" : "bg-white/15"}`} />)}
+    <div className={nen}>
+      <p className="m-0 text-center font-mono text-xs font-bold uppercase tracking-[0.3em] text-amber-300">{ch.co} {ch.noi}</p>
+      <div className="mt-4 flex items-center justify-center gap-6 text-center">
+        <div><Leon cam={thang ? "cuoi-lon" : "buon"} size={72} className="mx-auto block" /><p className="m-0 text-3xl font-extrabold tabular-nums">{kq.current.dung}</p></div>
+        <span className="text-xl font-black text-white/50">VS</span>
+        <div><span className="block text-[54px] leading-[72px]" aria-hidden>🐱</span><p className="m-0 text-3xl font-extrabold tabular-nums">{minette}</p></div>
       </div>
-      <div className="mt-3 flex items-center justify-between text-sm font-bold"><span className="text-white/70">{tr("Câu", "Question", "Question")} {i + 1}/{SO}</span><span className="rounded-full bg-amber-400 px-3 py-1 tabular-nums text-[#140b33]">{kq.current.diem}</span></div>
-      <div className="mt-4 rounded-2xl border-2 border-solid border-violet-400/60 bg-[#22145a] px-5 py-6 text-center shadow-[0_0_40px_rgba(139,92,246,0.35)]">
-        <p className="m-0 text-xl font-extrabold leading-snug">{c.q}</p>
+      {thang && <p className="mcf-dong mx-auto mt-3 w-fit rounded-md border-4 border-double border-amber-300 px-3 py-1 font-mono text-sm font-black uppercase tracking-widest text-amber-300">{tr("Đã đóng dấu", "Tampon obtenu", "Stamped")} {ch.co}</p>}
+      <LoiLeon cam={thang ? "yeah" : "co-len"}>{thang ? ch.thang : `${ch.thua} ${tr(`(Cần ${ch.dat}/5 câu đúng.)`, `(Il faut ${ch.dat}/5.)`, `(You need ${ch.dat}/5.)`)}`}</LoiLeon>
+      <div className="mt-5 text-right">
+        <button type="button" onClick={() => onXong({ diem: kq.current.diem, dung: kq.current.dung, tong: ch.cau.length })}
+          className="cursor-pointer rounded-full border-0 bg-amber-400 px-6 py-2.5 font-sans text-sm font-extrabold text-[#140b33]">{tr("Lưu điểm", "Enregistrer", "Save score")} →</button>
       </div>
-      <CauTracNghiem key={i} pa={c.pa} onTra={tra} daChon={chon} kieu="tv" />
-      {chon != null && <p className="m-0 mt-4 rounded-xl bg-white/10 px-4 py-3 text-sm text-white/90">💡 {c.gt}</p>}
     </div>
   );
 }
