@@ -168,18 +168,36 @@ function TroGiup({ expanded, onNavigate, onBlue = true }) {
 }
 
 /* Logo (09/10): đầu Leon + chữ FRACILE. Thu gọn thì chỉ còn đầu Leon. */
+/* 27/10: Leon trong huy hiệu trắng bo góc (nghiêng nhẹ, rê chuột thì thẳng lại),
+   chữ FRACILE đậm kèm chấm đỏ, dòng phụ có vạch ba màu cờ Pháp. */
+function Huy({ onBlue, size = "h-11 w-11" }) {
+  return (
+    <span className={`relative grid ${size} shrink-0 -rotate-6 place-items-center rounded-2xl transition-transform duration-300 ease-[cubic-bezier(.23,1,.32,1)] group-hover:rotate-0 ${onBlue ? "bg-white shadow-[0_8px_20px_rgba(0,0,0,0.18)] ring-4 ring-white/15" : "bg-primary-soft"}`}>
+      <img src="/leon/dau.webp" alt="" width={34} height={34} className="h-[34px] w-[34px] object-contain" />
+    </span>
+  );
+}
 function Brand({ expanded, onBlue = true }) {
   const tone = onBlue ? "text-white" : "text-ink";
-  const dot = onBlue ? "text-white/60" : "text-primary";
   return (
-    <div className={`flex items-center overflow-hidden ${expanded ? "px-5" : "justify-center px-0"}`}>
+    <div aria-label="FRACILE" className={`group flex items-center overflow-hidden ${expanded ? "px-5" : "justify-center px-0"}`}>
       {expanded ? (
-        <span className="flex items-center gap-2.5">
-          <img src="/leon/dau.webp" alt="" width={36} height={36} className="h-9 w-9 shrink-0 object-contain" />
-          <span className={`whitespace-nowrap text-2xl font-bold tracking-tight ${tone}`}>FRACILE<span className={dot}>.</span></span>
+        <span className="flex items-center gap-3">
+          <Huy onBlue={onBlue} />
+          <span className="min-w-0">
+            <span className={`block whitespace-nowrap text-[22px] font-extrabold leading-none tracking-tight ${tone}`}>
+              FRACILE<span className="ml-0.5 inline-block h-[7px] w-[7px] rounded-full bg-[#EF4444] align-baseline" />
+            </span>
+            <span className={`mt-1.5 flex items-center gap-1.5 whitespace-nowrap text-[10px] font-bold uppercase tracking-[0.1em] ${onBlue ? "text-white/65" : "text-soft"}`}>
+              <span aria-hidden className="flex h-[3px] w-5 overflow-hidden rounded-full">
+                <span className="flex-1 bg-[#2563EB] ring-1 ring-white/40" /><span className="flex-1 bg-white" /><span className="flex-1 bg-[#EF4444]" />
+              </span>
+              {tr("Tiếng Pháp · DELF", "Français · DELF", "French · DELF")}
+            </span>
+          </span>
         </span>
       ) : (
-        <img src="/leon/dau.webp" alt="FRACILE" width={36} height={36} className="h-9 w-9 object-contain" />
+        <Huy onBlue={onBlue} />
       )}
     </div>
   );
