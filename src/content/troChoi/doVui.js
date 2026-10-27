@@ -1,6 +1,6 @@
 /* « Le Grand Quiz de France » (28/10, theo chủ dự án).
- * Léon tham gia gameshow truyền hình quay vòng quanh nước Pháp. Mỗi CHẶNG quay ở một
- * vùng, 5 câu hỏi về vùng đó; đối thủ là bà Minette, mèo vô địch ba mùa liền. Trả lời
+ * Gameshow truyền hình quay vòng quanh nước Pháp, MC là Léon, thí sinh là NGƯỜI CHƠI.
+ * Mỗi CHẶNG quay ở một vùng, 5 câu hỏi về vùng đó; đối thủ là bà Minette, mèo vô địch ba mùa liền. Trả lời
  * đúng ít nhất `dat` câu thì thắng chặng, được đóng dấu vào hộ chiếu và mở chặng sau.
  *
  * Ngôn ngữ câu hỏi tăng theo mức: Dễ hỏi bằng tiếng Việt (đáp án có từ tiếng Pháp),
@@ -12,7 +12,7 @@ export const CHANG = [
   {
     id: "paris", muc: "de", so: 1, dat: 3, co: "🗼",
     noi: "Paris", ten: "Paris, ville lumière",
-    mo: "Bonsoir la France! Tập đầu tiên quay ngay dưới chân tháp Eiffel. Bà Minette ngồi ghế bên kia, liếm móng, chẳng thèm nhìn ta. Trợ lý nhắc bài cho ta nhé!",
+    mo: "Bonsoir la France ! Ta là Léon, MC của « Le Grand Quiz de France ». Thí sinh mới tối nay là BẠN, đối đầu bà Minette, mèo vô địch ba mùa liền. Tập đầu quay ngay dưới chân tháp Eiffel. Sẵn sàng chưa?",
     cau: [
       { q: "Tháp Eiffel được hoàn thành năm nào?", pa: ["1889", "1789", "1920", "1950"], gt: "Tháp hoàn thành năm 1889 cho Triển lãm Thế giới (Exposition universelle), đúng 100 năm sau Cách mạng 1789." },
       { q: "Con sông nào chảy qua Paris?", pa: ["La Seine", "La Loire", "Le Rhône", "La Garonne"], gt: "La Seine chia Paris thành « rive droite » (bờ phải) và « rive gauche » (bờ trái)." },
@@ -20,13 +20,13 @@ export const CHANG = [
       { q: "Khải Hoàn Môn (l'Arc de Triomphe) nằm ở đầu đại lộ nào?", pa: ["Les Champs-Élysées", "Le boulevard Saint-Michel", "La rue de Rivoli", "L'avenue Montaigne"], gt: "Khải Hoàn Môn đứng ở đầu đại lộ Champs-Élysées, giữa quảng trường Charles-de-Gaulle." },
       { q: "Nhà thờ Đức Bà Paris có tên tiếng Pháp là gì?", pa: ["Notre-Dame de Paris", "Le Sacré-Cœur", "La Sainte-Chapelle", "Saint-Sulpice"], gt: "Notre-Dame de Paris, nghĩa đen « Đức Bà của chúng ta ». Nhà thờ mở cửa lại năm 2024 sau vụ cháy 2019." },
     ],
-    thang: "Bà Minette nheo mắt: « Pas mal, le chien. » Dấu Paris đầu tiên trong hộ chiếu! Chuyến tàu tiếp theo: Normandie.",
+    thang: "Bà Minette nheo mắt nhìn bạn: « Pas mal… » Dấu Paris đầu tiên trong hộ chiếu! Tập sau, đoàn làm phim kéo nhau ra Normandie.",
     thua: "Bà Minette thắng sát nút, còn kêu « miaou » đầy khinh khỉnh. Không sao, quay lại tập này nhé!",
   },
   {
     id: "normandie", muc: "de", so: 2, dat: 3, co: "🏰",
     noi: "Normandie & Bretagne", ten: "Entre mer et pommiers",
-    mo: "Gió biển thổi bay cả vương miện của bà Minette! Tập này quay giữa Normandie và Bretagne: biển, táo, bánh crêpe. Ta đói rồi đấy…",
+    mo: "Gió biển thổi bay cả vương miện của bà Minette! Tập này quay giữa Normandie và Bretagne: biển, táo, bánh crêpe. Thí sinh, mời vào bục!",
     cau: [
       { q: "Món bánh mỏng nổi tiếng nhất của Bretagne là gì?", pa: ["La crêpe", "La baguette", "Le croissant", "Le macaron"], gt: "La crêpe (ngọt) và la galette (mặn, bột kiều mạch) là niềm tự hào của Bretagne." },
       { q: "Tu viện xây trên đảo đá, bị thủy triều bao quanh ở Normandie tên là gì?", pa: ["Le Mont-Saint-Michel", "Le château de Chambord", "La cité de Carcassonne", "Le palais des Papes"], gt: "Le Mont-Saint-Michel: khi triều lên, đảo gần như tách hẳn khỏi đất liền." },
@@ -34,13 +34,13 @@ export const CHANG = [
       { q: "Đồ uống lên men từ táo, rất phổ biến ở Normandie và Bretagne?", pa: ["Le cidre", "Le champagne", "Le pastis", "Le cognac"], gt: "Le cidre (rượu táo nhẹ) thường uống kèm crêpe trong một chiếc bát nhỏ (bolée)." },
       { q: "Ngày D-Day, quân Đồng minh đổ bộ lên bờ biển Normandie là ngày nào?", pa: ["6 juin 1944", "14 juillet 1789", "11 novembre 1918", "8 mai 1945"], gt: "Le 6 juin 1944, cuộc đổ bộ lớn nhất lịch sử, mở đầu giải phóng nước Pháp." },
     ],
-    thang: "Hai dấu rồi! Bà Minette bắt đầu lo, ngồi chải lông liên tục. Tập sau: nắng vàng Provence!",
+    thang: "Hai dấu rồi! Khán giả trường quay bắt đầu hô tên bạn. Bà Minette chải lông liên tục, lo lắng thấy rõ. Tập sau: nắng vàng Provence!",
     thua: "Lần này bà Minette hơn ta một chút. Ăn một chiếc crêpe cho lại sức rồi thử lại nhé.",
   },
   {
     id: "provence", muc: "de", so: 3, dat: 3, co: "🌻",
     noi: "Provence & Côte d'Azur", ten: "Soleil du Sud",
-    mo: "Ve sầu kêu inh ỏi, nắng chói chang. Bà Minette đeo kính râm hàng hiệu. Tập cuối mùa « dễ » đây, thắng là lên hạng!",
+    mo: "Ve sầu kêu inh ỏi, bà Minette đeo kính râm hàng hiệu. Tập cuối hạng « Facile »: thắng là lên hạng!",
     cau: [
       { q: "Những cánh đồng hoa màu tím nổi tiếng của Provence là hoa gì?", pa: ["La lavande", "La tulipe", "La rose", "Le tournesol"], gt: "La lavande (oải hương) nở rộ khoảng tháng Sáu, tháng Bảy." },
       { q: "Thành phố cảng lớn nhất nước Pháp, quê hương món súp cá bouillabaisse?", pa: ["Marseille", "Nice", "Lyon", "Bordeaux"], gt: "Marseille, thành phố lâu đời nhất nước Pháp, do người Hy Lạp lập ra khoảng năm 600 trước Công nguyên." },
@@ -48,7 +48,7 @@ export const CHANG = [
       { q: "Món rau hầm truyền thống của Provence (cà tím, bí, ớt, cà chua)?", pa: ["La ratatouille", "Le cassoulet", "La choucroute", "Le pot-au-feu"], gt: "La ratatouille, món rau hầm của vùng Nice và Provence." },
       { q: "Trò chơi ném bóng sắt rất được yêu thích ở miền Nam nước Pháp?", pa: ["La pétanque", "Le rugby", "Le croquet", "Le golf"], gt: "La pétanque ra đời ở La Ciotat, gần Marseille, năm 1907." },
     ],
-    thang: "Ba dấu! Ban tổ chức tuyên bố: Léon lên hạng « Moyen ». Từ giờ người dẫn chương trình sẽ hỏi bằng TIẾNG PHÁP. Bà Minette suýt làm rơi kính râm.",
+    thang: "Ba dấu! Ban tổ chức tuyên bố bạn lên hạng « Moyen ». Từ tập sau, MC Léon sẽ hỏi bằng TIẾNG PHÁP. Bà Minette suýt làm rơi kính râm.",
     thua: "Nắng quá nên ta hơi chóng mặt. Uống ngụm nước rồi phục thù nào!",
   },
 
@@ -56,7 +56,7 @@ export const CHANG = [
   {
     id: "lyon", muc: "vua", so: 4, dat: 3, co: "🦁",
     noi: "Lyon & les Alpes", ten: "Gastronomie et montagnes",
-    mo: "Hạng mới, luật mới: người dẫn chương trình chỉ nói tiếng Pháp! Tập này quay ở Lyon, thủ đô ẩm thực, rồi lên núi Alpes. Bà Minette đã đặt bàn ở nhà hàng ngon nhất…",
+    mo: "Hạng mới, luật mới: từ giờ MC Léon chỉ hỏi bằng tiếng Pháp! Tập này quay ở Lyon, thủ đô ẩm thực, rồi lên núi Alpes.",
     cau: [
       { q: "À Lyon, comment s'appellent les petits restaurants traditionnels ?", pa: ["Les bouchons", "Les crêperies", "Les guinguettes", "Les brasseries"], gt: "« Les bouchons lyonnais »: quán nhỏ phục vụ món truyền thống của Lyon." },
       { q: "Quel est le plus haut sommet des Alpes ?", pa: ["Le mont Blanc", "Le mont Ventoux", "Le puy de Dôme", "Le Vignemale"], gt: "Le mont Blanc, khoảng 4 800 m, nằm ở biên giới Pháp và Ý." },
@@ -70,7 +70,7 @@ export const CHANG = [
   {
     id: "bordeaux", muc: "vua", so: 5, dat: 3, co: "🍇",
     noi: "Bordeaux & le Sud-Ouest", ten: "Vignes, dunes et ville rose",
-    mo: "Tập này đi dọc miền Tây Nam: từ Bordeaux tới Toulouse. Nghe nói bà Minette đã lén học thuộc cả sách địa lý. Ta phải tỉnh táo!",
+    mo: "Tập này đi dọc miền Tây Nam, từ Bordeaux tới Toulouse. Nghe nói bà Minette đã lén học thuộc cả sách địa lý. Thí sinh, tỉnh táo nhé!",
     cau: [
       { q: "La région de Bordeaux est surtout connue pour…", pa: ["son vin", "ses volcans", "ses stations de ski", "ses champs de lavande"], gt: "Bordeaux là một trong những vùng rượu vang nổi tiếng nhất thế giới." },
       { q: "Comment s'appelle la plus haute dune d'Europe, près d'Arcachon ?", pa: ["La dune du Pilat", "La dune Blanche", "La dune d'Or", "La dune du Nord"], gt: "La dune du Pilat cao hơn 100 m, nhìn ra Đại Tây Dương." },
@@ -78,13 +78,13 @@ export const CHANG = [
       { q: "Quelles montagnes séparent la France de l'Espagne ?", pa: ["Les Pyrénées", "Les Alpes", "Le Jura", "Les Vosges"], gt: "Les Pyrénées chạy dọc biên giới Pháp và Tây Ban Nha." },
       { q: "Pourquoi appelle-t-on Toulouse « la ville rose » ?", pa: ["À cause de la couleur de ses briques", "À cause de ses fleurs", "À cause de son vin rosé", "À cause de ses couchers de soleil"], gt: "Nhà cửa ở Toulouse xây bằng gạch nung màu hồng cam." },
     ],
-    thang: "Thắng nữa rồi! Bà Minette quay sang hỏi ta học tiếng Pháp ở đâu. Ta bảo: « Fracile, évidemment ! »",
+    thang: "Thắng nữa rồi! Bà Minette hỏi bạn học tiếng Pháp ở đâu. MC Léon nháy mắt: « Fracile, évidemment ! »",
     thua: "Bà Minette học thuộc sách thật! Ôn lại rồi mình phục thù nhé.",
   },
   {
     id: "alsace", muc: "vua", so: 6, dat: 4, co: "🎄",
     noi: "Alsace & Lorraine", ten: "Au cœur de l'Europe",
-    mo: "Tập cuối hạng « Moyen », quay giữa chợ Giáng Sinh Strasbourg. Lần này phải đúng ít nhất 4 câu mới thắng được bà Minette!",
+    mo: "Tập cuối hạng « Moyen », quay giữa chợ Giáng Sinh Strasbourg. Luật đặc biệt: phải đúng ít nhất 4 câu!",
     cau: [
       { q: "Quelle institution européenne siège à Strasbourg ?", pa: ["Le Parlement européen", "La Banque centrale européenne", "La Commission européenne", "L'ONU"], gt: "Le Parlement européen họp ở Strasbourg. Ngân hàng Trung ương ở Frankfurt, Ủy ban ở Bruxelles." },
       { q: "Quel plat alsacien est fait avec du chou fermenté ?", pa: ["La choucroute", "La ratatouille", "La tartiflette", "La galette"], gt: "La choucroute: bắp cải muối chua ăn với xúc xích và thịt lợn." },
@@ -92,7 +92,7 @@ export const CHANG = [
       { q: "La quiche vient de quelle région ?", pa: ["La Lorraine", "La Bretagne", "La Provence", "La Corse"], gt: "« La quiche lorraine », bánh trứng kem với thịt xông khói, quê ở Lorraine." },
       { q: "Dans l'histoire, l'Alsace a souvent changé de pays. Avec quel voisin ?", pa: ["L'Allemagne", "L'Italie", "L'Espagne", "La Suisse"], gt: "Alsace nhiều lần đổi chủ giữa Pháp và Đức, nên tên làng và món ăn mang dấu ấn Đức." },
     ],
-    thang: "Bốn câu trở lên! Hạng « Difficile » mở cửa: từ giờ là lịch sử, văn học, nước Pháp hôm nay. Bà Minette lần đầu tiên… vỗ tay.",
+    thang: "Bốn câu trở lên! Hạng « Difficile » mở cửa: lịch sử, văn học, nước Pháp hôm nay. Bà Minette lần đầu tiên… vỗ tay cho bạn.",
     thua: "Mức 4 câu khó thật đấy. Đọc kỹ lời giải, lần sau là của ta!",
   },
 
@@ -100,7 +100,7 @@ export const CHANG = [
   {
     id: "loire", muc: "kho", so: 7, dat: 3, co: "👑",
     noi: "Val de Loire", ten: "Châteaux et histoire",
-    mo: "Hạng cao nhất! Trường quay đặt trong một lâu đài thời Phục Hưng. Bà Minette diện váy dạ hội. Câu hỏi bây giờ dài và khó, đọc kỹ từng chữ nhé trợ lý.",
+    mo: "Hạng cao nhất! Trường quay đặt trong một lâu đài thời Phục Hưng, bà Minette diện váy dạ hội. Câu hỏi giờ dài và khó: đọc kỹ từng chữ nhé.",
     cau: [
       { q: "Quel château de la Loire est célèbre pour son escalier à double révolution, souvent attribué à l'influence de Léonard de Vinci ?", pa: ["Chambord", "Chenonceau", "Versailles", "Amboise"], gt: "Chambord: hai cầu thang xoắn lồng vào nhau, hai người đi lên xuống không bao giờ gặp nhau." },
       { q: "Où Léonard de Vinci a-t-il passé les dernières années de sa vie ?", pa: ["Au Clos Lucé, à Amboise", "À Florence", "Au Louvre", "À Chambord"], gt: "Theo lời mời của vua François Ier, Léonard sống ở Clos Lucé (Amboise) và mất ở đó năm 1519." },
@@ -108,7 +108,7 @@ export const CHANG = [
       { q: "Quelle héroïne a libéré Orléans, assiégée par les Anglais, en 1429 ?", pa: ["Jeanne d'Arc", "Catherine de Médicis", "Marie-Antoinette", "Simone Veil"], gt: "Jeanne d'Arc giải vây Orléans năm 1429 trong Chiến tranh Trăm năm." },
       { q: "On présente souvent la Loire comme…", pa: ["le dernier grand fleuve sauvage de France", "le plus court fleuve de France", "le fleuve qui traverse Paris", "un fleuve entièrement canalisé"], gt: "Loire ít bị đắp đập, nắn dòng, nên thường được gọi là « dernier fleuve sauvage »." },
     ],
-    thang: "Magnifique ! Bà Minette thì thầm: « Vous êtes un adversaire digne de moi. » Còn hai chặng nữa là chung kết!",
+    thang: "Magnifique ! Bà Minette thì thầm: « Quel talent ! Je vous respecte. » Còn hai chặng nữa là chung kết!",
     thua: "Lịch sử Pháp dài thật. Đọc lời giải từng câu, lần sau ta sẽ nhớ.",
   },
   {
@@ -128,7 +128,7 @@ export const CHANG = [
   {
     id: "finale", muc: "kho", so: 9, dat: 4, co: "🏆",
     noi: "Studio 1, Paris", ten: "La Grande Finale",
-    mo: "CHUNG KẾT! Đèn sân khấu, khán giả cả nước, bà Minette với ba chiếc cúp vô địch. Chủ đề: nước Pháp hôm nay và thế giới nói tiếng Pháp. Cần ít nhất 4/5. Allez, trợ lý!",
+    mo: "CHUNG KẾT! Đèn sân khấu, khán giả cả nước, bà Minette với ba chiếc cúp vô địch. Chủ đề: nước Pháp hôm nay và thế giới nói tiếng Pháp. Cần ít nhất 4/5. Allez !",
     cau: [
       { q: "Dans combien de pays environ le français est-il langue officielle, seul ou avec d'autres langues ?", pa: ["Une trentaine", "Cinq", "Quatre-vingts", "Cent cinquante"], gt: "Khoảng 29 quốc gia dùng tiếng Pháp làm ngôn ngữ chính thức, từ Bỉ, Thụy Sĩ, Canada tới nhiều nước châu Phi." },
       { q: "Quelle institution, fondée en 1635, veille sur la langue française ?", pa: ["L'Académie française", "Le Sénat", "La Sorbonne", "L'UNESCO"], gt: "L'Académie française, do Richelieu lập năm 1635, soạn từ điển chính thức. Thành viên được gọi là « les Immortels »." },
@@ -136,7 +136,7 @@ export const CHANG = [
       { q: "Dans l'expression « avoir le cafard », le mot « cafard » veut dire…", pa: ["la tristesse, le moral bas", "une très grande faim", "une colère soudaine", "la fatigue après le sport"], gt: "« Cafard » nghĩa đen là con gián, nhưng « avoir le cafard » là buồn, chán nản." },
       { q: "Depuis la réforme de 2016, combien de régions compte la France métropolitaine ?", pa: ["13", "22", "27", "101"], gt: "Từ 2016: 13 vùng ở chính quốc (22 vùng trước đó). 101 là số tỉnh (départements) tính cả hải ngoại." },
     ],
-    thang: "LÉON VÔ ĐỊCH « LE GRAND QUIZ DE FRANCE » ! Pháo giấy tung bay, bà Minette trao cúp và… mời ta uống trà tuần sau. Trợ lý ơi, chiến thắng này là của cả hai ta!",
+    thang: "BẠN LÀ NHÀ VÔ ĐỊCH « LE GRAND QUIZ DE FRANCE » ! Pháo giấy tung bay, bà Minette trao cúp tận tay. MC Léon xúc động: « Mesdames et messieurs, le trophée change de mains ! »",
     thua: "Chỉ thiếu chút xíu! Bà Minette giữ cúp thêm một mùa. Nhưng chung kết luôn chờ người dám quay lại.",
   },
 ];
