@@ -122,15 +122,21 @@ export async function docDungSai(cap) {
   return tron(ra);
 }
 
-export async function ghiTroChoi(ma, diem, dung, tong) {
-  const { data, error } = await supabase.rpc("ghi_tro_choi", { p_tro_choi: ma, p_diem: diem, p_dung: dung, p_tong: tong });
+/* muc: kỷ lục riêng từng mức (migration 171). Database chưa có 171 thì PostgREST không
+   tìm thấy hàm 5 tham số (PGRST202): ghi lại theo kiểu cũ, chỉ mất phần tách mức. */
+export async function ghiTroChoi(ma, diem, dung, tong, muc) {
+  const tham = { p_tro_choi: ma, p_diem: diem, p_dung: dung, p_tong: tong };
+  let { data, error } = await supabase.rpc("ghi_tro_choi", muc ? { ...tham, p_muc: muc } : tham);
+  if (error && muc && error.code === "PGRST202") ({ data, error } = await supabase.rpc("ghi_tro_choi", tham));
   if (error) return { loi: error.message };
   return data;
 }
 
+/* Trả { "<trò>:<mức>": điểm }. Lượt cũ (muc NULL, trước 171) không thuộc mức nào nên bỏ. */
 export async function docKyLuc() {
-  const { data } = await supabase.from("tro_choi_luot").select("tro_choi, diem").order("diem", { ascending: false }).limit(300);
+  const { data, error } = await supabase.from("tro_choi_luot").select("tro_choi, diem, muc").not("muc", "is", null).order("diem", { ascending: false }).limit(1000);
+  if (error) return {};
   const kl = {};
-  for (const r of data ?? []) if (kl[r.tro_choi] == null) kl[r.tro_choi] = r.diem;
+  for (const r of data ?? []) { const k = `${r.tro_choi}:${r.muc}`; if (kl[k] == null) kl[k] = r.diem; }
   return kl;
 }
