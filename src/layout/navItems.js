@@ -77,8 +77,7 @@ export const STUDENT_NAV = [
   { to: "/etudiant/ngu-phap", nhom: "hoc", labelKey: "nav.learn", Icon: GraduationCap, khop: ["/etudiant/ngu-phap", "/etudiant/lo-trinh", "/etudiant/nghe-noi"] },
   /* Từ điển tra nhanh — nguồn là thẻ flashcard công khai (TuDien.jsx). */
   /* Thách đấu bạn bè — đứng ngay sau Lộ trình vì cùng là phần game. */
-  { to: "/etudiant/tro-choi", nhom: "on", labelKey: "nav.games", Icon: Gamepad2 },
-  { to: "/etudiant/thach-dau", nhom: "on", labelKey: "nav.duel", Icon: Swords },
+  { to: "/etudiant/tro-choi", nhom: "on", labelKey: "nav.games", Icon: Gamepad2, khop: ["/etudiant/tro-choi", "/etudiant/thach-dau"] },
   /* « Từ điển » GỠ 08/10 theo chủ dự án: nó chỉ tra lại đúng các thẻ Flashcard
      công khai (~130 mục), trùng với mục Flashcard. Lấy lại TuDien.jsx từ git. */
   { to: "/etudiant/entrainement", nhom: "on", labelKey: "nav.practice", Icon: Dumbbell, view: "practice" },

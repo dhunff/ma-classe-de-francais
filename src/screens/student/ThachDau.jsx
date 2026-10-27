@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Swords, X, Timer, Trophy, Hourglass, Play, Volume2, VolumeX, Send, Layers, Users, Check, XCircle, Handshake, Zap, ListChecks, Search } from "lucide-react";
+import { Swords, X, Timer, Trophy, Hourglass, Play, Volume2, VolumeX, Send, Layers, Users, Check, XCircle, Handshake, Zap, ListChecks, Search, ArrowLeft } from "lucide-react";
+import { Link } from "react-router-dom";
 import XemLaiDau from "./XemLaiDau.jsx";
 import { phat, amThanhBat, datAmThanh } from "../../shared/amThanh.js";
 import { Avatar } from "../../shared/avatars.jsx";
@@ -91,6 +92,7 @@ export default function ThachDau() {
 
   return (
     <div className="mx-auto max-w-3xl px-4 pb-24 pt-6">
+      <Link to="/etudiant/tro-choi" className="mb-3 inline-flex items-center gap-1 text-sm font-bold text-soft no-underline hover:text-ink"><ArrowLeft size={16} /> {tr("Trò chơi", "Jeux", "Games")}</Link>
       {/* ── Đấu trường ── */}
       <header className="mcf-cau-vao relative mb-6 overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-600 via-violet-600 to-fuchsia-600 p-6 text-white shadow-[0_20px_50px_rgba(99,102,241,0.35)]">
         <span aria-hidden className="absolute -right-10 -top-10 h-44 w-44 rounded-full bg-white/10" />

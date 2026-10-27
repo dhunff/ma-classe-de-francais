@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Heart, Headphones, CloudRain, VenusAndMars, Play, RotateCcw, Trophy, Volume2, Loader2, Shuffle, Crosshair, Check, X, Keyboard, DoorOpen, DoorClosed, Search, Landmark, MapPinned } from "lucide-react";
+import { ArrowLeft, Heart, Headphones, CloudRain, VenusAndMars, Play, RotateCcw, Trophy, Volume2, Loader2, Shuffle, Crosshair, Check, X, Keyboard, DoorOpen, DoorClosed, Search, Landmark, MapPinned, Swords } from "lucide-react";
 import { PhatAm } from "./NgheNoi.jsx";
 import { soCau } from "../../../supabase/functions/_shared/soCau.js";
 import { THAM_TU, DO_VUI, PHIEU_LUU } from "../../content/troChoi/docVanHoa.js";
@@ -14,6 +14,10 @@ import { CAP_CHOI, docDanhTuGioi, docMuaChu, phuongAnNghia, docCauNghe, phuongAn
  * ghi qua RPC ghi_tro_choi, mỗi lượt cũng tính một ngày học cho chuỗi. */
 
 const TRO_CHOI = () => [
+  /* 28/10 (chủ dự án): Thách đấu PvP vào sảnh, nhóm Từ vựng; `den` = màn riêng, không qua ManChoi. */
+  { ma: "thach_dau", den: "/etudiant/thach-dau", nhom: "tu", Icon: Swords, nen: "from-violet-600 to-rose-500",
+    ten: tr("Thách đấu PvP", "Duel PvP", "PvP duel"),
+    mo: tr("Đấu từ vựng 1 chọi 1 với bạn bè, ai nhanh và đúng hơn thì thắng.", "Duel de vocabulaire en 1 contre 1 avec vos amis.", "1-on-1 vocabulary duel against friends.") },
   { ma: "gioi_tinh", nhom: "tu", Icon: VenusAndMars, nen: "from-sky-500 to-pink-500",
     ten: tr("Le hay La?", "Le ou La ?", "Le or La?"),
     mo: tr("60 giây đoán giống đực / giống cái của danh từ. Đúng liên tiếp để nhân điểm.", "60 secondes pour trouver le genre des noms. Enchaînez pour multiplier.", "60 seconds to guess noun gender. Streaks multiply points.") },
@@ -52,7 +56,7 @@ const TRO_CHOI = () => [
 export default function TroChoiNhanh() {
   const { ma } = useParams();
   const ds = TRO_CHOI();
-  const tc = ds.find((x) => x.ma === ma);
+  const tc = ds.find((x) => x.ma === ma && !x.den);
   if (tc) return <ManChoi tc={tc} />;
   return <Sanh ds={ds} />;
 }
@@ -74,8 +78,8 @@ function Sanh({ ds }) {
       <section key={nhom} className="mt-6">
       <h2 className="m-0 mb-3 text-lg font-extrabold text-ink">{tenNhom}</h2>
       <div className="grid gap-4 md:grid-cols-3">
-        {ds.filter((x) => x.nhom === nhom).map(({ ma, Icon, nen, ten, mo }) => (
-          <Link key={ma} to={`/etudiant/tro-choi/${ma}`}
+        {ds.filter((x) => x.nhom === nhom).map(({ ma, den, Icon, nen, ten, mo }) => (
+          <Link key={ma} to={den ?? `/etudiant/tro-choi/${ma}`}
             className={`group relative flex min-h-[220px] flex-col overflow-hidden rounded-3xl bg-gradient-to-br ${nen} p-5 text-white no-underline shadow-[0_14px_30px_rgba(0,0,0,0.12)] transition-transform duration-200 ease-out hover:-translate-y-1 active:scale-[0.985]`}>
             <span aria-hidden className="absolute -right-10 -top-10 h-36 w-36 rounded-full bg-white/15" />
             <Icon aria-hidden size={110} strokeWidth={1.2} className="absolute -bottom-6 -right-4 text-white/15" />
@@ -83,7 +87,7 @@ function Sanh({ ds }) {
             <span className="relative mt-4 text-xl font-extrabold">{ten}</span>
             <span className="relative mt-1 text-sm leading-snug text-white/90">{mo}</span>
             <span className="relative mt-auto flex items-center justify-between pt-4 text-sm font-bold">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-white/20 px-3 py-1"><Trophy size={14} /> {kl[ma] != null ? kl[ma] : "—"}</span>
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-white/20 px-3 py-1">{den ? <Swords size={14} /> : <Trophy size={14} />} {den ? "PvP" : kl[ma] != null ? kl[ma] : "—"}</span>
               <span className="inline-flex items-center gap-1 rounded-full bg-white px-4 py-1.5 text-ink transition-transform group-hover:translate-x-0.5"><Play size={14} /> {tr("Chơi", "Jouer", "Play")}</span>
             </span>
           </Link>
