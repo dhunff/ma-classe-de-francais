@@ -102,6 +102,49 @@ export default function StudentDashboard({
             <TroChoi />
           </Rise>
 
+
+          {/* 27/10 (chủ dự án: « rối mắt »): gom thành hai nhóm có tiêu đề.
+              « Việc hôm nay » = kế hoạch thi + bài luyện + học tiếp ngữ pháp;
+              « Gợi ý cho bạn » = bài đề xuất. Hồ sơ chưa đầy nằm cuối, không chen giữa. */}
+          <section className="mt-2">
+            <h2 className="m-0 mb-3 text-lg font-extrabold text-ink">{tr("Việc hôm nay", "Aujourd'hui", "Today")}</h2>
+            <div className="flex flex-col gap-4">
+            {/* 08/10: trang chủ là ĐỀ XUẤT + TRÒ CHƠI. Ô Đã nộp / Điểm TB / Đang chờ
+                làm / % hoàn thành / Học tiếp đã sang trang « Bài tập được giao »
+                (TongQuanBaiGiao.jsx). */}
+            {/* 23/10: kế hoạch tới ngày thi (migration 160). Không đăng nhập thì không có. */}
+            {chuoiFixture === undefined && (
+              <Rise delay={140}>
+                <KeHoachThi capGoiY={(profile?.goal || "").match(/A1|A2|B1|B2|C1/)?.[0]} />
+              </Rise>
+            )}
+              <Rise delay={150}>
+              {/* 27/10: thẻ trắng thay dải gradient hồng (bớt một khối màu đậm tranh chỗ). */}
+              <Link to="/etudiant/bai-luyen"
+                className="group flex items-center gap-4 rounded-3xl bg-surface p-4 no-underline shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-[transform,box-shadow] duration-200 ease-out hover:-translate-y-0.5 hover:shadow-lg active:scale-[0.985]">
+                <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-rose-500 to-violet-600 text-white"><Target size={22} /></span>
+                <span className="min-w-0 flex-1">
+                  <span className="block text-base font-extrabold text-ink">{tr("Bài luyện của tôi", "Mon entraînement perso", "My practice set")}</span>
+                  <span className="block text-sm text-soft">{tr("10 câu ghép từ chính những câu bạn từng làm sai", "10 questions tirées de vos propres erreurs", "10 questions built from your own mistakes")}</span>
+                </span>
+                <ArrowRight size={20} className="shrink-0 text-soft transition-transform group-hover:translate-x-1 group-hover:text-primary" />
+              </Link>
+              </Rise>
+            <Rise delay={190}>
+              <TienDoNguPhap level={profile?.level} />
+            </Rise>
+              </div>
+          </section>
+
+          <section className="mt-2">
+            <Rise delay={160}>
+              <DeXuatBai coHoSo={!!(profile?.level && profile?.goal)} level={profile?.level} goal={profile?.goal}
+                dsDeXuat={practiceStore ? chonDeXuat({ practice: practiceStore, hist: practiceHist, skills, level: profile?.level, goal: profile?.goal }) : null}
+                onMo={(ex) => navigate("/etudiant/entrainement", { state: { moBai: ex.id } })} />
+            </Rise>
+  
+            </section>
+
           {/* Hồ sơ chưa đầy thì mời điền. Đầy rồi thì biến mất — một thanh
               đứng mãi ở 100% không còn nói điều gì. */}
           {profilePct < 100 && (
@@ -124,35 +167,6 @@ export default function StudentDashboard({
             </Rise>
           )}
 
-          {/* 08/10: trang chủ là ĐỀ XUẤT + TRÒ CHƠI. Ô Đã nộp / Điểm TB / Đang chờ
-              làm / % hoàn thành / Học tiếp đã sang trang « Bài tập được giao »
-              (TongQuanBaiGiao.jsx). */}
-          {/* 23/10: kế hoạch tới ngày thi (migration 160). Không đăng nhập thì không có. */}
-          {chuoiFixture === undefined && (
-            <Rise delay={140}>
-              <KeHoachThi capGoiY={(profile?.goal || "").match(/A1|A2|B1|B2|C1/)?.[0]} />
-            </Rise>
-          )}
-          <Rise delay={150}>
-            <Link to="/etudiant/bai-luyen"
-              className="group flex items-center gap-4 rounded-3xl bg-gradient-to-r from-rose-500 via-pink-600 to-violet-600 p-4 text-white no-underline shadow-[0_12px_28px_rgba(219,39,119,0.25)] transition-transform duration-200 ease-out hover:-translate-y-0.5 active:scale-[0.985]">
-              <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-white/20"><Target size={24} /></span>
-              <span className="min-w-0 flex-1">
-                <span className="block text-base font-extrabold">{tr("Bài luyện của tôi", "Mon entraînement perso", "My practice set")}</span>
-                <span className="block text-sm text-white/85">{tr("10 câu ghép từ chính những câu bạn từng làm sai", "10 questions tirées de vos propres erreurs", "10 questions built from your own mistakes")}</span>
-              </span>
-              <ArrowRight size={20} className="shrink-0 transition-transform group-hover:translate-x-1" />
-            </Link>
-          </Rise>
-          <Rise delay={160}>
-            <DeXuatBai coHoSo={!!(profile?.level && profile?.goal)} level={profile?.level} goal={profile?.goal}
-              dsDeXuat={practiceStore ? chonDeXuat({ practice: practiceStore, hist: practiceHist, skills, level: profile?.level, goal: profile?.goal }) : null}
-              onMo={(ex) => navigate("/etudiant/entrainement", { state: { moBai: ex.id } })} />
-          </Rise>
-
-          <Rise delay={190}>
-            <TienDoNguPhap level={profile?.level} />
-          </Rise>
 
 
           {/* 26/10 (chủ dự án): bỏ băng « Mới ra · Luyện tập »; bài mới trong 30 ngày
@@ -166,10 +180,6 @@ export default function StudentDashboard({
             <StreakWidget t={t} fixture={chuoi} />
           </Rise>
 
-          <Rise id="tour-tc-theo-doi" delay={100}>
-            <FollowingStreakWidget t={t} fixture={theoDoiFixture} bxhFixture={bxhFixture} />
-          </Rise>
-
           <Rise id="tour-tc-gio-hoc" delay={110}>
             <Card title={t("home.hours_title")}>
               <GioHocWidget t={t} fixture={gioHocFixture} />
@@ -181,6 +191,10 @@ export default function StudentDashboard({
             <DongDeuKyNang gon skills={skills}
               ghiChu={skills.sources?.assigned && skills.sources?.practice ? t("dash.skills_note_both")
                 : skills.sources?.practice ? t("dash.skills_note_practice") : t("dash.skills_note")} />
+          </Rise>
+
+          <Rise id="tour-tc-theo-doi" delay={100}>
+            <FollowingStreakWidget t={t} fixture={theoDoiFixture} bxhFixture={bxhFixture} />
           </Rise>
 
         </div>
