@@ -77,10 +77,10 @@ export const STUDENT_NAV = [
   { to: "/etudiant/ngu-phap", nhom: "hoc", labelKey: "nav.learn", Icon: GraduationCap, khop: ["/etudiant/ngu-phap", "/etudiant/lo-trinh"] },
   /* Từ điển tra nhanh — nguồn là thẻ flashcard công khai (TuDien.jsx). */
   /* Thách đấu bạn bè — đứng ngay sau Lộ trình vì cùng là phần game. */
-  { to: "/etudiant/thach-dau", nhom: "thi", labelKey: "nav.duel", Icon: Swords },
+  { to: "/etudiant/thach-dau", nhom: "on", labelKey: "nav.duel", Icon: Swords },
   /* « Từ điển » GỠ 08/10 theo chủ dự án: nó chỉ tra lại đúng các thẻ Flashcard
      công khai (~130 mục), trùng với mục Flashcard. Lấy lại TuDien.jsx từ git. */
-  { to: "/etudiant/entrainement", nhom: "hoc", labelKey: "nav.practice", Icon: Dumbbell, view: "practice" },
+  { to: "/etudiant/entrainement", nhom: "on", labelKey: "nav.practice", Icon: Dumbbell, view: "practice" },
   /* « Nghe & Nói » (10/10): chép chính tả + luyện phát âm, route riêng. */
   { to: "/etudiant/nghe-noi", nhom: "hoc", labelKey: "nav.speak", Icon: AudioLines },
   /* Không có `view`: là route riêng trong App.jsx, giống « Sổ tay » bên giáo viên.
@@ -98,7 +98,7 @@ export const STUDENT_NAV = [
      mất. Đường GHI cũng tắt cùng lúc (xem gradeRemote.js): để nguyên nó thì
      mỗi lần chấm bài lại ghi thêm thẻ vào chỗ không màn nào mở được — một
      đường ghi còn sống sau khi đường đọc đã chết. */
-  { to: "/etudiant/bo-the", nhom: "hoc", labelKey: "nav.decks", Icon: Layers },
+  { to: "/etudiant/bo-the", nhom: "on", labelKey: "nav.decks", Icon: Layers },
   /* « Ma progression » đã rời khỏi menu theo yêu cầu. Route
      /etudiant/progression VẪN sống trong App.jsx nên hành trình tới Paris và
      biểu đồ điểm không mất — chỉ là hiện không còn lối vào từ thanh bên.
@@ -108,17 +108,29 @@ export const STUDENT_NAV = [
   { to: "/etudiant/calendrier", nhom: "toi", labelKey: "nav.calendar", Icon: CalendarDays },
   /* « Bài tập được giao » (08/10): gộp « Cần làm » + « Đã nộp » thành hai tab
      của một mục, đặt ngay dưới Lịch theo yêu cầu chủ dự án. */
-  { to: "/etudiant/devoirs", nhom: "toi", labelKey: "nav.assigned", Icon: ClipboardList, view: "todo" },
+  { to: "/etudiant/devoirs", nhom: "thi", labelKey: "nav.assigned", Icon: ClipboardList, view: "todo" },
   { to: "/etudiant/compte", nhom: "toi", labelKey: "nav.account", Icon: UserRound, view: "settings" },
 ];
 
 /* 13/10: thanh bên chia NHÓM (trường `nhom`). Danh sách giữ nguyên thứ tự
    khai báo cho mọi chỗ khác; chỉ thanh bên sắp lại theo thứ tự nhóm dưới đây. */
-export const THU_TU_NHOM = { prof: ["tong", "lop", "noi_dung"], eleve: ["hoc", "thi", "toi"] };
+export const THU_TU_NHOM = { prof: ["tong", "lop", "noi_dung"], eleve: ["hoc", "on", "thi", "toi"] };
+/* 27/10 (chủ dự án): phân mục lại thanh bên học sinh. Học tập = học bài mới;
+   Ôn luyện = tự luyện + ôn + chơi; Bài tập & thi = việc có hạn / có chấm;
+   Của tôi = tiến độ và tài khoản. Thứ tự trong nhóm theo danh sách dưới,
+   mục không có tên ở đây giữ thứ tự gốc của mảng, xếp sau. */
+const THU_TU_MUC_HS = [
+  "/etudiant/dashboard", "/etudiant/ngu-phap", "/etudiant/nghe-noi",
+  "/etudiant/entrainement", "/etudiant/bo-the", "/etudiant/thach-dau",
+  "/etudiant/devoirs", "/etudiant/examen",
+  "/etudiant/tien-bo", "/etudiant/calendrier", "/etudiant/compte",
+];
+const viTriMuc = (to) => { const i = THU_TU_MUC_HS.indexOf(to); return i < 0 ? 999 : i; };
 export const navFor = (role) => (role === "prof" ? TEACHER_NAV : STUDENT_NAV);
 export const navTheoNhom = (role) => {
   const ds = navFor(role);
-  return (THU_TU_NHOM[role === "prof" ? "prof" : "eleve"]).map((n) => ({ nhom: n, muc: ds.filter((x) => x.nhom === n) }))
+  return (THU_TU_NHOM[role === "prof" ? "prof" : "eleve"]).map((n) => ({ nhom: n, muc: ds.filter((x) => x.nhom === n)
+    .map((x, i) => [x, i]).sort((a, b) => (role === "prof" ? 0 : viTriMuc(a[0].to) - viTriMuc(b[0].to)) || a[1] - b[1]).map(([x]) => x) }))
     .filter((g) => g.muc.length);
 };
 

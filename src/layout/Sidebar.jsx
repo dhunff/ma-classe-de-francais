@@ -8,7 +8,8 @@ import { tr } from "../shared/i18n.jsx";
 /* Tên nhóm menu (13/10). Hàm, không hằng số: tr() phải chạy lúc dựng. */
 const tenNhom = (n) => ({
   hoc: tr("Học tập", "Apprendre", "Learn"),
-  thi: tr("Luyện thi", "S'entraîner à l'examen", "Exam prep"),
+  on: tr("Ôn luyện", "S'entraîner", "Practice"),
+  thi: tr("Bài tập & thi", "Devoirs et examens", "Homework & exams"),
   toi: tr("Của tôi", "Mon espace", "My space"),
   tong: tr("Tổng quan", "Vue d'ensemble", "Overview"),
   lop: tr("Học sinh", "Élèves", "Students"),
