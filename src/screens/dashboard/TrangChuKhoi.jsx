@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Headphones, BookOpen, PenLine, Puzzle, Languages, Mic, ArrowRight, Map, Swords, Layers, Timer, TrendingUp, BookA } from "lucide-react";
+import { Headphones, BookOpen, PenLine, Puzzle, Languages, Mic, ArrowRight, Map, Swords, Layers, Timer, TrendingUp, BookA, Gamepad2 } from "lucide-react";
 import { supabase } from "../../storageShim.js";
 import { tr } from "../../shared/i18n.jsx";
 import { nhanHoSo } from "../../shared/nhanHoSo.js";
@@ -201,6 +201,8 @@ export function TroChoi() {
       ten: tr("Lộ trình học tập", "Parcours", "Learning path"), mo: tr("Vượt màn theo chủ đề, nhận sao và XP", "Franchissez les étapes, gagnez étoiles et XP", "Clear levels by topic, earn stars and XP") },
     { to: "/etudiant/thach-dau", Icon: Swords, nen: "from-rose-500 to-orange-500",
       ten: tr("Thách đấu", "Défis", "Duels"), mo: tr("Đấu từ vựng với bạn học", "Affrontez vos camarades", "Vocabulary duels with classmates") },
+    { to: "/etudiant/tro-choi", Icon: Gamepad2, nen: "from-amber-500 to-pink-500",
+      ten: tr("Trò chơi nhanh", "Jeux rapides", "Quick games"), mo: tr("Le hay La, Nghe và chọn, Mưa chữ", "Le ou La, Écoute, Pluie de mots", "Le or La, Listen, Word rain") },
     { to: "/etudiant/bo-the", Icon: Layers, nen: "from-violet-500 to-indigo-600",
       ten: "Flashcard", mo: tr("Ôn thẻ đến hạn hôm nay", "Révisez les cartes du jour", "Review today's due cards") },
     { to: "/etudiant/examen", Icon: Timer, nen: "from-sky-500 to-blue-600",
@@ -209,7 +211,7 @@ export function TroChoi() {
   return (
     <section>
       <h2 className="m-0 mb-3 text-lg font-extrabold text-ink">{tr("Trò chơi & thử thách", "Jeux et défis", "Games & challenges")}</h2>
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5">
         {o.map((x) => (
           <Link key={x.to} to={x.to}
             className={`group relative flex min-h-[132px] flex-col justify-between overflow-hidden rounded-3xl bg-gradient-to-br ${x.nen} p-4 text-white no-underline shadow-md transition-transform duration-200 ease-out hover:-translate-y-1 active:scale-[0.985]`}>

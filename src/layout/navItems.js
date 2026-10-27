@@ -1,5 +1,5 @@
 import {
-  House, GraduationCap, ChartNoAxesCombined, UserRound,
+  House, GraduationCap, ChartNoAxesCombined, UserRound, Gamepad2,
   LayoutDashboard, BookOpen, Users, BarChart3, Dumbbell, AudioLines, TrendingUp,
   ClipboardList, CheckSquare, CalendarDays, Settings, Lightbulb, Timer, Trophy, Layers, Lightbulb as Bulb, Anchor, Inbox,
   Map, BookA, Swords, FileCheck2, Megaphone, Flag } from "lucide-react";
@@ -77,6 +77,7 @@ export const STUDENT_NAV = [
   { to: "/etudiant/ngu-phap", nhom: "hoc", labelKey: "nav.learn", Icon: GraduationCap, khop: ["/etudiant/ngu-phap", "/etudiant/lo-trinh"] },
   /* Từ điển tra nhanh — nguồn là thẻ flashcard công khai (TuDien.jsx). */
   /* Thách đấu bạn bè — đứng ngay sau Lộ trình vì cùng là phần game. */
+  { to: "/etudiant/tro-choi", nhom: "on", labelKey: "nav.games", Icon: Gamepad2 },
   { to: "/etudiant/thach-dau", nhom: "on", labelKey: "nav.duel", Icon: Swords },
   /* « Từ điển » GỠ 08/10 theo chủ dự án: nó chỉ tra lại đúng các thẻ Flashcard
      công khai (~130 mục), trùng với mục Flashcard. Lấy lại TuDien.jsx từ git. */
@@ -121,7 +122,7 @@ export const THU_TU_NHOM = { prof: ["tong", "lop", "noi_dung"], eleve: ["hoc", "
    mục không có tên ở đây giữ thứ tự gốc của mảng, xếp sau. */
 const THU_TU_MUC_HS = [
   "/etudiant/dashboard", "/etudiant/ngu-phap", "/etudiant/nghe-noi",
-  "/etudiant/entrainement", "/etudiant/bo-the", "/etudiant/thach-dau",
+  "/etudiant/entrainement", "/etudiant/bo-the", "/etudiant/tro-choi", "/etudiant/thach-dau",
   "/etudiant/devoirs", "/etudiant/examen",
   "/etudiant/tien-bo", "/etudiant/calendrier", "/etudiant/compte",
 ];
