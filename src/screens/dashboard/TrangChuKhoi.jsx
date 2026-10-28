@@ -214,7 +214,7 @@ export function TroChoi() {
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5">
         {o.map((x) => (
           <Link key={x.to} to={x.to}
-            className={`group relative flex min-h-[132px] flex-col justify-between overflow-hidden rounded-3xl bg-gradient-to-br ${x.nen} p-4 text-white no-underline shadow-md transition-transform duration-200 ease-out hover:-translate-y-1 active:scale-[0.985]`}>
+            className={`group relative flex min-h-[132px] flex-col justify-between overflow-hidden rounded-3xl 2xl:aspect-[3/4] 2xl:min-h-0 bg-gradient-to-br ${x.nen} p-4 text-white no-underline shadow-md transition-transform duration-200 ease-out hover:-translate-y-1 active:scale-[0.985]`}>
             <x.Icon size={64} strokeWidth={1.4} className="pointer-events-none absolute -bottom-3 -right-3 opacity-20" />
             <span className="grid h-10 w-10 place-items-center rounded-xl bg-white/20"><x.Icon size={20} /></span>
             <span>
