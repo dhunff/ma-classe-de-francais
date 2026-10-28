@@ -215,11 +215,18 @@ export function TroChoi() {
         {o.map((x) => (
           <Link key={x.to} to={x.to}
             className={`group relative flex min-h-[132px] flex-col justify-between overflow-hidden rounded-3xl 2xl:aspect-[3/4] 2xl:min-h-0 bg-gradient-to-br ${x.nen} p-4 text-white no-underline shadow-md transition-transform duration-200 ease-out hover:-translate-y-1 active:scale-[0.985]`}>
-            <x.Icon size={64} strokeWidth={1.4} className="pointer-events-none absolute -bottom-3 -right-3 opacity-20" />
-            <span className="grid h-10 w-10 place-items-center rounded-xl bg-white/20"><x.Icon size={20} /></span>
-            <span>
-              <span className="block text-base font-extrabold">{x.ten}</span>
-              <span className="block text-xs text-white/85">{x.mo}</span>
+            {/* 28/10: thẻ đứng 3:4. Chữ dồn lên trên ngay dưới biểu tượng, mũi tên « Vào » ở đáy;
+                hình nền mờ to hơn, lùi xuống góc dưới để không đè lên chữ. */}
+            <x.Icon size={96} strokeWidth={1.2} className="pointer-events-none absolute -bottom-5 -right-5 opacity-15 transition-transform duration-300 group-hover:-rotate-6 group-hover:scale-110" />
+            <span className="relative flex flex-col gap-3">
+              <span className="grid h-11 w-11 place-items-center rounded-2xl bg-white/20"><x.Icon size={22} /></span>
+              <span>
+                <span className="block text-lg font-extrabold leading-tight">{x.ten}</span>
+                <span className="mt-1.5 line-clamp-3 text-[13px] leading-snug text-white/85">{x.mo}</span>
+              </span>
+            </span>
+            <span className="relative mt-3 inline-flex items-center gap-1 self-start rounded-full bg-white/20 px-3 py-1 text-xs font-bold transition-colors group-hover:bg-white/30">
+              {tr("Vào", "Ouvrir", "Open")} <ArrowRight size={13} className="transition-transform group-hover:translate-x-0.5" />
             </span>
           </Link>
         ))}
