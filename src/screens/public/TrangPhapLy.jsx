@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { supabase } from "../../storageShim.js";
 import { Link, useLocation } from "react-router-dom";
 import { useSeo } from "../../shared/seo.js";
-import { AlertTriangle, ChevronRight, Search } from "lucide-react";
+import { AlertTriangle, ChevronRight, Search, Send, Loader2 } from "lucide-react";
 import { tr } from "../../shared/i18n.jsx";
 
 /* Ba trang công khai: Câu hỏi thường gặp · Điều khoản sử dụng · Chính sách bảo mật.
@@ -96,6 +96,8 @@ function Khung({ tieuDe, children, trongApp = false }) {
           ))}
         </div>
 
+        <FormLienHe trang={pathname} />
+
         {/* Ba trang pháp lý: danh sách nhóm kiểu inset, trang đang xem tô màu chính (28/10). */}
         <nav className="mt-12 overflow-hidden rounded-2xl bg-surface ring-1 ring-line" aria-label={tr("Trang thông tin", "Pages d'information", "Information pages")}>
           {[["/faq", tr("Câu hỏi thường gặp", "Questions fréquentes", "FAQ")], ["/dieu-khoan", tr("Điều khoản sử dụng", "Conditions d'utilisation", "Terms of use")], ["/bao-mat", tr("Chính sách bảo mật", "Politique de confidentialité", "Privacy policy")]].map(([to, ten]) => (
@@ -107,6 +109,56 @@ function Khung({ tieuDe, children, trongApp = false }) {
         </nav>
       </div>
     </div>
+  );
+}
+
+/* Form « Liên hệ » (28/10, theo chủ dự án): cuối cả ba trang. Gửi qua Edge Function
+   gui-y-kien: ghi bằng RPC gui_lien_he (có chặn lũ) rồi chuyển mail tới EMAIL_LIEN_HE. */
+const O_NHAP = "w-full rounded-xl border border-solid border-line bg-bg px-3.5 py-3 font-sans text-[15px] text-ink outline-none transition-[border-color,box-shadow] duration-150 placeholder:text-soft focus:border-primary focus:ring-2 focus:ring-primary/30";
+const CHU_DE_LH = () => [["gop_y", tr("Góp ý", "Suggestion", "Feedback")], ["bao_loi", tr("Báo lỗi", "Signaler un bug", "Report a bug")], ["thanh_toan", tr("Thanh toán, VIP", "Paiement, VIP", "Payment, VIP")], ["ban_quyen", tr("Bản quyền", "Droits d'auteur", "Copyright")], ["khac", tr("Khác", "Autre", "Other")]];
+function FormLienHe({ trang }) {
+  const [f, setF] = useState({ hoTen: "", email: "", chuDe: "gop_y", noiDung: "" });
+  const [tt, setTt] = useState(null);      // null | "gui" | { ok, mail } | { loi, kemMail }
+  const doi = (k) => (e) => setF((x) => ({ ...x, [k]: e.target.value }));
+  const gui = async (e) => {
+    e.preventDefault();
+    if (!f.hoTen.trim() || !f.email.trim() || !f.noiDung.trim()) { setTt({ loi: tr("Điền đủ họ tên, email và nội dung nhé.", "Remplissez nom, e-mail et message.", "Please fill in name, email and message.") }); return; }
+    setTt("gui");
+    const { data, error } = await supabase.functions.invoke("gui-y-kien", { body: { ...f, trang } });
+    if (data?.ok) { setTt({ ok: true, mail: data.mail }); setF((x) => ({ ...x, noiDung: "" })); return; }
+    let ma = data?.error;
+    try { ma = ma || (await error?.context?.json?.())?.error; } catch { /* không đọc được thân lỗi */ }
+    setTt({ loi: ma === "GUI_QUA_NHIEU" ? tr("Bạn đã gửi nhiều lần hôm nay. Mai gửi tiếp được, hoặc viết thẳng tới", "Trop d'envois aujourd'hui. Réessayez demain ou écrivez à", "Too many messages today. Try tomorrow or email")
+      : ma === "SAI_DU_LIEU" ? tr("Email chưa đúng dạng. Kiểm tra lại giúp nhé.", "E-mail invalide.", "That email doesn't look right.")
+      : tr("Chưa gửi được (lỗi kết nối). Thử lại, hoặc viết thẳng tới", "Envoi impossible (connexion). Réessayez ou écrivez à", "Couldn't send (connection). Try again or email"), kemMail: ma !== "SAI_DU_LIEU" });
+  };
+  return (
+    <section id="lien-he" className="mcf-rise mt-12 scroll-mt-6" style={{ "--mcf-delay": "150ms" }}>
+      <h2 className="m-0 mb-2 px-4 text-[17px] font-semibold tracking-tight text-ink">{tr("Liên hệ", "Contact", "Contact")}</h2>
+      <form onSubmit={gui} className="space-y-3 rounded-2xl bg-surface p-4 shadow-[0_1px_2px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.04)] ring-1 ring-line">
+        <p className="m-0 text-[15px] text-soft">{tr("Góp ý, báo lỗi hay câu hỏi chưa có ở đây, cứ viết vào. Thư tới thẳng hộp thư", "Suggestion, bug ou question : écrivez-nous, le message arrive directement à", "Feedback, a bug or a question not covered here: write to us, it goes straight to")} <LienHe />.</p>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <input value={f.hoTen} onChange={doi("hoTen")} maxLength={120} autoComplete="name" placeholder={tr("Họ tên", "Nom", "Name")} aria-label={tr("Họ tên", "Nom", "Name")} className={O_NHAP} />
+          <input type="email" value={f.email} onChange={doi("email")} maxLength={200} autoComplete="email" placeholder="Email" aria-label="Email" className={O_NHAP} />
+        </div>
+        <div className="flex flex-wrap gap-2" role="radiogroup" aria-label={tr("Chủ đề", "Sujet", "Topic")}>
+          {CHU_DE_LH().map(([ma, ten]) => (
+            <button key={ma} type="button" role="radio" aria-checked={f.chuDe === ma} onClick={() => setF((x) => ({ ...x, chuDe: ma }))}
+              className={`cursor-pointer rounded-full border border-solid px-3.5 py-1.5 font-sans text-sm font-semibold transition-[background-color,border-color,color,transform] duration-150 active:scale-95 ${f.chuDe === ma ? "border-primary bg-primary text-on-primary" : "border-line bg-surface2 text-ink hover:border-primary/40"}`}>{ten}</button>
+          ))}
+        </div>
+        <textarea value={f.noiDung} onChange={doi("noiDung")} maxLength={1900} rows={5} placeholder={tr("Nội dung", "Votre message", "Your message")} aria-label={tr("Nội dung", "Message", "Message")} className={`${O_NHAP} resize-y`} />
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <p className="m-0 min-h-[20px] flex-1 text-sm" aria-live="polite">
+            {tt?.ok && <span className="mcf-rise inline-block font-semibold text-ok">{tt.mail ? tr("Đã gửi, cảm ơn bạn! Chúng tôi sẽ trả lời qua email.", "Envoyé, merci ! Réponse par e-mail.", "Sent, thank you! We'll reply by email.") : tr("Đã nhận và lưu lại, nhưng chưa chuyển được tới hộp thư. Chúng tôi vẫn đọc được.", "Reçu et enregistré, mais pas encore transmis par e-mail.", "Received and saved, but not forwarded by email yet.")}</span>}
+            {tt?.loi && <span className="mcf-rise inline-block text-danger">{tt.loi}{tt.kemMail && <> <LienHe />.</>}</span>}
+          </p>
+          <button type="submit" disabled={tt === "gui"} className="inline-flex min-h-[44px] cursor-pointer items-center gap-2 rounded-full border-0 bg-primary px-6 font-sans text-[15px] font-semibold text-on-primary transition-[transform,opacity] duration-150 active:scale-[0.97] disabled:cursor-wait disabled:opacity-70">
+            {tt === "gui" ? <Loader2 size={16} className="mcf-spin" /> : <Send size={16} />} {tr("Gửi", "Envoyer", "Send")}
+          </button>
+        </div>
+      </form>
+    </section>
   );
 }
 
@@ -284,10 +336,6 @@ export function TrangFAQ({ trongApp = false }) {
         </section>
       ))}
 
-      <div className="rounded-2xl bg-surface2 px-4 py-4 text-center text-[15px] text-soft">
-        <span className="block font-semibold text-ink">{tr("Chưa thấy câu trả lời?", "Pas de réponse ?", "Didn't find an answer?")}</span>
-        <span className="mt-1 block">{tr("Viết cho chúng tôi", "Écrivez-nous", "Write to us")}: <LienHe /></span>
-      </div>
     </Khung>
   );
 }
@@ -370,6 +418,7 @@ export function TrangBaoMat() {
         <P>{tr(<><strong>Việc học:</strong> câu trả lời, điểm, thời gian làm bài, kết quả tự chấm và chấm bằng AI, những ngày bạn học, thời điểm online gần nhất.</>, <><strong>Apprentissage :</strong> réponses, notes, temps passé, auto-évaluations et corrections IA, jours d'étude, dernière connexion.</>, <><strong>Learning:</strong> answers, scores, time spent, self and AI assessments, study days and last time online.</>)}</P>
         <P>{tr(<><strong>Bản ghi âm bài nói:</strong> lưu ở kho riêng tư, chỉ bạn và giáo viên nghe được. Khi bạn bấm « AI nhận xét », hệ thống lưu thêm bản chép lời và nhận xét của AI.</>, <><strong>Enregistrements oraux :</strong> stockés en privé, accessibles à vous et à l'enseignant. Avec « Avis de l'IA », la transcription et l'avis sont aussi conservés.</>, <><strong>Speaking recordings:</strong> stored privately, only you and the teacher can listen. With « AI feedback », the transcript and feedback are stored too.</>)}</P>
         <P>{tr(<><strong>Khi bạn bấm « Gửi câu hỏi »:</strong> họ tên, số điện thoại, năm sinh, email, vai trò, mục tiêu và nội dung câu hỏi, kèm địa chỉ IP để chặn gửi hàng loạt. Chỉ dùng để trả lời bạn.</>, <><strong>Quand vous posez une question :</strong> nom, téléphone, année de naissance, e-mail, rôle, objectif et message, avec l'adresse IP contre les envois massifs. Utilisé uniquement pour vous répondre.</>, <><strong>When you ask a question:</strong> name, phone, birth year, email, role, goal and message, plus the IP address to block spam. Used only to reply to you.</>)}</P>
+        <P>{tr(<><strong>Form « Liên hệ » cuối các trang thông tin:</strong> họ tên, email, chủ đề và nội dung, kèm địa chỉ IP để chặn gửi hàng loạt. Được lưu lại và chuyển qua Resend tới hộp thư {EMAIL_LIEN_HE}. Chỉ dùng để trả lời bạn.</>, <><strong>Formulaire « Contact » en bas des pages d'information :</strong> nom, e-mail, sujet et message, avec l'adresse IP contre les envois massifs. Conservés et transmis via Resend à {EMAIL_LIEN_HE}. Utilisés uniquement pour vous répondre.</>, <><strong>The « Contact » form at the bottom of the information pages:</strong> name, email, topic and message, plus the IP address to block spam. Stored and forwarded via Resend to {EMAIL_LIEN_HE}. Used only to reply to you.</>)}</P>
         <P>{tr(<><strong>Thanh toán:</strong> số tiền, nội dung chuyển khoản và thời điểm giao dịch. Chúng tôi <strong>không</strong> nhận số thẻ hay thông tin tài khoản ngân hàng của bạn.</>, <><strong>Paiement :</strong> montant, libellé et date du virement. Nous ne recevons <strong>pas</strong> vos numéros de carte ni vos coordonnées bancaires.</>, <><strong>Payments:</strong> amount, transfer note and time. We do <strong>not</strong> receive your card number or bank account details.</>)}</P>
         <P>{tr(<><strong>Trên thiết bị của bạn:</strong> trình duyệt lưu phiên đăng nhập, ngôn ngữ và chế độ sáng/tối. Không dùng cookie quảng cáo.</>, <><strong>Sur votre appareil :</strong> le navigateur garde votre session, votre langue et le thème clair/sombre. Pas de cookies publicitaires.</>, <><strong>On your device:</strong> the browser keeps your session, language and light/dark theme. No advertising cookies.</>)}</P>
       </Muc>
