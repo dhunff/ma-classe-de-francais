@@ -108,13 +108,13 @@ export const STUDENT_NAV = [
      của một mục, đặt ngay dưới Lịch theo yêu cầu chủ dự án. */
   { to: "/etudiant/devoirs", nhom: "thi", labelKey: "nav.assigned", Icon: ClipboardList, view: "todo" },
   { to: "/etudiant/compte", nhom: "toi", labelKey: "nav.account", Icon: UserRound, view: "settings" },
-  /* 28/10 (chủ dự án): FAQ vào thanh bên, mở bản trong vỏ app của trang /faq. */
-  { to: "/etudiant/faq", nhom: "toi", labelKey: "nav.faq", Icon: LifeBuoy },
+  /* 28/10 (chủ dự án): FAQ ở CUỐI thanh bên, chỗ ô « Cần trợ giúp » cũ (nhóm tro_giup, mt-auto), mở bản trong vỏ app của trang /faq. */
+  { to: "/etudiant/faq", nhom: "tro_giup", labelKey: "nav.faq", Icon: LifeBuoy },
 ];
 
 /* 13/10: thanh bên chia NHÓM (trường `nhom`). Danh sách giữ nguyên thứ tự
    khai báo cho mọi chỗ khác; chỉ thanh bên sắp lại theo thứ tự nhóm dưới đây. */
-export const THU_TU_NHOM = { prof: ["tong", "lop", "noi_dung"], eleve: ["hoc", "on", "thi", "toi"] };
+export const THU_TU_NHOM = { prof: ["tong", "lop", "noi_dung"], eleve: ["hoc", "on", "thi", "toi", "tro_giup"] };
 /* 27/10 (chủ dự án): phân mục lại thanh bên học sinh. Học tập = học bài mới;
    Ôn luyện = tự luyện + ôn + chơi; Bài tập & thi = việc có hạn / có chấm;
    Của tôi = tiến độ và tài khoản. Thứ tự trong nhóm theo danh sách dưới,

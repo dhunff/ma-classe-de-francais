@@ -14,6 +14,7 @@ const tenNhom = (n) => ({
   tong: tr("Tổng quan", "Vue d'ensemble", "Overview"),
   lop: tr("Học sinh", "Élèves", "Students"),
   noi_dung: tr("Nội dung", "Contenus", "Content"),
+  tro_giup: tr("Trợ giúp", "Aide", "Help"),
 }[n] ?? n);
 
 /* Thanh điều hướng trái — nằm thẳng trên nền xanh của khung, không có nền
@@ -89,7 +90,7 @@ function NavList({ role, t, expanded, onNavigate, onBlue = true }) {
     <MotionConfig reducedMotion="user">
     <nav className={`flex flex-1 flex-col ${onBlue ? "pl-3" : "px-3"}`} aria-label={t("nav.primary")}>
       {navTheoNhom(role).map(({ nhom, muc }, gi) => (
-        <div key={nhom} className={gi ? "mt-4 [@media(max-height:760px)]:mt-2" : ""}>
+        <div key={nhom} className={nhom === "tro_giup" ? "mt-auto pb-2 pt-4" : gi ? "mt-4 [@media(max-height:760px)]:mt-2" : ""}>
           {/* Tên nhóm khi mở rộng; khi thu gọn thì một vạch ngắn ngăn nhóm. */}
           {expanded ? (
             <span className={`mb-1.5 block px-3 text-[10px] font-extrabold uppercase tracking-[0.16em] ${onBlue ? "text-white/55" : "text-soft"}`}>{tenNhom(nhom)}</span>
@@ -146,7 +147,8 @@ function NavList({ role, t, expanded, onNavigate, onBlue = true }) {
   );
 }
 
-/* Ô « Cần trợ giúp? » cuối thanh GỠ 28/10 (chủ dự án): FAQ đã là một mục menu. */
+/* Ô « Cần trợ giúp? » cuối thanh GỠ 28/10 (chủ dự án): thay bằng nhóm menu « Trợ giúp »
+   (mục FAQ) dồn xuống đáy nav bằng mt-auto. */
 
 /* Logo (09/10): đầu Leon + chữ FRACILE. Thu gọn thì chỉ còn đầu Leon. */
 /* 27/10: Leon trong huy hiệu trắng bo góc (nghiêng nhẹ, rê chuột thì thẳng lại),

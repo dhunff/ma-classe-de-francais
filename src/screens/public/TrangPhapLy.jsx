@@ -69,7 +69,7 @@ function Khung({ tieuDe, children, trongApp = false }) {
     <div className={trongApp ? "" : "min-h-screen bg-bg"}>
       <div className={`mx-auto max-w-3xl px-5 ${trongApp ? "py-6" : "py-12 sm:py-16"}`}>
         {!trongApp && <Link to="/gioi-thieu" className="text-sm font-bold text-primary no-underline">← FRACILE</Link>}
-        <h1 className="m-0 mt-4 text-3xl font-extrabold tracking-tight text-ink">{tieuDe}</h1>
+        <h1 className="m-0 mt-4 text-[34px] font-bold leading-tight tracking-tight text-ink">{tieuDe}</h1>
         <p className="m-0 mt-2 text-xs text-soft">{tr("Cập nhật lần cuối", "Dernière mise à jour", "Last updated")}: {CAP_NHAT}</p>
 
         {!EMAIL_LIEN_HE && (
@@ -79,29 +79,35 @@ function Khung({ tieuDe, children, trongApp = false }) {
           </p>
         )}
 
-        <div className="mt-8 space-y-8 text-sm leading-relaxed text-ink">{children}</div>
+        <div className="mt-8 space-y-7 text-[15px] leading-relaxed text-ink">{children}</div>
 
-        <nav className="mt-14 flex flex-wrap gap-x-6 gap-y-2 border-0 border-t border-solid border-line pt-6 text-sm">
-          <Link to="/faq" className="text-soft no-underline hover:text-ink">{tr("Câu hỏi thường gặp", "Questions fréquentes", "FAQ")}</Link>
-          <Link to="/dieu-khoan" className="text-soft no-underline hover:text-ink">{tr("Điều khoản sử dụng", "Conditions d'utilisation", "Terms of use")}</Link>
-          <Link to="/bao-mat" className="text-soft no-underline hover:text-ink">{tr("Chính sách bảo mật", "Politique de confidentialité", "Privacy policy")}</Link>
+        {/* Ba trang pháp lý: danh sách nhóm kiểu inset, trang đang xem tô màu chính (28/10). */}
+        <nav className="mt-12 overflow-hidden rounded-2xl bg-surface ring-1 ring-line" aria-label={tr("Trang thông tin", "Pages d'information", "Information pages")}>
+          {[["/faq", tr("Câu hỏi thường gặp", "Questions fréquentes", "FAQ")], ["/dieu-khoan", tr("Điều khoản sử dụng", "Conditions d'utilisation", "Terms of use")], ["/bao-mat", tr("Chính sách bảo mật", "Politique de confidentialité", "Privacy policy")]].map(([to, ten]) => (
+            <Link key={to} to={to} aria-current={pathname === to ? "page" : undefined}
+              className={`flex min-h-[48px] items-center justify-between border-0 border-t border-solid border-line px-4 text-[15px] no-underline first:border-t-0 hover:bg-surface2 ${pathname === to ? "font-semibold text-primary" : "text-ink"}`}>
+              {ten}<ChevronRight size={18} aria-hidden className="text-soft" />
+            </Link>
+          ))}
         </nav>
       </div>
     </div>
   );
 }
 
+/* 28/10 (apple-design-skill): mỗi mục là một khối bo góc kiểu « inset grouped », tiêu đề
+   đứng ngoài khối; danh sách thành các dòng ngăn bằng đường kẻ mảnh thay chấm tròn. */
 function Muc({ ten, children }) {
   return (
     <section>
-      <h2 className="m-0 text-lg font-extrabold text-ink">{ten}</h2>
-      <div className="mt-2 space-y-3 text-soft [&_strong]:text-ink">{children}</div>
+      <h2 className="m-0 mb-2 px-4 text-[17px] font-semibold tracking-tight text-ink">{ten}</h2>
+      <div className="space-y-3 rounded-2xl bg-surface px-4 py-4 text-soft shadow-[0_1px_2px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.04)] ring-1 ring-line [&_strong]:font-semibold [&_strong]:text-ink">{children}</div>
     </section>
   );
 }
 
 const P = ({ children }) => <p className="m-0">{children}</p>;
-const UL = ({ children }) => <ul className="m-0 list-disc space-y-1.5 pl-5">{children}</ul>;
+const UL = ({ children }) => <ul className="-mx-4 m-0 list-none p-0 [&>li]:border-0 [&>li]:border-t [&>li]:border-solid [&>li]:border-line [&>li]:px-4 [&>li]:py-3 [&>li:first-child]:border-t-0 [&>li:first-child]:pt-0 [&>li:last-child]:pb-0">{children}</ul>;
 
 /* ═══════════════════════════════ FAQ ═══════════════════════════════ */
 
