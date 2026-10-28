@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { Headphones, Mic, Square, Play, Turtle, RotateCcw, ArrowRight, ArrowLeft, Check, Lightbulb, Loader2, PenLine, TextCursorInput } from "lucide-react";
+import { Mic, Square, Play, Turtle, RotateCcw, ArrowRight, ArrowLeft, Check, Lightbulb, Loader2, PenLine, TextCursorInput } from "lucide-react";
 import { supabase } from "../../storageShim.js";
 import { tr } from "../../shared/i18n.jsx";
 import { Leon } from "../../shared/leon.jsx";
@@ -304,12 +304,43 @@ export function PhatAm({ cau, onXong }) {
   );
 }
 
+/* Hành trình (28/10): mỗi chế độ × trình độ chia thành các TRẠM 5 câu, đi theo thứ tự trên bản
+   đồ. Sao của trạm TÍNH TỪ điểm tốt nhất đã lưu trên máy chủ (cau_luyen_ket_qua), câu chưa làm
+   tính 0, nên tiến độ theo người học sang mọi máy và không cần lưu thêm gì. Trạm sau mở khi trạm
+   trước có ít nhất 1 sao. */
+const CO_TRAM = 5;
+const saoTu = (tb) => (tb >= 0.9 ? 3 : tb >= 0.75 ? 2 : tb >= 0.5 ? 1 : 0);
+const BIEU_TUONG = ["☕", "🥐", "🚲", "🎨", "🏛️", "🎭", "🧀", "🌻", "⛵", "🍷", "🎻", "🗼"];
+const CHU_DE = () => ({
+  chinh_ta: {
+    ten: tr("Sổ tay phóng viên", "Le carnet du reporter", "The reporter's notebook"),
+    mo: tr("Ta là phóng viên Léon! Hôm nay ta đi phỏng vấn khắp Paris, nhưng tay ta bận cầm micro. Bạn nghe rồi chép lại giúp ta từng câu nhé, nhớ đủ dấu!", "Moi, c'est Léon, reporter ! J'interviewe tout Paris mais j'ai les mains prises. Note chaque phrase pour moi, accents compris !", "I'm Léon the reporter! I'm interviewing all of Paris but my hands are busy. Write down each sentence for me, accents included!"),
+    nen: "from-sky-500 to-indigo-600", vien: "border-sky-300", chu: "text-sky-700 dark:text-sky-300",
+  },
+  dien_tu: {
+    ten: tr("Radio Léon", "Radio Léon", "Radio Léon"),
+    mo: tr("Đài Radio Léon đang phát sóng, mà sóng chập chờn quá: vài từ bị rè mất. Bạn nghe kỹ và điền lại các từ đó để thính giả hiểu nhé!", "Radio Léon est en direct, mais la réception grésille : des mots disparaissent. Écoute bien et complète-les !", "Radio Léon is on air, but the signal crackles and some words drop out. Listen closely and fill them in!"),
+    nen: "from-amber-500 to-rose-500", vien: "border-amber-300", chu: "text-amber-700 dark:text-amber-300",
+  },
+  phat_am: {
+    ten: tr("Phòng thu lồng tiếng", "Le studio de doublage", "The dubbing studio"),
+    mo: tr("Chào mừng tới phòng thu! Ta là đạo diễn Léon. Bạn nghe câu mẫu, rồi đọc to vào micro: máy nghe ra đúng càng nhiều từ thì cảnh quay càng đạt.", "Bienvenue au studio ! Je suis Léon, le réalisateur. Écoute le modèle puis lis à voix haute : plus la machine reconnaît de mots, meilleure est la prise.", "Welcome to the studio! I'm Léon, the director. Listen to the model, then read aloud: the more words the machine recognises, the better the take."),
+    nen: "from-rose-500 to-fuchsia-600", vien: "border-rose-300", chu: "text-rose-700 dark:text-rose-300",
+  },
+});
+
+function Sao({ n, to }) {
+  return <span aria-label={`${n}/3`} className={to ? "text-2xl" : "text-sm"}>{[0, 1, 2].map((k) => <span key={k} className={k < n ? "text-amber-400" : "text-line"}>★</span>)}</span>;
+}
+
 export default function NgheNoi() {
   const [loai, setLoai] = useState("chinh_ta");
   const [cap, setCap] = useState("A1");
   const [ds, setDs] = useState(undefined);
-  const [diem, setDiem] = useState(new Map());     // cau_id → điểm tốt nhất
-  const [dang, setDang] = useState(null);           // chỉ số câu đang làm
+  const [diem, setDiem] = useState(new Map());     // kieu:cau_id → điểm tốt nhất
+  const [tram, setTram] = useState(null);           // chỉ số trạm đang chơi
+  const [dang, setDang] = useState(0);              // chỉ số câu trong trạm
+  const [ket, setKet] = useState(false);            // đang xem tổng kết trạm
 
   useEffect(() => {
     let con = true;
@@ -333,10 +364,17 @@ export default function NgheNoi() {
   const loaiCau = loai === "phat_am" ? "phat_am" : loai === "dien_tu" ? "dien_tu" : "chinh_ta";
   const kieu = loai === "phat_am" ? "phat_am" : loai === "dien_tu" ? "dien_tu" : "chep";
   const loc = useMemo(() => (ds || []).filter((c) => c.loai === loaiCau && c.cap === cap), [ds, loaiCau, cap]);
+  const cacTram = useMemo(() => { const r = []; for (let i = 0; i < loc.length; i += CO_TRAM) r.push(loc.slice(i, i + CO_TRAM)); return r; }, [loc]);
   const dCau = (id) => diem.get(`${kieu}:${id}`);
-  const cau = dang != null ? loc[dang] : null;
-  const xongCap = loc.filter((c) => (dCau(c.id) ?? 0) >= 0.9).length;
+  const tbTram = (t) => t.reduce((n, c) => n + (dCau(c.id) ?? 0), 0) / t.length;
+  const saoTram = (k) => saoTu(tbTram(cacTram[k]));
+  const tongSao = cacTram.reduce((n, _, k) => n + saoTram(k), 0);
+  const cd = CHU_DE()[loai];
+  const cauTram = tram != null ? cacTram[tram] : null;
+  const cau = cauTram && !ket ? cauTram[dang] : null;
   const ghiDiem = (d) => setDiem((m) => { const k = `${kieu}:${cau.id}`; return new Map(m).set(k, Math.max(m.get(k) ?? 0, d)); });
+  const vaoTram = (k) => { phat("batDau"); setTram(k); setDang(0); setKet(false); };
+  const raBanDo = () => { setTram(null); setKet(false); };
 
   return (
     <div className="mx-auto max-w-3xl px-4 pb-24 pt-6">
@@ -347,13 +385,13 @@ export default function NgheNoi() {
           <Leon cam={loai === "phat_am" ? "chao" : "lam-viec"} size={104} className="mcf-leon-bay shrink-0 drop-shadow-[0_12px_18px_rgba(0,0,0,0.3)] max-sm:h-20 max-sm:w-20" />
           <div className="min-w-0 flex-1">
             <h1 className="m-0 text-3xl font-extrabold tracking-tight">{tr("Nghe & Nói", "Écoute & Oral", "Listen & Speak")}</h1>
-            <p className="m-0 mt-1 text-sm text-white/85">{tr("Chép chính tả, nghe điền từ và luyện đọc cho máy nghe ra đúng.", "Dictées, textes à trous et lecture à voix haute reconnue par la machine.", "Dictations, gap fills and read-aloud practice checked by speech recognition.")}</p>
+            <p className="m-0 mt-1 text-sm text-white/85">{tr("Đi hết các trạm cùng Léon: chép chính tả, nghe điền từ và luyện đọc cho máy nghe ra đúng.", "Parcours les étapes avec Léon : dictées, textes à trous et lecture à voix haute.", "Travel the stops with Léon: dictations, gap fills and read-aloud practice.")}</p>
           </div>
           <NutTieng className="border-white/30 bg-white/15 text-white hover:border-white hover:text-white" />
         </div>
-        <div className="relative mt-5 inline-flex gap-1 rounded-2xl bg-white/15 p-1.5">
+        <div className="relative mt-5 inline-flex flex-wrap gap-1 rounded-2xl bg-white/15 p-1.5">
           {[["chinh_ta", PenLine, tr("Chép chính tả", "Dictée", "Dictation")], ["dien_tu", TextCursorInput, tr("Nghe điền từ", "Texte à trous", "Fill the gaps")], ["phat_am", Mic, tr("Phát âm", "Prononciation", "Pronunciation")]].map(([k, Icon, nhan]) => (
-            <button key={k} type="button" onClick={() => { if (k !== loai) phat("tiep"); setLoai(k); setDang(null); }}
+            <button key={k} type="button" onClick={() => { if (k !== loai) phat("tiep"); setLoai(k); raBanDo(); }}
               className={`inline-flex cursor-pointer items-center gap-2 rounded-xl border-0 px-4 py-2 font-sans text-sm font-extrabold transition-all ${loai === k ? "bg-white text-fuchsia-700 shadow" : "bg-transparent text-white hover:bg-white/15"}`}>
               <Icon size={15} /> {nhan}
             </button>
@@ -363,21 +401,66 @@ export default function NgheNoi() {
 
       <div className="mt-5 flex flex-wrap items-center gap-2">
         {CAP.map((c) => (
-          <button key={c} type="button" onClick={() => { setCap(c); setDang(null); phat("bam"); }}
+          <button key={c} type="button" onClick={() => { setCap(c); raBanDo(); phat("bam"); }}
             className={`cursor-pointer rounded-2xl border-2 border-solid px-4 py-2 font-sans text-sm font-extrabold transition-all ${cap === c ? "border-primary bg-primary text-white shadow-md" : "border-line bg-surface text-ink hover:border-primary/50"}`}>{c}</button>
         ))}
-        {loc.length > 0 && <span className="ml-auto text-xs font-bold text-soft">{tr(`Hoàn thành ${xongCap}/${loc.length} câu (từ 90%)`, `${xongCap}/${loc.length} réussies (≥ 90 %)`, `${xongCap}/${loc.length} done (≥ 90%)`)}</span>}
+        {cacTram.length > 0 && <span className="ml-auto text-xs font-bold text-soft">★ {tongSao}/{cacTram.length * 3}</span>}
       </div>
 
       {ds === undefined ? (
         <p className="mt-8 text-center text-sm text-soft">{tr("Đang tải…", "Chargement…", "Loading…")}</p>
       ) : ds === null ? (
         <p className="mt-8 text-center text-sm text-danger">{tr("Không tải được kho câu. Kiểm tra mạng rồi thử lại.", "Impossible de charger les phrases.", "Couldn't load sentences.")}</p>
+      ) : cacTram.length === 0 ? (
+        <p className="mt-8 text-center text-sm text-soft">{tr("Trình độ này chưa có câu nào cho chế độ này.", "Pas encore de phrases à ce niveau.", "No sentences at this level yet.")}</p>
+      ) : cauTram && ket ? (
+        <section className="mcf-cau-vao mt-5 overflow-hidden rounded-3xl border border-solid border-line bg-surface shadow-[0_8px_30px_rgba(0,0,0,0.04)]">
+          <div className={`bg-gradient-to-r ${cd.nen} px-5 py-4 text-white`}>
+            <p className="m-0 text-xs font-extrabold uppercase tracking-wider text-white/80">{cd.ten} · {cap}</p>
+            <p className="m-0 mt-1 text-xl font-extrabold">{BIEU_TUONG[tram % BIEU_TUONG.length]} {tr("Trạm", "Étape", "Stop")} {tram + 1}</p>
+          </div>
+          <div className="grid gap-4 p-5">
+            <div className="flex items-start gap-3">
+              <Leon cam={saoTram(tram) >= 3 ? "yeah" : saoTram(tram) >= 1 ? "duoc-do" : "co-len"} size={72} className="mcf-nay shrink-0" />
+              <div>
+                <Sao n={saoTram(tram)} to />
+                <p className="m-0 mt-1 rounded-3xl rounded-tl-md bg-surface2 px-4 py-3 text-sm leading-relaxed text-ink">
+                  {saoTram(tram) >= 3 ? tr("Hoàn hảo! Ta không cần sửa chữ nào.", "Parfait ! Rien à corriger.", "Perfect! Nothing to fix.")
+                    : saoTram(tram) >= 1 ? tr("Đạt rồi, trạm sau đã mở! Muốn đủ 3 sao thì làm lại những câu còn điểm thấp.", "Validé, l'étape suivante est ouverte ! Refais les phrases faibles pour 3 étoiles.", "Passed, the next stop is open! Redo the weaker sentences for 3 stars.")
+                      : tr("Chưa đủ để mở trạm sau (cần trung bình từ 50%). Nghe chậm lại rồi thử lần nữa nhé.", "Pas encore assez pour l'étape suivante (50 % de moyenne). Réécoute plus lentement.", "Not enough yet for the next stop (50% average needed). Try again more slowly.")}
+                </p>
+              </div>
+            </div>
+            <ul className="m-0 grid list-none gap-1.5 p-0">
+              {cauTram.map((c, i) => {
+                const d = dCau(c.id);
+                return (
+                  <li key={c.id}>
+                    <button type="button" onClick={() => { setKet(false); setDang(i); }}
+                      className="flex w-full cursor-pointer items-center gap-3 rounded-2xl border border-solid border-line bg-surface p-2.5 text-left font-sans hover:border-primary/40">
+                      <span className={`grid h-9 w-9 shrink-0 place-items-center rounded-xl text-xs font-extrabold tabular-nums ${mauDiem(d)}`}>{d != null ? Math.round(d * 100) : "–"}</span>
+                      <span lang="fr" className="min-w-0 flex-1 truncate text-sm font-bold text-ink">{d != null || loai === "phat_am" ? choTrong(c.cau) : `${tr("Câu", "Phrase", "Sentence")} ${i + 1}`}</span>
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+            <div className="flex flex-wrap justify-between gap-2">
+              <button type="button" onClick={raBanDo} className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border-0 bg-surface2 px-4 py-2 font-sans text-sm font-bold text-ink"><ArrowLeft size={14} /> {tr("Bản đồ", "Carte", "Map")}</button>
+              {saoTram(tram) >= 1 && tram + 1 < cacTram.length && (
+                <button type="button" onClick={() => vaoTram(tram + 1)} className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border-0 bg-primary px-4 py-2 font-sans text-sm font-bold text-on-primary">{tr("Trạm tiếp", "Étape suivante", "Next stop")} <ArrowRight size={14} /></button>
+              )}
+            </div>
+          </div>
+        </section>
       ) : cau ? (
         <section className="mcf-cau-vao mt-5 rounded-3xl border border-solid border-line bg-surface p-5 shadow-[0_8px_30px_rgba(0,0,0,0.04)]" key={cau.id}>
           <div className="mb-4 flex items-center justify-between gap-3">
-            <button type="button" onClick={() => setDang(null)} className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border-0 bg-surface2 px-3 py-1.5 font-sans text-xs font-bold text-ink"><ArrowLeft size={13} /> {tr("Danh sách", "Liste", "List")}</button>
-            <span className="text-xs font-bold uppercase tracking-[0.14em] text-soft">{cap} · {tr("Câu", "Phrase", "Sentence")} {dang + 1}/{loc.length}</span>
+            <button type="button" onClick={raBanDo} className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border-0 bg-surface2 px-3 py-1.5 font-sans text-xs font-bold text-ink"><ArrowLeft size={13} /> {tr("Bản đồ", "Carte", "Map")}</button>
+            <span className={`text-xs font-extrabold uppercase tracking-[0.14em] ${cd.chu}`}>{BIEU_TUONG[tram % BIEU_TUONG.length]} {tr("Trạm", "Étape", "Stop")} {tram + 1} · {dang + 1}/{cauTram.length}</span>
+          </div>
+          <div className="mb-4 flex items-center gap-1.5" aria-hidden>
+            {cauTram.map((c, i) => <span key={c.id} className={`h-2 flex-1 rounded-full ${i === dang ? "bg-primary" : dCau(c.id) != null ? "bg-ok" : "bg-surface2"}`} />)}
           </div>
           {loai === "phat_am" && (
             <div className="mb-4">
@@ -389,33 +472,40 @@ export default function NgheNoi() {
           <div className="mt-5 flex justify-between gap-2 border-0 border-t border-solid border-line pt-4">
             <button type="button" disabled={dang === 0} onClick={() => setDang(dang - 1)}
               className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border-0 bg-surface2 px-4 py-2 font-sans text-sm font-bold text-ink disabled:opacity-40"><ArrowLeft size={14} /> {tr("Câu trước", "Précédente", "Previous")}</button>
-            <button type="button" disabled={dang >= loc.length - 1} onClick={() => { phat("tiep"); setDang(dang + 1); }}
-              className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border-0 bg-primary px-4 py-2 font-sans text-sm font-bold text-on-primary disabled:opacity-40">{tr("Câu tiếp", "Suivante", "Next")} <ArrowRight size={14} /></button>
+            <button type="button" onClick={() => { if (dang + 1 >= cauTram.length) { setKet(true); phat(saoTram(tram) >= 1 ? "thang" : "tiep"); } else { phat("tiep"); setDang(dang + 1); } }}
+              className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border-0 bg-primary px-4 py-2 font-sans text-sm font-bold text-on-primary">
+              {dang + 1 >= cauTram.length ? tr("Kết thúc trạm", "Fin de l'étape", "Finish stop") : tr("Câu tiếp", "Suivante", "Next")} <ArrowRight size={14} />
+            </button>
           </div>
         </section>
       ) : (
-        <ul className="m-0 mt-5 grid list-none gap-2.5 p-0 sm:grid-cols-2">
-          {loc.map((c, i) => {
-            const d = dCau(c.id);
-            return (
-              <li key={c.id} className="mcf-cau-vao" style={{ animationDelay: `${i * 40}ms` }}>
-                <button type="button" onClick={() => { phat("bam"); setDang(i); }}
-                  className="flex w-full cursor-pointer items-center gap-3 rounded-2xl border border-solid border-line bg-surface p-3.5 text-left font-sans transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md">
-                  <span className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl text-sm font-extrabold tabular-nums ${mauDiem(d)}`}>
-                    {d != null ? `${Math.round(d * 100)}` : i + 1}
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <span className="block truncate text-sm font-bold text-ink" lang="fr">
-                      {loai === "chinh_ta" ? (d != null ? choTrong(c.cau) : tr("Câu chép chính tả", "Dictée", "Dictation") + ` ${i + 1}`) : loai === "dien_tu" ? (d != null ? choTrong(c.cau) : tr("Câu điền từ", "Texte à trous", "Gap fill") + ` ${i + 1}`) : c.cau}
-                    </span>
-                    <span className="block truncate text-xs text-soft">{loai === "chinh_ta" && d == null ? tr("Nghe rồi gõ lại", "Écoutez puis écrivez", "Listen then type") : loai === "dien_tu" && d == null ? tr("Nghe rồi điền từ còn thiếu", "Écoutez et complétez", "Listen and fill in") : c.nghia}</span>
-                  </span>
-                  {loai === "phat_am" ? <Mic size={16} className="shrink-0 text-soft" /> : <Headphones size={16} className="shrink-0 text-soft" />}
-                </button>
-              </li>
-            );
-          })}
-        </ul>
+        <section className="mcf-cau-vao mt-5 overflow-hidden rounded-[2rem] bg-surface shadow-[0_8px_30px_rgb(0,0,0,0.06)]">
+          <div className={`bg-gradient-to-r ${cd.nen} p-5 text-white`}>
+            <p className="m-0 text-xs font-extrabold uppercase tracking-wider text-white/80">{cap} · {cacTram.length} {tr("trạm", "étapes", "stops")}</p>
+            <h2 className="m-0 mt-1 text-2xl font-extrabold">{cd.ten}</h2>
+            <div className="mt-3 flex items-start gap-3">
+              <Leon cam="nhay-mat" size={56} className="shrink-0" />
+              <p className="m-0 rounded-3xl rounded-tl-md bg-white/15 px-4 py-3 text-sm leading-relaxed">{cd.mo}</p>
+            </div>
+          </div>
+          <ol className="m-0 grid list-none grid-cols-2 gap-3 p-5 sm:grid-cols-4">
+            {cacTram.map((t, k) => {
+              const khoa = k > 0 && saoTram(k - 1) < 1;
+              const daLam = t.filter((c) => dCau(c.id) != null).length;
+              return (
+                <li key={k} className="mcf-cau-vao" style={{ animationDelay: `${k * 40}ms` }}>
+                  <button type="button" disabled={khoa} onClick={() => vaoTram(k)}
+                    className={`flex w-full cursor-pointer flex-col items-center gap-1 rounded-3xl border-2 border-solid ${cd.vien} bg-surface p-3 font-sans transition-transform hover:-translate-y-1 disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:translate-y-0`}>
+                    <span className="text-2xl" aria-hidden>{khoa ? "🔒" : BIEU_TUONG[k % BIEU_TUONG.length]}</span>
+                    <span className={`text-xs font-extrabold uppercase tracking-wider ${cd.chu}`}>{tr("Trạm", "Étape", "Stop")} {k + 1}</span>
+                    <Sao n={saoTram(k)} />
+                    <span className="text-[11px] font-semibold text-soft">{daLam}/{t.length} {tr("câu", "phrases", "done")}</span>
+                  </button>
+                </li>
+              );
+            })}
+          </ol>
+        </section>
       )}
     </div>
   );
