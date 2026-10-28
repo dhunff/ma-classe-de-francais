@@ -1,7 +1,7 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useSeo } from "../../shared/seo.js";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, ChevronRight, Search } from "lucide-react";
 import { tr } from "../../shared/i18n.jsx";
 
 /* Ba trang công khai: Câu hỏi thường gặp · Điều khoản sử dụng · Chính sách bảo mật.
@@ -204,17 +204,66 @@ const HOI_DAP_BAN_QUYEN = () => [
       "Email us the link and a short description at the address at the bottom. If you are an author and believe content on FRACILE infringes your rights, we will review it and take it down while we verify.")],
 ];
 
+/* Giao diện FAQ (28/10, theo apple-design-skill): tiêu đề lớn, ô tìm kiếm đặt ngay đầu
+   (tìm kiếm quan trọng thì không giấu), câu hỏi gom thành danh sách nhóm bo góc kiểu
+   « inset grouped », mỗi dòng mở/đóng tại chỗ (tiết lộ dần thay vì bày hết chữ). Nhóm
+   theo CHỈ SỐ trong HOI_DAP, nên thêm câu mới ở đó thì nhớ xếp vào nhóm ở đây. */
+const NHOM_FAQ = () => [
+  [tr("Bắt đầu", "Pour commencer", "Getting started"), [0, 1, 13]],
+  [tr("Thi thử và chấm bài", "Examens et correction", "Exams and grading"), [2, 3, 4, 5, 6]],
+  [tr("Thanh toán, XP và VIP", "Paiement, XP et VIP", "Payment, XP and VIP"), [7, 8, 9]],
+  [tr("Học mỗi ngày", "Apprendre au quotidien", "Daily learning"), [10, 11, 12]],
+  [tr("Dữ liệu và liên hệ", "Données et contact", "Data and contact"), [14, 15]],
+];
+const boDau = (s) => String(s).normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/đ/gi, "d").toLowerCase();
+
+function DongHoi({ hoi, dap, mo, onDoi }) {
+  return (
+    <li className="border-0 border-t border-solid border-line first:border-t-0">
+      <button type="button" onClick={onDoi} aria-expanded={mo}
+        className="flex min-h-[48px] w-full cursor-pointer items-center gap-3 border-0 bg-transparent px-4 py-3 text-left font-sans text-[15px] font-semibold text-ink transition-colors hover:bg-surface2 focus-visible:bg-surface2 focus-visible:outline-none">
+        <span className="flex-1">{hoi}</span>
+        <ChevronRight size={18} aria-hidden className={`shrink-0 text-soft transition-transform duration-200 motion-reduce:transition-none ${mo ? "rotate-90" : ""}`} />
+      </button>
+      {mo && <p className="m-0 px-4 pb-4 text-[15px] leading-relaxed text-soft">{dap}</p>}
+    </li>
+  );
+}
+
 export function TrangFAQ({ trongApp = false }) {
+  const [q, setQ] = useState("");
+  const [mo, setMo] = useState(() => new Set());
+  const hd = HOI_DAP();
+  const nhom = [...NHOM_FAQ().map(([ten, ids]) => [ten, ids.map((i) => hd[i]).filter(Boolean)]),
+    [tr("Bản quyền và sở hữu trí tuệ", "Droits d'auteur et propriété intellectuelle", "Copyright and intellectual property"), HOI_DAP_BAN_QUYEN()]];
+  const k = boDau(q.trim());
+  const loc = nhom.map(([ten, ds]) => [ten, k ? ds.filter(([h, d]) => boDau(h).includes(k) || boDau(d).includes(k)) : ds]).filter(([, ds]) => ds.length);
+  const doi = (h) => setMo((s) => { const n = new Set(s); n.has(h) ? n.delete(h) : n.add(h); return n; });
   return (
     <Khung trongApp={trongApp} tieuDe={tr("Câu hỏi thường gặp", "Questions fréquentes", "Frequently asked questions")}>
-      {HOI_DAP().map(([hoi, dap]) => (
-        <Muc key={hoi} ten={hoi}><P>{dap}</P></Muc>
+      <label className="flex h-11 items-center gap-2 rounded-xl bg-surface2 px-3 text-soft focus-within:ring-2 focus-within:ring-primary/40">
+        <Search size={17} aria-hidden className="shrink-0" />
+        <input type="search" value={q} onChange={(e) => setQ(e.target.value)}
+          placeholder={tr("Tìm câu hỏi", "Rechercher une question", "Search questions")}
+          aria-label={tr("Tìm câu hỏi", "Rechercher une question", "Search questions")}
+          className="h-full w-full border-0 bg-transparent font-sans text-[15px] text-ink outline-none placeholder:text-soft" />
+      </label>
+
+      {loc.length === 0 && <p className="m-0 py-6 text-center text-[15px] text-soft">{tr(`Không có câu nào khớp « ${q} ».`, `Aucune question ne correspond à « ${q} ».`, `No question matches “${q}”.`)}</p>}
+
+      {loc.map(([ten, ds]) => (
+        <section key={ten}>
+          <h2 className="m-0 mb-2 px-4 text-xs font-semibold uppercase tracking-wider text-soft">{ten}</h2>
+          <ul className="m-0 list-none overflow-hidden rounded-2xl bg-surface p-0 shadow-[0_1px_2px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.04)] ring-1 ring-line">
+            {ds.map(([hoi, dap]) => <DongHoi key={hoi} hoi={hoi} dap={dap} mo={!!k || mo.has(hoi)} onDoi={() => doi(hoi)} />)}
+          </ul>
+        </section>
       ))}
-      <h2 className="m-0 border-0 border-t border-solid border-line pt-8 text-xl font-extrabold text-ink">{tr("Bản quyền và sở hữu trí tuệ", "Droits d'auteur et propriété intellectuelle", "Copyright and intellectual property")}</h2>
-      {HOI_DAP_BAN_QUYEN().map(([hoi, dap]) => (
-        <Muc key={hoi} ten={hoi}><P>{dap}</P></Muc>
-      ))}
-      <Muc ten={tr("Chưa thấy câu trả lời?", "Pas de réponse ?", "Didn't find an answer?")}><P>{tr("Liên hệ", "Contact", "Contact")}: <LienHe />.</P></Muc>
+
+      <div className="rounded-2xl bg-surface2 px-4 py-4 text-center text-[15px] text-soft">
+        <span className="block font-semibold text-ink">{tr("Chưa thấy câu trả lời?", "Pas de réponse ?", "Didn't find an answer?")}</span>
+        <span className="mt-1 block">{tr("Viết cho chúng tôi", "Écrivez-nous", "Write to us")}: <LienHe /></span>
+      </div>
     </Khung>
   );
 }

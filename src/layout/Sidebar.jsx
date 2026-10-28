@@ -1,6 +1,6 @@
 ﻿import React, { useEffect, useRef } from "react";
 import { NavLink, Link, useLocation } from "react-router-dom";
-import { LogIn, X, ChevronLeft, ChevronRight, LifeBuoy } from "lucide-react";
+import { LogIn, X, ChevronLeft, ChevronRight } from "lucide-react";
 import { motion, MotionConfig } from "framer-motion";
 import { navTheoNhom } from "./navItems.js";
 import { tr } from "../shared/i18n.jsx";
@@ -146,26 +146,7 @@ function NavList({ role, t, expanded, onNavigate, onBlue = true }) {
   );
 }
 
-/* Ô trợ giúp cuối thanh (13/10): lối tới FAQ, có Leon. Không số liệu nào. */
-function TroGiup({ expanded, onNavigate, onBlue = true }) {
-  if (!expanded) {
-    return (
-      <Link to="/faq" onClick={onNavigate} className={`group relative mx-auto mt-4 grid h-10 w-10 place-items-center rounded-xl no-underline ${onBlue ? "bg-white/10 text-white hover:bg-white/20" : "bg-surface2 text-soft"}`}>
-        <LifeBuoy size={18} /><Tip show>{tr("Trợ giúp", "Aide", "Help")}</Tip>
-      </Link>
-    );
-  }
-  return (
-    <Link to="/faq" onClick={onNavigate}
-      className={`relative mx-3 mt-4 flex items-center gap-3 overflow-hidden rounded-2xl p-3 no-underline transition-colors ${onBlue ? "bg-white/10 text-white hover:bg-white/15" : "bg-surface2 text-ink hover:bg-primary-soft"}`}>
-      <img src="/leon/dau.webp" alt="" width={40} height={40} className="h-10 w-10 shrink-0 object-contain" />
-      <span className="min-w-0">
-        <span className="block text-xs font-extrabold">{tr("Cần trợ giúp?", "Besoin d'aide ?", "Need help?")}</span>
-        <span className={`block text-[11px] ${onBlue ? "text-white/70" : "text-soft"}`}>{tr("Câu hỏi thường gặp", "Questions fréquentes", "FAQ")}</span>
-      </span>
-    </Link>
-  );
-}
+/* Ô « Cần trợ giúp? » cuối thanh GỠ 28/10 (chủ dự án): FAQ đã là một mục menu. */
 
 /* Logo (09/10): đầu Leon + chữ FRACILE. Thu gọn thì chỉ còn đầu Leon. */
 /* 27/10: Leon trong huy hiệu trắng bo góc (nghiêng nhẹ, rê chuột thì thẳng lại),
@@ -323,7 +304,6 @@ export default function Sidebar({
             Chỉ khi MỞ RỘNG: thu gọn cần overflow visible cho chú giải. */}
         <div className={`flex min-h-0 flex-1 flex-col ${expanded ? "no-scrollbar overflow-y-auto overscroll-contain" : ""}`}>
           <NavList role={role} t={t} expanded={expanded} />
-          {signedIn && <TroGiup expanded={expanded} />}
         </div>
         {/* Khối « Lớp của bạn » gỡ 24/09 theo yêu cầu chủ dự án; PeopleCard
             còn đó nếu cần dựng lại. */}
@@ -372,7 +352,6 @@ export default function Sidebar({
             pb theo safe-area để không nằm dưới thanh Home của iPhone. */}
         <div className="flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain pb-[max(1rem,env(safe-area-inset-bottom))]">
           <NavList role={role} t={t} expanded onNavigate={onClose} onBlue={false} />
-          {signedIn && <TroGiup expanded onNavigate={onClose} onBlue={false} />}
           <Footer t={t} signedIn={signedIn} expanded onNavigate={onClose} onBlue={false} />
         </div>
       </aside>
