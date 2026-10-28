@@ -47,7 +47,7 @@ import { tr } from "../../shared/i18n.jsx";
    mà trông như hoàn chỉnh còn tệ hơn một chính sách tự nói nó thiếu. */
 export const EMAIL_LIEN_HE = "contact.fracile@gmail.com";   // chủ dự án chọn 23/09/2026
 
-const CAP_NHAT = "08/10/2026";
+const CAP_NHAT = "28/10/2026";
 
 function LienHe() {
   if (EMAIL_LIEN_HE) {
@@ -60,13 +60,15 @@ function LienHe() {
   );
 }
 
-function Khung({ tieuDe, children }) {
+/* trongApp (28/10): bản mở từ thanh bên học sinh, nằm trong vỏ app nên không có
+   nền toàn màn hình và lối « ← FRACILE » về trang giới thiệu. */
+function Khung({ tieuDe, children, trongApp = false }) {
   const { pathname } = useLocation();
   useSeo({ tieuDe: `${tieuDe} · FRACILE`, moTa: `${tieuDe} của FRACILE, nền tảng học tiếng Pháp và luyện thi DELF bằng tiếng Việt.`, duongDan: pathname });
   return (
-    <div className="min-h-screen bg-bg">
-      <div className="mx-auto max-w-3xl px-5 py-12 sm:py-16">
-        <Link to="/gioi-thieu" className="text-sm font-bold text-primary no-underline">← FRACILE</Link>
+    <div className={trongApp ? "" : "min-h-screen bg-bg"}>
+      <div className={`mx-auto max-w-3xl px-5 ${trongApp ? "py-6" : "py-12 sm:py-16"}`}>
+        {!trongApp && <Link to="/gioi-thieu" className="text-sm font-bold text-primary no-underline">← FRACILE</Link>}
         <h1 className="m-0 mt-4 text-3xl font-extrabold tracking-tight text-ink">{tieuDe}</h1>
         <p className="m-0 mt-2 text-xs text-soft">{tr("Cập nhật lần cuối", "Dernière mise à jour", "Last updated")}: {CAP_NHAT}</p>
 
@@ -172,10 +174,44 @@ const HOI_DAP = () => [
       "Click « Ask a question » on the home page, or email the address at the bottom of this page.")],
 ];
 
-export function TrangFAQ() {
+/* Sở hữu trí tuệ (28/10, theo chủ dự án). Chỉ nói điều đúng với dự án: đề thi thử
+   soạn theo KHUÔN DELF, không chép đề thật; audio luyện nghe là giọng tổng hợp; không
+   tuyên bố đã đăng ký bản quyền hay nhãn hiệu ở đâu. */
+const HOI_DAP_BAN_QUYEN = () => [
+  [tr("Bài tập và đề thi trên FRACILE thuộc về ai?", "À qui appartiennent les exercices et sujets ?", "Who owns the exercises and exams?"),
+   tr("Bài tập, đề thi thử, bài học ngữ pháp, bộ Flashcard, câu luyện nghe nói, trò chơi và file âm thanh trên FRACILE do FRACILE và giáo viên của FRACILE soạn. Quyền tác giả với các nội dung này thuộc về FRACILE hoặc người soạn. Tài khoản của bạn chỉ cho phép dùng chúng để tự học, không chuyển quyền sở hữu nội dung nào cho bạn, kể cả khi bạn đã trả phí hoặc đổi XP để mở bài.",
+      "Exercices, examens blancs, leçons de grammaire, flashcards, phrases d'écoute et d'oral, jeux et fichiers audio sont créés par FRACILE et ses enseignants. Les droits d'auteur appartiennent à FRACILE ou à leurs auteurs. Votre compte vous donne un droit d'usage pour apprendre, sans transfert de propriété, même pour un contenu payé ou débloqué avec des XP.",
+      "Exercises, mock exams, grammar lessons, flashcards, listening and speaking sentences, games and audio files are made by FRACILE and its teachers. Copyright belongs to FRACILE or their authors. Your account lets you use them to study; it transfers no ownership, even for content you paid for or unlocked with XP.")],
+  [tr("Tôi có được chia sẻ, chụp lại hay đăng bài tập lên nơi khác không?", "Puis-je partager ou republier les exercices ?", "Can I share or repost the exercises?"),
+   tr("Bạn được ghi chép và in ra để tự học. Không được sao chép, chụp màn hình hàng loạt, tải hoặc trích xuất tự động, bán lại, đăng lên mạng xã hội, nhóm học, trang web hay ứng dụng khác, hoặc dùng để soạn tài liệu, khoá học thương mại khi chưa có đồng ý bằng văn bản. Chia sẻ một vài câu để hỏi bài thì được, miễn ghi rõ nguồn FRACILE. Nội dung trả phí thì không được chia sẻ dưới bất kỳ hình thức nào.",
+      "Vous pouvez prendre des notes et imprimer pour vous entraîner. Interdit sans accord écrit : copier, faire des captures en masse, télécharger ou extraire automatiquement, revendre, republier sur réseaux sociaux, groupes, sites ou applis, ou s'en servir pour des supports ou cours commerciaux. Citer quelques questions pour demander de l'aide est permis avec la mention FRACILE. Les contenus payants ne se partagent pas.",
+      "You may take notes and print for your own study. Without written permission you may not copy, mass-screenshot, download or scrape, resell, repost on social media, groups, websites or apps, or use them for commercial materials or courses. Quoting a few questions to ask for help is fine if you credit FRACILE. Paid content may not be shared in any form.")],
+  [tr("Léon là ai, tôi có được dùng hình Léon không?", "Qui est Léon ? Puis-je utiliser son image ?", "Who is Léon? Can I use his image?"),
+   tr("Léon là linh vật của FRACILE. Tên, hình vẽ, các sticker và tính cách của Léon là tài sản của FRACILE. Bạn được dùng sticker Léon ngay trong ứng dụng, và chia sẻ ảnh chụp kết quả học có Léon cho bạn bè. Không được cắt hình Léon ra để in ấn, làm sản phẩm, logo, ảnh đại diện cho trang khác, quảng cáo, hay đưa vào công cụ tạo ảnh AI để làm nhân vật giống Léon.",
+      "Léon est la mascotte de FRACILE. Son nom, ses dessins, ses stickers et sa personnalité appartiennent à FRACILE. Vous pouvez utiliser ses stickers dans l'appli et partager une capture de vos résultats avec Léon. Interdit : l'extraire pour imprimer, créer des produits, logos, avatars d'autres pages, publicités, ou le soumettre à une IA pour créer un personnage similaire.",
+      "Léon is FRACILE's mascot. His name, drawings, stickers and personality belong to FRACILE. You may use Léon stickers inside the app and share screenshots of your results featuring him. You may not extract him for printing, merchandise, logos, avatars for other pages, ads, or feed him to an AI image tool to make a look-alike.")],
+  [tr("Đề thi thử có phải đề DELF thật không? FRACILE có liên quan tới DELF chính thức không?", "Les examens blancs sont-ils de vrais sujets DELF ?", "Are mock exams real DELF papers?"),
+   tr("Không. Đề thi thử được FRACILE tự soạn theo cấu trúc, thời gian và thang điểm công khai của kỳ thi, không chép nội dung đề thật. DELF và DALF là các bằng do Bộ Giáo dục Pháp cấp, tổ chức qua France Éducation international; FRACILE là dịch vụ luyện thi độc lập, không liên kết và không được các tổ chức này bảo trợ. Tên DELF, DALF chỉ dùng để mô tả kỳ thi bạn đang luyện.",
+      "Non. Les examens blancs sont rédigés par FRACILE d'après la structure, la durée et le barème publics de l'examen, sans reprendre de vrais sujets. Le DELF et le DALF sont des diplômes du ministère français de l'Éducation, gérés par France Éducation international ; FRACILE est un service indépendant, sans lien ni parrainage avec ces organismes. Ces noms ne servent qu'à désigner l'examen préparé.",
+      "No. Mock exams are written by FRACILE following the exam's public structure, timing and scoring, without copying real papers. DELF and DALF are diplomas of the French Ministry of Education, run by France Éducation international; FRACILE is an independent prep service, not affiliated with or endorsed by them. The names are used only to describe the exam you are preparing for.")],
+  [tr("Bài viết, bản ghi âm của tôi thuộc về ai?", "À qui appartiennent mes textes et enregistrements ?", "Who owns my writing and recordings?"),
+   tr("Vẫn là của bạn. Khi nộp, bạn cho phép FRACILE lưu và xử lý chúng (kể cả gửi cho dịch vụ AI để chấm, nhận xét, viết bài mẫu) chỉ nhằm phục vụ việc học của chính bạn. FRACILE không đăng công khai hay dùng bài của bạn làm tài liệu cho người khác khi chưa hỏi bạn.",
+      "Ils restent à vous. En les envoyant, vous autorisez FRACILE à les stocker et les traiter (y compris via l'IA pour corriger, commenter ou rédiger un modèle) uniquement pour votre apprentissage. FRACILE ne les publie pas et ne les réutilise pas pour d'autres sans vous demander.",
+      "They stay yours. By submitting them you let FRACILE store and process them (including sending them to the AI service for grading, feedback or model answers) only for your own learning. FRACILE won't publish them or reuse them for others without asking you.")],
+  [tr("Tôi thấy nội dung FRACILE bị đăng lại ở nơi khác, hoặc FRACILE dùng nội dung của tôi?", "Contenu FRACILE republié ailleurs, ou mon contenu utilisé ?", "Found FRACILE content reposted, or my content used?"),
+   tr("Hãy gửi email kèm đường dẫn và mô tả ngắn tới địa chỉ ở cuối trang. Nếu bạn là tác giả và cho rằng một nội dung trên FRACILE vi phạm quyền của bạn, chúng tôi sẽ xem xét và gỡ nội dung đó trong lúc xác minh.",
+      "Écrivez-nous avec le lien et une brève description à l'adresse en bas de page. Si vous êtes auteur et pensez qu'un contenu FRACILE enfreint vos droits, nous l'examinerons et le retirerons le temps de vérifier.",
+      "Email us the link and a short description at the address at the bottom. If you are an author and believe content on FRACILE infringes your rights, we will review it and take it down while we verify.")],
+];
+
+export function TrangFAQ({ trongApp = false }) {
   return (
-    <Khung tieuDe={tr("Câu hỏi thường gặp", "Questions fréquentes", "Frequently asked questions")}>
+    <Khung trongApp={trongApp} tieuDe={tr("Câu hỏi thường gặp", "Questions fréquentes", "Frequently asked questions")}>
       {HOI_DAP().map(([hoi, dap]) => (
+        <Muc key={hoi} ten={hoi}><P>{dap}</P></Muc>
+      ))}
+      <h2 className="m-0 border-0 border-t border-solid border-line pt-8 text-xl font-extrabold text-ink">{tr("Bản quyền và sở hữu trí tuệ", "Droits d'auteur et propriété intellectuelle", "Copyright and intellectual property")}</h2>
+      {HOI_DAP_BAN_QUYEN().map(([hoi, dap]) => (
         <Muc key={hoi} ten={hoi}><P>{dap}</P></Muc>
       ))}
       <Muc ten={tr("Chưa thấy câu trả lời?", "Pas de réponse ?", "Didn't find an answer?")}><P>{tr("Liên hệ", "Contact", "Contact")}: <LienHe />.</P></Muc>
@@ -220,8 +256,10 @@ export function TrangDieuKhoan() {
         </UL>
       </Muc>
 
-      <Muc ten={tr("5. Nội dung", "5. Contenus", "5. Content")}>
-        <P>{tr("Bài tập, đề thi và bộ Flashcard trên FRACILE thuộc về người soạn. Không sao chép hoặc phát tán lại khi chưa được đồng ý.", "Les exercices, sujets et flashcards appartiennent à leurs auteurs. Pas de copie ni de diffusion sans accord.", "Exercises, exams and flashcards belong to their authors. Don't copy or redistribute them without permission.")}</P>
+      <Muc ten={tr("5. Nội dung và sở hữu trí tuệ", "5. Contenus et propriété intellectuelle", "5. Content and intellectual property")}>
+        <P>{tr("Bài tập, đề thi thử, bài học ngữ pháp, bộ Flashcard, câu luyện nghe nói, trò chơi, file âm thanh và giao diện FRACILE thuộc quyền của FRACILE hoặc người soạn. Bạn được dùng chúng để tự học; không sao chép, trích xuất tự động, bán lại hoặc đăng lại ở nơi khác khi chưa có đồng ý bằng văn bản. Trả phí hay đổi XP chỉ mở quyền sử dụng, không chuyển quyền sở hữu.", "Exercices, examens blancs, leçons, flashcards, phrases d'écoute et d'oral, jeux, audio et interface appartiennent à FRACILE ou à leurs auteurs. Usage personnel d'apprentissage uniquement ; pas de copie, d'extraction automatique, de revente ni de republication sans accord écrit. Payer ou dépenser des XP ouvre un droit d'usage, pas de propriété.", "Exercises, mock exams, lessons, flashcards, listening and speaking sentences, games, audio and the interface belong to FRACILE or their authors. Use them for your own study only; no copying, scraping, reselling or reposting without written permission. Paying or spending XP grants a right of use, not ownership.")}</P>
+        <P>{tr("Linh vật Léon (tên, hình vẽ, sticker) là tài sản của FRACILE, chỉ dùng trong ứng dụng và khi chia sẻ ảnh chụp kết quả học.", "La mascotte Léon (nom, dessins, stickers) appartient à FRACILE ; usage limité à l'appli et aux captures de vos résultats.", "The Léon mascot (name, drawings, stickers) belongs to FRACILE; use is limited to the app and screenshots of your results.")}</P>
+        <P>{tr("Đề thi thử do FRACILE tự soạn theo cấu trúc công khai của kỳ thi, không phải đề thật. FRACILE độc lập, không liên kết với France Éducation international hay đơn vị tổ chức DELF, DALF.", "Les examens blancs sont rédigés par FRACILE d'après la structure publique de l'examen, ce ne sont pas de vrais sujets. FRACILE est indépendant de France Éducation international et des organisateurs du DELF et du DALF.", "Mock exams are written by FRACILE from the exam's public structure; they are not real papers. FRACILE is independent of France Éducation international and the DELF and DALF organisers.")}</P>
         <P>{tr("Bài viết và bản ghi âm bạn tạo ra vẫn là của bạn.", "Vos textes et enregistrements restent les vôtres.", "Your writing and recordings remain yours.")}</P>
       </Muc>
 

@@ -2,7 +2,7 @@ import {
   House, GraduationCap, ChartNoAxesCombined, UserRound, Gamepad2,
   LayoutDashboard, BookOpen, Users, BarChart3, Dumbbell, AudioLines, TrendingUp,
   ClipboardList, CheckSquare, CalendarDays, Settings, Lightbulb, Timer, Trophy, Layers, Lightbulb as Bulb, Anchor, Inbox,
-  Map, BookA, Swords, FileCheck2, Megaphone, Flag } from "lucide-react";
+  Map, BookA, Swords, FileCheck2, Megaphone, Flag, LifeBuoy } from "lucide-react";
 
 /* Điều hướng của vỏ app.
 
@@ -108,6 +108,8 @@ export const STUDENT_NAV = [
      của một mục, đặt ngay dưới Lịch theo yêu cầu chủ dự án. */
   { to: "/etudiant/devoirs", nhom: "thi", labelKey: "nav.assigned", Icon: ClipboardList, view: "todo" },
   { to: "/etudiant/compte", nhom: "toi", labelKey: "nav.account", Icon: UserRound, view: "settings" },
+  /* 28/10 (chủ dự án): FAQ vào thanh bên, mở bản trong vỏ app của trang /faq. */
+  { to: "/etudiant/faq", nhom: "toi", labelKey: "nav.faq", Icon: LifeBuoy },
 ];
 
 /* 13/10: thanh bên chia NHÓM (trường `nhom`). Danh sách giữ nguyên thứ tự
@@ -121,7 +123,7 @@ const THU_TU_MUC_HS = [
   "/etudiant/dashboard", "/etudiant/ngu-phap", "/etudiant/nghe-noi",
   "/etudiant/entrainement", "/etudiant/bo-the", "/etudiant/tro-choi", "/etudiant/thach-dau",
   "/etudiant/devoirs", "/etudiant/examen",
-  "/etudiant/tien-bo", "/etudiant/calendrier", "/etudiant/compte",
+  "/etudiant/tien-bo", "/etudiant/calendrier", "/etudiant/compte", "/etudiant/faq",
 ];
 const viTriMuc = (to) => { const i = THU_TU_MUC_HS.indexOf(to); return i < 0 ? 999 : i; };
 export const navFor = (role) => (role === "prof" ? TEACHER_NAV : STUDENT_NAV);

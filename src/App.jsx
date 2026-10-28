@@ -331,6 +331,8 @@ function AppInner() {
               <Route path="/etudiant/thach-dau" element={<ThachDau />} />
               <Route path="/etudiant/tro-choi" element={<TroChoiNhanh />} />
               <Route path="/etudiant/tro-choi/:ma" element={<TroChoiNhanh />} />
+              {/* FAQ trong vỏ app (28/10): cùng nội dung trang công khai /faq, có thanh bên. */}
+              <Route path="/etudiant/faq" element={<TrangFAQ trongApp />} />
 
               <Route path="/etudiant/calendrier"
                 element={<CalendarView name={session?.name} exercises={exercises} t={t} />} />
