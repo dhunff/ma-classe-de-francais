@@ -8,7 +8,7 @@ import { CHANG } from "../../content/troChoi/doVui.js";
 import { CHUONG } from "../../content/troChoi/phieuLuu.js";
 import { tr } from "../../shared/i18n.jsx";
 import { phat } from "../../shared/amThanh.js";
-import { Leon } from "../../shared/leon.jsx";
+import { Leon, leonVai } from "../../shared/leon.jsx";
 import { MUC_CHOI, khopCap, docDanhTuGioi, docMuaChu, phuongAnNghia, docCauNghe, phuongAnCau, ghiTroChoi, docKyLuc, docXepCau, docSanLoi, docDungSai, tron } from "../../shared/troChoiNhanh.js";
 
 /* Ba trò chơi nhanh (27/10, migration 168). /etudiant/tro-choi là sảnh, /etudiant/tro-choi/:ma
@@ -1260,7 +1260,7 @@ function ThamTu({ muc = "vua", onXong }) {
   if (!vu) return (
     <div className="mt-6 rounded-[2rem] bg-[#3f3a36] bg-[radial-gradient(#57504a_1px,transparent_1px)] bg-[length:10px_10px] p-5">
       <div className="flex items-start gap-3">
-        <Leon cam="lam-viec" size={72} className="shrink-0" />
+        <Leon cam={leonVai("tham-tu", "kinh-lup")} size={72} className="shrink-0" />
         <p className="m-0 rounded-3xl rounded-tl-md bg-[#fef3c7] px-4 py-3 text-sm text-[#2b2118]">
           {muc === "de" ? tr("Chào trợ lý mới! Ta là Thanh tra Léon. Mấy vụ nhỏ trong khu phố đang chờ chúng ta. Bắt đầu từ hồ sơ số 1 nhé.", "Bienvenue, assistant ! Je suis l'inspecteur Léon. De petites affaires du quartier nous attendent. Commençons par le dossier 1.", "Welcome, assistant! I'm Inspector Léon. Some small neighbourhood cases await. Let's start with case 1.")
             : muc === "vua" ? tr("Gần đây hiện trường nào cũng có một chiếc lông vũ xám và chữ ký « P.G. ». Không phải trùng hợp đâu, trợ lý.", "Ces derniers temps, chaque scène de crime cache une plume grise et la signature « P.G. ». Ce n'est pas un hasard.", "Lately every crime scene has a grey feather and the signature “P.G.”. That's no coincidence.")
@@ -1298,7 +1298,7 @@ function ThamTu({ muc = "vua", onXong }) {
   );
   const LoiLeon = ({ cam, children }) => (
     <div className="mcf-cau-vao mt-4 flex items-start gap-3">
-      <Leon cam={cam} size={64} className="shrink-0" />
+      <Leon cam={leonVai("tham-tu", cam)} size={64} className="shrink-0" />
       <p className="m-0 rounded-3xl rounded-tl-md bg-[#fef3c7] px-4 py-3 text-sm leading-relaxed text-[#2b2118]">{children}</p>
     </div>
   );
@@ -1422,7 +1422,7 @@ function DoVui({ muc = "vua", he, onXong }) {
 
   const LoiLeon = ({ cam, children }) => (
     <div className="mcf-cau-vao mt-4 flex items-start gap-3">
-      <Leon cam={cam} size={60} className="shrink-0" />
+      <Leon cam={leonVai("mc", cam)} size={60} className="shrink-0" />
       <p className="m-0 rounded-3xl rounded-tl-md bg-white/10 px-4 py-3 text-sm leading-relaxed text-white">{children}</p>
     </div>
   );
@@ -1476,7 +1476,7 @@ function DoVui({ muc = "vua", he, onXong }) {
       <div className={nen}>
         {/* Bục thi: Léon (người chơi) và bà Minette */}
         <div className="mb-3 flex items-center justify-center gap-2">
-          <Leon cam={chon == null ? "hoi" : chon === 0 ? "yeah" : "hum"} size={48} />
+          <Leon cam={leonVai("mc", chon == null ? "hoi" : chon === 0 ? "yeah" : "hum")} size={48} />
           <span className="rounded-full bg-white/10 px-3 py-1 text-[11px] font-bold uppercase tracking-widest text-amber-300">MC Léon · {ch.co} {ch.noi}</span>
         </div>
         <div className="grid grid-cols-[1fr_auto_1fr] items-end gap-3">

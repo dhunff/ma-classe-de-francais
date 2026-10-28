@@ -34,13 +34,26 @@ export const STICKER = [
   ["cuoi-lon", () => tr("Vui quá!", "Trop content !", "So happy!")],
   ["mim-cuoi", () => tr("Mỉm cười", "Sourire", "Smile")],
 ];
-const CO = new Set(STICKER.map((s) => s[0]).concat(["leon", "dau"]));
+/* Bộ biểu cảm theo VAI (28/10, cắt từ hai bảng sticker chủ dự án gửi): Léon MC (vest, micro)
+   cho « Đố vui nước Pháp », Léon thám tử (mũ phớt, áo khoác) cho « Thám tử Léon ». Ảnh ở
+   public/leon/<bộ>/<tên>.webp, gọi bằng cam="mc/vui". Ánh xạ từ biểu cảm thường sang bộ vai
+   (leonVai) để nội dung trò chơi cũ, vốn ghi cam theo bộ thường, không phải sửa. */
+const BO_VAI = {
+  mc: ["gioi-thieu", "nhay-mat", "cam-the", "hoan-ho", "tu-tin", "ngac-nhien", "hoi", "vui", "tai-nghe", "yeu", "mim-cuoi", "ngau", "gio-the", "hai-long", "ngoai-lai"],
+  "tham-tu": ["kinh-lup", "like", "suy-nghi", "vui", "gian", "ngac-nhien", "ghi-chep", "soi", "suyt", "chi", "lan-theo", "ban-do", "ca-phe", "nap", "ngau"],
+};
+const DOI_VAI = {
+  mc: { chao: "gioi-thieu", phap: "gioi-thieu", "quyet-tam": "cam-the", hoi: "hoi", "suy-nghi": "hoi", yeah: "hoan-ho", hum: "tai-nghe", "tuyet-voi": "ngau", "ngac-nhien": "ngac-nhien", "xin-loi": "hai-long", buon: "hai-long", "cuoi-lon": "vui", haha: "vui", "co-len": "tu-tin", "nhay-mat": "nhay-mat", "yeu-qua": "yeu", "duoc-do": "gio-the", ok: "gio-the", "mim-cuoi": "mim-cuoi", "tam-biet": "ngoai-lai" },
+  "tham-tu": { chao: "chi", phap: "kinh-lup", "lam-viec": "ghi-chep", hoc: "ban-do", "nhay-mat": "chi", "tuyet-voi": "ngau", "duoc-do": "like", ok: "like", "yeu-qua": "ca-phe", hum: "suy-nghi", "suy-nghi": "suy-nghi", hoi: "suy-nghi", gian: "gian", buon: "nap", "xin-loi": "nap", "ngac-nhien": "ngac-nhien", haha: "vui", "cuoi-lon": "vui", yeah: "vui", "co-len": "lan-theo", "quyet-tam": "soi", "mim-cuoi": "suyt", "tam-biet": "ngau" },
+};
+export const leonVai = (bo, cam) => `${bo}/${BO_VAI[bo]?.includes(cam) ? cam : DOI_VAI[bo]?.[cam] ?? BO_VAI[bo][0]}`;
+const CO = new Set(STICKER.map((s) => s[0]).concat(["leon", "dau"], Object.entries(BO_VAI).flatMap(([bo, ds]) => ds.map((t) => `${bo}/${t}`))));
 export const nhanSticker = (id) => STICKER.find((s) => s[0] === id)?.[1]() ?? "Leon";
 
 export function Leon({ cam = "leon", size = 64, className = "", alt }) {
   const id = CO.has(cam) ? cam : "leon";
   return (
-    <img src={`/leon/${id}.webp`} width={size} height={size} alt={alt ?? (id === "leon" || id === "dau" ? "Leon" : nhanSticker(id))}
+    <img src={`/leon/${id}.webp`} width={size} height={size} alt={alt ?? (id === "leon" || id === "dau" || id.includes("/") ? "Leon" : nhanSticker(id))}
       draggable={false} loading="lazy" className={`select-none object-contain ${className}`} style={{ width: size, height: size }} />
   );
 }
