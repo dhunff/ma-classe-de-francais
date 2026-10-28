@@ -58,6 +58,8 @@ const BO = {
 };
 
 export function phat(ten) {
+  // Báo cho Léon bình luận viên ở màn trò chơi (chạy cả khi tắt tiếng).
+  try { window.dispatchEvent(new CustomEvent("mcf-am", { detail: ten })); } catch { /* ngoài trình duyệt */ }
   if (!amThanhBat()) return;
   const c = lay();
   if (!c || !BO[ten]) return;

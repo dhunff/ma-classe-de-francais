@@ -114,6 +114,33 @@ function Sanh({ ds }) {
 }
 
 /* ─────────── Khung một trò: chọn trình độ → chơi → kết quả ─────────── */
+/* Léon bình luận viên (28/10): các trò chưa có Léon trong lối chơi thì Léon đứng cạnh, nghe
+   sự kiện âm thanh « mcf-am » do phat() bắn ra và đổi nét mặt + câu nói theo đúng/sai. */
+const CO_LEON_RIENG = new Set(["nghe_chon", "chep_nhanh", "noi_mo_khoa", "tham_tu", "do_vui", "phieu_luu"]);
+function LeonBinhLuan() {
+  const [su, setSu] = useState({ ten: "batDau", n: 0 });
+  useEffect(() => {
+    const nghe = (e) => { if (["dung", "sai", "thang", "hetGio"].includes(e.detail)) setSu((x) => ({ ten: e.detail, n: x.n + 1 })); };
+    window.addEventListener("mcf-am", nghe);
+    return () => window.removeEventListener("mcf-am", nghe);
+  }, []);
+  const LOI = {
+    batDau: [tr("Sẵn sàng chưa? Ta cổ vũ bạn đây!", "On y va ? Je t'encourage !", "Ready? I'm cheering for you!")],
+    dung: [tr("Chuẩn luôn!", "Parfait !", "Spot on!"), tr("Giỏi quá!", "Bravo !", "Great!"), tr("Cứ thế mà tiến!", "Continue comme ça !", "Keep it up!")],
+    sai: [tr("Suýt nữa thôi!", "Presque !", "So close!"), tr("Không sao, câu sau nhé.", "Pas grave, la suivante !", "No worries, next one."), tr("Bình tĩnh nào.", "Du calme.", "Stay calm.")],
+    thang: [tr("Tuyệt vời, ta tự hào về bạn!", "Génial, je suis fier de toi !", "Brilliant, I'm proud of you!")],
+    hetGio: [tr("Hết giờ rồi! Lần sau nhanh hơn nhé.", "Temps écoulé ! Plus vite la prochaine fois.", "Time's up! Faster next time.")],
+  };
+  const CAM = { batDau: "chao", dung: "yeah", sai: "co-len", thang: "tuyet-voi", hetGio: "quyet-tam" };
+  const ds = LOI[su.ten]; const loi = ds[su.n % ds.length];
+  return (
+    <div className="mt-4 flex items-center gap-3">
+      <Leon key={su.n} cam={CAM[su.ten]} size={52} className="mcf-nay shrink-0" />
+      <p key={"p" + su.n} className="mcf-cau-vao m-0 rounded-2xl rounded-tl-md bg-surface px-3 py-2 text-sm font-bold text-ink shadow-sm">{loi}</p>
+    </div>
+  );
+}
+
 function ManChoi({ tc }) {
   const nav = useNavigate();
   const [muc, setMuc] = useState("vua");          // de | vua | kho (MUC_CHOI)
@@ -148,6 +175,10 @@ function ManChoi({ tc }) {
 
       {buoc === "chon" && (
         <div className="mt-6 rounded-3xl bg-surface p-6 text-center shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+          <div className="mb-5 flex items-start gap-3 text-left">
+            <Leon cam="nhay-mat" size={60} className="shrink-0" />
+            <p className="m-0 rounded-3xl rounded-tl-md bg-surface2 px-4 py-3 text-sm leading-relaxed text-ink">{tr("Luật chơi đây: ", "Voici la règle : ", "Here are the rules: ")}{tc.mo}</p>
+          </div>
           {tc.kieu && <>
             <p className="m-0 text-sm font-bold text-soft">{tr("Cách chơi", "Mode", "Mode")}</p>
             <div className="mb-5 mt-3 grid gap-2 sm:grid-cols-3">
@@ -177,6 +208,7 @@ function ManChoi({ tc }) {
         </div>
       )}
 
+      {buoc === "choi" && !CO_LEON_RIENG.has(tc.ma) && <LeonBinhLuan key={"l" + van} />}
       {buoc === "choi" && <Game key={van} cap={MUC_CHOI[muc].cap} he={MUC_CHOI[muc]} muc={muc} kieu={kieu} onXong={xong} />}
 
       {buoc === "xong" && kq && (
@@ -384,7 +416,7 @@ function NgheChon({ cap, muc = "vua", onXong }) {
   const khopK = (k) => thuTu[k] === doan[k]?.id;
   return (
     <div className="mt-6 rounded-[2rem] bg-[#2b1d14] p-5 text-[#f6e7c8] shadow-[inset_0_2px_0_rgba(255,255,255,0.08),0_20px_40px_rgba(0,0,0,0.25)]">
-      <div className="flex items-center justify-between font-mono text-xs uppercase tracking-widest text-[#d9b98a]">
+      <div className="flex items-center justify-between text-xs uppercase tracking-widest text-[#d9b98a]">
         <span className="inline-flex items-center gap-2">
           <span className={`h-2.5 w-2.5 rounded-full ${buoc === "phat" ? "animate-pulse bg-red-500" : "bg-[#5a3d27]"}`} />
           {buoc === "phat" ? "On air" : "Radio Léon"} · {tr("Cuộn", "Bobine", "Reel")} {v + 1}/{VONG}
@@ -399,7 +431,7 @@ function NgheChon({ cap, muc = "vua", onXong }) {
             <p className="m-0 rounded-3xl rounded-tl-md bg-[#3a281b] px-4 py-3 text-sm leading-relaxed">{LOI_DJ[v]}</p>
           </div>
           <p className="m-0 text-center text-xs text-[#d9b98a]">{tr(`Sẽ phát liền ${n} đoạn, chữ không hiện.`, `${n} extraits à la suite, sans texte.`, `${n} clips in a row, no text shown.`)}{lac ? " " + tr("Có 1 thẻ lạc sóng không hề phát: đừng chọn nó.", "Une carte n'a jamais été diffusée : ignore-la.", "One card was never played: leave it out.") : ""}</p>
-          <button type="button" onClick={phatChuoi} className="mx-auto inline-flex cursor-pointer items-center gap-2 rounded-full border-0 bg-[#ffb347] px-7 py-3 font-mono text-sm font-extrabold uppercase tracking-widest text-[#2b1d14]">
+          <button type="button" onClick={phatChuoi} className="mx-auto inline-flex cursor-pointer items-center gap-2 rounded-full border-0 bg-[#ffb347] px-7 py-3 text-sm font-extrabold uppercase tracking-widest text-[#2b1d14]">
             <Play size={16} fill="currentColor" /> {tr("Phát băng", "Lancer la bande", "Play tape")}
           </button>
         </div>
@@ -410,7 +442,7 @@ function NgheChon({ cap, muc = "vua", onXong }) {
             <span aria-hidden className={`grid h-14 w-14 shrink-0 place-items-center rounded-full border-4 border-dotted border-[#ffb347] ${buoc === "phat" ? "mcf-spin" : ""}`}><span className="h-4 w-4 rounded-full bg-[#ffb347]" /></span>
             <div className="flex flex-1 gap-1.5">
               {doan.map((_, k) => (
-                <span key={k} className={`grid h-10 flex-1 place-items-center rounded-md border-2 border-solid font-mono text-xs font-bold transition-colors ${dangPhat === k ? "border-[#ffd27a] bg-[#ffb347] text-[#2b1d14]" : buoc === "xong" ? (khopK(k) ? "border-[#7bd88f] bg-[#1f3a26] text-white" : "border-[#ff6b6b] bg-[#45201f] text-white") : thuTu[k] ? "border-[#ffb347] bg-[#3a281b]" : "border-[#5a3d27] bg-transparent text-[#8a6a4a]"}`}>
+                <span key={k} className={`grid h-10 flex-1 place-items-center rounded-md border-2 border-solid text-xs font-bold transition-colors ${dangPhat === k ? "border-[#ffd27a] bg-[#ffb347] text-[#2b1d14]" : buoc === "xong" ? (khopK(k) ? "border-[#7bd88f] bg-[#1f3a26] text-white" : "border-[#ff6b6b] bg-[#45201f] text-white") : thuTu[k] ? "border-[#ffb347] bg-[#3a281b]" : "border-[#5a3d27] bg-transparent text-[#8a6a4a]"}`}>
                   {k + 1}
                 </span>
               ))}
@@ -419,7 +451,7 @@ function NgheChon({ cap, muc = "vua", onXong }) {
           </div>
 
           {buoc === "phat" ? (
-            <p className="m-0 mt-5 text-center font-mono text-sm uppercase tracking-widest text-[#ffd27a]">{tr("Đang phát đoạn", "Extrait", "Playing clip")} {dangPhat + 1}/{n}…</p>
+            <p className="m-0 mt-5 text-center text-sm uppercase tracking-widest text-[#ffd27a]">{tr("Đang phát đoạn", "Extrait", "Playing clip")} {dangPhat + 1}/{n}…</p>
           ) : (
             <>
               <p className="m-0 mt-4 text-center text-xs text-[#d9b98a]">{buoc === "xep" ? tr(`Chạm thẻ theo thứ tự đã nghe (${thuTu.length}/${n})`, `Touchez dans l'ordre entendu (${thuTu.length}/${n})`, `Tap in the order heard (${thuTu.length}/${n})`) : null}</p>
@@ -431,7 +463,7 @@ function NgheChon({ cap, muc = "vua", onXong }) {
                   return (
                     <button key={c.id} type="button" onClick={() => cham(c.id)} disabled={buoc !== "xep"} lang="fr"
                       className={`flex cursor-pointer items-start gap-3 rounded-xl border-2 border-solid px-3 py-2.5 text-left font-sans text-sm disabled:cursor-default ${so >= 0 ? "border-[#ffb347] bg-[#3a281b] text-[#f6e7c8]" : "border-[#6b4a2f] bg-[#241811] text-[#f6e7c8] hover:border-[#ffb347]"}`}>
-                      <span className={`grid h-6 w-6 shrink-0 place-items-center rounded-full font-mono text-xs font-bold ${so >= 0 ? "bg-[#ffb347] text-[#2b1d14]" : "bg-[#3a281b] text-[#8a6a4a]"}`}>{so >= 0 ? so + 1 : "·"}</span>
+                      <span className={`grid h-6 w-6 shrink-0 place-items-center rounded-full text-xs font-bold ${so >= 0 ? "bg-[#ffb347] text-[#2b1d14]" : "bg-[#3a281b] text-[#8a6a4a]"}`}>{so >= 0 ? so + 1 : "·"}</span>
                       <span className="flex-1">{c.cau}{buoc === "xong" && <span className="mt-0.5 block text-xs text-[#d9b98a]">{laLac ? `📡 ${tr("lạc sóng, không phát", "jamais diffusé", "never played")}` : `${tr("Đúng vị trí", "Place", "Position")}: ${dungCho + 1} · ${c.nghia ?? ""}`}</span>}</span>
                     </button>
                   );
@@ -439,13 +471,13 @@ function NgheChon({ cap, muc = "vua", onXong }) {
               </div>
               <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
                 {buoc === "xep" && !daPhatLai && (
-                  <button type="button" onClick={() => { setDaPhatLai(true); phatChuoi(); }} className="inline-flex cursor-pointer items-center gap-2 rounded-full border-2 border-solid border-[#6b4a2f] bg-transparent px-4 py-2 font-mono text-xs font-bold uppercase text-[#d9b98a]"><RotateCcw size={14} /> {tr("Phát lại (−30)", "Rejouer (−30)", "Replay (−30)")}</button>
+                  <button type="button" onClick={() => { setDaPhatLai(true); phatChuoi(); }} className="inline-flex cursor-pointer items-center gap-2 rounded-full border-2 border-solid border-[#6b4a2f] bg-transparent px-4 py-2 text-xs font-bold uppercase text-[#d9b98a]"><RotateCcw size={14} /> {tr("Phát lại (−30)", "Rejouer (−30)", "Replay (−30)")}</button>
                 )}
                 {buoc === "xep" && thuTu.length > 0 && (
-                  <button type="button" onClick={() => setThuTu(thuTu.slice(0, -1))} className="cursor-pointer rounded-full border-2 border-solid border-[#6b4a2f] bg-transparent px-4 py-2 font-mono text-xs font-bold uppercase text-[#d9b98a]">↶ {tr("Gỡ thẻ cuối", "Annuler", "Undo")}</button>
+                  <button type="button" onClick={() => setThuTu(thuTu.slice(0, -1))} className="cursor-pointer rounded-full border-2 border-solid border-[#6b4a2f] bg-transparent px-4 py-2 text-xs font-bold uppercase text-[#d9b98a]">↶ {tr("Gỡ thẻ cuối", "Annuler", "Undo")}</button>
                 )}
                 {buoc === "xong" && (
-                  <button type="button" onClick={tiep} className="cursor-pointer rounded-full border-0 bg-[#ffb347] px-7 py-2.5 font-mono text-sm font-extrabold uppercase tracking-widest text-[#2b1d14]">{v + 1 >= VONG ? tr("Kết thúc", "Terminer", "Finish") : tr("Cuộn tiếp", "Bobine suivante", "Next reel")} →</button>
+                  <button type="button" onClick={tiep} className="cursor-pointer rounded-full border-0 bg-[#ffb347] px-7 py-2.5 text-sm font-extrabold uppercase tracking-widest text-[#2b1d14]">{v + 1 >= VONG ? tr("Kết thúc", "Terminer", "Finish") : tr("Cuộn tiếp", "Bobine suivante", "Next reel")} →</button>
                 )}
               </div>
             </>
@@ -599,7 +631,7 @@ function MuaChu({ cap, he, kieu = "nghia", onXong }) {
         <div className="bg-black/25 p-3">
           <input ref={o} lang="fr" value={go} onChange={(e) => goChu(e.target.value)} autoComplete="off" spellCheck={false}
             placeholder={tr("Gõ từ tiếng Pháp (mạo từ không bắt buộc)…", "Tapez le mot français (article facultatif)…", "Type the French word (article optional)…")}
-            className="w-full rounded-xl border-2 border-solid border-emerald-300/40 bg-black/30 px-4 py-3 font-mono text-base text-white caret-emerald-300 outline-none placeholder:text-emerald-100/50 focus:border-emerald-300" />
+            className="w-full rounded-xl border-2 border-solid border-emerald-300/40 bg-black/30 px-4 py-3 text-base text-white caret-emerald-300 outline-none placeholder:text-emerald-100/50 focus:border-emerald-300" />
         </div>
       )}
       <p className="m-0 bg-black/25 pb-3 text-center text-xs text-white/60">
@@ -665,9 +697,9 @@ function XepCau({ cap, he, onXong }) {
        thì đoàn tàu chạy khỏi ga. */
     <div className="mt-6 overflow-hidden rounded-[2rem] bg-gradient-to-b from-orange-100 to-amber-50 p-5 dark:from-orange-950/40 dark:to-amber-950/20">
       <div className="flex items-center justify-between">
-        <span className="rounded-lg bg-[#1f2937] px-3 py-1.5 font-mono text-sm font-bold tabular-nums text-amber-300">{String(Math.floor(con / 60)).padStart(2, "0")}:{String(con % 60).padStart(2, "0")}</span>
+        <span className="rounded-lg bg-[#1f2937] px-3 py-1.5 text-sm font-bold tabular-nums text-amber-300">{String(Math.floor(con / 60)).padStart(2, "0")}:{String(con % 60).padStart(2, "0")}</span>
         <span className="text-sm font-bold text-soft">🚉 {kq.current.dung}/{kq.current.tong}</span>
-        <span className="rounded-lg bg-[#1f2937] px-3 py-1.5 font-mono text-sm font-bold tabular-nums text-amber-300">{kq.current.diem}</span>
+        <span className="rounded-lg bg-[#1f2937] px-3 py-1.5 text-sm font-bold tabular-nums text-amber-300">{kq.current.diem}</span>
       </div>
       <p className="m-0 mt-5 text-center text-sm font-bold text-ink">🎯 {cau.goiY}</p>
       <div className="mt-3 overflow-x-auto no-scrollbar">
@@ -729,7 +761,7 @@ function SanLoi({ cap, onXong }) {
     /* Vở chấm bài: giấy kẻ dòng (màu giấy viết thẳng, không đảo bản tối), người
        chơi là giáo viên cầm bút đỏ khoanh đúng chữ sai. Ba lần khoanh nhầm là hết mực. */
     <div className="mt-6 rotate-[-0.6deg] rounded-md bg-[#fffdf5] p-0 text-[#1f2937] shadow-[0_18px_36px_rgba(0,0,0,0.18)]">
-      <div className="flex items-center justify-between border-0 border-b-2 border-solid border-rose-300 px-6 py-3 font-['Caveat',cursive] text-lg">
+      <div className="flex items-center justify-between border-0 border-b-2 border-solid border-rose-300 px-6 py-3 text-lg">
         <span className="flex items-center gap-1">{[0, 1, 2].map((k) => <span key={k} className={`h-3 w-8 rounded-full ${k < mang ? "bg-red-600" : "bg-red-200"}`} aria-hidden />)}<span className="sr-only">{mang}</span></span>
         <span className="text-sm font-bold text-[#6b7280]">{kq.current.dung}/{kq.current.tong}</span>
         <span className="rotate-[-6deg] rounded-full border-2 border-solid border-red-600 px-3 text-xl font-extrabold tabular-nums text-red-600">{kq.current.diem}</span>
@@ -742,13 +774,13 @@ function SanLoi({ cap, onXong }) {
             const laLoi = chon != null && k === cau.vt, nham = chon === k && k !== cau.vt;
             return (
               <button key={k} type="button" onClick={() => bam(k)} lang="fr"
-                className={`relative cursor-pointer rounded-[50%] border-2 border-solid bg-transparent px-2 py-1 font-serif text-2xl transition-colors duration-150 ${laLoi ? "border-red-600 text-[#1f2937]" : nham ? "mcf-rung border-[#9ca3af] text-[#9ca3af] line-through" : "border-transparent text-[#1f2937] hover:border-red-300"}`}>
+                className={`relative cursor-pointer rounded-[50%] border-2 border-solid bg-transparent px-2 py-1 text-2xl transition-colors duration-150 ${laLoi ? "border-red-600 text-[#1f2937]" : nham ? "mcf-rung border-[#9ca3af] text-[#9ca3af] line-through" : "border-transparent text-[#1f2937] hover:border-red-300"}`}>
                 {laLoi ? <><s className="text-red-600">{w}</s> <span className="font-['Caveat',cursive] text-red-600">{cau.sua}</span></> : w}
               </button>
             );
           })}
         </div>
-        {chon != null && <p className="m-0 mt-4 font-serif text-base text-[#374151]"><span lang="fr" className="font-bold text-green-700">✔ {cau.dung}</span>{cau.giai ? <span className="block text-sm text-[#6b7280]">{cau.giai}</span> : null}</p>}
+        {chon != null && <p className="m-0 mt-4 text-base text-[#374151]"><span lang="fr" className="font-bold text-green-700">✔ {cau.dung}</span>{cau.giai ? <span className="block text-sm text-[#6b7280]">{cau.giai}</span> : null}</p>}
       </div>
     </div>
   );
@@ -792,18 +824,18 @@ function DungSai({ cap, he, onXong }) {
         <span className="rounded-full bg-black/25 px-3 py-1 tabular-nums">{kq.current.diem}</span>
       </div>
       <div className={`relative mx-auto mt-5 max-w-xl rounded-sm bg-[#fbf6ea] px-6 pb-8 pt-5 text-[#1f2937] shadow-[0_14px_30px_rgba(0,0,0,0.35)] ${loe && !loe.ok ? "mcf-rung" : ""}`}>
-        <p className="m-0 border-0 border-b border-dashed border-[#c8b89a] pb-2 font-mono text-[11px] uppercase tracking-[0.2em] text-[#8a6d4b]">
+        <p className="m-0 border-0 border-b border-dashed border-[#c8b89a] pb-2 text-[11px] uppercase tracking-[0.2em] text-[#8a6d4b]">
           {tr("Hồ sơ", "Dossier", "Case")} #{String(i + 1).padStart(3, "0")} · {cau.kieu === "sua" ? tr("câu này viết đúng chưa?", "phrase correcte ?", "correct sentence?") : tr("đúng hay sai?", "vrai ou faux ?", "true or false?")}
         </p>
-        <p lang={cau.kieu === "sua" ? "fr" : undefined} className="m-0 mt-5 font-serif text-2xl leading-snug">{cau.cau}</p>
+        <p lang={cau.kieu === "sua" ? "fr" : undefined} className="m-0 mt-5 text-2xl leading-snug">{cau.cau}</p>
         {loe && !loe.ok && loe.cau.giai && <p className="m-0 mt-3 text-sm text-[#6b5a45]">{loe.cau.giai}</p>}
-        {loe && <span className={`mcf-dong absolute bottom-3 right-4 rounded-md border-4 border-double px-3 py-1 font-mono text-2xl font-black tracking-widest ${loe.cau.dung ? "border-green-700 text-green-700" : "border-red-700 text-red-700"}`}>{loe.cau.dung ? "VRAI" : "FAUX"}</span>}
+        {loe && <span className={`mcf-dong absolute bottom-3 right-4 rounded-md border-4 border-double px-3 py-1 text-2xl font-black tracking-widest ${loe.cau.dung ? "border-green-700 text-green-700" : "border-red-700 text-red-700"}`}>{loe.cau.dung ? "VRAI" : "FAUX"}</span>}
       </div>
       <div className="mt-6 flex justify-center gap-8">
         {[[true, "VRAI", "bg-green-700", tr("đúng", "vrai", "true")], [false, "FAUX", "bg-red-700", tr("sai", "faux", "false")]].map(([v, nhanDau, nen, mo]) => (
           <button key={nhanDau} type="button" onClick={() => tra(v)} className="group flex cursor-pointer flex-col items-center border-0 bg-transparent p-0 font-sans">
             <span aria-hidden className="h-10 w-8 rounded-t-xl bg-[#2b1a10] transition-transform group-active:translate-y-2" />
-            <span className={`grid h-14 w-32 place-items-center rounded-lg ${nen} font-mono text-xl font-black tracking-widest text-white shadow-[0_6px_0_rgba(0,0,0,0.35)] transition-transform group-active:translate-y-2 group-active:shadow-none`}>{nhanDau}</span>
+            <span className={`grid h-14 w-32 place-items-center rounded-lg ${nen} text-xl font-black tracking-widest text-white shadow-[0_6px_0_rgba(0,0,0,0.35)] transition-transform group-active:translate-y-2 group-active:shadow-none`}>{nhanDau}</span>
             <span className="mt-2 text-xs font-bold text-[#fde7c7]">{mo}</span>
           </button>
         ))}
@@ -917,7 +949,7 @@ function ChepNhanh({ cap, muc = "vua", onXong }) {
   ];
   return (
     /* Màn hình máy thu điện tín: nền xanh đen, chữ phốt-pho xanh. Màu viết thẳng, cố ý một thế giới. */
-    <div className="mt-6 rounded-[2rem] bg-[#07140d] p-5 font-mono text-[#7ef0a8] shadow-[inset_0_0_40px_rgba(0,255,120,0.08),0_20px_40px_rgba(0,0,0,0.3)]">
+    <div className="mt-6 rounded-[2rem] bg-[#07140d] p-5 text-[#7ef0a8] shadow-[inset_0_0_40px_rgba(0,255,120,0.08),0_20px_40px_rgba(0,0,0,0.3)]">
       <div className="flex items-center justify-between text-[11px] uppercase tracking-widest text-[#4fbf7c]">
         <span>{tr("Bức điện", "Message", "Message")} #{i + 1}/{SO} · {cau.cap}</span>
         <span className="tabular-nums">{tong.current.diem} pts</span>
@@ -934,7 +966,7 @@ function ChepNhanh({ cap, muc = "vua", onXong }) {
           {Array.from({ length: PIN[muc] ?? 8 }, (_, k) => <span key={k} className={`h-3 flex-1 rounded-sm ${k < pin ? (pin <= 2 ? "bg-[#ff6b6b]" : "bg-[#7ef0a8]") : "bg-[#163322]"}`} />)}
         </span>
         <button type="button" onClick={nghe} disabled={pin <= 0 || !!kq}
-          className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-solid border-[#2f7a50] bg-[#0f2a1b] px-4 py-2 font-mono text-xs font-bold uppercase tracking-widest text-[#7ef0a8] disabled:cursor-not-allowed disabled:opacity-40">
+          className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-solid border-[#2f7a50] bg-[#0f2a1b] px-4 py-2 text-xs font-bold uppercase tracking-widest text-[#7ef0a8] disabled:cursor-not-allowed disabled:opacity-40">
           <Volume2 size={14} /> {daNghe ? tr("Nghe lại", "Réécouter", "Replay") : tr("Bắt sóng", "Capter", "Tune in")}
         </button>
       </div>
@@ -955,11 +987,11 @@ function ChepNhanh({ cap, muc = "vua", onXong }) {
       <input ref={o} lang="fr" value={go} onChange={(e) => setGo(e.target.value)} disabled={!!kq || !daNghe} spellCheck={false} autoComplete="off"
         onKeyDown={(e) => { if (e.key === "Enter") (kq ? tiep() : nop()); }}
         placeholder={daNghe ? tr("gõ nội dung bức điện…", "tapez le message…", "type the message…") : tr("bấm « Bắt sóng » trước", "« Capter » d'abord", "press “Tune in” first")}
-        className="mt-4 w-full rounded-lg border border-solid border-[#1f5236] bg-[#04100a] px-3 py-2.5 font-mono text-base text-[#c9f7d9] caret-[#7ef0a8] outline-none placeholder:text-[#2f7a50] focus:border-[#4fbf7c] disabled:opacity-60" />
+        className="mt-4 w-full rounded-lg border border-solid border-[#1f5236] bg-[#04100a] px-3 py-2.5 text-base text-[#c9f7d9] caret-[#7ef0a8] outline-none placeholder:text-[#2f7a50] focus:border-[#4fbf7c] disabled:opacity-60" />
       {kq && <p className="m-0 mt-3 font-sans text-sm text-[#9fe3b8]">{cau.nghia} · <strong className="text-[#c9f7d9]">+{kq.them}</strong></p>}
       <div className="mt-4 flex justify-end">
         <button type="button" onClick={kq ? tiep : nop} disabled={!kq && !go.trim()}
-          className="cursor-pointer rounded-lg border-0 bg-[#7ef0a8] px-6 py-2.5 font-mono text-sm font-bold uppercase tracking-widest text-[#07140d] disabled:opacity-40">
+          className="cursor-pointer rounded-lg border-0 bg-[#7ef0a8] px-6 py-2.5 text-sm font-bold uppercase tracking-widest text-[#07140d] disabled:opacity-40">
           {kq ? (i + 1 >= SO ? tr(`Kết thúc (+${pin * 20} pin)`, `Terminer (+${pin * 20})`, `Finish (+${pin * 20})`) : tr("Bức tiếp ↵", "Suivant ↵", "Next ↵")) : tr("Giải mã ↵", "Décoder ↵", "Decode ↵")}
         </button>
       </div>
@@ -1026,7 +1058,7 @@ function NoiMoKhoa({ cap, muc = "vua", onXong }) {
         {/* Kịch bản + màn nhung */}
         <div className="relative mt-4 min-h-[120px] overflow-hidden rounded-2xl bg-[radial-gradient(ellipse_at_top,#fff7e0_0%,#f3dca8_60%,#d9b56f_100%)] px-5 py-5 text-center">
           <p className="m-0 text-[11px] font-bold uppercase tracking-[0.25em] text-[#7c4a12]">{tr("Kịch bản", "Le script", "Script")}{lo && !daDoc && con < 99 ? ` · ${con}s` : ""}</p>
-          <p lang="fr" className="m-0 mt-2 font-serif text-2xl text-[#3b1d06]">{cau.cau}</p>
+          <p lang="fr" className="m-0 mt-2 text-2xl text-[#3b1d06]">{cau.cau}</p>
           {(muc === "de" || daDoc) && cau.nghia && <p className="m-0 mt-1 text-sm text-[#7c4a12]">{cau.nghia}</p>}
           <span aria-hidden className={`absolute inset-y-0 left-0 w-1/2 bg-[repeating-linear-gradient(90deg,#7f1d1d_0_14px,#991b1b_14px_28px)] shadow-[inset_-10px_0_20px_rgba(0,0,0,0.4)] transition-transform duration-700 ${lo ? "-translate-x-full" : "translate-x-0"}`} />
           <span aria-hidden className={`absolute inset-y-0 right-0 w-1/2 bg-[repeating-linear-gradient(90deg,#991b1b_0_14px,#7f1d1d_14px_28px)] shadow-[inset_10px_0_20px_rgba(0,0,0,0.4)] transition-transform duration-700 ${lo ? "translate-x-full" : "translate-x-0"}`} />
@@ -1065,7 +1097,7 @@ function TaiLieu({ tl }) {
     </div>
   );
   if (tl.loai === "ve" || tl.loai === "hoaDon") return (
-    <div className="mx-auto max-w-sm border-0 border-y-4 border-dotted border-[#9ca3af] bg-[#fff] px-5 py-4 font-mono text-sm text-[#111] shadow-lg">
+    <div className="mx-auto max-w-sm border-0 border-y-4 border-dotted border-[#9ca3af] bg-[#fff] px-5 py-4 text-sm text-[#111] shadow-lg">
       <p className="m-0 mb-2 text-center font-bold uppercase tracking-widest">{tl.tieuDe}</p><div lang="fr">{dong}</div>
     </div>
   );
@@ -1077,8 +1109,8 @@ function TaiLieu({ tl }) {
   );
   if (tl.loai === "bao") return (
     <div className="bg-[#f5f1e6] px-5 py-4 text-[#1f1f1f] shadow-lg">
-      <p className="m-0 border-0 border-b-2 border-solid border-[#1f1f1f] pb-1 font-serif text-sm font-black uppercase tracking-wider">{tl.tieuDe}</p>
-      <p lang="fr" className="m-0 mt-3 font-serif text-[15px] leading-relaxed [column-gap:1.5rem] sm:columns-2">{tl.van}</p>
+      <p className="m-0 border-0 border-b-2 border-solid border-[#1f1f1f] pb-1 text-sm font-black uppercase tracking-wider">{tl.tieuDe}</p>
+      <p lang="fr" className="m-0 mt-3 text-[15px] leading-relaxed [column-gap:1.5rem] sm:columns-2">{tl.van}</p>
     </div>
   );
   if (tl.loai === "affiche" || tl.loai === "bien") return (
@@ -1095,7 +1127,7 @@ function TaiLieu({ tl }) {
   );
   // note · loiKhai · thu · bang · the · bai: tờ giấy viết tay / đánh máy
   return (
-    <div className={`px-5 py-4 text-[#1f2937] shadow-lg ${tl.loai === "thu" ? "bg-[#fdf6e3] font-serif" : tl.loai === "bang" ? "bg-[#fff] font-mono text-sm" : "bg-[#fffbeb]"}`}>
+    <div className={`px-5 py-4 text-[#1f2937] shadow-lg ${tl.loai === "thu" ? "bg-[#fdf6e3]" : tl.loai === "bang" ? "bg-[#fff] text-sm" : "bg-[#fffbeb]"}`}>
       <p className="m-0 mb-2 text-xs font-extrabold uppercase tracking-wider text-[#92400e]">{tl.loai === "loiKhai" ? "🗣 " : "📄 "}{tl.tieuDe}</p>
       <div lang="fr" className="text-[15px] leading-relaxed">{dong}</div>
     </div>
@@ -1128,13 +1160,13 @@ function ThamTu({ muc = "vua", onXong }) {
           return (
             <button key={v.id} type="button" disabled={khoa} onClick={() => { phat("batDau"); setVu(v); setBuoc("mo"); setI(0); setSo([]); kq.current = { diem: 0, dung: 0 }; }}
               className="relative cursor-pointer rounded-sm border-0 bg-[#e8d3a5] p-4 pt-6 text-left font-sans text-[#2b2118] shadow-[0_10px_20px_rgba(0,0,0,0.35)] transition-transform hover:-translate-y-1 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0">
-              <span className="absolute -top-3 left-4 rounded-t-lg bg-[#e8d3a5] px-3 py-0.5 font-mono text-[10px] font-bold uppercase tracking-widest text-[#7c5c2e]">{tr("Hồ sơ", "Dossier", "Case")} {v.so}</span>
-              <span lang="fr" className="block font-serif text-lg font-bold">{v.ten}</span>
+              <span className="absolute -top-3 left-4 rounded-t-lg bg-[#e8d3a5] px-3 py-0.5 text-[10px] font-bold uppercase tracking-widest text-[#7c5c2e]">{tr("Hồ sơ", "Dossier", "Case")} {v.so}</span>
+              <span lang="fr" className="block text-lg font-bold">{v.ten}</span>
               <span className="mt-1 block text-xs text-[#6b5435]">{v.tenVi}</span>
               <span className="mt-3 block text-xs font-bold">
                 {khoa ? `🔒 ${tr("Phá vụ trước để mở", "Résolvez l'affaire précédente", "Solve the previous case")}` : xong ? `✅ ${tr("Đã phá", "Résolue", "Solved")} · ${td[v.id]}` : `🔎 ${tr("Chưa phá", "À résoudre", "Unsolved")}`}
               </span>
-              {xong && <span className="mcf-dong absolute right-2 top-3 rounded border-2 border-solid border-red-700 px-1 font-mono text-[10px] font-black text-red-700">{tr("ĐÃ PHÁ", "RÉSOLU", "SOLVED")}</span>}
+              {xong && <span className="mcf-dong absolute right-2 top-3 rounded border-2 border-solid border-red-700 px-1 text-[10px] font-black text-red-700">{tr("ĐÃ PHÁ", "RÉSOLU", "SOLVED")}</span>}
             </button>
           );
         })}
@@ -1144,7 +1176,7 @@ function ThamTu({ muc = "vua", onXong }) {
 
   const khung = (noi, con) => (
     <div className="mt-6 rounded-[2rem] bg-[#3f3a36] bg-[radial-gradient(#57504a_1px,transparent_1px)] bg-[length:10px_10px] p-5">
-      <div className="flex items-center justify-between font-mono text-xs font-bold uppercase tracking-widest text-[#e7dcc8]">
+      <div className="flex items-center justify-between text-xs font-bold uppercase tracking-widest text-[#e7dcc8]">
         <span>🔎 {tr("Hồ sơ", "Dossier", "Case")} {vu.so} · <span lang="fr">{vu.ten}</span></span><span className="tabular-nums">{kq.current.diem} pts</span>
       </div>
       {noi && <p className="m-0 mt-2 text-xs font-bold text-amber-300">📍 {noi}</p>}
@@ -1193,7 +1225,7 @@ function ThamTu({ muc = "vua", onXong }) {
     return khung(c.noi, <>
       <LoiLeon key={`l${i}`} cam={c.cam}>{c.leon}</LoiLeon>
       <div key={`t${i}`} className="mcf-cau-vao mt-4"><TaiLieu tl={c.tl} /></div>
-      <p lang="fr" className="m-0 mt-5 rounded-lg bg-black/30 px-4 py-2 font-mono text-base font-bold text-[#fef3c7]">❓ {c.q}</p>
+      <p lang="fr" className="m-0 mt-5 rounded-lg bg-black/30 px-4 py-2 text-base font-bold text-[#fef3c7]">❓ {c.q}</p>
       <CauTracNghiem key={i} pa={c.pa} onTra={tra} daChon={chon} laPhap kieu="manh" />
       {chon != null && <>
         <LoiLeon cam={chon === 0 ? "duoc-do" : "hum"}>{chon === 0 ? tr("Chính xác! ", "Exact ! ", "Exactly! ") : tr("Chưa đúng, nhưng không sao, ta vẫn ghi manh mối vào sổ. ", "Raté, mais je note quand même l'indice. ", "Not quite, but I'll still note the clue. ")}{c.gt}</LoiLeon>
@@ -1217,7 +1249,7 @@ function ThamTu({ muc = "vua", onXong }) {
     return khung(tr("Phá án", "Résolution", "Solving"), <>
       <SoManhMoi />
       <LoiLeon cam={k_.cam}>{k_.leon}</LoiLeon>
-      <p lang="fr" className="m-0 mt-5 rounded-lg bg-red-900/60 px-4 py-3 text-center font-serif text-xl font-bold text-[#fef3c7]">{k_.q}</p>
+      <p lang="fr" className="m-0 mt-5 rounded-lg bg-red-900/60 px-4 py-3 text-center text-xl font-bold text-[#fef3c7]">{k_.q}</p>
       <CauTracNghiem pa={k_.pa} onTra={tra} daChon={chon} laPhap kieu="manh" />
       {chon != null && <>
         <LoiLeon cam={chon === 0 ? vu.loiKet.cam : "buon"}>{chon === 0 ? vu.loiKet.loi : <>{tr("Ôi không, ta bắt nhầm người rồi! ", "Oh non, ce n'est pas le bon suspect ! ", "Oh no, wrong suspect! ")}{k_.gt}</>}</LoiLeon>
@@ -1296,12 +1328,12 @@ function DoVui({ muc = "vua", he, onXong }) {
             <button key={c.id} type="button" disabled={khoa}
               onClick={() => { phat("batDau"); setCh(c); setBuoc("mo"); setI(0); setChon(null); setMinette(0); kq.current = { diem: 0, dung: 0 }; }}
               className="relative cursor-pointer overflow-hidden rounded-2xl border-2 border-solid border-[#7c2d12] bg-[#fef3c7] p-4 text-left font-sans text-[#431407] shadow-[0_10px_24px_rgba(0,0,0,0.35)] transition-transform hover:-translate-y-1 disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:translate-y-0">
-              <span className="block font-mono text-[10px] font-bold uppercase tracking-widest text-[#9a3412]">{tr("Hộ chiếu · chặng", "Passeport · étape", "Passport · stage")} {c.so}</span>
+              <span className="block text-[10px] font-bold uppercase tracking-widest text-[#9a3412]">{tr("Hộ chiếu · chặng", "Passeport · étape", "Passport · stage")} {c.so}</span>
               <span className="mt-2 block text-3xl" aria-hidden>{c.co}</span>
               <span className="mt-1 block text-base font-extrabold">{c.noi}</span>
               <span lang="fr" className="block text-xs italic text-[#9a3412]">{c.ten}</span>
               <span className="mt-2 block text-xs font-bold">{khoa ? `🔒 ${tr("Thắng chặng trước để mở", "Gagnez l'étape précédente", "Win the previous stage")}` : thang ? `${tr("Kỷ lục", "Record", "Best")}: ${dau[c.id]}` : tr(`Cần đúng ${c.dat}/5`, `${c.dat}/5 pour gagner`, `${c.dat}/5 to win`)}</span>
-              {thang && <span className="mcf-dong absolute right-2 top-6 grid h-16 w-16 place-items-center rounded-full border-4 border-double border-[#b91c1c] text-center font-mono text-[10px] font-black uppercase leading-tight text-[#b91c1c]">{c.noi.split(" ")[0]}<br />✓</span>}
+              {thang && <span className="mcf-dong absolute right-2 top-6 grid h-16 w-16 place-items-center rounded-full border-4 border-double border-[#b91c1c] text-center text-[10px] font-black uppercase leading-tight text-[#b91c1c]">{c.noi.split(" ")[0]}<br />✓</span>}
             </button>
           );
         })}
@@ -1311,7 +1343,7 @@ function DoVui({ muc = "vua", he, onXong }) {
 
   if (buoc === "mo") return (
     <div className={nen}>
-      <p className="m-0 text-center font-mono text-xs font-bold uppercase tracking-[0.3em] text-amber-300">Le Grand Quiz de France · {ch.co} {ch.noi}</p>
+      <p className="m-0 text-center text-xs font-bold uppercase tracking-[0.3em] text-amber-300">Le Grand Quiz de France · {ch.co} {ch.noi}</p>
       <LoiLeon cam="quyet-tam">{ch.mo}</LoiLeon>
       <div className="mt-5 text-center">
         <button type="button" onClick={() => { phat("batDau"); setBuoc("hoi"); }} className="cursor-pointer rounded-full border-0 bg-amber-400 px-8 py-3 font-sans text-base font-extrabold text-[#140b33] shadow-[0_6px_0_#b45309] active:translate-y-1 active:shadow-none">{tr("Bắt đầu ghi hình!", "Moteur, ça tourne !", "Roll the cameras!")}</button>
@@ -1332,7 +1364,7 @@ function DoVui({ muc = "vua", he, onXong }) {
         {/* Bục thi: Léon (người chơi) và bà Minette */}
         <div className="mb-3 flex items-center justify-center gap-2">
           <Leon cam={chon == null ? "hoi" : chon === 0 ? "yeah" : "hum"} size={48} />
-          <span className="rounded-full bg-white/10 px-3 py-1 font-mono text-[11px] font-bold uppercase tracking-widest text-amber-300">MC Léon · {ch.co} {ch.noi}</span>
+          <span className="rounded-full bg-white/10 px-3 py-1 text-[11px] font-bold uppercase tracking-widest text-amber-300">MC Léon · {ch.co} {ch.noi}</span>
         </div>
         <div className="grid grid-cols-[1fr_auto_1fr] items-end gap-3">
           <div className="rounded-xl bg-amber-400/90 p-2 text-center text-[#140b33]">
@@ -1373,13 +1405,13 @@ function DoVui({ muc = "vua", he, onXong }) {
   const thang = kq.current.dung >= ch.dat;
   return (
     <div className={nen}>
-      <p className="m-0 text-center font-mono text-xs font-bold uppercase tracking-[0.3em] text-amber-300">{ch.co} {ch.noi}</p>
+      <p className="m-0 text-center text-xs font-bold uppercase tracking-[0.3em] text-amber-300">{ch.co} {ch.noi}</p>
       <div className="mt-4 flex items-center justify-center gap-6 text-center">
         <div><span className="block text-[54px] leading-[72px]" aria-hidden>{thang ? "🏆" : "🙋"}</span><p className="m-0 text-xs font-bold text-white/70">{tr("Bạn", "Vous", "You")}</p><p className="m-0 text-3xl font-extrabold tabular-nums">{kq.current.dung}</p></div>
         <span className="text-xl font-black text-white/50">VS</span>
         <div><span className="block text-[54px] leading-[72px]" aria-hidden>🐱</span><p className="m-0 text-xs font-bold text-white/70">Minette</p><p className="m-0 text-3xl font-extrabold tabular-nums">{minette}</p></div>
       </div>
-      {thang && <p className="mcf-dong mx-auto mt-3 w-fit rounded-md border-4 border-double border-amber-300 px-3 py-1 font-mono text-sm font-black uppercase tracking-widest text-amber-300">{tr("Đã đóng dấu", "Tampon obtenu", "Stamped")} {ch.co}</p>}
+      {thang && <p className="mcf-dong mx-auto mt-3 w-fit rounded-md border-4 border-double border-amber-300 px-3 py-1 text-sm font-black uppercase tracking-widest text-amber-300">{tr("Đã đóng dấu", "Tampon obtenu", "Stamped")} {ch.co}</p>}
       <LoiLeon cam={thang ? "cuoi-lon" : "co-len"}>{thang ? ch.thang : `${ch.thua} ${tr(`(Cần ${ch.dat}/5 câu đúng.)`, `(Il faut ${ch.dat}/5.)`, `(You need ${ch.dat}/5.)`)}`}</LoiLeon>
       <div className="mt-5 text-right">
         <button type="button" onClick={() => onXong({ diem: kq.current.diem, dung: kq.current.dung, tong: ch.cau.length })}
@@ -1521,7 +1553,7 @@ function PhieuLuu({ muc = "vua", onXong }) {
   const qua = mang > 0;
   return khung(<>
     <LoiLeon cam={qua ? "yeu-qua" : "co-len"}>{qua ? ch.ket : tr("Hết tim rồi! Không sao, ở Paris ai cũng từng lúng túng. Thử lại chương này nhé, ta vẫn ở đây.", "Plus de cœurs ! Pas grave, tout le monde a ses débuts. On recommence ?", "Out of hearts! No worries, everyone stumbles at first. Try again?")}</LoiLeon>
-    {qua && <p className="mcf-dong mx-auto mt-4 w-fit rounded-md border-4 border-double border-orange-500 px-3 py-1 font-mono text-sm font-black uppercase tracking-widest text-orange-600">{ch.co} {tr("Hoàn thành", "Terminé", "Complete")}</p>}
+    {qua && <p className="mcf-dong mx-auto mt-4 w-fit rounded-md border-4 border-double border-orange-500 px-3 py-1 text-sm font-black uppercase tracking-widest text-orange-600">{ch.co} {tr("Hoàn thành", "Terminé", "Complete")}</p>}
     <div className="mt-5 text-right">
       <button type="button" onClick={() => onXong({ diem: kq.current.diem, dung: kq.current.dung, tong: Math.max(1, kq.current.tong) })}
         className="cursor-pointer rounded-full border-0 bg-orange-500 px-6 py-2.5 font-sans text-sm font-extrabold text-white">{tr("Lưu điểm", "Enregistrer", "Save score")} →</button>
