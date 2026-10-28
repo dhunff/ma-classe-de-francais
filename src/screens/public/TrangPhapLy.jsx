@@ -79,7 +79,13 @@ function Khung({ tieuDe, children, trongApp = false }) {
           </p>
         )}
 
-        <div className="mt-8 space-y-7 text-[15px] leading-relaxed text-ink">{children}</div>
+        {/* 28/10: các khối hiện lần lượt từ dưới lên (mcfRise trong base.css, mỗi khối trễ thêm
+            50 ms, trần 400 ms để trang dài không bắt chờ). Giảm chuyển động thì base.css tắt hết. */}
+        <div className="mt-8 space-y-7 text-[15px] leading-relaxed text-ink">
+          {React.Children.toArray(children).filter(Boolean).map((con, k) => (
+            <div key={k} className="mcf-rise" style={{ "--mcf-delay": `${Math.min(k * 50, 400)}ms` }}>{con}</div>
+          ))}
+        </div>
 
         {/* Ba trang pháp lý: danh sách nhóm kiểu inset, trang đang xem tô màu chính (28/10). */}
         <nav className="mt-12 overflow-hidden rounded-2xl bg-surface ring-1 ring-line" aria-label={tr("Trang thông tin", "Pages d'information", "Information pages")}>
@@ -131,9 +137,9 @@ const HOI_DAP = () => [
       "QCM, textes à trous, conjugaison, vrai/faux, tableaux, phrases à remettre en ordre et appariements sont corrigés par le serveur dès l'envoi. La production écrite d'un examen blanc est corrigée automatiquement par l'IA avec la grille DELF du niveau, avec une fiche d'évaluation par critère ; c'est la note de l'écrit. À l'entraînement, vous vous auto-évaluez et pouvez demander une proposition à l'IA. Compte standard : 3 corrections IA par jour (examens blancs compris, renouvelées à minuit) ; VIP : jusqu'à 100 requêtes IA/jour. La note de l'IA peut se tromper et n'est pas une note officielle.",
       "Multiple choice, gap fills, conjugation, true/false, tables, sentence ordering and matching are graded by the server the moment you submit. Writing in a mock exam is graded automatically by AI against the DELF grid for that level, with a per-criterion assessment sheet; that is the writing score. In practice you self-assess and can ask the AI for a suggestion. Standard accounts get 3 AI gradings per day (mock exams included, reset at midnight); VIP gets up to 100 AI requests a day. AI scores can be wrong and are not official.")],
   [tr("Bài nói có được chấm điểm không?", "La production orale est-elle notée ?", "Is speaking scored?"),
-   tr("Không có điểm số. Kỳ thi thật chấm phần nói qua hội thoại với giám khảo. Bạn ghi âm để tự nghe lại, và có thể bấm « AI nhận xét » để nhận góp ý về ngữ pháp, từ vựng và cách nối ý (6 lượt mỗi 24 giờ, VIP tới 100 lượt AI/ngày).",
-      "Pas de note. À l'examen réel, l'oral se passe face à un examinateur. Vous vous enregistrez pour vous réécouter, et pouvez cliquer sur « Avis de l'IA » pour des conseils de grammaire, de vocabulaire et d'enchaînement (6 par 24 h ; VIP : jusqu'à 100 requêtes IA par jour).",
-      "No score. In the real exam, speaking is assessed in conversation with an examiner. You record yourself to listen back, and can click « AI feedback » for advice on grammar, vocabulary and flow (6 per 24 h; VIP: up to 100 AI requests a day).")],
+   tr("Trong bài thi thử: có. Bạn tự chấm bài nói theo grille DELF chính thức của đúng trình độ, AI gợi ý điểm từng tiêu chí và bạn bấm « dùng số này » nếu đồng ý; điểm đó tính vào tổng /100. Bỏ phần nói ở màn chờ thì tổng là /75. Khi luyện tập: không có điểm, bạn ghi âm để nghe lại và có thể bấm « AI nhận xét » (6 lượt mỗi 24 giờ, VIP tới 100 lượt AI/ngày).",
+      "À l'examen blanc : oui. Vous vous auto-évaluez avec la grille DELF officielle du niveau, l'IA propose une note par critère que vous validez avec « utiliser ce nombre » ; elle compte dans le total sur 100 (sur 75 si vous retirez l'oral). À l'entraînement : pas de note, vous vous enregistrez et pouvez demander l'« Avis de l'IA » (6 par 24 h ; VIP : jusqu'à 100 requêtes IA par jour).",
+      "In a mock exam: yes. You self-assess with the official DELF grid for the level, the AI suggests a score per criterion that you accept with « use this number »; it counts towards the total out of 100 (out of 75 if you skip speaking). In practice: no score, you record yourself and can ask for « AI feedback » (6 per 24 h; VIP: up to 100 AI requests a day).")],
   [tr("Phần nghe trong thi thử diễn ra thế nào?", "Comment se passe la compréhension orale à l'examen blanc ?", "How does listening work in a mock exam?"),
    tr("Như phòng thi thật: mỗi bài nghe là một file gồm 30 giây đọc câu hỏi, lượt nghe 1, 30 giây nghỉ, lượt nghe 2 và 30 giây hoàn thành. Bạn bấm phát một lần, không tạm dừng hay tua lại được. Số lần phát được đếm ở máy chủ.",
       "Comme à l'examen : chaque enregistrement contient 30 secondes de lecture des questions, une 1re écoute, 30 secondes de pause, une 2e écoute et 30 secondes pour compléter. Vous le lancez une seule fois, sans pause ni retour. Les lectures sont comptées par le serveur.",
@@ -155,13 +161,13 @@ const HOI_DAP = () => [
       "99 000 ₫ pour 30 jours : tous les exercices payants et examens blancs, sans limite d'essais d'examen, jusqu'à 100 requêtes IA par jour, badge couronne sur l'avatar. Prolonger avant la fin ajoute 30 jours. À l'expiration, les exercices payants se reverrouillent, sans prélèvement automatique.",
       "99,000 ₫ for 30 days: every paid exercise and mock exam, unlimited mock exams, up to 100 AI requests a day, and a crown badge on your avatar. Renewing early adds 30 more days. When it expires, paid content locks again, with no automatic charge.")],
   [tr("Chuỗi ngày học được tính ra sao?", "Comment la série de jours est-elle calculée ?", "How is the study streak counted?"),
-   tr("Mỗi ngày nộp ít nhất một bài thì chuỗi tăng một ngày, theo giờ Việt Nam. Hôm nay chưa học thì chuỗi vẫn giữ tới nửa đêm. Chuỗi tính ở máy chủ.",
-      "Chaque jour avec au moins un exercice rendu ajoute un jour, heure du Vietnam. La série tient jusqu'à minuit. Elle est calculée par le serveur.",
-      "Each day you submit at least one exercise adds a day, Vietnam time. The streak holds until midnight. It's calculated on the server.")],
+   tr("Mỗi ngày nộp ít nhất một bài thì chuỗi tăng một ngày, theo giờ Việt Nam. Hôm nay chưa học thì chuỗi vẫn giữ tới nửa đêm. Ngày bỏ lỡ được tự đóng băng để giữ chuỗi, tối đa 5 ngày mỗi tháng; lỡ ngày thứ 6 trong tháng thì chuỗi đứt. Chuỗi tính ở máy chủ.",
+      "Chaque jour avec au moins un exercice rendu ajoute un jour, heure du Vietnam. La série tient jusqu'à minuit. Un jour manqué est gelé automatiquement pour garder la série, jusqu'à 5 jours par mois ; au 6e, la série se casse. Elle est calculée par le serveur.",
+      "Each day you submit at least one exercise adds a day, Vietnam time. The streak holds until midnight. A missed day is frozen automatically to keep it, up to 5 days a month; the 6th breaks it. It's calculated on the server.")],
   [tr("Theo dõi bạn học là gì?", "Suivre un camarade, c'est quoi ?", "What does following a classmate do?"),
-   tr("Nhập @username của bạn học để theo dõi, rồi thấy hôm nay bạn đó đã học chưa và đang online hay không. Người khác chỉ thấy tên hiển thị, @username, ảnh đại diện; bạn có thể ẩn trạng thái online.",
-      "Entrez le @username d'un camarade pour le suivre et voir s'il a étudié aujourd'hui et s'il est en ligne. Les autres ne voient que votre nom, @username et avatar ; vous pouvez masquer votre statut en ligne.",
-      "Enter a classmate's @username to follow them and see whether they studied today and whether they're online. Others only see your display name, @username and avatar; you can hide your online status.")],
+   tr("Tìm bạn học theo tên hoặc @username (hoặc chọn trong phần gợi ý) để theo dõi, rồi thấy hôm nay bạn đó đã học chưa và đang online hay không. Người khác chỉ thấy tên hiển thị, @username, ảnh đại diện; bạn có thể ẩn trạng thái online.",
+      "Cherchez un camarade par son nom ou son @username (ou dans les suggestions) pour le suivre et voir s'il a étudié aujourd'hui et s'il est en ligne. Les autres ne voient que votre nom, @username et avatar ; vous pouvez masquer votre statut en ligne.",
+      "Search for a classmate by name or @username (or pick from suggestions) to follow them and see whether they studied today and whether they're online. Others only see your display name, @username and avatar; you can hide your online status.")],
   [tr("Tôi có tự tạo Flashcard được không?", "Puis-je créer mes propres flashcards ?", "Can I make my own flashcards?"),
    tr("Không. Các bộ Flashcard do giáo viên soạn để bảo đảm chính xác. Bạn chọn một bộ rồi luyện; lịch ôn đưa lại đúng những thẻ bạn sắp quên.",
       "Non. Les paquets sont créés par les enseignants pour garantir leur exactitude. Choisissez-en un ; la révision espacée vous repropose les cartes au bon moment.",
@@ -185,9 +191,9 @@ const HOI_DAP = () => [
    tuyên bố đã đăng ký bản quyền hay nhãn hiệu ở đâu. */
 const HOI_DAP_BAN_QUYEN = () => [
   [tr("Bài tập và đề thi trên FRACILE thuộc về ai?", "À qui appartiennent les exercices et sujets ?", "Who owns the exercises and exams?"),
-   tr("Bài tập, đề thi thử, bài học ngữ pháp, bộ Flashcard, câu luyện nghe nói, trò chơi và file âm thanh trên FRACILE do FRACILE và giáo viên của FRACILE soạn. Quyền tác giả với các nội dung này thuộc về FRACILE hoặc người soạn. Tài khoản của bạn chỉ cho phép dùng chúng để tự học, không chuyển quyền sở hữu nội dung nào cho bạn, kể cả khi bạn đã trả phí hoặc đổi XP để mở bài.",
-      "Exercices, examens blancs, leçons de grammaire, flashcards, phrases d'écoute et d'oral, jeux et fichiers audio sont créés par FRACILE et ses enseignants. Les droits d'auteur appartiennent à FRACILE ou à leurs auteurs. Votre compte vous donne un droit d'usage pour apprendre, sans transfert de propriété, même pour un contenu payé ou débloqué avec des XP.",
-      "Exercises, mock exams, grammar lessons, flashcards, listening and speaking sentences, games and audio files are made by FRACILE and its teachers. Copyright belongs to FRACILE or their authors. Your account lets you use them to study; it transfers no ownership, even for content you paid for or unlocked with XP.")],
+   tr("Thuộc về FRACILE hoặc giáo viên soạn ra chúng. Trả phí hay đổi XP chỉ mở quyền dùng để tự học, không chuyển quyền sở hữu. Phạm vi đầy đủ ở mục 5 trang Điều khoản sử dụng.",
+      "À FRACILE ou aux enseignants qui les ont créés. Payer ou dépenser des XP ouvre un droit d'usage pour apprendre, pas de propriété. Le détail figure à l'article 5 des Conditions d'utilisation.",
+      "To FRACILE or the teachers who made them. Paying or spending XP grants a right to use them for study, not ownership. Full scope in section 5 of the Terms of use.")],
   [tr("Tôi có được chia sẻ, chụp lại hay đăng bài tập lên nơi khác không?", "Puis-je partager ou republier les exercices ?", "Can I share or repost the exercises?"),
    tr("Bạn được ghi chép và in ra để tự học. Không được sao chép, chụp màn hình hàng loạt, tải hoặc trích xuất tự động, bán lại, đăng lên mạng xã hội, nhóm học, trang web hay ứng dụng khác, hoặc dùng để soạn tài liệu, khoá học thương mại khi chưa có đồng ý bằng văn bản. Chia sẻ một vài câu để hỏi bài thì được, miễn ghi rõ nguồn FRACILE. Nội dung trả phí thì không được chia sẻ dưới bất kỳ hình thức nào.",
       "Vous pouvez prendre des notes et imprimer pour vous entraîner. Interdit sans accord écrit : copier, faire des captures en masse, télécharger ou extraire automatiquement, revendre, republier sur réseaux sociaux, groupes, sites ou applis, ou s'en servir pour des supports ou cours commerciaux. Citer quelques questions pour demander de l'aide est permis avec la mention FRACILE. Les contenus payants ne se partagent pas.",
@@ -227,11 +233,14 @@ function DongHoi({ hoi, dap, mo, onDoi }) {
   return (
     <li className="border-0 border-t border-solid border-line first:border-t-0">
       <button type="button" onClick={onDoi} aria-expanded={mo}
-        className="flex min-h-[48px] w-full cursor-pointer items-center gap-3 border-0 bg-transparent px-4 py-3 text-left font-sans text-[15px] font-semibold text-ink transition-colors hover:bg-surface2 focus-visible:bg-surface2 focus-visible:outline-none">
+        className="flex min-h-[48px] w-full cursor-pointer items-center gap-3 border-0 bg-transparent px-4 py-3 text-left font-sans text-[15px] font-semibold text-ink transition-[background-color,transform] duration-150 hover:bg-surface2 active:scale-[0.99] focus-visible:bg-surface2 focus-visible:outline-none">
         <span className="flex-1">{hoi}</span>
         <ChevronRight size={18} aria-hidden className={`shrink-0 text-soft transition-transform duration-200 motion-reduce:transition-none ${mo ? "rotate-90" : ""}`} />
       </button>
-      {mo && <p className="m-0 px-4 pb-4 text-[15px] leading-relaxed text-soft">{dap}</p>}
+      {/* Mở/đóng trượt mượt bằng grid-rows 0fr ↔ 1fr (đo được chiều cao tự nhiên, không cần JS). */}
+      <div className={`grid transition-[grid-template-rows,opacity] duration-300 ease-[cubic-bezier(.23,1,.32,1)] motion-reduce:transition-none ${mo ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"}`} aria-hidden={!mo}>
+        <p className="m-0 min-h-0 overflow-hidden px-4 text-[15px] leading-relaxed text-soft"><span className="block pb-4">{dap}</span></p>
+      </div>
     </li>
   );
 }
@@ -297,9 +306,9 @@ export function TrangDieuKhoan() {
         <P>{tr(<><strong>Điểm trên FRACILE không phải kết quả DELF chính thức</strong> và không có giá trị thay thế chứng chỉ. Đề thi thử mô phỏng cấu trúc kỳ thi để bạn luyện tập.</>,
           <><strong>Les notes FRACILE ne sont pas des résultats officiels du DELF</strong> et ne remplacent pas le diplôme. Les examens blancs reproduisent la structure de l'examen pour vous entraîner.</>,
           <><strong>FRACILE scores are not official DELF results</strong> and do not replace the certificate. Mock exams mirror the exam's structure for practice.</>)}</P>
-        <P>{tr("Bài viết của bài thi thử do AI chấm tự động theo thang DELF; bài viết luyện tập do bạn tự chấm, có thể xin gợi ý từ AI. Điểm do AI chấm có thể sai. Bài nói không được chấm điểm.",
-          "La production écrite des examens blancs est corrigée automatiquement par l'IA selon la grille DELF ; à l'entraînement, vous vous auto-évaluez. La note de l'IA peut se tromper. L'oral n'est pas noté.",
-          "Mock exam writing is graded automatically by AI against the DELF grid; in practice you self-assess. AI scores can be wrong. Speaking is not scored.")}</P>
+        <P>{tr("Một phần điểm do AI chấm hoặc gợi ý, hoặc do chính bạn tự chấm (cách chấm từng phần xem ở trang Câu hỏi thường gặp). Điểm do AI chấm có thể sai, và FRACILE không bảo đảm điểm thi thử khớp với điểm thi thật.",
+          "Une partie des notes est donnée ou proposée par l'IA, ou issue de votre auto-évaluation (détails dans la FAQ). Les notes de l'IA peuvent se tromper et FRACILE ne garantit pas qu'une note d'examen blanc corresponde à la note réelle.",
+          "Some scores are given or suggested by AI, or come from your own self-assessment (details in the FAQ). AI scores can be wrong, and FRACILE does not guarantee mock scores match real exam scores.")}</P>
       </Muc>
 
       <Muc ten={tr("4. Thanh toán", "4. Paiement", "4. Payment")}>
