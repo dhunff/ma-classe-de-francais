@@ -211,7 +211,7 @@ function DienTu({ cau, onXong }) {
   );
 }
 
-export function PhatAm({ cau, onXong }) {
+export function PhatAm({ cau, onXong, anNghe = false }) {
   const [trangThai, setTT] = useState("cho");   // cho | ghi | gui | xong
   const [giay, setGiay] = useState(0);
   const [kq, setKq] = useState(null);
@@ -263,7 +263,7 @@ export function PhatAm({ cau, onXong }) {
 
   return (
     <div className="grid gap-4">
-      <NutNghe src={cau.audio_url} />
+      {!anNghe && <NutNghe src={cau.audio_url} />}
       {cau.meo && (
         <p className="m-0 flex items-start gap-2 rounded-2xl bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:bg-amber-500/10 dark:text-amber-200">
           <Lightbulb size={16} className="mt-0.5 shrink-0" /> {cau.meo}

@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Heart, Headphones, CloudRain, VenusAndMars, Play, RotateCcw, Trophy, Volume2, Loader2, Shuffle, Crosshair, Check, X, Keyboard, DoorOpen, DoorClosed, Search, Landmark, MapPinned, Swords, Layers } from "lucide-react";
+import { ArrowLeft, Heart, Headphones, CloudRain, VenusAndMars, Play, RotateCcw, Trophy, Volume2, Loader2, Shuffle, Crosshair, Check, X, Keyboard, Drama, Search, Landmark, MapPinned, Swords, Layers } from "lucide-react";
 import { PhatAm } from "./NgheNoi.jsx";
 import { soCau } from "../../../supabase/functions/_shared/soCau.js";
 import { VU_AN } from "../../content/troChoi/thamTu.js";
@@ -28,8 +28,8 @@ const TRO_CHOI = () => [
     ten: tr("Le hay La?", "Le ou La ?", "Le or La?"),
     mo: tr("Đua giờ đoán giống đực / giống cái của danh từ. Đúng liên tiếp để nhân điểm.", "Contre la montre : trouvez le genre des noms. Enchaînez pour multiplier.", "Beat the clock guessing noun gender. Streaks multiply points.") },
   { ma: "nghe_chon", nhom: "ng", Icon: Headphones, nen: "from-indigo-500 to-violet-600",
-    ten: tr("Nghe và chọn", "Écoute et choisis", "Listen and pick"),
-    mo: tr("10 câu: nghe audio rồi chọn đúng câu vừa nghe. Trả lời càng nhanh càng nhiều điểm.", "10 phrases : écoutez puis choisissez la bonne. Plus vite, plus de points.", "10 sentences: listen, then pick the one you heard. Faster means more points.") },
+    ten: tr("Radio Léon: băng đứt", "Radio Léon : la bande coupée", "Radio Léon: the snapped tape"),
+    mo: tr("DJ Léon làm đứt cuộn băng! Nghe liền một chuỗi đoạn (không hiện chữ) rồi ghép lại đúng thứ tự đã nghe.", "La bande de DJ Léon est coupée ! Écoutez une série d'extraits, puis remettez-les dans l'ordre.", "DJ Léon's tape snapped! Hear a run of clips (no text), then put them back in order.") },
   { ma: "mua_chu", nhom: "tu", Icon: CloudRain, nen: "from-emerald-500 to-cyan-600",
     ten: tr("Mưa chữ", "Pluie de mots", "Word rain"),
     mo: tr("Ba cách chơi: chọn nghĩa, bắt đúng giọt, hoặc gõ từ trước khi nó chạm đất. 3 mạng.", "Trois modes : choisir le sens, attraper le mot ou le taper avant qu'il tombe. 3 vies.", "Three modes: pick the meaning, catch the word, or type it before it lands. 3 lives."),
@@ -48,11 +48,11 @@ const TRO_CHOI = () => [
     ten: tr("Đúng hay sai", "Vrai ou faux", "True or false"),
     mo: tr("Lướt thật nhanh: câu này đúng hay sai? Đúng liên tiếp để nhân điểm.", "Vite : la phrase est-elle correcte ? Enchaînez pour multiplier.", "Quick: is it right or wrong? Streaks multiply points.") },
   { ma: "chep_nhanh", nhom: "ng", Icon: Keyboard, nen: "from-fuchsia-500 to-purple-600",
-    ten: tr("Chép chính tả tốc độ", "Dictée express", "Speed dictation"),
-    mo: tr("5 câu: nghe rồi gõ lại. Điểm theo độ chính xác (tính cả dấu) và tốc độ.", "5 phrases : écoutez et tapez. Précision et vitesse comptent.", "5 sentences: listen and type. Accuracy and speed count.") },
-  { ma: "noi_mo_khoa", nhom: "ng", Icon: DoorOpen, nen: "from-rose-500 to-red-600",
-    ten: tr("Nói để mở cửa", "Parle pour ouvrir", "Speak to unlock"),
-    mo: tr("3 cánh cửa, mỗi cửa một câu. Đọc to cho Leon nghe, đúng từ 70% là cửa mở. Dùng lượt chấm phát âm trong ngày.", "3 portes, une phrase chacune. Lisez à voix haute : 70 % de mots reconnus pour ouvrir.", "3 doors, one sentence each. Read aloud: 70% of words recognised opens the door.") },
+    ten: tr("Mật thư của P.G.", "Les messages de P.G.", "P.G.'s secret messages"),
+    mo: tr("Giải mã 5 bức điện của kẻ bí ẩn. Máy thu có ít pin: mỗi lần nghe tốn 1 vạch, pin còn dư được cộng điểm.", "Décodez 5 messages secrets. Chaque écoute coûte de la batterie.", "Decode 5 secret messages. Every listen costs battery.") },
+  { ma: "noi_mo_khoa", nhom: "ng", Icon: Drama, nen: "from-rose-500 to-red-600",
+    ten: tr("Sân khấu Léon", "Le théâtre de Léon", "Léon's theatre"),
+    mo: tr("Bạn là diễn viên: đọc thoại vài giây, màn nhung kéo kín, rồi nói thuộc lòng. 3 cảnh, dùng lượt chấm phát âm trong ngày.", "Lisez la réplique, le rideau tombe, dites-la de mémoire. 3 scènes.", "Read your line, the curtain closes, say it from memory. 3 scenes.") },
   { ma: "tham_tu", nhom: "dv", Icon: Search, nen: "from-slate-600 to-indigo-700",
     ten: tr("Thám tử Léon", "Détective Léon", "Detective Léon"),
     mo: tr("Làm trợ lý cho Thanh tra Léon: 9 vụ án, đọc manh mối tiếng Pháp và lần ra kẻ bí ẩn P.G.", "Assistez l'inspecteur Léon : 9 affaires, des indices en français et le mystérieux P.G.", "Assist Inspector Léon: 9 cases, French clues and the mysterious P.G.") },
@@ -314,77 +314,144 @@ function TheVuot({ w, sau, loe, chon, con, GIAY, diem, nhan, dung, tong }) {
   );
 }
 
-/* ─────────── 2. Nghe và chọn ─────────── */
-function NgheChon({ cap, onXong }) {
-  const SO = 10;
+/* ─────────── 2. Radio Léon: « Cuộn băng bị đứt » ───────────
+   Cách chơi riêng (28/10): KHÔNG chọn một câu. Léon là DJ, cuộn băng chương trình đêm nay bị
+   đứt thành từng đoạn; mỗi vòng nghe liền một chuỗi câu (chữ KHÔNG hiện), rồi chạm các thẻ
+   theo đúng THỨ TỰ đã nghe để ghép lại băng. Mức Khó có thêm một đoạn « lạc sóng » không hề
+   phát, phải bỏ ra ngoài. Mỗi vòng được phát lại một lần (−30). */
+const SO_DOAN = { de: 3, vua: 4, kho: 4 };
+const DOAN_LAC = { de: 0, vua: 0, kho: 1 };
+function NgheChon({ cap, muc = "vua", onXong }) {
+  const VONG = 4, n = SO_DOAN[muc] ?? 4, lac = DOAN_LAC[muc] ?? 0;
   const [kho, setKho] = useState(null);
-  const [i, setI] = useState(0);
-  const [pa, setPa] = useState([]);
-  const [chon, setChon] = useState(null);
-  const [diem, setDiem] = useState(0);
-  const [dung, setDung] = useState(0);
-  const batDau = useRef(0);
+  const [v, setV] = useState(0);
+  const [buoc, setBuoc] = useState("mo");          // mo | phat | xep | xong
+  const [dangPhat, setDangPhat] = useState(-1);
+  const [thuTu, setThuTu] = useState([]);          // id thẻ đã chạm, theo thứ tự
+  const [daPhatLai, setDaPhatLai] = useState(false);
+  const tong = useRef({ diem: 0, dung: 0 });
   const am = useRef(null);
+  const huy = useRef(0);
 
-  useEffect(() => { docCauNghe(cap).then(setKho, () => setKho([])); }, [cap]);
-  const cau = kho?.[i];
-  const nghe = useCallback(() => { if (!cau) return; am.current?.pause(); am.current = new Audio(cau.audio_url); am.current.play().catch(() => {}); }, [cau]);
-  useEffect(() => {
-    if (!cau || !kho) return;
-    setPa(phuongAnCau(cau, kho)); setChon(null); batDau.current = Date.now();
-    const t = setTimeout(nghe, 250);
-    return () => { clearTimeout(t); am.current?.pause(); };
-  }, [cau, kho, nghe]);
+  useEffect(() => { docCauNghe(cap).then((d) => setKho(d ? d.filter((c) => c.cau.length <= 75) : []), () => setKho([])); }, [cap]);
+  useEffect(() => () => { huy.current++; am.current?.pause(); }, []);
+  const can = VONG * (n + lac);
+  const vong = kho && kho.length >= can ? kho.slice(v * (n + lac), (v + 1) * (n + lac)) : [];
+  const doan = vong.slice(0, n);                   // các đoạn THẬT, đúng thứ tự phát
+  const the = React.useMemo(() => tron(vong), [kho, v]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  if (!kho) return <Dang chu={tr("Đang tải audio…", "Chargement de l'audio…", "Loading audio…")} />;
-  if (kho.length < SO + 3) return <TrongKho />;
+  const phatChuoi = useCallback(() => {
+    const lan = ++huy.current;
+    setBuoc("phat"); setThuTu([]);
+    const mot = (k) => {
+      if (lan !== huy.current) return;
+      if (k >= doan.length) { setDangPhat(-1); setBuoc("xep"); return; }
+      setDangPhat(k);
+      am.current?.pause();
+      const a = new Audio(doan[k].audio_url); am.current = a;
+      const sau = () => setTimeout(() => mot(k + 1), 700);
+      a.onended = sau; a.onerror = sau;
+      a.play().catch(sau);
+    };
+    setTimeout(() => mot(0), 400);
+  }, [doan]);
 
-  const tra = (x) => {
-    if (chon) return;
-    const ok = x === cau.cau;
-    const giay = (Date.now() - batDau.current) / 1000;
-    const them = ok ? 100 + Math.max(0, Math.round(50 - giay * 5)) : 0;
-    setChon(x); phat(ok ? "dung" : "sai");
-    const d = diem + them, s = dung + (ok ? 1 : 0);
-    setDiem(d); setDung(s);
-    setTimeout(() => { if (i + 1 >= SO) onXong({ diem: d, dung: s, tong: SO }); else setI(i + 1); }, ok ? 700 : 1600);
+  if (!kho) return <Dang chu={tr("Đang tải cuộn băng…", "Chargement de la bande…", "Loading the tape…")} />;
+  if (kho.length < can) return <TrongKho />;
+
+  const cham = (id) => {
+    if (buoc !== "xep" || thuTu.includes(id) || thuTu.length >= n) return;
+    phat("bam");
+    const moi = [...thuTu, id]; setThuTu(moi);
+    if (moi.length === n) {
+      const khop = moi.filter((x, k) => x === doan[k].id).length;
+      const tron_ = khop === n;
+      const them = khop * 50 + (tron_ ? 100 : 0) - (daPhatLai ? 30 : 0);
+      tong.current.diem += Math.max(0, them); if (tron_) tong.current.dung++;
+      phat(tron_ ? "dung" : "sai"); setBuoc("xong");
+    }
   };
-  /* Đài radio cũ: mặt loa + vạch dò sóng, bốn phương án là bốn KÊNH. Chọn kênh
-     đúng thì kim dò nhảy tới đó. Nền tối cố ý, màu viết thẳng (không đảo theo bản sáng). */
-  const KENH = ["88.4", "94.2", "101.7", "106.9"];
-  const kimTai = chon ? pa.indexOf(cau.cau) : -1;
+  const tiep = () => {
+    if (v + 1 >= VONG) { onXong({ diem: tong.current.diem, dung: tong.current.dung, tong: VONG }); return; }
+    setV(v + 1); setDaPhatLai(false); setThuTu([]); setBuoc("mo");
+  };
+  const LOI_DJ = [
+    tr("Bonsoir Paris! Đây là Radio Léon. Ối, cuộn băng đêm nay đứt mất rồi! Bạn nghe kỹ thứ tự các đoạn rồi ghép lại giúp ta nhé.", "Bonsoir Paris ! Ici Radio Léon. Oh non, la bande est coupée ! Écoute l'ordre des extraits et recolle-les.", "Bonsoir Paris! This is Radio Léon. Oh no, tonight's tape snapped! Listen to the order and splice it back."),
+    tr("Đoạn băng thứ hai đây. Thính giả đang chờ, ghép nhanh mà chuẩn nhé!", "Deuxième bobine. Les auditeurs attendent !", "Second reel. The listeners are waiting!"),
+    tr("Gần xong rồi! Đoạn này dài hơn một chút, tập trung nào.", "On y est presque ! Celle-ci est plus longue.", "Almost there! This one's a bit longer."),
+    tr("Cuộn cuối cùng trước giờ lên sóng. Cố lên!", "Dernière bobine avant l'antenne. Courage !", "Last reel before we go on air. Go!"),
+  ];
+  const khopK = (k) => thuTu[k] === doan[k]?.id;
   return (
     <div className="mt-6 rounded-[2rem] bg-[#2b1d14] p-5 text-[#f6e7c8] shadow-[inset_0_2px_0_rgba(255,255,255,0.08),0_20px_40px_rgba(0,0,0,0.25)]">
       <div className="flex items-center justify-between font-mono text-xs uppercase tracking-widest text-[#d9b98a]">
-        <span>Radio Léon · {i + 1}/{SO}</span>
-        <span className="tabular-nums text-[#ffd27a]">{diem} pts</span>
+        <span className="inline-flex items-center gap-2">
+          <span className={`h-2.5 w-2.5 rounded-full ${buoc === "phat" ? "animate-pulse bg-red-500" : "bg-[#5a3d27]"}`} />
+          {buoc === "phat" ? "On air" : "Radio Léon"} · {tr("Cuộn", "Bobine", "Reel")} {v + 1}/{VONG}
+        </span>
+        <span className="tabular-nums text-[#ffd27a]">{tong.current.diem} pts</span>
       </div>
-      <div className="mt-4 flex items-center gap-4 rounded-2xl bg-[#1a120c] p-4">
-        <button type="button" onClick={nghe} aria-label={tr("Nghe lại", "Réécouter", "Replay")}
-          className="grid h-20 w-20 shrink-0 cursor-pointer place-items-center rounded-full border-4 border-solid border-[#6b4a2f] bg-[radial-gradient(circle,#4a3322_2px,transparent_2.5px)] bg-[length:8px_8px] text-[#ffd27a] active:scale-[0.94]">
-          <Volume2 size={30} />
-        </button>
-        <div className="flex h-14 flex-1 items-end gap-1" aria-hidden>
-          {Array.from({ length: 18 }, (_, k) => <span key={k} className="mcf-song w-full rounded-t bg-[#ffb347]" style={{ height: `${30 + ((k * 37) % 70)}%`, animationDelay: `${(k % 6) * 0.12}s` }} />)}
+
+      {buoc === "mo" ? (
+        <div className="mcf-cau-vao mt-5 grid gap-4">
+          <div className="flex items-start gap-3">
+            <Leon cam={v === 0 ? "chao" : "nhay-mat"} size={64} className="shrink-0" />
+            <p className="m-0 rounded-3xl rounded-tl-md bg-[#3a281b] px-4 py-3 text-sm leading-relaxed">{LOI_DJ[v]}</p>
+          </div>
+          <p className="m-0 text-center text-xs text-[#d9b98a]">{tr(`Sẽ phát liền ${n} đoạn, chữ không hiện.`, `${n} extraits à la suite, sans texte.`, `${n} clips in a row, no text shown.`)}{lac ? " " + tr("Có 1 thẻ lạc sóng không hề phát: đừng chọn nó.", "Une carte n'a jamais été diffusée : ignore-la.", "One card was never played: leave it out.") : ""}</p>
+          <button type="button" onClick={phatChuoi} className="mx-auto inline-flex cursor-pointer items-center gap-2 rounded-full border-0 bg-[#ffb347] px-7 py-3 font-mono text-sm font-extrabold uppercase tracking-widest text-[#2b1d14]">
+            <Play size={16} fill="currentColor" /> {tr("Phát băng", "Lancer la bande", "Play tape")}
+          </button>
         </div>
-      </div>
-      <div className="relative mt-4 h-8 rounded-lg bg-[#f3e3c3] px-3" aria-hidden>
-        <div className="flex h-full items-center justify-between font-mono text-[10px] text-[#6b4a2f]">{KENH.map((k) => <span key={k}>{k}</span>)}</div>
-        <span className="absolute top-0 h-full w-1 rounded bg-red-600 transition-[left] duration-500" style={{ left: kimTai < 0 ? "50%" : `${8 + kimTai * 28}%` }} />
-      </div>
-      <div className="mt-4 grid gap-2.5 sm:grid-cols-2">
-        {pa.map((x, k) => {
-          const laDung = chon && x === cau.cau, laSai = chon === x && x !== cau.cau;
-          return (
-            <button key={x} type="button" onClick={() => tra(x)} lang="fr"
-              className={`flex cursor-pointer items-start gap-3 rounded-xl border-2 border-solid px-3 py-3 text-left font-sans text-sm transition-colors duration-150 ${laDung ? "border-[#7bd88f] bg-[#1f3a26] text-white" : laSai ? "border-[#ff6b6b] bg-[#45201f] text-white" : "border-[#6b4a2f] bg-[#3a281b] text-[#f6e7c8] hover:border-[#ffb347]"}`}>
-              <span className="shrink-0 rounded bg-[#ffb347] px-1.5 font-mono text-[10px] font-bold text-[#2b1d14]">FM {KENH[k]}</span>
-              <span>{x}</span>
-            </button>
-          );
-        })}
-      </div>
-      {chon && <p className="m-0 mt-3 text-center text-sm text-[#d9b98a]">{cau.nghia}</p>}
+      ) : (
+        <>
+          {/* Hai cuộn băng + các rãnh đoạn: rãnh sáng lên khi đoạn đó đang phát, sau đó hiện số thẻ đã ghép */}
+          <div className="mt-4 flex items-center gap-3 rounded-2xl bg-[#1a120c] p-4">
+            <span aria-hidden className={`grid h-14 w-14 shrink-0 place-items-center rounded-full border-4 border-dotted border-[#ffb347] ${buoc === "phat" ? "mcf-spin" : ""}`}><span className="h-4 w-4 rounded-full bg-[#ffb347]" /></span>
+            <div className="flex flex-1 gap-1.5">
+              {doan.map((_, k) => (
+                <span key={k} className={`grid h-10 flex-1 place-items-center rounded-md border-2 border-solid font-mono text-xs font-bold transition-colors ${dangPhat === k ? "border-[#ffd27a] bg-[#ffb347] text-[#2b1d14]" : buoc === "xong" ? (khopK(k) ? "border-[#7bd88f] bg-[#1f3a26] text-white" : "border-[#ff6b6b] bg-[#45201f] text-white") : thuTu[k] ? "border-[#ffb347] bg-[#3a281b]" : "border-[#5a3d27] bg-transparent text-[#8a6a4a]"}`}>
+                  {k + 1}
+                </span>
+              ))}
+            </div>
+            <span aria-hidden className={`grid h-14 w-14 shrink-0 place-items-center rounded-full border-4 border-dotted border-[#ffb347] ${buoc === "phat" ? "mcf-spin" : ""}`}><span className="h-4 w-4 rounded-full bg-[#ffb347]" /></span>
+          </div>
+
+          {buoc === "phat" ? (
+            <p className="m-0 mt-5 text-center font-mono text-sm uppercase tracking-widest text-[#ffd27a]">{tr("Đang phát đoạn", "Extrait", "Playing clip")} {dangPhat + 1}/{n}…</p>
+          ) : (
+            <>
+              <p className="m-0 mt-4 text-center text-xs text-[#d9b98a]">{buoc === "xep" ? tr(`Chạm thẻ theo thứ tự đã nghe (${thuTu.length}/${n})`, `Touchez dans l'ordre entendu (${thuTu.length}/${n})`, `Tap in the order heard (${thuTu.length}/${n})`) : null}</p>
+              <div className="mt-3 grid gap-2">
+                {the.map((c) => {
+                  const so = thuTu.indexOf(c.id);
+                  const laLac = !doan.some((d) => d.id === c.id);
+                  const dungCho = buoc === "xong" ? doan.findIndex((d) => d.id === c.id) : -1;
+                  return (
+                    <button key={c.id} type="button" onClick={() => cham(c.id)} disabled={buoc !== "xep"} lang="fr"
+                      className={`flex cursor-pointer items-start gap-3 rounded-xl border-2 border-solid px-3 py-2.5 text-left font-sans text-sm disabled:cursor-default ${so >= 0 ? "border-[#ffb347] bg-[#3a281b] text-[#f6e7c8]" : "border-[#6b4a2f] bg-[#241811] text-[#f6e7c8] hover:border-[#ffb347]"}`}>
+                      <span className={`grid h-6 w-6 shrink-0 place-items-center rounded-full font-mono text-xs font-bold ${so >= 0 ? "bg-[#ffb347] text-[#2b1d14]" : "bg-[#3a281b] text-[#8a6a4a]"}`}>{so >= 0 ? so + 1 : "·"}</span>
+                      <span className="flex-1">{c.cau}{buoc === "xong" && <span className="mt-0.5 block text-xs text-[#d9b98a]">{laLac ? `📡 ${tr("lạc sóng, không phát", "jamais diffusé", "never played")}` : `${tr("Đúng vị trí", "Place", "Position")}: ${dungCho + 1} · ${c.nghia ?? ""}`}</span>}</span>
+                    </button>
+                  );
+                })}
+              </div>
+              <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
+                {buoc === "xep" && !daPhatLai && (
+                  <button type="button" onClick={() => { setDaPhatLai(true); phatChuoi(); }} className="inline-flex cursor-pointer items-center gap-2 rounded-full border-2 border-solid border-[#6b4a2f] bg-transparent px-4 py-2 font-mono text-xs font-bold uppercase text-[#d9b98a]"><RotateCcw size={14} /> {tr("Phát lại (−30)", "Rejouer (−30)", "Replay (−30)")}</button>
+                )}
+                {buoc === "xep" && thuTu.length > 0 && (
+                  <button type="button" onClick={() => setThuTu(thuTu.slice(0, -1))} className="cursor-pointer rounded-full border-2 border-solid border-[#6b4a2f] bg-transparent px-4 py-2 font-mono text-xs font-bold uppercase text-[#d9b98a]">↶ {tr("Gỡ thẻ cuối", "Annuler", "Undo")}</button>
+                )}
+                {buoc === "xong" && (
+                  <button type="button" onClick={tiep} className="cursor-pointer rounded-full border-0 bg-[#ffb347] px-7 py-2.5 font-mono text-sm font-extrabold uppercase tracking-widest text-[#2b1d14]">{v + 1 >= VONG ? tr("Kết thúc", "Terminer", "Finish") : tr("Cuộn tiếp", "Bobine suivante", "Next reel")} →</button>
+                )}
+              </div>
+            </>
+          )}
+        </>
+      )}
     </div>
   );
 }
@@ -798,105 +865,185 @@ function CauTracNghiem({ pa, onTra, daChon, laPhap, kieu, bo }) {
 }
 const Tim = ({ mang }) => <span className="flex gap-1">{[0, 1, 2].map((k) => <Heart key={k} size={18} className={k < mang ? "fill-danger text-danger" : "text-line"} />)}</span>;
 
-/* ─────────── 7. Chép chính tả tốc độ ─────────── */
-function ChepNhanh({ cap, onXong }) {
+/* ─────────── 7. « Mật thư của P.G. » (chép chính tả) ───────────
+   Cách chơi riêng (28/10): Léon chặn được 5 bức điện của kẻ bí ẩn P.G. (cùng mạch truyện với
+   Thám tử). Máy thu chỉ còn một lượng PIN cho CẢ nhiệm vụ: mỗi lần nghe tốn 1 vạch, nên phải
+   tính xem nghe lại ở bức nào. Bảng giải mã hiện SẴN số ô theo số từ (mức Dễ hiện cả chữ đầu),
+   chữ gõ tới đâu điền vào ô tới đó. Pin còn lại cuối nhiệm vụ được cộng điểm. */
+const PIN = { de: 10, vua: 8, kho: 6 };
+function ChepNhanh({ cap, muc = "vua", onXong }) {
   const SO = 5;
   const [kho, setKho] = useState(null);
   const [i, setI] = useState(0);
   const [go, setGo] = useState("");
   const [kq, setKq] = useState(null);
+  const [pin, setPin] = useState(PIN[muc] ?? 8);
+  const [daNghe, setDaNghe] = useState(false);
   const tong = useRef({ diem: 0, dung: 0 });
-  const batDau = useRef(Date.now());
   const am = useRef(null);
   const o = useRef(null);
   useEffect(() => { docCauNghe(cap, ["chinh_ta"]).then((d) => setKho(d ? d.filter((c) => c.cau.length <= 90) : []), () => setKho([])); }, [cap]);
+  useEffect(() => () => am.current?.pause(), []);
   const cau = kho?.[i];
-  const nghe = useCallback(() => { if (!cau) return; am.current?.pause(); am.current = new Audio(cau.audio_url); am.current.play().catch(() => {}); }, [cau]);
-  useEffect(() => { if (!cau) return; setGo(""); setKq(null); batDau.current = Date.now(); const t = setTimeout(() => { nghe(); o.current?.focus(); }, 300); return () => { clearTimeout(t); am.current?.pause(); }; }, [cau, nghe]);
-  if (!kho) return <Dang chu={tr("Đang tải audio…", "Chargement de l'audio…", "Loading audio…")} />;
+  useEffect(() => { setGo(""); setKq(null); setDaNghe(false); }, [i]);
+  if (!kho) return <Dang chu={tr("Đang dò tần số…", "Recherche de la fréquence…", "Scanning frequencies…")} />;
   if (kho.length < SO) return <TrongKho />;
+
+  const nghe = () => {
+    if (pin <= 0 || kq) return;
+    setPin(pin - 1); setDaNghe(true); phat("bam");
+    am.current?.pause(); am.current = new Audio(cau.audio_url); am.current.play().catch(() => {});
+    setTimeout(() => o.current?.focus(), 50);
+  };
+  const tuGoc = cau.cau.split(/\s+/).filter(Boolean);
+  const tuGo = go.trim() ? go.trim().split(/\s+/) : [];
   const nop = () => {
     if (kq || !go.trim()) return;
     const r = soCau(cau.cau, go, { dau: true });
-    const giay = (Date.now() - batDau.current) / 1000;
-    const them = Math.round(r.diem * 100) + (r.diem >= 0.8 ? Math.max(0, Math.round(40 - giay)) : 0);
+    const them = Math.round(r.diem * 100);
     tong.current.diem += them; if (r.diem >= 0.8) tong.current.dung++;
     setKq({ ...r, them }); phat(r.diem >= 0.8 ? "dung" : "sai");
   };
-  const tiep = () => { if (i + 1 >= SO) onXong({ diem: tong.current.diem, dung: tong.current.dung, tong: SO }); else setI(i + 1); };
+  const tiep = () => {
+    if (i + 1 >= SO) { const thuong = pin * 20; onXong({ diem: tong.current.diem + thuong, dung: tong.current.dung, tong: SO }); }
+    else setI(i + 1);
+  };
+  const LOI = [
+    tr("Ta bắt được tín hiệu lạ ký tên « P.G. ». Máy thu yếu pin lắm, nghe tiết kiệm thôi nhé!", "J'ai capté un signal signé « P.G. ». La batterie est faible, économise-la !", "I've caught a signal signed “P.G.”. The battery is low, use it wisely!"),
+    tr("Bức thứ hai. Có vẻ hắn đang hẹn ai đó…", "Deuxième message. Il donne rendez-vous à quelqu'un…", "Second message. He seems to be meeting someone…"),
+    tr("Giải được nửa mạng lưới rồi. Tiếp tục!", "La moitié du réseau est décodée. Continue !", "Half the network decoded. Keep going!"),
+    tr("Tín hiệu nhiễu hơn. Bình tĩnh nghe từng từ.", "Le signal se brouille. Mot par mot.", "The signal's getting noisy. Word by word."),
+    tr("Bức cuối! Giải xong là ta có đủ bằng chứng.", "Dernier message ! Ensuite on aura les preuves.", "Last message! Then we'll have the evidence."),
+  ];
   return (
-    /* Máy đánh chữ: tờ giấy cắm trên trục, chữ gõ hiện kiểu đánh máy; chấm xong
-       giáo viên sửa bằng mực màu ngay dưới dòng. */
-    <div className="mt-6 rounded-[2rem] bg-[#2d2a32] px-4 pb-5 pt-6 shadow-[0_20px_40px_rgba(0,0,0,0.3)]">
-      <div className="mx-auto h-3 w-[85%] rounded-full bg-[#9ca3af]" aria-hidden />
-      <div className="mx-auto -mt-1 w-[78%] rounded-b-sm bg-[#fdfbf5] px-5 pb-5 pt-6 font-mono text-[#1f2937] shadow-inner" onClick={() => o.current?.focus()}>
-        <div className="flex justify-between text-[11px] uppercase tracking-widest text-[#9ca3af]"><span>{tr("Bài chép", "Dictée", "Dictation")} {i + 1}/{SO} · {cau.cap}</span><span className="tabular-nums">{tong.current.diem} pts</span></div>
-        <input ref={o} lang="fr" value={go} onChange={(e) => setGo(e.target.value)} disabled={!!kq}
-          onKeyDown={(e) => { if (e.key === "Enter") (kq ? tiep() : nop()); }}
-          placeholder={tr("gõ câu bạn nghe…", "tapez ce que vous entendez…", "type what you hear…")}
-          className="mt-4 w-full border-0 border-b border-dashed border-[#d1d5db] bg-transparent py-2 font-mono text-lg text-[#111] caret-red-600 outline-none placeholder:text-[#b0b0b0]" />
-        {kq && (
-          <div className="mt-3">
-            <p lang="fr" className="m-0 flex flex-wrap gap-x-2 text-base">
-              {kq.tu.map((t, k) => <span key={k} className={t.khop === "dung" ? "text-green-700" : t.khop === "sai_dau" ? "text-amber-600" : "text-red-600 underline decoration-wavy"}>{t.goc}</span>)}
-            </p>
-            <p className="m-0 mt-2 font-sans text-sm text-[#6b7280]">{cau.nghia} · <strong className="text-[#111]">+{kq.them}</strong></p>
-          </div>
-        )}
+    /* Màn hình máy thu điện tín: nền xanh đen, chữ phốt-pho xanh. Màu viết thẳng, cố ý một thế giới. */
+    <div className="mt-6 rounded-[2rem] bg-[#07140d] p-5 font-mono text-[#7ef0a8] shadow-[inset_0_0_40px_rgba(0,255,120,0.08),0_20px_40px_rgba(0,0,0,0.3)]">
+      <div className="flex items-center justify-between text-[11px] uppercase tracking-widest text-[#4fbf7c]">
+        <span>{tr("Bức điện", "Message", "Message")} #{i + 1}/{SO} · {cau.cap}</span>
+        <span className="tabular-nums">{tong.current.diem} pts</span>
       </div>
-      <div className="mt-5 flex items-center justify-center gap-3">
-        <button type="button" onClick={nghe} aria-label={tr("Nghe lại", "Réécouter", "Replay")}
-          className="grid h-12 w-12 cursor-pointer place-items-center rounded-full border-2 border-solid border-[#4b4652] bg-[#1c1a20] text-[#e5e7eb] shadow-[0_4px_0_#111] active:translate-y-1 active:shadow-none"><Volume2 size={20} /></button>
-        <button type="button" onClick={kq ? tiep : nop}
-          className="h-12 cursor-pointer rounded-full border-2 border-solid border-[#4b4652] bg-[#1c1a20] px-8 font-mono text-sm font-bold uppercase tracking-widest text-[#e5e7eb] shadow-[0_4px_0_#111] active:translate-y-1 active:shadow-none">
-          {kq ? (i + 1 >= SO ? tr("Kết quả", "Résultat", "Result") : tr("Câu tiếp ↵", "Suivante ↵", "Next ↵")) : tr("Chấm ↵", "Valider ↵", "Check ↵")}
+      <div className="mt-3 flex items-start gap-3">
+        <Leon cam="lam-viec" size={52} className="shrink-0" />
+        <p className="m-0 rounded-2xl rounded-tl-md border border-solid border-[#1f5236] bg-[#0b2015] px-3 py-2 font-sans text-sm text-[#c9f7d9]">{LOI[i]}</p>
+      </div>
+
+      {/* Pin máy thu */}
+      <div className="mt-4 flex items-center gap-3">
+        <span className="text-[11px] uppercase tracking-widest text-[#4fbf7c]">{tr("Pin", "Batterie", "Battery")}</span>
+        <span className="flex flex-1 gap-1" aria-label={`${pin}/${PIN[muc] ?? 8}`}>
+          {Array.from({ length: PIN[muc] ?? 8 }, (_, k) => <span key={k} className={`h-3 flex-1 rounded-sm ${k < pin ? (pin <= 2 ? "bg-[#ff6b6b]" : "bg-[#7ef0a8]") : "bg-[#163322]"}`} />)}
+        </span>
+        <button type="button" onClick={nghe} disabled={pin <= 0 || !!kq}
+          className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-solid border-[#2f7a50] bg-[#0f2a1b] px-4 py-2 font-mono text-xs font-bold uppercase tracking-widest text-[#7ef0a8] disabled:cursor-not-allowed disabled:opacity-40">
+          <Volume2 size={14} /> {daNghe ? tr("Nghe lại", "Réécouter", "Replay") : tr("Bắt sóng", "Capter", "Tune in")}
+        </button>
+      </div>
+
+      {/* Bảng giải mã: một ô cho mỗi từ */}
+      <div className="mt-5 flex flex-wrap gap-2" onClick={() => o.current?.focus()} lang="fr">
+        {tuGoc.map((w, k) => {
+          const t = kq?.tu[k];
+          const go_ = tuGo[k];
+          return (
+            <span key={k} style={{ minWidth: `${Math.max(3, w.length) * 0.75}em` }}
+              className={`rounded border border-solid px-2 py-1.5 text-center text-base ${kq ? (t?.khop === "dung" ? "border-[#7ef0a8] bg-[#123a24] text-[#c9f7d9]" : t?.khop === "sai_dau" ? "border-[#f5c451] bg-[#3a3012] text-[#f5c451]" : "border-[#ff6b6b] bg-[#3a1414] text-[#ffb4b4]") : go_ ? "border-[#2f7a50] bg-[#0f2a1b]" : "border-dashed border-[#1f5236] text-[#2f7a50]"}`}>
+              {kq ? (t?.goc ?? w) : go_ ?? (muc === "de" ? w[0] + "·".repeat(Math.max(0, w.length - 1)) : "·".repeat(w.length))}
+            </span>
+          );
+        })}
+      </div>
+      <input ref={o} lang="fr" value={go} onChange={(e) => setGo(e.target.value)} disabled={!!kq || !daNghe} spellCheck={false} autoComplete="off"
+        onKeyDown={(e) => { if (e.key === "Enter") (kq ? tiep() : nop()); }}
+        placeholder={daNghe ? tr("gõ nội dung bức điện…", "tapez le message…", "type the message…") : tr("bấm « Bắt sóng » trước", "« Capter » d'abord", "press “Tune in” first")}
+        className="mt-4 w-full rounded-lg border border-solid border-[#1f5236] bg-[#04100a] px-3 py-2.5 font-mono text-base text-[#c9f7d9] caret-[#7ef0a8] outline-none placeholder:text-[#2f7a50] focus:border-[#4fbf7c] disabled:opacity-60" />
+      {kq && <p className="m-0 mt-3 font-sans text-sm text-[#9fe3b8]">{cau.nghia} · <strong className="text-[#c9f7d9]">+{kq.them}</strong></p>}
+      <div className="mt-4 flex justify-end">
+        <button type="button" onClick={kq ? tiep : nop} disabled={!kq && !go.trim()}
+          className="cursor-pointer rounded-lg border-0 bg-[#7ef0a8] px-6 py-2.5 font-mono text-sm font-bold uppercase tracking-widest text-[#07140d] disabled:opacity-40">
+          {kq ? (i + 1 >= SO ? tr(`Kết thúc (+${pin * 20} pin)`, `Terminer (+${pin * 20})`, `Finish (+${pin * 20})`) : tr("Bức tiếp ↵", "Suivant ↵", "Next ↵")) : tr("Giải mã ↵", "Décoder ↵", "Decode ↵")}
         </button>
       </div>
     </div>
   );
 }
 
-/* ─────────── 8. Nói để mở cửa (dùng PhatAm + Edge Function cham-phat-am) ─────────── */
-function NoiMoKhoa({ cap, onXong }) {
+/* ─────────── 8. « Sân khấu Léon: Diễn viên quên thoại » (phát âm) ───────────
+   Cách chơi riêng (28/10): khác đọc to nhìn chữ. Mỗi cảnh, câu thoại hiện trên kịch bản trong
+   vài giây (Dễ 9 s, Vừa 6 s, Khó 4 s) rồi màn nhung KÉO KÍN; người chơi phải đọc thuộc lòng.
+   Mức Khó không có nút nghe mẫu. « Nhắc tuồng » mở lại kịch bản 2 giây, mỗi lần −15. Chấm
+   bằng PhatAm (Edge Function cham-phat-am, dùng lượt phát âm trong ngày); chỉ lần đọc đầu được
+   tính. Tràng pháo tay theo % từ máy nghe ra. */
+const GIAY_THOAI = { de: 9, vua: 6, kho: 4 };
+function NoiMoKhoa({ cap, muc = "vua", onXong }) {
   const SO = 3;
   const [kho, setKho] = useState(null);
   const [i, setI] = useState(0);
-  const [mo, setMo] = useState([]);              // điểm từng cửa đã thử
+  const [kq, setKq] = useState([]);               // điểm từng cảnh
+  const [lo, setLo] = useState(true);             // kịch bản đang mở
+  const [con, setCon] = useState(GIAY_THOAI[muc] ?? 6);
+  const nhac = useRef(0);
   useEffect(() => { docCauNghe(cap, ["phat_am"]).then((d) => setKho(d ? d.filter((c) => c.cau.length <= 70) : []), () => setKho([])); }, [cap]);
-  if (!kho) return <Dang chu={tr("Đang chuẩn bị cửa…", "Préparation…", "Preparing…")} />;
+  useEffect(() => {
+    if (!kho || !lo || kq.length > i) return undefined;
+    const t = setInterval(() => setCon((c) => { if (c <= 1) { setLo(false); return 0; } return c - 1; }), 1000);
+    return () => clearInterval(t);
+  }, [kho, lo, i, kq.length]);
+  if (!kho) return <Dang chu={tr("Đang dựng sân khấu…", "Montage de la scène…", "Setting the stage…")} />;
   if (kho.length < SO) return <TrongKho />;
   const cau = kho[i];
-  const xongCua = (diem) => {
-    const ds = [...mo, diem]; setMo(ds);
-    setTimeout(() => {
-      if (ds.length >= SO) onXong({ diem: Math.round(ds.reduce((a, b) => a + b, 0) * 100), dung: ds.filter((d) => d >= 0.7).length, tong: SO });
-      else setI(i + 1);
-    }, 2200);
+  const daDoc = kq.length > i;
+  const xongCanh = (d) => {
+    if (daDoc) return;
+    const ds = [...kq, d]; setKq(ds); setLo(true); setCon(99);
   };
+  const tiep = () => {
+    if (kq.length >= SO) {
+      const diem = Math.max(0, Math.round(kq.reduce((a, b) => a + b, 0) * 100 * (muc === "kho" ? 1.5 : muc === "de" ? 1 : 1.2)) - nhac.current * 15);
+      onXong({ diem, dung: kq.filter((d) => d >= 0.7).length, tong: SO });
+    } else { setI(i + 1); setLo(true); setCon(GIAY_THOAI[muc] ?? 6); }
+  };
+  const nhacTuong = () => { if (lo || daDoc) return; nhac.current++; phat("bam"); setLo(true); setCon(2); };
+  const vo = (d) => (d >= 0.9 ? "👏👏👏👏" : d >= 0.7 ? "👏👏👏" : d >= 0.4 ? "👏" : "🍅");
+  const CANH = [
+    tr("Cảnh 1: quán cà phê. Bạn là nhân vật chính, nhớ thoại nhé!", "Scène 1 : le café. Retiens bien ta réplique !", "Scene 1: the café. Remember your line!"),
+    tr("Cảnh 2: ga tàu đông người. Nói rõ cho khán giả hàng cuối nghe.", "Scène 2 : la gare. Articule pour le dernier rang !", "Scene 2: the station. Speak up for the back row!"),
+    tr("Cảnh cuối: màn hạ. Câu này mà hay là cả rạp đứng dậy!", "Scène finale : réussis-la et la salle se lève !", "Final scene: nail it and the house stands up!"),
+  ];
   return (
-    /* Hành lang lâu đài: ba cánh cửa vòm bằng gỗ, câu thần chú khắc trên tấm đá.
-       Đọc đúng ≥70% thì cửa hé ra ánh sáng. Màu đá/gỗ viết thẳng (không đảo theo bản sáng). */
-    <div className="mt-6 rounded-[2rem] bg-[#1c1917] bg-[linear-gradient(#292524_2px,transparent_2px),linear-gradient(90deg,#292524_2px,transparent_2px)] bg-[length:60px_30px] p-5">
-      <div className="flex items-end justify-center gap-4 sm:gap-8">
-        {Array.from({ length: SO }, (_, k) => {
-          const d = mo[k]; const mo_ = d != null && d >= 0.7, hong = d != null && d < 0.7, dangO = d == null && k === i;
-          return (
-            <span key={k} className={`relative grid h-28 w-20 place-items-center overflow-hidden rounded-t-full border-4 border-solid ${dangO ? "border-amber-400 shadow-[0_0_30px_rgba(251,191,36,0.45)]" : "border-[#44403c]"} ${mo_ ? "bg-amber-200" : "bg-[#78350f]"}`}>
-              {!mo_ && <span aria-hidden className="absolute inset-0 bg-[repeating-linear-gradient(90deg,transparent_0_18px,rgba(0,0,0,0.25)_18px_20px)]" />}
-              {mo_ ? <DoorOpen size={30} className="relative text-amber-700" /> : <DoorClosed size={30} className={`relative ${hong ? "text-red-400" : "text-amber-300/80"}`} />}
-              <span className="absolute bottom-1 text-[10px] font-extrabold text-white/80">{["I", "II", "III"][k]}</span>
-            </span>
-          );
-        })}
+    /* Sân khấu: màn nhung đỏ hai bên, đèn rọi giữa. Màu viết thẳng, một thế giới riêng. */
+    <div className="mt-6 overflow-hidden rounded-[2rem] bg-[#1a0606] shadow-[0_20px_40px_rgba(0,0,0,0.3)]">
+      <div className="flex items-center justify-between bg-[#3b0a0a] px-5 py-3 text-xs font-extrabold uppercase tracking-widest text-[#fcd9a8]">
+        <span>🎭 Théâtre Léon · {tr("Cảnh", "Scène", "Scene")} {i + 1}/{SO}</span>
+        <span className="tracking-normal">{kq.map((d, k) => <span key={k} title={`${Math.round(d * 100)}%`}>{vo(d)} </span>)}</span>
       </div>
-      <div className="mx-auto mt-6 max-w-xl rounded-xl border-2 border-solid border-[#57534e] bg-[#44403c] px-5 py-4 text-center shadow-inner">
-        <p className="m-0 text-[11px] font-bold uppercase tracking-[0.25em] text-amber-300/80">{tr(`Cửa ${i + 1}: đọc to câu thần chú`, `Porte ${i + 1} : prononcez la formule`, `Door ${i + 1}: speak the spell`)}</p>
-        <p lang="fr" className="m-0 mt-2 font-serif text-2xl text-[#fef3c7]">{cau.cau}</p>
-        {cau.nghia && <p className="m-0 mt-1 text-sm text-[#d6d3d1]">{cau.nghia}</p>}
+      <div className="relative px-5 pb-5 pt-4">
+        <div className="flex items-start gap-3">
+          <Leon cam={daDoc ? (kq[i] >= 0.7 ? "yeah" : "co-len") : "lam-viec"} size={56} className="shrink-0" />
+          <p className="m-0 rounded-2xl rounded-tl-md bg-[#2a0b0b] px-3 py-2 text-sm text-[#fde7c7]">
+            {daDoc ? (kq[i] >= 0.7 ? tr("Bravo! Khán giả vỗ tay rần rần.", "Bravo ! La salle applaudit.", "Bravo! The audience loves it.") : tr("Hơi lúng túng chút, nhưng diễn tiếp nào!", "Un petit trou, mais on continue !", "A little stumble, but the show goes on!")) : CANH[i]}
+          </p>
+        </div>
+        {/* Kịch bản + màn nhung */}
+        <div className="relative mt-4 min-h-[120px] overflow-hidden rounded-2xl bg-[radial-gradient(ellipse_at_top,#fff7e0_0%,#f3dca8_60%,#d9b56f_100%)] px-5 py-5 text-center">
+          <p className="m-0 text-[11px] font-bold uppercase tracking-[0.25em] text-[#7c4a12]">{tr("Kịch bản", "Le script", "Script")}{lo && !daDoc && con < 99 ? ` · ${con}s` : ""}</p>
+          <p lang="fr" className="m-0 mt-2 font-serif text-2xl text-[#3b1d06]">{cau.cau}</p>
+          {(muc === "de" || daDoc) && cau.nghia && <p className="m-0 mt-1 text-sm text-[#7c4a12]">{cau.nghia}</p>}
+          <span aria-hidden className={`absolute inset-y-0 left-0 w-1/2 bg-[repeating-linear-gradient(90deg,#7f1d1d_0_14px,#991b1b_14px_28px)] shadow-[inset_-10px_0_20px_rgba(0,0,0,0.4)] transition-transform duration-700 ${lo ? "-translate-x-full" : "translate-x-0"}`} />
+          <span aria-hidden className={`absolute inset-y-0 right-0 w-1/2 bg-[repeating-linear-gradient(90deg,#991b1b_0_14px,#7f1d1d_14px_28px)] shadow-[inset_10px_0_20px_rgba(0,0,0,0.4)] transition-transform duration-700 ${lo ? "translate-x-full" : "translate-x-0"}`} />
+          {!lo && <span className="absolute inset-0 grid place-items-center text-sm font-extrabold uppercase tracking-widest text-[#fcd9a8]">{tr("Đến lượt bạn: đọc thuộc lòng!", "À toi : de mémoire !", "Your turn: from memory!")}</span>}
+        </div>
+        {!lo && !daDoc && (
+          <button type="button" onClick={nhacTuong} className="mt-3 cursor-pointer rounded-full border border-solid border-[#7f1d1d] bg-transparent px-4 py-1.5 font-sans text-xs font-bold text-[#fcd9a8]">🤫 {tr("Nhắc tuồng (−15)", "Souffleur (−15)", "Prompter (−15)")}</button>
+        )}
+        {(!lo || daDoc) && (
+          <div className="mt-4 rounded-2xl bg-surface p-3"><PhatAm key={cau.id} cau={cau} anNghe={muc === "kho"} onXong={xongCanh} /></div>
+        )}
+        {daDoc && (
+          <div className="mt-4 text-right">
+            <button type="button" onClick={tiep} className="cursor-pointer rounded-full border-0 bg-[#fcd9a8] px-6 py-2.5 font-sans text-sm font-extrabold text-[#3b0a0a]">{kq.length >= SO ? tr("Hạ màn", "Rideau", "Curtain call") : tr("Cảnh tiếp", "Scène suivante", "Next scene")} →</button>
+          </div>
+        )}
       </div>
-      {/* Giữ PhatAm hiện tới khi sang cửa sau để người chơi đọc được kết quả từng từ;
-          chỉ lần chấm ĐẦU của mỗi cửa được tính. */}
-      <div className="mx-auto mt-5 max-w-xl rounded-2xl bg-surface p-3"><PhatAm key={cau.id} cau={cau} onXong={(d) => { if (mo.length === i) xongCua(d); }} /></div>
     </div>
   );
 }
