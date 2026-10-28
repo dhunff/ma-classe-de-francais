@@ -39,14 +39,14 @@ const TRO_CHOI = () => [
       { ma: "go", get ten() { return tr("Gõ chữ", "Tape-mot", "Type it"); }, get mo() { return tr("Nghĩa rơi, gõ từ tiếng Pháp.", "Le sens tombe, tapez le mot.", "Meaning falls, type the French."); } },
     ] },
   { ma: "xep_cau", nhom: "np", Icon: Shuffle, nen: "from-orange-500 to-rose-500",
-    ten: tr("Xếp câu tốc độ", "Phrases en vrac", "Sentence builder"),
-    mo: tr("Đua giờ: chạm các từ theo đúng thứ tự để thành câu. Xếp được càng nhiều câu càng nhiều điểm.", "Contre la montre : remettez les mots dans l'ordre, un maximum de phrases.", "Beat the clock: tap words in order to build as many sentences as you can.") },
+    ten: tr("Chuyến tàu của Léon", "Le train de Léon", "Léon's train"),
+    mo: tr("Trưởng tàu Léon chạy tuyến Paris → Nice: móc các toa từ theo đúng thứ tự, mỗi câu đúng tàu tới một ga. Mức Vừa/Khó có toa lạ lẫn trên sân ga.", "Paris → Nice : accrochez les mots dans l'ordre, chaque phrase juste = une gare. Attention au wagon intrus.", "Paris → Nice: hook words in order, each right sentence reaches a station. Watch for the stray wagon.") },
   { ma: "san_loi", nhom: "np", Icon: Crosshair, nen: "from-red-500 to-amber-500",
-    ten: tr("Săn lỗi sai", "Chasse à l'erreur", "Error hunt"),
-    mo: tr("Mỗi câu có đúng một từ sai: chạm vào nó. 3 mạng, chạm nhầm là mất mạng.", "Chaque phrase cache une erreur : touchez-la. 3 vies.", "Each sentence hides one wrong word: tap it. 3 lives.") },
+    ten: tr("Toà soạn Léon", "La rédaction de Léon", "Léon's newsroom"),
+    mo: tr("Làm biên tập viên cho tổng biên tập Léon: khoanh chữ sai trong bản thảo rồi chọn chữ đúng để thay, trước giờ in. 3 lọ mực.", "Entourez la faute puis choisissez la correction avant l'impression. 3 encriers.", "Circle the mistake, then pick the fix before printing. 3 inkwells.") },
   { ma: "dung_sai", nhom: "np", Icon: Check, nen: "from-teal-500 to-blue-600",
-    ten: tr("Đúng hay sai", "Vrai ou faux", "True or false"),
-    mo: tr("Lướt thật nhanh: câu này đúng hay sai? Đúng liên tiếp để nhân điểm.", "Vite : la phrase est-elle correcte ? Enchaînez pour multiplier.", "Quick: is it right or wrong? Streaks multiply points.") },
+    ten: tr("Phiên toà ngữ pháp", "Le tribunal de la grammaire", "Grammar court"),
+    mo: tr("Thẩm phán Léon đưa từng câu ra toà: đóng dấu VRAI hay FAUX thật nhanh. Phán đúng liên tiếp để nhân điểm.", "Le juge Léon présente chaque phrase : tamponnez VRAI ou FAUX. Enchaînez pour multiplier.", "Judge Léon presents each sentence: stamp VRAI or FAUX. Streaks multiply points.") },
   { ma: "chep_nhanh", nhom: "ng", Icon: Keyboard, nen: "from-fuchsia-500 to-purple-600",
     ten: tr("Mật thư của P.G.", "Les messages de P.G.", "P.G.'s secret messages"),
     mo: tr("Giải mã 5 bức điện của kẻ bí ẩn. Máy thu có ít pin: mỗi lần nghe tốn 1 vạch, pin còn dư được cộng điểm.", "Décodez 5 messages secrets. Chaque écoute coûte de la batterie.", "Decode 5 secret messages. Every listen costs battery.") },
@@ -116,7 +116,7 @@ function Sanh({ ds }) {
 /* ─────────── Khung một trò: chọn trình độ → chơi → kết quả ─────────── */
 /* Léon bình luận viên (28/10): các trò chưa có Léon trong lối chơi thì Léon đứng cạnh, nghe
    sự kiện âm thanh « mcf-am » do phat() bắn ra và đổi nét mặt + câu nói theo đúng/sai. */
-const CO_LEON_RIENG = new Set(["nghe_chon", "chep_nhanh", "noi_mo_khoa", "tham_tu", "do_vui", "phieu_luu"]);
+const CO_LEON_RIENG = new Set(["nghe_chon", "chep_nhanh", "xep_cau", "san_loi", "dung_sai", "noi_mo_khoa", "tham_tu", "do_vui", "phieu_luu"]);
 function LeonBinhLuan() {
   const [su, setSu] = useState({ ten: "batDau", n: 0 });
   useEffect(() => {
@@ -159,7 +159,7 @@ function ManChoi({ tc }) {
   const Game = { gioi_tinh: GioiTinh, nghe_chon: NgheChon, mua_chu: MuaChu, xep_cau: XepCau, san_loi: SanLoi, dung_sai: DungSai,
     chep_nhanh: ChepNhanh, noi_mo_khoa: NoiMoKhoa, tham_tu: ThamTu, do_vui: DoVui, phieu_luu: PhieuLuu }[tc.ma];
   return (
-    <div className="mx-auto max-w-3xl px-4 pb-16 pt-4">
+    <div className={`mx-auto ${buoc === "choi" ? "max-w-5xl" : "max-w-3xl"} px-4 pb-16 pt-4`}>
       <button type="button" onClick={() => (buoc === "choi" ? setBuoc("chon") : nav("/etudiant/tro-choi"))}
         className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border-0 bg-surface px-4 py-2 font-sans text-sm font-bold text-ink shadow-sm">
         <ArrowLeft size={16} /> {buoc === "choi" ? tr("Dừng", "Arrêter", "Stop") : tr("Trò chơi", "Jeux", "Games")}
@@ -540,7 +540,7 @@ function MuaChu({ cap, he, kieu = "nghia", onXong }) {
         // Kiểu bat: không cho hai giọt cùng nghĩa rơi một lúc, kẻo bắt « đúng » mà bị chấm sai.
         let tu = du.kho[st.k++ % du.kho.length];
         for (let n = 0; n < 5 && st.roi.some((w) => w.tu.vi === tu.vi); n++) tu = du.kho[st.k++ % du.kho.length];
-        st.roi.push({ id: st.k, tu, x: 6 + Math.random() * 66, y: -6 });
+        st.roi.push({ id: st.k, tu, x: 14 + Math.random() * 72, y: -6 });
         st.sinh = Math.max(800, (kieu === "bat" ? 1900 : 2600) - st.dung * 60) / toc;
       }
       const tocDo = (kieu === "go" ? 0.032 : 0.045) * toc + st.dung * 0.0015;
@@ -596,7 +596,7 @@ function MuaChu({ cap, he, kieu = "nghia", onXong }) {
   const MAU = { nghia: "#0b1530", bat: "#2a0f2f", go: "#06251f" }[kieu];
   return (
     <div className="mt-6 overflow-hidden rounded-[2rem] shadow-[0_20px_40px_rgba(11,21,48,0.35)]" style={{ background: MAU }}>
-      <div className={`relative h-[360px] overflow-hidden ${kieu === "bat" ? "bg-[radial-gradient(circle_at_50%_0,#86198f_0,transparent_55%)]" : kieu === "go" ? "bg-[radial-gradient(circle_at_30%_0,#047857_0,transparent_50%)]" : "bg-[radial-gradient(circle_at_20%_10%,#1e3a8a_0,transparent_45%),radial-gradient(circle_at_80%_0,#155e75_0,transparent_40%)]"}`}>
+      <div className={`relative h-[440px] overflow-hidden sm:h-[520px] ${kieu === "bat" ? "bg-[radial-gradient(circle_at_50%_0,#86198f_0,transparent_55%)]" : kieu === "go" ? "bg-[radial-gradient(circle_at_30%_0,#047857_0,transparent_50%)]" : "bg-[radial-gradient(circle_at_20%_10%,#1e3a8a_0,transparent_45%),radial-gradient(circle_at_80%_0,#155e75_0,transparent_40%)]"}`}>
         <div className="absolute inset-x-0 top-0 z-10 flex items-center justify-between p-4 text-sm font-bold text-white">
           <span className="flex gap-1">{[0, 1, 2].map((k) => <Heart key={k} size={18} className={k < mang ? "fill-rose-400 text-rose-400" : "text-white/25"} />)}</span>
           <span className="rounded-full bg-white/10 px-3 py-1 tabular-nums">{diem}</span>
@@ -604,7 +604,7 @@ function MuaChu({ cap, he, kieu = "nghia", onXong }) {
         {roi.map((w) => {
           const sang = w.id === dichId, nham = nhay?.id === w.id && !nhay.ok;
           const chu = kieu === "go" ? w.tu.vi : w.tu.fr;
-          const lop = `absolute whitespace-nowrap rounded-b-full rounded-t-[60%] border-0 px-3 pb-2 pt-3 font-sans text-sm font-extrabold ${nham ? "!bg-rose-500 text-white" : sang && kieu === "nghia" ? "bg-cyan-300 text-[#0b1530] shadow-[0_0_24px_rgba(103,232,249,0.8)]" : kieu === "go" ? "bg-emerald-300/90 text-[#06251f]" : "bg-white/15 text-white backdrop-blur"}`;
+          const lop = `absolute -translate-x-1/2 whitespace-nowrap rounded-2xl border border-solid px-4 py-2 font-sans text-base font-extrabold shadow-[0_8px_20px_rgba(0,0,0,0.25)] before:absolute before:-top-2 before:left-1/2 before:h-3 before:w-3 before:-translate-x-1/2 before:rotate-45 before:rounded-tl-full before:bg-inherit before:content-[''] ${nham ? "!border-rose-300 !bg-rose-500 text-white" : sang && kieu === "nghia" ? "border-cyan-100 bg-cyan-300 text-[#0b1530] shadow-[0_0_28px_rgba(103,232,249,0.8)]" : kieu === "go" ? "border-emerald-100/60 bg-emerald-300 text-[#06251f]" : kieu === "bat" ? "border-white/30 bg-[#4a1d55] text-white" : "border-white/30 bg-[#1e3a8a] text-white"}`;
           return kieu === "bat"
             ? <button key={w.id} type="button" lang="fr" onClick={() => bat(w)} className={`${lop} cursor-pointer hover:bg-fuchsia-300 hover:text-[#2a0f2f]`} style={{ left: `${w.x}%`, top: `${w.y}%` }}>{chu}</button>
             : <span key={w.id} lang={kieu === "go" ? undefined : "fr"} className={lop} style={{ left: `${w.x}%`, top: `${w.y}%` }}>{chu}</span>;
@@ -660,8 +660,12 @@ function useDemNguoc(giay, chay, onHet) {
   return [con, het];
 }
 
-/* ─────────── 4. Xếp câu tốc độ ─────────── */
-function XepCau({ cap, he, onXong }) {
+/* ─────────── 4. « Chuyến tàu của Léon » (xếp câu) ───────────
+   Léon là trưởng tàu tuyến Paris → Nice. Mỗi câu xếp đúng là đoàn tàu chạy tới GA kế tiếp trên
+   bản đồ tuyến. Mức Vừa / Khó có thêm một TOA LẠ (từ của câu khác) đậu lẫn trên sân ga: móc
+   nhầm nó vào là cả đoàn trật bánh. Đua giờ như cũ. */
+const GA = ["Paris", "Dijon", "Lyon", "Valence", "Avignon", "Marseille", "Toulon", "Cannes", "Nice"];
+function XepCau({ cap, he, muc = "vua", onXong }) {
   const GIAY = Math.round(90 * (he?.gio ?? 1));
   const [ds, setDs] = useState(null);
   const [i, setI] = useState(0);
@@ -672,7 +676,15 @@ function XepCau({ cap, he, onXong }) {
   useEffect(() => { docXepCau(cap).then(setDs, () => setDs([])); }, [cap]);
   const [con, het] = useDemNguoc(GIAY, !!ds?.length, () => onXong({ ...kq.current, tong: Math.max(1, kq.current.tong) }));
   const cau = ds?.[i % (ds?.length || 1)];
-  const manh = React.useMemo(() => (cau ? tron(cau.tu.map((w, k) => ({ w, k }))) : []), [cau]);
+  const manh = React.useMemo(() => {
+    if (!cau) return [];
+    const ra = cau.tu.map((w, k) => ({ w, k }));
+    if (muc !== "de" && ds.length > 1) {
+      const khac = ds[(i + 7) % ds.length].tu.filter((w) => !cau.tu.includes(w) && w.length > 2);
+      if (khac.length) ra.push({ w: khac[Math.floor(Math.random() * khac.length)], k: -1 });
+    }
+    return tron(ra);
+  }, [cau]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!ds) return <Dang chu={tr("Đang chuẩn bị câu…", "Préparation…", "Preparing…")} />;
   if (ds.length < 5) return <TrongKho />;
@@ -682,31 +694,52 @@ function XepCau({ cap, he, onXong }) {
     const moi = [...chon, j];
     phat("bam");
     setChon(moi);
-    if (moi.length === manh.length) {
-      const cauRa = moi.map((x) => manh[x].w).join(" ");
-      const ok = cauRa === cau.tu.join(" ");
+    const laLa = manh[j].k < 0;
+    if (laLa || moi.length === cau.tu.length) {
+      const ok = !laLa && moi.map((x) => manh[x].w).join(" ") === cau.tu.join(" ");
       kq.current.tong++;
-      if (ok) { kq.current.dung++; kq.current.diem += 20 + cau.tu.length * 5; }
+      if (ok) { kq.current.dung++; kq.current.diem += 20 + cau.tu.length * 5 + (muc === "kho" ? 10 : 0); }
       ve((x) => x + 1); setLoe(ok ? "dung" : "sai"); phat(ok ? "dung" : "sai");
-      setTimeout(() => { setLoe(null); setChon([]); setI((x) => x + 1); }, ok ? 600 : 1800);
+      setTimeout(() => { setLoe(null); setChon([]); setI((x) => x + 1); }, ok ? 700 : 1900);
     }
   };
   const go = () => { if (!loe && chon.length) setChon(chon.slice(0, -1)); };
+  const daToi = Math.min(kq.current.dung, GA.length - 1);
+  const loiLeon = loe === "dung" ? tr(`Tàu đã tới ga ${GA[daToi]}! Lên toa tiếp nào.`, `Arrivée en gare de ${GA[daToi]} !`, `Arrived at ${GA[daToi]}!`)
+    : loe === "sai" ? tr("Trật bánh rồi! Xem thứ tự đúng bên dưới nhé.", "Déraillement ! Voici le bon ordre.", "Derailed! Here's the right order.")
+      : kq.current.dung >= GA.length - 1 ? tr("Đã tới Nice! Chạy thêm vòng nữa lấy điểm nào.", "Nice atteinte ! Encore un tour ?", "Nice reached! One more lap?")
+        : muc === "de" ? tr("Ta là trưởng tàu Léon. Móc toa theo đúng thứ tự để câu chạy được nhé!", "Je suis Léon, chef de train. Accroche les wagons dans l'ordre !", "I'm Léon, the conductor. Hook the wagons in order!")
+          : tr("Cẩn thận: trên sân ga có một toa lạ không thuộc câu này!", "Attention : un wagon intrus est sur le quai !", "Careful: a stray wagon is on the platform!");
   return (
-    /* Ga tàu: mỗi từ là một TOA, chạm để móc vào sau đầu máy. Đủ toa đúng thứ tự
-       thì đoàn tàu chạy khỏi ga. */
-    <div className="mt-6 overflow-hidden rounded-[2rem] bg-gradient-to-b from-orange-100 to-amber-50 p-5 dark:from-orange-950/40 dark:to-amber-950/20">
+    <div className="mt-6 overflow-hidden rounded-[2rem] bg-gradient-to-b from-orange-100 to-amber-50 p-5 sm:p-7 dark:from-orange-950/40 dark:to-amber-950/20">
       <div className="flex items-center justify-between">
         <span className="rounded-lg bg-[#1f2937] px-3 py-1.5 text-sm font-bold tabular-nums text-amber-300">{String(Math.floor(con / 60)).padStart(2, "0")}:{String(con % 60).padStart(2, "0")}</span>
         <span className="text-sm font-bold text-soft">🚉 {kq.current.dung}/{kq.current.tong}</span>
         <span className="rounded-lg bg-[#1f2937] px-3 py-1.5 text-sm font-bold tabular-nums text-amber-300">{kq.current.diem}</span>
       </div>
-      <p className="m-0 mt-5 text-center text-sm font-bold text-ink">🎯 {cau.goiY}</p>
+      {/* Bản đồ tuyến: các ga, ga đã tới tô đậm */}
+      <div className="relative mt-5 overflow-x-auto no-scrollbar">
+        <div className="relative flex min-w-[560px] justify-between px-2">
+          <span aria-hidden className="absolute left-4 right-4 top-[9px] h-1 rounded bg-orange-200 dark:bg-orange-900" />
+          <span aria-hidden className="absolute left-4 top-[9px] h-1 rounded bg-orange-500 transition-[width] duration-700" style={{ width: `calc(${(daToi / (GA.length - 1)) * 100}% - ${daToi === GA.length - 1 ? 32 : 0}px)` }} />
+          {GA.map((g, k) => (
+            <span key={g} className="relative flex flex-col items-center gap-1">
+              <span className={`h-5 w-5 rounded-full border-4 border-solid ${k <= daToi ? "border-orange-500 bg-white" : "border-orange-200 bg-orange-50 dark:border-orange-900 dark:bg-orange-950"} ${k === daToi ? "ring-4 ring-orange-300" : ""}`} />
+              <span className={`text-[11px] font-bold ${k <= daToi ? "text-ink" : "text-soft"}`}>{g}</span>
+            </span>
+          ))}
+        </div>
+      </div>
+      <div className="mt-4 flex items-start gap-3">
+        <Leon key={`${loe}${kq.current.tong}`} cam={loe === "dung" ? "yeah" : loe === "sai" ? "co-len" : "lam-viec"} size={56} className="mcf-nay shrink-0" />
+        <p className="m-0 rounded-3xl rounded-tl-md bg-surface px-4 py-3 text-sm font-semibold text-ink shadow-sm">{loiLeon}</p>
+      </div>
+      <p className="m-0 mt-5 text-center text-base font-bold text-ink">🎯 {cau.goiY}</p>
       <div className="mt-3 overflow-x-auto no-scrollbar">
-        <div className={`flex min-h-[72px] w-max min-w-full items-end gap-1 pb-3 ${loe === "dung" ? "mcf-tau-chay" : loe === "sai" ? "mcf-rung" : ""}`}>
-          <span className="grid h-14 w-16 shrink-0 place-items-center rounded-l-2xl rounded-tr-lg bg-rose-600 text-2xl" aria-hidden>🚂</span>
+        <div className={`flex min-h-[80px] w-max min-w-full items-end gap-1 pb-3 ${loe === "dung" ? "mcf-tau-chay" : loe === "sai" ? "mcf-rung" : ""}`}>
+          <span className="grid h-16 w-20 shrink-0 place-items-center rounded-l-2xl rounded-tr-lg bg-rose-600 text-3xl" aria-hidden>🚂</span>
           {chon.map((j) => (
-            <span key={j} lang="fr" className={`mcf-toa-vao relative shrink-0 rounded-md px-3 py-3 text-base font-bold text-white shadow ${loe === "sai" ? "bg-danger" : "bg-orange-500"}`}>
+            <span key={j} lang="fr" className={`mcf-toa-vao relative shrink-0 rounded-md px-4 py-3.5 text-lg font-bold text-white shadow ${loe === "sai" ? "bg-danger" : "bg-orange-500"}`}>
               {manh[j].w}
               <span aria-hidden className="absolute -bottom-2 left-2 h-3 w-3 rounded-full bg-[#1f2937]" /><span aria-hidden className="absolute -bottom-2 right-2 h-3 w-3 rounded-full bg-[#1f2937]" />
             </span>
@@ -715,12 +748,12 @@ function XepCau({ cap, he, onXong }) {
         </div>
         <div aria-hidden className="h-1.5 bg-[repeating-linear-gradient(90deg,#78350f_0_6px,transparent_6px_14px)]" />
       </div>
-      {loe === "sai" && <p lang="fr" className="m-0 mt-2 text-center text-sm font-bold text-ok">{cau.tu.join(" ")}</p>}
-      <p className="m-0 mt-5 text-xs font-extrabold uppercase tracking-wider text-soft">{tr("Sân ga", "Quai", "Platform")}</p>
-      <div className="mt-2 flex flex-wrap gap-2">
+      {loe === "sai" && <p lang="fr" className="m-0 mt-2 text-center text-base font-bold text-ok">{cau.tu.join(" ")}</p>}
+      <p className="m-0 mt-6 text-xs font-extrabold uppercase tracking-wider text-soft">{tr("Sân ga", "Quai", "Platform")}</p>
+      <div className="mt-2 flex flex-wrap gap-2.5">
         {manh.map((m, j) => (
           <button key={j} type="button" onClick={() => bam(j)} disabled={chon.includes(j)} lang="fr"
-            className="cursor-pointer rounded-md border-2 border-solid border-orange-500 bg-surface px-4 py-2.5 font-sans text-base font-bold text-ink shadow-[0_4px_0_#c2410c] transition-[opacity,transform] duration-150 active:translate-y-1 active:shadow-none disabled:cursor-default disabled:opacity-20">
+            className={`cursor-pointer rounded-md border-2 border-solid px-5 py-3 font-sans text-lg font-bold shadow-[0_4px_0_#c2410c] transition-[opacity,transform] duration-150 active:translate-y-1 active:shadow-none disabled:cursor-default disabled:opacity-20 ${loe === "sai" && m.k < 0 ? "border-danger bg-danger-soft text-danger" : "border-orange-500 bg-surface text-ink"}`}>
             {m.w}
           </button>
         ))}
@@ -732,55 +765,91 @@ function XepCau({ cap, he, onXong }) {
   );
 }
 
-/* ─────────── 5. Săn lỗi sai ─────────── */
+/* ─────────── 5. « Toà soạn Léon » (săn lỗi sai) ───────────
+   Léon là tổng biên tập, báo sắp lên khuôn in. Mỗi bản thảo có đúng một chữ sai; HAI bước:
+   khoanh chữ sai (khoanh nhầm mất một lọ mực), rồi chọn chữ đúng để thay trong ba chữ viết
+   tay. Sửa đúng thì bản thảo được đóng dấu « BON À TIRER ». */
 function SanLoi({ cap, onXong }) {
   const [ds, setDs] = useState(null);
   const [i, setI] = useState(0);
   const [mang, setMang] = useState(3);
-  const [chon, setChon] = useState(null);         // chỉ số từ vừa chạm
+  const [chon, setChon] = useState(null);         // chỉ số từ vừa khoanh
+  const [sua, setSua] = useState(null);           // chữ đã chọn để thay
   const kq = useRef({ diem: 0, dung: 0, tong: 0, mang: 3, het: false });
   const batDau = useRef(Date.now());
   useEffect(() => { docSanLoi(cap).then(setDs, () => setDs([])); }, [cap]);
   useEffect(() => { batDau.current = Date.now(); }, [i]);
+  const cau = ds?.length ? ds[i % ds.length] : null;
+  const pa = React.useMemo(() => {
+    if (!cau) return [];
+    const khac = [...new Set(ds.filter((c) => c !== cau).map((c) => c.sua).filter((w) => w && w !== cau.sua && w !== cau.tu[cau.vt]))]
+      .sort((a, b) => Math.abs(a.length - cau.sua.length) - Math.abs(b.length - cau.sua.length) + (Math.random() - 0.5) * 4);
+    return tron([cau.sua, ...khac.slice(0, 2)]);
+  }, [cau]); // eslint-disable-line react-hooks/exhaustive-deps
   if (!ds) return <Dang chu={tr("Đang chuẩn bị câu…", "Préparation…", "Preparing…")} />;
   if (ds.length < 5) return <TrongKho />;
-  const cau = ds[i % ds.length];
-  const bam = (k) => {
-    const st = kq.current; if (chon != null || st.het) return;
-    const ok = k === cau.vt;
-    st.tong++;
-    if (ok) { st.dung++; st.diem += 50 + Math.max(0, Math.round(30 - (Date.now() - batDau.current) / 200)); phat("dung"); }
-    else { st.mang--; setMang(st.mang); phat("sai"); }
-    setChon(k);
+  const sangCau = () => {
+    const st = kq.current;
     setTimeout(() => {
       if (st.mang <= 0) { st.het = true; onXong({ diem: st.diem, dung: st.dung, tong: st.tong }); return; }
-      setChon(null); setI((x) => x + 1);
-    }, ok ? 1100 : 2200);
+      setChon(null); setSua(null); setI((x) => x + 1);
+    }, 1900);
   };
+  const khoanh = (k) => {
+    const st = kq.current; if (chon != null || st.het) return;
+    setChon(k);
+    if (k === cau.vt) { st.diem += 30 + Math.max(0, Math.round(30 - (Date.now() - batDau.current) / 200)); phat("dung"); }
+    else { st.tong++; st.mang--; setMang(st.mang); phat("sai"); sangCau(); }
+  };
+  const thay = (w) => {
+    const st = kq.current; if (sua) return;
+    setSua(w); st.tong++;
+    if (w === cau.sua) { st.dung++; st.diem += 40; phat("dung"); } else phat("sai");
+    sangCau();
+  };
+  const xong = sua != null || (chon != null && chon !== cau.vt);
+  const dat = sua === cau.sua;
+  const loiLeon = !xong ? (chon === cau.vt ? tr("Chuẩn, chữ này sai! Giờ chọn chữ thay vào.", "Bien vu ! Choisis maintenant la correction.", "Good catch! Now pick the fix.") : tr("Ta là tổng biên tập Léon. Bản thảo này có đúng MỘT chữ sai, khoanh nó trước giờ in!", "Je suis Léon, rédacteur en chef. Une seule faute : trouve-la avant l'impression !", "I'm Léon, the editor. One mistake per page: find it before printing!"))
+    : dat ? tr("Bon à tirer! Gửi xuống xưởng in.", "Bon à tirer ! À l'imprimerie.", "Good to print! Off to the press.")
+      : tr("Suýt thì in lỗi lên báo! Xem bản đúng nhé.", "On a failli imprimer une faute !", "We nearly printed a mistake!");
   return (
-    /* Vở chấm bài: giấy kẻ dòng (màu giấy viết thẳng, không đảo bản tối), người
-       chơi là giáo viên cầm bút đỏ khoanh đúng chữ sai. Ba lần khoanh nhầm là hết mực. */
-    <div className="mt-6 rotate-[-0.6deg] rounded-md bg-[#fffdf5] p-0 text-[#1f2937] shadow-[0_18px_36px_rgba(0,0,0,0.18)]">
-      <div className="flex items-center justify-between border-0 border-b-2 border-solid border-rose-300 px-6 py-3 text-lg">
-        <span className="flex items-center gap-1">{[0, 1, 2].map((k) => <span key={k} className={`h-3 w-8 rounded-full ${k < mang ? "bg-red-600" : "bg-red-200"}`} aria-hidden />)}<span className="sr-only">{mang}</span></span>
-        <span className="text-sm font-bold text-[#6b7280]">{kq.current.dung}/{kq.current.tong}</span>
-        <span className="rotate-[-6deg] rounded-full border-2 border-solid border-red-600 px-3 text-xl font-extrabold tabular-nums text-red-600">{kq.current.diem}</span>
+    <div className="mt-6 grid gap-4">
+      <div className="flex items-start gap-3">
+        <Leon key={`${chon}${sua}${i}`} cam={!xong ? (chon === cau.vt ? "yeah" : "lam-viec") : dat ? "tuyet-voi" : "co-len"} size={60} className="mcf-nay shrink-0" />
+        <p className="m-0 rounded-3xl rounded-tl-md bg-surface px-4 py-3 text-sm font-semibold text-ink shadow-sm">{loiLeon}</p>
       </div>
-      <div className="relative px-6 pb-6 pl-14 pt-4 [background:repeating-linear-gradient(#fffdf5_0_39px,#bfdbfe_39px_40px)]">
-        <span aria-hidden className="absolute bottom-0 left-10 top-0 w-0.5 bg-rose-300" />
-        <p className="m-0 text-xs font-bold uppercase tracking-wider text-[#6b7280]">✏️ {tr("Khoanh chữ SAI", "Entourez le mot FAUX", "Circle the WRONG word")}</p>
-        <div className="mt-2 flex flex-wrap gap-x-2 gap-y-1">
-          {cau.tu.map((w, k) => {
-            const laLoi = chon != null && k === cau.vt, nham = chon === k && k !== cau.vt;
-            return (
-              <button key={k} type="button" onClick={() => bam(k)} lang="fr"
-                className={`relative cursor-pointer rounded-[50%] border-2 border-solid bg-transparent px-2 py-1 text-2xl transition-colors duration-150 ${laLoi ? "border-red-600 text-[#1f2937]" : nham ? "mcf-rung border-[#9ca3af] text-[#9ca3af] line-through" : "border-transparent text-[#1f2937] hover:border-red-300"}`}>
-                {laLoi ? <><s className="text-red-600">{w}</s> <span className="font-['Caveat',cursive] text-red-600">{cau.sua}</span></> : w}
-              </button>
-            );
-          })}
+      {/* Bản thảo: giấy kẻ dòng (màu giấy viết thẳng), người chơi cầm bút đỏ */}
+      <div className="relative rotate-[-0.4deg] rounded-md bg-[#fffdf5] text-[#1f2937] shadow-[0_18px_36px_rgba(0,0,0,0.18)]">
+        <div className="flex items-center justify-between border-0 border-b-2 border-solid border-rose-300 px-6 py-3 text-lg">
+          <span className="flex items-center gap-1.5">{[0, 1, 2].map((k) => <span key={k} className={`text-lg ${k < mang ? "" : "opacity-20 grayscale"}`} aria-hidden>🖋️</span>)}<span className="sr-only">{mang}</span></span>
+          <span className="text-sm font-bold text-[#6b7280]">{tr("Trang", "Page", "Page")} {i + 1} · {kq.current.dung}/{kq.current.tong}</span>
+          <span className="rotate-[-6deg] rounded-full border-2 border-solid border-red-600 px-3 text-xl font-extrabold tabular-nums text-red-600">{kq.current.diem}</span>
         </div>
-        {chon != null && <p className="m-0 mt-4 text-base text-[#374151]"><span lang="fr" className="font-bold text-green-700">✔ {cau.dung}</span>{cau.giai ? <span className="block text-sm text-[#6b7280]">{cau.giai}</span> : null}</p>}
+        <div className="relative min-h-[200px] px-6 pb-8 pl-14 pt-4 [background:repeating-linear-gradient(#fffdf5_0_47px,#bfdbfe_47px_48px)]">
+          <span aria-hidden className="absolute bottom-0 left-10 top-0 w-0.5 bg-rose-300" />
+          <p className="m-0 text-xs font-bold uppercase tracking-wider text-[#6b7280]">✏️ {chon === cau.vt && !sua ? tr("Chọn chữ ĐÚNG để thay", "Choisissez la correction", "Pick the correction") : tr("Khoanh chữ SAI", "Entourez le mot FAUX", "Circle the WRONG word")}</p>
+          <div className="mt-3 flex flex-wrap gap-x-2.5 gap-y-2">
+            {cau.tu.map((w, k) => {
+              const laLoi = chon != null && k === cau.vt, nham = chon === k && k !== cau.vt;
+              return (
+                <button key={k} type="button" onClick={() => khoanh(k)} lang="fr"
+                  className={`relative cursor-pointer rounded-[50%] border-2 border-solid bg-transparent px-2 py-1 font-sans text-3xl transition-colors duration-150 ${laLoi ? "border-red-600 text-[#1f2937]" : nham ? "mcf-rung border-[#9ca3af] text-[#9ca3af] line-through" : "border-transparent text-[#1f2937] hover:border-red-300"}`}>
+                  {laLoi && sua ? <><s className="text-red-600">{w}</s> <span className={sua === cau.sua ? "text-red-600" : "text-[#9ca3af] line-through"}>{sua}</span></> : w}
+                </button>
+              );
+            })}
+          </div>
+          {chon === cau.vt && !sua && (
+            <div className="mcf-cau-vao mt-5 flex flex-wrap gap-3">
+              {pa.map((w) => (
+                <button key={w} type="button" onClick={() => thay(w)} lang="fr"
+                  className="cursor-pointer rounded-xl border-2 border-dashed border-red-400 bg-white px-5 py-2.5 font-sans text-2xl font-bold text-red-600 hover:bg-red-50">{w}</button>
+              ))}
+            </div>
+          )}
+          {xong && <p className="m-0 mt-4 text-base text-[#374151]"><span lang="fr" className="font-bold text-green-700">✔ {cau.dung}</span>{cau.giai ? <span className="block text-sm text-[#6b7280]">{cau.giai}</span> : null}</p>}
+          {xong && dat && <span className="mcf-dong absolute bottom-3 right-5 rotate-[-8deg] rounded-md border-4 border-double border-green-700 px-3 py-1 text-lg font-black tracking-widest text-green-700">BON À TIRER</span>}
+        </div>
       </div>
     </div>
   );
@@ -823,11 +892,19 @@ function DungSai({ cap, he, onXong }) {
         <span>{kq.current.dung}/{kq.current.tong}{nhan > 1 && <span className="ml-2 rounded-full bg-amber-400 px-2 py-0.5 text-xs text-[#3b2417]">×{nhan}</span>}</span>
         <span className="rounded-full bg-black/25 px-3 py-1 tabular-nums">{kq.current.diem}</span>
       </div>
-      <div className={`relative mx-auto mt-5 max-w-xl rounded-sm bg-[#fbf6ea] px-6 pb-8 pt-5 text-[#1f2937] shadow-[0_14px_30px_rgba(0,0,0,0.35)] ${loe && !loe.ok ? "mcf-rung" : ""}`}>
+      <div className="mx-auto mt-4 flex max-w-2xl items-start gap-3">
+        <Leon key={`${i}${!!loe}`} cam={!loe ? "lam-viec" : loe.ok ? (nhan > 1 ? "tuyet-voi" : "yeah") : "co-len"} size={56} className="mcf-nay shrink-0" />
+        <p className="m-0 rounded-3xl rounded-tl-md bg-[#fbf6ea] px-4 py-3 text-sm font-semibold text-[#3b2417]">
+          {!loe ? (i === 0 ? tr("Phiên toà ngữ pháp bắt đầu! Ta là thẩm phán Léon. Câu này viết đúng hay sai? Phán nhanh lên!", "L'audience est ouverte ! Je suis le juge Léon. Correct ou pas ? Vite !", "Court is in session! I'm Judge Léon. Right or wrong? Quick!") : tr(`Hồ sơ tiếp theo, mời bị cáo số ${i + 1}!`, `Dossier suivant, accusé n° ${i + 1} !`, `Next case, defendant no. ${i + 1}!`))
+            : loe.ok ? (nhan > 1 ? tr(`Phán chuẩn! Chuỗi ${chuoi}, điểm nhân ${nhan}.`, `Verdict juste ! Série de ${chuoi}.`, `Spot on! Streak ${chuoi}.`) : tr("Phán chuẩn!", "Verdict juste !", "Correct verdict!"))
+              : tr("Phán nhầm rồi! Đọc lời giải bên dưới.", "Erreur judiciaire ! Lis l'explication.", "Miscarriage of justice! Read the note.")}
+        </p>
+      </div>
+      <div className={`relative mx-auto mt-5 max-w-2xl rounded-sm bg-[#fbf6ea] px-6 pb-8 pt-5 text-[#1f2937] shadow-[0_14px_30px_rgba(0,0,0,0.35)] ${loe && !loe.ok ? "mcf-rung" : ""}`}>
         <p className="m-0 border-0 border-b border-dashed border-[#c8b89a] pb-2 text-[11px] uppercase tracking-[0.2em] text-[#8a6d4b]">
           {tr("Hồ sơ", "Dossier", "Case")} #{String(i + 1).padStart(3, "0")} · {cau.kieu === "sua" ? tr("câu này viết đúng chưa?", "phrase correcte ?", "correct sentence?") : tr("đúng hay sai?", "vrai ou faux ?", "true or false?")}
         </p>
-        <p lang={cau.kieu === "sua" ? "fr" : undefined} className="m-0 mt-5 text-2xl leading-snug">{cau.cau}</p>
+        <p lang={cau.kieu === "sua" ? "fr" : undefined} className="m-0 mt-5 text-3xl leading-snug">{cau.cau}</p>
         {loe && !loe.ok && loe.cau.giai && <p className="m-0 mt-3 text-sm text-[#6b5a45]">{loe.cau.giai}</p>}
         {loe && <span className={`mcf-dong absolute bottom-3 right-4 rounded-md border-4 border-double px-3 py-1 text-2xl font-black tracking-widest ${loe.cau.dung ? "border-green-700 text-green-700" : "border-red-700 text-red-700"}`}>{loe.cau.dung ? "VRAI" : "FAUX"}</span>}
       </div>
