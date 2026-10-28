@@ -138,7 +138,7 @@ const loiChaoBuoi = () => {
       : h < 18 ? tr("Chào buổi chiều", "Bon après-midi", "Good afternoon")
         : tr("Chào buổi tối", "Bonsoir", "Good evening");
 };
-export function HeroBanner({ t, signedIn, name, note, goal, level, hocTiep = "/decouvrir/entrainement", as: Heading = "h1" }) {
+export function HeroBanner({ t, signedIn, name, note, goal, level, hocTiep = "/decouvrir/entrainement", as: Heading = "h1", nut = true }) {
   return (
     <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-blue-600 via-primary to-[#6d5ce7] p-6 text-on-primary shadow-[0_20px_50px_rgba(37,99,235,0.3)] sm:p-8">
       {/* Trang trí: lưới chấm mờ + hai quầng sáng. Ẩn với trình đọc màn hình. */}
@@ -175,7 +175,8 @@ export function HeroBanner({ t, signedIn, name, note, goal, level, hocTiep = "/d
             </div>
           )}
 
-          <div className="mt-5 flex flex-wrap gap-2.5">
+          {/* nut=false (28/10): trang chủ học sinh bỏ hai nút, các thẻ bên dưới đã dẫn tới đó. */}
+          {nut && <div className="mt-5 flex flex-wrap gap-2.5">
             <Link to={hocTiep}
               className="inline-flex items-center gap-2 rounded-full bg-surface px-5 py-2.5 text-sm font-bold text-primary no-underline shadow-[0_6px_16px_rgb(0,0,0,0.15)] transition-transform duration-200 hover:scale-[1.03]">
               {t("home.discover")} <ArrowRight size={16} />
@@ -186,7 +187,7 @@ export function HeroBanner({ t, signedIn, name, note, goal, level, hocTiep = "/d
                 <Timer size={16} /> {tr("Thi thử DELF", "Examen blanc", "Mock exam")}
               </Link>
             )}
-          </div>
+          </div>}
         </div>
         <Leon cam="co-len" size={150} className="mcf-leon-bay hidden shrink-0 drop-shadow-[0_14px_20px_rgba(0,0,0,0.3)] sm:block" />
       </div>

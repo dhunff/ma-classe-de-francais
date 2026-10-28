@@ -95,7 +95,7 @@ export default function StudentDashboard({
               là không lặp nên được mang vào banner. */}
           <Rise delay={0}>
             <HeroBanner t={t} signedIn name={name} as="h2" goal={goal} level={profile?.level}
-              hocTiep="/etudiant/entrainement" note={goal ? null : t("dash.no_goal")} />
+              hocTiep="/etudiant/entrainement" nut={false} note={goal ? null : t("dash.no_goal")} />
           </Rise>
 
           {/* 26/10 (chủ dự án): Trò chơi & thử thách lên đầu, ngay dưới banner. */}
