@@ -15,7 +15,7 @@ import FollowingStreakWidget from "./FollowingStreakWidget.jsx";
 import GioHocWidget from "./GioHocWidget.jsx";
 import KeHoachThi from "./KeHoachThi.jsx";
 import TourGioiThieu from "../../shared/TourGioiThieu.jsx";
-import { DeXuatBai, TroChoi, DongDeuKyNang, chonDeXuat, TienDoNguPhap } from "./TrangChuKhoi.jsx";
+import { DeXuatBai, TroChoi, DongDeuKyNang, chonDeXuat } from "./TrangChuKhoi.jsx";
 
 /* Trang chủ học sinh.
 
@@ -130,9 +130,7 @@ export default function StudentDashboard({
                 <ArrowRight size={20} className="shrink-0 text-soft transition-transform group-hover:translate-x-1 group-hover:text-primary" />
               </Link>
               </Rise>
-            <Rise delay={190}>
-              <TienDoNguPhap level={profile?.level} />
-            </Rise>
+            {/* Thẻ « Học ngữ pháp » (TienDoNguPhap) gỡ 28/10 theo chủ dự án; hàm vẫn ở TrangChuKhoi.jsx. */}
               </div>
           </section>
 
