@@ -57,7 +57,7 @@ const TRO_CHOI = () => [
     ten: tr("Thám tử Léon", "Détective Léon", "Detective Léon"),
     mo: tr("Làm trợ lý cho Thanh tra Léon: 9 vụ án, đọc manh mối tiếng Pháp và lần ra kẻ bí ẩn P.G.", "Assistez l'inspecteur Léon : 9 affaires, des indices en français et le mystérieux P.G.", "Assist Inspector Léon: 9 cases, French clues and the mysterious P.G.") },
   { ma: "do_vui", nhom: "dv", Icon: Landmark, nen: "from-blue-600 to-red-500",
-    ten: tr("Le Grand Quiz de France", "Le Grand Quiz de France", "Le Grand Quiz de France"),
+    ten: tr("Đố vui nước Pháp", "Quiz France", "France quiz"),
     mo: tr("Gameshow 9 chặng vòng quanh nước Pháp do MC Léon dẫn: bạn đấu bà Minette, thắng chặng để đóng dấu hộ chiếu.", "Un jeu télé en 9 étapes animé par Léon : vous contre Mme Minette.", "A 9-stage TV quiz hosted by Léon: you vs Mme Minette.") },
   { ma: "phieu_luu", nhom: "dv", Icon: MapPinned, nen: "from-amber-500 to-orange-600",
     ten: tr("Một năm ở Paris", "Une année à Paris", "A year in Paris"),
@@ -192,14 +192,28 @@ function ManChoi({ tc }) {
             </div>
           </>}
           <p className="m-0 text-sm font-bold text-soft">{tr("Mức độ", "Difficulté", "Difficulty")}</p>
-          <div className="mx-auto mt-3 grid max-w-md grid-cols-3 gap-2">
-            {[["de", tr("Dễ", "Facile", "Easy"), "A1–A2", "bg-ok"], ["vua", tr("Vừa", "Moyen", "Medium"), "A2–B1", "bg-warn"], ["kho", tr("Khó", "Difficile", "Hard"), "B1–B2", "bg-danger"]].map(([m, ten, mo, nen]) => (
-              <button key={m} type="button" onClick={() => setMuc(m)}
-                className={`cursor-pointer rounded-2xl border-0 px-2 py-3 font-sans transition-[transform,opacity] ${muc === m ? `${nen} scale-105 text-white shadow-md` : "bg-surface2 text-ink opacity-80 hover:opacity-100"}`}>
-                <span className="block text-base font-extrabold">{ten}</span>
-                <span className="block text-[11px] font-bold opacity-80">{mo}</span>
-              </button>
-            ))}
+          {/* Chọn mức (28/10): ba thẻ lớn, vạch cường độ 1–3, mô tả ngắn và dấu tích ở thẻ đang chọn */}
+          <div className="mx-auto mt-3 grid max-w-2xl gap-3 sm:grid-cols-3">
+            {[["de", tr("Dễ", "Facile", "Easy"), "A1–A2", tr("Từ quen, nhiều thời gian", "Mots courants, plus de temps", "Common words, more time"), "bg-ok", "border-ok", "text-ok", "mim-cuoi"],
+              ["vua", tr("Vừa", "Moyen", "Medium"), "A2–B1", tr("Nhịp chuẩn, có bẫy nhẹ", "Rythme normal, quelques pièges", "Normal pace, light traps"), "bg-warn", "border-warn", "text-warn", "nhay-mat"],
+              ["kho", tr("Khó", "Difficile", "Hard"), "B1–B2", tr("Nhanh hơn, từ khó, ít gợi ý", "Plus rapide, moins d'aide", "Faster, harder, fewer hints"), "bg-danger", "border-danger", "text-danger", "quyet-tam"]].map(([m, ten, cap, mo, nen, vien, chu, cam], j) => {
+              const chon = muc === m;
+              return (
+                <button key={m} type="button" onClick={() => setMuc(m)} aria-pressed={chon}
+                  className={`relative flex cursor-pointer items-center gap-3 rounded-2xl border-2 border-solid p-3 text-left font-sans transition-[transform,box-shadow,border-color] duration-200 sm:flex-col sm:items-center sm:p-4 sm:text-center ${chon ? `${vien} bg-surface -translate-y-0.5 shadow-lg` : "border-line bg-surface2 hover:-translate-y-0.5 hover:border-soft/40"}`}>
+                  {chon && <span className={`absolute right-2 top-2 grid h-6 w-6 place-items-center rounded-full ${nen} text-white`}><Check size={14} strokeWidth={3} /></span>}
+                  <Leon cam={cam} size={48} className={`shrink-0 transition-[filter,opacity] ${chon ? "" : "opacity-60 grayscale"}`} />
+                  <span className="min-w-0 flex-1 sm:flex-none">
+                    <span className="flex items-center gap-2 sm:justify-center">
+                      <span className={`text-lg font-extrabold ${chon ? chu : "text-ink"}`}>{ten}</span>
+                      <span aria-hidden className="flex items-end gap-0.5">{[0, 1, 2].map((k) => <span key={k} className={`w-1.5 rounded-sm ${["h-2", "h-3", "h-4"][k]} ${k <= j ? (chon ? nen : "bg-soft") : "bg-line"}`} />)}</span>
+                    </span>
+                    <span className="mt-0.5 block text-xs font-bold text-soft">{cap}</span>
+                    <span className="mt-1 block text-xs leading-snug text-soft">{mo}</span>
+                  </span>
+                </button>
+              );
+            })}
           </div>
           <button type="button" onClick={() => { phat("batDau"); setVan((v) => v + 1); setBuoc("choi"); }}
             className="mt-6 inline-flex cursor-pointer items-center gap-2 rounded-full border-0 bg-primary px-8 py-3 font-sans text-base font-extrabold text-on-primary shadow-[0_10px_24px_rgb(var(--mcf-primary-rgb)/0.3)] active:scale-[0.97]">
