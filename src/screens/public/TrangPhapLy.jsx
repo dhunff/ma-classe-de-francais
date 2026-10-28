@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { supabase } from "../../storageShim.js";
 import { Link, useLocation } from "react-router-dom";
 import { useSeo } from "../../shared/seo.js";
 import { AlertTriangle, ChevronRight, Search } from "lucide-react";
@@ -45,7 +46,7 @@ import { tr } from "../../shared/i18n.jsx";
    người đó, không phải của người viết mã. Điền vào đây là mọi trang tự đổi.
    Trống thì trang HIỆN RÕ là còn thiếu — một chính sách không có chỗ liên hệ
    mà trông như hoàn chỉnh còn tệ hơn một chính sách tự nói nó thiếu. */
-export const EMAIL_LIEN_HE = "contact.fracile@gmail.com";   // chủ dự án chọn 23/09/2026
+export const EMAIL_LIEN_HE = "leon@fracile.vn";   // chủ dự án đổi 28/10/2026 (trước: contact.fracile@gmail.com)
 
 const CAP_NHAT = "28/10/2026";
 
@@ -64,11 +65,19 @@ function LienHe() {
    nền toàn màn hình và lối « ← FRACILE » về trang giới thiệu. */
 function Khung({ tieuDe, children, trongApp = false }) {
   const { pathname } = useLocation();
+  const [dangNhap, setDangNhap] = useState(false);
+  useEffect(() => {
+    let con = true;
+    supabase.auth.getSession().then(({ data }) => { if (con) setDangNhap(!!data?.session); }, () => {});
+    return () => { con = false; };
+  }, []);
   useSeo({ tieuDe: `${tieuDe} · FRACILE`, moTa: `${tieuDe} của FRACILE, nền tảng học tiếng Pháp và luyện thi DELF bằng tiếng Việt.`, duongDan: pathname });
   return (
     <div className={trongApp ? "" : "min-h-screen bg-bg"}>
       <div className={`mx-auto max-w-3xl px-5 ${trongApp ? "py-6" : "py-12 sm:py-16"}`}>
-        {!trongApp && <Link to="/gioi-thieu" className="text-sm font-bold text-primary no-underline">← FRACILE</Link>}
+        {/* 28/10: đã đăng nhập thì « ← » về trang chủ của vai (route « * » trong App.jsx lo
+            việc chọn), chưa đăng nhập mới về trang giới thiệu. */}
+        {!trongApp && <Link to={dangNhap ? "/" : "/gioi-thieu"} className="text-sm font-bold text-primary no-underline">← {dangNhap ? tr("Trang chủ", "Accueil", "Home") : "FRACILE"}</Link>}
         <h1 className="m-0 mt-4 text-[34px] font-bold leading-tight tracking-tight text-ink">{tieuDe}</h1>
         <p className="m-0 mt-2 text-xs text-soft">{tr("Cập nhật lần cuối", "Dernière mise à jour", "Last updated")}: {CAP_NHAT}</p>
 
