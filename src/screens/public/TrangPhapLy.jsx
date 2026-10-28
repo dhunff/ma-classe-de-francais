@@ -136,12 +136,11 @@ function FormLienHe({ trang }) {
     <section id="lien-he" className="mcf-rise mt-12 scroll-mt-6" style={{ "--mcf-delay": "150ms" }}>
       <h2 className="m-0 mb-2 px-4 text-[17px] font-semibold tracking-tight text-ink">{tr("Liên hệ", "Contact", "Contact")}</h2>
       <form onSubmit={gui} className="space-y-3 rounded-2xl bg-surface p-4 shadow-[0_1px_2px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.04)] ring-1 ring-line">
-        <p className="m-0 text-[15px] text-soft">{tr("Góp ý, báo lỗi hay câu hỏi chưa có ở đây, cứ viết vào. Thư tới thẳng hộp thư", "Suggestion, bug ou question : écrivez-nous, le message arrive directement à", "Feedback, a bug or a question not covered here: write to us, it goes straight to")} <LienHe />.</p>
         <div className="grid gap-3 sm:grid-cols-2">
           <input value={f.hoTen} onChange={doi("hoTen")} maxLength={120} autoComplete="name" placeholder={tr("Họ tên", "Nom", "Name")} aria-label={tr("Họ tên", "Nom", "Name")} className={O_NHAP} />
           <input type="email" value={f.email} onChange={doi("email")} maxLength={200} autoComplete="email" placeholder="Email" aria-label="Email" className={O_NHAP} />
         </div>
-        <div className="flex flex-wrap gap-2" role="radiogroup" aria-label={tr("Chủ đề", "Sujet", "Topic")}>
+        <div className="flex flex-wrap justify-center gap-2" role="radiogroup" aria-label={tr("Chủ đề", "Sujet", "Topic")}>
           {CHU_DE_LH().map(([ma, ten]) => (
             <button key={ma} type="button" role="radio" aria-checked={f.chuDe === ma} onClick={() => setF((x) => ({ ...x, chuDe: ma }))}
               className={`cursor-pointer rounded-full border border-solid px-3.5 py-1.5 font-sans text-sm font-semibold transition-[background-color,border-color,color,transform] duration-150 active:scale-95 ${f.chuDe === ma ? "border-primary bg-primary text-on-primary" : "border-line bg-surface2 text-ink hover:border-primary/40"}`}>{ten}</button>
