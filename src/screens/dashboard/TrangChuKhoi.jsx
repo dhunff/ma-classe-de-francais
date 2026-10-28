@@ -202,7 +202,7 @@ export function TroChoi() {
     { to: "/etudiant/thach-dau", Icon: Swords, nen: "from-rose-500 to-orange-500",
       ten: tr("Thách đấu", "Défis", "Duels"), mo: tr("Đấu từ vựng với bạn học", "Affrontez vos camarades", "Vocabulary duels with classmates") },
     { to: "/etudiant/tro-choi", Icon: Gamepad2, nen: "from-amber-500 to-pink-500",
-      ten: tr("Trò chơi nhanh", "Jeux rapides", "Quick games"), mo: tr("11 trò: từ vựng, nghe nói, ngữ pháp, đọc và văn hoá", "11 jeux : vocabulaire, oral, grammaire, culture", "11 games: vocabulary, speaking, grammar, culture") },
+      ten: tr("Trò chơi nhanh", "Jeux rapides", "Quick games"), mo: tr("11 trò chơi học tiếng Pháp", "11 jeux pour apprendre", "11 games to learn French") },
     { to: "/etudiant/bo-the", Icon: Layers, nen: "from-violet-500 to-indigo-600",
       ten: "Flashcard", mo: tr("Ôn thẻ đến hạn hôm nay", "Révisez les cartes du jour", "Review today's due cards") },
     { to: "/etudiant/examen", Icon: Timer, nen: "from-sky-500 to-blue-600",
@@ -222,10 +222,10 @@ export function TroChoi() {
               <span className="grid h-11 w-11 place-items-center rounded-2xl bg-white/20"><x.Icon size={22} /></span>
               <span>
                 <span className="block text-lg font-extrabold leading-tight">{x.ten}</span>
-                <span className="mt-1.5 line-clamp-3 text-[13px] leading-snug text-white/85">{x.mo}</span>
+                <span className="mt-1.5 line-clamp-2 text-[13px] leading-snug text-white/85">{x.mo}</span>
               </span>
             </span>
-            <span className="relative mt-3 inline-flex items-center gap-1 self-start rounded-full bg-white/20 px-3 py-1 text-xs font-bold transition-colors group-hover:bg-white/30">
+            <span className="relative mt-3 inline-flex shrink-0 items-center gap-1 self-start rounded-full bg-white/20 px-3 py-1 text-xs font-bold transition-colors group-hover:bg-white/30">
               {tr("Vào", "Ouvrir", "Open")} <ArrowRight size={13} className="transition-transform group-hover:translate-x-0.5" />
             </span>
           </Link>
