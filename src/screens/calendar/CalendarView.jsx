@@ -1,15 +1,14 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  ChevronLeft, ChevronRight, CalendarDays, ClipboardList, Trash2, Plus,
-  Map, Dumbbell, Layers, Timer, AudioLines, Swords,
+  ChevronLeft, ChevronRight, CalendarDays, ClipboardList, Trash2, Mail, X, MousePointerClick,
 } from "lucide-react";
-import ChonGio from "../../shared/ChonGio.jsx";
 import { tr } from "../../shared/i18n.jsx";
 import { Rise } from "../dashboard/parts.jsx";
 import CalendarTour from "./CalendarTour.jsx";
 import { load, save } from "../../shared/storage.js";
-import ChonNgay from "../../shared/ChonNgay.jsx";
+import DatLichNhanh, { mucLich } from "../../shared/DatLichNhanh.jsx";
+import { docLich, xoaLich } from "../../shared/lichHoc.js";
 
 /* Lịch tuần — hai khoang: dòng thời gian bên trái, bảng thao tác bên phải.
 
@@ -66,20 +65,12 @@ const fmtLong = (t, d) => `${d.getDate()} ${t(`cal.m${d.getMonth() + 1}`).toLowe
 const KIND = {
   devoir: { dot: "bg-warn", bar: "bg-warn", Icon: ClipboardList },
   custom: { dot: "bg-primary", bar: "bg-primary", Icon: CalendarDays },
+  lich: { dot: "bg-primary", bar: "bg-primary", Icon: CalendarDays },
 };
 
-/* Hoạt động gắn với lịch (14/10): học sinh đặt lịch để LÀM BÀI ở một phần của
-   app, nên mỗi sự kiện mang `muc` và bấm vào thẻ là mở thẳng phần đó.
-   Hàm, không phải hằng: tr() phải chạy lúc dựng để theo ngôn ngữ đang chọn. */
-const MUC = () => [
-  { id: "lo-trinh", to: "/etudiant/lo-trinh", Icon: Map, nhan: tr("Lộ trình học tập", "Parcours", "Learning path") },
-  { id: "luyen-tap", to: "/etudiant/entrainement", Icon: Dumbbell, nhan: tr("Luyện tập", "Entraînement", "Practice") },
-  { id: "flashcard", to: "/etudiant/bo-the", Icon: Layers, nhan: "Flashcard" },
-  { id: "thi-thu", to: "/etudiant/examen", Icon: Timer, nhan: tr("Thi thử DELF", "Examen blanc", "Mock exam") },
-  { id: "nghe-noi", to: "/etudiant/nghe-noi", Icon: AudioLines, nhan: tr("Nghe & Nói", "Écoute & Oral", "Listen & Speak") },
-  { id: "thach-dau", to: "/etudiant/thach-dau", Icon: Swords, nhan: tr("Thách đấu", "Défi", "Duel") },
-];
-const mucCua = (id) => MUC().find((x) => x.id === id);
+/* Hoạt động gắn với lịch (14/10): mỗi sự kiện mang `muc`, bấm thẻ là mở thẳng phần đó.
+   Danh sách dùng chung ở shared/DatLichNhanh.jsx (28/10). */
+const mucCua = mucLich;
 
 function EventCard({ ev, t, onDelete, style, onMo }) {
   const kind = KIND[ev.kind] || KIND.custom;
@@ -112,13 +103,14 @@ function EventCard({ ev, t, onDelete, style, onMo }) {
           <span className="truncate">
             {ev.kind === "devoir" ? t("cal.deadline_at", { time }) : time}
           </span>
+          {ev.nhac && <Mail size={10} className="shrink-0 text-primary" aria-label={tr("Léon sẽ nhắc qua mail", "Rappel par e-mail", "Email reminder")} />}
         </p>
       </div>
 
-      {onDelete && ev.kind === "custom" && (
+      {onDelete && (ev.kind === "custom" || ev.kind === "lich") && (
         <button
           type="button"
-          onClick={(e) => { e.stopPropagation(); onDelete(ev.id); }}
+          onClick={(e) => { e.stopPropagation(); onDelete(ev); }}
           aria-label={t("cal.delete")}
           className="absolute right-1 top-1 hidden h-5 w-5 cursor-pointer place-items-center rounded-full border-0 bg-surface2 p-0 text-soft transition-colors hover:text-danger group-hover:grid"
         >
@@ -200,78 +192,6 @@ function MiniMonth({ t, month, selected, onPick, onMonth }) {
   );
 }
 
-/* ─────────────────────────── Biểu mẫu thêm ─────────────────────────── */
-
-function AddEventForm({ t, defaultDate, onAdd }) {
-  const [title, setTitle] = useState("");
-  const [date, setDate] = useState(ymd(defaultDate));
-  const [time, setTime] = useState("19:00");
-  const [muc, setMuc] = useState("luyen-tap");
-  const [err, setErr] = useState("");
-
-  /* Chọn ngày ở lịch nhỏ thì ô ngày đi theo — người dùng vừa chỉ vào một ngày
-     rồi phải gõ lại chính ngày đó là thừa. */
-  useEffect(() => { setDate(ymd(defaultDate)); }, [defaultDate]);
-
-  const field = "w-full rounded-xl border-0 bg-surface2 px-3.5 py-2.5 text-sm font-semibold text-ink outline-none transition-all placeholder:font-normal placeholder:text-soft focus:ring-2 focus:ring-primary/40";
-
-  const submit = (e) => {
-    e.preventDefault();
-    const clean = title.trim();
-    /* Đã chọn hoạt động thì tiêu đề là tuỳ chọn: để trống lấy tên hoạt động. */
-    const tieuDe = clean || mucCua(muc)?.nhan || "";
-    if (!tieuDe) { setErr(t("cal.need_title")); return; }
-    setErr("");
-    onAdd({ title: tieuDe, date, time, muc });
-    setTitle("");
-  };
-
-  return (
-    <form id="tour-cal-form" onSubmit={submit}
-      className="rounded-3xl bg-surface p-5 shadow-[0_18px_44px_rgb(0,0,0,0.20)]">
-      <h3 className="m-0 text-sm font-extrabold text-ink">{t("cal.new_event")}</h3>
-
-      <p className="m-0 mt-3 text-xs font-bold text-soft">{tr("Bạn sẽ học gì?", "Que allez-vous travailler ?", "What will you study?")}</p>
-      <div className="mt-2 grid grid-cols-2 gap-1.5">
-        {MUC().map((x) => (
-          <button key={x.id} type="button" onClick={() => setMuc(x.id)} aria-pressed={muc === x.id}
-            className={`flex cursor-pointer items-center gap-1.5 rounded-xl border-0 px-2.5 py-2 text-left text-xs font-bold transition-colors ${
-              muc === x.id ? "bg-primary text-on-primary" : "bg-surface2 text-ink hover:bg-primary-soft hover:text-primary"}`}>
-            <x.Icon size={14} className="shrink-0" /> <span className="truncate">{x.nhan}</span>
-          </button>
-        ))}
-      </div>
-
-      <div className="mt-3 flex flex-col gap-2.5">
-        <label className="block">
-          <span className="sr-only">{t("cal.f_title")}</span>
-          <input value={title} onChange={(e) => setTitle(e.target.value)}
-            placeholder={tr("Ghi chú (tuỳ chọn): Ôn bài 3…", "Note (facultatif) : réviser l'exercice 3…", "Note (optional): review exercise 3…")} className={field} />
-        </label>
-
-        <div className="flex gap-2.5">
-          <label className="min-w-0 flex-1">
-            <span className="sr-only">{t("cal.f_date")}</span>
-            <ChonNgay value={date} onChange={setDate} className={field} />
-          </label>
-          <label className="w-[104px] shrink-0">
-            <span className="sr-only">{t("cal.f_time")}</span>
-            <ChonGio value={time} onChange={setTime} className={field} />
-          </label>
-        </div>
-      </div>
-
-      {err && <p className="m-0 mt-2 text-xs font-bold text-danger">{err}</p>}
-
-      <button type="submit"
-        className="mt-4 flex w-full cursor-pointer items-center justify-center gap-2 rounded-full border-0 bg-primary px-4 py-2.5 font-[inherit] text-sm font-bold text-on-primary transition-transform duration-200 hover:scale-[1.02]">
-        <Plus size={16} />
-        {t("cal.add")}
-      </button>
-    </form>
-  );
-}
-
 /* ─────────────────────────────── Khung ─────────────────────────────── */
 
 export default function CalendarView({
@@ -303,19 +223,37 @@ export default function CalendarView({
 
   const custom = mine ?? [];
 
+  /* 28/10: lịch mới nằm ở bảng lich_hoc (migration 172). Nạp theo tuần đang xem; database chưa có
+     bảng thì `chuaBang` = true và biểu mẫu lùi về blob cũ (không có mail nhắc). */
+  const [bang, setBang] = useState([]);
+  const [chuaBang, setChuaBang] = useState(false);
+  const [lan, setLan] = useState(0);
+  useEffect(() => {
+    if (eventsProp) return;
+    let off = false;
+    docLich(weekStart, addDays(weekStart, 7)).then((r) => {
+      if (off) return;
+      if (r.ds) { setBang(r.ds); setChuaBang(false); } else { setBang([]); setChuaBang(!!r.chuaCoBang); }
+    });
+    return () => { off = true; };
+  }, [weekStart, lan, eventsProp]);
+
   const persist = async (next) => {
     setMine(next);
     if (name && !eventsProp) await save(CAL_KEY(name), next, false);
   };
 
-  const addEvent = ({ title, date, time, muc }) => {
-    const [h, m] = time.split(":").map(Number);
-    const d = new Date(`${date}T00:00:00`);
-    d.setHours(h || 0, m || 0, 0, 0);
-    persist([...custom, { id: `c${Date.now()}`, title, at: d.toISOString(), kind: "custom", muc }]);
+  /* Đường lùi khi chưa có bảng: ghi blob như trước. */
+  const luuBlob = ({ tieuDe, muc, luc }) => persist([...custom, { id: `c${Date.now()}`, title: tieuDe, at: luc.toISOString(), kind: "custom", muc }]);
+  const daDat = (lich) => {
+    setONhanh(null);
+    if (lich) { const d = new Date(lich.luc); setSelected(d); setWeekStart(mondayOf(d)); setLan((x) => x + 1); }
   };
-
-  const removeEvent = (id) => persist(custom.filter((e) => e.id !== id));
+  const removeEvent = async (ev) => {
+    if (ev.kind === "lich") { if (await xoaLich(ev.id)) setBang((ds) => ds.filter((x) => x.id !== ev.id)); return; }
+    persist(custom.filter((e) => e.id !== ev.id));
+  };
+  const [oNhanh, setONhanh] = useState(null);     // Date của ô vừa bấm trên lưới
 
   /* Hạn nộp bài trở thành sự kiện. Đây là phần khiến lịch có nội dung thật
      ngay lập tức thay vì chờ người dùng tự nhập. */
@@ -326,8 +264,9 @@ export default function CalendarView({
         id: `d-${ex.id}`, title: ex.title, at: new Date(ex.deadline), kind: "devoir",
       }));
     const fromMe = custom.map((e) => ({ ...e, at: new Date(e.at) }));
-    return [...fromWork, ...fromMe].filter((e) => !Number.isNaN(e.at.getTime()));
-  }, [exercises, custom]);
+    const fromBang = bang.map((l) => ({ id: l.id, title: l.tieu_de, at: new Date(l.luc), kind: "lich", muc: l.muc, nhac: l.nhac_mail }));
+    return [...fromWork, ...fromMe, ...fromBang].filter((e) => !Number.isNaN(e.at.getTime()));
+  }, [exercises, custom, bang]);
 
   const days = useMemo(
     () => Array.from({ length: 7 }, (_, i) => addDays(weekStart, i)),
@@ -447,10 +386,19 @@ export default function CalendarView({
 
                   {days.map((d, i) => (
                     <div key={ymd(d)} className="relative border-0 border-l border-solid border-line/70">
-                      {HOURS.map((h) => (
-                        <div key={h} style={{ height: ROW_H }}
-                          className="border-0 border-t border-solid border-line/70" />
-                      ))}
+                      {/* 28/10: mỗi ô giờ là một nút, bấm là mở đặt lịch nhanh đúng ngày giờ đó. */}
+                      {HOURS.map((h) => {
+                        const luc = new Date(d); luc.setHours(h, 0, 0, 0);
+                        const qua = luc.getTime() + 3600000 <= Date.now();
+                        return (
+                          <button key={h} type="button" disabled={qua || !!eventsProp} onClick={() => setONhanh(luc)}
+                            aria-label={tr(`Đặt lịch ${pad2(h)}:00 ngày ${d.getDate()}`, `Planifier à ${pad2(h)}:00 le ${d.getDate()}`, `Schedule ${pad2(h)}:00 on day ${d.getDate()}`)}
+                            style={{ height: ROW_H }}
+                            className="group/o relative block w-full cursor-pointer border-0 border-t border-solid border-line/70 bg-transparent p-0 transition-colors hover:bg-primary-soft/60 disabled:cursor-default disabled:hover:bg-transparent">
+                            {!qua && <span className="pointer-events-none absolute inset-0 hidden items-center justify-center gap-1 text-[11px] font-bold text-primary group-hover/o:flex">+ {pad2(h)}:00</span>}
+                          </button>
+                        );
+                      })}
 
                       {weekEvents[i].map((ev) => (
                         <EventCard key={ev.id} ev={ev} t={t} onDelete={removeEvent} onMo={(to) => nav(to)}
@@ -462,6 +410,12 @@ export default function CalendarView({
               </div>
             </div>
 
+            <p className="m-0 flex items-center justify-center gap-1.5 border-0 border-t border-solid border-line px-5 py-2.5 text-center text-xs font-semibold text-soft">
+              <MousePointerClick size={14} className="shrink-0 text-primary" />
+              {chuaBang
+                ? tr("Bấm vào ô giờ bất kỳ để đặt lịch. (Mail nhắc chưa bật trên máy chủ.)", "Cliquez sur une case horaire pour planifier. (Rappels e-mail pas encore actifs.)", "Click any hour slot to schedule. (Email reminders not active yet.)")
+                : tr("Bấm vào ô giờ bất kỳ để đặt lịch, Léon sẽ nhắc qua mail trước 30 phút.", "Cliquez sur une case horaire pour planifier ; Léon vous rappelle par e-mail 30 min avant.", "Click any hour slot to schedule; Léon emails you 30 min before.")}
+            </p>
             {nothingThisWeek && (
               <div className="border-0 border-t border-solid border-line px-5 py-6 text-center">
                 <p className="m-0 text-sm font-bold text-ink">{t("cal.empty_week")}</p>
@@ -475,10 +429,26 @@ export default function CalendarView({
             <MiniMonth t={t} month={month} selected={selected} onMonth={setMonth}
               onPick={(d) => { setSelected(d); setWeekStart(mondayOf(d)); }} />
 
-            <AddEventForm t={t} defaultDate={selected} onAdd={addEvent} />
+            <div id="tour-cal-form" className="rounded-3xl bg-surface p-5 shadow-[0_18px_44px_rgb(0,0,0,0.20)]">
+              <h3 className="m-0 mb-3 text-sm font-extrabold text-ink">{t("cal.new_event")}</h3>
+              <DatLichNhanh luc={(() => { const x = new Date(selected); x.setHours(19, 0, 0, 0); return x; })()} onXong={daDat} onLuuBlob={luuBlob} />
+            </div>
           </aside>
         </div>
       </Rise>
+
+      {oNhanh && (
+        <div className="fixed inset-0 z-50 grid place-items-end bg-black/30 p-3 backdrop-blur-[2px] sm:place-items-center" onClick={() => setONhanh(null)} role="presentation">
+          <div role="dialog" aria-modal="true" aria-label={tr("Đặt lịch nhanh", "Planification rapide", "Quick schedule")} onClick={(e) => e.stopPropagation()}
+            className="mcf-rise w-full max-w-sm rounded-3xl bg-surface p-5 shadow-[0_24px_60px_rgba(0,0,0,0.25)]">
+            <div className="mb-3 flex items-center justify-between gap-2">
+              <p className="m-0 text-sm font-extrabold text-ink">{tr("Đặt lịch", "Planifier", "Schedule")} · {pad2(oNhanh.getHours())}:00, {fmtLong(t, oNhanh)}</p>
+              <button type="button" onClick={() => setONhanh(null)} aria-label={tr("Đóng", "Fermer", "Close")} className="grid h-8 w-8 cursor-pointer place-items-center rounded-full border-0 bg-surface2 text-soft hover:text-ink"><X size={16} /></button>
+            </div>
+            <DatLichNhanh luc={oNhanh} gon autoFocus onXong={(l) => (l === undefined ? setONhanh(null) : daDat(l))} onLuuBlob={luuBlob} />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

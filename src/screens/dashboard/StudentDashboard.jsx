@@ -14,6 +14,7 @@ import StreakWidget from "./StreakWidget.jsx";
 import FollowingStreakWidget from "./FollowingStreakWidget.jsx";
 import GioHocWidget from "./GioHocWidget.jsx";
 import KeHoachThi from "./KeHoachThi.jsx";
+import LichSapToi from "./LichSapToi.jsx";
 import TourGioiThieu from "../../shared/TourGioiThieu.jsx";
 import { DeXuatBai, TroChoi, DongDeuKyNang, chonDeXuat } from "./TrangChuKhoi.jsx";
 
@@ -131,6 +132,8 @@ export default function StudentDashboard({
               </Link>
               </Rise>
             {/* Thẻ « Học ngữ pháp » (TienDoNguPhap) gỡ 28/10 theo chủ dự án; hàm vẫn ở TrangChuKhoi.jsx. */}
+            {/* 28/10: đặt lịch học ngay ở trang chủ, mail Léon nhắc trước 30 phút (migration 172). */}
+            {chuoiFixture === undefined && <Rise delay={190}><LichSapToi /></Rise>}
               </div>
           </section>
 
