@@ -25,14 +25,14 @@ const TRO_CHOI = () => [
     ten: tr("Thách đấu PvP", "Duel PvP", "PvP duel"),
     mo: tr("Đấu từ vựng 1 chọi 1 với bạn bè, ai nhanh và đúng hơn thì thắng.", "Duel de vocabulaire en 1 contre 1 avec vos amis.", "1-on-1 vocabulary duel against friends.") },
   { ma: "gioi_tinh", nhom: "tu", Icon: VenusAndMars, nen: "from-sky-500 to-pink-500",
-    ten: tr("Le hay La?", "Le ou La ?", "Le or La?"),
-    mo: tr("Đua giờ đoán giống đực / giống cái của danh từ. Đúng liên tiếp để nhân điểm.", "Contre la montre : trouvez le genre des noms. Enchaînez pour multiplier.", "Beat the clock guessing noun gender. Streaks multiply points.") },
+    ten: tr("Bưu điện Léon", "La poste de Léon", "Léon's post office"),
+    mo: tr("Phân loại thư cho trưởng bưu cục Léon: vuốt mỗi danh từ vào bao LE hoặc LA trước giờ đóng cửa. Thư hoả tốc ×2, đúng liên tiếp để nhân điểm.", "Triez le courrier : glissez chaque nom dans le sac LE ou LA. Lettre express ×2.", "Sort the mail: swipe each noun into the LE or LA bag. Express letters ×2.") },
   { ma: "nghe_chon", nhom: "ng", Icon: Headphones, nen: "from-indigo-500 to-violet-600",
     ten: tr("Radio Léon: băng đứt", "Radio Léon : la bande coupée", "Radio Léon: the snapped tape"),
     mo: tr("DJ Léon làm đứt cuộn băng! Nghe liền một chuỗi đoạn (không hiện chữ) rồi ghép lại đúng thứ tự đã nghe.", "La bande de DJ Léon est coupée ! Écoutez une série d'extraits, puis remettez-les dans l'ordre.", "DJ Léon's tape snapped! Hear a run of clips (no text), then put them back in order.") },
   { ma: "mua_chu", nhom: "tu", Icon: CloudRain, nen: "from-emerald-500 to-cyan-600",
-    ten: tr("Mưa chữ", "Pluie de mots", "Word rain"),
-    mo: tr("Ba cách chơi: chọn nghĩa, bắt đúng giọt, hoặc gõ từ trước khi nó chạm đất. 3 mạng.", "Trois modes : choisir le sens, attraper le mot ou le taper avant qu'il tombe. 3 vies.", "Three modes: pick the meaning, catch the word, or type it before it lands. 3 lives."),
+    ten: tr("Vườn mưa chữ của Léon", "Le jardin de pluie de Léon", "Léon's word-rain garden"),
+    mo: tr("Mưa chữ rơi xuống vườn của Léon: chọn nghĩa, bắt đúng giọt hoặc gõ từ trước khi nó chạm đất. Mỗi từ đúng nở một bông hoa. 3 mạng.", "Il pleut des mots sur le jardin de Léon : chaque bonne réponse fait une fleur. 3 vies.", "Words rain on Léon's garden: every right answer blooms a flower. 3 lives."),
     kieu: [
       { ma: "nghia", get ten() { return tr("Chọn nghĩa", "Le sens", "Meaning"); }, get mo() { return tr("Từ Pháp rơi, chọn nghĩa đúng.", "Le mot tombe, choisissez son sens.", "French falls, pick its meaning."); } },
       { ma: "bat", get ten() { return tr("Bắt từ", "Attrape-mot", "Catch"); }, get mo() { return tr("Nghĩa hiện ở dưới, chạm đúng giọt tiếng Pháp.", "Le sens s'affiche, touchez le bon mot.", "Meaning shown, tap the right word."); } },
@@ -116,7 +116,7 @@ function Sanh({ ds }) {
 /* ─────────── Khung một trò: chọn trình độ → chơi → kết quả ─────────── */
 /* Léon bình luận viên (28/10): các trò chưa có Léon trong lối chơi thì Léon đứng cạnh, nghe
    sự kiện âm thanh « mcf-am » do phat() bắn ra và đổi nét mặt + câu nói theo đúng/sai. */
-const CO_LEON_RIENG = new Set(["nghe_chon", "chep_nhanh", "xep_cau", "san_loi", "dung_sai", "noi_mo_khoa", "tham_tu", "do_vui", "phieu_luu"]);
+const CO_LEON_RIENG = new Set(["gioi_tinh", "mua_chu", "nghe_chon", "chep_nhanh", "xep_cau", "san_loi", "dung_sai", "noi_mo_khoa", "tham_tu", "do_vui", "phieu_luu"]);
 function LeonBinhLuan() {
   const [su, setSu] = useState({ ten: "batDau", n: 0 });
   useEffect(() => {
@@ -278,7 +278,7 @@ function GioiTinh({ cap, he, onXong }) {
     const w = ds[i % ds.length];
     const ok = w.mao === mao;
     const c = ok ? chuoi + 1 : 0;
-    const them = ok ? 10 * (1 + Math.floor(c / 5)) : 0;
+    const them = ok ? 10 * (1 + Math.floor(c / 5)) * (laHoaToc(i) ? 2 : 1) : 0;
     ref.current = { ...ref.current, diem: ref.current.diem + them, dung: ref.current.dung + (ok ? 1 : 0), tong: ref.current.tong + 1 };
     setChuoi(c); setDiem(ref.current.diem); setDung(ref.current.dung); setTong(ref.current.tong);
     phat(ok ? (c > 0 && c % 5 === 0 ? "combo" : "dung") : "sai");
@@ -296,11 +296,13 @@ function GioiTinh({ cap, he, onXong }) {
   const w = ds[i % ds.length];
   const sau = ds[(i + 1) % ds.length];
   const nhan = 1 + Math.floor(chuoi / 5);
-  return <TheVuot w={w} sau={sau} loe={loe} chon={chon} con={con} GIAY={GIAY} diem={diem} nhan={nhan} dung={dung} tong={tong} />;
+  return <TheVuot w={w} sau={sau} loe={loe} chon={chon} con={con} GIAY={GIAY} diem={diem} nhan={nhan} dung={dung} tong={tong} chuoi={chuoi} hoaToc={laHoaToc(i)} />;
 }
 
-/* Le hay La: VUỐT thẻ sang trái (le) hoặc phải (la), như xếp bài vào hai chồng. */
-function TheVuot({ w, sau, loe, chon, con, GIAY, diem, nhan, dung, tong }) {
+/* « Bưu điện Léon » (28/10): Léon là trưởng bưu cục, mỗi danh từ là một lá thư phải bỏ vào
+   đúng bao LE (trái) hoặc LA (phải). Cứ lá thứ 7 là THƯ HOẢ TỐC viền vàng, đúng thì ×2 điểm. */
+const laHoaToc = (i) => (i + 1) % 7 === 0;
+function TheVuot({ w, sau, loe, chon, con, GIAY, diem, nhan, dung, tong, chuoi, hoaToc }) {
   const [dx, setDx] = useState(0);
   const keo = useRef(null);
   useEffect(() => { setDx(0); }, [w]);
@@ -318,17 +320,31 @@ function TheVuot({ w, sau, loe, chon, con, GIAY, diem, nhan, dung, tong }) {
         <span className="text-center"><span className="block text-3xl font-extrabold tabular-nums text-ink">{diem}</span>{nhan > 1 && <span className="rounded-full bg-warn px-2 py-0.5 text-xs font-extrabold text-white">COMBO ×{nhan}</span>}</span>
         <span className="text-sm font-bold text-soft">{dung}/{tong}</span>
       </div>
-      <div className="relative mt-6 grid h-[300px] grid-cols-[64px_1fr_64px] items-center gap-2 sm:grid-cols-[96px_1fr_96px]">
+      <div className="mt-4 flex items-center gap-3">
+        <Leon key={loe ? (loe.ok ? "d" : "s") + tong : "n"} cam={loe ? (loe.ok ? "yeah" : "co-len") : hoaToc ? "quyet-tam" : "chao"} size={52} className="mcf-nay shrink-0" />
+        <p className="m-0 rounded-2xl rounded-tl-md bg-surface px-3 py-2 text-sm font-bold text-ink shadow-sm">
+          {loe && !loe.ok ? tr(`Ối, lá này phải vào bao « ${loe.mao.toUpperCase()} »!`, `Oups, celle-ci va dans le sac « ${loe.mao.toUpperCase()} » !`, `Oops, this one goes in the “${loe.mao.toUpperCase()}” bag!`)
+            : hoaToc ? tr("Thư hoả tốc! Bỏ đúng bao được gấp đôi điểm.", "Lettre express ! Points doublés.", "Express letter! Double points.")
+            : chuoi >= 10 ? tr(`${chuoi} lá liền không sót, bưu cục chạy như máy!`, `${chuoi} lettres sans faute, quel tri !`, `${chuoi} in a row, what sorting!`)
+            : tr("Bưu điện Léon mở cửa! Thư giống đực vào bao LE, giống cái vào bao LA.", "Le bureau de poste est ouvert ! Masculin dans LE, féminin dans LA.", "The post office is open! Masculine in LE, feminine in LA.")}
+        </p>
+      </div>
+      <div className="relative mt-4 grid h-[300px] grid-cols-[64px_1fr_64px] items-center gap-2 sm:grid-cols-[96px_1fr_96px]">
         <button type="button" onClick={() => chon("le")} className={`h-full cursor-pointer rounded-3xl border-2 border-dashed border-sky-500 bg-sky-500/10 font-sans text-sky-600 transition-transform ${dx < -40 ? "scale-105 bg-sky-500/25" : ""}`}>
-          <span lang="fr" className="block text-2xl font-extrabold">le</span><span className="block text-[10px] font-bold uppercase">{tr("đực", "masc.", "masc.")}</span>
+          <span aria-hidden className="block text-2xl">📮</span><span lang="fr" className="block text-2xl font-extrabold">le</span><span className="block text-[10px] font-bold uppercase">{tr("đực", "masc.", "masc.")}</span>
         </button>
         <div className="relative h-[260px] touch-none select-none">
           <div className="absolute inset-x-4 top-3 bottom-0 rounded-3xl bg-surface opacity-60 shadow" aria-hidden>
             <p lang="fr" className="m-0 mt-24 text-center text-2xl font-extrabold text-soft">{sau.tu}</p>
           </div>
           <div onPointerDown={xuong} onPointerMove={di} onPointerUp={len} onPointerCancel={len}
-            className={`absolute inset-0 flex cursor-grab flex-col items-center justify-center rounded-3xl bg-surface shadow-[0_18px_40px_rgba(0,0,0,0.15)] active:cursor-grabbing ${loe && !loe.ok ? "mcf-rung ring-4 ring-danger" : ""}`}
+            className={`absolute inset-0 flex cursor-grab flex-col items-center justify-center overflow-hidden rounded-3xl bg-surface shadow-[0_18px_40px_rgba(0,0,0,0.15)] active:cursor-grabbing ${loe && !loe.ok ? "mcf-rung ring-4 ring-danger" : hoaToc ? "ring-4 ring-amber-400" : ""}`}
             style={{ transform: `translateX(${lech}px) rotate(${lech / 18}deg)`, transition: keo.current != null ? "none" : "transform .28s cubic-bezier(.22,1,.36,1)" }}>
+            {/* Viền phong bì kiểu thư máy bay + con tem góc phải */}
+            <span aria-hidden className="absolute inset-x-0 top-0 h-2 bg-[repeating-linear-gradient(135deg,#ef4444_0_12px,transparent_12px_24px,#3b82f6_24px_36px,transparent_36px_48px)]" />
+            <span aria-hidden className="absolute inset-x-0 bottom-0 h-2 bg-[repeating-linear-gradient(135deg,#ef4444_0_12px,transparent_12px_24px,#3b82f6_24px_36px,transparent_36px_48px)]" />
+            <span aria-hidden className={`absolute bottom-5 right-5 grid h-12 w-10 place-items-center rounded-sm border-2 border-dashed text-lg ${hoaToc ? "border-amber-400 bg-amber-100" : "border-line bg-surface2"}`}>{hoaToc ? "⚡" : "✉️"}</span>
+            {hoaToc && <span className="absolute bottom-5 left-5 -rotate-6 rounded-md border-2 border-solid border-amber-500 px-2 text-xs font-extrabold uppercase text-amber-600">Express ×2</span>}
             <span className={`absolute left-4 top-4 rounded-lg border-4 border-solid border-sky-500 px-2 text-xl font-extrabold text-sky-500 transition-opacity ${dx < -30 ? "opacity-100" : "opacity-0"}`} lang="fr">LE</span>
             <span className={`absolute right-4 top-4 rounded-lg border-4 border-solid border-pink-500 px-2 text-xl font-extrabold text-pink-500 transition-opacity ${dx > 30 ? "opacity-100" : "opacity-0"}`} lang="fr">LA</span>
             <p lang="fr" className="m-0 px-3 text-center text-4xl font-extrabold text-ink sm:text-5xl">
@@ -338,7 +354,7 @@ function TheVuot({ w, sau, loe, chon, con, GIAY, diem, nhan, dung, tong }) {
           </div>
         </div>
         <button type="button" onClick={() => chon("la")} className={`h-full cursor-pointer rounded-3xl border-2 border-dashed border-pink-500 bg-pink-500/10 font-sans text-pink-600 transition-transform ${dx > 40 ? "scale-105 bg-pink-500/25" : ""}`}>
-          <span lang="fr" className="block text-2xl font-extrabold">la</span><span className="block text-[10px] font-bold uppercase">{tr("cái", "fém.", "fem.")}</span>
+          <span aria-hidden className="block text-2xl">📮</span><span lang="fr" className="block text-2xl font-extrabold">la</span><span className="block text-[10px] font-bold uppercase">{tr("cái", "fém.", "fem.")}</span>
         </button>
       </div>
       <p className="m-0 mt-4 text-center text-xs text-soft">{tr("Vuốt thẻ sang trái (le) hoặc phải (la). Phím ← →.", "Glissez la carte à gauche (le) ou à droite (la). Touches ← →.", "Swipe left (le) or right (la). Keys ← →.")}</p>
@@ -609,7 +625,13 @@ function MuaChu({ cap, he, kieu = "nghia", onXong }) {
             ? <button key={w.id} type="button" lang="fr" onClick={() => bat(w)} className={`${lop} cursor-pointer hover:bg-fuchsia-300 hover:text-[#2a0f2f]`} style={{ left: `${w.x}%`, top: `${w.y}%` }}>{chu}</button>
             : <span key={w.id} lang={kieu === "go" ? undefined : "fr"} className={lop} style={{ left: `${w.x}%`, top: `${w.y}%` }}>{chu}</span>;
         })}
-        <span aria-hidden className="absolute inset-x-0 bottom-0 h-[8%] bg-[repeating-linear-gradient(90deg,rgba(255,255,255,0.12)_0_18px,rgba(255,255,255,0.05)_18px_36px)]" />
+        {/* « Vườn chữ của Léon » (28/10): mỗi từ đúng nở một bông dưới đất, Léon cầm ô đứng
+            góc trái và đổi nét mặt theo đúng / sai / sắp hết mạng. */}
+        <div aria-hidden className="absolute inset-x-0 bottom-0 flex h-[8%] items-end gap-0.5 overflow-hidden bg-gradient-to-t from-[#3f2a14] to-[#5b3d1e] pl-16 pr-3">
+          {Array.from({ length: Math.min(24, s.current.dung) }, (_, k) => <span key={k} className="mcf-nay -mb-0.5 text-lg leading-none">{["🌷", "🌼", "🌻", "🌸"][k % 4]}</span>)}
+        </div>
+        <Leon key={nhay ? nhay.id + (nhay.ok ? "d" : "s") : "n" + mang} cam={nhay ? (nhay.ok ? "yeah" : "co-len") : mang <= 1 ? "quyet-tam" : "nhay-mat"} size={56} className="mcf-nay absolute bottom-1 left-1 z-10" />
+        {s.current.dung === 0 && <p className="absolute inset-x-0 bottom-[12%] m-0 px-20 text-center text-xs font-bold text-white/70">{tr("Léon đang trồng vườn chữ: mỗi từ đúng nở một bông hoa!", "Léon plante son jardin de mots : chaque bonne réponse fait une fleur !", "Léon is growing a word garden: every right answer blooms a flower!")}</p>}
       </div>
       {kieu === "nghia" && (
         <div className="grid grid-cols-2 gap-2 bg-black/20 p-3">
