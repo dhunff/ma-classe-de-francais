@@ -156,7 +156,7 @@ export default function BocThamNoi({ ex, khoa, children }) {
                 </button>
               </div>
             ) : (
-              <div className={`mt-3 grid gap-3 ${daRut.length > 1 ? "grid-cols-2" : ""}`}>
+              <div className="mt-3 grid gap-3">
                 {daRut.map((ma) => {
                   const s = ph.sujets.find((x) => x.ma === ma);
                   const chon = st.chon?.[i] === ma;
