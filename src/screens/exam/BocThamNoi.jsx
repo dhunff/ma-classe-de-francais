@@ -146,7 +146,8 @@ export default function BocThamNoi({ ex, khoa, children }) {
             </p>
             {!daRut ? (
               <div className="mt-3 flex flex-wrap items-center gap-3">
-                {ph.sujets.map((s) => (
+                {/* 29/10: kho có thể tới 15 đề, chỉ vẽ tối đa 4 lá úp làm tượng trưng. */}
+                {ph.sujets.slice(0, 4).map((s) => (
                   <span key={s.ma} aria-hidden className="grid h-24 w-16 place-items-center border-[1.5px] border-solid border-[#111] bg-[repeating-linear-gradient(45deg,#222_0_6px,#3a3a3a_6px_12px)] text-lg font-bold text-white shadow">?</span>
                 ))}
                 <button type="button" onClick={() => rut(i, ph)}
@@ -155,7 +156,7 @@ export default function BocThamNoi({ ex, khoa, children }) {
                 </button>
               </div>
             ) : (
-              <div className="mt-3 grid gap-3 sm:grid-cols-2">
+              <div className={`mt-3 grid gap-3 ${daRut.length > 1 ? "grid-cols-2" : ""}`}>
                 {daRut.map((ma) => {
                   const s = ph.sujets.find((x) => x.ma === ma);
                   const chon = st.chon?.[i] === ma;
