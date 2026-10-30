@@ -222,6 +222,7 @@ export default function ThamTu({ muc = "vua", onXong }) {
       if (ok) { kq.current.dung++; kq.current.diem += 100; setVatChung((n) => n + 1); } else kq.current.sai++;
       /* Hai câu đúng liền nhau: nhận một món ngẫu nhiên nếu túi còn chỗ. */
       chuoiDung.current = ok ? chuoiDung.current + 1 : 0;
+      setMoi(null);
       if (chuoiDung.current >= 2 && tui.length < 3) {
         chuoiDung.current = 0;
         const ds = MON().map((m) => m.ma).filter((m) => !tui.includes(m));
@@ -231,7 +232,7 @@ export default function ThamTu({ muc = "vua", onXong }) {
       setHud((h) => sauCanh(h, ok, vu));
     };
     const tiep = () => {
-      setChon(null); setDungCanh(SACH); setMoi(null);
+      setChon(null); setDungCanh(SACH);   // giữ `moi` để lá thưởng rơi vào khay khi khay hiện lại
       const thua = lyDoThua(hud, vu, i + 1 >= vu.canh.length);
       if (thua) { phat("sai"); setLyDo(thua); setBuoc("thua"); return; }
       if (i + 1 >= vu.canh.length) setBuoc("ket"); else setI(i + 1);
