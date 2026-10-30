@@ -374,6 +374,20 @@ mark.de-to:hover { background: #facc15; }
 .mcf-tt-tu { animation: mcfBongChu .3s ease-out both; }
 @keyframes mcfTtChay { 0% { filter: none; } 40% { filter: brightness(1.8) sepia(1); } 100% { filter: grayscale(1); opacity: .4; transform: scale(.95); } }
 .mcf-tt-chay { animation: mcfTtChay .8s ease-out forwards; cursor: not-allowed; text-decoration: line-through; }
+/* ── Thám tử Léon: màn công bố hạng (31/10) ── */
+@keyframes mcfHangThe { 0% { opacity: 0; transform: translateY(70px) rotate(-5deg) scale(.92); } 65% { opacity: 1; transform: translateY(-8px) rotate(1deg); } 100% { transform: none; } }
+.mcf-hang-the { animation: mcfHangThe .6s cubic-bezier(.22,1,.36,1) both; }
+@keyframes mcfHangRung { 0%,100% { transform: none; } 15% { transform: translate(-5px,4px) rotate(-.8deg); } 35% { transform: translate(5px,-3px) rotate(.7deg); } 55% { transform: translate(-3px,2px); } 75% { transform: translate(2px,-1px); } }
+.mcf-hang-rung { animation: mcfHangRung .42s .1s ease-out; }
+@keyframes mcfHangDong { 0% { opacity: 0; transform: translateX(-16px); } 100% { opacity: 1; transform: none; } }
+.mcf-hang-dong { animation: mcfHangDong .38s ease-out both; }
+@keyframes mcfHangDau { 0% { opacity: 0; transform: scale(3.4) rotate(-24deg); filter: blur(5px); } 62% { opacity: 1; transform: scale(.9) rotate(-11deg); filter: none; } 80% { transform: scale(1.05) rotate(-13deg); } 100% { opacity: .96; transform: rotate(-12deg); } }
+.mcf-hang-dau { background: radial-gradient(circle, rgba(255,255,255,.28), transparent 70%); animation: mcfHangDau .46s cubic-bezier(.3,1.4,.5,1) both; box-shadow: 0 0 34px var(--hang-a); }
+.mcf-hang-tieu { animation: mcfBongChu .4s .28s ease-out both; }
+@keyframes mcfHangSau { 0% { opacity: 0; transform: translateY(14px); } 100% { opacity: 1; transform: none; } }
+.mcf-hang-sau { animation: mcfHangSau .4s ease-out both; }
+@keyframes mcfHangTia { 0% { opacity: 0; transform: translate(-50%,-50%) rotate(0) scale(.5); } 30% { opacity: .55; } 100% { opacity: .38; transform: translate(-50%,-50%) rotate(50deg) scale(1); } }
+.mcf-hang-tia { background: repeating-conic-gradient(from 0deg, var(--hang-a) 0 6deg, transparent 6deg 22deg); -webkit-mask-image: radial-gradient(circle, #000 0, transparent 46%); mask-image: radial-gradient(circle, #000 0, transparent 46%); transform: translate(-50%,-50%); animation: mcfHangTia 7s ease-out forwards; }
 /* ── Thám tử Léon: sơ đồ, thẩm vấn, bảng ghim (31/10) ── */
 .mcf-tt-bando { background-color: #12304f; background-image: linear-gradient(rgba(186,230,253,.1) 1px, transparent 1px), linear-gradient(90deg, rgba(186,230,253,.1) 1px, transparent 1px), linear-gradient(rgba(186,230,253,.05) 1px, transparent 1px), linear-gradient(90deg, rgba(186,230,253,.05) 1px, transparent 1px); background-size: 60px 60px, 60px 60px, 12px 12px, 12px 12px; box-shadow: inset 0 0 40px rgba(0,0,0,.35); }
 .mcf-tt-tuyen { stroke: #fcd34d; stroke-width: 2.5; stroke-dasharray: 7 6; animation: mcfTtTuyen 1.4s linear infinite; }
@@ -432,6 +446,9 @@ mark.de-to:hover { background: #facc15; }
   .mcf-tt-la-moi, .mcf-tt-nguy, .mcf-tt-huy, .mcf-tt-huy-mat, .mcf-tt-bay, .mcf-tt-chop, .mcf-tt-noi, .mcf-tt-quet, .mcf-tt-lat, .mcf-tt-tia, .mcf-tt-reo, .mcf-tt-song, .mcf-tt-khoi, .mcf-tt-sach, .mcf-tt-tu { animation: none; }
   .mcf-tt-bia, .mcf-tt-bia-icon, .mcf-tt-long, .mcf-tt-bia-den_truoc, .mcf-tt-bia-khan, .mcf-tt-bia-bruno, .mcf-tt-bia-tin_gia .mcf-tt-bia-icon, .mcf-tt-lua, .mcf-tt-tan, .mcf-tt-coi, .mcf-tt-quet-dong, .mcf-tt-rung-may, .mcf-tt-den, .mcf-tt-doi, .mcf-tt-bao, .mcf-tt-nghi, .mcf-tt-radar, .mcf-tt-gap { animation: none; }
   .mcf-tt-tan { display: none; }
+  .mcf-hang-the, .mcf-hang-rung, .mcf-hang-dong, .mcf-hang-dau, .mcf-hang-tieu, .mcf-hang-sau { animation: none; opacity: 1; }
+  .mcf-hang-dau { transform: rotate(-12deg); }
+  .mcf-hang-tia { animation: none; opacity: .3; transform: translate(-50%,-50%); }
   .mcf-tt-tuyen, .mcf-tt-diem-chon, .mcf-tt-den-ban, .mcf-tt-chi { animation: none; }
   .mcf-tt-toi { transition: none; }
   .mcf-tt-man { display: none; }

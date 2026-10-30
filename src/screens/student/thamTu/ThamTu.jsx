@@ -8,6 +8,7 @@ import TaiLieu from "./TaiLieu.jsx";
 import ManSuKien, { SU_KIEN, DemNguoc } from "./SuKien.jsx";
 import HoSoThamTu, { thanhTichMoi } from "./HoSoThamTu.jsx";
 import HuongDan from "./HuongDan.jsx";
+import ManHang from "./ManHang.jsx";
 import { BanDo, ThamVan, GhepThu, BangGhim, ChonBangChung, LuaChonSauKet } from "./BanDo.jsx";
 import { tr } from "../../../shared/i18n.jsx";
 import { phat } from "../../../shared/amThanh.js";
@@ -100,6 +101,8 @@ export default function ThamTu({ muc = "vua", onXong, kho }) {
   const [ketQua, setKetQua] = useState(null);     // kết buộc tội: du | thieu
   const [choiLai, setChoiLai] = useState(false);
   const [daChonKet, setDaChonKet] = useState(false);
+  const [congBo, setCongBo] = useState(null);     // màn công bố hạng: { hang, diem, moi, kyLuc }
+  const dangLuu = useRef(null);
   const [so, setSo] = useState([]);               // sổ manh mối: chuỗi, hoặc { t, loai: "gia" | "mat" }
   const kq = useRef({ diem: 0, dung: 0, sai: 0 });
   const [hud, setHud] = useState({ gio: 0, uy: UY_TIN_DAU, nghi: 0 });   // đồng hồ vụ án + uy tín
@@ -119,7 +122,7 @@ export default function ThamTu({ muc = "vua", onXong, kho }) {
   /* Đưa mọi thứ về đầu vụ: dùng chung cho mở hồ sơ và « Điều tra lại ». */
   const moVu = (v, lai = false) => {
     const vuMoi = vuTheoChon(VU_AN.find((x) => x.id === v.id), docChon());
-    phat("batDau"); setChoiLai(lai); setDaDen([]); setKhoa(null); setKetQua(null); setDaChonKet(false); setVu(vuMoi); setBuoc("mo"); setI(0); setChon(null); setSo([]); setHud(batDauVu(vuMoi));
+    phat("batDau"); setChoiLai(lai); setDaDen([]); setKhoa(null); setKetQua(null); setDaChonKet(false); setCongBo(null); setVu(vuMoi); setBuoc("mo"); setI(0); setChon(null); setSo([]); setHud(batDauVu(vuMoi));
     setTui([]); setChonTui([]); setVatChung(0); setDungCanh(SACH); setMoi(null); setSk(null); setTrinh(null); daCo.current = []; chuoiDung.current = 0;
     kq.current = { diem: 0, dung: 0, sai: 0 };
   };
@@ -399,9 +402,6 @@ export default function ThamTu({ muc = "vua", onXong, kho }) {
       {chon == null && khayTui(k_, null)}
       {choBangChung && <ChonBangChung vu={vu} so={so} onChot={chotBuocToi} />}
       {chon != null && !choBangChung && <>
-        {chon === 0 && (!vu.sauKet || daChonKet) && thanhTichMoi(hoSo(td, ct), { ...hoSo(td, ct), [vu.id]: { diem: kq.current.diem, hang: vu.ban ? hangBuocToi(ketQua, kq.current.sai) : hangVu(kq.current.sai), ket: [...(ct[vu.id]?.ket ?? []), ...(vu.id === "kiosque" && chonTruoc.marcel ? [chonTruoc.marcel] : [])] } }, chonTruoc).map((t) => (
-          <p key={t.ma} className="mcf-cau-vao m-0 mt-3 flex items-center gap-2 rounded-2xl bg-amber-300 px-4 py-2 text-sm font-extrabold text-[#2b2118]"><t.Icon size={18} className="mcf-tt-huy shrink-0" />{tr("Thành tích mới: ", "Nouveau succès : ", "New achievement: ")}{t.ten}</p>
-        ))}
         <LoiLeon cam={chon === 0 ? loiCuoi.cam : "buon"}>{chon === 0 ? loiCuoi.loi : <>{tr("Ôi không, ta bắt nhầm người rồi! ", "Oh non, ce n'est pas le bon suspect ! ", "Oh no, wrong suspect! ")}{k_.gt}</>}</LoiLeon>
         {chon === 0 && vu.sauKet && <LuaChonSauKet sk={vu.sauKet} onChon={(gt) => { luuChon(vu.sauKet.ma, gt); setChonTruoc(docChon()); kho?.luuChon(vu.sauKet.ma, gt); setDaChonKet(true); }} />}
         {(chon !== 0 || !vu.sauKet || daChonKet) && <div className="mt-4 flex flex-wrap justify-end gap-2">
@@ -409,15 +409,20 @@ export default function ThamTu({ muc = "vua", onXong, kho }) {
             const h = sauBuocToiOan(hud, vu); setHud(h); setChon(null); kq.current.diem = Math.max(0, kq.current.diem - 100);
             if (h.uy <= 0) { setLyDo("uy_tin"); setBuoc("thua"); }
           }} className="cursor-pointer rounded-full border-0 bg-white/15 px-5 py-2.5 font-sans text-sm font-bold text-white">{laMucDe(vu) ? tr("Suy luận lại (−100)", "Réfléchir encore (−100)", "Think again (−100)") : tr("Suy luận lại (−1 uy tín)", "Réfléchir encore (−1 réputation)", "Think again (−1 reputation)")}</button>}
-          {chon === 0 && <span className="mr-auto self-center rounded border-2 border-solid border-amber-300 px-2 py-1 text-sm font-black text-amber-300">{tr("Hạng", "Rang", "Rank")} {vu.ban ? hangBuocToi(ketQua, kq.current.sai) : hangVu(kq.current.sai - 0)}</span>}
-          <button type="button" onClick={async () => {
+          <button type="button" onClick={() => {
             const ok = chon === 0;
             if (!ok) { setLyDo("thoat"); setBuoc("thua"); return; }
-            const hang = vu.ban ? hangBuocToi(ketQua, kq.current.sai) : hangVu(kq.current.sai);
-            luuTienDo(vu.id, kq.current.diem, hang, ketQua); setTd(docTienDo()); setCt(docCt());
-            await kho?.luu([{ vu: vu.id, diem: kq.current.diem, hang, ket: ketQua ?? "" }]);   // hỏng thì lần mở sau tự gửi lại
-            onXong({ diem: kq.current.diem, dung: kq.current.dung, tong: (vu.ban ? vu.canh.filter((c, k) => c.q && daDen.includes(k)).length : vu.canh.length) + 1 });
+            const hang = vu.ban ? hangBuocToi(ketQua, kq.current.sai) : hangVu(kq.current.sai), diem = kq.current.diem;
+            const truoc = hoSo(td, ct);
+            const moi = thanhTichMoi(truoc, { ...truoc, [vu.id]: { diem, hang, ket: [...(ct[vu.id]?.ket ?? []), ...(vu.id === "kiosque" && chonTruoc.marcel ? [chonTruoc.marcel] : [])] } }, chonTruoc);
+            setCongBo({ hang, diem, moi, kyLuc: td[vu.id] != null && diem > td[vu.id] });
+            luuTienDo(vu.id, diem, hang, ketQua); setTd(docTienDo()); setCt(docCt());
+            dangLuu.current = kho?.luu([{ vu: vu.id, diem, hang, ket: ketQua ?? "" }]);   // hỏng thì lần mở sau tự gửi lại
           }} className="cursor-pointer rounded-full border-0 bg-amber-400 px-6 py-2.5 font-sans text-sm font-extrabold text-[#2b2118]">{tr("Đóng hồ sơ", "Classer le dossier", "Close the case")} →</button>
+          {congBo && <ManHang vu={vu} hang={congBo.hang} diem={congBo.diem} sai={kq.current.sai} uy={hud.uy} soNoi={daDen.length} moi={congBo.moi} kyLuc={congBo.kyLuc} onTiep={async () => {
+            await dangLuu.current;
+            onXong({ diem: kq.current.diem, dung: kq.current.dung, tong: (vu.ban ? vu.canh.filter((c, k) => c.q && daDen.includes(k)).length : vu.canh.length) + 1 });
+          }} />}
         </div>}
       </>}
     </>);
