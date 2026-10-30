@@ -113,14 +113,14 @@ export default function StreakWidget({ t, fixture }) {
         {/* Leon (09/10): khen khi hôm nay đã học, lo lắng khi chuỗi sắp đứt. */}
         {d && d.homNay != null && (d.tuan?.[d.homNay] ? (
           <LeonNoi cam="yeah" size={52} className="mt-4">
-            {tr(<><em>C'est super !</em> Hôm nay bạn học rồi, Leon vẫy đuôi mừng lắm 🐾</>, <><em>C'est super !</em> Tu as déjà étudié aujourd'hui, Leon remue la queue 🐾</>, <><em>C'est super!</em> You've studied today, Leon is wagging his tail 🐾</>)}
+            {tr(<><em>C'est super !</em> Hôm nay xong rồi 🐾</>, <><em>C'est super !</em> C'est fait pour aujourd'hui 🐾</>, <><em>C'est super!</em> Done for today 🐾</>)}
           </LeonNoi>
         ) : d.chuoi > 0 ? (
           <LeonNoi cam="buon" size={52} className="mt-4">
             {/* 13/10: còn lượt đóng băng thì ngày lỡ không làm đứt chuỗi. */}
             {d.conLaiBang > 0
-              ? tr(<><em>Ohlala !</em> Hôm nay chưa học. Bỏ lỡ thì Leon sẽ đóng băng ngày này để giữ chuỗi {d.chuoi} ngày (còn {d.conLaiBang} lần tháng này). Làm một bài nhỏ cho chắc nhé!</>, <><em>Ohlala !</em> Pas encore étudié aujourd'hui. Sinon, Leon gèlera ce jour pour garder ta série de {d.chuoi} jours (encore {d.conLaiBang} ce mois-ci).</>, <><em>Ohlala!</em> No study yet today. If you skip, Leon will freeze this day to keep your {d.chuoi}-day streak ({d.conLaiBang} freezes left this month).</>)
-              : tr(<><em>Ohlala !</em> Hết lượt đóng băng tháng này: không học hôm nay là chuỗi {d.chuoi} ngày tắt đó. <em>Allez</em>!</>, <><em>Ohlala !</em> Plus de gel ce mois-ci : sans activité aujourd'hui, ta série de {d.chuoi} jours s'éteint. <em>Allez</em> !</>, <><em>Ohlala!</em> No freezes left this month: skip today and your {d.chuoi}-day streak ends. <em>Allez</em>!</>)}
+              ? tr(<><em>Allez !</em> Hôm nay chưa học đó.</>, <><em>Allez !</em> Pas encore étudié aujourd'hui.</>, <><em>Allez!</em> No study yet today.</>)
+              : tr(<><em>Ohlala !</em> Hết đóng băng, học ngay kẻo tắt chuỗi!</>, <><em>Ohlala !</em> Plus de gel : étudie vite pour garder ta série !</>, <><em>Ohlala!</em> No freezes left: study now to save your streak!</>)}
           </LeonNoi>
         ) : null)}
 
