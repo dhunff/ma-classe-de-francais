@@ -7,7 +7,7 @@ const NGHI_DAU = { de: 0, vua: 1, kho: 2 };
 
 export const laMucDe = (vu) => vu.muc === "de";
 export const giuManhKhiSai = laMucDe;
-export const batDauVu = (vu) => ({ gio: vu.canh.length + (DU_GIO[vu.muc] ?? 2), uy: UY_TIN_DAU, nghi: NGHI_DAU[vu.muc] ?? 1 });
+export const batDauVu = (vu) => ({ gio: vu.ban?.gio ?? vu.canh.length + (DU_GIO[vu.muc] ?? 2), uy: UY_TIN_DAU, nghi: NGHI_DAU[vu.muc] ?? 1 });
 
 export const sauCanh = (h, ok, vu) => {
   if (ok) return { ...h, gio: Math.max(0, h.gio - 1) };
@@ -95,3 +95,8 @@ export const sauSuKien = (h, vu, { tot, gio = 0, conLai }) => {
   const moi = { ...h, gio: Math.min(h.gio, Math.max(h.gio - gio, san)) };
   return tot == null ? moi : doiNghi(moi, tot ? -1 : 1);
 };
+
+/* Giai đoạn 4: buộc tội theo sơ đồ. 3 bằng chứng nặng là đủ, 2 là bắt được nhưng hồ sơ mỏng (hạng B),
+   ít hơn thì hung thủ thoát. Điểm màn cuối theo đó: 300, 150, 0. */
+export const ketBuocToi = (soNang) => (soNang >= 3 ? "du" : soNang === 2 ? "thieu" : "thoat");
+export const hangBuocToi = (ket, sai) => (ket === "thieu" ? "B" : hangVu(sai));

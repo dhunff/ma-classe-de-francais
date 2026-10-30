@@ -107,7 +107,7 @@ export default function ManSuKien({ sk, vu, vatChung, onChot, onTiep }) {
     );
   }
 
-  if (ma === "den_truoc") {
+  if (ma === "den_truoc" && !sk.noi) {
     const chon = (doi) => { phat("bam"); onChot(doi); onTiep(); };
     return (
       <div className="mcf-cau-vao mt-4">
@@ -130,6 +130,7 @@ export default function ManSuKien({ sk, vu, vatChung, onChot, onTiep }) {
   return (
     <div className="mcf-cau-vao mt-4">
       <BiaSuKien ma={ma} />
+      {ma === "den_truoc" && <p className="m-0 mt-4 flex items-center gap-2 rounded-xl bg-black/30 px-4 py-2.5 text-sm font-bold text-[#fecdd3]"><DoorClosed size={16} /> {tr(`${sk.noi} bị khoá. Mở lại phải xin lệnh khám (−1 vật chứng), hoặc đổi đường.`, `${sk.noi} est verrouillé. Il faut un mandat (−1 preuve), ou changer d'itinéraire.`, `${sk.noi} is locked. Get a warrant (−1 evidence) or change route.`)}</p>}
       {ma === "trao" && sk.mat && <p className="m-0 mt-4 rounded-xl bg-black/30 px-4 py-2.5 text-sm text-[#fecdd3] line-through decoration-rose-400">{sk.mat}</p>}
       <NutTiep onClick={onTiep} chu={ma === "khan" ? tr("Vào ngay", "Foncer", "Go now") : undefined} />
     </div>

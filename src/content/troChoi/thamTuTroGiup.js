@@ -20,11 +20,6 @@ export const TRO_GIUP_VU = {
     { neo: "Il marchait vers le restaurant au coin de la rue", tu: [["vers", "về phía, khoảng"], ["au coin de", "ở góc"], ["beaucoup de", "nhiều"]] },
     { neo: "Fermé le lundi", tu: [["fermé", "đóng cửa"], ["la livraison", "việc giao hàng"], ["la cour", "cái sân"]] },
   ],
-  tableau: [
-    { neo: "mardi, vers 14 h", tu: [["l'atelier", "xưởng"], ["signer", "ký tên"], ["le bon de livraison", "phiếu giao hàng"]] },
-    { neo: "Mardi : Bernard en congé · Karim remplace à l'accueil", tu: [["en congé", "nghỉ phép"], ["remplace", "thay thế"], ["l'accueil", "quầy lễ tân"]] },
-    { neo: "Je la lui ai donnée à 13 h.", tu: [["prêter", "cho mượn"], ["la copie", "bản sao"], ["rendue", "đã trả lại"]] },
-  ],
   marche: [
     { neo: "a bousculé M. Lambert, il s'est excusé, puis il est parti très vite", tu: [["a bousculé", "đã va phải, xô phải"], ["s'est excusé", "đã xin lỗi"], ["depuis", "từ, suốt"]] },
     { neo: "il est parti à 11 h, et il ne portait pas ses balles", tu: [["d'habitude", "thường ngày"], ["le jongleur", "người tung hứng"], ["sans arrêt", "không ngừng"]] },

@@ -10,6 +10,8 @@
  * và câu hỏi bằng tiếng Pháp đúng trình độ. KHÔNG dùng dấu gạch dài (quy tắc 7).
  * cam = id sticker Léon (shared/leon.jsx). */
 
+import { VU_TABLEAU } from "./vuMauTableau.js";
+
 export const VU_AN = [
   /* ───────────── DỄ (A1–A2) ───────────── */
   {
@@ -152,52 +154,7 @@ export const VU_AN = [
   },
 
   /* ───────────── VỪA (A2–B1) ───────────── */
-  {
-    id: "tableau", muc: "vua", so: 4,
-    ten: "Le faux tableau", tenVi: "Bức tranh giả",
-    mo: "Bảo tàng nhỏ ở Montmartre phát hiện bức « Les Toits de Paris » trên tường chỉ là bản sao. Bức thật đã bị tráo. Trên khung tranh có một chiếc lông vũ xám và tờ giấy nhỏ ký « P.G. ».",
-    nghiPham: [
-      { ten: "Bernard", vai: "Bảo vệ bảo tàng, làm ở đây 20 năm" },
-      { ten: "Inès", vai: "Họa sĩ, đang chép tranh cho lớp học" },
-      { ten: "Karim", vai: "Hướng dẫn viên, thay ca nhận hàng khi thiếu người" },
-    ],
-    canh: [
-      {
-        noi: "Email của giám đốc bảo tàng", cam: "lam-viec",
-        leon: "Bức tranh vừa đi phục chế về. Nó trở lại bảo tàng lúc nào?",
-        tl: { loai: "email", tieuDe: "Objet : Retour du tableau", van: "De : directrice@musee-montmartre.fr\nÀ : équipe\n\nBonjour à tous,\nL'atelier de restauration nous rapporte « Les Toits de Paris » mardi, vers 14 h. Quelqu'un de l'équipe devra signer le bon de livraison et vérifier le tableau avant de l'accrocher.\nMerci,\nClaire Fontaine" },
-        q: "Quand le tableau revient-il au musée ?",
-        pa: ["Mardi, vers 14 h", "Lundi matin", "Mercredi soir", "Jeudi, vers midi"],
-        gt: "« mardi, vers 14 h ». Người ký nhận hôm đó là người cầm tranh trong tay đầu tiên.",
-        manh: "Tranh thật về bảo tàng thứ Ba lúc 14 h; một nhân viên phải ký nhận.",
-      },
-      {
-        noi: "Lịch trực của bảo vệ", cam: "hum",
-        leon: "Bernard nói ông chẳng biết gì. Lịch trực có nói thật không?",
-        tl: { loai: "bang", tieuDe: "Planning de la semaine", van: "Lundi : Bernard (8 h – 16 h)\nMardi : Bernard en congé · Karim remplace à l'accueil\nMercredi : Bernard en congé\nJeudi : Bernard (8 h – 16 h)" },
-        q: "Qui était à l'accueil mardi ?",
-        pa: ["Karim", "Bernard", "Inès", "La directrice"],
-        gt: "« Mardi : Bernard en congé · Karim remplace à l'accueil ». Bernard nghỉ phép đúng hôm tranh về.",
-        manh: "Thứ Ba Bernard nghỉ phép; Karim trực quầy lễ tân thay.",
-      },
-      {
-        noi: "Sổ tay của Inès", cam: "suy-nghi",
-        leon: "Inès có bản chép rất giống tranh thật. Đáng ngờ đấy! Xem sổ tay của cô ấy.",
-        tl: { loai: "note", tieuDe: "Carnet d'Inès", van: "Lundi : j'ai fini ma copie des « Toits de Paris » pour le cours du soir.\nMardi : Karim m'a demandé de lui prêter ma copie « pour la montrer à un groupe de touristes ». Je la lui ai donnée à 13 h.\nJeudi : il ne me l'a toujours pas rendue…" },
-        q: "Qu'est-ce qu'Inès a fait mardi ?",
-        pa: ["Elle a prêté sa copie à Karim", "Elle a vendu sa copie au musée", "Elle a fini sa copie", "Elle a donné un cours aux touristes"],
-        gt: "« Karim m'a demandé de lui prêter ma copie… Je la lui ai donnée à 13 h », một tiếng TRƯỚC khi tranh thật về.",
-        manh: "Thứ Ba 13 h: Karim mượn bản chép của Inès, đến giờ chưa trả.",
-      },
-    ],
-    ket: {
-      cam: "suy-nghi", leon: "Ai có cả bản chép LẪN cơ hội cầm bức thật trong tay vào chiều thứ Ba?",
-      q: "Qui a échangé les tableaux ?",
-      pa: ["Karim, le guide", "Bernard, le gardien", "Inès, la peintre"],
-      gt: "Karim mượn bản chép lúc 13 h, trực quầy và ký nhận tranh thật lúc 14 h. Bernard nghỉ phép, còn Inès đã giao bản chép từ trước.",
-    },
-    loiKet: { cam: "gian", loi: "Karim khai hết: một người lạ ký « P.G. » gửi thư chỉ cho anh ta cách tráo tranh, hứa trả rất nhiều tiền. Tranh thật tìm thấy trong tủ đồ của Karim. Nhưng P.G. là ai? Chiếc lông vũ xám lần thứ hai rồi…" },
-  },
+  VU_TABLEAU,
   {
     id: "marche", muc: "vua", so: 5,
     ten: "Pickpocket au marché", tenVi: "Móc túi ở chợ",

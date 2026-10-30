@@ -6,11 +6,12 @@ import { BRUNO, TIN_GIA, KHAI } from "../../../content/troChoi/thamTuSuKien.js";
 import { MON, monCua, LaMon, KhayTui, HudVu, HieuUng } from "./TuiDo.jsx";
 import TaiLieu from "./TaiLieu.jsx";
 import ManSuKien, { SU_KIEN, DemNguoc } from "./SuKien.jsx";
+import { BanDo, ThamVan, BangGhim, ChonBangChung } from "./BanDo.jsx";
 import { tr } from "../../../shared/i18n.jsx";
 import { phat } from "../../../shared/amThanh.js";
 import { Leon, leonVai } from "../../../shared/leon.jsx";
 import CauTracNghiem from "../CauTracNghiem.jsx";
-import { UY_TIN_DAU, soMonMangTheo, lyDoKhongDung, batDauVu, sauCanh, sauBuocToiOan, lyDoThua, giuManhKhiSai, laMucDe, hangVu, suKienHopLe, tungSuKien, sauSuKien, GIAY_KHAN } from "./luat.js";
+import { UY_TIN_DAU, soMonMangTheo, lyDoKhongDung, batDauVu, sauCanh, sauBuocToiOan, lyDoThua, giuManhKhiSai, laMucDe, hangVu, suKienHopLe, tungSuKien, sauSuKien, doiNghi, ketBuocToi, hangBuocToi, GIAY_KHAN } from "./luat.js";
 
 /* ─────────── 9. Thám tử đọc: « Những vụ án của Thanh tra Léon » ───────────
    Chọn mức xong thì vào BẢNG VỤ ÁN của mức đó; mỗi vụ: mở hồ sơ → các cảnh (đọc tài
@@ -42,6 +43,10 @@ export default function ThamTu({ muc = "vua", onXong }) {
   const [trinh, setTrinh] = useState(null);       // nước đi kế của P.G. đã bị Theo dõi ngầm thấy
   const [choKhan, setChoKhan] = useState(docKhan);   // cho phép đếm ngược ở mức khó
   const daCo = useRef([]);                        // cản trở đã gặp trong vụ này
+  const [daDen, setDaDen] = useState([]);         // vụ theo sơ đồ: chỉ số địa điểm đã đến, theo thứ tự
+  const [khoa, setKhoa] = useState(null);         // địa điểm P.G. đã khoá
+  const [ketQua, setKetQua] = useState(null);     // kết buộc tội: du | thieu
+  const [choiLai, setChoiLai] = useState(false);
   const [so, setSo] = useState([]);               // sổ manh mối: chuỗi, hoặc { t, loai: "gia" | "mat" }
   const kq = useRef({ diem: 0, dung: 0, sai: 0 });
   const [hud, setHud] = useState({ gio: 0, uy: UY_TIN_DAU, nghi: 0 });   // đồng hồ vụ án + uy tín
@@ -57,8 +62,8 @@ export default function ThamTu({ muc = "vua", onXong }) {
   const SACH = { neo: false, tu: false, goiY: false, an: [], chay: false, khan: false };
 
   /* Đưa mọi thứ về đầu vụ: dùng chung cho mở hồ sơ và « Điều tra lại ». */
-  const moVu = (v) => {
-    phat("batDau"); setVu(v); setBuoc("mo"); setI(0); setChon(null); setSo([]); setHud(batDauVu(v));
+  const moVu = (v, lai = false) => {
+    phat("batDau"); setChoiLai(lai); setDaDen([]); setKhoa(null); setKetQua(null); setVu(v); setBuoc("mo"); setI(0); setChon(null); setSo([]); setHud(batDauVu(v));
     setTui([]); setChonTui([]); setVatChung(0); setDungCanh(SACH); setMoi(null); setSk(null); setTrinh(null); daCo.current = []; chuoiDung.current = 0;
     kq.current = { diem: 0, dung: 0, sai: 0 };
   };
@@ -81,16 +86,21 @@ export default function ThamTu({ muc = "vua", onXong }) {
       setTimeout(() => setDungCanh((d) => ({ ...d, an: [...d.an, bo] })), 700);
     }
   };
-  const nguCanh = () => ({ nghi: hud.nghi, daCo: daCo.current, conLai: vu.canh.length - (i + 1), soManh: so.filter((m) => typeof m === "string").length, choKhan });
+  const chuaDen = () => vu.canh.map((_, k) => k).filter((k) => !daDen.includes(k));
+  const nguCanh = () => ({ nghi: hud.nghi, daCo: daCo.current, conLai: vu.ban ? Math.min(hud.gio, chuaDen().length) : vu.canh.length - (i + 1), soManh: so.filter((m) => typeof m === "string").length, choKhan });
   /* Sang cảnh sau hoặc màn phá án, mang theo hậu quả của cản trở vừa rồi. */
   const sangTiep = () => {
     setDungCanh({ ...SACH, chay: sk?.ma === "chay" && !sk.chan, khan: sk?.ma === "khan" && !sk.chan });
     setSk(null); setTrinh(null);
-    if (i + 1 >= vu.canh.length) setBuoc("ket"); else { setI(i + 1); setBuoc("canh"); }
+    if (vu.ban) setBuoc("ban");
+    else if (i + 1 >= vu.canh.length) setBuoc("ket"); else { setI(i + 1); setBuoc("canh"); }
   };
   const vaoSuKien = (ma) => {
     daCo.current = [...daCo.current, ma];
-    let chan = !!trinh, mat = null;
+    let chan = !!trinh, mat = null, noi = null;
+    if (ma === "den_truoc" && vu.ban && !chan) {
+      const k = nhat(chuaDen()); noi = vu.canh[k].ten; setKhoa(k);
+    }
     if (ma === "trao" && !chan) {
       if (tui.includes("theo")) { chan = true; setTui((t) => t.filter((m) => m !== "theo")); }
       else {
@@ -100,13 +110,22 @@ export default function ThamTu({ muc = "vua", onXong }) {
         setVatChung((n) => Math.max(0, n - 1));
       }
     }
-    setSk({ ma, du: duSuKien(ma, vu), chan, mat }); setBuoc("sukien");
+    setSk({ ma, du: duSuKien(ma, vu), chan, mat, noi }); setBuoc("sukien");
   };
   const chotSuKien = ({ tot, gio = 0, vat = 0, khai }) => {
-    setHud((h) => sauSuKien(h, vu, { tot, gio, conLai: vu.canh.length - (i + 1) }));
+    setHud((h) => sauSuKien(h, vu, { tot, gio, conLai: vu.ban ? 0 : vu.canh.length - (i + 1) }));
     if (tot === true || vat) setVatChung((n) => n + (tot === true ? 1 : 0) - vat);
     if (tot === false) kq.current.sai++;
     if (khai) setSo((ds) => [...ds, khai.that ? `« ${khai.fr} »` : { t: `« ${khai.fr} »`, loai: "gia" }]);
+  };
+  const vaoNoi = (k) => {
+    setI(k); setChon(null); setDaDen((d) => [...d, k]); setBuoc(vu.canh[k].loai === "hoi" ? "hoi" : "canh");
+  };
+  const xongThamVan = ({ manh, sai }) => {
+    setSo((s) => [...s, ...manh]); kq.current.sai += sai;
+    setHud((h) => doiNghi({ ...h, gio: Math.max(0, h.gio - 1) }, sai));
+    const ma = trinh ?? tungSuKien(vu, nguCanh());
+    if (ma) vaoSuKien(ma); else sangTiep();
   };
   const phucHoi = () => {
     phat("lat"); setVatChung((n) => n - 1); setHieuUng("ines"); setTimeout(() => setHieuUng(null), 1300);
@@ -193,7 +212,7 @@ export default function ThamTu({ muc = "vua", onXong }) {
   );
 
   if (buoc === "mo") return khung(null, <>
-    <LoiLeon cam="lam-viec">{vu.mo}</LoiLeon>
+    <LoiLeon cam={choiLai && vu.moLai ? "quyet-tam" : "lam-viec"}>{choiLai && vu.moLai ? vu.moLai : vu.mo}</LoiLeon>
     <p className="m-0 mt-5 text-xs font-extrabold uppercase tracking-widest text-[#e7dcc8]">{vu.muc === "kho" && vu.so === 7 ? tr("Giả thuyết", "Hypothèses", "Hypotheses") : tr("Những người liên quan", "Personnes impliquées", "People involved")}</p>
     <div className="mt-2 grid gap-3 sm:grid-cols-3">
       {vu.nghiPham.map((n, k) => (
@@ -218,13 +237,26 @@ export default function ThamTu({ muc = "vua", onXong }) {
       </label>
     )}
     <div className="mt-5 text-right">
-      <button type="button" disabled={chonTui.length < soMonMangTheo(vu)} onClick={() => { phat("bam"); setTui(chonTui); setBuoc("canh"); }} className="cursor-pointer rounded-full border-0 bg-amber-400 px-6 py-2.5 font-sans text-sm font-extrabold text-[#2b2118] disabled:cursor-not-allowed disabled:opacity-50">{tr("Điều tra ngay", "Enquêter", "Investigate")} <ArrowRight size={15} className="inline align-[-3px]" /></button>
+      <button type="button" disabled={chonTui.length < soMonMangTheo(vu)} onClick={() => { phat("bam"); setTui(chonTui); setBuoc(vu.ban ? "ban" : "canh"); }} className="cursor-pointer rounded-full border-0 bg-amber-400 px-6 py-2.5 font-sans text-sm font-extrabold text-[#2b2118] disabled:cursor-not-allowed disabled:opacity-50">{tr("Điều tra ngay", "Enquêter", "Investigate")} <ArrowRight size={15} className="inline align-[-3px]" /></button>
     </div>
   </>);
 
+  if (buoc === "ban") return khung(tr("Sơ đồ điều tra", "Plan de l'enquête", "Investigation map"), <>
+    <BanDo vu={vu} hud={hud} daDen={daDen} khoa={khoa} vatChung={vatChung} onDi={vaoNoi}
+      onMoKhoa={() => { setVatChung((n) => n - 1); setKhoa(null); }} onGhim={() => { phat("bam"); setBuoc("ghim"); }} />
+    <SoManhMoi />
+  </>);
+  if (buoc === "hoi") return khung(vu.canh[i].noi, <ThamVan key={i} c={vu.canh[i]} onXong={xongThamVan} />);
+  if (buoc === "ghim") return khung(tr("Bảng ghim", "Tableau d'enquête", "Evidence board"), (
+    <BangGhim vu={vu} so={so} conDi={hud.gio > 0 && chuaDen().length > 0} onVe={() => setBuoc("ban")}
+      onThay={(t) => { setSo((s) => [...s, t]); setVatChung((n) => n + 1); setHud((h) => doiNghi(h, -1)); }}
+      onSai={() => setHud((h) => doiNghi(h, 1))}
+      onTiep={() => { setChon(null); setDungCanh(SACH); setBuoc("ket"); }} />
+  ));
+
   if (buoc === "canh") {
     const c = vu.canh[i];
-    const tg = TRO_GIUP_VU[vu.id]?.[i];
+    const tg = c.tg ?? TRO_GIUP_VU[vu.id]?.[i];
     const tra = (k) => {
       if (chon != null) return;
       setChon(k); const ok = k === 0; phat(ok ? "dung" : "sai");
@@ -242,7 +274,7 @@ export default function ThamTu({ muc = "vua", onXong }) {
     };
     const tiep = () => {
       setChon(null);   // giữ `moi` để lá thưởng rơi vào khay khi khay hiện lại
-      const thua = lyDoThua(hud, vu, i + 1 >= vu.canh.length);
+      const thua = lyDoThua(hud, vu, !!vu.ban || i + 1 >= vu.canh.length);
       if (thua) { setDungCanh(SACH); phat("sai"); setLyDo(thua); setBuoc("thua"); return; }
       const ma = trinh ?? tungSuKien(vu, nguCanh());
       if (ma) vaoSuKien(ma); else sangTiep();
@@ -263,7 +295,7 @@ export default function ThamTu({ muc = "vua", onXong }) {
         <LoiLeon cam={chon === 0 ? "duoc-do" : "hum"}>{chon === -1 ? tr("Hết giờ, P.G. đã kịp lẩn đi! ", "Temps écoulé, P.G. s'est esquivé ! ", "Time's up, P.G. slipped away! ") : null}{chon === 0 ? tr("Chính xác! ", "Exact ! ", "Exactly! ") : giuManhKhiSai(vu) ? tr("Chưa đúng, nhưng ta vẫn ghi manh mối vào sổ. ", "Raté, mais je note quand même l'indice. ", "Not quite, but I'll still note the clue. ") : tr("Sai rồi! Mất thêm 1 giờ, mất uy tín, và manh mối này trôi mất. ", "Raté ! Une heure et de la réputation perdues, et l'indice nous échappe. ", "Wrong! An hour and reputation lost, and the clue slips away. ")}{c.gt}</LoiLeon>
         <div className="mt-4 text-right">
           <button type="button" onClick={tiep} className="cursor-pointer rounded-full border-0 bg-amber-400 px-6 py-2.5 font-sans text-sm font-extrabold text-[#2b2118]">
-            {i + 1 >= vu.canh.length ? tr("Phá án", "Résoudre", "Solve") : tr("Manh mối tiếp", "Indice suivant", "Next clue")} →
+            {vu.ban ? tr("Về sơ đồ", "Retour au plan", "Back to the map") : i + 1 >= vu.canh.length ? tr("Phá án", "Résoudre", "Solve") : tr("Manh mối tiếp", "Indice suivant", "Next clue")} →
           </button>
         </div>
       </>}
@@ -276,8 +308,15 @@ export default function ThamTu({ muc = "vua", onXong }) {
     const tra = (k) => {
       if (chon != null) return;
       setChon(k); const ok = k === 0; phat(ok ? "thang" : "sai");
-      if (ok) { kq.current.dung++; kq.current.diem += 300; } else kq.current.sai++;
+      if (ok) { kq.current.dung++; if (!vu.ban) kq.current.diem += 300; } else kq.current.sai++;
     };
+    const chotBuocToi = (soNang) => {
+      const k = ketBuocToi(soNang);
+      if (k === "thoat") { phat("sai"); setLyDo("thieu"); setBuoc("thua"); return; }
+      phat("thang"); kq.current.diem += k === "du" ? 300 : 150; setKetQua(k);
+    };
+    const choBangChung = vu.ban && chon === 0 && !ketQua;
+    const loiCuoi = ketQua === "thieu" ? vu.ketThieu : vu.loiKet;
     return khung(tr("Phá án", "Résolution", "Solving"), <>
       <SoManhMoi />
       <LoiLeon cam={k_.cam}>{k_.leon}</LoiLeon>
@@ -285,19 +324,20 @@ export default function ThamTu({ muc = "vua", onXong }) {
       {ketQuaTroGiup(k_, null)}
       <CauTracNghiem pa={k_.pa} onTra={tra} daChon={chon} laPhap kieu="manh" an={dungCanh.an} />
       {chon == null && khayTui(k_, null)}
-      {chon != null && <>
-        <LoiLeon cam={chon === 0 ? vu.loiKet.cam : "buon"}>{chon === 0 ? vu.loiKet.loi : <>{tr("Ôi không, ta bắt nhầm người rồi! ", "Oh non, ce n'est pas le bon suspect ! ", "Oh no, wrong suspect! ")}{k_.gt}</>}</LoiLeon>
+      {choBangChung && <ChonBangChung vu={vu} so={so} onChot={chotBuocToi} />}
+      {chon != null && !choBangChung && <>
+        <LoiLeon cam={chon === 0 ? loiCuoi.cam : "buon"}>{chon === 0 ? loiCuoi.loi : <>{tr("Ôi không, ta bắt nhầm người rồi! ", "Oh non, ce n'est pas le bon suspect ! ", "Oh no, wrong suspect! ")}{k_.gt}</>}</LoiLeon>
         <div className="mt-4 flex flex-wrap justify-end gap-2">
           {chon !== 0 && <button type="button" onClick={() => {
             const h = sauBuocToiOan(hud, vu); setHud(h); setChon(null); kq.current.diem = Math.max(0, kq.current.diem - 100);
             if (h.uy <= 0) { setLyDo("uy_tin"); setBuoc("thua"); }
           }} className="cursor-pointer rounded-full border-0 bg-white/15 px-5 py-2.5 font-sans text-sm font-bold text-white">{laMucDe(vu) ? tr("Suy luận lại (−100)", "Réfléchir encore (−100)", "Think again (−100)") : tr("Suy luận lại (−1 uy tín)", "Réfléchir encore (−1 réputation)", "Think again (−1 reputation)")}</button>}
-          {chon === 0 && <span className="mr-auto self-center rounded border-2 border-solid border-amber-300 px-2 py-1 text-sm font-black text-amber-300">{tr("Hạng", "Rang", "Rank")} {hangVu(kq.current.sai - 0)}</span>}
+          {chon === 0 && <span className="mr-auto self-center rounded border-2 border-solid border-amber-300 px-2 py-1 text-sm font-black text-amber-300">{tr("Hạng", "Rang", "Rank")} {vu.ban ? hangBuocToi(ketQua, kq.current.sai) : hangVu(kq.current.sai - 0)}</span>}
           <button type="button" onClick={() => {
             const ok = chon === 0;
             if (!ok) { setLyDo("thoat"); setBuoc("thua"); return; }
             if (ok) { luuTienDo(vu.id, kq.current.diem); setTd(docTienDo()); }
-            onXong({ diem: kq.current.diem, dung: kq.current.dung, tong: vu.canh.length + 1 });
+            onXong({ diem: kq.current.diem, dung: kq.current.dung, tong: (vu.ban ? vu.canh.filter((c, k) => c.q && daDen.includes(k)).length : vu.canh.length) + 1 });
           }} className="cursor-pointer rounded-full border-0 bg-amber-400 px-6 py-2.5 font-sans text-sm font-extrabold text-[#2b2118]">{tr("Đóng hồ sơ", "Classer le dossier", "Close the case")} →</button>
         </div>
       </>}
@@ -312,11 +352,12 @@ export default function ThamTu({ muc = "vua", onXong }) {
     <LoiLeon cam="buon">
       {lyDo === "gio" ? tr("Hết giờ rồi! Hung thủ đã kịp tẩu thoát.", "Trop tard ! Le coupable s'est enfui.", "Out of time! The culprit got away.")
         : lyDo === "uy_tin" ? tr("Cấp trên đã rút chúng ta khỏi vụ này vì mất hết uy tín.", "Plus de réputation : on nous retire l'enquête.", "No reputation left: we're off the case.")
-          : tr("Thủ phạm thật đã thoát vì ta buộc tội sai người.", "Mauvais suspect : le vrai coupable s'échappe.", "Wrong suspect: the real culprit escapes.")}
+          : lyDo === "thieu" ? tr("Bằng chứng quá yếu, tòa thả người. Hung thủ thoát ngay trước mắt ta.", "Preuves trop faibles : le coupable ressort libre.", "Evidence too weak: the culprit walks free.")
+            : tr("Thủ phạm thật đã thoát vì ta buộc tội sai người.", "Mauvais suspect : le vrai coupable s'échappe.", "Wrong suspect: the real culprit escapes.")}
     </LoiLeon>
     <div className="mt-5 flex flex-wrap justify-end gap-2">
       <button type="button" onClick={() => setVu(null)} className="cursor-pointer rounded-full border-0 bg-white/15 px-5 py-2.5 font-sans text-sm font-bold text-white">{tr("Về bảng vụ án", "Retour aux dossiers", "Back to cases")}</button>
-      <button type="button" onClick={() => moVu(vu)} className="cursor-pointer rounded-full border-0 bg-amber-400 px-6 py-2.5 font-sans text-sm font-extrabold text-[#2b2118]">{tr("Điều tra lại", "Recommencer", "Try again")} →</button>
+      <button type="button" onClick={() => moVu(vu, true)} className="cursor-pointer rounded-full border-0 bg-amber-400 px-6 py-2.5 font-sans text-sm font-extrabold text-[#2b2118]">{tr("Điều tra lại", "Recommencer", "Try again")} →</button>
     </div>
   </>);
   return null;
