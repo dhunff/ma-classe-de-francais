@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { GraduationCap, BriefcaseBusiness, Users, Compass, BedDouble, Wallet, BatteryMedium, Heart, Languages, MapPin, UserRound, Thermometer, ArrowRight, Sparkles, Save, CalendarDays, Contact, Snowflake } from "lucide-react";
 import { CHUONG } from "../../../content/troChoi/phieuLuu.js";
 import { NHAN_VAT, NHANH } from "../../../content/troChoi/parisNhanh.js";
@@ -6,13 +6,14 @@ import { LICH_THANG } from "../../../content/troChoi/parisThang.js";
 import { VIEC_THEO_ID, DIA_DIEM, ALBUM, THANH_NGU } from "../../../content/troChoi/parisKyUc.js";
 import { ChoNoel, ThuNha } from "./ManPhu.jsx";
 import { NutKyUc, KhoKyUc } from "./KyUc.jsx";
-import ManKet from "./ManKet.jsx";
+import ManKet, { KHOA_CHO } from "./ManKet.jsx";
+import HoSoNam, { DongMay } from "./HoSoNam.jsx";
 import { tr } from "../../../shared/i18n.jsx";
 import { phat } from "../../../shared/amThanh.js";
 import { Leon } from "../../../shared/leon.jsx";
 import { tron } from "../../../shared/troChoiNhanh.js";
 import CauTracNghiem from "../CauTracNghiem.jsx";
-import { HIEU_UNG, batDau, chuanHoa, chonCanh, sauCau, sauNhanh, sauPhu, viecThang, hopGiong, THAN_MAX, cong, hetThang, hetNam, quaTuan, dungOm, tinhThang, sangThang, danhXung, noiSangDen, cauHay, anhDaCo, hocNgu } from "./luat.js";
+import { HIEU_UNG, batDau, chuanHoa, chonCanh, sauCau, sauNhanh, sauPhu, viecThang, hopGiong, THAN_MAX, cong, hetThang, hetNam, quaTuan, dungOm, tinhThang, sangThang, danhXung, noiSangDen, cauHay, anhDaCo, hocNgu, hoSoGop } from "./luat.js";
 
 /* « Một năm ở Paris » (31/10, giai đoạn 1). Lịch 12 tháng thay cho chín chương rời. Cảnh đối thoại lấy
    nguyên từ phieuLuu.js theo thứ tự truyện. Ván chơi giữ ở trình duyệt, điểm thật ghi qua ghi_tro_choi
@@ -117,8 +118,11 @@ function DauMan({ s }) {
   );
 }
 
-export default function MotNam({ onXong }) {
-  const [s, setS] = useState(docVan);
+export default function MotNam({ onXong, kho }) {
+  const [s, setS] = useState(() => (kho ? null : docVan()));
+  const [san, setSan] = useState(false);        // đã đọc xong ván từ máy chủ
+  const [may, setMay] = useState(null);         // ok | loi
+  const [ho, setHo] = useState({});             // kết cục đã lưu trên máy chủ
   const [buoc, setBuoc] = useState("lich");     // lich | canh | yen | thang | het
   const [k, setK] = useState(null);             // chỉ số cảnh đang chơi
   const [chon, setChon] = useState(null);
@@ -130,7 +134,62 @@ export default function MotNam({ onXong }) {
   const [xem, setXem] = useState(null);         // { tab, cu }: bản đồ, sổ tay, album đang mở
   const nhanhXao = useMemo(() => (nh ? tron(nh.lua) : []), [nh]);
   const thuong = useMemo(thuongCu, []);
-  useEffect(() => { ghiVan(s); }, [s]);
+  const uid = useRef(null), daGui = useRef(null), choGui = useRef(undefined), henGui = useRef(null);
+  const quaTuanMoi = (x0) => {
+    const x = { ...x0, doDang: "sau" }, v = viecThang(x, LICH_THANG);
+    if (v) {
+      setS(x); setLc(null);
+      if (v.loai === "su") { setNh(v); setBuoc("nhanh"); } else { setVp(v); setBuoc("phu"); }
+      return;
+    }
+    if (hetThang(x)) { setS(x); setBuoc("thang"); } else { setS(quaTuan(x)); setBuoc("lich"); }
+  };
+  const moCanh = (x, ma) => {
+    const c = ma === "nghi" ? null : chonCanh(x, ma, CANH, NHANH);
+    setS(x); setChon(null); setBo(null); setLc(null);
+    if (!c) { const y = hocNgu(x, THANH_NGU.length); setS(y); setYn(y.ngu.length > x.ngu.length ? y.ngu[y.ngu.length - 1] : null); setBuoc("yen"); return; }
+    if (c.nhanh) { setNh(c.nhanh); setBuoc("nhanh"); return; }
+    setK(c.truyen); setBuoc("canh");
+  };
+  /* Mở lại ván: quay về đúng chỗ đang dở thay vì cho chọn lại hoạt động của tuần. */
+  const khoiPhuc = (x) => {
+    setS(x);
+    if (x?.doDang === "sau") quaTuanMoi(x); else if (x?.doDang?.hd) moCanh(x, x.doDang.hd);
+    setSan(true);
+  };
+  useEffect(() => {
+    if (!kho) { khoiPhuc(docVan()); return undefined; }
+    let con = true;
+    kho.doc().then((r) => {
+      if (!con) return;
+      if (!r || r.loi) { setMay("loi"); khoiPhuc(docVan()); return; }
+      uid.current = r.uid; setMay("ok"); setHo(r.ket ?? {});
+      const docMay = docVan(), may_ = docMay?.chu && docMay.chu !== r.uid ? null : docMay, sv = r.van ? chuanHoa(r.van) : null;   // ván của tài khoản khác trên cùng trình duyệt thì bỏ qua
+      khoiPhuc(!sv ? may_ : !may_ || (sv.luc ?? 0) >= (may_.luc ?? 0) ? sv : may_);
+      try {
+        const cho = (JSON.parse(localStorage.getItem(KHOA_CHO)) || []).filter((x) => x.chu === r.uid);
+        if (cho.length) kho.luuKet(cho).then((k) => { if (!k?.loi) { localStorage.removeItem(KHOA_CHO); setHo(k.ket); } });
+      } catch { /* chế độ riêng tư: bỏ qua */ }
+    });
+    return () => { con = false; };
+  }, [kho]);
+  /* Ghi máy ngay, ghi máy chủ sau một nhịp để mỗi cú bấm không thành một lượt gọi mạng. */
+  const guiMay = (v) => { choGui.current = undefined; kho?.luu(v).then((r) => setMay(r?.loi ? "loi" : "ok")); };
+  const dongGoi = (x) => (x ? { ...x, luc: Date.now(), chu: uid.current ?? x.chu } : null);
+  const luuNgay = (x) => { clearTimeout(henGui.current); daGui.current = JSON.stringify(x ? { ...x, luc: 0 } : null); const v = dongGoi(x); ghiVan(v); guiMay(v); };
+  useEffect(() => {
+    if (!san) return undefined;
+    const khoa = JSON.stringify(s ? { ...s, luc: 0 } : null);
+    if (khoa === daGui.current) return undefined;
+    daGui.current = khoa;
+    const v = dongGoi(s);
+    ghiVan(v);
+    if (kho) { choGui.current = v; clearTimeout(henGui.current); henGui.current = setTimeout(() => guiMay(v), 1500); }
+    return undefined;
+  }, [s, san]);
+  useEffect(() => () => { clearTimeout(henGui.current); if (choGui.current !== undefined) kho?.luu(choGui.current); }, []);
+
+  if (!san) return <div className="mt-6 grid place-items-center rounded-[2rem] bg-surface p-10 shadow-[0_8px_30px_rgb(0,0,0,0.06)]"><Leon cam="chao" size={72} className="mcf-dong" /><p className="m-0 mt-2 text-sm font-bold text-soft">{tr("Léon đang tìm lại năm của bạn…", "Léon retrouve votre année…", "Léon is finding your year…")}</p></div>;
 
   if (!s) return (
     <div className="mt-6 overflow-hidden rounded-[2rem] bg-surface shadow-[0_8px_30px_rgb(0,0,0,0.06)]">
@@ -144,11 +203,13 @@ export default function MotNam({ onXong }) {
         <p className="m-0 mt-5 text-sm font-bold text-soft">{tr("Bạn là ai?", "Qui êtes-vous ?", "Who are you?")}</p>
         <div className="mt-2 grid gap-3 sm:grid-cols-2">
           {[["nu", tr("Một bạn nữ", "Une étudiante", "A female student"), "from-pink-500 to-rose-600"], ["nam", tr("Một bạn nam", "Un étudiant", "A male student"), "from-sky-500 to-blue-600"]].map(([g, ten, nen]) => (
-            <button key={g} type="button" onClick={() => { phat("batDau"); setS(batDau(g, thuong)); setBuoc("lich"); }} className={`mcf-tt-la flex cursor-pointer items-center gap-3 rounded-2xl border-0 bg-gradient-to-br ${nen} p-4 text-left font-sans text-white`}>
+            <button key={g} type="button" onClick={() => { phat("batDau"); setS({ ...batDau(g, thuong), nam: `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}` }); setBuoc("lich"); }} className={`mcf-tt-la flex cursor-pointer items-center gap-3 rounded-2xl border-0 bg-gradient-to-br ${nen} p-4 text-left font-sans text-white`}>
               <span className="grid h-11 w-11 place-items-center rounded-full bg-white/25"><UserRound size={24} /></span><span className="text-base font-extrabold">{ten}</span>
             </button>
           ))}
         </div>
+        {Object.keys(ho).length > 0 && <div className="mt-6"><HoSoNam h={hoSoGop(ho)} kho={kho} may={may} /></div>}
+        {!Object.keys(ho).length && may === "loi" && <div className="mt-4"><DongMay may={may} /></div>}
       </div>
     </div>
   );
@@ -156,32 +217,18 @@ export default function MotNam({ onXong }) {
   const ky = { noi: noiSangDen(s, CANH, VIEC_THEO_ID, DIA_DIEM), anh: anhDaCo(s, ALBUM), cau: cauHay(s, CANH, VIEC_THEO_ID) };
   const daThay = () => ({ noi: ky.noi.map((d) => d.id), anh: ky.anh.length, cau: ky.cau.length + s.ngu.length });
   const khung = (con) => <div className="mt-6 overflow-hidden rounded-[2rem] bg-surface shadow-[0_8px_30px_rgb(0,0,0,0.06)]"><DauMan s={s} /><div className="p-5">{con}</div></div>;
-  /* Hết tuần: chạy hết việc riêng của tuần đó rồi mới sang tuần mới. */
-  const quaTuanMoi = (x) => {
-    const v = viecThang(x, LICH_THANG);
-    if (v) {
-      setS(x); setLc(null);
-      if (v.loai === "su") { setNh(v); setBuoc("nhanh"); } else { setVp(v); setBuoc("phu"); }
-      return;
-    }
-    if (hetThang(x)) { setS(x); setBuoc("thang"); } else { setS(quaTuan(x)); setBuoc("lich"); }
-  };
-  const luuDiem = (x) => { const r = { diem: x.diem, dung: x.dung, tong: Math.max(1, x.tong) }, sau = { ...x, diem: 0, dung: 0, tong: 0 }; ghiVan(sau); setS(sau); onXong(r); };   // ghi ngay: onXong gỡ màn này trước khi effect kịp chạy
+  const luuDiem = (x) => { const r = { diem: x.diem, dung: x.dung, tong: Math.max(1, x.tong) }, sau = { ...x, diem: 0, dung: 0, tong: 0 }; luuNgay(sau); setS(sau); onXong(r); };   // ghi ngay: onXong gỡ màn này trước khi effect kịp chạy
 
   if (buoc === "lich") {
     const tenHoat = (ma) => HOAT().find((h) => h.ma === ma).ten;
-    if (xem) return khung(<KhoKyUc tab={xem.tab} cu={xem.cu} ky={ky} ngu={s.ngu} tenHoat={tenHoat} onTab={(tab) => { phat("bam"); setXem({ ...xem, tab }); }} onDong={() => { phat("bam"); setXem(null); }} />);
+    if (xem) return khung(<KhoKyUc tab={xem.tab} cu={xem.cu} ky={ky} ngu={s.ngu} tenHoat={tenHoat} hoSo={<HoSoNam h={hoSoGop(ho, s, ky)} kho={kho} may={may} />} onTab={(tab) => { phat("bam"); setXem({ ...xem, tab }); }} onDong={() => { phat("bam"); setXem(null); }} />);
     if (s.om) return khung(<>
       <LoiLeon cam="buon">{tr("Bạn kiệt sức nên bị ốm cả tuần rồi. Nằm nghỉ đi, ta mang soupe sang cho.", "Tu es épuisé·e, te voilà malade pour la semaine. Repose-toi, je t'apporte une soupe.", "You're worn out and ill this week. Rest, I'll bring soup.")}</LoiLeon>
       <div className="mt-4 text-right"><Nut onClick={() => { phat("lat"); quaTuanMoi(dungOm(s)); }}><Thermometer size={15} className="mr-1 inline align-[-3px]" />{tr("Nghỉ hết tuần", "Se soigner", "Recover")}</Nut></div>
     </>);
     const chonHoat = (ma) => {
       phat("lat");
-      const x = { ...cong(s, HIEU_UNG[ma]), hdThang: [...s.hdThang, ma] }, c = ma === "nghi" ? null : chonCanh(x, ma, CANH, NHANH);
-      setS(x); setChon(null); setBo(null); setLc(null);
-      if (!c) { const y = hocNgu(x, THANH_NGU.length); setS(y); setYn(y.ngu.length > x.ngu.length ? y.ngu[y.ngu.length - 1] : null); setBuoc("yen"); return; }
-      if (c.nhanh) { setNh(c.nhanh); setBuoc("nhanh"); return; }
-      setK(c.truyen); setBuoc("canh");
+      moCanh({ ...cong(s, HIEU_UNG[ma]), hdThang: [...s.hdThang, ma], doDang: { hd: ma } }, ma);
     };
     return khung(<>
       {s.tuan === 0 && LICH_THANG[s.thang]?.mo && <div className="mb-4"><LoiLeon cam="nhay-mat">{LICH_THANG[s.thang].mo}</LoiLeon></div>}
@@ -303,6 +350,6 @@ export default function MotNam({ onXong }) {
   }
 
   /* het: màn kết năm với kết cục riêng (giai đoạn 5). */
-  const veDau = () => { ghiVan(null); setS(null); setBuoc("lich"); };
-  return <ManKet s={s} ky={ky} onLai={veDau} onLuu={() => { const r = { diem: s.diem, dung: s.dung, tong: Math.max(1, s.tong) }; veDau(); onXong(r); }} />;
+  const veDau = () => { luuNgay(null); setS(null); setBuoc("lich"); };
+  return <ManKet s={s} ky={ky} ho={ho} uid={uid.current} kho={kho} onHo={setHo} onLai={veDau} onLuu={() => { const r = { diem: s.diem, dung: s.dung, tong: Math.max(1, s.tong) }; veDau(); onXong(r); }} />;
 }

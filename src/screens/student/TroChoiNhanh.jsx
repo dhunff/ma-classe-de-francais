@@ -5,6 +5,7 @@ import { PhatAm } from "./NgheNoi.jsx";
 import { soCau } from "../../../supabase/functions/_shared/soCau.js";
 import ThamTu from "./thamTu/ThamTu.jsx";
 import { khoThamTu } from "../../shared/thamTuStore.js";
+import { khoMotNam } from "../../shared/motNamStore.js";
 import CauTracNghiem from "./CauTracNghiem.jsx";
 import { CHANG } from "../../content/troChoi/doVui.js";
 import MotNam from "./paris/MotNam.jsx";
@@ -227,7 +228,7 @@ function ManChoi({ tc }) {
       )}
 
       {buoc === "choi" && !CO_LEON_RIENG.has(tc.ma) && <LeonBinhLuan key={"l" + van} />}
-      {buoc === "choi" && <Game key={van} cap={MUC_CHOI[muc].cap} he={MUC_CHOI[muc]} muc={muc} kieu={kieu} onXong={xong} kho={tc.ma === "tham_tu" ? khoThamTu : undefined} />}
+      {buoc === "choi" && <Game key={van} cap={MUC_CHOI[muc].cap} he={MUC_CHOI[muc]} muc={muc} kieu={kieu} onXong={xong} kho={tc.ma === "tham_tu" ? khoThamTu : tc.ma === "phieu_luu" ? khoMotNam : undefined} />}
 
       {buoc === "xong" && kq && (
         <div className="mt-6 rounded-3xl bg-surface p-6 text-center shadow-[0_8px_30px_rgb(0,0,0,0.04)]">

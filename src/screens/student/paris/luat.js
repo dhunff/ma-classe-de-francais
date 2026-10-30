@@ -21,15 +21,15 @@ export const cong = (s, d) => ({ ...s, tien: s.tien + (d.tien ?? 0), nl: kep(s.n
 
 export const batDau = (gioi, thuong = 0) => ({
   gioi, thang: 0, tuan: 0, tien: TIEN_DAU + thuong, nl: 70, tt: 70, phap: 0,
-  da: [], saiLai: [], than: {}, co: [], nhanhDa: [], hdThang: [], chon: {}, ngu: [], thay: {}, om: false, buocLam: false, diem: 0, dung: 0, tong: 0,
+  da: [], saiLai: [], than: {}, co: [], nhanhDa: [], hdThang: [], chon: {}, ngu: [], thay: {}, vay: 0, doDang: null, om: false, buocLam: false, diem: 0, dung: 0, tong: 0,
 });
 
 /* Ván từ giai đoạn 1 đi tuần tự theo `ke`: đổi sang danh sách cảnh đã chơi. */
 export const chuanHoa = (s) => {
-  if (s?.da) return { hdThang: [], chon: {}, ngu: [], thay: {}, ...s };
+  if (s?.da) return { hdThang: [], chon: {}, ngu: [], thay: {}, vay: 0, doDang: null, nam: "cu", ...s };
   if (!s) return s;
   const { ke = 0, ...x } = s;
-  return { ...x, da: Array.from({ length: ke }, (_, k) => k), than: {}, co: [], nhanhDa: [], hdThang: [], chon: {}, ngu: [], thay: {} };
+  return { ...x, da: Array.from({ length: ke }, (_, k) => k), than: {}, co: [], nhanhDa: [], hdThang: [], chon: {}, ngu: [], thay: {}, vay: 0, doDang: null, nam: "cu" };
 };
 
 /* Chương nào mở từ tháng nào, thuộc hoạt động nào. arrivee (*) chạy trước mọi hoạt động. */
@@ -88,8 +88,9 @@ export const hopGiong = (t, gioi) => t.replaceAll("{e}", gioi === "nu" ? "e" : "
 
 export const hetThang = (s) => s.tuan >= SO_TUAN - 1;
 export const hetNam = (s) => s.thang >= SO_THANG - 1;
-/* Sang tuần sau. Cạn sức thì tuần kế ốm. */
-export const quaTuan = (s) => ({ ...s, tuan: s.tuan + 1, om: s.nl <= 0, buocLam: false });
+/* Sang tuần sau. Cạn sức thì tuần kế ốm. doDang giữ chỗ đang chơi dở để tải lại trang không được thêm một tuần:
+   { hd } là đã chọn hoạt động, "sau" là xong cảnh chính, đang chạy việc tháng hoặc tổng kết. */
+export const quaTuan = (s) => ({ ...s, tuan: s.tuan + 1, om: s.nl <= 0, buocLam: false, doDang: null });
 export const dungOm = (s) => ({ ...cong(s, { nl: 45 }), om: false });
 
 /* Cuối tháng: nhận học bổng, trả tiền nhà. Âm tiền thì Léon cho vay và tuần đầu tháng sau phải đi làm. */
@@ -99,7 +100,7 @@ export const tinhThang = (s) => {
 };
 export const sangThang = (s) => {
   const { con, vay, nho } = tinhThang(s);
-  return { ...cong({ ...s, tien: vay ? 0 : con }, { nl: 10, tt: -nho - (vay ? 10 : 0) }), thang: s.thang + 1, tuan: 0, hdThang: [], buocLam: vay, om: false };
+  return { ...cong({ ...s, tien: vay ? 0 : con }, { nl: 10, tt: -nho - (vay ? 10 : 0) }), thang: s.thang + 1, tuan: 0, hdThang: [], buocLam: vay, om: false, doDang: null, vay: (s.vay ?? 0) + (vay ? 1 : 0) };
 };
 /* Danh xưng theo điểm tiếng Pháp trong truyện: không phải trình độ thật, nên không gắn nhãn A1–B2. */
 export const danhXung = (phap) => (phap < 25 ? 0 : phap < 50 ? 1 : phap < 75 ? 2 : 3);
@@ -135,4 +136,21 @@ export const ketCuc = (s, KET_CUC, soNoi) => {
   if (an.dk.every((c) => c.dat)) return { ...an, dat: true };
   const ma = Object.keys(KET_CUC).find((m) => s.co.includes(KET_CUC[m].co)) ?? "olai", x = xet(ma);
   return { ...x, dat: x.dk.every((c) => c.dat) };
+};
+
+/* Dòng gửi lên máy chủ khi hết năm (giai đoạn 6). */
+export const dongKet = (s, ky, kq) => ({
+  ma: kq.ma, ban: kq.dat ? "dat" : "do", nam: s.nam, noi: ky.noi.length, anh: ky.anh.length, cau: ky.cau.length, ngu: s.ngu.length,
+  tien: Math.max(0, s.tien), than: Object.values(s.than).filter((v) => v >= 4).length, vay: s.vay ?? 0,
+});
+/* Gộp kết cục đã lưu với kỷ lục của ván đang chơi, cho phần thành tích. */
+export const hoSoGop = (ket, s, ky) => {
+  const ds = Object.values(ket);
+  const lon = (m, v = 0) => Math.max(v, ...ds.map((x) => x[m] ?? 0));
+  const coVay = ds.filter((x) => x.vay != null).map((x) => x.vay);
+  return {
+    ket: Object.fromEntries(Object.entries(ket).map(([m, x]) => [m, x.ban])),
+    noi: lon("noi", ky?.noi.length), anh: lon("anh", ky?.anh.length), cau: lon("cau", ky?.cau.length), ngu: lon("ngu", s?.ngu.length),
+    tien: lon("tien"), ban: lon("than", s ? Object.values(s.than).filter((v) => v >= 4).length : 0), vay: coVay.length ? Math.min(...coVay) : null,
+  };
 };

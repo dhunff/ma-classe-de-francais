@@ -33,6 +33,18 @@ import ThamTu from "./screens/student/thamTu/ThamTu.jsx";
 import MotNam from "./screens/student/paris/MotNam.jsx";
 /* Giả máy chủ cho Thám tử (chỉ trang xem thử): ghi trong bộ nhớ, bảng hạng cố định. */
 const SV_TT = { vu: {}, chon: {} };
+/* Giả lập máy chủ của Một năm ở Paris: window.__motNam để đọc, đặt .hong = true để thử nhánh lỗi. */
+const SV_PN = { van: null, ket: {}, hong: false };
+if (typeof window !== "undefined") window.__motNam = SV_PN;
+const KHO_PN_GIA = {
+  doc: async () => (SV_PN.hong ? { loi: "giả lập" } : { uid: "xem-thu", van: SV_PN.van, ket: SV_PN.ket }),
+  luu: async (van) => { if (SV_PN.hong) return { loi: "giả lập" }; SV_PN.van = van; return { luc: van?.luc ?? null }; },
+  luuKet: async (ds) => { if (SV_PN.hong) return { loi: "giả lập" }; ds.forEach((x) => { SV_PN.ket[x.ma] = { ...x, than: x.than }; }); return { uid: "xem-thu", van: SV_PN.van, ket: SV_PN.ket }; },
+  bangBan: async () => [
+    { hang: 1, id: "a", name: "Bạn A", so_ket: 3, so_dat: 2, la_toi: false },
+    { hang: 2, id: "b", name: "Tôi", so_ket: 1, so_dat: 1, la_toi: true },
+  ],
+};
 const KHO_TT_GIA = {
   doc: async () => SV_TT,
   luu: async (ds) => { ds.forEach((x) => { SV_TT.vu[x.vu] = { diem: x.diem, hang: x.hang, ket: x.ket ? [x.ket] : [] }; }); return SV_TT; },
@@ -877,7 +889,7 @@ function Preview() {
           <Route path="/etudiant/hoan-ho-so" element={<><Controls /><HoanThienHoSo fixture={{ prenom: "Linh" }} /></>} />
           <Route path="/etudiant/tham-tu-de" element={<><Controls /><ThamTu muc="de" onXong={() => {}} /></>} />
           <Route path="/etudiant/tham-tu-mau" element={<><Controls /><ThamTu muc="vua" onXong={() => {}} /></>} />
-          <Route path="/etudiant/mot-nam" element={<><Controls /><MotNam onXong={() => {}} /></>} />
+          <Route path="/etudiant/mot-nam" element={<><Controls /><MotNam onXong={() => {}} kho={KHO_PN_GIA} /></>} />
           <Route path="/etudiant/tham-tu" element={<><Controls /><ThamTu muc="kho" onXong={() => {}} kho={KHO_TT_GIA} /></>} />
           <Route path="/etudiant/boc-tham" element={<><Controls /><PhanThi section={{ code: "PO", label: "Production orale", minutes: 20, points: 25, exercise: { id: "po-xem-thu", level: "B2", questions: [], consigne: "<p><strong>Production orale : 20 minutes environ.</strong> 30 minutes de préparation.</p><p>Vous tirez au sort deux documents et vous en choisissez un.</p>", bocTham: { chuanBi: 30, phan: [{ ten: "Monologue suivi puis exercice en interaction", cachLam: "Choisissez un document.", soRut: 2, sujets: SUJET_B2_TP68 }] } } }} attemptId="xem-thu" answers={{}} setAnswers={() => {}} onDone={() => {}} onBlur={() => {}} examId="xem-thu" /></>} />
           <Route path="/etudiant/tu-cham-noi" element={<><Controls /><div className="mx-auto max-w-6xl py-6"><POSelfEvaluation po={{ attemptId: "xem-thu", cap: "B2", examId: "xem-thu", tuCham: { monologue: 3 }, aiGoiY: { diem: { monologue: 3, interaction: 1, lexique: 3, morpho: 3, phono: 3 }, ly_do: { interaction: "Bản ghi chỉ có phần độc thoại, chưa có phần tranh luận." }, tong_quat: "Bài độc thoại có nêu vấn đề và hai luận điểm rõ, nhưng thiếu ví dụ cụ thể.", chep_loi: "Aujourd’hui, de plus en plus de jeunes reviennent à la photographie argentique…" } }} exerciseId="xem-thu" consigne="<p>Vous dégagez le problème soulevé par ce document…</p>" /></div></>} />

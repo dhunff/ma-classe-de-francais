@@ -1,24 +1,25 @@
 import React, { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { ArrowRight, RotateCcw, KeyRound, GraduationCap, Coffee, TrainFront, Heart, Check, Circle, Lock, Sparkles } from "lucide-react";
+import { ArrowRight, RotateCcw, Check, Circle, Sparkles } from "lucide-react";
 import { KET_CUC } from "../../../content/troChoi/parisKyUc.js";
 import { NHAN_VAT } from "../../../content/troChoi/parisNhanh.js";
 import { tr } from "../../../shared/i18n.jsx";
 import { phat } from "../../../shared/amThanh.js";
 import { Leon } from "../../../shared/leon.jsx";
 import { AnhKyNiem } from "./KyUc.jsx";
-import { hopGiong, ketCuc, nguoiThan } from "./luat.js";
+import { CacKetCuc, HINH_KET, thanhTichMoi } from "./HoSoNam.jsx";
+import { hopGiong, ketCuc, nguoiThan, dongKet, hoSoGop } from "./luat.js";
 
 /* Màn kết năm (31/10, giai đoạn 5). Thứ tự: trời tối và tháp Eiffel → pháo hoa, tên kết cục → lá thư,
    ảnh, hồ sơ năm. Bấm vào đâu cũng tua tới cuối; máy bật giảm chuyển động thì hiện ngay. */
 const KHOA_KET = "mcf-mot-nam-ket-v1";
+export const KHOA_CHO = "mcf-mot-nam-ket-cho";
 const docKet = () => { try { return JSON.parse(localStorage.getItem(KHOA_KET)) || {}; } catch { return {}; } };
 const ghiKet = (ma, dat) => {
   const cu = docKet(), moi = cu[ma] == null;
   try { localStorage.setItem(KHOA_KET, JSON.stringify({ ...cu, [ma]: dat ? "dat" : (cu[ma] ?? "do") })); } catch { /* chế độ riêng tư: bỏ qua */ }
   return moi;
 };
-const HINH = { chia: KeyRound, mu: GraduationCap, ly: Coffee, tau: TrainFront, tim: Heart };
 const giamChuyenDong = () => window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
 
 function PhaoHoa({ a, b, lan }) {
@@ -76,12 +77,22 @@ const nhanDk = (c, s, soNoi) => {
   return [tr("Thư giới thiệu của giáo sư", "Lettre de recommandation", "Recommendation letter"), ""];
 };
 
-export default function ManKet({ s, ky, onLai, onLuu }) {
+export default function ManKet({ s, ky, ho, uid, kho, onHo, onLai, onLuu }) {
   const soNoi = ky.noi.length;
   const [kq] = useState(() => ketCuc(s, KET_CUC, soNoi));
   const K = KET_CUC[kq.ma], B = kq.dat ? K.dat : K.do;
   const [moi] = useState(() => ghiKet(kq.ma, kq.dat));
   const [da] = useState(docKet);
+  /* Gửi kết cục lên máy chủ. Hỏng thì để lại ở máy, lần mở trò sau MotNam gửi lại. Cùng mã nam không bị đếm hai lần. */
+  const [gui] = useState(() => dongKet(s, ky, kq));
+  const [tt] = useState(() => thanhTichMoi(hoSoGop(ho), hoSoGop({ ...ho, [gui.ma]: { ...gui, ban: kq.dat || ho[gui.ma]?.ban === "dat" ? "dat" : "do" } })));
+  useEffect(() => {
+    if (!kho) return;
+    kho.luuKet([gui]).then((r) => {
+      if (!r?.loi) { onHo(r.ket); return; }
+      try { const cu = JSON.parse(localStorage.getItem(KHOA_CHO)) || []; localStorage.setItem(KHOA_CHO, JSON.stringify([...cu.filter((x) => x.nam !== gui.nam), { ...gui, chu: uid }])); } catch { /* chế độ riêng tư: bỏ qua */ }
+    });
+  }, []);
   const [b, setB] = useState(() => (giamChuyenDong() ? 2 : 0));   // 0 trời tối · 1 tên kết cục · 2 lá thư và hồ sơ
   const [ban, setBan] = useState(false);
   const hen = useRef([]);
@@ -93,7 +104,7 @@ export default function ManKet({ s, ky, onLai, onLuu }) {
   }, [kq.dat]);
   const tua = () => { if (b < 2) { hen.current.forEach(clearTimeout); setB(2); } };
   const ban_ = nguoiThan(s, NHAN_VAT), van = B.van.replaceAll("{ban}", ban_).replaceAll("{noi}", soNoi);
-  const Icon = HINH[K.hinh], anh = ky.anh.slice(-3);
+  const Icon = HINH_KET[K.hinh], anh = ky.anh.slice(-3);
   const dong = [[tr("Tiếng Pháp", "Français", "French"), s.phap], [tr("Tinh thần", "Moral", "Mood"), s.tt], [tr("Tiền còn lại", "Argent restant", "Money left"), `${s.tien} €`], [tr("Nơi đã tới", "Lieux visités", "Places visited"), soNoi], [tr("Câu trong sổ tay", "Phrases notées", "Lines noted"), ky.cau.length + s.ngu.length], [tr("Ảnh kỷ niệm", "Souvenirs", "Memories"), ky.anh.length]];
   return createPortal(
     <div role="dialog" aria-modal="true" aria-label={K.ten} onClick={tua} className="mcf-ket-troi fixed inset-0 z-[85] overflow-y-auto font-sans text-white" style={{ "--ket-a": K.a, "--ket-b": K.b }}>
@@ -113,6 +124,7 @@ export default function ManKet({ s, ky, onLai, onLuu }) {
             <p className="m-0 text-sm leading-relaxed">{van}</p>
             <p lang="fr" className="m-0 mt-3 font-serif text-base font-bold italic text-[#92400e]">« {hopGiong(B.fr, s.gioi)} »</p>
           </div>
+          {tt.map((t, k) => <p key={t.ma} style={{ animationDelay: `${0.15 + k * 0.15}s` }} className="mcf-hang-dong m-0 flex items-center gap-2 rounded-2xl bg-gradient-to-r from-amber-300 to-yellow-200 px-4 py-2 text-sm font-extrabold text-[#2b2118]"><t.Icon size={18} className="shrink-0" />{tr("Thành tích mới: ", "Nouveau succès : ", "New achievement: ")}{t.ten}</p>)}
           {anh.length > 0 && <div className="grid grid-cols-3 gap-3 px-1">{anh.map((a, k) => <AnhKyNiem key={a.id} a={a} k={k} nho />)}</div>}
           <div className="rounded-2xl bg-[#0b1020]/80 p-4">
             <p className="m-0 text-xs font-extrabold uppercase tracking-widest text-white/75">{tr("Hồ sơ năm của bạn", "Votre bilan", "Your year")}</p>
@@ -122,14 +134,7 @@ export default function ManKet({ s, ky, onLai, onLuu }) {
           </div>
           <div className="rounded-2xl bg-[#0b1020]/80 p-4">
             <p className="m-0 text-xs font-extrabold uppercase tracking-widest text-white/75">{tr("Các kết cục", "Les fins", "Endings")}</p>
-            <div className="mt-2 grid grid-cols-5 gap-2">{Object.entries(KET_CUC).map(([ma, x]) => {
-              const co = da[ma];
-              const HinhKet = HINH[x.hinh];
-              return <div key={ma} className="text-center">
-                <span className={`mx-auto grid h-11 w-11 place-items-center rounded-full ${co === "dat" ? "text-[#2b2118]" : co ? "bg-white/20 text-white" : "bg-black/30 text-white/40"}`} style={co === "dat" ? { background: x.a } : undefined}>{co ? <HinhKet size={19} /> : <Lock size={15} />}</span>
-                <span lang="fr" className="mt-1 block text-[10px] font-bold leading-tight text-white/85">{co || !x.an ? x.ten : "???"}</span>
-              </div>;
-            })}</div>
+            <div className="mt-2"><CacKetCuc ket={{ ...da, ...Object.fromEntries(Object.entries(ho).map(([m, x]) => [m, x.ban])) }} toi /></div>
           </div>
           <div className="flex items-start gap-3"><Leon cam={kq.dat ? "yeu-qua" : "co-len"} size={60} className="shrink-0" /><p className="m-0 rounded-3xl rounded-tl-md bg-[#fef3c7] px-4 py-3 text-sm text-[#2b2118]">{kq.dat ? tr("Ta tự hào về bạn. Paris sẽ nhớ bạn lắm.", "Je suis fier de toi. Paris se souviendra de toi.", "I'm proud of you. Paris will remember you.") : tr("Chưa tới đích không có nghĩa là thua. Thử sống lại một năm khác xem?", "Ne pas arriver au but, ce n'est pas perdre. On revit une année ?", "Not reaching the goal isn't losing. Live another year?")}</p></div>
           <div className="flex flex-wrap justify-end gap-2 pb-2">

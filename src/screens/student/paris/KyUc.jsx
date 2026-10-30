@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import { Map as IconBanDo, BookOpen, Images, Lock, ArrowLeft, MapPin, GraduationCap, Moon, Lamp, Wallet, TreePine, Crown, Flower2, Cherry, Fish, Salad, Grape, Music, Soup, Cake, Ship, Sparkles } from "lucide-react";
+import { Map as IconBanDo, BookOpen, Images, Award, Lock, ArrowLeft, MapPin, GraduationCap, Moon, Lamp, Wallet, TreePine, Crown, Flower2, Cherry, Fish, Salad, Grape, Music, Soup, Cake, Ship, Sparkles } from "lucide-react";
 import { DIA_DIEM, ALBUM, THANH_NGU } from "../../../content/troChoi/parisKyUc.js";
 import { tr } from "../../../shared/i18n.jsx";
 
@@ -98,11 +98,11 @@ function Album({ anh }) {
   );
 }
 
-const TAB = () => [["bando", IconBanDo, tr("Bản đồ", "Carte", "Map")], ["so", BookOpen, tr("Sổ tay", "Carnet", "Notebook")], ["album", Images, tr("Album", "Album", "Album")]];
+const TAB = () => [["bando", IconBanDo, tr("Bản đồ", "Carte", "Map")], ["so", BookOpen, tr("Sổ tay", "Carnet", "Notebook")], ["album", Images, tr("Album", "Album", "Album")], ["ho", Award, tr("Hồ sơ", "Dossier", "Profile")]];
 
 export function NutKyUc({ moi, onMo }) {
   return (
-    <div className="mt-4 grid grid-cols-3 gap-2">
+    <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
       {TAB().map(([ma, Icon, ten], j) => (
         <button key={ma} type="button" onClick={() => onMo(ma)} className="relative flex cursor-pointer items-center justify-center gap-1.5 rounded-2xl border-0 bg-surface2 px-2 py-2.5 font-sans text-sm font-extrabold text-ink">
           <Icon size={16} className="shrink-0 text-orange-600" /><span className="truncate">{ten}</span>
@@ -113,7 +113,7 @@ export function NutKyUc({ moi, onMo }) {
   );
 }
 
-export function KhoKyUc({ tab, cu, ky, ngu, tenHoat, onTab, onDong }) {
+export function KhoKyUc({ tab, cu, ky, ngu, tenHoat, hoSo, onTab, onDong }) {
   return (
     <div>
       <div className="mb-3 flex flex-wrap items-center gap-2">
@@ -125,6 +125,7 @@ export function KhoKyUc({ tab, cu, ky, ngu, tenHoat, onTab, onDong }) {
       {tab === "bando" && <BanDoParis noi={ky.noi} cu={cu} tenHoat={tenHoat} />}
       {tab === "so" && <SoTay cau={ky.cau} ngu={ngu} />}
       {tab === "album" && <Album anh={ky.anh} />}
+      {tab === "ho" && hoSo}
     </div>
   );
 }
