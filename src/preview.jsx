@@ -29,6 +29,7 @@
    như `ONhapUsername` nhận `hoiConTrong` thay vì tự import. */
 import React, { useState } from "react";
 import ReactDOM from "react-dom/client";
+import ThamTu from "./screens/student/thamTu/ThamTu.jsx";
 /* Bốc thăm PO B2: dùng đúng 15 sujet TP68 đang nằm trong database (lô 26), không gọi mạng. */
 import TP68 from "../scripts/nhap/lo26_b2_po_tp68.json";
 const SUJET_B2_TP68 = TP68.map((x) => ({ ma: x.ma, html: `<p><strong>${x.titre}</strong></p><p>${x.texte}</p>` + (x.note ? `<p><em>* ${x.note}</em></p>` : "") }));
@@ -699,6 +700,7 @@ function Preview() {
     ["/etudiant/auto-evaluation", "Tự chấm Production écrite"],
     ["/etudiant/tu-cham-noi", "Tự chấm Production orale"],
     ["/etudiant/boc-tham", "Phần nói: bốc thăm + chuẩn bị"],
+    ["/etudiant/tham-tu", "Thám tử Léon (mức khó)"],
     ["/etudiant/hoan-ho-so", "Hoàn thiện hồ sơ (mới đăng ký)"],
     ["/etudiant/tai-khoan-moi", "Trang Tài khoản"],
     ["/etudiant/phan-nghe", "Phần nghe 2 bài (thi thử)"],
@@ -858,6 +860,7 @@ function Preview() {
           <Route path="/etudiant/phan-nghe" element={<><Controls /><PhanThi section={{ code: "CO", label: "Compréhension de l'oral", minutes: 25, points: 25, exercises: [1, 2].map((k) => ({ id: "co-" + k, level: "A2", title: "Écoute " + k, consigne: "<p>Exercice " + k + "</p>", audioUrl: "/am-thanh-mau-" + k + ".mp3", imageUrl: ANH_MAU, questions: k === 2 ? [{ id: "cq2", ord: 0, type: "qcm", prompt: "Question 1", options: ["a", "b", "c"], nhom: "Document 1", heSo: 4 }, { id: "cq2b", ord: 1, type: "qcm", prompt: "Question 2", options: ["a", "b", "c"], nhom: "Document 2", heSo: 3 }] : [{ id: "cq" + k, ord: 0, type: "qcm", prompt: "Question " + k, options: ["a", "b", "c"] }] })) }} attemptId="xem-thu" attemptTheoBai={{ "co-1": "a1", "co-2": "a2" }} answers={{}} setAnswers={() => {}} onDone={() => {}} onBlur={() => {}} examId="xem-thu" /></>} />
           <Route path="/etudiant/tai-khoan-moi" element={<><Controls /><AccountPage name="Linh" role="eleve" email="linh@example.com" emailVerified onLogout={() => {}} changePw={() => {}} /></>} />
           <Route path="/etudiant/hoan-ho-so" element={<><Controls /><HoanThienHoSo fixture={{ prenom: "Linh" }} /></>} />
+          <Route path="/etudiant/tham-tu" element={<><Controls /><ThamTu muc="kho" onXong={() => {}} /></>} />
           <Route path="/etudiant/boc-tham" element={<><Controls /><PhanThi section={{ code: "PO", label: "Production orale", minutes: 20, points: 25, exercise: { id: "po-xem-thu", level: "B2", questions: [], consigne: "<p><strong>Production orale : 20 minutes environ.</strong> 30 minutes de préparation.</p><p>Vous tirez au sort deux documents et vous en choisissez un.</p>", bocTham: { chuanBi: 30, phan: [{ ten: "Monologue suivi puis exercice en interaction", cachLam: "Choisissez un document.", soRut: 2, sujets: SUJET_B2_TP68 }] } } }} attemptId="xem-thu" answers={{}} setAnswers={() => {}} onDone={() => {}} onBlur={() => {}} examId="xem-thu" /></>} />
           <Route path="/etudiant/tu-cham-noi" element={<><Controls /><div className="mx-auto max-w-6xl py-6"><POSelfEvaluation po={{ attemptId: "xem-thu", cap: "B2", examId: "xem-thu", tuCham: { monologue: 3 }, aiGoiY: { diem: { monologue: 3, interaction: 1, lexique: 3, morpho: 3, phono: 3 }, ly_do: { interaction: "Bản ghi chỉ có phần độc thoại, chưa có phần tranh luận." }, tong_quat: "Bài độc thoại có nêu vấn đề và hai luận điểm rõ, nhưng thiếu ví dụ cụ thể.", chep_loi: "Aujourd’hui, de plus en plus de jeunes reviennent à la photographie argentique…" } }} exerciseId="xem-thu" consigne="<p>Vous dégagez le problème soulevé par ce document…</p>" /></div></>} />
           <Route path="/etudiant/auto-evaluation" element={
