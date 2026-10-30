@@ -1,11 +1,13 @@
 import React, { useRef, useState } from "react";
-import { Volume2 } from "lucide-react";
+import { Volume2, Mail, MessageSquareQuote, FileText, Lock, CircleCheck, Search, MapPin, NotebookPen, CircleHelp, UserRound, Languages, Lightbulb, Gift, Briefcase, ArrowRight } from "lucide-react";
 import { VU_AN } from "../../../content/troChoi/thamTu.js";
+import { TRO_GIUP_VU, goiYCau } from "../../../content/troChoi/thamTuTroGiup.js";
+import { MON, monCua, LaMon, KhayTui, HudVu, HieuUng } from "./TuiDo.jsx";
 import { tr } from "../../../shared/i18n.jsx";
 import { phat } from "../../../shared/amThanh.js";
 import { Leon, leonVai } from "../../../shared/leon.jsx";
 import CauTracNghiem from "../CauTracNghiem.jsx";
-import { UY_TIN_DAU, batDauVu, sauCanh, sauBuocToiOan, lyDoThua, giuManhKhiSai, laMucDe, hangVu } from "./luat.js";
+import { UY_TIN_DAU, soMonMangTheo, lyDoKhongDung, batDauVu, sauCanh, sauBuocToiOan, lyDoThua, giuManhKhiSai, laMucDe, hangVu } from "./luat.js";
 
 /* ─────────── 9. Thám tử đọc: « Những vụ án của Thanh tra Léon » ───────────
    Chọn mức xong thì vào BẢNG VỤ ÁN của mức đó; mỗi vụ: mở hồ sơ → các cảnh (đọc tài
@@ -15,8 +17,13 @@ const KHOA_TT = "mcf-tham-tu-v1";
 const docTienDo = () => { try { return JSON.parse(localStorage.getItem(KHOA_TT)) || {}; } catch { return {}; } };
 const luuTienDo = (id, diem) => { try { const t = docTienDo(); t[id] = Math.max(t[id] ?? 0, diem); localStorage.setItem(KHOA_TT, JSON.stringify(t)); } catch { /* chế độ riêng tư: bỏ qua */ } };
 
-function TaiLieu({ tl }) {
-  const dong = tl.van.split("\n").map((d, k) => <span key={k} className="block min-h-[1em]">{d}</span>);
+/* neo: đoạn Kính lúp tô, luôn nằm gọn trong một dòng (thamTuTroGiup.js). */
+function TaiLieu({ tl, neo }) {
+  const boi = (t) => {
+    const k = neo ? t.indexOf(neo) : -1;
+    return k < 0 ? t : <>{t.slice(0, k)}<mark className="mcf-tt-mark">{neo}</mark>{t.slice(k + neo.length)}</>;
+  };
+  const dong = tl.van.split("\n").map((d, k) => <span key={k} className="block min-h-[1em]">{boi(d)}</span>);
   if (tl.loai === "sms") return (
     <div className="mx-auto max-w-sm rounded-[1.75rem] bg-[#111827] p-3 shadow-xl">
       <p className="m-0 pb-2 text-center text-xs font-bold text-white/70">{tl.tieuDe}</p>
@@ -30,14 +37,14 @@ function TaiLieu({ tl }) {
   );
   if (tl.loai === "email") return (
     <div className="overflow-hidden rounded-xl bg-[#fff] text-[#111] shadow-lg">
-      <p className="m-0 bg-[#e0e7ff] px-4 py-2 text-sm font-bold text-[#3730a3]">✉ {tl.tieuDe}</p>
+      <p className="m-0 bg-[#e0e7ff] px-4 py-2 text-sm font-bold text-[#3730a3]"><Mail size={14} className="mr-1 inline align-[-2px]" />{tl.tieuDe}</p>
       <div lang="fr" className="px-4 py-3 text-[15px] leading-relaxed">{dong}</div>
     </div>
   );
   if (tl.loai === "bao") return (
     <div className="bg-[#f5f1e6] px-5 py-4 text-[#1f1f1f] shadow-lg">
       <p className="m-0 border-0 border-b-2 border-solid border-[#1f1f1f] pb-1 text-sm font-black uppercase tracking-wider">{tl.tieuDe}</p>
-      <p lang="fr" className="m-0 mt-3 text-[15px] leading-relaxed [column-gap:1.5rem] sm:columns-2">{tl.van}</p>
+      <p lang="fr" className="m-0 mt-3 text-[15px] leading-relaxed [column-gap:1.5rem] sm:columns-2">{boi(tl.van)}</p>
     </div>
   );
   if (tl.loai === "affiche" || tl.loai === "bien") return (
@@ -55,7 +62,7 @@ function TaiLieu({ tl }) {
   // note · loiKhai · thu · bang · the · bai: tờ giấy viết tay / đánh máy
   return (
     <div className={`px-5 py-4 text-[#1f2937] shadow-lg ${tl.loai === "thu" ? "bg-[#fdf6e3]" : tl.loai === "bang" ? "bg-[#fff] text-sm" : "bg-[#fffbeb]"}`}>
-      <p className="m-0 mb-2 text-xs font-extrabold uppercase tracking-wider text-[#92400e]">{tl.loai === "loiKhai" ? "🗣 " : "📄 "}{tl.tieuDe}</p>
+      <p className="m-0 mb-2 text-xs font-extrabold uppercase tracking-wider text-[#92400e]">{tl.loai === "loiKhai" ? <MessageSquareQuote size={13} className="mr-1 inline align-[-2px]" /> : <FileText size={13} className="mr-1 inline align-[-2px]" />}{tl.tieuDe}</p>
       <div lang="fr" className="text-[15px] leading-relaxed">{dong}</div>
     </div>
   );
@@ -71,7 +78,61 @@ export default function ThamTu({ muc = "vua", onXong }) {
   const [so, setSo] = useState([]);               // sổ manh mối
   const kq = useRef({ diem: 0, dung: 0, sai: 0 });
   const [hud, setHud] = useState({ gio: 0, uy: UY_TIN_DAU });   // đồng hồ vụ án + uy tín
+  const [tui, setTui] = useState([]);             // tối đa 3 món đang mang
+  const [chonTui, setChonTui] = useState([]);     // món đang chọn ở màn mở hồ sơ
+  const [vatChung, setVatChung] = useState(0);    // mỗi câu đúng được 1, Inès tiêu
+  const [dungCanh, setDungCanh] = useState({ neo: false, tu: false, goiY: false, an: [] });   // món đã bật ở cảnh này
+  const [hieuUng, setHieuUng] = useState(null);
+  const [moi, setMoi] = useState(null);           // vị trí món vừa nhận
+  const chuoiDung = useRef(0);
   const ds = VU_AN.filter((v) => v.muc === muc);
+  const gioDau = vu ? batDauVu(vu).gio : 1;
+  const SACH = { neo: false, tu: false, goiY: false, an: [] };
+
+  /* Đưa mọi thứ về đầu vụ: dùng chung cho mở hồ sơ và « Điều tra lại ». */
+  const moVu = (v) => {
+    phat("batDau"); setVu(v); setBuoc("mo"); setI(0); setChon(null); setSo([]); setHud(batDauVu(v));
+    setTui([]); setChonTui([]); setVatChung(0); setDungCanh(SACH); setMoi(null); chuoiDung.current = 0;
+    kq.current = { diem: 0, dung: 0, sai: 0 };
+  };
+
+  /* Dùng món ở ô k. Giá trừ ngay, món mất luôn, hiệu ứng chạy 1,3 giây. */
+  const dungMon = (k, cau) => {
+    const ma = tui[k]; if (!ma) return;
+    phat("lat");
+    setTui((t) => t.filter((_, j) => j !== k)); setMoi(null);
+    setHieuUng(ma); setTimeout(() => setHieuUng(null), 1300);
+    if (ma === "kinh") { setHud((h) => ({ ...h, gio: h.gio - 1 })); setDungCanh((d) => ({ ...d, neo: true })); }
+    if (ma === "tu") setDungCanh((d) => ({ ...d, tu: true }));
+    if (ma === "leon") { setHud((h) => ({ ...h, uy: h.uy - 1 })); setDungCanh((d) => ({ ...d, goiY: true })); }
+    if (ma === "cafe") setHud((h) => ({ gio: h.gio - 2, uy: h.uy + 1 }));
+    if (ma === "ines") {
+      setVatChung((n) => n - 1);
+      const sai = cau.pa.map((_, j) => j).filter((j) => j !== 0 && !dungCanh.an.includes(j));
+      const bo = sai[Math.floor(Math.random() * sai.length)];
+      setTimeout(() => setDungCanh((d) => ({ ...d, an: [...d.an, bo] })), 700);
+    }
+  };
+  const lyDoMon = (ma, cau, troGiup) => lyDoKhongDung(ma, {
+    hud, vatChung, daTraLoi: chon != null, coTaiLieu: !!troGiup, soAn: dungCanh.an.length, soPa: cau.pa.length,
+    daKinh: dungCanh.neo, daTu: dungCanh.tu, daGoiY: dungCanh.goiY, tr,
+  });
+  const khayTui = (cau, troGiup) => <KhayTui tui={tui} moi={moi} lyDo={(ma) => lyDoMon(ma, cau, troGiup)} onDung={(k) => dungMon(k, cau)} />;
+  const ketQuaTroGiup = (cau, troGiup) => <>
+    {dungCanh.tu && troGiup && (
+      <div className="mcf-tt-sach mt-4 rounded-2xl bg-[#e0f2fe] p-3 text-[#0c4a6e]">
+        <p className="m-0 mb-2 flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-wider"><Languages size={14} /> {tr("Từ điển Odile", "Dico d'Odile", "Odile's dictionary")}</p>
+        <div className="grid gap-1.5 sm:grid-cols-3">
+          {troGiup.tu.map(([fr, vi], k) => (
+            <p key={fr} style={{ animationDelay: `${0.25 + k * 0.15}s` }} className="mcf-tt-tu m-0 rounded-lg bg-white px-2.5 py-1.5 text-sm"><b lang="fr">{fr}</b><span className="block text-xs">{vi}</span></p>
+          ))}
+        </div>
+      </div>
+    )}
+    {dungCanh.goiY && (() => { const [dang, loi] = goiYCau(cau.q); return (
+      <p className="mcf-cau-vao m-0 mt-4 rounded-2xl bg-[#ffe4e6] px-4 py-3 text-sm text-[#881337]"><Lightbulb size={15} className="mr-1.5 inline align-[-3px]" /><b lang="fr">{dang}</b>: {loi}</p>
+    ); })()}
+  </>;
 
   if (!vu) return (
     <div className="mt-6 rounded-[2rem] bg-[#3f3a36] bg-[radial-gradient(#57504a_1px,transparent_1px)] bg-[length:10px_10px] p-5">
@@ -87,13 +148,13 @@ export default function ThamTu({ muc = "vua", onXong }) {
         {ds.map((v, k) => {
           const xong = td[v.id] != null, khoa = k > 0 && td[ds[k - 1].id] == null;
           return (
-            <button key={v.id} type="button" disabled={khoa} onClick={() => { phat("batDau"); setVu(v); setBuoc("mo"); setI(0); setSo([]); setHud(batDauVu(v)); kq.current = { diem: 0, dung: 0, sai: 0 }; }}
+            <button key={v.id} type="button" disabled={khoa} onClick={() => moVu(v)}
               className="relative cursor-pointer rounded-sm border-0 bg-[#e8d3a5] p-4 pt-6 text-left font-sans text-[#2b2118] shadow-[0_10px_20px_rgba(0,0,0,0.35)] transition-transform hover:-translate-y-1 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0">
               <span className="absolute -top-3 left-4 rounded-t-lg bg-[#e8d3a5] px-3 py-0.5 text-[10px] font-bold uppercase tracking-widest text-[#7c5c2e]">{tr("Hồ sơ", "Dossier", "Case")} {v.so}</span>
               <span lang="fr" className="block text-lg font-bold">{v.ten}</span>
               <span className="mt-1 block text-xs text-[#6b5435]">{v.tenVi}</span>
               <span className="mt-3 block text-xs font-bold">
-                {khoa ? `🔒 ${tr("Phá vụ trước để mở", "Résolvez l'affaire précédente", "Solve the previous case")}` : xong ? `✅ ${tr("Đã phá", "Résolue", "Solved")} · ${td[v.id]}` : `🔎 ${tr("Chưa phá", "À résoudre", "Unsolved")}`}
+                {khoa ? <><Lock size={13} className="mr-1 inline align-[-2px]" />{tr("Phá vụ trước để mở", "Résolvez l'affaire précédente", "Solve the previous case")}</> : xong ? <><CircleCheck size={13} className="mr-1 inline align-[-2px]" />{tr("Đã phá", "Résolue", "Solved")} · {td[v.id]}</> : <><Search size={13} className="mr-1 inline align-[-2px]" />{tr("Chưa phá", "À résoudre", "Unsolved")}</>}
               </span>
               {xong && <span className="mcf-dong absolute right-2 top-3 rounded border-2 border-solid border-red-700 px-1 text-[10px] font-black text-red-700">{tr("ĐÃ PHÁ", "RÉSOLU", "SOLVED")}</span>}
             </button>
@@ -104,15 +165,14 @@ export default function ThamTu({ muc = "vua", onXong }) {
   );
 
   const khung = (noi, con) => (
-    <div className="mt-6 rounded-[2rem] bg-[#3f3a36] bg-[radial-gradient(#57504a_1px,transparent_1px)] bg-[length:10px_10px] p-5">
+    <div className="relative mt-6 overflow-hidden rounded-[2rem] bg-[#3f3a36] bg-[radial-gradient(#57504a_1px,transparent_1px)] bg-[length:10px_10px] p-5">
       <div className="flex items-center justify-between text-xs font-bold uppercase tracking-widest text-[#e7dcc8]">
-        <span>🔎 {tr("Hồ sơ", "Dossier", "Case")} {vu.so} · <span lang="fr">{vu.ten}</span></span><span className="tabular-nums">{kq.current.diem} pts</span>
+        <span><Search size={13} className="mr-1 inline align-[-2px]" />{tr("Hồ sơ", "Dossier", "Case")} {vu.so} · <span lang="fr">{vu.ten}</span></span><span className="tabular-nums">{kq.current.diem} pts</span>
       </div>
-      <div className="mt-2 flex flex-wrap items-center gap-4 text-sm font-bold text-[#fef3c7]">
-        <span className={`tabular-nums ${hud.gio <= 1 ? "text-red-300" : ""}`}>⏰ {tr(`Còn ${hud.gio} giờ`, `${hud.gio} h restantes`, `${hud.gio} h left`)}</span>
-        <span aria-label={tr(`Uy tín ${hud.uy}/${UY_TIN_DAU}`, `Réputation ${hud.uy}/${UY_TIN_DAU}`, `Reputation ${hud.uy}/${UY_TIN_DAU}`)}>{"🎖️".repeat(hud.uy)}<span className="opacity-30">{"🎖️".repeat(UY_TIN_DAU - hud.uy)}</span></span>
-      </div>
-      {noi && <p className="m-0 mt-2 text-xs font-bold text-amber-300">📍 {noi}</p>}
+      <HudVu hud={hud} gioDau={gioDau} vatChung={vatChung} />
+      {hieuUng && <HieuUng key={hieuUng} ma={hieuUng} />}
+      {kq.current.sai > 0 && <span key={kq.current.sai} aria-hidden className="mcf-tt-chop pointer-events-none absolute inset-0 z-10 bg-red-600" />}
+      {noi && <p className="m-0 mt-2 text-xs font-bold text-amber-300"><MapPin size={13} className="mr-1 inline align-[-2px]" />{noi}</p>}
       {con}
     </div>
   );
@@ -124,7 +184,7 @@ export default function ThamTu({ muc = "vua", onXong }) {
   );
   const SoManhMoi = () => so.length > 0 && (
     <details className="mt-4 rounded-xl bg-black/25 px-4 py-2 text-sm text-[#fef3c7]" open={buoc === "ket"}>
-      <summary className="cursor-pointer font-bold">📒 {tr("Sổ manh mối", "Carnet d'indices", "Clue notebook")} ({so.length})</summary>
+      <summary className="cursor-pointer font-bold"><NotebookPen size={15} className="mr-1 inline align-[-3px]" />{tr("Sổ manh mối", "Carnet d'indices", "Clue notebook")} ({so.length})</summary>
       <ul className="m-0 mt-2 grid gap-1 pl-5">{so.map((m, k) => <li key={k}>{m}</li>)}</ul>
     </details>
   );
@@ -135,37 +195,55 @@ export default function ThamTu({ muc = "vua", onXong }) {
     <div className="mt-2 grid gap-3 sm:grid-cols-3">
       {vu.nghiPham.map((n, k) => (
         <div key={n.ten} className="bg-[#fff] p-3 text-[#1f2937] shadow-md" style={{ rotate: `${[-2, 1.5, -1, 2][k % 4]}deg` }}>
-          <div className="grid h-16 place-items-center bg-[#e5e7eb] text-2xl" aria-hidden>❔</div>
+          <div className="grid h-16 place-items-center bg-[#e5e7eb] text-[#9ca3af]" aria-hidden><UserRound size={34} /></div>
           <p lang="fr" className="m-0 mt-2 text-sm font-bold">{n.ten}</p>
           <p className="m-0 text-xs text-[#6b7280]">{n.vai}</p>
         </div>
       ))}
     </div>
+    <p className="m-0 mt-5 flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-widest text-[#e7dcc8]"><Briefcase size={14} /> {tr(`Chọn ${soMonMangTheo(vu)} món mang theo`, `Choisissez ${soMonMangTheo(vu)} outils`, `Pick ${soMonMangTheo(vu)} tools`)} ({chonTui.length}/{soMonMangTheo(vu)})</p>
+    <div className="mt-2 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      {MON().map((m) => {
+        const co = chonTui.includes(m.ma);
+        return <LaMon key={m.ma} m={m} chon={co} onClick={() => { phat("bam"); setChonTui((t) => (co ? t.filter((x) => x !== m.ma) : t.length < soMonMangTheo(vu) ? [...t, m.ma] : t)); }} />;
+      })}
+    </div>
     <div className="mt-5 text-right">
-      <button type="button" onClick={() => { phat("bam"); setBuoc("canh"); }} className="cursor-pointer rounded-full border-0 bg-amber-400 px-6 py-2.5 font-sans text-sm font-extrabold text-[#2b2118]">{tr("Điều tra ngay", "Enquêter", "Investigate")} →</button>
+      <button type="button" disabled={chonTui.length < soMonMangTheo(vu)} onClick={() => { phat("bam"); setTui(chonTui); setBuoc("canh"); }} className="cursor-pointer rounded-full border-0 bg-amber-400 px-6 py-2.5 font-sans text-sm font-extrabold text-[#2b2118] disabled:cursor-not-allowed disabled:opacity-50">{tr("Điều tra ngay", "Enquêter", "Investigate")} <ArrowRight size={15} className="inline align-[-3px]" /></button>
     </div>
   </>);
 
   if (buoc === "canh") {
     const c = vu.canh[i];
+    const tg = TRO_GIUP_VU[vu.id]?.[i];
     const tra = (k) => {
       if (chon != null) return;
       setChon(k); const ok = k === 0; phat(ok ? "dung" : "sai");
-      if (ok) { kq.current.dung++; kq.current.diem += 100; } else kq.current.sai++;
+      if (ok) { kq.current.dung++; kq.current.diem += 100; setVatChung((n) => n + 1); } else kq.current.sai++;
+      /* Hai câu đúng liền nhau: nhận một món ngẫu nhiên nếu túi còn chỗ. */
+      chuoiDung.current = ok ? chuoiDung.current + 1 : 0;
+      if (chuoiDung.current >= 2 && tui.length < 3) {
+        chuoiDung.current = 0;
+        const ds = MON().map((m) => m.ma).filter((m) => !tui.includes(m));
+        setTui((t) => [...t, ds[Math.floor(Math.random() * ds.length)]]); setMoi(tui.length);
+      }
       if (ok || giuManhKhiSai(vu)) setSo((s) => [...s, c.manh]);
       setHud((h) => sauCanh(h, ok, vu));
     };
     const tiep = () => {
-      setChon(null);
+      setChon(null); setDungCanh(SACH); setMoi(null);
       const thua = lyDoThua(hud, vu, i + 1 >= vu.canh.length);
       if (thua) { phat("sai"); setLyDo(thua); setBuoc("thua"); return; }
       if (i + 1 >= vu.canh.length) setBuoc("ket"); else setI(i + 1);
     };
     return khung(c.noi, <>
       <LoiLeon key={`l${i}`} cam={c.cam}>{c.leon}</LoiLeon>
-      <div key={`t${i}`} className="mcf-cau-vao mt-4"><TaiLieu tl={c.tl} /></div>
-      <p lang="fr" className="m-0 mt-5 rounded-lg bg-black/30 px-4 py-2 text-base font-bold text-[#fef3c7]">❓ {c.q}</p>
-      <CauTracNghiem key={i} pa={c.pa} onTra={tra} daChon={chon} laPhap kieu="manh" />
+      <div key={`t${i}`} className="mcf-cau-vao mt-4"><TaiLieu tl={c.tl} neo={dungCanh.neo ? tg?.neo : null} /></div>
+      <p lang="fr" className="m-0 mt-5 rounded-lg bg-black/30 px-4 py-2 text-base font-bold text-[#fef3c7]"><CircleHelp size={17} className="mr-1.5 inline align-[-3px] text-amber-300" />{c.q}</p>
+      {ketQuaTroGiup(c, tg)}
+      <CauTracNghiem key={i} pa={c.pa} onTra={tra} daChon={chon} laPhap kieu="manh" an={dungCanh.an} />
+      {chon == null && khayTui(c, tg)}
+      {chon != null && moi != null && <p className="mcf-cau-vao m-0 mt-3 flex items-center gap-2 text-sm font-bold text-amber-300"><Gift size={16} /> {tr(`Hai câu đúng liền: nhận ${monCua(tui[moi])?.ten ?? ""}`, `Deux bonnes réponses : ${monCua(tui[moi])?.ten ?? ""} obtenu`, `Two in a row: got ${monCua(tui[moi])?.ten ?? ""}`)}</p>}
       {chon != null && <>
         <LoiLeon cam={chon === 0 ? "duoc-do" : "hum"}>{chon === 0 ? tr("Chính xác! ", "Exact ! ", "Exactly! ") : giuManhKhiSai(vu) ? tr("Chưa đúng, nhưng ta vẫn ghi manh mối vào sổ. ", "Raté, mais je note quand même l'indice. ", "Not quite, but I'll still note the clue. ") : tr("Sai rồi! Mất thêm 1 giờ, mất uy tín, và manh mối này trôi mất. ", "Raté ! Une heure et de la réputation perdues, et l'indice nous échappe. ", "Wrong! An hour and reputation lost, and the clue slips away. ")}{c.gt}</LoiLeon>
         <div className="mt-4 text-right">
@@ -189,7 +267,9 @@ export default function ThamTu({ muc = "vua", onXong }) {
       <SoManhMoi />
       <LoiLeon cam={k_.cam}>{k_.leon}</LoiLeon>
       <p lang="fr" className="m-0 mt-5 rounded-lg bg-red-900/60 px-4 py-3 text-center text-xl font-bold text-[#fef3c7]">{k_.q}</p>
-      <CauTracNghiem pa={k_.pa} onTra={tra} daChon={chon} laPhap kieu="manh" />
+      {ketQuaTroGiup(k_, null)}
+      <CauTracNghiem pa={k_.pa} onTra={tra} daChon={chon} laPhap kieu="manh" an={dungCanh.an} />
+      {chon == null && khayTui(k_, null)}
       {chon != null && <>
         <LoiLeon cam={chon === 0 ? vu.loiKet.cam : "buon"}>{chon === 0 ? vu.loiKet.loi : <>{tr("Ôi không, ta bắt nhầm người rồi! ", "Oh non, ce n'est pas le bon suspect ! ", "Oh no, wrong suspect! ")}{k_.gt}</>}</LoiLeon>
         <div className="mt-4 flex flex-wrap justify-end gap-2">
@@ -217,7 +297,7 @@ export default function ThamTu({ muc = "vua", onXong }) {
     </LoiLeon>
     <div className="mt-5 flex flex-wrap justify-end gap-2">
       <button type="button" onClick={() => setVu(null)} className="cursor-pointer rounded-full border-0 bg-white/15 px-5 py-2.5 font-sans text-sm font-bold text-white">{tr("Về bảng vụ án", "Retour aux dossiers", "Back to cases")}</button>
-      <button type="button" onClick={() => { phat("batDau"); setBuoc("mo"); setI(0); setChon(null); setSo([]); setHud(batDauVu(vu)); kq.current = { diem: 0, dung: 0, sai: 0 }; }} className="cursor-pointer rounded-full border-0 bg-amber-400 px-6 py-2.5 font-sans text-sm font-extrabold text-[#2b2118]">{tr("Điều tra lại", "Recommencer", "Try again")} →</button>
+      <button type="button" onClick={() => moVu(vu)} className="cursor-pointer rounded-full border-0 bg-amber-400 px-6 py-2.5 font-sans text-sm font-extrabold text-[#2b2118]">{tr("Điều tra lại", "Recommencer", "Try again")} →</button>
     </div>
   </>);
   return null;

@@ -23,3 +23,35 @@ export const lyDoThua = (h, vu, cuoi) => {
   return null;
 };
 export const hangVu = (sai) => (sai <= 0 ? "S" : sai === 1 ? "A" : "B");
+
+/* Giai đoạn 2: mức dễ mang 3 món, còn lại 2; nhận thêm khi đúng 2 câu liền, tối đa 3. */
+export const soMonMangTheo = (vu) => (laMucDe(vu) ? 3 : 2);
+
+/* Vì sao món này chưa dùng được, null = dùng được. Giá không bao giờ được làm người chơi thua
+   ngay tại chỗ, nên kính lúp cần ≥ 2 giờ, cà phê ≥ 3 giờ, Léon ≥ 2 uy tín. */
+export const lyDoKhongDung = (ma, x) => {
+  const { tr } = x;
+  if (x.daTraLoi) return tr("Đã trả lời xong", "Déjà répondu", "Already answered");
+  if (ma === "kinh") {
+    if (!x.coTaiLieu) return tr("Không có tài liệu ở đây", "Pas de document ici", "No document here");
+    if (x.daKinh) return tr("Đã dùng ở cảnh này", "Déjà utilisé ici", "Already used here");
+    return x.hud.gio < 2 ? tr("Không đủ giờ", "Pas assez de temps", "Not enough time") : null;
+  }
+  if (ma === "tu") {
+    if (!x.coTaiLieu) return tr("Không có tài liệu ở đây", "Pas de document ici", "No document here");
+    return x.daTu ? tr("Đã dùng ở cảnh này", "Déjà utilisé ici", "Already used here") : null;
+  }
+  if (ma === "ines") {
+    if (x.vatChung < 1) return tr("Chưa có vật chứng", "Aucune preuve", "No evidence yet");
+    return x.soAn >= x.soPa - 2 ? tr("Chỉ còn 2 đáp án", "Plus que 2 réponses", "Only 2 answers left") : null;
+  }
+  if (ma === "leon") {
+    if (x.daGoiY) return tr("Đã dùng ở cảnh này", "Déjà utilisé ici", "Already used here");
+    return x.hud.uy < 2 ? tr("Không đủ uy tín", "Pas assez de réputation", "Not enough reputation") : null;
+  }
+  if (ma === "cafe") {
+    if (x.hud.uy >= UY_TIN_DAU) return tr("Uy tín đang đầy", "Réputation au maximum", "Reputation is full");
+    return x.hud.gio < 3 ? tr("Không đủ giờ", "Pas assez de temps", "Not enough time") : null;
+  }
+  return null;
+};
