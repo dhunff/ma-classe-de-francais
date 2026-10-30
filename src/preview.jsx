@@ -701,7 +701,8 @@ function Preview() {
     ["/etudiant/tu-cham-noi", "Tự chấm Production orale"],
     ["/etudiant/boc-tham", "Phần nói: bốc thăm + chuẩn bị"],
     ["/etudiant/tham-tu", "Thám tử Léon (mức khó)"],
-    ["/etudiant/tham-tu-mau", "Thám tử Léon (vụ mẫu)"],
+    ["/etudiant/tham-tu-mau", "Thám tử Léon (mức vừa)"],
+    ["/etudiant/tham-tu-de", "Thám tử Léon (mức dễ)"],
     ["/etudiant/hoan-ho-so", "Hoàn thiện hồ sơ (mới đăng ký)"],
     ["/etudiant/tai-khoan-moi", "Trang Tài khoản"],
     ["/etudiant/phan-nghe", "Phần nghe 2 bài (thi thử)"],
@@ -861,6 +862,7 @@ function Preview() {
           <Route path="/etudiant/phan-nghe" element={<><Controls /><PhanThi section={{ code: "CO", label: "Compréhension de l'oral", minutes: 25, points: 25, exercises: [1, 2].map((k) => ({ id: "co-" + k, level: "A2", title: "Écoute " + k, consigne: "<p>Exercice " + k + "</p>", audioUrl: "/am-thanh-mau-" + k + ".mp3", imageUrl: ANH_MAU, questions: k === 2 ? [{ id: "cq2", ord: 0, type: "qcm", prompt: "Question 1", options: ["a", "b", "c"], nhom: "Document 1", heSo: 4 }, { id: "cq2b", ord: 1, type: "qcm", prompt: "Question 2", options: ["a", "b", "c"], nhom: "Document 2", heSo: 3 }] : [{ id: "cq" + k, ord: 0, type: "qcm", prompt: "Question " + k, options: ["a", "b", "c"] }] })) }} attemptId="xem-thu" attemptTheoBai={{ "co-1": "a1", "co-2": "a2" }} answers={{}} setAnswers={() => {}} onDone={() => {}} onBlur={() => {}} examId="xem-thu" /></>} />
           <Route path="/etudiant/tai-khoan-moi" element={<><Controls /><AccountPage name="Linh" role="eleve" email="linh@example.com" emailVerified onLogout={() => {}} changePw={() => {}} /></>} />
           <Route path="/etudiant/hoan-ho-so" element={<><Controls /><HoanThienHoSo fixture={{ prenom: "Linh" }} /></>} />
+          <Route path="/etudiant/tham-tu-de" element={<><Controls /><ThamTu muc="de" onXong={() => {}} /></>} />
           <Route path="/etudiant/tham-tu-mau" element={<><Controls /><ThamTu muc="vua" onXong={() => {}} /></>} />
           <Route path="/etudiant/tham-tu" element={<><Controls /><ThamTu muc="kho" onXong={() => {}} /></>} />
           <Route path="/etudiant/boc-tham" element={<><Controls /><PhanThi section={{ code: "PO", label: "Production orale", minutes: 20, points: 25, exercise: { id: "po-xem-thu", level: "B2", questions: [], consigne: "<p><strong>Production orale : 20 minutes environ.</strong> 30 minutes de préparation.</p><p>Vous tirez au sort deux documents et vous en choisissez un.</p>", bocTham: { chuanBi: 30, phan: [{ ten: "Monologue suivi puis exercice en interaction", cachLam: "Choisissez un document.", soRut: 2, sujets: SUJET_B2_TP68 }] } } }} attemptId="xem-thu" answers={{}} setAnswers={() => {}} onDone={() => {}} onBlur={() => {}} examId="xem-thu" /></>} />

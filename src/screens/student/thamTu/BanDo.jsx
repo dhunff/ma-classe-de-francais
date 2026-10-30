@@ -1,13 +1,20 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { Mail, ConciergeBell, Warehouse, BookOpenText, Palette, MessagesSquare, Phone, Lock, Check, ArrowRight, Hourglass, MoonStar, Gavel, Search, Link2, UserRound, MessageCircle, Pin } from "lucide-react";
+import { Mail, ConciergeBell, Warehouse, BookOpenText, Palette, MessagesSquare, Phone, Lock, Check, ArrowRight, Hourglass, MoonStar, Gavel, Search, Link2, UserRound, MessageCircle, Pin, Scale } from "lucide-react";
 import { tr } from "../../../shared/i18n.jsx";
 import { phat } from "../../../shared/amThanh.js";
+import { Leon, leonVai } from "../../../shared/leon.jsx";
 import CauTracNghiem from "../CauTracNghiem.jsx";
 
 /* Vòng chơi theo sơ đồ (31/10, giai đoạn 4): BanDo → ThamVan → BangGhim → ChonBangChung.
    Mỗi màn tự giữ trạng thái của nó, ThamTu chỉ giữ thứ sống qua cả vụ. */
 const ICON = { thu: Mail, quay: ConciergeBell, kho: Warehouse, so: BookOpenText, xuong: Palette, hoi: MessagesSquare, goi: Phone };
 
+const LoiNgan = ({ cam = "lam-viec", children }) => (
+  <div className="mcf-cau-vao mt-4 flex items-start gap-3">
+    <Leon cam={leonVai("tham-tu", cam)} size={56} className="shrink-0" />
+    <p className="m-0 rounded-3xl rounded-tl-md bg-[#fef3c7] px-4 py-3 text-sm leading-relaxed text-[#2b2118]">{children}</p>
+  </div>
+);
 const NUT = "cursor-pointer rounded-full border-0 bg-amber-400 px-6 py-2.5 font-sans text-sm font-extrabold text-[#2b2118] disabled:cursor-not-allowed disabled:opacity-50";
 
 export function BanDo({ vu, hud, daDen, khoa, vatChung, onDi, onMoKhoa, onGhim }) {
@@ -57,7 +64,7 @@ export function BanDo({ vu, hud, daDen, khoa, vatChung, onDi, onMoKhoa, onGhim }
 
       {hetGio && <p className="mcf-cau-vao m-0 mt-4 rounded-2xl bg-[#ffe4e6] px-4 py-3 text-sm font-bold text-[#881337]">{hud.gio <= 0 ? tr("Hết giờ! Không đi đâu được nữa, phải kết luận với những gì đã có.", "Plus de temps : il faut conclure avec ce que nous avons.", "Out of time: we must conclude with what we have.") : tr("Đã đi hết mọi nơi. Đến lúc kết luận.", "Tout est visité. Il est temps de conclure.", "Every place is visited. Time to conclude.")}</p>}
 
-      {!hetGio && cuoi?.goi && !c && <p key={cuoi.ma} className="mcf-cau-vao m-0 mt-4 rounded-3xl bg-[#fef3c7] px-4 py-3 text-sm text-[#2b2118]"><b>Léon: </b>{cuoi.goi}</p>}
+      {!hetGio && cuoi?.goi && !c && <LoiNgan key={cuoi.ma} cam={cuoi.cam}>{cuoi.goi}</LoiNgan>}
 
       {c && !hetGio && (
         <div key={c.ma} className="mcf-cau-vao mt-4 flex flex-wrap items-center gap-3 rounded-2xl bg-black/30 p-4 text-[#fef3c7]">
@@ -104,7 +111,7 @@ export function ThamVan({ c, onXong }) {
   };
   return (
     <div className="mcf-cau-vao mt-4">
-      <p className="m-0 rounded-3xl bg-[#fef3c7] px-4 py-3 text-sm text-[#2b2118]"><b>Léon: </b>{c.leon}</p>
+      <LoiNgan cam={c.cam}>{c.leon}</LoiNgan>
       <div className="mcf-tt-phong relative mt-4 overflow-hidden rounded-2xl p-4">
         <span aria-hidden className="mcf-tt-den-ban absolute left-1/2 top-0 h-full w-3/4 -translate-x-1/2" />
         <div className="relative flex items-center gap-3">
@@ -159,7 +166,7 @@ export function BangGhim({ vu, so, onThay, onSai, onTiep, conDi, onVe }) {
   };
   return (
     <div className="mcf-cau-vao mt-4">
-      <p className="m-0 rounded-3xl bg-[#fef3c7] px-4 py-3 text-sm text-[#2b2118]"><b>Léon: </b>{tr("Chọn hai manh mối rồi đối chiếu. Mâu thuẫn thật sẽ thành bằng chứng mạnh. Đối chiếu sai thì P.G. nghi ngờ thêm.", "Choisissez deux indices et comparez. Une vraie contradiction devient une preuve solide. Une erreur augmente les soupçons de P.G.", "Pick two clues and compare. A real contradiction becomes strong evidence. A wrong guess raises P.G.'s suspicion.")}</p>
+      <LoiNgan cam="suy-nghi">{tr("Chọn hai manh mối rồi đối chiếu. Mâu thuẫn thật sẽ thành bằng chứng mạnh. Đối chiếu sai thì P.G. nghi ngờ thêm.", "Choisissez deux indices et comparez. Une vraie contradiction devient une preuve solide. Une erreur augmente les soupçons de P.G.", "Pick two clues and compare. A real contradiction becomes strong evidence. A wrong guess raises P.G.'s suspicion.")}</LoiNgan>
       <div ref={bang} className="mcf-tt-ghim relative mt-4 rounded-2xl p-4">
         {day && <svg aria-hidden className="pointer-events-none absolute inset-0 z-10 h-full w-full"><line x1={day[0]} y1={day[1]} x2={day[2]} y2={day[3]} className="mcf-tt-chi" /></svg>}
         <div className="grid grid-cols-3 gap-3">
@@ -195,6 +202,21 @@ export function BangGhim({ vu, so, onThay, onSai, onTiep, conDi, onVe }) {
   );
 }
 
+/* Quyết định sau khi phá án, mang sang vụ sau (vu.sauKet, lưu ở ThamTu). */
+export function LuaChonSauKet({ sk, onChon }) {
+  const [da, setDa] = useState(null);
+  const chon = (x) => { if (da) return; phat("lat"); setDa(x); onChon(x.gt); };
+  return (
+    <div className="mcf-cau-vao mt-4 rounded-2xl bg-black/35 p-4 text-[#fef3c7]">
+      <p className="m-0 flex items-center gap-2 text-sm font-extrabold"><Scale size={16} className="shrink-0 text-amber-300" />{sk.hoi}</p>
+      {!da && <div className="mt-3 grid gap-3 sm:grid-cols-2">
+        {[sk.a, sk.b].map((x) => <button key={x.gt} type="button" onClick={() => chon(x)} className="mcf-tt-la cursor-pointer rounded-2xl border-0 bg-[#fef9c3] p-3 text-left font-sans text-sm font-bold text-[#2b2118]">{x.t}</button>)}
+      </div>}
+      {da && <p className="mcf-cau-vao m-0 mt-3 text-sm italic">{da.loi}</p>}
+    </div>
+  );
+}
+
 /* Sau khi chỉ đúng hung thủ: chọn 3 manh mối làm bằng chứng. */
 export function ChonBangChung({ vu, so, onChot }) {
   const ds = so.filter((m) => typeof m === "string");
@@ -203,7 +225,7 @@ export function ChonBangChung({ vu, so, onChot }) {
   const chot = () => { phat("nop"); onChot(chon.filter((t) => vu.nang.includes(t)).length); };
   return (
     <div className="mcf-cau-vao mt-4">
-      <p className="m-0 rounded-3xl bg-[#fef3c7] px-4 py-3 text-sm text-[#2b2118]"><b>Léon: </b>{vu.ketDu}</p>
+      <LoiNgan cam="quyet-tam">{vu.ketDu}</LoiNgan>
       <p className="m-0 mt-4 text-xs font-extrabold uppercase tracking-widest text-[#e7dcc8]">{tr(`Chọn ${can} bằng chứng`, `Choisissez ${can} preuves`, `Pick ${can} pieces of evidence`)} ({chon.length}/{can})</p>
       <div className="mt-2 grid gap-3 sm:grid-cols-2">
         {ds.map((t) => {

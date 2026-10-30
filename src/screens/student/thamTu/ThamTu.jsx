@@ -1,12 +1,12 @@
 import React, { useRef, useState } from "react";
 import { Lock, CircleCheck, Search, MapPin, NotebookPen, CircleHelp, UserRound, Languages, Lightbulb, Gift, Briefcase, ArrowRight, Eye, Flame } from "lucide-react";
-import { VU_AN } from "../../../content/troChoi/thamTu.js";
+import { VU_AN, vuTheoChon } from "../../../content/troChoi/thamTu.js";
 import { TRO_GIUP_VU, goiYCau } from "../../../content/troChoi/thamTuTroGiup.js";
 import { BRUNO, TIN_GIA, KHAI } from "../../../content/troChoi/thamTuSuKien.js";
 import { MON, monCua, LaMon, KhayTui, HudVu, HieuUng } from "./TuiDo.jsx";
 import TaiLieu from "./TaiLieu.jsx";
 import ManSuKien, { SU_KIEN, DemNguoc } from "./SuKien.jsx";
-import { BanDo, ThamVan, BangGhim, ChonBangChung } from "./BanDo.jsx";
+import { BanDo, ThamVan, BangGhim, ChonBangChung, LuaChonSauKet } from "./BanDo.jsx";
 import { tr } from "../../../shared/i18n.jsx";
 import { phat } from "../../../shared/amThanh.js";
 import { Leon, leonVai } from "../../../shared/leon.jsx";
@@ -19,6 +19,10 @@ import { UY_TIN_DAU, soMonMangTheo, lyDoKhongDung, batDauVu, sauCanh, sauBuocToi
    mở khoá vụ kế tiếp, điểm thật vẫn ghi qua ghi_tro_choi như mọi trò. */
 const KHOA_TT = "mcf-tham-tu-v1";
 const docTienDo = () => { try { return JSON.parse(localStorage.getItem(KHOA_TT)) || {}; } catch { return {}; } };
+/* Lựa chọn mang sang vụ sau. Cùng kiểu tiện ích trình duyệt với tiến độ, giai đoạn 6 mới lên máy chủ. */
+const KHOA_CHON = "mcf-tham-tu-chon";
+const docChon = () => { try { return JSON.parse(localStorage.getItem(KHOA_CHON)) || {}; } catch { return {}; } };
+const luuChon = (ma, gt) => { try { localStorage.setItem(KHOA_CHON, JSON.stringify({ ...docChon(), [ma]: gt })); } catch { /* chế độ riêng tư: bỏ qua */ } };
 const KHOA_KHAN = "mcf-tham-tu-khan";
 const docKhan = () => { try { return localStorage.getItem(KHOA_KHAN) !== "0"; } catch { return true; } };
 const nhat = (ds) => ds[Math.floor(Math.random() * ds.length)];
@@ -47,6 +51,7 @@ export default function ThamTu({ muc = "vua", onXong }) {
   const [khoa, setKhoa] = useState(null);         // địa điểm P.G. đã khoá
   const [ketQua, setKetQua] = useState(null);     // kết buộc tội: du | thieu
   const [choiLai, setChoiLai] = useState(false);
+  const [daChonKet, setDaChonKet] = useState(false);
   const [so, setSo] = useState([]);               // sổ manh mối: chuỗi, hoặc { t, loai: "gia" | "mat" }
   const kq = useRef({ diem: 0, dung: 0, sai: 0 });
   const [hud, setHud] = useState({ gio: 0, uy: UY_TIN_DAU, nghi: 0 });   // đồng hồ vụ án + uy tín
@@ -63,7 +68,8 @@ export default function ThamTu({ muc = "vua", onXong }) {
 
   /* Đưa mọi thứ về đầu vụ: dùng chung cho mở hồ sơ và « Điều tra lại ». */
   const moVu = (v, lai = false) => {
-    phat("batDau"); setChoiLai(lai); setDaDen([]); setKhoa(null); setKetQua(null); setVu(v); setBuoc("mo"); setI(0); setChon(null); setSo([]); setHud(batDauVu(v));
+    const vuMoi = vuTheoChon(VU_AN.find((x) => x.id === v.id), docChon());
+    phat("batDau"); setChoiLai(lai); setDaDen([]); setKhoa(null); setKetQua(null); setDaChonKet(false); setVu(vuMoi); setBuoc("mo"); setI(0); setChon(null); setSo([]); setHud(batDauVu(vuMoi));
     setTui([]); setChonTui([]); setVatChung(0); setDungCanh(SACH); setMoi(null); setSk(null); setTrinh(null); daCo.current = []; chuoiDung.current = 0;
     kq.current = { diem: 0, dung: 0, sai: 0 };
   };
@@ -123,7 +129,7 @@ export default function ThamTu({ muc = "vua", onXong }) {
   };
   const xongThamVan = ({ manh, sai }) => {
     setSo((s) => [...s, ...manh]); kq.current.sai += sai;
-    setHud((h) => doiNghi({ ...h, gio: Math.max(0, h.gio - 1) }, sai));
+    setHud((h) => doiNghi({ ...h, gio: Math.max(laMucDe(vu) ? 1 : 0, h.gio - 1) }, sai));
     const ma = trinh ?? tungSuKien(vu, nguCanh());
     if (ma) vaoSuKien(ma); else sangTiep();
   };
@@ -311,7 +317,7 @@ export default function ThamTu({ muc = "vua", onXong }) {
       if (ok) { kq.current.dung++; if (!vu.ban) kq.current.diem += 300; } else kq.current.sai++;
     };
     const chotBuocToi = (soNang) => {
-      const k = ketBuocToi(soNang);
+      const k = ketBuocToi(soNang, vu);
       if (k === "thoat") { phat("sai"); setLyDo("thieu"); setBuoc("thua"); return; }
       phat("thang"); kq.current.diem += k === "du" ? 300 : 150; setKetQua(k);
     };
@@ -327,7 +333,8 @@ export default function ThamTu({ muc = "vua", onXong }) {
       {choBangChung && <ChonBangChung vu={vu} so={so} onChot={chotBuocToi} />}
       {chon != null && !choBangChung && <>
         <LoiLeon cam={chon === 0 ? loiCuoi.cam : "buon"}>{chon === 0 ? loiCuoi.loi : <>{tr("Ôi không, ta bắt nhầm người rồi! ", "Oh non, ce n'est pas le bon suspect ! ", "Oh no, wrong suspect! ")}{k_.gt}</>}</LoiLeon>
-        <div className="mt-4 flex flex-wrap justify-end gap-2">
+        {chon === 0 && vu.sauKet && <LuaChonSauKet sk={vu.sauKet} onChon={(gt) => { luuChon(vu.sauKet.ma, gt); setDaChonKet(true); }} />}
+        {(chon !== 0 || !vu.sauKet || daChonKet) && <div className="mt-4 flex flex-wrap justify-end gap-2">
           {chon !== 0 && <button type="button" onClick={() => {
             const h = sauBuocToiOan(hud, vu); setHud(h); setChon(null); kq.current.diem = Math.max(0, kq.current.diem - 100);
             if (h.uy <= 0) { setLyDo("uy_tin"); setBuoc("thua"); }
@@ -339,7 +346,7 @@ export default function ThamTu({ muc = "vua", onXong }) {
             if (ok) { luuTienDo(vu.id, kq.current.diem); setTd(docTienDo()); }
             onXong({ diem: kq.current.diem, dung: kq.current.dung, tong: (vu.ban ? vu.canh.filter((c, k) => c.q && daDen.includes(k)).length : vu.canh.length) + 1 });
           }} className="cursor-pointer rounded-full border-0 bg-amber-400 px-6 py-2.5 font-sans text-sm font-extrabold text-[#2b2118]">{tr("Đóng hồ sơ", "Classer le dossier", "Close the case")} →</button>
-        </div>
+        </div>}
       </>}
     </>);
   }

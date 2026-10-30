@@ -97,6 +97,6 @@ export const sauSuKien = (h, vu, { tot, gio = 0, conLai }) => {
 };
 
 /* Giai đoạn 4: buộc tội theo sơ đồ. 3 bằng chứng nặng là đủ, 2 là bắt được nhưng hồ sơ mỏng (hạng B),
-   ít hơn thì hung thủ thoát. Điểm màn cuối theo đó: 300, 150, 0. */
-export const ketBuocToi = (soNang) => (soNang >= 3 ? "du" : soNang === 2 ? "thieu" : "thoat");
+   ít hơn thì hung thủ thoát (mức dễ vẫn phá được, chỉ hạng B). Điểm màn cuối theo đó: 300, 150, 0. */
+export const ketBuocToi = (soNang, vu) => (soNang >= 3 ? "du" : soNang === 2 || laMucDe(vu) ? "thieu" : "thoat");
 export const hangBuocToi = (ket, sai) => (ket === "thieu" ? "B" : hangVu(sai));

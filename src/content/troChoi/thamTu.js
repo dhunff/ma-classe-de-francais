@@ -1,7 +1,7 @@
 /* « Những vụ án của Thanh tra Léon » (28/10, theo chủ dự án).
  * Chín vụ, ba mức. Người chơi là trợ lý của Léon: mỗi vụ có vài CẢNH, mỗi cảnh một
  * tài liệu tiếng Pháp (ghi chú, tin nhắn, vé, email, bài báo…) và một câu hỏi đọc hiểu.
- * Đúng hay sai thì manh mối vẫn vào sổ (`manh`), để màn PHÁ ÁN cuối luôn suy ra được.
+ * Từ giai đoạn 5 mọi vụ chơi theo sơ đồ: phần thêm cho từng vụ ở thamTuMoRong.js, ghép ở mo() cuối file.
  *
  * Mạch truyện xuyên suốt: từ vụ 4, hiện trường nào cũng có một chiếc lông vũ xám và một
  * lời nhắn ký « P.G. ». Vụ 7–9 lần ra P.G. và giăng bẫy bắt.
@@ -11,8 +11,9 @@
  * cam = id sticker Léon (shared/leon.jsx). */
 
 import { VU_TABLEAU } from "./vuMauTableau.js";
+import { MO_RONG } from "./thamTuMoRong.js";
 
-export const VU_AN = [
+const VU_GOC = [
   /* ───────────── DỄ (A1–A2) ───────────── */
   {
     id: "croissant", muc: "de", so: 1,
@@ -388,3 +389,25 @@ export const VU_AN = [
     loiKet: { cam: "tuyet-voi", loi: "« Monsieur Garnier, je crois que votre chronique s'arrête ici. » Paul Garnier mỉm cười, tháo mũ xám, cắm chiếc lông vũ cuối cùng vào túi áo Léon. « Échec et mat, inspecteur. » Hết mùa một. Trợ lý xuất sắc nhất Paris là bạn đấy!" },
   },
 ];
+
+/* Ghép phần mở rộng vào vụ gốc. Cảnh cũ giữ nguyên thứ tự nên trợ giúp theo chỉ số vẫn đúng. */
+const mo = (v) => {
+  const x = MO_RONG[v.id];
+  if (!x) return v;
+  const { noi, them, ...phu } = x;
+  const canh = [...v.canh.map((c, k) => ({ ...c, ...noi[k] })), ...them];
+  const r = (t) => (t.startsWith("@") ? canh.find((c) => c.ma === t.slice(1)).manh : t);
+  return { ...v, ...phu, canh, nang: x.nang.map(r), matThuan: x.matThuan.map((m) => ({ ...m, a: r(m.a), b: r(m.b) })) };
+};
+export const VU_AN = VU_GOC.map(mo);
+
+/* Áp lựa chọn ở vụ trước (chon = { bruno: "giup" | "bao", marcel: "noi" | "giau" }) vào vụ sắp mở. */
+export const vuTheoChon = (v, chon) => {
+  let k = v;
+  for (const [ma, nhanh] of Object.entries(v.theoChon ?? {})) {
+    const p = nhanh[chon[ma]];
+    if (!p) continue;
+    k = { ...k, mo: p.moThem ? `${k.mo} ${p.moThem}` : k.mo, loiKet: p.loiKet ?? k.loiKet, ban: { ...k.ban, gio: k.ban.gio + (p.gio ?? 0) } };
+  }
+  return k;
+};
