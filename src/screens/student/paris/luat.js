@@ -7,26 +7,29 @@ export const HOC_BONG = 200;
 const SO_THANG = 12, SO_TUAN = 4;
 
 export const HIEU_UNG = {
-  hoc: { nl: -10, phap: 3 },
+  hoc: { nl: -10, phap: 2 },
   lam: { tien: 120, nl: -25, tt: -5 },
-  ban: { tien: -30, nl: -5, tt: 15 },
-  kham: { tien: -20, nl: -10, tt: 10, phap: 1 },
+  ban: { tien: -30, nl: -5, tt: 10 },
+  kham: { tien: -20, nl: -10, tt: 6, phap: 1 },
   nghi: { nl: 35, tt: 5 },
 };
+/* Nhớ nhà trừ tinh thần mỗi cuối tháng, nặng hơn ở tháng 11 và tháng 2 (giai đoạn 5). */
+const THANG_BUON = [2, 5];
+export const nhoNha = (thang) => (THANG_BUON.includes(thang) ? 24 : 15);
 const kep = (v) => Math.min(100, Math.max(0, v));
 export const cong = (s, d) => ({ ...s, tien: s.tien + (d.tien ?? 0), nl: kep(s.nl + (d.nl ?? 0)), tt: kep(s.tt + (d.tt ?? 0)), phap: kep(s.phap + (d.phap ?? 0)) });
 
 export const batDau = (gioi, thuong = 0) => ({
   gioi, thang: 0, tuan: 0, tien: TIEN_DAU + thuong, nl: 70, tt: 70, phap: 0,
-  da: [], saiLai: [], than: {}, co: [], nhanhDa: [], hdThang: [], om: false, buocLam: false, diem: 0, dung: 0, tong: 0,
+  da: [], saiLai: [], than: {}, co: [], nhanhDa: [], hdThang: [], chon: {}, ngu: [], thay: {}, om: false, buocLam: false, diem: 0, dung: 0, tong: 0,
 });
 
 /* Ván từ giai đoạn 1 đi tuần tự theo `ke`: đổi sang danh sách cảnh đã chơi. */
 export const chuanHoa = (s) => {
-  if (s?.da) return { hdThang: [], ...s };
+  if (s?.da) return { hdThang: [], chon: {}, ngu: [], thay: {}, ...s };
   if (!s) return s;
   const { ke = 0, ...x } = s;
-  return { ...x, da: Array.from({ length: ke }, (_, k) => k), than: {}, co: [], nhanhDa: [], hdThang: [] };
+  return { ...x, da: Array.from({ length: ke }, (_, k) => k), than: {}, co: [], nhanhDa: [], hdThang: [], chon: {}, ngu: [], thay: {} };
 };
 
 /* Chương nào mở từ tháng nào, thuộc hoạt động nào. arrivee (*) chạy trước mọi hoạt động. */
@@ -56,7 +59,7 @@ export const chonCanh = (s, ma, CANH, NHANH) => {
 };
 
 export const sauCau = (s, k, ok) => {
-  const x = cong(s, ok ? { phap: 4, tt: 3 } : { tt: -6 });
+  const x = cong(s, ok ? { phap: 2, tt: 1 } : { tt: -6 });
   return {
     ...x, da: s.da.includes(k) ? s.da : [...s.da, k], tong: s.tong + 1, dung: s.dung + (ok ? 1 : 0), diem: s.diem + (ok ? 100 : 0),
     saiLai: ok ? s.saiLai.filter((j) => j !== k) : [...s.saiLai.filter((j) => j !== k), k],
@@ -67,7 +70,7 @@ export const THAN_MAX = 5;
 export const sauNhanh = (s, n, l) => {
   const { than = 0, co, ...d } = l.kq, x = cong(s, d);
   return {
-    ...x, nhanhDa: [...s.nhanhDa, n.id], co: co ? [...s.co, co] : s.co,
+    ...x, nhanhDa: [...s.nhanhDa, n.id], chon: { ...s.chon, [n.id]: n.lua.indexOf(l) }, co: co ? [...s.co, co] : s.co,
     than: n.ai ? { ...s.than, [n.ai]: Math.min(THAN_MAX, Math.max(0, (s.than[n.ai] ?? 0) + than)) } : s.than,
     tong: s.tong + 1, dung: s.dung + (l.tot ? 1 : 0), diem: s.diem + (l.tot ? 100 : 0),
   };
@@ -92,11 +95,44 @@ export const dungOm = (s) => ({ ...cong(s, { nl: 45 }), om: false });
 /* Cuối tháng: nhận học bổng, trả tiền nhà. Âm tiền thì Léon cho vay và tuần đầu tháng sau phải đi làm. */
 export const tinhThang = (s) => {
   const con = s.tien + HOC_BONG - TIEN_NHA;
-  return { thu: HOC_BONG, chi: TIEN_NHA, con, vay: con < 0 };
+  return { thu: HOC_BONG, chi: TIEN_NHA, con, vay: con < 0, nho: nhoNha(s.thang) };
 };
 export const sangThang = (s) => {
-  const { con, vay } = tinhThang(s);
-  return { ...cong({ ...s, tien: vay ? 0 : con }, { nl: 10, tt: vay ? -10 : 0 }), thang: s.thang + 1, tuan: 0, hdThang: [], buocLam: vay, om: false };
+  const { con, vay, nho } = tinhThang(s);
+  return { ...cong({ ...s, tien: vay ? 0 : con }, { nl: 10, tt: -nho - (vay ? 10 : 0) }), thang: s.thang + 1, tuan: 0, hdThang: [], buocLam: vay, om: false };
 };
 /* Danh xưng theo điểm tiếng Pháp trong truyện: không phải trình độ thật, nên không gắn nhãn A1–B2. */
 export const danhXung = (phap) => (phap < 25 ? 0 : phap < 50 ? 1 : phap < 75 ? 2 : 3);
+
+/* Bản đồ, sổ tay, album (giai đoạn 5): đều suy ra từ ván chơi, không lưu bản sao. */
+const noiDaChoi = (s, CANH, VIEC_ID) => [...s.da.map((k) => CANH[k]?.noi), ...s.nhanhDa.map((id) => VIEC_ID[id]?.noi)].filter(Boolean);
+export const noiSangDen = (s, CANH, VIEC_ID, DIA_DIEM) => {
+  const ds = noiDaChoi(s, CANH, VIEC_ID);
+  return DIA_DIEM.filter((d) => d.khop.some((m) => ds.some((n) => n.includes(m))));
+};
+/* Câu trong sổ tay: câu truyện đã nói đúng và câu rẽ nhánh đã chọn đúng sắc thái. Trùng thì giữ một. */
+export const cauHay = (s, CANH, VIEC_ID) => {
+  const truyen = s.da.filter((k) => !s.saiLai.includes(k) && CANH[k]).map((k) => ({ fr: CANH[k].pa[0], vi: CANH[k].gt }));
+  const nhanh = Object.entries(s.chon).map(([id, j]) => VIEC_ID[id]?.lua?.[j]).filter((l) => l?.tot).map((l) => ({ fr: hopGiong(l.c, s.gioi), vi: l.ghi }));
+  return [...new Map([...truyen, ...nhanh].map((c) => [c.fr, c])).values()];
+};
+export const anhDaCo = (s, ALBUM) => ALBUM.filter((a) => s.nhanhDa.includes(a.id)).map((a) => ({ ...a, chu: a.chung ?? a.loi[s.chon[a.id] ?? 0] ?? a.loi[0] }));
+/* Tuần yên ả: Léon dạy thành ngữ tiếp theo chưa học. */
+export const hocNgu = (s, tong) => {
+  const k = Array.from({ length: tong }, (_, j) => j).find((j) => !s.ngu.includes(j));
+  return k == null ? s : { ...s, ngu: [...s.ngu, k] };
+};
+export const nguoiThan = (s, NHAN_VAT) => {
+  const [ai] = Object.entries(s.than).sort((a, b) => b[1] - a[1])[0] ?? [];
+  return ai ? NHAN_VAT[ai].ten : "Léon";
+};
+const datDk = (s, c, soNoi) => (c.chi ? s[c.chi] >= c.min : c.than ? (s.than[c.than] ?? 0) >= c.min : c.noi ? soNoi >= c.noi
+  : c.ban ? Object.values(s.than).filter((v) => v >= 4).length >= c.ban : c.co.some((m) => s.co.includes(m)));
+/* Kết cục ẩn đè lên hướng đã chọn ở tháng 8. Ván cũ chưa chọn hướng thì coi như ở lại. */
+export const ketCuc = (s, KET_CUC, soNoi) => {
+  const xet = (ma) => ({ ma, dk: KET_CUC[ma].can.map((c) => ({ ...c, dat: datDk(s, c, soNoi) })) });
+  const an = xet("nha");
+  if (an.dk.every((c) => c.dat)) return { ...an, dat: true };
+  const ma = Object.keys(KET_CUC).find((m) => s.co.includes(KET_CUC[m].co)) ?? "olai", x = xet(ma);
+  return { ...x, dat: x.dk.every((c) => c.dat) };
+};

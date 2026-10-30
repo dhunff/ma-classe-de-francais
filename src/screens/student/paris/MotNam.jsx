@@ -1,15 +1,18 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { GraduationCap, BriefcaseBusiness, Users, Compass, BedDouble, Wallet, BatteryMedium, Heart, Languages, MapPin, UserRound, Thermometer, ArrowRight, Sparkles, Save, RotateCcw, CalendarDays, Check, Contact, Snowflake } from "lucide-react";
+import { GraduationCap, BriefcaseBusiness, Users, Compass, BedDouble, Wallet, BatteryMedium, Heart, Languages, MapPin, UserRound, Thermometer, ArrowRight, Sparkles, Save, CalendarDays, Contact, Snowflake } from "lucide-react";
 import { CHUONG } from "../../../content/troChoi/phieuLuu.js";
 import { NHAN_VAT, NHANH } from "../../../content/troChoi/parisNhanh.js";
 import { LICH_THANG } from "../../../content/troChoi/parisThang.js";
+import { VIEC_THEO_ID, DIA_DIEM, ALBUM, THANH_NGU } from "../../../content/troChoi/parisKyUc.js";
 import { ChoNoel, ThuNha } from "./ManPhu.jsx";
+import { NutKyUc, KhoKyUc } from "./KyUc.jsx";
+import ManKet from "./ManKet.jsx";
 import { tr } from "../../../shared/i18n.jsx";
 import { phat } from "../../../shared/amThanh.js";
 import { Leon } from "../../../shared/leon.jsx";
 import { tron } from "../../../shared/troChoiNhanh.js";
 import CauTracNghiem from "../CauTracNghiem.jsx";
-import { HIEU_UNG, batDau, chuanHoa, chonCanh, sauCau, sauNhanh, sauPhu, viecThang, hopGiong, THAN_MAX, cong, hetThang, hetNam, quaTuan, dungOm, tinhThang, sangThang, danhXung } from "./luat.js";
+import { HIEU_UNG, batDau, chuanHoa, chonCanh, sauCau, sauNhanh, sauPhu, viecThang, hopGiong, THAN_MAX, cong, hetThang, hetNam, quaTuan, dungOm, tinhThang, sangThang, danhXung, noiSangDen, cauHay, anhDaCo, hocNgu } from "./luat.js";
 
 /* « Một năm ở Paris » (31/10, giai đoạn 1). Lịch 12 tháng thay cho chín chương rời. Cảnh đối thoại lấy
    nguyên từ phieuLuu.js theo thứ tự truyện. Ván chơi giữ ở trình duyệt, điểm thật ghi qua ghi_tro_choi
@@ -123,6 +126,8 @@ export default function MotNam({ onXong }) {
   const [nh, setNh] = useState(null);           // cảnh rẽ nhánh đang chơi
   const [lc, setLc] = useState(null);           // lựa chọn vừa bấm
   const [vp, setVp] = useState(null);           // mini game / thư nhà đang mở
+  const [yn, setYn] = useState(null);           // thành ngữ Léon dạy ở tuần yên ả
+  const [xem, setXem] = useState(null);         // { tab, cu }: bản đồ, sổ tay, album đang mở
   const nhanhXao = useMemo(() => (nh ? tron(nh.lua) : []), [nh]);
   const thuong = useMemo(thuongCu, []);
   useEffect(() => { ghiVan(s); }, [s]);
@@ -148,6 +153,8 @@ export default function MotNam({ onXong }) {
     </div>
   );
 
+  const ky = { noi: noiSangDen(s, CANH, VIEC_THEO_ID, DIA_DIEM), anh: anhDaCo(s, ALBUM), cau: cauHay(s, CANH, VIEC_THEO_ID) };
+  const daThay = () => ({ noi: ky.noi.map((d) => d.id), anh: ky.anh.length, cau: ky.cau.length + s.ngu.length });
   const khung = (con) => <div className="mt-6 overflow-hidden rounded-[2rem] bg-surface shadow-[0_8px_30px_rgb(0,0,0,0.06)]"><DauMan s={s} /><div className="p-5">{con}</div></div>;
   /* Hết tuần: chạy hết việc riêng của tuần đó rồi mới sang tuần mới. */
   const quaTuanMoi = (x) => {
@@ -162,6 +169,8 @@ export default function MotNam({ onXong }) {
   const luuDiem = (x) => { const r = { diem: x.diem, dung: x.dung, tong: Math.max(1, x.tong) }, sau = { ...x, diem: 0, dung: 0, tong: 0 }; ghiVan(sau); setS(sau); onXong(r); };   // ghi ngay: onXong gỡ màn này trước khi effect kịp chạy
 
   if (buoc === "lich") {
+    const tenHoat = (ma) => HOAT().find((h) => h.ma === ma).ten;
+    if (xem) return khung(<KhoKyUc tab={xem.tab} cu={xem.cu} ky={ky} ngu={s.ngu} tenHoat={tenHoat} onTab={(tab) => { phat("bam"); setXem({ ...xem, tab }); }} onDong={() => { phat("bam"); setXem(null); }} />);
     if (s.om) return khung(<>
       <LoiLeon cam="buon">{tr("Bạn kiệt sức nên bị ốm cả tuần rồi. Nằm nghỉ đi, ta mang soupe sang cho.", "Tu es épuisé·e, te voilà malade pour la semaine. Repose-toi, je t'apporte une soupe.", "You're worn out and ill this week. Rest, I'll bring soup.")}</LoiLeon>
       <div className="mt-4 text-right"><Nut onClick={() => { phat("lat"); quaTuanMoi(dungOm(s)); }}><Thermometer size={15} className="mr-1 inline align-[-3px]" />{tr("Nghỉ hết tuần", "Se soigner", "Recover")}</Nut></div>
@@ -170,7 +179,7 @@ export default function MotNam({ onXong }) {
       phat("lat");
       const x = { ...cong(s, HIEU_UNG[ma]), hdThang: [...s.hdThang, ma] }, c = ma === "nghi" ? null : chonCanh(x, ma, CANH, NHANH);
       setS(x); setChon(null); setBo(null); setLc(null);
-      if (!c) { setBuoc("yen"); return; }
+      if (!c) { const y = hocNgu(x, THANH_NGU.length); setS(y); setYn(y.ngu.length > x.ngu.length ? y.ngu[y.ngu.length - 1] : null); setBuoc("yen"); return; }
       if (c.nhanh) { setNh(c.nhanh); setBuoc("nhanh"); return; }
       setK(c.truyen); setBuoc("canh");
     };
@@ -190,6 +199,7 @@ export default function MotNam({ onXong }) {
           );
         })}
       </div>
+      <NutKyUc moi={[ky.noi.filter((d) => !s.thay.noi?.includes(d.id)).length, ky.cau.length + s.ngu.length - (s.thay.cau ?? 0), ky.anh.length - (s.thay.anh ?? 0)]} onMo={(tab) => { phat("lat"); setXem({ tab, cu: s.thay.noi ?? [] }); setS({ ...s, thay: daThay() }); }} />
       <NguoiQuen s={s} />
     </>);
   }
@@ -234,6 +244,11 @@ export default function MotNam({ onXong }) {
 
   if (buoc === "yen") return khung(<>
     <LoiLeon cam="mim-cuoi">{tr("Một tuần yên ả ở Paris. Không có chuyện gì đặc biệt, và thế cũng tốt.", "Une semaine tranquille à Paris. Rien de spécial, et c'est très bien.", "A quiet week in Paris. Nothing special, and that's fine.")}</LoiLeon>
+    {yn != null && <div className="mcf-pl-thu mt-3 rounded-2xl bg-[#fdf6e3] p-4 text-[#2b2118]">
+      <p className="m-0 text-xs font-extrabold uppercase tracking-wider text-[#92400e]">{tr("Léon dạy một thành ngữ, đã chép vào sổ tay", "L'expression de Léon, notée au carnet", "Léon's idiom, added to your notebook")}</p>
+      <p lang="fr" className="m-0 mt-1 font-serif text-lg font-bold">{THANH_NGU[yn].fr}</p>
+      <p className="m-0 text-sm text-[#57473a]">{THANH_NGU[yn].vi}</p>
+    </div>}
     <div className="mt-4 text-right"><Nut onClick={() => quaTuanMoi(s)}>{tr("Tuần sau", "Semaine suivante", "Next week")} <ArrowRight size={15} className="inline align-[-3px]" /></Nut></div>
   </>);
 
@@ -277,6 +292,7 @@ export default function MotNam({ onXong }) {
         <p className="m-0 flex justify-between"><span>{tr("Học bổng", "Bourse", "Grant")}</span><b className="tabular-nums text-ok">+{t.thu} €</b></p>
         <p className="m-0 flex justify-between"><span>{tr("Tiền nhà", "Loyer", "Rent")}</span><b className="tabular-nums text-danger">−{t.chi} €</b></p>
         <p className="m-0 flex justify-between border-0 border-t border-solid border-line pt-1.5"><span>{tr("Còn lại", "Reste", "Left")}</span><b className="tabular-nums">{t.con} €</b></p>
+        {!cuoi && <p className="m-0 flex justify-between"><span>{tr("Nhớ nhà", "Mal du pays", "Homesick")}</span><b className="tabular-nums text-danger">−{t.nho} {tr("tinh thần", "moral", "mood")}</b></p>}
       </div>
       <LoiLeon cam={t.vay ? "hum" : "duoc-do"}>{t.vay ? tr("Thiếu tiền nhà rồi! Lần này ta cho vay, nhưng tuần đầu tháng sau bạn phải đi làm nhé.", "Il manque de quoi payer le loyer ! Je te prête, mais au travail la première semaine.", "You're short on rent! I'll lend you this time, but you work first week next month.") : tr("Một tháng nữa trôi qua êm đẹp. Paris bắt đầu quen với bạn rồi.", "Encore un mois de passé. Paris s'habitue à toi.", "Another month gone. Paris is getting used to you.")}</LoiLeon>
       <div className="mt-4 flex flex-wrap justify-end gap-2">
@@ -286,13 +302,7 @@ export default function MotNam({ onXong }) {
     </>);
   }
 
-  /* het: tổng kết tạm, kết cục riêng làm ở giai đoạn 5. */
-  return khung(<>
-    <LoiLeon cam="yeu-qua">{tr(`Một năm đã qua! Từ người mới sang, giờ bạn là « ${DANH()[danhXung(s.phap)]} ». Paris sẽ nhớ bạn lắm.`, `Une année déjà ! Te voilà « ${DANH()[danhXung(s.phap)]} ». Paris se souviendra de toi.`, `A whole year! You're now “${DANH()[danhXung(s.phap)]}”. Paris will miss you.`)}</LoiLeon>
-    <p className="mcf-dong mx-auto mt-4 flex w-fit items-center gap-2 rounded-md border-4 border-double border-orange-500 px-3 py-1 text-sm font-black uppercase tracking-widest text-orange-600"><Check size={15} /> {tr("Hoàn thành năm", "Année terminée", "Year complete")}</p>
-    <div className="mt-5 flex flex-wrap justify-end gap-2">
-      <Nut phu onClick={() => { setS(null); setBuoc("lich"); }}><RotateCcw size={14} className="mr-1 inline align-[-2px]" />{tr("Sống lại một năm", "Revivre l'année", "Live it again")}</Nut>
-      <Nut onClick={() => { const r = { diem: s.diem, dung: s.dung, tong: Math.max(1, s.tong) }; ghiVan(null); setS(null); setBuoc("lich"); onXong(r); }}>{tr("Lưu điểm", "Enregistrer", "Save score")} <ArrowRight size={15} className="inline align-[-3px]" /></Nut>
-    </div>
-  </>);
+  /* het: màn kết năm với kết cục riêng (giai đoạn 5). */
+  const veDau = () => { ghiVan(null); setS(null); setBuoc("lich"); };
+  return <ManKet s={s} ky={ky} onLai={veDau} onLuu={() => { const r = { diem: s.diem, dung: s.dung, tong: Math.max(1, s.tong) }; veDau(); onXong(r); }} />;
 }
