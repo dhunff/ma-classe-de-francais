@@ -18,14 +18,15 @@ export const cong = (s, d) => ({ ...s, tien: s.tien + (d.tien ?? 0), nl: kep(s.n
 
 export const batDau = (gioi, thuong = 0) => ({
   gioi, thang: 0, tuan: 0, tien: TIEN_DAU + thuong, nl: 70, tt: 70, phap: 0,
-  da: [], saiLai: [], than: {}, co: [], nhanhDa: [], om: false, buocLam: false, diem: 0, dung: 0, tong: 0,
+  da: [], saiLai: [], than: {}, co: [], nhanhDa: [], hdThang: [], om: false, buocLam: false, diem: 0, dung: 0, tong: 0,
 });
 
 /* Ván từ giai đoạn 1 đi tuần tự theo `ke`: đổi sang danh sách cảnh đã chơi. */
 export const chuanHoa = (s) => {
-  if (!s || s.da) return s;
+  if (s?.da) return { hdThang: [], ...s };
+  if (!s) return s;
   const { ke = 0, ...x } = s;
-  return { ...x, da: Array.from({ length: ke }, (_, k) => k), than: {}, co: [], nhanhDa: [] };
+  return { ...x, da: Array.from({ length: ke }, (_, k) => k), than: {}, co: [], nhanhDa: [], hdThang: [] };
 };
 
 /* Chương nào mở từ tháng nào, thuộc hoạt động nào. arrivee (*) chạy trước mọi hoạt động. */
@@ -71,6 +72,19 @@ export const sauNhanh = (s, n, l) => {
     tong: s.tong + 1, dung: s.dung + (l.tot ? 1 : 0), diem: s.diem + (l.tot ? 100 : 0),
   };
 };
+/* Việc riêng của tháng còn chưa diễn ra sau tuần hiện tại (parisThang.js). */
+export const viecThang = (s, LICH) => LICH[s.thang]?.tuan?.[s.tuan]?.find((v) => !s.nhanhDa.includes(v.id)) ?? null;
+/* Xong mini game hoặc thư nhà: áp hệ quả, không tính vào điểm hội thoại. */
+export const sauPhu = (s, id, { than = {}, ...d }) => {
+  const moi = { ...s.than };
+  Object.entries(than).forEach(([ai, v]) => { moi[ai] = Math.min(THAN_MAX, (moi[ai] ?? 0) + v); });
+  return { ...cong(s, d), than: moi, nhanhDa: [...s.nhanhDa, id] };
+};
+/* Vào thẳng tháng mẫu để duyệt: ván tách riêng, không lưu, không ghi điểm. */
+export const vanMau = (gioi, thang, CANH) => ({
+  ...batDau(gioi), mau: true, thang, tien: 420, phap: 28, than: { camille: 2, yuki: 1, dubois: 1 },
+  da: CANH.map((c, k) => (c.ch.id === "arrivee" ? k : -1)).filter((k) => k >= 0),
+});
 /* {e}: hợp giống theo nhân vật người chơi. */
 export const hopGiong = (t, gioi) => t.replaceAll("{e}", gioi === "nu" ? "e" : "");
 
@@ -87,7 +101,7 @@ export const tinhThang = (s) => {
 };
 export const sangThang = (s) => {
   const { con, vay } = tinhThang(s);
-  return { ...cong({ ...s, tien: vay ? 0 : con }, { nl: 10, tt: vay ? -10 : 0 }), thang: s.thang + 1, tuan: 0, buocLam: vay, om: false };
+  return { ...cong({ ...s, tien: vay ? 0 : con }, { nl: 10, tt: vay ? -10 : 0 }), thang: s.thang + 1, tuan: 0, hdThang: [], buocLam: vay, om: false };
 };
 /* Danh xưng theo điểm tiếng Pháp trong truyện: không phải trình độ thật, nên không gắn nhãn A1–B2. */
 export const danhXung = (phap) => (phap < 25 ? 0 : phap < 50 ? 1 : phap < 75 ? 2 : 3);

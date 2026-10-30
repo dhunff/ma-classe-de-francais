@@ -1,13 +1,15 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { GraduationCap, BriefcaseBusiness, Users, Compass, BedDouble, Wallet, BatteryMedium, Heart, Languages, MapPin, UserRound, Thermometer, ArrowRight, Sparkles, Save, RotateCcw, CalendarDays, Check, Contact } from "lucide-react";
+import { GraduationCap, BriefcaseBusiness, Users, Compass, BedDouble, Wallet, BatteryMedium, Heart, Languages, MapPin, UserRound, Thermometer, ArrowRight, Sparkles, Save, RotateCcw, CalendarDays, Check, Contact, Snowflake, FlaskConical } from "lucide-react";
 import { CHUONG } from "../../../content/troChoi/phieuLuu.js";
 import { NHAN_VAT, NHANH } from "../../../content/troChoi/parisNhanh.js";
+import { LICH_THANG } from "../../../content/troChoi/parisThang.js";
+import { ChoNoel, ThuNha } from "./ManPhu.jsx";
 import { tr } from "../../../shared/i18n.jsx";
 import { phat } from "../../../shared/amThanh.js";
 import { Leon } from "../../../shared/leon.jsx";
 import { tron } from "../../../shared/troChoiNhanh.js";
 import CauTracNghiem from "../CauTracNghiem.jsx";
-import { HIEU_UNG, batDau, chuanHoa, chonCanh, sauCau, sauNhanh, hopGiong, THAN_MAX, cong, hetThang, hetNam, quaTuan, dungOm, tinhThang, sangThang, danhXung } from "./luat.js";
+import { HIEU_UNG, batDau, chuanHoa, chonCanh, sauCau, sauNhanh, sauPhu, viecThang, vanMau, hopGiong, THAN_MAX, cong, hetThang, hetNam, quaTuan, dungOm, tinhThang, sangThang, danhXung } from "./luat.js";
 
 /* « Một năm ở Paris » (31/10, giai đoạn 1). Lịch 12 tháng thay cho chín chương rời. Cảnh đối thoại lấy
    nguyên từ phieuLuu.js theo thứ tự truyện. Ván chơi giữ ở trình duyệt, điểm thật ghi qua ghi_tro_choi
@@ -15,7 +17,7 @@ import { HIEU_UNG, batDau, chuanHoa, chonCanh, sauCau, sauNhanh, hopGiong, THAN_
 const KHOA = "mcf-mot-nam-v1";
 const KHOA_CU = "mcf-phieu-luu-v1";
 const docVan = () => { try { return chuanHoa(JSON.parse(localStorage.getItem(KHOA))); } catch { return null; } };
-const ghiVan = (s) => { try { if (s) localStorage.setItem(KHOA, JSON.stringify(s)); else localStorage.removeItem(KHOA); } catch { /* chế độ riêng tư: bỏ qua */ } };
+const ghiVan = (s) => { if (s?.mau) return; try { if (s) localStorage.setItem(KHOA, JSON.stringify(s)); else localStorage.removeItem(KHOA); } catch { /* chế độ riêng tư: bỏ qua */ } };
 const thuongCu = () => { try { return Object.keys(JSON.parse(localStorage.getItem(KHOA_CU)) || {}).length * 50; } catch { return 0; } };
 
 const CANH = CHUONG.flatMap((c) => c.canh.map((x, k) => ({ ...x, ch: c, dau: k === 0, cuoi: k === c.canh.length - 1 })));
@@ -94,7 +96,8 @@ function DauMan({ s }) {
     );
   };
   return (
-    <div key={s.thang} className={`mcf-pl-thang bg-gradient-to-br ${T[2]} p-5 text-white`}>
+    <div key={s.thang} className={`mcf-pl-thang relative overflow-hidden bg-gradient-to-br ${T[2]} p-5 text-white`}>
+      {LICH_THANG[s.thang]?.tuyet && [6, 17, 29, 41, 53, 64, 76, 88, 95].map((x, k) => <span key={x} aria-hidden style={{ left: `${x}%`, animationDelay: `${k * 0.7}s` }} className="mcf-pl-tuyet absolute -top-3 text-white/80"><Snowflake size={k % 2 ? 11 : 15} /></span>)}
       <div className="flex items-center gap-4">
         <div className="mcf-pl-to shrink-0 overflow-hidden rounded-xl bg-white text-center text-[#2b2118] shadow-lg">
           <p className="m-0 bg-red-600 px-3 py-0.5 text-[10px] font-black uppercase text-white">{T[1]}</p>
@@ -119,6 +122,7 @@ export default function MotNam({ onXong }) {
   const [bo, setBo] = useState(null);
   const [nh, setNh] = useState(null);           // cảnh rẽ nhánh đang chơi
   const [lc, setLc] = useState(null);           // lựa chọn vừa bấm
+  const [vp, setVp] = useState(null);           // mini game / thư nhà đang mở
   const nhanhXao = useMemo(() => (nh ? tron(nh.lua) : []), [nh]);
   const thuong = useMemo(thuongCu, []);
   useEffect(() => { ghiVan(s); }, [s]);
@@ -145,7 +149,17 @@ export default function MotNam({ onXong }) {
   );
 
   const khung = (con) => <div className="mt-6 overflow-hidden rounded-[2rem] bg-surface shadow-[0_8px_30px_rgb(0,0,0,0.06)]"><DauMan s={s} /><div className="p-5">{con}</div></div>;
-  const quaTuanMoi = (x) => { if (hetThang(x)) { setS(x); setBuoc("thang"); } else { setS(quaTuan(x)); setBuoc("lich"); } };
+  /* Hết tuần: chạy hết việc riêng của tuần đó rồi mới sang tuần mới. */
+  const quaTuanMoi = (x) => {
+    const v = viecThang(x, LICH_THANG);
+    if (v) {
+      setS(x); setLc(null);
+      if (v.loai === "su") { setNh(v); setBuoc("nhanh"); } else { setVp(v); setBuoc("phu"); }
+      return;
+    }
+    if (hetThang(x)) { setS(x); setBuoc("thang"); } else { setS(quaTuan(x)); setBuoc("lich"); }
+  };
+  const veVanThat = () => { setS(docVan()); setBuoc("lich"); };
   const luuDiem = (x) => { const r = { diem: x.diem, dung: x.dung, tong: Math.max(1, x.tong) }, sau = { ...x, diem: 0, dung: 0, tong: 0 }; ghiVan(sau); setS(sau); onXong(r); };   // ghi ngay: onXong gỡ màn này trước khi effect kịp chạy
 
   if (buoc === "lich") {
@@ -155,13 +169,15 @@ export default function MotNam({ onXong }) {
     </>);
     const chonHoat = (ma) => {
       phat("lat");
-      const x = cong(s, HIEU_UNG[ma]), c = ma === "nghi" ? null : chonCanh(x, ma, CANH, NHANH);
+      const x = { ...cong(s, HIEU_UNG[ma]), hdThang: [...s.hdThang, ma] }, c = ma === "nghi" ? null : chonCanh(x, ma, CANH, NHANH);
       setS(x); setChon(null); setBo(null); setLc(null);
       if (!c) { setBuoc("yen"); return; }
       if (c.nhanh) { setNh(c.nhanh); setBuoc("nhanh"); return; }
       setK(c.truyen); setBuoc("canh");
     };
     return khung(<>
+      {s.mau && <p className="m-0 mb-3 flex flex-wrap items-center gap-2 rounded-2xl bg-orange-50 px-4 py-2 text-sm font-bold text-ink dark:bg-orange-950/40"><FlaskConical size={15} className="text-orange-500" />{tr("Đang chơi thử tháng mẫu, không lưu vào ván của bạn.", "Mois d'essai : rien n'est enregistré.", "Sample month: nothing is saved.")}<button type="button" onClick={veVanThat} className="ml-auto cursor-pointer rounded-full border-0 bg-surface2 px-3 py-1 font-sans text-xs font-bold text-ink">{tr("Thoát", "Quitter", "Exit")}</button></p>}
+      {s.tuan === 0 && LICH_THANG[s.thang]?.mo && <div className="mb-4"><LoiLeon cam="nhay-mat">{LICH_THANG[s.thang].mo}</LoiLeon></div>}
       <p className="m-0 flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-widest text-orange-600"><CalendarDays size={14} /> {tr("Tuần này bạn định làm gì?", "Que faire cette semaine ?", "What's the plan this week?")}</p>
       {s.buocLam && <p className="m-0 mt-2 rounded-2xl bg-orange-50 px-4 py-2 text-sm text-ink dark:bg-orange-950/40">{tr("Bạn đang nợ Léon tiền nhà, tuần này phải đi làm.", "Tu dois le loyer à Léon : cette semaine, au travail.", "You owe Léon the rent: work this week.")}</p>}
       <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
@@ -177,7 +193,13 @@ export default function MotNam({ onXong }) {
         })}
       </div>
       <NguoiQuen s={s} />
+      {!s.mau && <div className="mt-4 text-right"><button type="button" onClick={() => { phat("batDau"); setS(vanMau(s.gioi, 3, CANH)); }} className="cursor-pointer rounded-full border-0 bg-surface2 px-3 py-1 font-sans text-xs font-bold text-soft"><FlaskConical size={13} className="mr-1 inline align-[-2px]" />{tr("Thử tháng mẫu (tháng 12)", "Essayer le mois de décembre", "Try the sample month")}</button></div>}
     </>);
+  }
+
+  if (buoc === "phu") {
+    const xongPhu = (d) => { setVp(null); quaTuanMoi(sauPhu(s, vp.id, d)); };
+    return khung(vp.loai === "mini" ? <ChoNoel d={vp} onXong={xongPhu} /> : <ThuNha d={vp} hdThang={s.hdThang} onXong={xongPhu} />);
   }
 
   if (buoc === "nhanh") {
@@ -261,8 +283,9 @@ export default function MotNam({ onXong }) {
       </div>
       <LoiLeon cam={t.vay ? "hum" : "duoc-do"}>{t.vay ? tr("Thiếu tiền nhà rồi! Lần này ta cho vay, nhưng tuần đầu tháng sau bạn phải đi làm nhé.", "Il manque de quoi payer le loyer ! Je te prête, mais au travail la première semaine.", "You're short on rent! I'll lend you this time, but you work first week next month.") : tr("Một tháng nữa trôi qua êm đẹp. Paris bắt đầu quen với bạn rồi.", "Encore un mois de passé. Paris s'habitue à toi.", "Another month gone. Paris is getting used to you.")}</LoiLeon>
       <div className="mt-4 flex flex-wrap justify-end gap-2">
-        {s.tong > 0 && !cuoi && <Nut phu onClick={() => { const x = sangThang(s); setBuoc("lich"); luuDiem(x); }}><Save size={14} className="mr-1 inline align-[-2px]" />{tr("Lưu điểm và nghỉ", "Enregistrer et s'arrêter", "Save and stop")}</Nut>}
-        <Nut onClick={tiepThang}>{cuoi ? tr("Kết thúc năm", "Fin de l'année", "End the year") : sau} <ArrowRight size={15} className="inline align-[-3px]" /></Nut>
+        {s.mau && <Nut onClick={veVanThat}>{tr("Kết thúc thử", "Fin de l'essai", "End sample")}</Nut>}
+        {!s.mau && s.tong > 0 && !cuoi && <Nut phu onClick={() => { const x = sangThang(s); setBuoc("lich"); luuDiem(x); }}><Save size={14} className="mr-1 inline align-[-2px]" />{tr("Lưu điểm và nghỉ", "Enregistrer et s'arrêter", "Save and stop")}</Nut>}
+        {!s.mau && <Nut onClick={tiepThang}>{cuoi ? tr("Kết thúc năm", "Fin de l'année", "End the year") : sau} <ArrowRight size={15} className="inline align-[-3px]" /></Nut>}
       </div>
     </>);
   }
