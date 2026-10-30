@@ -18,20 +18,61 @@ export const cong = (s, d) => ({ ...s, tien: s.tien + (d.tien ?? 0), nl: kep(s.n
 
 export const batDau = (gioi, thuong = 0) => ({
   gioi, thang: 0, tuan: 0, tien: TIEN_DAU + thuong, nl: 70, tt: 70, phap: 0,
-  ke: 0, saiLai: [], om: false, buocLam: false, diem: 0, dung: 0, tong: 0,
+  da: [], saiLai: [], than: {}, co: [], nhanhDa: [], om: false, buocLam: false, diem: 0, dung: 0, tong: 0,
 });
 
-/* Cảnh của tuần này: đi tiếp câu chuyện, hết truyện thì gặp lại câu từng sai, null là tuần yên ả. */
-export const chonCanh = (s, n) => (s.ke < n ? s.ke : s.saiLai[0] ?? null);
+/* Ván từ giai đoạn 1 đi tuần tự theo `ke`: đổi sang danh sách cảnh đã chơi. */
+export const chuanHoa = (s) => {
+  if (!s || s.da) return s;
+  const { ke = 0, ...x } = s;
+  return { ...x, da: Array.from({ length: ke }, (_, k) => k), than: {}, co: [], nhanhDa: [] };
+};
 
-export const sauCau = (s, k, ok, n) => {
+/* Chương nào mở từ tháng nào, thuộc hoạt động nào. arrivee (*) chạy trước mọi hoạt động. */
+export const CHUONG_LICH = {
+  arrivee: ["*", 0], matin: ["kham", 0], ville: ["kham", 1], logement: ["kham", 3], paperasse: ["hoc", 4],
+  soiree: ["ban", 4], debat: ["hoc", 6], entretien: ["lam", 7], bilan: ["hoc", 9],
+};
+const nhanhMo = (s, n, ma) => n.hd === ma && !s.nhanhDa.includes(n.id) && s.thang >= n.tu && (!n.can || s.co.includes(n.can))
+  && Object.entries(n.canThan ?? {}).every(([ai, m]) => (s.than[ai] ?? 0) >= m);
+const truyenMo = (s, c, k, ma) => {
+  const [hd, tu] = CHUONG_LICH[c.ch.id];
+  return !s.da.includes(k) && (hd === "*" || (hd === ma && s.thang >= tu));
+};
+
+/* Cảnh của tuần: hết phần mở đầu thì xen kẽ cảnh rẽ nhánh và cảnh truyện ĐÚNG hoạt động đã chọn,
+   rồi tới câu từng sai cùng hoạt động. null là tuần yên ả. */
+export const chonCanh = (s, ma, CANH, NHANH) => {
+  const dau = CANH.findIndex((c, k) => CHUONG_LICH[c.ch.id][0] === "*" && !s.da.includes(k));
+  if (dau >= 0) return { truyen: dau };
+  const n = NHANH.find((x) => nhanhMo(s, x, ma));
+  const t = CANH.findIndex((c, k) => truyenMo(s, c, k, ma));
+  const uuNhanh = (s.da.length + s.nhanhDa.length) % 2 === 0;
+  if (n && (uuNhanh || t < 0)) return { nhanh: n };
+  if (t >= 0) return { truyen: t };
+  const lai = s.saiLai.find((k) => CHUONG_LICH[CANH[k].ch.id][0] === ma);
+  return lai != null ? { truyen: lai } : null;
+};
+
+export const sauCau = (s, k, ok) => {
   const x = cong(s, ok ? { phap: 4, tt: 3 } : { tt: -6 });
-  const moi = k >= s.ke && k < n;
   return {
-    ...x, ke: moi ? s.ke + 1 : s.ke, tong: s.tong + 1, dung: s.dung + (ok ? 1 : 0), diem: s.diem + (ok ? 100 : 0),
-    saiLai: ok ? s.saiLai.filter((j) => j !== k) : moi ? [...s.saiLai, k] : [...s.saiLai.filter((j) => j !== k), k],
+    ...x, da: s.da.includes(k) ? s.da : [...s.da, k], tong: s.tong + 1, dung: s.dung + (ok ? 1 : 0), diem: s.diem + (ok ? 100 : 0),
+    saiLai: ok ? s.saiLai.filter((j) => j !== k) : [...s.saiLai.filter((j) => j !== k), k],
   };
 };
+export const THAN_MAX = 5;
+/* Chọn một nhánh: áp hệ quả, ghi thiện cảm và cờ. tot = đúng sắc thái, được tính điểm. */
+export const sauNhanh = (s, n, l) => {
+  const { than = 0, co, ...d } = l.kq, x = cong(s, d);
+  return {
+    ...x, nhanhDa: [...s.nhanhDa, n.id], co: co ? [...s.co, co] : s.co,
+    than: n.ai ? { ...s.than, [n.ai]: Math.min(THAN_MAX, Math.max(0, (s.than[n.ai] ?? 0) + than)) } : s.than,
+    tong: s.tong + 1, dung: s.dung + (l.tot ? 1 : 0), diem: s.diem + (l.tot ? 100 : 0),
+  };
+};
+/* {e}: hợp giống theo nhân vật người chơi. */
+export const hopGiong = (t, gioi) => t.replaceAll("{e}", gioi === "nu" ? "e" : "");
 
 export const hetThang = (s) => s.tuan >= SO_TUAN - 1;
 export const hetNam = (s) => s.thang >= SO_THANG - 1;

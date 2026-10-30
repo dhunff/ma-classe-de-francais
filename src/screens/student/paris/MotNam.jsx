@@ -1,19 +1,20 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { GraduationCap, BriefcaseBusiness, Users, Compass, BedDouble, Wallet, BatteryMedium, Heart, Languages, MapPin, UserRound, Thermometer, ArrowRight, Sparkles, Save, RotateCcw, CalendarDays, Check } from "lucide-react";
+import { GraduationCap, BriefcaseBusiness, Users, Compass, BedDouble, Wallet, BatteryMedium, Heart, Languages, MapPin, UserRound, Thermometer, ArrowRight, Sparkles, Save, RotateCcw, CalendarDays, Check, Contact } from "lucide-react";
 import { CHUONG } from "../../../content/troChoi/phieuLuu.js";
+import { NHAN_VAT, NHANH } from "../../../content/troChoi/parisNhanh.js";
 import { tr } from "../../../shared/i18n.jsx";
 import { phat } from "../../../shared/amThanh.js";
 import { Leon } from "../../../shared/leon.jsx";
 import { tron } from "../../../shared/troChoiNhanh.js";
 import CauTracNghiem from "../CauTracNghiem.jsx";
-import { HIEU_UNG, batDau, chonCanh, sauCau, cong, hetThang, hetNam, quaTuan, dungOm, tinhThang, sangThang, danhXung } from "./luat.js";
+import { HIEU_UNG, batDau, chuanHoa, chonCanh, sauCau, sauNhanh, hopGiong, THAN_MAX, cong, hetThang, hetNam, quaTuan, dungOm, tinhThang, sangThang, danhXung } from "./luat.js";
 
 /* « Một năm ở Paris » (31/10, giai đoạn 1). Lịch 12 tháng thay cho chín chương rời. Cảnh đối thoại lấy
    nguyên từ phieuLuu.js theo thứ tự truyện. Ván chơi giữ ở trình duyệt, điểm thật ghi qua ghi_tro_choi
-   mỗi khi người chơi lưu. Đoạn hội thoại CHƯA khớp hoạt động đã chọn: giai đoạn 2 sẽ nối. */
+   mỗi khi người chơi lưu. Từ giai đoạn 2 cảnh đi theo hoạt động đã chọn, xen cảnh rẽ nhánh ở parisNhanh.js. */
 const KHOA = "mcf-mot-nam-v1";
 const KHOA_CU = "mcf-phieu-luu-v1";
-const docVan = () => { try { return JSON.parse(localStorage.getItem(KHOA)); } catch { return null; } };
+const docVan = () => { try { return chuanHoa(JSON.parse(localStorage.getItem(KHOA))); } catch { return null; } };
 const ghiVan = (s) => { try { if (s) localStorage.setItem(KHOA, JSON.stringify(s)); else localStorage.removeItem(KHOA); } catch { /* chế độ riêng tư: bỏ qua */ } };
 const thuongCu = () => { try { return Object.keys(JSON.parse(localStorage.getItem(KHOA_CU)) || {}).length * 50; } catch { return 0; } };
 
@@ -62,6 +63,25 @@ const Chip = ({ ma, v }) => {
   return <span className={`inline-flex items-center gap-0.5 rounded-full bg-black/20 px-1.5 py-0.5 text-[11px] font-bold tabular-nums`}><Icon size={11} />{v > 0 ? "+" : "−"}{Math.abs(v)}{duoi}</span>;
 };
 
+const TimThan = ({ v }) => <span className="flex gap-0.5" role="img" aria-label={`${v}/${THAN_MAX}`}>{Array.from({ length: THAN_MAX }, (_, k) => <Heart key={k} size={12} className={k < v ? "fill-rose-500 text-rose-500" : "text-line"} />)}</span>;
+
+/* Người quen: chỉ hiện người đã gặp. */
+function NguoiQuen({ s }) {
+  const ds = Object.keys(NHAN_VAT).filter((m) => s.than[m] != null);
+  if (!ds.length) return null;
+  return (
+    <div className="mt-5">
+      <p className="m-0 flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-widest text-soft"><Contact size={14} /> {tr("Người quen ở Paris", "Mes proches à Paris", "People you know")}</p>
+      <div className="mt-2 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+        {ds.map((m) => <div key={m} className="flex items-center gap-2 rounded-2xl bg-surface2 p-2">
+          <span className={`grid h-9 w-9 shrink-0 place-items-center rounded-full bg-gradient-to-br ${NHAN_VAT[m].nen} text-white`}><UserRound size={18} /></span>
+          <span className="min-w-0"><b lang="fr" className="block truncate text-sm text-ink">{NHAN_VAT[m].ten}</b><TimThan v={s.than[m]} /></span>
+        </div>)}
+      </div>
+    </div>
+  );
+}
+
 function DauMan({ s }) {
   const T = THANG()[s.thang], C = CHI_SO();
   const Thanh = ({ ma }) => {
@@ -97,6 +117,9 @@ export default function MotNam({ onXong }) {
   const [k, setK] = useState(null);             // chỉ số cảnh đang chơi
   const [chon, setChon] = useState(null);
   const [bo, setBo] = useState(null);
+  const [nh, setNh] = useState(null);           // cảnh rẽ nhánh đang chơi
+  const [lc, setLc] = useState(null);           // lựa chọn vừa bấm
+  const nhanhXao = useMemo(() => (nh ? tron(nh.lua) : []), [nh]);
   const thuong = useMemo(thuongCu, []);
   useEffect(() => { ghiVan(s); }, [s]);
 
@@ -132,10 +155,11 @@ export default function MotNam({ onXong }) {
     </>);
     const chonHoat = (ma) => {
       phat("lat");
-      const x = cong(s, HIEU_UNG[ma]), c = ma === "nghi" ? null : chonCanh(x, CANH.length);
-      setS(x); setChon(null); setBo(null);
-      if (c == null) { setBuoc("yen"); return; }
-      setK(c); setBuoc("canh");
+      const x = cong(s, HIEU_UNG[ma]), c = ma === "nghi" ? null : chonCanh(x, ma, CANH, NHANH);
+      setS(x); setChon(null); setBo(null); setLc(null);
+      if (!c) { setBuoc("yen"); return; }
+      if (c.nhanh) { setNh(c.nhanh); setBuoc("nhanh"); return; }
+      setK(c.truyen); setBuoc("canh");
     };
     return khung(<>
       <p className="m-0 flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-widest text-orange-600"><CalendarDays size={14} /> {tr("Tuần này bạn định làm gì?", "Que faire cette semaine ?", "What's the plan this week?")}</p>
@@ -152,6 +176,40 @@ export default function MotNam({ onXong }) {
           );
         })}
       </div>
+      <NguoiQuen s={s} />
+    </>);
+  }
+
+  if (buoc === "nhanh") {
+    const nv = nh.ai ? NHAN_VAT[nh.ai] : null, ten = nv?.ten ?? nh.nguoi;
+    const bam = (l) => { if (lc) return; setLc(l); phat(l.tot ? "dung" : "sai"); };
+    return khung(<>
+      <p className="m-0 flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-wider text-orange-600"><MapPin size={13} /><span lang="fr">{nh.noi}</span></p>
+      <p className="m-0 mt-1 text-sm text-soft">{nh.tinh}</p>
+      <div className="mcf-cau-vao mt-4 flex items-start gap-3">
+        <span className={`grid h-12 w-12 shrink-0 place-items-center rounded-full bg-gradient-to-br ${nv?.nen ?? "from-stone-400 to-stone-600"} text-white`} aria-hidden><UserRound size={24} /></span>
+        <div>
+          <p className="m-0 flex items-center gap-2 text-xs font-bold text-soft"><span lang="fr">{ten}</span>{nh.ai && <TimThan v={s.than[nh.ai] ?? 0} />}</p>
+          <p lang="fr" className="m-0 mt-1 rounded-3xl rounded-tl-md bg-surface2 px-4 py-3 text-base text-ink">{nh.noi_}</p>
+        </div>
+      </div>
+      {!lc && <div className="mt-4 flex flex-col items-end gap-2.5">
+        {nhanhXao.map((l) => <button key={l.c} type="button" lang="fr" onClick={() => bam(l)} className="max-w-[90%] cursor-pointer rounded-3xl rounded-br-md border-2 border-solid border-orange-300 bg-surface px-4 py-2.5 text-left font-sans text-base text-ink">{hopGiong(l.c, s.gioi)}</button>)}
+      </div>}
+      {lc && <>
+        <p lang="fr" className="mcf-cau-vao m-0 ml-auto mt-4 w-fit max-w-[90%] rounded-3xl rounded-br-md bg-orange-500 px-4 py-2.5 text-base text-white">{hopGiong(lc.c, s.gioi)}</p>
+        <div className="mcf-cau-vao mt-3 flex items-start gap-3">
+          <span className={`grid h-10 w-10 shrink-0 place-items-center rounded-full bg-gradient-to-br ${nv?.nen ?? "from-stone-400 to-stone-600"} text-white`} aria-hidden><UserRound size={20} /></span>
+          <p lang="fr" className="m-0 rounded-3xl rounded-tl-md bg-surface2 px-4 py-2.5 text-base text-ink">{lc.dap}</p>
+        </div>
+        <LoiLeon cam={lc.tot ? "duoc-do" : "hum"}>{lc.ghi}</LoiLeon>
+        <p className="mcf-dong m-0 mt-3 flex w-fit flex-wrap items-center gap-1.5 rounded-2xl bg-gradient-to-br from-stone-600 to-stone-800 px-3 py-1.5 text-white">
+          {Object.entries(lc.kq).filter(([m, v]) => m !== "co" && m !== "than" && v).map(([m, v]) => <Chip key={m} ma={m} v={v} />)}
+          {nh.ai && lc.kq.than ? <span className="inline-flex items-center gap-1 rounded-full bg-black/20 px-1.5 py-0.5 text-[11px] font-bold"><Heart size={11} className="fill-rose-400 text-rose-400" />{lc.kq.than > 0 ? "+" : "−"}{Math.abs(lc.kq.than)} {ten}</span> : null}
+          {lc.kq.co ? <span className="text-[11px] font-bold">{tr("Chuyện này chưa kết thúc…", "Cette histoire n'est pas finie…", "This isn't over…")}</span> : null}
+        </p>
+        <div className="mt-4 text-right"><Nut onClick={() => { const x = sauNhanh(s, nh, lc); setNh(null); setLc(null); quaTuanMoi(x); }}>{tr("Tiếp tục", "Continuer", "Continue")} <ArrowRight size={15} className="inline align-[-3px]" /></Nut></div>
+      </>}
     </>);
   }
 
@@ -164,7 +222,7 @@ export default function MotNam({ onXong }) {
     const c = CANH[k];
     const tra = (j) => { if (chon != null) return; setChon(j); phat(j === 0 ? "dung" : "sai"); };
     const nhac = () => { setBo(tron([1, 2, 3].filter((j) => j < c.pa.length)).slice(0, 2)); setS((x) => cong(x, { tt: -3 })); phat("bam"); };
-    const tiep = () => { setChon(null); setBo(null); quaTuanMoi(sauCau(s, k, chon === 0, CANH.length)); };
+    const tiep = () => { setChon(null); setBo(null); quaTuanMoi(sauCau(s, k, chon === 0)); };
     return khung(<>
       {c.dau && <LoiLeon cam="nhay-mat">{c.ch.mo}</LoiLeon>}
       <p className="m-0 mt-3 flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-wider text-orange-600"><MapPin size={13} /><span lang="fr">{c.noi}</span></p>
