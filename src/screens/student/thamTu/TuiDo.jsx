@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Search, BookOpen, FlaskConical, PhoneCall, Coffee, Clock, Award, Briefcase, Lock } from "lucide-react";
+import { Search, BookOpen, FlaskConical, PhoneCall, Coffee, Award, Briefcase, Lock, Eye, Feather } from "lucide-react";
 import { tr } from "../../../shared/i18n.jsx";
-import { UY_TIN_DAU } from "./luat.js";
+import { UY_TIN_DAU, NGHI_MAX } from "./luat.js";
 
 /* Túi đồ thám tử (30/10, giai đoạn 2). Toàn bộ biểu tượng là lucide + CSS, không emoji.
  * MON là hàm vì tr() phải chạy lúc dựng. */
@@ -11,6 +11,7 @@ export const MON = () => [
   { ma: "ines", Icon: FlaskConical, ten: tr("Phân tích của Inès", "Analyse d'Inès", "Inès's analysis"), gia: tr("−1 vật chứng", "−1 preuve", "−1 evidence"), mo: tr("Loại 1 đáp án sai", "Élimine 1 réponse", "Removes 1 wrong answer"), nen: "from-emerald-500 to-teal-600" },
   { ma: "leon", Icon: PhoneCall, ten: tr("Gọi Léon", "Appeler Léon", "Call Léon"), gia: tr("−1 uy tín", "−1 réputation", "−1 reputation"), mo: tr("Mẹo đọc câu hỏi", "Astuce de lecture", "A reading tip"), nen: "from-rose-500 to-red-600" },
   { ma: "cafe", Icon: Coffee, ten: tr("Nghỉ cà phê", "Pause café", "Coffee break"), gia: tr("−2 giờ", "−2 h", "−2 h"), mo: tr("Hồi 1 uy tín", "Rend 1 réputation", "Restores 1 reputation"), nen: "from-yellow-700 to-amber-900" },
+  { ma: "theo", Icon: Eye, hiem: true, ten: tr("Theo dõi ngầm", "Filature", "Undercover tail"), gia: tr("Hiếm", "Rare", "Rare"), mo: tr("Thấy trước và chặn nước đi kế của P.G.", "Voit et déjoue le prochain coup de P.G.", "Sees and foils P.G.'s next move"), nen: "from-slate-500 to-slate-800" },
 ];
 export const monCua = (ma) => MON().find((m) => m.ma === ma);
 
@@ -77,6 +78,9 @@ export function HudVu({ hud, gioDau, vatChung }) {
       <span className="flex items-center gap-1.5 text-sm font-bold text-[#fef3c7]" title={tr("Vật chứng: mỗi câu đúng được 1, dùng cho phân tích của Inès", "Preuves : 1 par bonne réponse", "Evidence: 1 per correct answer")}>
         <FlaskConical size={16} className="text-emerald-300" /> <span className="tabular-nums">{vatChung}</span>
       </span>
+      <span key={hud.nghi} className="mcf-tt-nghi flex items-center gap-0.5" role="img" aria-label={tr(`P.G. nghi ngờ ${hud.nghi}/${NGHI_MAX}`, `Soupçons de P.G. ${hud.nghi}/${NGHI_MAX}`, `P.G.'s suspicion ${hud.nghi}/${NGHI_MAX}`)} title={tr("Mức nghi ngờ của P.G.: càng cao thì cản trở càng nặng. Sai làm tăng, hoá giải cản trở làm giảm.", "Soupçons de P.G. : plus ils sont hauts, plus les obstacles sont durs.", "P.G.'s suspicion: the higher it is, the harder the obstacles.")}>
+        {Array.from({ length: NGHI_MAX }, (_, k) => <Feather key={k} size={15} className={k < hud.nghi ? (hud.nghi >= 4 ? "text-red-300" : "text-[#d6d3d1]") : "text-white/15"} />)}
+      </span>
       {bay && (
         <span key={bay.k} className="mcf-tt-bay pointer-events-none absolute left-14 top-0 text-sm font-black" aria-hidden>
           {bay.dg ? <span className={bay.dg < 0 ? "text-red-300" : "text-emerald-300"}>{nhan(bay.dg, "h")} </span> : null}
@@ -94,6 +98,7 @@ export function HieuUng({ ma }) {
     <div aria-hidden className={`mcf-tt-man mcf-tt-man-${ma} pointer-events-none absolute inset-0 z-20 grid place-items-center overflow-hidden`}>
       {ma === "kinh" && <span className="mcf-tt-quet absolute left-0 top-1/3 grid h-28 w-28 place-items-center rounded-full border-4 border-solid border-amber-300 bg-amber-200/20 text-amber-200"><Search size={46} /></span>}
       {ma === "ines" && <span className="mcf-tt-tia absolute inset-x-0 top-0 h-1.5 bg-emerald-300 shadow-[0_0_24px_8px_rgba(110,231,183,.7)]" />}
+      {ma === "theo" && <span className="mcf-tt-radar absolute h-64 w-64 rounded-full" />}
       {ma === "leon" && <><span className="mcf-tt-song absolute h-24 w-24 rounded-full border-2 border-solid border-rose-300" /><span className="mcf-tt-song mcf-tt-song2 absolute h-24 w-24 rounded-full border-2 border-solid border-rose-300" /></>}
       <span className={`relative grid h-20 w-20 place-items-center rounded-3xl bg-gradient-to-br ${m.nen} text-white shadow-2xl ${ma === "leon" ? "mcf-tt-reo" : ma === "tu" ? "mcf-tt-lat" : "mcf-tt-noi"}`}>
         <m.Icon size={38} />
