@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Lock, CircleCheck, Search, MapPin, NotebookPen, CircleHelp, UserRound, Languages, Lightbulb, Gift, Briefcase, ArrowRight, Eye, Flame } from "lucide-react";
 import { VU_AN, vuTheoChon } from "../../../content/troChoi/thamTu.js";
 import { TRO_GIUP_VU, goiYCau } from "../../../content/troChoi/thamTuTroGiup.js";
@@ -7,6 +7,7 @@ import { MON, monCua, LaMon, KhayTui, HudVu, HieuUng } from "./TuiDo.jsx";
 import TaiLieu from "./TaiLieu.jsx";
 import ManSuKien, { SU_KIEN, DemNguoc } from "./SuKien.jsx";
 import HoSoThamTu, { thanhTichMoi } from "./HoSoThamTu.jsx";
+import HuongDan from "./HuongDan.jsx";
 import { BanDo, ThamVan, BangGhim, ChonBangChung, LuaChonSauKet } from "./BanDo.jsx";
 import { tr } from "../../../shared/i18n.jsx";
 import { phat } from "../../../shared/amThanh.js";
@@ -24,6 +25,8 @@ const docTienDo = () => { try { return JSON.parse(localStorage.getItem(KHOA_TT))
 const KHOA_CHON = "mcf-tham-tu-chon";
 const docChon = () => { try { return JSON.parse(localStorage.getItem(KHOA_CHON)) || {}; } catch { return {}; } };
 const luuChon = (ma, gt) => { try { localStorage.setItem(KHOA_CHON, JSON.stringify({ ...docChon(), [ma]: gt })); } catch { /* chế độ riêng tư: bỏ qua */ } };
+const KHOA_HD = "mcf-tham-tu-da-xem-hd";
+const daXemHd = () => { try { return localStorage.getItem(KHOA_HD) === "1"; } catch { return true; } };
 const KHOA_KHAN = "mcf-tham-tu-khan";
 const docKhan = () => { try { return localStorage.getItem(KHOA_KHAN) !== "0"; } catch { return true; } };
 const nhat = (ds) => ds[Math.floor(Math.random() * ds.length)];
@@ -51,6 +54,8 @@ export default function ThamTu({ muc = "vua", onXong, kho }) {
   const [td, setTd] = useState(docTienDo);
   const [ct, setCt] = useState(docCt);
   const [chonTruoc, setChonTruoc] = useState(docChon);
+  const [hd, setHd] = useState(() => !daXemHd());  // cách chơi: tự mở lần đầu
+  const dongHd = useCallback(() => { setHd(false); try { localStorage.setItem(KHOA_HD, "1"); } catch { /* bỏ qua */ } }, []);
   const [may, setMay] = useState(null);           // null đang đọc | ok | loi
   const [bang, setBang] = useState(kho ? null : undefined);
   /* Máy chủ thắng khi đã có; thứ chỉ máy này có (điểm cao hơn, lựa chọn mới) thì gửi lên. */
@@ -203,6 +208,7 @@ export default function ThamTu({ muc = "vua", onXong, kho }) {
     ); })()}
   </>;
 
+  const hopHd = hd && <HuongDan onDong={dongHd} />;
   if (!vu) return (
     <div className="mt-6 rounded-[2rem] bg-[#3f3a36] bg-[radial-gradient(#57504a_1px,transparent_1px)] bg-[length:10px_10px] p-5">
       <div className="flex items-start gap-3">
@@ -212,6 +218,10 @@ export default function ThamTu({ muc = "vua", onXong, kho }) {
             : muc === "vua" ? tr("Gần đây hiện trường nào cũng có một chiếc lông vũ xám và chữ ký « P.G. ». Không phải trùng hợp đâu, trợ lý.", "Ces derniers temps, chaque scène de crime cache une plume grise et la signature « P.G. ». Ce n'est pas un hasard.", "Lately every crime scene has a grey feather and the signature “P.G.”. That's no coincidence.")
             : tr("Đã đến lúc lần ra P.G. Ba hồ sơ cuối, khó nhất. Ta tin ở cậu.", "Il est temps de démasquer P.G. Trois derniers dossiers, les plus durs. Je compte sur vous.", "Time to unmask P.G. Three final cases, the hardest. I'm counting on you.")}
         </p>
+      </div>
+      {hopHd}
+      <div className="mt-3 text-right">
+        <button type="button" onClick={() => setHd(true)} className="cursor-pointer rounded-full border-0 bg-white/15 px-4 py-1.5 font-sans text-xs font-bold text-white"><CircleHelp size={14} className="mr-1 inline align-[-3px]" />{tr("Cách chơi", "Comment jouer", "How to play")}</button>
       </div>
       <div className="mt-5 grid gap-4 sm:grid-cols-3">
         {ds.map((v, k) => {
@@ -237,8 +247,12 @@ export default function ThamTu({ muc = "vua", onXong, kho }) {
   const khung = (noi, con) => (
     <div className="relative mt-6 overflow-hidden rounded-[2rem] bg-[#3f3a36] bg-[radial-gradient(#57504a_1px,transparent_1px)] bg-[length:10px_10px] p-5">
       <div className="flex items-center justify-between text-xs font-bold uppercase tracking-widest text-[#e7dcc8]">
-        <span><Search size={13} className="mr-1 inline align-[-2px]" />{tr("Hồ sơ", "Dossier", "Case")} {vu.so} · <span lang="fr">{vu.ten}</span></span><span className="tabular-nums">{kq.current.diem} pts</span>
+        <span><Search size={13} className="mr-1 inline align-[-2px]" />{tr("Hồ sơ", "Dossier", "Case")} {vu.so} · <span lang="fr">{vu.ten}</span></span>
+        <span className="flex shrink-0 items-center gap-2"><span className="tabular-nums">{kq.current.diem} pts</span>
+          {!dungCanh.khan && <button type="button" onClick={() => setHd(true)} aria-label={tr("Cách chơi", "Comment jouer", "How to play")} title={tr("Cách chơi", "Comment jouer", "How to play")} className="grid h-7 w-7 cursor-pointer place-items-center rounded-full border-0 bg-white/15 text-white"><CircleHelp size={15} /></button>}
+        </span>
       </div>
+      {hopHd}
       <HudVu hud={hud} gioDau={gioDau} vatChung={vatChung} />
       {hieuUng && <HieuUng key={hieuUng} ma={hieuUng} />}
       {kq.current.sai > 0 && <span key={kq.current.sai} aria-hidden className="mcf-tt-chop pointer-events-none absolute inset-0 z-10 bg-red-600" />}
