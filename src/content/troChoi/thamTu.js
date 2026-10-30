@@ -12,6 +12,7 @@
 
 import { VU_TABLEAU } from "./vuMauTableau.js";
 import { MO_RONG } from "./thamTuMoRong.js";
+import { VU_MUA2 } from "./thamTuMua2.js";
 
 const VU_GOC = [
   /* ───────────── DỄ (A1–A2) ───────────── */
@@ -399,7 +400,7 @@ const mo = (v) => {
   const r = (t) => (t.startsWith("@") ? canh.find((c) => c.ma === t.slice(1)).manh : t);
   return { ...v, ...phu, canh, nang: x.nang.map(r), matThuan: x.matThuan.map((m) => ({ ...m, a: r(m.a), b: r(m.b) })) };
 };
-export const VU_AN = VU_GOC.map(mo);
+export const VU_AN = [...VU_GOC.map(mo), ...VU_MUA2];
 
 /* Áp lựa chọn ở vụ trước (chon = { bruno: "giup" | "bao", marcel: "noi" | "giau" }) vào vụ sắp mở. */
 export const vuTheoChon = (v, chon) => {

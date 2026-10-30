@@ -1,5 +1,5 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { Mail, ConciergeBell, Warehouse, BookOpenText, Palette, MessagesSquare, Phone, Lock, Check, ArrowRight, Hourglass, MoonStar, Gavel, Search, Link2, UserRound, MessageCircle, Pin, Scale } from "lucide-react";
+import { Mail, ConciergeBell, Warehouse, BookOpenText, Palette, MessagesSquare, Phone, Lock, Check, ArrowRight, Hourglass, MoonStar, Gavel, Search, Link2, UserRound, MessageCircle, Pin, Scale, Puzzle, RotateCcw } from "lucide-react";
 import { tr } from "../../../shared/i18n.jsx";
 import { phat } from "../../../shared/amThanh.js";
 import { Leon, leonVai } from "../../../shared/leon.jsx";
@@ -7,7 +7,7 @@ import CauTracNghiem from "../CauTracNghiem.jsx";
 
 /* Vòng chơi theo sơ đồ (31/10, giai đoạn 4): BanDo → ThamVan → BangGhim → ChonBangChung.
    Mỗi màn tự giữ trạng thái của nó, ThamTu chỉ giữ thứ sống qua cả vụ. */
-const ICON = { thu: Mail, quay: ConciergeBell, kho: Warehouse, so: BookOpenText, xuong: Palette, hoi: MessagesSquare, goi: Phone };
+const ICON = { thu: Mail, quay: ConciergeBell, kho: Warehouse, so: BookOpenText, xuong: Palette, hoi: MessagesSquare, goi: Phone, ghep: Puzzle };
 
 const LoiNgan = ({ cam = "lam-viec", children }) => (
   <div className="mcf-cau-vao mt-4 flex items-start gap-3">
@@ -140,6 +140,51 @@ export function ThamVan({ c, onXong }) {
         <CauTracNghiem key={luot} pa={L.pa} onTra={tra} daChon={null} laPhap bo={bo} />
       </>}
       {xong && <div className="mt-4 text-right"><button type="button" onClick={() => onXong({ manh, sai })} className={NUT}>{tr("Kết thúc thẩm vấn", "Terminer l'interrogatoire", "End the interview")} <ArrowRight size={15} className="inline align-[-3px]" /></button></div>}
+    </div>
+  );
+}
+
+/* Ghép thư bị xé: xếp các mảnh thành câu đúng. Hết lượt thì lộ câu đúng nhưng mất manh mối. */
+const xaoManh = (ds) => {
+  const k = ds.map((_, i) => i);
+  for (let i = k.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [k[i], k[j]] = [k[j], k[i]]; }
+  return k.every((x, i) => x === i) ? [...k.slice(1), k[0]] : k;
+};
+export function GhepThu({ c, onXong }) {
+  const [thuTu] = useState(() => xaoManh(c.manhThu));
+  const [xep, setXep] = useState([]);
+  const [lan, setLan] = useState(c.lan);
+  const [sai, setSai] = useState(0);
+  const [kq, setKq] = useState(null);        // null | "dung" | "het"
+  const [rung, setRung] = useState(0);
+  const thu = () => {
+    if (xep.every((x, i) => x === i)) { phat("thang"); setKq("dung"); return; }
+    phat("sai"); setSai((n) => n + 1); setRung((n) => n + 1); setXep([]);
+    if (lan <= 1) setKq("het");
+    setLan((n) => n - 1);
+  };
+  const mieng = "cursor-pointer border-0 bg-[#fdf6e3] px-3 py-2 font-sans text-sm text-[#1f2937] shadow-[0_3px_6px_rgba(0,0,0,0.3)] [clip-path:polygon(0_6%,12%_0,30%_5%,55%_0,78%_6%,100%_2%,98%_50%,100%_96%,74%_100%,50%_94%,25%_100%,2%_95%,3%_48%)]";
+  return (
+    <div className="mcf-cau-vao mt-4">
+      <LoiNgan cam={c.cam}>{c.leon}</LoiNgan>
+      <div key={rung} className={`mt-4 rounded-2xl bg-black/30 p-4 ${rung ? "mcf-rung" : ""}`}>
+        <p className="m-0 text-xs font-extrabold uppercase tracking-widest text-[#e7dcc8]">{tr("Lá thư", "La lettre", "The letter")}</p>
+        <div className="mt-2 flex min-h-[52px] flex-wrap items-center gap-2 rounded-xl border-2 border-dashed border-white/20 p-2">
+          {kq ? <p lang="fr" className="mcf-cau-vao m-0 bg-[#fdf6e3] px-3 py-2 text-base font-bold text-[#1f2937]">{c.manhThu.join(" ")}</p>
+            : xep.map((k) => <button key={k} type="button" lang="fr" onClick={() => { phat("bam"); setXep((x) => x.filter((y) => y !== k)); }} className={mieng}>{c.manhThu[k]}</button>)}
+        </div>
+        {!kq && <div className="mt-3 flex flex-wrap gap-2">
+          {thuTu.filter((k) => !xep.includes(k)).map((k, j) => <button key={k} type="button" lang="fr" style={{ rotate: `${[-2, 1.5, -1, 2][j % 4]}deg` }} onClick={() => { phat("lat"); setXep((x) => [...x, k]); }} className={mieng}>{c.manhThu[k]}</button>)}
+        </div>}
+      </div>
+      {kq === "dung" && <p className="mcf-dong m-0 mt-3 rounded-2xl bg-[#d1fae5] px-4 py-3 text-sm text-[#064e3b]"><b>{tr("Ghép đúng! +1 vật chứng. ", "Bien reconstitué ! +1 preuve. ", "Well pieced! +1 evidence. ")}</b>{c.vi}</p>}
+      {kq === "het" && <p className="mcf-rung m-0 mt-3 rounded-2xl bg-[#ffe4e6] px-4 py-3 text-sm text-[#881337]"><b>{tr("Mảnh giấy rách nát, manh mối mất rồi. ", "Le papier est fichu, l'indice est perdu. ", "The paper is ruined, the clue is lost. ")}</b>{c.vi}</p>}
+      <div className="mt-4 flex flex-wrap items-center justify-end gap-2">
+        {!kq && <><span className="mr-auto text-xs font-bold text-[#e7dcc8]">{tr(`Còn ${lan} lần ghép`, `${lan} essais restants`, `${lan} tries left`)}</span>
+          <button type="button" onClick={() => setXep([])} aria-label={tr("Xếp lại", "Recommencer", "Reset")} className="grid h-10 w-10 cursor-pointer place-items-center rounded-full border-0 bg-white/15 text-white"><RotateCcw size={16} /></button>
+          <button type="button" disabled={xep.length < c.manhThu.length} onClick={thu} className={NUT}>{tr("Ghép thử", "Assembler", "Piece together")}</button></>}
+        {kq && <button type="button" onClick={() => onXong({ manh: kq === "dung" ? [c.manh] : [], sai, vat: kq === "dung" ? 1 : 0 })} className={NUT}>{tr("Về sơ đồ", "Retour au plan", "Back to the map")} <ArrowRight size={15} className="inline align-[-3px]" /></button>}
+      </div>
     </div>
   );
 }

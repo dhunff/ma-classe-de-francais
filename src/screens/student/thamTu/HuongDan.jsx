@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { Hourglass, Award, FlaskConical, Feather, MapPin, FileText, MessagesSquare, Pin, Gavel, Briefcase, Flag, ArrowLeft, ArrowRight, X, Check, Trophy } from "lucide-react";
+import { Hourglass, Award, FlaskConical, Feather, MapPin, FileText, MessagesSquare, Pin, Gavel, Briefcase, Flag, Puzzle, ArrowLeft, ArrowRight, X, Check, Trophy } from "lucide-react";
+import { VU_AN } from "../../../content/troChoi/thamTu.js";
 import { tr } from "../../../shared/i18n.jsx";
 import { Leon, leonVai } from "../../../shared/leon.jsx";
 import { MON } from "./TuiDo.jsx";
@@ -22,7 +23,7 @@ const TRANG = () => [
     Icon: Flag, cam: "kinh-lup", ten: tr("Nhiệm vụ của bạn", "Votre mission", "Your mission"),
     loi: tr("Bạn là trợ lý của Thanh tra Léon. Đọc tài liệu tiếng Pháp, tìm manh mối và chỉ đúng hung thủ.", "Vous êtes l'assistant de l'inspecteur Léon. Lisez les documents en français, trouvez les indices et désignez le coupable.", "You are Inspector Léon's assistant. Read French documents, find clues and name the culprit."),
     noi: () => <>
-      <Dong Icon={MapPin} ten={tr("9 hồ sơ, 3 mức", "9 dossiers, 3 niveaux", "9 cases, 3 levels")}>{tr("Phá vụ trước để mở vụ sau. Tiến độ tự lưu vào tài khoản.", "Résolvez une affaire pour ouvrir la suivante. La progression est enregistrée.", "Solve a case to open the next. Progress saves to your account.")}</Dong>
+      <Dong Icon={MapPin} ten={tr(`${VU_AN.length} hồ sơ, 3 mức, 2 mùa`, `${VU_AN.length} dossiers, 3 niveaux, 2 saisons`, `${VU_AN.length} cases, 3 levels, 2 seasons`)}>{tr("Phá vụ trước để mở vụ sau. Phá hết Mùa 1 của một mức thì mở Mùa 2 của mức đó. Tiến độ tự lưu vào tài khoản.", "Résolvez une affaire pour ouvrir la suivante. Finir la saison 1 d'un niveau ouvre sa saison 2. La progression est enregistrée.", "Solve a case to open the next. Finishing season 1 at a level opens its season 2. Progress saves to your account.")}</Dong>
       <Dong Icon={Check} mau="text-emerald-300" ten={tr("Một vụ diễn ra thế nào", "Déroulement d'une affaire", "How a case goes")}>{tr("Chọn đồ mang theo, đi các địa điểm trên sơ đồ, đối chiếu manh mối, rồi buộc tội.", "Choisissez vos outils, visitez les lieux, comparez les indices, puis accusez.", "Pick tools, visit places on the map, compare clues, then accuse.")}</Dong>
       <Dong Icon={Trophy} ten={tr("Thua cũng không sao", "Perdre n'est pas grave", "Losing is fine")}>{tr("Chơi lại ngay được, chỉ là lượt đó không có thưởng. Mức dễ thì không bị rút khỏi vụ.", "Rejouez aussitôt, sans récompense pour ce tour. Au niveau facile, on ne perd jamais l'enquête.", "Replay at once, with no reward for that run. On easy you can't be taken off a case.")}</Dong>
     </>,
@@ -43,6 +44,7 @@ const TRANG = () => [
     noi: () => <>
       <Dong Icon={MapPin} ten={tr("Chọn địa điểm", "Choisir un lieu", "Choose a place")}>{tr("Bấm vào một điểm rồi « Đi tới ». Léon thường gợi ý nơi nên đến tiếp.", "Touchez un lieu puis « Y aller ». Léon suggère souvent la suite.", "Tap a place, then “Go”. Léon often suggests where next.")}</Dong>
       <Dong Icon={FileText} ten={tr("Đọc và trả lời", "Lire et répondre", "Read and answer")}>{tr("Đúng thì manh mối vào sổ và được 1 vật chứng.", "Bonne réponse : l'indice va au carnet, plus 1 preuve.", "Right: the clue goes in your notebook, plus 1 evidence.")}</Dong>
+      <Dong Icon={Puzzle} mau="text-sky-300" ten={tr("Thư bị xé (Mùa 2)", "Lettres déchirées (saison 2)", "Torn letters (season 2)")}>{tr("Bấm các mảnh giấy theo đúng thứ tự để ghép thành câu tiếng Pháp. Số lần ghép có hạn.", "Touchez les morceaux dans l'ordre pour recomposer la phrase. Les essais sont limités.", "Tap the pieces in order to rebuild the French sentence. Tries are limited.")}</Dong>
       <Dong Icon={X} mau="text-rose-300" ten={tr("Khi trả lời sai", "En cas d'erreur", "If you're wrong")}>{tr("Mất thêm 1 giờ, 1 uy tín và manh mối đó, vì không quay lại được. Mức dễ chỉ tụt hạng, manh mối vẫn được giữ.", "Une heure de plus, 1 réputation et l'indice sont perdus : pas de retour en arrière. Au niveau facile, seul le rang baisse et l'indice reste.", "An extra hour, 1 reputation and the clue are lost, with no going back. On easy only your rank drops and you keep the clue.")}</Dong>
     </>,
   },

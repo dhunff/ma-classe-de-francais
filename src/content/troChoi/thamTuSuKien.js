@@ -79,6 +79,30 @@ export const KHAI = {
     gia: ["Paul Garnier admire le travail de l'inspecteur Léon.", "Garnier viết « Permettez-moi d'en douter » và muốn chứng minh Léon có thể bị thao túng."],
     that: ["Paul Garnier prépare un livre.", "Chuyên mục viết « Je prépare un livre sur ce sujet »."],
   },
+  recette: {
+    gia: ["Le carnet était dans la cuisine.", "Ghi chú viết « sur le comptoir, à côté de la caisse »."],
+    that: ["Il y a une petite clé sur le comptoir.", "Ghi chú viết đúng như vậy."],
+  },
+  biblio: {
+    gia: ["La bibliothèque est ouverte le dimanche.", "Biển ghi « du lundi au vendredi »."],
+    that: ["Les atlas ne sortent pas de la bibliothèque.", "Nội quy viết đúng như vậy."],
+  },
+  collier: {
+    gia: ["Mme Aubert a laissé son collier à la réception.", "Bà ấy viết « dans le coffre de la chambre 214 »."],
+    that: ["La réception a un code de secours.", "Đơn trình báo ghi đúng như vậy."],
+  },
+  librairie: {
+    gia: ["La serrure de la vitrine est cassée.", "Sổ kiểm kê ghi « serrure intacte »."],
+    that: ["À 18 h, la vitrine était vide.", "Sổ ghi « Jeudi, 18 h : vitrine vide »."],
+  },
+  editions: {
+    gia: ["Garnier a écrit tous les chapitres du livre.", "Hắn viết « je n'ai écrit que les six premiers chapitres »."],
+    that: ["Le septième chapitre n'est pas de Garnier.", "Lá thư viết đúng như vậy."],
+  },
+  chapitre: {
+    gia: ["Mme Lacombe présente sa collection à 18 h.", "Chương trình ghi 16 h, còn 18 h là lễ trao giải."],
+    that: ["La présentation a lieu dans le hall B.", "Chương trình ghi « (hall B) »."],
+  },
   kiosque: {
     gia: ["P.G. passera au kiosque tous les jours.", "Câu đố viết « le seul jour où il ouvre plus tard »: chỉ một ngày."],
     that: ["P.G. viendra une heure après l'ouverture.", "Câu đố viết « exactement une heure après son ouverture »."],

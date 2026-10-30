@@ -8,7 +8,7 @@ import TaiLieu from "./TaiLieu.jsx";
 import ManSuKien, { SU_KIEN, DemNguoc } from "./SuKien.jsx";
 import HoSoThamTu, { thanhTichMoi } from "./HoSoThamTu.jsx";
 import HuongDan from "./HuongDan.jsx";
-import { BanDo, ThamVan, BangGhim, ChonBangChung, LuaChonSauKet } from "./BanDo.jsx";
+import { BanDo, ThamVan, GhepThu, BangGhim, ChonBangChung, LuaChonSauKet } from "./BanDo.jsx";
 import { tr } from "../../../shared/i18n.jsx";
 import { phat } from "../../../shared/amThanh.js";
 import { Leon, leonVai } from "../../../shared/leon.jsx";
@@ -110,7 +110,9 @@ export default function ThamTu({ muc = "vua", onXong, kho }) {
   const [hieuUng, setHieuUng] = useState(null);
   const [moi, setMoi] = useState(null);           // vị trí món vừa nhận
   const chuoiDung = useRef(0);
-  const ds = VU_AN.filter((v) => v.muc === muc);
+  const [mua, setMua] = useState(1);
+  const ds = VU_AN.filter((v) => v.muc === muc && (v.mua ?? 1) === mua);
+  const moMua2 = VU_AN.filter((v) => v.muc === muc && !v.mua).every((v) => td[v.id] != null);
   const gioDau = vu ? batDauVu(vu).gio : 1;
   const SACH = { neo: false, tu: false, goiY: false, an: [], chay: false, khan: false };
 
@@ -173,10 +175,10 @@ export default function ThamTu({ muc = "vua", onXong, kho }) {
     if (khai) setSo((ds) => [...ds, khai.that ? `« ${khai.fr} »` : { t: `« ${khai.fr} »`, loai: "gia" }]);
   };
   const vaoNoi = (k) => {
-    setI(k); setChon(null); setDaDen((d) => [...d, k]); setBuoc(vu.canh[k].loai === "hoi" ? "hoi" : "canh");
+    setI(k); setChon(null); setDaDen((d) => [...d, k]); setBuoc(vu.canh[k].loai === "hoi" ? "hoi" : vu.canh[k].loai === "ghep" ? "ghep" : "canh");
   };
-  const xongThamVan = ({ manh, sai }) => {
-    setSo((s) => [...s, ...manh]); kq.current.sai += sai;
+  const xongThamVan = ({ manh, sai, vat = 0 }) => {
+    setSo((s) => [...s, ...manh]); kq.current.sai += sai; if (vat) setVatChung((n) => n + vat);
     setHud((h) => doiNghi({ ...h, gio: Math.max(laMucDe(vu) ? 1 : 0, h.gio - 1) }, sai));
     const ma = trinh ?? tungSuKien(vu, nguCanh());
     if (ma) vaoSuKien(ma); else sangTiep();
@@ -214,7 +216,10 @@ export default function ThamTu({ muc = "vua", onXong, kho }) {
       <div className="flex items-start gap-3">
         <Leon cam={leonVai("tham-tu", "kinh-lup")} size={72} className="shrink-0" />
         <p className="m-0 rounded-3xl rounded-tl-md bg-[#fef3c7] px-4 py-3 text-sm text-[#2b2118]">
-          {muc === "de" ? tr("Chào trợ lý mới! Ta là Thanh tra Léon. Mấy vụ nhỏ trong khu phố đang chờ chúng ta. Bắt đầu từ hồ sơ số 1 nhé.", "Bienvenue, assistant ! Je suis l'inspecteur Léon. De petites affaires du quartier nous attendent. Commençons par le dossier 1.", "Welcome, assistant! I'm Inspector Léon. Some small neighbourhood cases await. Let's start with case 1.")
+          {mua === 2 ? (muc === "de" ? tr("Trợ lý, có chuyện lạ ở quán bà Odile: một chiếc chìa đồng không mở được cửa nào.", "Assistant, chose étrange au café d'Odile : une clé de laiton qui n'ouvre aucune porte.", "Assistant, something odd at Odile's café: a brass key that opens no door.")
+            : muc === "vua" ? tr("Bruno vừa gọi cho ta. Lần đầu tiên ông ấy chịu nhờ giúp, và lại là một chiếc chìa đồng.", "Bruno vient d'appeler. Pour la première fois, il demande de l'aide, et encore une clé de laiton.", "Bruno just called. For the first time he's asking for help, and it's a brass key again.")
+              : tr("Ai đã viết điều 3 của bản hợp đồng? Đến lúc mở cánh cửa cuối cùng.", "Qui a écrit l'article 3 du contrat ? Il est temps d'ouvrir la dernière porte.", "Who wrote article 3 of the contract? Time to open the last door."))
+            : muc === "de" ? tr("Chào trợ lý mới! Ta là Thanh tra Léon. Mấy vụ nhỏ trong khu phố đang chờ chúng ta. Bắt đầu từ hồ sơ số 1 nhé.", "Bienvenue, assistant ! Je suis l'inspecteur Léon. De petites affaires du quartier nous attendent. Commençons par le dossier 1.", "Welcome, assistant! I'm Inspector Léon. Some small neighbourhood cases await. Let's start with case 1.")
             : muc === "vua" ? tr("Gần đây hiện trường nào cũng có một chiếc lông vũ xám và chữ ký « P.G. ». Không phải trùng hợp đâu, trợ lý.", "Ces derniers temps, chaque scène de crime cache une plume grise et la signature « P.G. ». Ce n'est pas un hasard.", "Lately every crime scene has a grey feather and the signature “P.G.”. That's no coincidence.")
             : tr("Đã đến lúc lần ra P.G. Ba hồ sơ cuối, khó nhất. Ta tin ở cậu.", "Il est temps de démasquer P.G. Trois derniers dossiers, les plus durs. Je compte sur vous.", "Time to unmask P.G. Three final cases, the hardest. I'm counting on you.")}
         </p>
@@ -223,9 +228,12 @@ export default function ThamTu({ muc = "vua", onXong, kho }) {
       <div className="mt-3 text-right">
         <button type="button" onClick={() => setHd(true)} className="cursor-pointer rounded-full border-0 bg-white/15 px-4 py-1.5 font-sans text-xs font-bold text-white"><CircleHelp size={14} className="mr-1 inline align-[-3px]" />{tr("Cách chơi", "Comment jouer", "How to play")}</button>
       </div>
-      <div className="mt-5 grid gap-4 sm:grid-cols-3">
+      <div className="mt-3 flex flex-wrap gap-2" role="tablist">
+        {[1, 2].map((m) => <button key={m} type="button" role="tab" aria-selected={mua === m} onClick={() => { phat("bam"); setMua(m); }} className={`cursor-pointer rounded-full border-0 px-4 py-1.5 font-sans text-xs font-extrabold ${mua === m ? "bg-amber-300 text-[#2b2118]" : "bg-white/10 text-[#e7dcc8]"}`}>{m === 1 ? tr("Mùa 1: Lông vũ xám", "Saison 1 : La plume grise", "Season 1: The grey feather") : tr("Mùa 2: Chiếc chìa đồng", "Saison 2 : La clé de laiton", "Season 2: The brass key")}</button>)}
+      </div>
+      <div className="mt-5 grid gap-4 sm:grid-cols-2">
         {ds.map((v, k) => {
-          const xong = td[v.id] != null, khoa = k > 0 && td[ds[k - 1].id] == null;
+          const xong = td[v.id] != null, khoa = k > 0 ? td[ds[k - 1].id] == null : mua === 2 && !moMua2;
           return (
             <button key={v.id} type="button" disabled={khoa} onClick={() => moVu(v)}
               className="relative cursor-pointer rounded-sm border-0 bg-[#e8d3a5] p-4 pt-6 text-left font-sans text-[#2b2118] shadow-[0_10px_20px_rgba(0,0,0,0.35)] transition-transform hover:-translate-y-1 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0">
@@ -233,7 +241,7 @@ export default function ThamTu({ muc = "vua", onXong, kho }) {
               <span lang="fr" className="block text-lg font-bold">{v.ten}</span>
               <span className="mt-1 block text-xs text-[#6b5435]">{v.tenVi}</span>
               <span className="mt-3 block text-xs font-bold">
-                {khoa ? <><Lock size={13} className="mr-1 inline align-[-2px]" />{tr("Phá vụ trước để mở", "Résolvez l'affaire précédente", "Solve the previous case")}</> : xong ? <><CircleCheck size={13} className="mr-1 inline align-[-2px]" />{tr("Đã phá", "Résolue", "Solved")} · {td[v.id]}</> : <><Search size={13} className="mr-1 inline align-[-2px]" />{tr("Chưa phá", "À résoudre", "Unsolved")}</>}
+                {khoa ? <><Lock size={13} className="mr-1 inline align-[-2px]" />{k === 0 ? tr("Phá hết Mùa 1 của mức này để mở", "Terminez la saison 1 de ce niveau", "Finish season 1 at this level") : tr("Phá vụ trước để mở", "Résolvez l'affaire précédente", "Solve the previous case")}</> : xong ? <><CircleCheck size={13} className="mr-1 inline align-[-2px]" />{tr("Đã phá", "Résolue", "Solved")} · {td[v.id]}</> : <><Search size={13} className="mr-1 inline align-[-2px]" />{tr("Chưa phá", "À résoudre", "Unsolved")}</>}
               </span>
               {xong && <span className="mcf-dong absolute right-2 top-3 rounded border-2 border-solid border-red-700 px-1 text-[10px] font-black text-red-700">{tr("ĐÃ PHÁ", "RÉSOLU", "SOLVED")}</span>}
             </button>
@@ -311,6 +319,7 @@ export default function ThamTu({ muc = "vua", onXong, kho }) {
     <SoManhMoi />
   </>);
   if (buoc === "hoi") return khung(vu.canh[i].noi, <ThamVan key={i} c={vu.canh[i]} onXong={xongThamVan} />);
+  if (buoc === "ghep") return khung(vu.canh[i].noi, <GhepThu key={i} c={vu.canh[i]} onXong={xongThamVan} />);
   if (buoc === "ghim") return khung(tr("Bảng ghim", "Tableau d'enquête", "Evidence board"), (
     <BangGhim vu={vu} so={so} conDi={hud.gio > 0 && chuaDen().length > 0} onVe={() => setBuoc("ban")}
       onThay={(t) => { setSo((s) => [...s, t]); setVatChung((n) => n + 1); setHud((h) => doiNghi(h, -1)); }}
