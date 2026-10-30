@@ -3,6 +3,8 @@
  *   lua[]: { c: câu nói, kq: { tien, nl, tt, phap, than, co }, dap: lời đáp, ghi: Léon giải thích, tot: đúng sắc thái }.
  *   {e} trong câu nói: thành « e » nếu người chơi là nữ, bỏ đi nếu là nam (dạy hợp giống).
  * KHÔNG dùng dấu gạch dài (quy tắc 7). */
+import { NHANH_THEM } from "./parisNhanh2.js";
+
 export const NHAN_VAT = {
   renard: { ten: "Mme Renard", vai: "Chủ Café Renard", nen: "from-amber-500 to-orange-600" },
   camille: { ten: "Camille", vai: "Bạn học", nen: "from-pink-500 to-rose-600" },
@@ -139,4 +141,5 @@ export const NHANH = [
       { c: "C'est sympa. On rentre ?", tot: true, kq: { than: 0 }, dap: "Si vous voulez…", ghi: "Hơi hờ hững trước một món quà tinh thần." },
     ],
   },
+  ...NHANH_THEM,
 ];

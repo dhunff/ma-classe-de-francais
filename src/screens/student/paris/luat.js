@@ -80,11 +80,6 @@ export const sauPhu = (s, id, { than = {}, ...d }) => {
   Object.entries(than).forEach(([ai, v]) => { moi[ai] = Math.min(THAN_MAX, (moi[ai] ?? 0) + v); });
   return { ...cong(s, d), than: moi, nhanhDa: [...s.nhanhDa, id] };
 };
-/* Vào thẳng tháng mẫu để duyệt: ván tách riêng, không lưu, không ghi điểm. */
-export const vanMau = (gioi, thang, CANH) => ({
-  ...batDau(gioi), mau: true, thang, tien: 420, phap: 28, than: { camille: 2, yuki: 1, dubois: 1 },
-  da: CANH.map((c, k) => (c.ch.id === "arrivee" ? k : -1)).filter((k) => k >= 0),
-});
 /* {e}: hợp giống theo nhân vật người chơi. */
 export const hopGiong = (t, gioi) => t.replaceAll("{e}", gioi === "nu" ? "e" : "");
 

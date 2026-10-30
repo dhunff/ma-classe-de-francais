@@ -21,10 +21,10 @@ export function ChoNoel({ d, onXong }) {
   const [gio, setGio] = useState([]);
   const [xong, setXong] = useState(false);
   const tong = gio.reduce((n, x) => n + x.gia, 0), lo = tong > d.ngan;
-  const hop = gio.filter((x) => x.cho);
+  const hop = gio.filter((x) => x.cho || x.dung);
   const bam = (x) => { if (xong) return; phat("bam"); setGio((g) => (g.includes(x) ? g.filter((y) => y !== x) : g.length < 3 ? [...g, x] : g)); };
   const tra = () => {
-    const than = {}; hop.forEach((x) => { than[x.cho] = 1; });
+    const than = {}; hop.forEach((x) => { if (x.cho) than[x.cho] = 1; });
     onXong({ tien: -tong, tt: hop.length * 5, than, phap: hop.length });
   };
   return (
@@ -35,7 +35,7 @@ export function ChoNoel({ d, onXong }) {
       </div>
       <div className="mt-3 grid gap-2 sm:grid-cols-2">
         {hang.map((x, k) => {
-          const co = gio.includes(x), dung = xong && x.cho, sai = xong && co && !x.cho;
+          const co = gio.includes(x), dung = xong && (x.cho || x.dung), sai = xong && co && !dung;
           return (
             <button key={x.ten} type="button" aria-pressed={co} onClick={() => bam(x)} style={{ animationDelay: `${k * 0.05}s` }}
               className={`mcf-pl-the flex cursor-pointer items-center gap-2 rounded-2xl border-2 border-solid p-3 text-left font-sans ${co ? "border-orange-500 bg-orange-50 dark:bg-orange-950/40" : "border-line bg-surface"} ${dung ? "border-ok" : ""} ${sai ? "border-danger" : ""}`}>
@@ -47,7 +47,7 @@ export function ChoNoel({ d, onXong }) {
         })}
       </div>
       <p className={`m-0 mt-3 flex items-center gap-2 text-sm font-bold ${lo ? "text-danger" : "text-ink"}`}><ShoppingBasket size={16} /> {gio.length}/3 · {tong}/{d.ngan} € {lo && tr("(quá ngân sách)", "(budget dépassé)", "(over budget)")}</p>
-      {xong && <p className="mcf-cau-vao m-0 mt-3 text-sm text-ink">{hop.length === 3 ? tr("Đúng cả ba! Ai cũng cảm động.", "Trois sur trois ! Tout le monde est touché.", "All three right! Everyone's touched.") : tr(`Đúng ${hop.length}/3 món. Khung xanh là món hợp với lời ghi chú.`, `${hop.length}/3 bons cadeaux. Le cadre vert montre les bons choix.`, `${hop.length}/3 right. Green frames show the good choices.`)}</p>}
+      {xong && <p className="mcf-cau-vao m-0 mt-3 text-sm text-ink">{hop.length === 3 ? tr("Đúng cả ba, đọc giỏi lắm!", "Trois sur trois, bien lu !", "All three right, well read!") : tr(`Đúng ${hop.length}/3 món. Khung xanh là món hợp với lời ghi chú.`, `${hop.length}/3 bons cadeaux. Le cadre vert montre les bons choix.`, `${hop.length}/3 right. Green frames show the good choices.`)}</p>}
       <div className="mt-4 text-right">
         {!xong ? <button type="button" disabled={gio.length < 3 || lo} onClick={() => { phat(hop.length === 3 ? "thang" : "nop"); setXong(true); }} className={NUT}>{tr("Mua quà", "Acheter", "Buy gifts")}</button>
           : <button type="button" onClick={tra} className={NUT}>{tr("Tiếp tục", "Continuer", "Continue")} <ArrowRight size={15} className="inline align-[-3px]" /></button>}
