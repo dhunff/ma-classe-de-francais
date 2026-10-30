@@ -310,3 +310,21 @@ mark.de-to:hover { background: #facc15; }
 @keyframes mcfTauChay { to { transform: translateX(120%); } }
 .mcf-tau-chay { animation: mcfTauChay .9s cubic-bezier(.55,0,.8,.2) forwards; }
 @media (prefers-reduced-motion: reduce) { .mcf-dong, .mcf-song, .mcf-toa-vao, .mcf-tau-chay { animation: none; } }
+
+/* ── Bong bóng Leon (LeonNoi, 30/10) ── bật ra, ba chấm đang gõ, chữ hiện, Leon gật một cái. */
+@keyframes mcfBongBat { 0% { opacity: 0; transform: scale(.5) rotate(-4deg); } 65% { opacity: 1; transform: scale(1.05) rotate(1deg); } 100% { opacity: 1; transform: none; } }
+@keyframes mcfBongCham { 0%, 100% { transform: translateY(0); opacity: .45; } 50% { transform: translateY(-4px); opacity: 1; } }
+@keyframes mcfBongChamTat { to { opacity: 0; visibility: hidden; } }
+@keyframes mcfBongChu { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: none; } }
+@keyframes mcfNoiLeon { 0%, 100% { transform: none; } 35% { transform: translateY(-5px) rotate(-5deg); } 70% { transform: rotate(3deg); } }
+.mcf-bong { transform-origin: 0 75%; animation: mcfBongBat .45s cubic-bezier(.34,1.56,.64,1) both; }
+.mcf-bong-cham { animation: mcfBongChamTat .01s .85s forwards; }
+.mcf-bong-cham i { width: 6px; height: 6px; border-radius: 9999px; background: rgb(var(--mcf-primary-rgb)); animation: mcfBongCham .5s ease-in-out infinite; }
+.mcf-bong-cham i:nth-child(2) { animation-delay: .12s; }
+.mcf-bong-cham i:nth-child(3) { animation-delay: .24s; }
+.mcf-bong-chu { animation: mcfBongChu .3s .85s ease-out both; }
+.mcf-noi-leon { display: inline-block; transform-origin: 50% 100%; animation: mcfNoiLeon .6s .85s ease-in-out; }
+@media (prefers-reduced-motion: reduce) {
+  .mcf-bong, .mcf-bong-chu, .mcf-noi-leon { animation: none; }
+  .mcf-bong-cham { display: none; }
+}

@@ -62,9 +62,14 @@ export function Leon({ cam = "leon", size = 64, className = "", alt }) {
 export function LeonNoi({ cam = "chao", size = 56, children, className = "" }) {
   return (
     <div className={`flex items-end gap-2 ${className}`}>
-      <Leon cam={cam} size={size} className="shrink-0" />
-      <div className="relative min-w-0 rounded-2xl rounded-bl-md bg-primary-soft px-3.5 py-2.5 text-[13px] leading-relaxed text-ink">
-        {children}
+      <span className="mcf-noi-leon shrink-0"><Leon cam={cam} size={size} /></span>
+      {/* 30/10: bong bóng có đuôi chỉ vào Leon, bật ra từ góc đuôi, ba chấm « đang gõ » rồi hiện chữ. */}
+      <div className="mcf-bong relative ml-1 min-w-0 rounded-[20px] border-2 border-solid border-primary/30 bg-primary-soft px-4 py-2.5 text-[13px] font-medium leading-relaxed text-ink shadow-[0_6px_18px_rgb(var(--mcf-primary-rgb)/0.16)]">
+        <span aria-hidden className="absolute -left-[7px] bottom-3.5 h-3 w-3 rotate-45 border-0 border-b-2 border-l-2 border-solid border-primary/30 bg-primary-soft" />
+        <span aria-hidden className="mcf-bong-cham absolute inset-0 flex items-center justify-center gap-1">
+          <i /><i /><i />
+        </span>
+        <span className="mcf-bong-chu relative block">{children}</span>
       </div>
     </div>
   );
