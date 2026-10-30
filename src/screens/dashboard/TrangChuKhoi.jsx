@@ -242,33 +242,6 @@ const muc = (v) => (v >= 80 ? ["ok", () => tr("Vững", "Solide", "Strong")]
       : ["danger", () => tr("Yếu", "Fragile", "Weak")]);
 const MAU = { ok: ["bg-ok", "text-ok", "bg-ok-soft"], primary: ["bg-primary", "text-primary", "bg-primary-soft"], warn: ["bg-warn", "text-warn", "bg-warn-soft"], danger: ["bg-danger", "text-danger", "bg-danger-soft"] };
 
-/* Biểu đồ mạng nhện (30/10): giữ thứ tự gốc của kỹ năng để hình không đổi dáng khi điểm đổi.
-   Đỉnh là icon kỹ năng, tâm là điểm trung bình, tất cả tính từ `skills`. */
-function MangNhen({ skills, tb }) {
-  const n = skills.length, R = 74, C = 100;
-  const diem = (i, r) => { const g = (Math.PI * 2 * i) / n - Math.PI / 2; return [C + r * Math.cos(g), C + r * Math.sin(g)]; };
-  const vong = (r) => skills.map((_, i) => diem(i, r).join(",")).join(" ");
-  return (
-    <div className="relative mx-auto mt-3 aspect-square w-full max-w-[220px]">
-      <svg viewBox="0 0 200 200" className="block h-full w-full" aria-hidden>
-        {[0.25, 0.5, 0.75, 1].map((k) => <polygon key={k} points={vong(R * k)} className="fill-none stroke-line" strokeWidth="1" />)}
-        {skills.map((_, i) => { const [x, y] = diem(i, R); return <line key={i} x1={C} y1={C} x2={x} y2={y} className="stroke-line" strokeWidth="1" />; })}
-        <polygon points={skills.map((k, i) => diem(i, R * Math.max(k.value, 4) / 100).join(",")).join(" ")}
-          className="fill-primary/25 stroke-primary" strokeWidth="2.5" strokeLinejoin="round" />
-        {skills.map((k, i) => { const [x, y] = diem(i, R * Math.max(k.value, 4) / 100); return <circle key={i} cx={x} cy={y} r="4" className="fill-primary stroke-surface" strokeWidth="2" />; })}
-      </svg>
-      {skills.map(({ skill }, i) => {
-        const [x, y] = diem(i, 91); const Icon = IconKN(skill);
-        return <span key={skill} className="absolute grid h-6 w-6 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-surface2 text-primary" style={{ left: `${x / 2}%`, top: `${y / 2}%` }}><Icon size={13} /></span>;
-      })}
-      <span className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-surface/85 px-2 py-0.5 text-center">
-        <span className="block text-lg font-extrabold leading-none tabular-nums text-ink">{tb}%</span>
-        <span className="block text-[10px] font-bold text-soft">{tr("Trung bình", "Moyenne", "Average")}</span>
-      </span>
-    </div>
-  );
-}
-
 export function DongDeuKyNang({ skills, ghiChu, gon = false }) {
   const ds = [...(skills ?? [])].sort((a, b) => b.value - a.value);
   const tb = ds.length ? Math.round(ds.reduce((n, s) => n + s.value, 0) / ds.length) : null;
@@ -281,31 +254,42 @@ export function DongDeuKyNang({ skills, ghiChu, gon = false }) {
           <p className="m-0 flex items-center gap-1.5 text-xs font-bold uppercase tracking-[0.14em] text-soft"><TrendingUp size={14} /> {tr("Hồ sơ kỹ năng", "Profil de compétences", "Skill profile")}</p>
           <h2 className={"m-0 mt-1 font-extrabold text-ink " + (gon ? "hidden" : "text-lg")}>{tr("Mức độ đồng đều theo kỹ năng", "Équilibre entre les compétences", "Balance across skills")}</h2>
         </div>
-        {tb != null && ds.length > 1 && (
-          <span className={`rounded-full px-2.5 py-1 text-[11px] font-bold ${chenh > 30 ? "bg-warn-soft text-warn" : "bg-ok-soft text-ok"}`}>
-            {tr("Độ chênh", "Écart", "Gap")} {chenh}
-          </span>
-        )}
       </div>
+      {tb != null && (
+        <div className="mt-3 grid grid-cols-2 gap-2">
+          <div className="rounded-2xl bg-primary-soft px-3 py-2">
+            <p className="m-0 text-2xl font-extrabold leading-tight tabular-nums text-ink">{tb}%</p>
+            <p className="m-0 text-[11px] font-bold text-soft">{tr("Trung bình", "Moyenne", "Average")}</p>
+          </div>
+          <div className={`rounded-2xl px-3 py-2 ${chenh > 30 ? "bg-warn-soft" : "bg-ok-soft"}`}>
+            <p className={`m-0 text-2xl font-extrabold leading-tight tabular-nums ${chenh > 30 ? "text-warn" : "text-ok"}`}>{chenh}</p>
+            <p className="m-0 text-[11px] font-bold text-soft">{tr("Độ chênh", "Écart", "Gap")}</p>
+          </div>
+        </div>
+      )}
       {!ds.length ? (
         <p className="m-0 mt-4 rounded-2xl bg-surface2 p-4 text-sm text-soft">
           {tr("Làm vài bài ở các kỹ năng khác nhau để thấy hồ sơ của bạn.", "Faites quelques exercices dans différentes compétences pour voir votre profil.", "Do a few exercises across skills to see your profile.")}
         </p>
       ) : (
         <>
-          {skills.length >= 3 && <MangNhen skills={skills} tb={tb} />}
-          <ul className="m-0 mt-4 grid list-none grid-cols-2 gap-2 p-0">
+          <ul className="m-0 mt-4 grid list-none gap-3.5 p-0">
             {ds.map(({ skill, value }) => {
               const [m, nhan] = muc(value);
               const Icon = IconKN(skill);
               return (
-                <li key={skill} className={`min-w-0 rounded-2xl p-3 ${MAU[m][2]}`}>
-                  <span className="flex items-center justify-between gap-2">
-                    <Icon size={16} className={`shrink-0 ${MAU[m][1]}`} />
-                    <span className="text-lg font-extrabold leading-none tabular-nums text-ink">{value}%</span>
-                  </span>
-                  <span className="mt-2 block truncate text-xs font-bold text-ink">{tenKN(skill)}</span>
-                  <span className={`block text-[11px] font-bold ${MAU[m][1]}`}>{nhan()}</span>
+                <li key={skill} className="grid grid-cols-[auto_1fr] items-center gap-3">
+                  <span className={`grid h-10 w-10 place-items-center rounded-2xl ${MAU[m][2]} ${MAU[m][1]}`}><Icon size={18} /></span>
+                  <div className="min-w-0">
+                    <div className="flex items-baseline gap-2">
+                      <span className="truncate text-sm font-bold text-ink">{tenKN(skill)}</span>
+                      <span className={`text-[11px] font-bold ${MAU[m][1]}`}>{nhan()}</span>
+                      <span className="ml-auto text-sm font-extrabold tabular-nums text-ink">{value}%</span>
+                    </div>
+                    <div className="mt-1.5 h-2.5 overflow-hidden rounded-full bg-surface2">
+                      <div className={`h-full w-full rounded-full ${MAU[m][0]} transition-transform duration-[550ms] ease-out`} style={{ transform: `translateX(${Math.max(value, 3) - 100}%)` }} />
+                    </div>
+                  </div>
                 </li>
               );
             })}
