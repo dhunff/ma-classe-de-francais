@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Lock, CircleCheck, Search, MapPin, NotebookPen, CircleHelp, UserRound, Languages, Lightbulb, Gift, Briefcase, ArrowRight, Eye, Flame } from "lucide-react";
 import { VU_AN, vuTheoChon } from "../../../content/troChoi/thamTu.js";
 import { TRO_GIUP_VU, goiYCau } from "../../../content/troChoi/thamTuTroGiup.js";
@@ -6,6 +6,7 @@ import { BRUNO, TIN_GIA, KHAI } from "../../../content/troChoi/thamTuSuKien.js";
 import { MON, monCua, LaMon, KhayTui, HudVu, HieuUng } from "./TuiDo.jsx";
 import TaiLieu from "./TaiLieu.jsx";
 import ManSuKien, { SU_KIEN, DemNguoc } from "./SuKien.jsx";
+import HoSoThamTu, { thanhTichMoi } from "./HoSoThamTu.jsx";
 import { BanDo, ThamVan, BangGhim, ChonBangChung, LuaChonSauKet } from "./BanDo.jsx";
 import { tr } from "../../../shared/i18n.jsx";
 import { phat } from "../../../shared/amThanh.js";
@@ -15,8 +16,8 @@ import { UY_TIN_DAU, soMonMangTheo, lyDoKhongDung, batDauVu, sauCanh, sauBuocToi
 
 /* ─────────── 9. Thám tử đọc: « Những vụ án của Thanh tra Léon » ───────────
    Chọn mức xong thì vào BẢNG VỤ ÁN của mức đó; mỗi vụ: mở hồ sơ → các cảnh (đọc tài
-   liệu, trả lời) → phá án. Tiến độ (vụ đã phá) chỉ lưu ở trình duyệt: đây là tiện ích
-   mở khoá vụ kế tiếp, điểm thật vẫn ghi qua ghi_tro_choi như mọi trò. */
+   liệu, trả lời) → phá án. Tiến độ giữ ở trình duyệt và đồng bộ lên máy chủ qua `kho` (migration 173),
+   chưa nối được thì vẫn chơi được và tự gửi lại lần sau. Điểm thật vẫn ghi qua ghi_tro_choi như mọi trò. */
 const KHOA_TT = "mcf-tham-tu-v1";
 const docTienDo = () => { try { return JSON.parse(localStorage.getItem(KHOA_TT)) || {}; } catch { return {}; } };
 /* Lựa chọn mang sang vụ sau. Cùng kiểu tiện ích trình duyệt với tiến độ, giai đoạn 6 mới lên máy chủ. */
@@ -34,10 +35,52 @@ const duSuKien = (ma, vu) => {
   const that = Math.random() < 0.5, [fr, vi] = KHAI[vu.id][that ? "that" : "gia"];
   return { fr, vi, that };
 };
-const luuTienDo = (id, diem) => { try { const t = docTienDo(); t[id] = Math.max(t[id] ?? 0, diem); localStorage.setItem(KHOA_TT, JSON.stringify(t)); } catch { /* chế độ riêng tư: bỏ qua */ } };
+const KHOA_CT = "mcf-tham-tu-ct";                 // id vụ → { hang, ket[] }
+const docCt = () => { try { return JSON.parse(localStorage.getItem(KHOA_CT)) || {}; } catch { return {}; } };
+const ghiMay = (t, ct) => { try { localStorage.setItem(KHOA_TT, JSON.stringify(t)); localStorage.setItem(KHOA_CT, JSON.stringify(ct)); } catch { /* chế độ riêng tư: bỏ qua */ } };
+const THU_HANG = ["S", "A", "B"];
+const luuTienDo = (id, diem, hang, ket) => {
+  const t = docTienDo(), ct = docCt(), cu = ct[id] ?? {};
+  t[id] = Math.max(t[id] ?? 0, diem);
+  ct[id] = { hang: [cu.hang, hang].filter(Boolean).sort((a, b) => THU_HANG.indexOf(a) - THU_HANG.indexOf(b))[0] ?? null, ket: [...new Set([...(cu.ket ?? []), ...(ket ? [ket] : [])])] };
+  ghiMay(t, ct);
+};
+const hoSo = (t, ct) => Object.fromEntries(Object.entries(t).map(([id, diem]) => [id, { diem, ...ct[id] }]));
 
-export default function ThamTu({ muc = "vua", onXong }) {
+export default function ThamTu({ muc = "vua", onXong, kho }) {
   const [td, setTd] = useState(docTienDo);
+  const [ct, setCt] = useState(docCt);
+  const [chonTruoc, setChonTruoc] = useState(docChon);
+  const [may, setMay] = useState(null);           // null đang đọc | ok | loi
+  const [bang, setBang] = useState(kho ? null : undefined);
+  /* Máy chủ thắng khi đã có; thứ chỉ máy này có (điểm cao hơn, lựa chọn mới) thì gửi lên. */
+  useEffect(() => {
+    if (!kho) return undefined;
+    let con = true;
+    const hop = (sv) => {
+      const t = { ...docTienDo() }, cc = { ...docCt() };
+      for (const [id, x] of Object.entries(sv.vu ?? {})) { t[id] = Math.max(t[id] ?? 0, x.diem); cc[id] = { hang: x.hang ?? cc[id]?.hang ?? null, ket: x.ket ?? [] }; }
+      const c = { ...docChon(), ...sv.chon };
+      ghiMay(t, cc); try { localStorage.setItem(KHOA_CHON, JSON.stringify(c)); } catch { /* bỏ qua */ }
+      if (con) { setTd(t); setCt(cc); setChonTruoc(c); }
+    };
+    (async () => {
+      const sv = await kho.doc();
+      if (!con) return;
+      if (!sv || sv.loi) { setMay("loi"); return; }
+      const tLoc = docTienDo(), ctLoc = docCt(), cLoc = docChon();
+      let loi = false;
+      for (const [ma, gt] of Object.entries(cLoc)) if (!sv.chon?.[ma] && (await kho.luuChon(ma, gt))?.loi) loi = true;
+      const ds = Object.entries(tLoc).filter(([id, d]) => (sv.vu?.[id]?.diem ?? -1) < d).map(([id, diem]) => ({ vu: id, diem, hang: ctLoc[id]?.hang ?? "", ket: ctLoc[id]?.ket?.find((k) => k === "du" || k === "thieu") ?? "" }));
+      const moi = ds.length ? await kho.luu(ds) : sv;
+      if (moi?.loi) loi = true;
+      hop(moi?.loi ? sv : moi);
+      if (con) setMay(loi ? "loi" : "ok");
+      const b = await kho.bangHang();
+      if (con) setBang(b);
+    })();
+    return () => { con = false; };
+  }, [kho]);
   const [vu, setVu] = useState(null);             // vụ đang chơi
   const [buoc, setBuoc] = useState("mo");         // mo | canh | ket | xong
   const [i, setI] = useState(0);
@@ -187,6 +230,7 @@ export default function ThamTu({ muc = "vua", onXong }) {
           );
         })}
       </div>
+      <HoSoThamTu hs={hoSo(td, ct)} chon={chonTruoc} bang={bang} may={may} />
     </div>
   );
 
@@ -332,18 +376,23 @@ export default function ThamTu({ muc = "vua", onXong }) {
       {chon == null && khayTui(k_, null)}
       {choBangChung && <ChonBangChung vu={vu} so={so} onChot={chotBuocToi} />}
       {chon != null && !choBangChung && <>
+        {chon === 0 && (!vu.sauKet || daChonKet) && thanhTichMoi(hoSo(td, ct), { ...hoSo(td, ct), [vu.id]: { diem: kq.current.diem, hang: vu.ban ? hangBuocToi(ketQua, kq.current.sai) : hangVu(kq.current.sai), ket: [...(ct[vu.id]?.ket ?? []), ...(vu.id === "kiosque" && chonTruoc.marcel ? [chonTruoc.marcel] : [])] } }, chonTruoc).map((t) => (
+          <p key={t.ma} className="mcf-cau-vao m-0 mt-3 flex items-center gap-2 rounded-2xl bg-amber-300 px-4 py-2 text-sm font-extrabold text-[#2b2118]"><t.Icon size={18} className="mcf-tt-huy shrink-0" />{tr("Thành tích mới: ", "Nouveau succès : ", "New achievement: ")}{t.ten}</p>
+        ))}
         <LoiLeon cam={chon === 0 ? loiCuoi.cam : "buon"}>{chon === 0 ? loiCuoi.loi : <>{tr("Ôi không, ta bắt nhầm người rồi! ", "Oh non, ce n'est pas le bon suspect ! ", "Oh no, wrong suspect! ")}{k_.gt}</>}</LoiLeon>
-        {chon === 0 && vu.sauKet && <LuaChonSauKet sk={vu.sauKet} onChon={(gt) => { luuChon(vu.sauKet.ma, gt); setDaChonKet(true); }} />}
+        {chon === 0 && vu.sauKet && <LuaChonSauKet sk={vu.sauKet} onChon={(gt) => { luuChon(vu.sauKet.ma, gt); setChonTruoc(docChon()); kho?.luuChon(vu.sauKet.ma, gt); setDaChonKet(true); }} />}
         {(chon !== 0 || !vu.sauKet || daChonKet) && <div className="mt-4 flex flex-wrap justify-end gap-2">
           {chon !== 0 && <button type="button" onClick={() => {
             const h = sauBuocToiOan(hud, vu); setHud(h); setChon(null); kq.current.diem = Math.max(0, kq.current.diem - 100);
             if (h.uy <= 0) { setLyDo("uy_tin"); setBuoc("thua"); }
           }} className="cursor-pointer rounded-full border-0 bg-white/15 px-5 py-2.5 font-sans text-sm font-bold text-white">{laMucDe(vu) ? tr("Suy luận lại (−100)", "Réfléchir encore (−100)", "Think again (−100)") : tr("Suy luận lại (−1 uy tín)", "Réfléchir encore (−1 réputation)", "Think again (−1 reputation)")}</button>}
           {chon === 0 && <span className="mr-auto self-center rounded border-2 border-solid border-amber-300 px-2 py-1 text-sm font-black text-amber-300">{tr("Hạng", "Rang", "Rank")} {vu.ban ? hangBuocToi(ketQua, kq.current.sai) : hangVu(kq.current.sai - 0)}</span>}
-          <button type="button" onClick={() => {
+          <button type="button" onClick={async () => {
             const ok = chon === 0;
             if (!ok) { setLyDo("thoat"); setBuoc("thua"); return; }
-            if (ok) { luuTienDo(vu.id, kq.current.diem); setTd(docTienDo()); }
+            const hang = vu.ban ? hangBuocToi(ketQua, kq.current.sai) : hangVu(kq.current.sai);
+            luuTienDo(vu.id, kq.current.diem, hang, ketQua); setTd(docTienDo()); setCt(docCt());
+            await kho?.luu([{ vu: vu.id, diem: kq.current.diem, hang, ket: ketQua ?? "" }]);   // hỏng thì lần mở sau tự gửi lại
             onXong({ diem: kq.current.diem, dung: kq.current.dung, tong: (vu.ban ? vu.canh.filter((c, k) => c.q && daDen.includes(k)).length : vu.canh.length) + 1 });
           }} className="cursor-pointer rounded-full border-0 bg-amber-400 px-6 py-2.5 font-sans text-sm font-extrabold text-[#2b2118]">{tr("Đóng hồ sơ", "Classer le dossier", "Close the case")} →</button>
         </div>}

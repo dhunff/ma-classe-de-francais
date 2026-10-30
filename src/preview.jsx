@@ -30,6 +30,17 @@
 import React, { useState } from "react";
 import ReactDOM from "react-dom/client";
 import ThamTu from "./screens/student/thamTu/ThamTu.jsx";
+/* Giả máy chủ cho Thám tử (chỉ trang xem thử): ghi trong bộ nhớ, bảng hạng cố định. */
+const SV_TT = { vu: {}, chon: {} };
+const KHO_TT_GIA = {
+  doc: async () => SV_TT,
+  luu: async (ds) => { ds.forEach((x) => { SV_TT.vu[x.vu] = { diem: x.diem, hang: x.hang, ket: x.ket ? [x.ket] : [] }; }); return SV_TT; },
+  luuChon: async (ma, gt) => { SV_TT.chon[ma] = gt; return SV_TT; },
+  bangHang: async () => [
+    { hang: 1, id: "a", name: "Bạn A", diem: 1800, so_vu: 3, so_s: 2, la_toi: false },
+    { hang: 2, id: "b", name: "Tôi", diem: 600, so_vu: 1, so_s: 1, la_toi: true },
+  ],
+};
 /* Bốc thăm PO B2: dùng đúng 15 sujet TP68 đang nằm trong database (lô 26), không gọi mạng. */
 import TP68 from "../scripts/nhap/lo26_b2_po_tp68.json";
 const SUJET_B2_TP68 = TP68.map((x) => ({ ma: x.ma, html: `<p><strong>${x.titre}</strong></p><p>${x.texte}</p>` + (x.note ? `<p><em>* ${x.note}</em></p>` : "") }));
@@ -864,7 +875,7 @@ function Preview() {
           <Route path="/etudiant/hoan-ho-so" element={<><Controls /><HoanThienHoSo fixture={{ prenom: "Linh" }} /></>} />
           <Route path="/etudiant/tham-tu-de" element={<><Controls /><ThamTu muc="de" onXong={() => {}} /></>} />
           <Route path="/etudiant/tham-tu-mau" element={<><Controls /><ThamTu muc="vua" onXong={() => {}} /></>} />
-          <Route path="/etudiant/tham-tu" element={<><Controls /><ThamTu muc="kho" onXong={() => {}} /></>} />
+          <Route path="/etudiant/tham-tu" element={<><Controls /><ThamTu muc="kho" onXong={() => {}} kho={KHO_TT_GIA} /></>} />
           <Route path="/etudiant/boc-tham" element={<><Controls /><PhanThi section={{ code: "PO", label: "Production orale", minutes: 20, points: 25, exercise: { id: "po-xem-thu", level: "B2", questions: [], consigne: "<p><strong>Production orale : 20 minutes environ.</strong> 30 minutes de préparation.</p><p>Vous tirez au sort deux documents et vous en choisissez un.</p>", bocTham: { chuanBi: 30, phan: [{ ten: "Monologue suivi puis exercice en interaction", cachLam: "Choisissez un document.", soRut: 2, sujets: SUJET_B2_TP68 }] } } }} attemptId="xem-thu" answers={{}} setAnswers={() => {}} onDone={() => {}} onBlur={() => {}} examId="xem-thu" /></>} />
           <Route path="/etudiant/tu-cham-noi" element={<><Controls /><div className="mx-auto max-w-6xl py-6"><POSelfEvaluation po={{ attemptId: "xem-thu", cap: "B2", examId: "xem-thu", tuCham: { monologue: 3 }, aiGoiY: { diem: { monologue: 3, interaction: 1, lexique: 3, morpho: 3, phono: 3 }, ly_do: { interaction: "Bản ghi chỉ có phần độc thoại, chưa có phần tranh luận." }, tong_quat: "Bài độc thoại có nêu vấn đề và hai luận điểm rõ, nhưng thiếu ví dụ cụ thể.", chep_loi: "Aujourd’hui, de plus en plus de jeunes reviennent à la photographie argentique…" } }} exerciseId="xem-thu" consigne="<p>Vous dégagez le problème soulevé par ce document…</p>" /></div></>} />
           <Route path="/etudiant/auto-evaluation" element={
