@@ -374,6 +374,11 @@ mark.de-to:hover { background: #facc15; }
 .mcf-tt-tu { animation: mcfBongChu .3s ease-out both; }
 @keyframes mcfTtChay { 0% { filter: none; } 40% { filter: brightness(1.8) sepia(1); } 100% { filter: grayscale(1); opacity: .4; transform: scale(.95); } }
 .mcf-tt-chay { animation: mcfTtChay .8s ease-out forwards; cursor: not-allowed; text-decoration: line-through; }
+/* ── Một năm ở Paris (31/10) ── */
+@keyframes mcfPlTo { 0% { transform: perspective(500px) rotateX(-90deg); opacity: 0; } 70% { transform: perspective(500px) rotateX(12deg); opacity: 1; } 100% { transform: none; } }
+.mcf-pl-to { transform-origin: top; animation: mcfPlTo .55s ease-out both; }
+@keyframes mcfPlThe { 0% { opacity: 0; translate: 0 14px; } 100% { opacity: 1; translate: 0 0; } }
+.mcf-pl-the { animation: mcfPlThe .35s ease-out both; }
 /* ── Thám tử Léon: màn công bố hạng (31/10) ── */
 @keyframes mcfHangThe { 0% { opacity: 0; transform: translateY(70px) rotate(-5deg) scale(.92); } 65% { opacity: 1; transform: translateY(-8px) rotate(1deg); } 100% { transform: none; } }
 .mcf-hang-the { animation: mcfHangThe .6s cubic-bezier(.22,1,.36,1) both; }
@@ -446,6 +451,7 @@ mark.de-to:hover { background: #facc15; }
   .mcf-tt-la-moi, .mcf-tt-nguy, .mcf-tt-huy, .mcf-tt-huy-mat, .mcf-tt-bay, .mcf-tt-chop, .mcf-tt-noi, .mcf-tt-quet, .mcf-tt-lat, .mcf-tt-tia, .mcf-tt-reo, .mcf-tt-song, .mcf-tt-khoi, .mcf-tt-sach, .mcf-tt-tu { animation: none; }
   .mcf-tt-bia, .mcf-tt-bia-icon, .mcf-tt-long, .mcf-tt-bia-den_truoc, .mcf-tt-bia-khan, .mcf-tt-bia-bruno, .mcf-tt-bia-tin_gia .mcf-tt-bia-icon, .mcf-tt-lua, .mcf-tt-tan, .mcf-tt-coi, .mcf-tt-quet-dong, .mcf-tt-rung-may, .mcf-tt-den, .mcf-tt-doi, .mcf-tt-bao, .mcf-tt-nghi, .mcf-tt-radar, .mcf-tt-gap { animation: none; }
   .mcf-tt-tan { display: none; }
+  .mcf-pl-to, .mcf-pl-the { animation: none; }
   .mcf-hang-the, .mcf-hang-rung, .mcf-hang-dong, .mcf-hang-dau, .mcf-hang-tieu, .mcf-hang-sau { animation: none; opacity: 1; }
   .mcf-hang-dau { transform: rotate(-12deg); }
   .mcf-hang-tia { animation: none; opacity: .3; transform: translate(-50%,-50%); }

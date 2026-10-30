@@ -30,6 +30,7 @@
 import React, { useState } from "react";
 import ReactDOM from "react-dom/client";
 import ThamTu from "./screens/student/thamTu/ThamTu.jsx";
+import MotNam from "./screens/student/paris/MotNam.jsx";
 /* Giả máy chủ cho Thám tử (chỉ trang xem thử): ghi trong bộ nhớ, bảng hạng cố định. */
 const SV_TT = { vu: {}, chon: {} };
 const KHO_TT_GIA = {
@@ -712,6 +713,7 @@ function Preview() {
     ["/etudiant/tu-cham-noi", "Tự chấm Production orale"],
     ["/etudiant/boc-tham", "Phần nói: bốc thăm + chuẩn bị"],
     ["/etudiant/tham-tu", "Thám tử Léon (mức khó)"],
+    ["/etudiant/mot-nam", "Một năm ở Paris"],
     ["/etudiant/tham-tu-mau", "Thám tử Léon (mức vừa)"],
     ["/etudiant/tham-tu-de", "Thám tử Léon (mức dễ)"],
     ["/etudiant/hoan-ho-so", "Hoàn thiện hồ sơ (mới đăng ký)"],
@@ -875,6 +877,7 @@ function Preview() {
           <Route path="/etudiant/hoan-ho-so" element={<><Controls /><HoanThienHoSo fixture={{ prenom: "Linh" }} /></>} />
           <Route path="/etudiant/tham-tu-de" element={<><Controls /><ThamTu muc="de" onXong={() => {}} /></>} />
           <Route path="/etudiant/tham-tu-mau" element={<><Controls /><ThamTu muc="vua" onXong={() => {}} /></>} />
+          <Route path="/etudiant/mot-nam" element={<><Controls /><MotNam onXong={() => {}} /></>} />
           <Route path="/etudiant/tham-tu" element={<><Controls /><ThamTu muc="kho" onXong={() => {}} kho={KHO_TT_GIA} /></>} />
           <Route path="/etudiant/boc-tham" element={<><Controls /><PhanThi section={{ code: "PO", label: "Production orale", minutes: 20, points: 25, exercise: { id: "po-xem-thu", level: "B2", questions: [], consigne: "<p><strong>Production orale : 20 minutes environ.</strong> 30 minutes de préparation.</p><p>Vous tirez au sort deux documents et vous en choisissez un.</p>", bocTham: { chuanBi: 30, phan: [{ ten: "Monologue suivi puis exercice en interaction", cachLam: "Choisissez un document.", soRut: 2, sujets: SUJET_B2_TP68 }] } } }} attemptId="xem-thu" answers={{}} setAnswers={() => {}} onDone={() => {}} onBlur={() => {}} examId="xem-thu" /></>} />
           <Route path="/etudiant/tu-cham-noi" element={<><Controls /><div className="mx-auto max-w-6xl py-6"><POSelfEvaluation po={{ attemptId: "xem-thu", cap: "B2", examId: "xem-thu", tuCham: { monologue: 3 }, aiGoiY: { diem: { monologue: 3, interaction: 1, lexique: 3, morpho: 3, phono: 3 }, ly_do: { interaction: "Bản ghi chỉ có phần độc thoại, chưa có phần tranh luận." }, tong_quat: "Bài độc thoại có nêu vấn đề và hai luận điểm rõ, nhưng thiếu ví dụ cụ thể.", chep_loi: "Aujourd’hui, de plus en plus de jeunes reviennent à la photographie argentique…" } }} exerciseId="xem-thu" consigne="<p>Vous dégagez le problème soulevé par ce document…</p>" /></div></>} />

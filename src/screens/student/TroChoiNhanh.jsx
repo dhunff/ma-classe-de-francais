@@ -7,7 +7,7 @@ import ThamTu from "./thamTu/ThamTu.jsx";
 import { khoThamTu } from "../../shared/thamTuStore.js";
 import CauTracNghiem from "./CauTracNghiem.jsx";
 import { CHANG } from "../../content/troChoi/doVui.js";
-import { CHUONG } from "../../content/troChoi/phieuLuu.js";
+import MotNam from "./paris/MotNam.jsx";
 import { tr } from "../../shared/i18n.jsx";
 import { phat } from "../../shared/amThanh.js";
 import { Leon, leonVai } from "../../shared/leon.jsx";
@@ -63,7 +63,7 @@ const TRO_CHOI = () => [
     mo: tr("Gameshow 9 chặng vòng quanh nước Pháp do MC Léon dẫn: bạn đấu bà Minette, thắng chặng để đóng dấu hộ chiếu.", "Un jeu télé en 9 étapes animé par Léon : vous contre Mme Minette.", "A 9-stage TV quiz hosted by Léon: you vs Mme Minette.") },
   { ma: "phieu_luu", nhom: "dv", Icon: MapPinned, nen: "from-amber-500 to-orange-600",
     ten: tr("Một năm ở Paris", "Une année à Paris", "A year in Paris"),
-    mo: tr("9 chương đời sống du học sinh cùng Léon: từ sân bay, tìm nhà, tới phỏng vấn và tranh luận. Chọn câu đáp đúng sắc thái.", "9 chapitres de vie étudiante avec Léon : de l'aéroport à l'entretien.", "9 chapters of student life with Léon: from the airport to the job interview.") },
+    mo: tr("Sống 12 tháng du học cùng Léon: mỗi tuần tự chọn việc, giữ tiền, sức và tinh thần, đối đáp đúng sắc thái.", "12 mois de vie étudiante avec Léon : choisissez chaque semaine, gérez argent, énergie et moral.", "12 months of student life with Léon: choose each week, manage money, energy and mood.") },
 ];
 
 export default function TroChoiNhanh() {
@@ -155,11 +155,11 @@ function ManChoi({ tc }) {
   const xong = useCallback(async (r) => {
     setKq(r); setBuoc("xong"); setGhi(null);
     phat(r.dung >= r.tong * 0.6 ? "thang" : "hetGio");
-    setGhi(await ghiTroChoi(tc.ma, r.diem, r.dung, Math.max(1, r.tong), muc));
+    setGhi(await ghiTroChoi(tc.ma, r.diem, r.dung, Math.max(1, r.tong), tc.ma === "phieu_luu" ? "vua" : muc));
   }, [tc.ma, muc]);
 
   const Game = { gioi_tinh: GioiTinh, nghe_chon: NgheChon, mua_chu: MuaChu, xep_cau: XepCau, san_loi: SanLoi, dung_sai: DungSai,
-    chep_nhanh: ChepNhanh, noi_mo_khoa: NoiMoKhoa, tham_tu: ThamTu, do_vui: DoVui, phieu_luu: PhieuLuu }[tc.ma];
+    chep_nhanh: ChepNhanh, noi_mo_khoa: NoiMoKhoa, tham_tu: ThamTu, do_vui: DoVui, phieu_luu: MotNam }[tc.ma];
   return (
     <div className={`mx-auto ${buoc === "choi" ? "max-w-5xl" : "max-w-3xl"} px-4 pb-16 pt-4`}>
       <button type="button" onClick={() => (buoc === "choi" ? setBuoc("chon") : nav("/etudiant/tro-choi"))}
@@ -193,6 +193,7 @@ function ManChoi({ tc }) {
               ))}
             </div>
           </>}
+          {tc.ma !== "phieu_luu" && <>
           <p className="m-0 text-sm font-bold text-soft">{tr("Mức độ", "Difficulté", "Difficulty")}</p>
           {/* Chọn mức (28/10): ba thẻ lớn, vạch cường độ 1–3, mô tả ngắn và dấu tích ở thẻ đang chọn */}
           <div className="mx-auto mt-3 grid max-w-2xl gap-3 sm:grid-cols-3">
@@ -217,6 +218,7 @@ function ManChoi({ tc }) {
               );
             })}
           </div>
+          </>}
           <button type="button" onClick={() => { phat("batDau"); setVan((v) => v + 1); setBuoc("choi"); }}
             className="mt-6 inline-flex cursor-pointer items-center gap-2 rounded-full border-0 bg-primary px-8 py-3 font-sans text-base font-extrabold text-on-primary shadow-[0_10px_24px_rgb(var(--mcf-primary-rgb)/0.3)] active:scale-[0.97]">
             <Play size={18} /> {tr("Bắt đầu", "Commencer", "Start")}
@@ -1299,144 +1301,4 @@ function DoVui({ muc = "vua", he, onXong }) {
       </div>
     </div>
   );
-}
-
-/* ─────────── 11. Phiêu lưu: « Một năm ở Paris » ───────────
-   Chọn mức → bản đồ ba chương của mức đó → một chương: 4 cảnh hội thoại, 3 tim. Léon là
-   bạn đồng hành, có thể « nhắc nhỏ » (bỏ bớt 2 câu sai, trừ 50 điểm). Tiến độ chương chỉ
-   lưu ở trình duyệt (mở khoá chương sau); điểm thật ghi qua ghi_tro_choi. */
-const KHOA_PL = "mcf-phieu-luu-v1";
-const docPL = () => { try { return JSON.parse(localStorage.getItem(KHOA_PL)) || {}; } catch { return {}; } };
-const luuPL = (id, diem) => { try { const t = docPL(); t[id] = Math.max(t[id] ?? 0, diem); localStorage.setItem(KHOA_PL, JSON.stringify(t)); } catch { /* bỏ qua */ } };
-
-function PhieuLuu({ muc = "vua", onXong }) {
-  const [td, setTd] = useState(docPL);
-  const [ch, setCh] = useState(null);
-  const [buoc, setBuoc] = useState("mo");         // mo | canh | xong
-  const [i, setI] = useState(0);
-  const [chon, setChon] = useState(null);
-  const [mang, setMang] = useState(3);
-  const [bo, setBo] = useState(null);             // phương án Léon đã gạch
-  const kq = useRef({ diem: 0, dung: 0, tong: 0 });
-  const ds = CHUONG.filter((c) => c.muc === muc);
-
-  const LoiLeon = ({ cam, children }) => (
-    <div className="mcf-cau-vao mt-4 flex items-start gap-3">
-      <Leon cam={cam} size={56} className="shrink-0" />
-      <p className="m-0 rounded-3xl rounded-tl-md bg-orange-50 px-4 py-3 text-sm leading-relaxed text-ink dark:bg-orange-950/40">{children}</p>
-    </div>
-  );
-
-  if (!ch) return (
-    <div className="mt-6 overflow-hidden rounded-[2rem] bg-surface shadow-[0_8px_30px_rgb(0,0,0,0.06)]">
-      <div className="bg-[#fef3c7] p-5 dark:bg-amber-950/40">
-        <LoiLeon cam="chao">{muc === "de" ? tr("Chào bạn! Ta là Léon, người Paris chính gốc. Năm nay ta sẽ đi cùng bạn từ ngày đầu tiên ở sân bay.", "Salut ! Moi, c'est Léon, Parisien pur jus. Je t'accompagne dès ton premier jour.", "Hi! I'm Léon, a true Parisian. I'll be with you from day one.")
-          : muc === "vua" ? tr("Bạn đã quen Paris rồi. Giờ là chuyện thật: tìm nhà, giấy tờ, bạn bè người Pháp.", "Tu connais Paris maintenant. Place à la vraie vie : logement, papiers, amis.", "You know Paris now. Time for real life: housing, paperwork, friends.")
-          : tr("Phỏng vấn, tranh luận, thư từ trang trọng: tiếng Pháp của người đi làm. Ta tin ở bạn!", "Entretien, débat, courrier formel : le français professionnel. Je crois en toi !", "Interviews, debates, formal letters: professional French. I believe in you!")}</LoiLeon>
-      </div>
-      <div className="relative grid gap-4 p-5 sm:grid-cols-3">
-        <span aria-hidden className="absolute left-10 right-10 top-1/2 hidden border-0 border-t-2 border-dashed border-orange-300 sm:block" />
-        {ds.map((c, k) => {
-          const xong = td[c.id] != null, khoa = k > 0 && td[ds[k - 1].id] == null;
-          return (
-            <button key={c.id} type="button" disabled={khoa}
-              onClick={() => { phat("batDau"); setCh(c); setBuoc("mo"); setI(0); setChon(null); setMang(3); setBo(null); kq.current = { diem: 0, dung: 0, tong: 0 }; }}
-              className="relative cursor-pointer rounded-3xl border-2 border-solid border-orange-300 bg-surface p-4 text-left font-sans shadow-sm transition-transform hover:-translate-y-1 disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:translate-y-0">
-              <span className="text-xs font-extrabold uppercase tracking-wider text-orange-600">{tr("Chương", "Chapitre", "Chapter")} {c.so}</span>
-              <span className="mt-1 block text-3xl" aria-hidden>{c.co}</span>
-              <span lang="fr" className="mt-1 block text-base font-extrabold text-ink">{c.ten}</span>
-              <span className="block text-xs text-soft">{c.tenVi}</span>
-              <span className="mt-2 block text-xs font-bold text-ink">{khoa ? `🔒 ${tr("Xong chương trước để mở", "Terminez le chapitre précédent", "Finish the previous chapter")}` : xong ? `✅ ${td[c.id]}` : `▶ ${tr("Chưa chơi", "À jouer", "Not played")}`}</span>
-            </button>
-          );
-        })}
-      </div>
-    </div>
-  );
-
-  const dau = (
-    <div className="bg-[#fef3c7] px-5 pb-4 pt-4 dark:bg-amber-950/40">
-      <div className="flex items-center justify-between text-sm font-bold">
-        <Tim mang={mang} />
-        <span lang="fr" className="text-xs font-extrabold uppercase tracking-wider text-orange-700 dark:text-orange-300">{ch.co} {ch.ten}</span>
-        <span className="rounded-full bg-surface px-3 py-1 tabular-nums text-ink">{kq.current.diem}</span>
-      </div>
-      <div className="relative mt-4 flex items-center justify-between" aria-hidden>
-        <span className="absolute inset-x-2 top-1/2 border-0 border-t-2 border-dashed border-orange-400" />
-        {ch.canh.map((_, k) => <span key={k} className={`relative rounded-full ${k < i || buoc === "xong" ? "h-3 w-3 bg-orange-500" : k === i ? "h-5 w-5 bg-orange-600 ring-4 ring-orange-300" : "h-3 w-3 bg-surface ring-2 ring-orange-300"}`} />)}
-        <span className="relative text-lg">{ch.co}</span>
-      </div>
-    </div>
-  );
-  const khung = (con) => <div className="mt-6 overflow-hidden rounded-[2rem] bg-surface shadow-[0_8px_30px_rgb(0,0,0,0.06)]">{dau}<div className="p-5">{con}</div></div>;
-
-  if (buoc === "mo") return khung(<>
-    <LoiLeon cam="nhay-mat">{ch.mo}</LoiLeon>
-    <div className="mt-5 text-right">
-      <button type="button" onClick={() => { phat("bam"); setBuoc("canh"); }} className="cursor-pointer rounded-full border-0 bg-orange-500 px-6 py-2.5 font-sans text-sm font-extrabold text-white">{tr("Lên đường", "C'est parti", "Let's go")} →</button>
-    </div>
-  </>);
-
-  if (buoc === "canh") {
-    const c = ch.canh[i];
-    const tra = (k) => {
-      const st = kq.current; if (chon != null) return;
-      setChon(k); const ok = k === 0; st.tong++; phat(ok ? "dung" : "sai");
-      if (ok) { st.dung++; st.diem += 100; } else { setMang((m) => m - 1); }
-    };
-    const nhac = () => {
-      if (bo || chon != null) return;
-      // Gạch 2 phương án sai (chỉ số khác 0), trừ 50 điểm, không xuống dưới 0.
-      setBo(tron([1, 2, 3].filter((k) => k < c.pa.length)).slice(0, 2));
-      kq.current.diem = Math.max(0, kq.current.diem - 50); phat("bam");
-    };
-    const tiep = () => {
-      setChon(null); setBo(null);
-      if (mang <= 0 || i + 1 >= ch.canh.length) {
-        const qua = mang > 0;
-        if (qua) { kq.current.diem += mang * 50; luuPL(ch.id, kq.current.diem); setTd(docPL()); phat("thang"); }
-        setBuoc("xong");
-      } else setI(i + 1);
-    };
-    return khung(<>
-      <p className="m-0 text-xs font-extrabold uppercase tracking-wider text-orange-600">📍 <span lang="fr">{c.noi}</span></p>
-      <p className="m-0 mt-1 text-sm text-soft">{c.tinh}</p>
-      {/* Người đối thoại nói trước (trái), câu trả lời của người chơi là bong bóng bên phải */}
-      <div key={i} className="mcf-cau-vao mt-4 flex items-start gap-3">
-        <span className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-surface2 text-2xl" aria-hidden>{c.hinh}</span>
-        <div>
-          <p className="m-0 text-xs font-bold text-soft" lang="fr">{c.ai}</p>
-          <p lang="fr" className="m-0 mt-1 rounded-3xl rounded-tl-md bg-surface2 px-4 py-3 text-base text-ink">{c.noi_}</p>
-        </div>
-      </div>
-      <CauTracNghiem key={i} pa={c.pa} onTra={tra} daChon={chon} laPhap kieu="thoai" bo={bo} />
-      {chon == null && !bo && (
-        <button type="button" onClick={nhac} className="mt-3 inline-flex cursor-pointer items-center gap-2 rounded-full border border-solid border-orange-300 bg-surface px-3 py-1.5 font-sans text-xs font-bold text-orange-700 dark:text-orange-300">
-          <Leon cam="nhay-mat" size={22} /> {tr("Léon nhắc nhỏ (−50)", "Léon souffle (−50)", "Léon whispers (−50)")}
-        </button>
-      )}
-      {chon != null && <>
-        <div className="mcf-cau-vao mt-4 flex items-start gap-3">
-          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-surface2 text-xl" aria-hidden>{c.hinh}</span>
-          <p lang="fr" className="m-0 rounded-3xl rounded-tl-md bg-surface2 px-4 py-2.5 text-base text-ink">{chon === 0 ? c.dap : "… Pardon ?"}</p>
-        </div>
-        <LoiLeon cam={chon === 0 ? "duoc-do" : "hum"}>{chon === 0 ? tr("Chuẩn luôn! ", "Parfait ! ", "Spot on! ") : <>{tr("Câu hợp hơn là: ", "Il valait mieux dire : ", "Better to say: ")}<strong lang="fr">« {c.pa[0]} »</strong>. </>}{c.gt}</LoiLeon>
-        <div className="mt-4 text-right">
-          <button type="button" onClick={tiep} className="cursor-pointer rounded-full border-0 bg-orange-500 px-6 py-2.5 font-sans text-sm font-extrabold text-white">
-            {mang <= 0 || i + 1 >= ch.canh.length ? tr("Kết thúc chương", "Fin du chapitre", "End of chapter") : tr("Tiếp tục", "Continuer", "Continue")} →
-          </button>
-        </div>
-      </>}
-    </>);
-  }
-
-  const qua = mang > 0;
-  return khung(<>
-    <LoiLeon cam={qua ? "yeu-qua" : "co-len"}>{qua ? ch.ket : tr("Hết tim rồi! Không sao, ở Paris ai cũng từng lúng túng. Thử lại chương này nhé, ta vẫn ở đây.", "Plus de cœurs ! Pas grave, tout le monde a ses débuts. On recommence ?", "Out of hearts! No worries, everyone stumbles at first. Try again?")}</LoiLeon>
-    {qua && <p className="mcf-dong mx-auto mt-4 w-fit rounded-md border-4 border-double border-orange-500 px-3 py-1 text-sm font-black uppercase tracking-widest text-orange-600">{ch.co} {tr("Hoàn thành", "Terminé", "Complete")}</p>}
-    <div className="mt-5 text-right">
-      <button type="button" onClick={() => onXong({ diem: kq.current.diem, dung: kq.current.dung, tong: Math.max(1, kq.current.tong) })}
-        className="cursor-pointer rounded-full border-0 bg-orange-500 px-6 py-2.5 font-sans text-sm font-extrabold text-white">{tr("Lưu điểm", "Enregistrer", "Save score")} →</button>
-    </div>
-  </>);
 }
