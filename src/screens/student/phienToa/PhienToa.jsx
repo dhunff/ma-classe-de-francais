@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { Gavel, Scale, BookOpen, Check, ChevronLeft, ChevronRight, Undo2, MessageCircleQuestion, FileText, Flag, Ban, CheckCheck, Feather } from "lucide-react";
+import { Gavel, Scale, BookOpen, Check, ChevronLeft, ChevronRight, Undo2, MessageCircleQuestion, FileText, Flag, Ban, CheckCheck, Feather, Lock, Play, CloudOff, RotateCcw, Award } from "lucide-react";
 import { tr } from "../../../shared/i18n.jsx";
 import { phat } from "../../../shared/amThanh.js";
 import { Leon } from "../../../shared/leon.jsx";
@@ -7,12 +7,19 @@ import { LUAT, CHUONG, VU_TOA, BOI_THAM } from "../../../content/troChoi/phienTo
 import { PhaoGiay } from "../doVui/Minette.jsx";
 import BoLuat from "./BoLuat.jsx";
 import { NhanChung, Corbeau, BoiThamMat } from "./NhanVat.jsx";
+import { HO_TRONG, KHANG_CAO, capBac, capKe, soThang, vuMo, luatDaMo, gopHoSo, ghiTk, taoKhangCao, vanHopLe, vuCuaVan } from "./hoSo.js";
 import { UY_TIN_DAU, SO_BOI_THAM, PHIEU_THANG, DIEM_NHAT, DIEM_UY_TIN, THUONG_THANG, SO_HOI, DIEM_MAU, taoBoiTham, apSuKien, demPhieu, laThuan, laLoiHop, dapCorbeau, giayCorbeau, dongHien, trinhDung, chuongCo, tachDong, viTriLoi, dongDaSua, chamDung, chonTuDe, chonLuat, chonSua, khopSua, giayDoc, thangToa, diemCuoi } from "./luat.js";
 
 /* Phiên toà (31/10): tranh tụng theo nhịp. Nhân chứng khai từng dòng, người chơi hô OBJECTION rồi đi ba nhát:
    chỉ từ sai, viện điều luật, sửa lại. Hỏi thêm làm lộ dòng khai ẩn, trình tang vật phá mâu thuẫn; cả hai không bắt buộc nhưng thêm phiếu.
    Sau mỗi nhân chứng Maître Corbeau phản đối ngược, cuối phiên là bài biện hộ rồi bảy bồi thẩm bỏ phiếu.
    Bản 60 giây cũ vẫn ở DungSai, chọn ở chế độ « Phiên nhanh ». */
+/* Hồ sơ ghi ở máy trước, rồi đẩy lên máy chủ nếu được (migration 177), nên chưa chạy migration thì trò vẫn chơi được. */
+const KHOA_HO = "mcf-phien-toa-ho-so-v1", KHOA_VAN = "mcf-phien-toa-van-v1";
+const docHo = () => { try { return { ...HO_TRONG, cho: [], ...JSON.parse(localStorage.getItem(KHOA_HO)) }; } catch { return { ...HO_TRONG, cho: [] }; } };
+const ghiHo = (h) => { try { localStorage.setItem(KHOA_HO, JSON.stringify(h)); } catch { /* bỏ qua */ } };
+const docVan = () => { try { const v = JSON.parse(localStorage.getItem(KHOA_VAN)); return vanHopLe(v) ? v : null; } catch { return null; } };
+const ghiVan = (v) => { try { if (v) localStorage.setItem(KHOA_VAN, JSON.stringify(v)); else localStorage.removeItem(KHOA_VAN); } catch { /* bỏ qua */ } };
 const nen = "relative mt-6 overflow-hidden rounded-[2rem] bg-[#1d0f17] bg-[radial-gradient(ellipse_at_top,#6b1730_0,transparent_62%)] p-4 text-white sm:p-5";
 const nutChinh = "cursor-pointer rounded-full border-0 bg-amber-400 px-6 py-2.5 font-sans text-sm font-extrabold text-[#2a1020]";
 
@@ -33,7 +40,7 @@ const BoiTham = ({ bt }) => {
   );
 };
 
-export default function PhienToa({ muc = "vua", he, onXong }) {
+export default function PhienToa({ muc = "vua", he, onXong, kho }) {
   const dsVu = useMemo(() => VU_TOA.filter((v) => v.muc === muc), [muc]);
   const [vu, setVu] = useState(dsVu[0]);
   const [buoc, setBuoc] = useState("chonVu");       // chonVu | mo | khai | phan | tang | boLuat | luat | sua | sauLoi | corbeau | chuyen | bienHo | bauPhieu | ket
@@ -51,6 +58,12 @@ export default function PhienToa({ muc = "vua", he, onXong }) {
   const [bChon, setBChon] = useState(null);     // câu vừa chọn cho bài biện hộ
   const [baiNoi, setBaiNoi] = useState([]);
   const batDauC = useRef(0);
+  const [ho, setHo] = useState(HO_TRONG);       // { vu, tk }: hồ sơ luật sư
+  const [vanDo, setVanDo] = useState(null);     // phiên dở tìm thấy lúc mở trò
+  const [may, setMay] = useState(kho ? "cho" : "ok");
+  const [boLuatVe, setBoLuatVe] = useState("khai");   // màn quay về khi đóng Bộ luật
+  const tk = useRef({});                        // { luat: [dung, sai] } của phiên này
+  const uid = useRef(null), choGui = useRef(undefined), henGui = useRef(null);
   const [uy, setUy] = useState(UY_TIN_DAU);
   const [bao, setBao] = useState(null);         // lời toà sau mỗi lượt: { cam, chu }
   const [no, setNo] = useState(0);              // tăng mỗi lần hô OBJECTION để chữ đập lại từ đầu
@@ -70,7 +83,57 @@ export default function PhienToa({ muc = "vua", he, onXong }) {
   const cauC = N.doiDap?.[cI], dsBH = useMemo(() => vu.bienHo.map((b) => [...b.pa].sort(() => Math.random() - 0.5)), [vu]);
   const gioC = giayCorbeau(he?.gio ?? 1);
 
-  const sangLuotMoi = () => { if (nc + 1 < vu.nhanChung.length) setBuoc("chuyen"); else { setBI(0); setBChon(null); setBuoc("bienHo"); } };
+  const sangLuotMoi = () => { if (nc + 1 < vu.nhanChung.length) setBuoc("chuyen"); else if (vu.bienHo.length) { setBI(0); setBChon(null); setBuoc("bienHo"); } else { phat("nop"); setBuoc("bauPhieu"); } };
+  const ghiLuat = (ma, ok) => { tk.current = ghiTk(tk.current, ma, ok); };
+  const moVu = (v) => { phat("lat"); setVu(v); setTang(v.tangVat); setBt(taoBoiTham(v)); setBuoc("mo"); };
+  const choiTiep = (x) => {
+    const v = vuCuaVan(x);
+    setVu(v); setNc(x.nc); setD(x.d); setDaPha(x.daPha); setDaHoi(x.daHoi); setLuotHoi(x.luotHoi); setTang(x.tang); setUy(x.uy); setBt(x.bt);
+    setCI(x.cI); setCKq(x.cKq); setBI(x.bI); setBaiNoi(x.baiNoi); setBChon(x.bChon ? v.bienHo[x.bI].pa.find((c) => c.van === x.bChon) ?? null : null);
+    setDsLuat(x.dsLuat); setDsSua(x.dsSua); setKetQua(x.ketQua); kq.current = x.kq; tk.current = x.tk; batDauC.current = Date.now();
+    phat("tiep"); setBuoc(x.buoc);
+  };
+
+  /* Mở trò: lấy phiên mới nhất giữa máy và máy chủ, đẩy các phiên còn nợ lên. Dữ liệu của tài khoản khác trên trình duyệt thì bỏ qua. */
+  useEffect(() => {
+    const m = docHo();
+    if (!kho) { setHo(m); setVanDo(docVan()); return undefined; }
+    let song = true;
+    kho.doc().then((r) => {
+      if (!song) return;
+      if (!r || r.loi) { setMay("loi"); setHo(m); setVanDo(docVan()); return; }
+      uid.current = r.uid; setMay("ok");
+      const cho = m.chu && m.chu !== r.uid ? [] : m.cho, hoMoi = gopHoSo({ vu: r.vu, tk: r.tk }, cho);
+      setHo(hoMoi); ghiHo({ ...hoMoi, cho, chu: r.uid });
+      const v = docVan(), vMay = v?.nguoi && v.nguoi !== r.uid ? null : v, sv = vanHopLe(r.van) ? r.van : null;
+      setVanDo(!sv ? vMay : !vMay || (sv.luc ?? 0) >= (vMay.luc ?? 0) ? sv : vMay);
+      if (cho.length) kho.luuKet(cho).then((k) => {
+        if (k?.loi) { setMay("loi"); return; }
+        const sau = { vu: k.vu, tk: k.tk }; setHo(sau); ghiHo({ ...sau, cho: [], chu: r.uid });
+      });
+    });
+    return () => { song = false; };
+  }, [kho]);
+
+  /* Ghi máy ngay, ghi máy chủ sau một nhịp. Đang chọn từ hay xem tang vật thì lưu thành lúc nghe khai,
+     còn đã qua nhát đầu thì giữ nguyên bước để không được chấm lại. */
+  const guiVan = (v) => { choGui.current = undefined; kho?.luu(v).then((r) => setMay(r?.loi ? "loi" : "ok")); };
+  useEffect(() => {
+    if (buoc === "chonVu" || buoc === "mo") return;
+    const b = buoc === "phan" || buoc === "tang" || buoc === "boLuat" ? "khai" : buoc;
+    const v = { ban: 1, muc, luc: Date.now(), nguoi: uid.current, vuId: vu.id, vuKc: vu.id === KHANG_CAO ? vu : undefined, buoc: b, nc, d, daPha, daHoi, luotHoi, tang, uy, bt, cI, cKq, bI, bChon: bChon?.van ?? null, baiNoi, dsLuat, dsSua, ketQua, kq: kq.current, tk: tk.current };
+    ghiVan(v);
+    if (kho) { choGui.current = v; clearTimeout(henGui.current); henGui.current = setTimeout(() => guiVan(v), 1500); }
+  }, [buoc, nc, d, daPha, daHoi, uy, bt, cI, cKq, bI, bChon]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => () => { clearTimeout(henGui.current); if (choGui.current !== undefined) kho?.luu(choGui.current); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const xongPhien = (thang_, diem_) => {
+    clearTimeout(henGui.current); choGui.current = undefined; ghiVan(null); kho?.luu(null);
+    const e = { ma: `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`, vu: vu.id, thang: thang_, phieu, diem: diem_, tk: tk.current };
+    const m = docHo(), cho = [...m.cho, e].slice(-30), sau = gopHoSo(ho, [e]);
+    ghiHo({ ...sau, cho, chu: uid.current ?? m.chu });
+    kho?.luuKet([e]).then((k) => { if (k?.loi) return; const c = docHo(); ghiHo({ vu: k.vu, tk: k.tk, cho: c.cho.filter((x) => x.ma !== e.ma), chu: c.chu }); });
+  };
   const matUy = (chu) => {
     const m = uy - 1;
     setUy(m); phat("sai"); su("nham");
@@ -97,6 +160,7 @@ export default function PhienToa({ muc = "vua", he, onXong }) {
     if (cKq != null) return;
     const ok = chapNhan != null && dapCorbeau(cauC, chapNhan);
     kq.current.tong++;
+    ghiLuat(cauC.luat, ok);
     if (ok) { kq.current.dung++; kq.current.diem += DIEM_NHAT; phat("dung"); su("doi"); if (Date.now() - batDauC.current < gioC * 500) su("nhanh"); } else { phat("sai"); su("doi_sai"); }
     setCKq(ok);
   };
@@ -172,7 +236,7 @@ export default function PhienToa({ muc = "vua", he, onXong }) {
     const ok = ma === dong.loi.luat;
     kq.current.tong++;
     if (ok) { kq.current.dung++; kq.current.diem += DIEM_NHAT; }
-    phat(ok ? "dung" : "sai"); su(ok ? "luat" : "sai_luat");
+    phat(ok ? "dung" : "sai"); su(ok ? "luat" : "sai_luat"); ghiLuat(dong.loi.luat, ok);
     setKetQua({ luat: ok }); setDsSua(chonSua(dong.loi)); setBuoc("sua");
   };
   const sua = (dap) => {
@@ -180,7 +244,7 @@ export default function PhienToa({ muc = "vua", he, onXong }) {
     kq.current.tong++;
     if (ok) { kq.current.dung++; kq.current.diem += DIEM_NHAT; }
     phat(ok && ketQua.luat ? "combo" : ok ? "dung" : "sai");
-    su(ok ? "sua" : "sai_sua");
+    su(ok ? "sua" : "sai_sua"); ghiLuat(dong.loi.luat, ok);
     if (ok && ketQua.luat && laLoiHop(dong.loi.luat)) su("hop");
     setKetQua({ ...ketQua, sua: ok }); setDaPha({ ...daPha, [khoa]: true }); setBuoc("sauLoi");
   };
@@ -210,7 +274,7 @@ export default function PhienToa({ muc = "vua", he, onXong }) {
   );
   const toGiay = (noiDung, them = "") => <div className={`mt-3 rounded-sm bg-[#fbf6ea] px-5 py-4 text-[#1f2937] shadow-[0_12px_26px_rgba(0,0,0,0.4)] ${them}`}>{noiDung}</div>;
 
-  if (buoc === "boLuat") return <div className={nen}><BoLuat muc={muc} onDong={() => setBuoc("khai")} /></div>;
+  if (buoc === "boLuat") return <div className={nen}><BoLuat muc={muc} daMo={luatDaMo(ho)} tk={ho.tk} onDong={() => setBuoc(boLuatVe)} /></div>;
 
   if (buoc === "tang") return (
     <div className={nen}>
@@ -230,20 +294,43 @@ export default function PhienToa({ muc = "vua", he, onXong }) {
     </div>
   );
 
-  if (buoc === "chonVu") return (
-    <div className={nen}>
-      <p className="m-0 text-center text-xs font-bold uppercase tracking-[0.3em] text-amber-300">{tr("Hồ sơ trên bàn", "Affaires au rôle", "Cases on the docket")}</p>
-      <div className="mt-4 grid gap-3">
-        {dsVu.map((v, k) => (
-          <button key={v.id} type="button" onClick={() => { phat("lat"); setVu(v); setTang(v.tangVat); setBt(taoBoiTham(v)); setBuoc("mo"); }} className="mcf-cau-vao flex cursor-pointer items-center gap-3 rounded-xl border-2 border-solid border-[#a08868] bg-[#fbf6ea] p-3 text-left font-sans text-[#2a1020] hover:-translate-y-0.5" style={{ animationDelay: `${k * 0.08}s` }}>
-            <FileText size={22} className="shrink-0 text-[#7f1d1d]" />
-            <span className="min-w-0 flex-1"><span lang="fr" className="block text-base font-extrabold">{v.ten}</span><span className="block text-xs">{v.chuDe} · {tr(`${v.nhanChung.length} nhân chứng`, `${v.nhanChung.length} témoins`, `${v.nhanChung.length} witnesses`)}</span></span>
+  if (buoc === "chonVu") {
+    const cap = capBac(ho), ke = capKe(ho), kc = taoKhangCao(ho.tk, muc);
+    return (
+      <div className={nen}>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p className="m-0 text-xs font-bold uppercase tracking-[0.3em] text-amber-300">{tr("Hồ sơ luật sư", "Votre dossier", "Your record")}</p>
+            <p lang="fr" className="m-0 mt-1 flex items-center gap-2 text-xl font-black"><Award size={20} className="text-amber-300" />{cap.ten}</p>
+            <p className="m-0 text-xs text-white/75">{tr(`Thắng ${soThang(ho)}/${VU_TOA.length} vụ`, `${soThang(ho)}/${VU_TOA.length} affaires gagnées`, `${soThang(ho)}/${VU_TOA.length} cases won`)}{ke ? <> · {tr(`còn ${ke.tu - soThang(ho)} vụ nữa lên`, `encore ${ke.tu - soThang(ho)} pour`, `${ke.tu - soThang(ho)} more to`)} <span lang="fr">{ke.ten}</span></> : ""}</p>
+          </div>
+          <button type="button" onClick={() => { setBoLuatVe("chonVu"); setBuoc("boLuat"); }} className="flex cursor-pointer items-center gap-2 rounded-full border-0 bg-white/15 px-4 py-2 font-sans text-xs font-extrabold text-white hover:bg-white/25"><BookOpen size={15} />{tr("Bộ luật", "Le Code", "The Code")}</button>
+        </div>
+        {may === "loi" && <p className="m-0 mt-3 flex items-center gap-2 rounded-xl bg-white/10 px-3 py-2 text-xs text-white/80"><CloudOff size={14} className="shrink-0" />{tr("Chưa nối được máy chủ, hồ sơ tạm lưu trên trình duyệt này.", "Serveur injoignable : progression gardée sur ce navigateur.", "Server unreachable: progress is kept in this browser.")}</p>}
+        {vanDo && (vanDo.muc === muc
+          ? <button type="button" onClick={() => choiTiep(vanDo)} className="mt-3 flex w-full cursor-pointer items-center gap-3 rounded-xl border-0 bg-amber-400 p-3 text-left font-sans text-[#2a1020]"><Play size={20} className="shrink-0" /><span className="min-w-0 flex-1"><span className="block text-sm font-extrabold">{tr("Tiếp tục phiên dở", "Reprendre l'audience", "Resume the hearing")}</span><span lang="fr" className="block text-xs">{vuCuaVan(vanDo).ten}</span></span></button>
+          : <p className="m-0 mt-3 rounded-xl bg-white/10 px-3 py-2 text-xs text-white/80">{tr("Bạn còn một phiên dở ở mức khác. Chọn lại mức đó để chơi tiếp, còn mở vụ ở đây sẽ xoá phiên đó.", "Une audience est en cours à un autre niveau. Ouvrir une affaire ici l'effacera.", "A hearing is in progress at another level. Opening a case here erases it.")}</p>)}
+        <p className="m-0 mt-4 text-xs font-bold uppercase tracking-[0.2em] text-amber-300">{tr("Hồ sơ trên bàn", "Affaires au rôle", "Cases on the docket")}</p>
+        <div className="mt-2 grid gap-3">
+          {dsVu.map((v, k) => {
+            const mo = vuMo(v, ho), kq_ = ho.vu[v.id];
+            return (
+              <button key={v.id} type="button" disabled={!mo} onClick={() => moVu(v)} className={`mcf-cau-vao flex items-center gap-3 rounded-xl border-2 border-solid border-[#a08868] bg-[#fbf6ea] p-3 text-left font-sans text-[#2a1020] ${mo ? "cursor-pointer hover:-translate-y-0.5" : "cursor-not-allowed opacity-55"}`} style={{ animationDelay: `${k * 0.08}s` }}>
+                {mo ? <FileText size={22} className="shrink-0 text-[#7f1d1d]" /> : <Lock size={22} className="shrink-0 text-[#6b5a45]" />}
+                <span className="min-w-0 flex-1"><span lang="fr" className="block text-base font-extrabold">{v.ten}</span><span className="block text-xs">{mo ? <>{v.chuDe} · {tr(`${v.nhanChung.length} nhân chứng`, `${v.nhanChung.length} témoins`, `${v.nhanChung.length} witnesses`)}</> : tr("Thắng vụ trước để mở", "Gagnez l'affaire précédente", "Win the previous case")}</span></span>
+                {kq_?.thang ? <span className="mcf-dong shrink-0 rounded-md border-2 border-double border-[#b91c1c] px-1.5 py-0.5 text-[10px] font-black uppercase text-[#b91c1c]">{tr("Thắng", "Gagnée", "Won")} {kq_.phieu}/{SO_BOI_THAM}</span> : mo && <ChevronRight size={18} className="shrink-0" />}
+              </button>
+            );
+          })}
+          {kc && <button type="button" onClick={() => moVu(kc)} className="mcf-cau-vao flex cursor-pointer items-center gap-3 rounded-xl border-2 border-dashed border-amber-300 bg-amber-400/15 p-3 text-left font-sans text-white hover:-translate-y-0.5">
+            <RotateCcw size={22} className="shrink-0 text-amber-300" />
+            <span className="min-w-0 flex-1"><span lang="fr" className="block text-base font-extrabold">{kc.ten}</span><span className="block text-xs text-white/80">{tr("Ôn đúng điều bạn hay sai:", "Vos points faibles :", "Your weak points:")} <span lang="fr">{kc.chuDe}</span></span></span>
             <ChevronRight size={18} className="shrink-0" />
-          </button>
-        ))}
+          </button>}
+        </div>
       </div>
-    </div>
-  );
+    );
+  }
 
   if (buoc === "mo") return (
     <div className={nen}>
@@ -282,7 +369,7 @@ export default function PhienToa({ muc = "vua", he, onXong }) {
       <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
         <button type="button" disabled={luotHoi < 1} onClick={hoiThem} className={`flex items-center gap-1.5 rounded-full border-0 px-3 py-2 font-sans text-xs font-extrabold ${luotHoi < 1 ? "cursor-not-allowed bg-white/5 text-white/30" : "cursor-pointer bg-sky-500/30 text-white hover:bg-sky-500/50"}`}><MessageCircleQuestion size={14} />{tr("Hỏi thêm", "Presser", "Press")} ({luotHoi})</button>
         <button type="button" disabled={daMau} onClick={() => { setBao(null); setBuoc("tang"); }} className={`flex items-center gap-1.5 rounded-full border-0 px-3 py-2 font-sans text-xs font-extrabold ${daMau ? "cursor-not-allowed bg-white/5 text-white/30" : "cursor-pointer bg-white/15 text-white hover:bg-white/25"}`}><FileText size={14} />{tr("Tang vật", "Pièces", "Exhibits")} ({tang.length})</button>
-        {muc !== "kho" && <button type="button" onClick={() => setBuoc("boLuat")} className="flex cursor-pointer items-center gap-1.5 rounded-full border-0 bg-white/15 px-3 py-2 font-sans text-xs font-extrabold text-white hover:bg-white/25"><BookOpen size={14} />{tr("Bộ luật", "Le Code", "The Code")}</button>}
+        {muc !== "kho" && <button type="button" onClick={() => { setBoLuatVe("khai"); setBuoc("boLuat"); }} className="flex cursor-pointer items-center gap-1.5 rounded-full border-0 bg-white/15 px-3 py-2 font-sans text-xs font-extrabold text-white hover:bg-white/25"><BookOpen size={14} />{tr("Bộ luật", "Le Code", "The Code")}</button>}
         {!conLoi && <button type="button" onClick={ketThamVan} className="flex cursor-pointer items-center gap-1.5 rounded-full border-0 bg-amber-400 px-3 py-2 font-sans text-xs font-extrabold text-[#2a1020]"><Flag size={14} />{tr("Kết thúc thẩm vấn", "Fin de l'interrogatoire", "End questioning")}</button>}
       </div>
     </div>
@@ -445,6 +532,7 @@ export default function PhienToa({ muc = "vua", he, onXong }) {
   }
 
   const thang = uy > 0 && thangToa(phieu), tongDiem = diemCuoi(kq.current.diem, uy, thang);
+  const capSau = thang ? capBac(gopHoSo(ho, [{ vu: vu.id, thang, phieu, diem: tongDiem }])) : null, lenCap = capSau && capSau.ten !== capBac(ho).ten;
   return (
     <div className={nen}>
       {thang && <PhaoGiay nhieu />}
@@ -454,13 +542,14 @@ export default function PhienToa({ muc = "vua", he, onXong }) {
       <div className="mt-3 flex justify-center"><BoiTham bt={bt} /></div>
       <p className="m-0 mt-2 text-center text-xs text-white/75 tabular-nums">{tr(`${phieu}/${SO_BOI_THAM} phiếu cho ${vu.bi_cao}`, `${phieu}/${SO_BOI_THAM} voix pour ${vu.bi_cao}`, `${phieu}/${SO_BOI_THAM} votes for ${vu.bi_cao}`)}</p>
       <LoiLeon cam={thang ? "tuyet-voi" : "co-len"}>{thang ? vu.thang : vu.thua}</LoiLeon>
+      {lenCap && <p className="mcf-sao-no m-0 mt-3 flex items-center justify-center gap-2 text-sm font-black text-amber-300" style={{ animationDelay: "1.8s" }}><Award size={18} />{tr("Thăng cấp:", "Promotion :", "Promoted:")} <span lang="fr">{capSau.ten}</span></p>}
       <dl className="mx-auto mt-4 grid max-w-xs grid-cols-[1fr_auto] gap-x-4 gap-y-1 text-sm">
         <dt className="text-white/70">{tr(`Nhát đúng ${kq.current.dung}/${kq.current.tong}`, `${kq.current.dung}/${kq.current.tong} coups justes`, `${kq.current.dung}/${kq.current.tong} right`)}</dt><dd className="m-0 text-right font-bold tabular-nums">{kq.current.diem}</dd>
         <dt className="text-white/70">{tr(`${uy} uy tín còn lại`, `${uy} crédibilité`, `${uy} credibility left`)}</dt><dd className="m-0 text-right font-bold tabular-nums">+{uy * DIEM_UY_TIN}</dd>
         {thang && <><dt className="text-white/70">{tr("Thưởng thắng kiện", "Affaire gagnée", "Case won")}</dt><dd className="m-0 text-right font-bold tabular-nums">+{THUONG_THANG}</dd></>}
         <dt className="font-extrabold text-amber-300">{tr("Tổng", "Total", "Total")}</dt><dd className="m-0 text-right font-extrabold tabular-nums text-amber-300">{tongDiem}</dd>
       </dl>
-      <div className="mt-5 text-right"><button type="button" onClick={() => onXong({ diem: tongDiem, dung: kq.current.dung, tong: Math.max(1, kq.current.tong) })} className={nutChinh}><Check size={15} className="mr-1.5 inline" />{tr("Lưu điểm", "Enregistrer", "Save score")}</button></div>
+      <div className="mt-5 text-right"><button type="button" onClick={() => { xongPhien(thang, tongDiem); onXong({ diem: tongDiem, dung: kq.current.dung, tong: Math.max(1, kq.current.tong) }); }} className={nutChinh}><Check size={15} className="mr-1.5 inline" />{tr("Lưu điểm", "Enregistrer", "Save score")}</button></div>
     </div>
   );
 }

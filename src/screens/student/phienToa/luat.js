@@ -2,7 +2,7 @@
    chỉ đúng từ, viện đúng điều luật, sửa đúng dạng. Bắt nhầm thì mất uy tín, hết uy tín là thua phiên. */
 import { LUAT, CHUONG, BOI_THAM } from "../../../content/troChoi/phienToa.js";
 
-const tron = (a, rng = Math.random) => { const b = [...a]; for (let i = b.length - 1; i > 0; i--) { const j = Math.floor(rng() * (i + 1)); [b[i], b[j]] = [b[j], b[i]]; } return b; };
+export const tron = (a, rng = Math.random) => { const b = [...a]; for (let i = b.length - 1; i > 0; i--) { const j = Math.floor(rng() * (i + 1)); [b[i], b[j]] = [b[j], b[i]]; } return b; };
 
 export const UY_TIN_DAU = 5;
 export const SO_BOI_THAM = 7;
@@ -83,7 +83,7 @@ export const BANG_TAC_DONG = {
 /* Điểm tin đầu phiên tính theo vụ: chơi trọn phần bắt buộc mà không nhắm tới ai thì cả toà vẫn dừng sát ngưỡng,
    nên vụ dài hay ngắn thì bồi thẩm cũng khó thuyết phục như nhau. */
 const caToiDa = (vu) => { const c = vu.nhanChung; return c.flatMap((x) => x.dong).filter((d) => d.loi).length * 4 + c.flatMap((x) => x.doiDap ?? []).length + (vu.bienHo?.length ?? 0); };
-export const taoBoiTham = (vu) => Object.fromEntries(BOI_THAM.map((b) => [b.ma, Math.max(0, NGUONG_THUAN - 1 - caToiDa(vu))]));
+export const taoBoiTham = (vu) => Object.fromEntries(BOI_THAM.map((b) => [b.ma, Math.max(0, NGUONG_THUAN - 1 - caToiDa(vu) + (vu.bienHo?.length ? 0 : 2))]));   // không có bài biện hộ thì không còn cách nhắm tới từng người
 export const apSuKien = (bt, su) => {
   const t = BANG_TAC_DONG[su];
   return Object.fromEntries(Object.entries(bt).map(([ma, d]) => [ma, Math.max(0, Math.min(100, d + (t.ca ?? 0) + (t[ma] ?? 0)))]));

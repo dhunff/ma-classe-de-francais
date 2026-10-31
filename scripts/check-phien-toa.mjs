@@ -2,6 +2,8 @@
 import { LUAT, CHUONG, VU_TOA, BOI_THAM } from "../src/content/troChoi/phienToa.js";
 import { UY_TIN_DAU, SO_BOI_THAM, SO_NHAT, SO_HOI, dongHien, luatTheoMuc, chuongCo, trinhDung, tachDong, viTriLoi, dongDaSua, chamDung, tongNhat, chonTuDe, chonLuat, chonSua, khopSua, giayDoc, thangToa, diemCuoi, BANG_TAC_DONG, taoBoiTham, apSuKien, demPhieu, laLoiHop, dapCorbeau, giayCorbeau } from "../src/screens/student/phienToa/luat.js";
 
+import { HO_TRONG, KHANG_CAO, CAP_BAC, capBac, capKe, soThang, vuMo, luatDaMo, luatCuaVu, gopHoSo, ghiTk, luatYeu, taoKhangCao, vanHopLe, vuCuaVan } from "../src/screens/student/phienToa/hoSo.js";
+
 let dat = 0, hong = 0;
 const ca = (ten, ok, chiTiet = "") => { if (ok) dat++; else { hong++; console.log("✗", ten, chiTiet); } };
 
@@ -116,6 +118,43 @@ for (const vu of VU_TOA) {
   ca("không chọn câu văn đẹp thì Mlle Verlaine không thuận", chiBatLoi().nha_tho < 50);
   ca("bắt lỗi giỏi vẫn thắng dù không làm hết", thangToa(demPhieu(chiBatLoi())));
 }
+// Hồ sơ, mở khoá, kháng cáo, phiên dở.
+const vuDs = (m) => VU_TOA.filter((v) => v.muc === m);
+for (const m of ["de", "vua", "kho"]) {
+  ca(`${m}: vụ đầu mở, vụ sau khoá`, vuMo(vuDs(m)[0], HO_TRONG) && !vuMo(vuDs(m)[1], HO_TRONG) && !vuMo(vuDs(m)[2], HO_TRONG));
+  ca(`${m}: thắng vụ trước thì mở vụ sau`, vuMo(vuDs(m)[1], { vu: { [vuDs(m)[0].id]: { thang: true } } }));
+  ca(`${m}: chỉ tham dự mà thua thì chưa mở`, !vuMo(vuDs(m)[1], { vu: { [vuDs(m)[0].id]: { thang: false } } }));
+}
+ca("cấp bậc tăng dần", CAP_BAC.every((c, k) => k === 0 || c.tu > CAP_BAC[k - 1].tu) && capBac(HO_TRONG).ten === "Stagiaire" && soThang(HO_TRONG) === 0);
+ca("thắng đủ 9 vụ thành Bâtonnier", capBac({ vu: Object.fromEntries(VU_TOA.map((v) => [v.id, { thang: true }])) }).ten === "Bâtonnier" && capKe({ vu: Object.fromEntries(VU_TOA.map((v) => [v.id, { thang: true }])) }) === null);
+ca("kháng cáo không tính vào cấp bậc", soThang({ vu: { [KHANG_CAO]: { thang: true } } }) === 0);
+const gop = gopHoSo(HO_TRONG, [{ vu: "chat-perdu", thang: false, phieu: 2, diem: 500, tk: { hop_etre: [1, 2] } }, { vu: "chat-perdu", thang: true, phieu: 5, diem: 900, tk: { hop_etre: [2, 0] } }]);
+ca("gộp hồ sơ: thắng giữ lại, điểm lấy cao nhất, đếm lượt", gop.vu["chat-perdu"].thang && gop.vu["chat-perdu"].phieu === 5 && gop.vu["chat-perdu"].diem === 900 && gop.vu["chat-perdu"].so_lan === 2);
+ca("gộp hồ sơ: cộng thống kê", gop.tk.hop_etre.dung === 3 && gop.tk.hop_etre.sai === 2);
+ca("ghi thống kê theo từng nhát", JSON.stringify(ghiTk(ghiTk({}, "phu_dinh", true), "phu_dinh", false)) === '{"phu_dinh":[1,1]}');
+ca("điều luật đã nắm lấy từ vụ đã thắng", luatDaMo({ vu: { [VU_TOA[0].id]: { thang: true } } }).has("hop_etre") && luatDaMo(HO_TRONG).size === 0 && luatCuaVu(VU_TOA[0]).length >= 4);
+ca("luật yếu: chỉ lấy điều sai nhiều hơn đúng, nặng nhất trước", JSON.stringify(luatYeu({ hop_etre: { dung: 1, sai: 2 }, so_nhieu: { dung: 0, sai: 5 }, phu_dinh: { dung: 3, sai: 3 }, la: { dung: 0, sai: 9 } })) === '["so_nhieu","hop_etre"]');
+ca("chưa có lỗi thì chưa có kháng cáo", taoKhangCao({}, "de") === null && taoKhangCao({ hop_etre: { dung: 5, sai: 0 } }, "kho") === null);
+for (const m of ["de", "vua", "kho"]) for (let v = 0; v < 60; v++) {
+  const tkMau = m === "de" ? { hop_etre: { dung: 0, sai: 3 }, so_nhieu: { dung: 0, sai: 2 } } : { quan_he: { dung: 0, sai: 3 }, hop_etre: { dung: 1, sai: 4 } };
+  const kc = m === "de" || m === "vua" || m === "kho" ? taoKhangCao(tkMau, m) : null;
+  ca(`${m}: dựng được kháng cáo`, !!kc);
+  if (!kc) continue;
+  const dong = kc.nhanChung[0].dong, loi = dong.filter((d) => d.loi);
+  ca(`${m}: kháng cáo có 2 đến 4 lỗi và dòng đúng`, loi.length >= 2 && loi.length <= 4 && dong.some((d) => !d.loi), loi.length);
+  ca(`${m}: lỗi đúng điều người chơi yếu và đủ trình độ`, loi.every((d) => tkMau[d.loi.luat] && luatTheoMuc(m).includes(d.loi.luat)));
+  ca(`${m}: mỗi điều yếu đều được ôn`, Object.keys(tkMau).filter((x) => luatTheoMuc(m).includes(x)).every((x) => loi.some((d) => d.loi.luat === x)));
+  ca(`${m}: không dòng ẩn hay mâu thuẫn trong kháng cáo`, dong.every((d) => !d.them && !d.mau));
+  let b = taoBoiTham(kc); const ap = (...ds) => { b = ds.reduce(apSuKien, b); };
+  for (const d of loi) { ap("tu", "luat", "sua"); if (laLoiHop(d.loi.luat)) ap("hop"); }
+  kc.nhanChung[0].doiDap.forEach(() => ap("doi"));
+  ca(`${m}: làm đúng hết kháng cáo thì thắng`, thangToa(demPhieu(b)), demPhieu(b));
+  ca(`${m}: phiên dở của kháng cáo khôi phục được`, vanHopLe({ ban: 1, buoc: "khai", muc: m, vuId: KHANG_CAO, vuKc: JSON.parse(JSON.stringify(kc)), nc: 0, d: 0, bt: {}, kq: {}, uy: 3, bI: 0 }));
+}
+const vanMau = { ban: 1, buoc: "khai", muc: "de", vuId: "chat-perdu", nc: 1, d: 2, bt: {}, kq: {}, uy: 3, bI: 0 };
+ca("phiên dở hợp lệ", vanHopLe(vanMau) && vuCuaVan(vanMau).id === "chat-perdu");
+ca("phiên dở hỏng bị loại", !vanHopLe(null) && !vanHopLe({ ...vanMau, ban: 2 }) && !vanHopLe({ ...vanMau, buoc: "phan" }) && !vanHopLe({ ...vanMau, vuId: "khong-co" }) && !vanHopLe({ ...vanMau, nc: 9 }) && !vanHopLe({ ...vanMau, buoc: "bienHo", bI: 9 }) && !vanHopLe({ ...vanMau, muc: "x" }));
+
 ca("sửa: bỏ khoảng trắng và hoa thường, giữ dấu", khopSua(" Allée ", "allée") && !khopSua("allee", "allée"));
 ca("giờ đọc có sàn và tăng theo độ dài", giayDoc("a b") === 5 && giayDoc(Array(20).fill("x").join(" ")) === 18);
 ca("Corbeau nhân giờ theo mức", giayCorbeau(1) === 14 && giayCorbeau(0.75) < giayCorbeau(1.3));

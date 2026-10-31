@@ -7,6 +7,7 @@ import ThamTu from "./thamTu/ThamTu.jsx";
 import { khoThamTu } from "../../shared/thamTuStore.js";
 import { khoMotNam } from "../../shared/motNamStore.js";
 import { khoDoVui } from "../../shared/doVuiStore.js";
+import { khoPhienToa } from "../../shared/phienToaStore.js";
 import CauTracNghiem from "./CauTracNghiem.jsx";
 import DoVui from "./doVui/DoVui.jsx";
 import PhienToa from "./phienToa/PhienToa.jsx";
@@ -234,7 +235,7 @@ function ManChoi({ tc }) {
       )}
 
       {buoc === "choi" && !CO_LEON_RIENG.has(tc.ma) && <LeonBinhLuan key={"l" + van} />}
-      {buoc === "choi" && <Game key={van} cap={MUC_CHOI[muc].cap} he={MUC_CHOI[muc]} muc={muc} kieu={kieu} onXong={xong} kho={tc.ma === "tham_tu" ? khoThamTu : tc.ma === "phieu_luu" ? khoMotNam : tc.ma === "do_vui" ? khoDoVui : undefined} />}
+      {buoc === "choi" && <Game key={van} cap={MUC_CHOI[muc].cap} he={MUC_CHOI[muc]} muc={muc} kieu={kieu} onXong={xong} kho={tc.ma === "tham_tu" ? khoThamTu : tc.ma === "phieu_luu" ? khoMotNam : tc.ma === "do_vui" ? khoDoVui : tc.ma === "dung_sai" ? khoPhienToa : undefined} />}
 
       {buoc === "xong" && kq && (
         <div className="mt-6 rounded-3xl bg-surface p-6 text-center shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
