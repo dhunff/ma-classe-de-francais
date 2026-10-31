@@ -47,6 +47,7 @@ npm run check:neo          # neo đáp án vào ngữ liệu (59 ca)
 npm run check:champe       # khuôn gợi ý chấm PE do AI trả về (38 ca)
 npm run check:dapan        # đáp án phía học sinh + chốt chặn câu ordre (33 ca)
 npm run check:dovui        # Đố vui: kho câu, địa danh, giả lập 1 500 Tour không kẹt đường
+npm run check:phientoa     # Phiên toà: vụ án, điều luật, luật chấm ba nhát
 npm run check:css          # lớp Tailwind có thật sinh ra CSS không
 npm run check:db           # database THẬT có khớp giả định của mã nguồn không
 ```

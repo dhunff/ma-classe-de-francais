@@ -331,7 +331,16 @@ mark.de-to:hover { background: #facc15; }
 @keyframes mcfDvCot { from { transform: scaleX(0); } to { transform: none; } }
 .mcf-dv-cot { transform-origin: left; animation: mcfDvCot .7s cubic-bezier(.22,1,.36,1) both; }
 .mcf-dv-dua { transition: width .6s cubic-bezier(.22,1,.36,1); }
-@media (prefers-reduced-motion: reduce) { .mcf-dong, .mcf-song, .mcf-toa-vao, .mcf-tau-chay, .mcf-dv-mach, .mcf-dv-ve, .mcf-dv-co, .mcf-dv-bay, .mcf-dv-bang, .mcf-dv-meo, .mcf-dv-duoi, .mcf-dv-cot { animation: none; } .mcf-dv-dua { transition: none; } .mcf-dv-tau { animation-duration: 1ms; } }
+/* Phiên toà (31/10): chữ OBJECTION đập vào màn hình rồi tan, búa toà gõ khi tuyên án. */
+@keyframes mcfPtObj { 0% { opacity: 0; transform: scale(3) rotate(-8deg); } 18% { opacity: 1; transform: scale(1) rotate(-4deg); } 26% { transform: scale(1.08) rotate(-4deg) translateX(-5px); } 34% { transform: scale(1) rotate(-4deg) translateX(5px); } 70% { opacity: 1; transform: scale(1) rotate(-4deg); } 100% { opacity: 0; transform: scale(1.1) rotate(-4deg); } }
+.mcf-pt-obj { animation: mcfPtObj .95s cubic-bezier(.22,1,.36,1) both; text-shadow: 0 4px 0 #fff, 0 8px 24px rgba(0,0,0,.6); }
+@keyframes mcfPtBua { 0%,100% { transform: rotate(-30deg); } 20%,44%,68% { transform: rotate(14deg); } 32%,56% { transform: rotate(-24deg); } 80% { transform: rotate(0); } }
+.mcf-pt-bua { transform-origin: 80% 80%; animation: mcfPtBua 1.3s ease-in-out both; }
+@keyframes mcfPtTho { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }
+.mcf-pt-tho { animation: mcfPtTho 2.8s ease-in-out infinite; }
+@keyframes mcfPtGio { from { width: 100%; } to { width: 0; } }
+.mcf-pt-gio { animation: mcfPtGio linear both; }
+@media (prefers-reduced-motion: reduce) { .mcf-dong, .mcf-song, .mcf-toa-vao, .mcf-tau-chay, .mcf-dv-mach, .mcf-dv-ve, .mcf-dv-co, .mcf-dv-bay, .mcf-dv-bang, .mcf-dv-meo, .mcf-dv-duoi, .mcf-dv-cot, .mcf-pt-bua, .mcf-pt-tho { animation: none; } .mcf-pt-obj { display: none; } .mcf-dv-dua { transition: none; } .mcf-dv-tau { animation-duration: 1ms; } }
 
 /* ── Bong bóng Leon (LeonNoi, 30/10) ── bật ra, ba chấm đang gõ, chữ hiện, Leon gật một cái. */
 @keyframes mcfBongBat { 0% { opacity: 0; transform: scale(.5) rotate(-4deg); } 65% { opacity: 1; transform: scale(1.05) rotate(1deg); } 100% { opacity: 1; transform: none; } }

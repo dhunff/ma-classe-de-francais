@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Heart, Headphones, CloudRain, VenusAndMars, Play, RotateCcw, Trophy, Volume2, Loader2, Shuffle, Crosshair, Check, X, Keyboard, Drama, Search, Landmark, MapPinned, Swords, Layers } from "lucide-react";
+import { ArrowLeft, Heart, Headphones, CloudRain, VenusAndMars, Play, RotateCcw, Trophy, Volume2, Loader2, Shuffle, Crosshair, Check, X, Keyboard, Drama, Search, Landmark, MapPinned, Swords, Layers, Scale } from "lucide-react";
 import { PhatAm } from "./NgheNoi.jsx";
 import { soCau } from "../../../supabase/functions/_shared/soCau.js";
 import ThamTu from "./thamTu/ThamTu.jsx";
@@ -9,6 +9,7 @@ import { khoMotNam } from "../../shared/motNamStore.js";
 import { khoDoVui } from "../../shared/doVuiStore.js";
 import CauTracNghiem from "./CauTracNghiem.jsx";
 import DoVui from "./doVui/DoVui.jsx";
+import PhienToa from "./phienToa/PhienToa.jsx";
 import MotNam from "./paris/MotNam.jsx";
 import { tr } from "../../shared/i18n.jsx";
 import { phat } from "../../shared/amThanh.js";
@@ -50,7 +51,11 @@ const TRO_CHOI = () => [
     mo: tr("Làm biên tập viên cho tổng biên tập Léon: khoanh chữ sai trong bản thảo rồi chọn chữ đúng để thay, trước giờ in. 3 lọ mực.", "Entourez la faute puis choisissez la correction avant l'impression. 3 encriers.", "Circle the mistake, then pick the fix before printing. 3 inkwells.") },
   { ma: "dung_sai", nhom: "np", Icon: Check, nen: "from-teal-500 to-blue-600",
     ten: tr("Phiên toà ngữ pháp", "Le tribunal de la grammaire", "Grammar court"),
-    mo: tr("Thẩm phán Léon đưa từng câu ra toà: đóng dấu VRAI hay FAUX thật nhanh. Phán đúng liên tiếp để nhân điểm.", "Le juge Léon présente chaque phrase : tamponnez VRAI ou FAUX. Enchaînez pour multiplier.", "Judge Léon presents each sentence: stamp VRAI or FAUX. Streaks multiply points.") },
+    mo: tr("Làm luật sư trước toà của thẩm phán Léon: nghe nhân chứng khai, hô OBJECTION đúng lúc, chỉ ra từ sai, viện điều luật và sửa lại để thuyết phục bồi thẩm đoàn.", "Avocat devant le juge Léon : écoutez les témoins, criez OBJECTION, citez la règle et corrigez pour convaincre le jury.", "Be a lawyer before Judge Léon: hear the witnesses, shout OBJECTION, cite the rule and correct it to win the jury."),
+    kieu: [
+      { ma: "phien", get ten() { return tr("Phiên xử", "Audience", "Hearing"); }, get mo() { return tr("Một vụ án trọn vẹn, tranh tụng từng lời khai.", "Une affaire complète, témoin après témoin.", "A full case, witness by witness."); } },
+      { ma: "nhanh", get ten() { return tr("Phiên nhanh", "Audience rapide", "Quick hearing"); }, get mo() { return tr("60 giây, đóng dấu VRAI hay FAUX thật nhanh.", "60 secondes pour tamponner VRAI ou FAUX.", "60 seconds to stamp VRAI or FAUX."); } },
+    ] },
   { ma: "chep_nhanh", nhom: "ng", Icon: Keyboard, nen: "from-fuchsia-500 to-purple-600",
     ten: tr("Mật thư của P.G.", "Les messages de P.G.", "P.G.'s secret messages"),
     mo: tr("Giải mã 5 bức điện của kẻ bí ẩn. Máy thu có ít pin: mỗi lần nghe tốn 1 vạch, pin còn dư được cộng điểm.", "Décodez 5 messages secrets. Chaque écoute coûte de la batterie.", "Decode 5 secret messages. Every listen costs battery.") },
@@ -160,7 +165,7 @@ function ManChoi({ tc }) {
     setGhi(await ghiTroChoi(tc.ma, r.diem, r.dung, Math.max(1, r.tong), tc.ma === "phieu_luu" ? "vua" : muc));
   }, [tc.ma, muc]);
 
-  const Game = { gioi_tinh: GioiTinh, nghe_chon: NgheChon, mua_chu: MuaChu, xep_cau: XepCau, san_loi: SanLoi, dung_sai: DungSai,
+  const Game = tc.ma === "dung_sai" && kieu === "phien" ? PhienToa : { gioi_tinh: GioiTinh, nghe_chon: NgheChon, mua_chu: MuaChu, xep_cau: XepCau, san_loi: SanLoi, dung_sai: DungSai,
     chep_nhanh: ChepNhanh, noi_mo_khoa: NoiMoKhoa, tham_tu: ThamTu, do_vui: DoVui, phieu_luu: MotNam }[tc.ma];
   return (
     <div className={`mx-auto ${buoc === "choi" ? "max-w-5xl" : "max-w-3xl"} px-4 pb-16 pt-4`}>
@@ -930,7 +935,7 @@ function DungSai({ cap, he, onXong }) {
        (theo đáp án) đập lên hồ sơ; phán sai thì tờ giấy rung. */
     <div className="mt-6 rounded-[2rem] bg-[#5b3a29] bg-[linear-gradient(90deg,rgba(0,0,0,0.08)_1px,transparent_1px)] bg-[length:46px_100%] p-5">
       <div className="flex items-center justify-between text-sm font-bold text-[#fde7c7]">
-        <span className={`rounded-full bg-black/25 px-3 py-1 tabular-nums ${con <= 10 ? "text-red-300" : ""}`}>⚖️ {con}s</span>
+        <span className={`rounded-full bg-black/25 px-3 py-1 tabular-nums ${con <= 10 ? "text-red-300" : ""}`}><Scale size={14} className="mr-1 inline" />{con}s</span>
         <span>{kq.current.dung}/{kq.current.tong}{nhan > 1 && <span className="ml-2 rounded-full bg-amber-400 px-2 py-0.5 text-xs text-[#3b2417]">×{nhan}</span>}</span>
         <span className="rounded-full bg-black/25 px-3 py-1 tabular-nums">{kq.current.diem}</span>
       </div>
