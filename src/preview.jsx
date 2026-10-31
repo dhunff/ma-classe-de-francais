@@ -732,6 +732,7 @@ function Preview() {
     ["/etudiant/do-vui", "Đố vui nước Pháp"],
     ["/etudiant/phien-toa", "Phiên toà ngữ pháp"],
     ["/etudiant/tro-choi/dung_sai", "Màn chọn mức trò chơi"],
+    ["/etudiant/sanh-tro-choi", "Sảnh trò chơi"],
     ["/etudiant/tham-tu-mau", "Thám tử Léon (mức vừa)"],
     ["/etudiant/tham-tu-de", "Thám tử Léon (mức dễ)"],
     ["/etudiant/hoan-ho-so", "Hoàn thiện hồ sơ (mới đăng ký)"],
@@ -895,6 +896,7 @@ function Preview() {
           <Route path="/etudiant/hoan-ho-so" element={<><Controls /><HoanThienHoSo fixture={{ prenom: "Linh" }} /></>} />
           <Route path="/etudiant/tham-tu-de" element={<><Controls /><ThamTu muc="de" onXong={() => {}} /></>} />
           <Route path="/etudiant/tham-tu-mau" element={<><Controls /><ThamTu muc="vua" onXong={() => {}} /></>} />
+          <Route path="/etudiant/sanh-tro-choi" element={<><Controls /><TroChoiNhanh /></>} />
           <Route path="/etudiant/tro-choi/:ma" element={<><Controls /><TroChoiNhanh /></>} />
           <Route path="/etudiant/phien-toa" element={<><Controls /><div className="mx-auto max-w-5xl"><PhienToa muc={new URLSearchParams(window.location.search).get("muc") ?? "vua"} he={{ gio: 1 }} onXong={(r) => { window.__phienToa = r; }} /></div></>} />
           <Route path="/etudiant/do-vui" element={<><Controls /><div className="mx-auto max-w-5xl"><DoVui muc={new URLSearchParams(window.location.search).get("muc") ?? "de"} he={{ gio: 1 }} onXong={(r) => { window.__doVui = r; }} /></div></>} />

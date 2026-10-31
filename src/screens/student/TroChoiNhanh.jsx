@@ -63,13 +63,13 @@ const TRO_CHOI = () => [
   { ma: "noi_mo_khoa", nhom: "ng", Icon: Drama, nen: "from-rose-500 to-red-600",
     ten: tr("Sân khấu Léon", "Le théâtre de Léon", "Léon's theatre"),
     mo: tr("Bạn là diễn viên: đọc thoại vài giây, màn nhung kéo kín, rồi nói thuộc lòng. 3 cảnh, dùng lượt chấm phát âm trong ngày.", "Lisez la réplique, le rideau tombe, dites-la de mémoire. 3 scènes.", "Read your line, the curtain closes, say it from memory. 3 scenes.") },
-  { ma: "tham_tu", nhom: "dv", Icon: Search, nen: "from-slate-600 to-indigo-700",
+  { ma: "tham_tu", nhom: "dv", Icon: Search, nen: "from-slate-600 to-indigo-700", leon: { src: "/leon/tham-tu-lon.webp", lop: "h-[85%] -right-2" },
     ten: tr("Thám tử Léon", "Détective Léon", "Detective Léon"),
     mo: tr("Làm trợ lý cho Thanh tra Léon: 9 vụ án, đọc manh mối tiếng Pháp và lần ra kẻ bí ẩn P.G.", "Assistez l'inspecteur Léon : 9 affaires, des indices en français et le mystérieux P.G.", "Assist Inspector Léon: 9 cases, French clues and the mysterious P.G.") },
-  { ma: "do_vui", nhom: "dv", Icon: Landmark, nen: "from-blue-600 to-red-500",
+  { ma: "do_vui", nhom: "dv", Icon: Landmark, nen: "from-blue-600 to-red-500", leon: { src: "/leon/mc/ngau.webp", lop: "h-[84%] right-0" },
     ten: tr("Đố vui nước Pháp", "Quiz France", "France quiz"),
     mo: tr("Gameshow vòng quanh nước Pháp do MC Léon dẫn: tự chọn từng địa danh trên bản đồ, đua cùng bà Minette, về Paris chung kết.", "Un jeu télé à travers la France : choisissez vos étapes sur la carte, puis finale à Paris.", "A TV quiz around France: pick your stops on the map, then the final in Paris.") },
-  { ma: "phieu_luu", nhom: "dv", Icon: MapPinned, nen: "from-amber-500 to-orange-600",
+  { ma: "phieu_luu", nhom: "dv", Icon: MapPinned, nen: "from-amber-500 to-orange-600", leon: { src: "/leon/mc/vui.webp", lop: "h-[84%] right-0" },
     ten: tr("Một năm ở Paris", "Une année à Paris", "A year in Paris"),
     mo: tr("Sống 12 tháng du học cùng Léon: mỗi tuần tự chọn việc, giữ tiền, sức và tinh thần, đối đáp đúng sắc thái.", "12 mois de vie étudiante avec Léon : choisissez chaque semaine, gérez argent, énergie et moral.", "12 months of student life with Léon: choose each week, manage money, energy and mood.") },
 ];
@@ -99,11 +99,15 @@ function Sanh({ ds }) {
       <section key={nhom} className="mt-6">
       <h2 className="m-0 mb-3 text-lg font-extrabold text-ink">{tenNhom}</h2>
       <div className="grid gap-4 md:grid-cols-3">
-        {ds.filter((x) => x.nhom === nhom).map(({ ma, den, Icon, nen, ten, mo }) => (
+        {ds.filter((x) => x.nhom === nhom).map(({ ma, den, Icon, nen, ten, mo, leon }) => (
           <Link key={ma} to={den ?? `/etudiant/tro-choi/${ma}`}
             className={`group relative flex min-h-[220px] flex-col overflow-hidden rounded-3xl bg-gradient-to-br ${nen} p-5 text-white no-underline shadow-[0_14px_30px_rgba(0,0,0,0.12)] transition-transform duration-200 ease-out hover:-translate-y-1 active:scale-[0.985]`}>
-            <span aria-hidden className="absolute -right-10 -top-10 h-36 w-36 rounded-full bg-white/15" />
-            <Icon aria-hidden size={110} strokeWidth={1.2} className="absolute -bottom-6 -right-4 text-white/15" />
+            {leon
+              ? <img src={leon.src} alt="" aria-hidden loading="lazy" draggable={false} className={`mcf-leon-nen pointer-events-none absolute bottom-0 w-auto max-w-[66%] select-none object-contain object-right-bottom transition-transform duration-500 ease-out group-hover:scale-105 ${leon.lop}`} />
+              : <>
+                  <span aria-hidden className="absolute -right-10 -top-10 h-36 w-36 rounded-full bg-white/15" />
+                  <Icon aria-hidden size={110} strokeWidth={1.2} className="absolute -bottom-6 -right-4 text-white/15" />
+                </>}
             <span className="relative grid h-12 w-12 place-items-center rounded-2xl bg-white/25"><Icon size={24} /></span>
             <span className="relative mt-4 text-xl font-extrabold">{ten}</span>
             <span className="relative mt-1 text-sm leading-snug text-white/90">{mo}</span>

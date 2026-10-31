@@ -331,6 +331,8 @@ mark.de-to:hover { background: #facc15; }
 @keyframes mcfDvCot { from { transform: scaleX(0); } to { transform: none; } }
 .mcf-dv-cot { transform-origin: left; animation: mcfDvCot .7s cubic-bezier(.22,1,.36,1) both; }
 .mcf-dv-dua { transition: width .6s cubic-bezier(.22,1,.36,1); }
+/* Léon ẩn sau nền thẻ trò chơi (31/10): lấy độ sáng của hình trên màu gradient, mờ dần sang trái để không chen vào chữ. */
+.mcf-leon-nen { opacity: .22; mix-blend-mode: luminosity; -webkit-mask-image: linear-gradient(to left, #000 50%, transparent 100%); mask-image: linear-gradient(to left, #000 50%, transparent 100%); transform-origin: right bottom; }
 /* Phiên toà (31/10): chữ OBJECTION đập vào màn hình rồi tan, búa toà gõ khi tuyên án. */
 @keyframes mcfPtObj { 0% { opacity: 0; transform: scale(3) rotate(-8deg); } 18% { opacity: 1; transform: scale(1) rotate(-4deg); } 26% { transform: scale(1.08) rotate(-4deg) translateX(-5px); } 34% { transform: scale(1) rotate(-4deg) translateX(5px); } 70% { opacity: 1; transform: scale(1) rotate(-4deg); } 100% { opacity: 0; transform: scale(1.1) rotate(-4deg); } }
 .mcf-pt-obj { animation: mcfPtObj .95s cubic-bezier(.22,1,.36,1) both; text-shadow: 0 4px 0 #fff, 0 8px 24px rgba(0,0,0,.6); }
