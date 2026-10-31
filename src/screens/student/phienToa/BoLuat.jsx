@@ -2,6 +2,7 @@ import React from "react";
 import { X, Stamp } from "lucide-react";
 import { tr } from "../../../shared/i18n.jsx";
 import { LUAT, CHUONG } from "../../../content/troChoi/phienToa.js";
+import { LUAT_DICH } from "../../../content/troChoi/phienToaDich.js";
 import { luatTheoMuc, chuongCo } from "./luat.js";
 
 /* Bộ luật: các điều trong tầm trình độ của mức đang chơi, chia theo chương. */
@@ -24,7 +25,7 @@ export default function BoLuat({ muc, onDong, daMo, tk = {} }) {
               {ds.filter((ma) => LUAT[ma].chuong === c).map((ma) => (
                 <div key={ma}>
                   <dt lang="fr" className="text-sm font-extrabold">{daMo?.has(ma) && <Stamp size={13} className="mr-1 inline text-[#b91c1c]" aria-label={tr("Đã nắm", "Maîtrisé", "Mastered")} />}Article {LUAT[ma].so} · {LUAT[ma].ten} <span className="text-[11px] font-bold text-[#8a6d4b]">{LUAT[ma].cap}</span></dt>
-                  <dd className="m-0 text-xs leading-snug">{LUAT[ma].mo} <span lang="fr" className="italic text-[#7f1d1d]">{LUAT[ma].vd}</span>{tk[ma]?.sai > 0 && <span className="ml-1 font-bold text-[#b91c1c]">{tr(`Sai ${tk[ma].sai} lần`, `${tk[ma].sai} erreur(s)`, `${tk[ma].sai} mistake(s)`)}</span>}</dd>
+                  <dd className="m-0 text-xs leading-snug">{tr(LUAT[ma].mo, ...LUAT_DICH[ma])} <span lang="fr" className="italic text-[#7f1d1d]">{LUAT[ma].vd}</span>{tk[ma]?.sai > 0 && <span className="ml-1 font-bold text-[#b91c1c]">{tr(`Sai ${tk[ma].sai} lần`, `${tk[ma].sai} erreur(s)`, `${tk[ma].sai} mistake(s)`)}</span>}</dd>
                 </div>
               ))}
             </dl>

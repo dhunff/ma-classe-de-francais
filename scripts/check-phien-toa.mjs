@@ -1,6 +1,7 @@
 // Phiên toà: dữ liệu vụ án, điều luật, và luật chấm ba nhát.
 import { LUAT, CHUONG, VU_TOA, BOI_THAM } from "../src/content/troChoi/phienToa.js";
-import { UY_TIN_DAU, SO_BOI_THAM, SO_NHAT, SO_HOI, dongHien, luatTheoMuc, chuongCo, trinhDung, tachDong, viTriLoi, dongDaSua, chamDung, tongNhat, chonTuDe, chonLuat, chonSua, khopSua, giayDoc, thangToa, diemCuoi, BANG_TAC_DONG, taoBoiTham, apSuKien, demPhieu, laLoiHop, dapCorbeau, giayCorbeau } from "../src/screens/student/phienToa/luat.js";
+import { LUAT_DICH, THICH_DICH, VAI_DICH, VU_DICH } from "../src/content/troChoi/phienToaDich.js";
+import { UY_TIN_DAU, SO_BOI_THAM, SO_NHAT, SO_HOI, dongHien, luatTheoMuc, chuongCo, trinhDung, tachDong, viTriLoi, dongDaSua, chamDung, tongNhat, chonTuDe, chonLuat, chonSua, khopSua, giayDoc, gioConLai, GIAY_DOC_MIN, thangToa, diemCuoi, BANG_TAC_DONG, taoBoiTham, apSuKien, demPhieu, laLoiHop, dapCorbeau, giayCorbeau } from "../src/screens/student/phienToa/luat.js";
 
 import { HO_TRONG, KHANG_CAO, CAP_BAC, capBac, capKe, soThang, vuMo, luatDaMo, luatCuaVu, gopHoSo, ghiTk, luatYeu, taoKhangCao, vanHopLe, vuCuaVan } from "../src/screens/student/phienToa/hoSo.js";
 
@@ -156,7 +157,19 @@ ca("phiên dở hợp lệ", vanHopLe(vanMau) && vuCuaVan(vanMau).id === "chat-p
 ca("phiên dở hỏng bị loại", !vanHopLe(null) && !vanHopLe({ ...vanMau, ban: 2 }) && !vanHopLe({ ...vanMau, buoc: "phan" }) && !vanHopLe({ ...vanMau, vuId: "khong-co" }) && !vanHopLe({ ...vanMau, nc: 9 }) && !vanHopLe({ ...vanMau, buoc: "bienHo", bI: 9 }) && !vanHopLe({ ...vanMau, muc: "x" }));
 
 ca("sửa: bỏ khoảng trắng và hoa thường, giữ dấu", khopSua(" Allée ", "allée") && !khopSua("allee", "allée"));
-ca("giờ đọc có sàn và tăng theo độ dài", giayDoc("a b") === 5 && giayDoc(Array(20).fill("x").join(" ")) === 18);
+ca("giờ đọc có sàn và tăng theo độ dài", giayDoc("a b") === GIAY_DOC_MIN && giayDoc(Array(20).fill("x").join(" ")) === 18);
+ca("mức Khó: dòng nào cũng đủ giờ đọc", VU_TOA.filter((v) => v.muc === "kho").flatMap((v) => v.nhanChung.flatMap((c) => c.dong)).every((d) => giayDoc(d.van, 0.75) >= GIAY_DOC_MIN));
+ca("đồng hồ chạy tiếp, không tính lại, vẫn chừa 2 giây", gioConLai(8000, 3000) === 5000 && gioConLai(3000, 2500) === 2000);
+// Bản dịch phần dùng chung.
+const hai = (x) => Array.isArray(x) && x.length === 2 && x.every((s) => typeof s === "string" && s.length > 2);
+ca("nội dung dịch không có dấu gạch dài", !JSON.stringify([LUAT_DICH, THICH_DICH, VAI_DICH, VU_DICH]).includes("—"));
+for (const ma of Object.keys(LUAT)) ca(`dịch điều luật: ${ma}`, hai(LUAT_DICH[ma]));
+for (const b of BOI_THAM) ca(`dịch sở thích: ${b.ma}`, hai(THICH_DICH[b.ma]));
+for (const v of VU_TOA) {
+  ca(`dịch vụ: ${v.id}`, ["chuDe", "bi_cao", "mo", "thang", "thua"].every((k) => hai(VU_DICH[v.id]?.[k])));
+  for (const c of v.nhanChung) ca(`dịch vai: ${c.vai}`, hai(VAI_DICH[c.vai]));
+}
+ca("dịch hồ sơ kháng cáo", ["bi_cao", "mo", "thang", "thua"].every((k) => hai(VU_DICH[KHANG_CAO]?.[k])));
 ca("Corbeau nhân giờ theo mức", giayCorbeau(1) === 14 && giayCorbeau(0.75) < giayCorbeau(1.3));
 ca("điểm cuối cộng uy tín và thưởng thắng", diemCuoi(900, 2, true) === 1300 && diemCuoi(900, 2, false) === 1000);
 

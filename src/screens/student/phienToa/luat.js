@@ -58,8 +58,12 @@ export function chonLuat(ma, muc = "de", rng = Math.random) {
 export const chonSua = (loi, rng = Math.random) => tron([loi.dung, ...loi.sai], rng);
 export const khopSua = (go, dung) => go.trim().toLowerCase() === dung.toLowerCase();
 
-/* Mức Khó: lời khai tự chạy, đủ giờ đọc theo độ dài dòng. */
-export const giayDoc = (van, heSo = 1) => Math.round(Math.max(5, van.split(" ").length * 0.9) * heSo);
+/* Mức Khó: lời khai tự chạy, đủ giờ đọc theo độ dài dòng, dòng ngắn nhất cũng có GIAY_DOC_MIN giây. */
+export const GIAY_DOC_MIN = 6;
+export const giayDoc = (van, heSo = 1) => Math.max(GIAY_DOC_MIN, Math.round(van.split(" ").length * 0.9 * heSo));
+/* Bỏ dở một dòng để phản đối hay xem tang vật rồi quay lại thì đồng hồ chạy tiếp, không tính lại từ đầu. */
+export const GIAY_CON_MIN = 2;
+export const gioConLai = (conMs, daQuaMs) => Math.max(GIAY_CON_MIN * 1000, conMs - daQuaMs);
 
 /* Bảy bồi thẩm: mỗi người một điểm tin, đạt NGUONG_THUAN thì bỏ phiếu cho bị cáo. Mỗi sự kiện đẩy cả toà
    một chút (ca) và đẩy mạnh người coi trọng nó, nên muốn đủ phiếu phải chơi trọn nhiều kỹ năng. */
