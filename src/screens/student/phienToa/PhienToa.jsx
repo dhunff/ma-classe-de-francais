@@ -34,8 +34,9 @@ const BoiTham = ({ bt }) => {
 };
 
 export default function PhienToa({ muc = "vua", he, onXong }) {
-  const vu = VU_TOA[0];
-  const [buoc, setBuoc] = useState("mo");       // mo | khai | phan | tang | boLuat | luat | sua | sauLoi | corbeau | chuyen | bienHo | bauPhieu | ket
+  const dsVu = useMemo(() => VU_TOA.filter((v) => v.muc === muc), [muc]);
+  const [vu, setVu] = useState(dsVu[0]);
+  const [buoc, setBuoc] = useState("chonVu");       // chonVu | mo | khai | phan | tang | boLuat | luat | sua | sauLoi | corbeau | chuyen | bienHo | bauPhieu | ket
   const [nc, setNc] = useState(0);              // nhân chứng đang khai
   const [d, setD] = useState(0);                // dòng đang khai
   const [daPha, setDaPha] = useState({});       // "nc:id": lời khai đã bị phá, hoặc mâu thuẫn đã bị phá
@@ -43,7 +44,7 @@ export default function PhienToa({ muc = "vua", he, onXong }) {
   const [luotHoi, setLuotHoi] = useState(SO_HOI);
   const [tang, setTang] = useState(() => vu.tangVat);
   const [hoiLuc, setHoiLuc] = useState(null);   // câu luật sư vừa hỏi
-  const [bt, setBt] = useState(taoBoiTham);     // điểm tin của bảy bồi thẩm
+  const [bt, setBt] = useState(() => taoBoiTham(dsVu[0]));     // điểm tin của bảy bồi thẩm
   const [cI, setCI] = useState(0);              // lượt phản đối của Corbeau
   const [cKq, setCKq] = useState(null);         // true | false sau khi đáp
   const [bI, setBI] = useState(0);              // lượt của bài biện hộ
@@ -64,6 +65,7 @@ export default function PhienToa({ muc = "vua", he, onXong }) {
   const conLoi = ds.some((x) => x.loi && !daPha[`${nc}:${x.id}`]);
   const tuDe = useMemo(() => chonTuDe(dong), [dong]);
   const phieu = demPhieu(bt);
+  const nhanThang = vu.nhanThang ?? "Non coupable", nhanThua = vu.nhanThua ?? "Coupable";
   const su = (...ds) => setBt((b) => ds.reduce(apSuKien, b));
   const cauC = N.doiDap?.[cI], dsBH = useMemo(() => vu.bienHo.map((b) => [...b.pa].sort(() => Math.random() - 0.5)), [vu]);
   const gioC = giayCorbeau(he?.gio ?? 1);
@@ -225,6 +227,21 @@ export default function PhienToa({ muc = "vua", he, onXong }) {
       </div>
       <p className="m-0 mt-3 text-center text-xs text-white/75">{tr("Trình sai mất 1 uy tín. Chỉ xem thì bấm Thu lại.", "Une pièce hors sujet coûte 1 crédibilité.", "A wrong exhibit costs 1 credibility.")}</p>
       <div className="mt-3 text-center"><button type="button" onClick={() => setBuoc("khai")} className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border-0 bg-white/10 px-4 py-2 font-sans text-xs font-bold text-white"><Undo2 size={14} />{tr("Thu lại", "Reprendre", "Take back")}</button></div>
+    </div>
+  );
+
+  if (buoc === "chonVu") return (
+    <div className={nen}>
+      <p className="m-0 text-center text-xs font-bold uppercase tracking-[0.3em] text-amber-300">{tr("Hồ sơ trên bàn", "Affaires au rôle", "Cases on the docket")}</p>
+      <div className="mt-4 grid gap-3">
+        {dsVu.map((v, k) => (
+          <button key={v.id} type="button" onClick={() => { phat("lat"); setVu(v); setTang(v.tangVat); setBt(taoBoiTham(v)); setBuoc("mo"); }} className="mcf-cau-vao flex cursor-pointer items-center gap-3 rounded-xl border-2 border-solid border-[#a08868] bg-[#fbf6ea] p-3 text-left font-sans text-[#2a1020] hover:-translate-y-0.5" style={{ animationDelay: `${k * 0.08}s` }}>
+            <FileText size={22} className="shrink-0 text-[#7f1d1d]" />
+            <span className="min-w-0 flex-1"><span lang="fr" className="block text-base font-extrabold">{v.ten}</span><span className="block text-xs">{v.chuDe} · {tr(`${v.nhanChung.length} nhân chứng`, `${v.nhanChung.length} témoins`, `${v.nhanChung.length} witnesses`)}</span></span>
+            <ChevronRight size={18} className="shrink-0" />
+          </button>
+        ))}
+      </div>
     </div>
   );
 
@@ -406,7 +423,7 @@ export default function PhienToa({ muc = "vua", he, onXong }) {
               <span className="flex justify-center"><BoiThamMat bt={b} thuan={thuan} /></span>
               <p lang="fr" className="m-0 mt-1 text-xs font-extrabold">{b.ten}</p>
               <p className="m-0 text-[11px] leading-tight opacity-85">{b.thich}</p>
-              <p lang="fr" className="m-0 mt-1 text-xs font-black uppercase tracking-wide">{thuan ? "Non coupable" : "Coupable"}</p>
+              <p lang="fr" className="m-0 mt-1 text-xs font-black uppercase tracking-wide">{thuan ? nhanThang : nhanThua}</p>
             </div>
           );
         })}
@@ -433,9 +450,9 @@ export default function PhienToa({ muc = "vua", he, onXong }) {
       {thang && <PhaoGiay nhieu />}
       <p className="m-0 text-center text-xs font-bold uppercase tracking-[0.3em] text-amber-300">{tr("Phán quyết", "Le verdict", "Verdict")}</p>
       <Gavel size={46} className="mcf-pt-bua mx-auto mt-3 block text-amber-300" aria-hidden />
-      <p className="mcf-sao-no m-0 mt-2 text-center text-3xl font-black uppercase tracking-widest" style={{ animationDelay: "1.4s" }}>{thang ? "Non coupable" : "Coupable"}</p>
+      <p className="mcf-sao-no m-0 mt-2 text-center text-3xl font-black uppercase tracking-widest" style={{ animationDelay: "1.4s" }}>{thang ? nhanThang : nhanThua}</p>
       <div className="mt-3 flex justify-center"><BoiTham bt={bt} /></div>
-      <p className="m-0 mt-2 text-center text-xs text-white/75 tabular-nums">{tr(`${phieu}/${SO_BOI_THAM} phiếu cho bị cáo ${vu.bi_cao}`, `${phieu}/${SO_BOI_THAM} voix pour ${vu.bi_cao}`, `${phieu}/${SO_BOI_THAM} votes for ${vu.bi_cao}`)}</p>
+      <p className="m-0 mt-2 text-center text-xs text-white/75 tabular-nums">{tr(`${phieu}/${SO_BOI_THAM} phiếu cho ${vu.bi_cao}`, `${phieu}/${SO_BOI_THAM} voix pour ${vu.bi_cao}`, `${phieu}/${SO_BOI_THAM} votes for ${vu.bi_cao}`)}</p>
       <LoiLeon cam={thang ? "tuyet-voi" : "co-len"}>{thang ? vu.thang : vu.thua}</LoiLeon>
       <dl className="mx-auto mt-4 grid max-w-xs grid-cols-[1fr_auto] gap-x-4 gap-y-1 text-sm">
         <dt className="text-white/70">{tr(`Nhát đúng ${kq.current.dung}/${kq.current.tong}`, `${kq.current.dung}/${kq.current.tong} coups justes`, `${kq.current.dung}/${kq.current.tong} right`)}</dt><dd className="m-0 text-right font-bold tabular-nums">{kq.current.diem}</dd>

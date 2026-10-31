@@ -63,7 +63,6 @@ export const giayDoc = (van, heSo = 1) => Math.round(Math.max(5, van.split(" ").
 
 /* Bảy bồi thẩm: mỗi người một điểm tin, đạt NGUONG_THUAN thì bỏ phiếu cho bị cáo. Mỗi sự kiện đẩy cả toà
    một chút (ca) và đẩy mạnh người coi trọng nó, nên muốn đủ phiếu phải chơi trọn nhiều kỹ năng. */
-const DIEM_TIN_DAU = 26;
 export const BANG_TAC_DONG = {
   tu: { ca: 2 },
   luat: { ca: 1, cong_chung: 13 },
@@ -81,7 +80,10 @@ export const BANG_TAC_DONG = {
   tinh: { ca: 1, hang_xom: 22 },
   sai_cau: { ca: -6, kho_tinh: -14 },
 };
-export const taoBoiTham = () => Object.fromEntries(BOI_THAM.map((b) => [b.ma, DIEM_TIN_DAU]));
+/* Điểm tin đầu phiên tính theo vụ: chơi trọn phần bắt buộc mà không nhắm tới ai thì cả toà vẫn dừng sát ngưỡng,
+   nên vụ dài hay ngắn thì bồi thẩm cũng khó thuyết phục như nhau. */
+const caToiDa = (vu) => { const c = vu.nhanChung; return c.flatMap((x) => x.dong).filter((d) => d.loi).length * 4 + c.flatMap((x) => x.doiDap ?? []).length + (vu.bienHo?.length ?? 0); };
+export const taoBoiTham = (vu) => Object.fromEntries(BOI_THAM.map((b) => [b.ma, Math.max(0, NGUONG_THUAN - 1 - caToiDa(vu))]));
 export const apSuKien = (bt, su) => {
   const t = BANG_TAC_DONG[su];
   return Object.fromEntries(Object.entries(bt).map(([ma, d]) => [ma, Math.max(0, Math.min(100, d + (t.ca ?? 0) + (t[ma] ?? 0)))]));

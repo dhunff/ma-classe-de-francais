@@ -11,6 +11,8 @@
  * Tình huống hư cấu. Không dùng dấu gạch dài. */
 
 /* Chương của Bộ luật. Mỗi điều: chuong, cap (trình độ), so (số điều), ten, mo, vd (ví dụ đúng). */
+import { VU_THEM } from "./phienToaVu.js";
+
 /* Bảy bồi thẩm. thich: điều người đó coi trọng, hiện ở cảnh bỏ phiếu. Mã trùng với BANG_TAC_DONG trong phienToa/luat.js. */
 export const BOI_THAM = [
   { ma: "kho_tinh", ten: "Mme Puriste", thich: "soi từng lỗi hợp giống số", mau: "#7c3aed", da: "#fcd9b6", mauToc: "#e5e7eb", kinh: true, toc: "M11 26c-1-12 6-17 13-17s14 5 13 17c-3-6-7-8-13-8s-10 2-13 8z" },
@@ -66,7 +68,7 @@ export const LUAT = {
 
 export const VU_TOA = [
   {
-    id: "livre-recettes",
+    id: "livre-recettes", muc: "de", chuDe: "Hợp giống số cơ bản",
     ten: "L'affaire du livre de recettes",
     bi_cao: "Thomas",
     bienHo: [
@@ -138,4 +140,5 @@ export const VU_TOA = [
       },
     ],
   },
+  ...VU_THEM,
 ];

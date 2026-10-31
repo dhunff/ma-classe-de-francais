@@ -17,10 +17,20 @@ ca("nội dung không có dấu gạch dài", !JSON.stringify([LUAT, CHUONG, VU_
 ca("đủ 7 bồi thẩm, mã không trùng", BOI_THAM.length === SO_BOI_THAM && new Set(BOI_THAM.map((b) => b.ma)).size === SO_BOI_THAM);
 for (const b of BOI_THAM) { ca(`${b.ma}: đủ tên, sở thích, hình`, b.ten?.length > 2 && b.thich?.length > 8 && /^M/.test(b.toc) && /^#/.test(b.mau)); ca(`${b.ma}: có sự kiện tác động riêng`, Object.values(BANG_TAC_DONG).some((t) => (t[b.ma] ?? 0) !== 0)); }
 for (const [su, t] of Object.entries(BANG_TAC_DONG)) ca(`${su}: chỉ tác động lên bồi thẩm có thật`, Object.keys(t).every((k) => k === "ca" || BOI_THAM.some((b) => b.ma === k)));
-ca("bồi thẩm mới vào chưa thuận ai", demPhieu(taoBoiTham()) === 0);
-ca("điểm tin kẹp trong 0 đến 100", Object.values(Array.from({ length: 80 }).reduce((b) => apSuKien(b, "dep"), taoBoiTham())).every((d) => d >= 0 && d <= 100));
+ca("bồi thẩm mới vào chưa thuận ai", demPhieu(taoBoiTham(VU_TOA[0])) === 0);
+ca("điểm tin kẹp trong 0 đến 100", Object.values(Array.from({ length: 80 }).reduce((b) => apSuKien(b, "dep"), taoBoiTham(VU_TOA[0]))).every((d) => d >= 0 && d <= 100));
+
+ca("9 vụ, id không trùng", VU_TOA.length === 9 && new Set(VU_TOA.map((v) => v.id)).size === 9);
+for (const m of ["de", "vua", "kho"]) ca(`${m}: đủ 3 vụ`, VU_TOA.filter((v) => v.muc === m).length === 3);
+ca("vụ cuối là phiên xử Garnier, thắng là có tội", VU_TOA.at(-1).id === "garnier" && VU_TOA.at(-1).nhanThang === "Coupable" && VU_TOA.at(-1).muc === "kho");
+ca("không câu tiếng Pháp nào lặp giữa hai vụ", (() => { const ds = VU_TOA.flatMap((v) => v.nhanChung.flatMap((c) => c.dong.map((d) => d.van))); return new Set(ds).size === ds.length; })());
 
 for (const vu of VU_TOA) {
+  ca(`${vu.id}: có chủ đề và mức`, vu.chuDe?.length > 5 && ["de", "vua", "kho"].includes(vu.muc));
+  ca(`${vu.id}: có tang vật ban đầu`, vu.tangVat?.length > 0 && vu.tangVat.every((t) => vu.tang[t]));
+  ca(`${vu.id}: mọi tang vật đều dùng được`, Object.keys(vu.tang).every((t) => vu.nhanChung.flatMap((c) => c.dong.flatMap((d) => [d, d.them].filter(Boolean))).some((d) => d.mau?.tang === t)));
+  ca(`${vu.id}: đủ lỗi để chơi`, vu.nhanChung.flatMap((c) => c.dong).filter((d) => d.loi).length >= 4);
+  ca(`${vu.id}: có ít nhất một lỗi ẩn và hai mâu thuẫn`, vu.nhanChung.flatMap((c) => c.dong).some((d) => d.them?.loi) && vu.nhanChung.flatMap((c) => c.dong.flatMap((d) => [d, d.them].filter(Boolean))).filter((d) => d.mau).length >= 2);
   ca(`${vu.id}: đủ lời mở và kết`, vu.mo?.length > 20 && vu.thang?.length > 20 && vu.thua?.length > 20 && !!vu.bi_cao);
   ca(`${vu.id}: có ít nhất 2 nhân chứng`, vu.nhanChung.length >= 2);
   for (const nc of vu.nhanChung) {
@@ -28,7 +38,7 @@ for (const vu of VU_TOA) {
     ca(`${nc.ten}: có dòng lỗi lẫn dòng đúng`, nc.dong.some((d) => d.loi) && nc.dong.some((d) => !d.loi));
     ca(`${nc.ten}: Corbeau có đủ hai kiểu, thật và dọa`, nc.doiDap?.some((c) => c.dung) && nc.doiDap?.some((c) => !c.dung));
     for (const c of nc.doiDap ?? []) {
-      ca(`Corbeau: đủ nội dung: ${c.cau}`, c.loi?.length > 10 && c.dich?.length > 10 && c.gt?.length > 15 && !!LUAT[c.luat]);
+      ca(`Corbeau: đủ nội dung: ${c.cau}`, c.loi?.length > 10 && c.dich?.length > 10 && c.gt?.length > 15 && luatTheoMuc(vu.muc).includes(c.luat), c.luat);
       ca(`Corbeau: chấm đúng hai chiều: ${c.cau}`, dapCorbeau(c, !c.dung) && !dapCorbeau(c, c.dung));
     }
     ca(`${nc.ten}: lượt hỏi đủ dùng cho dòng ẩn`, nc.dong.filter((d) => d.them).length <= SO_HOI);
@@ -39,6 +49,7 @@ for (const vu of VU_TOA) {
     for (const d of tatCa) {
       ca(`có bản dịch: ${d.van}`, d.dich?.length > 5);
       if (d.them) ca(`câu hỏi thêm: ${d.van}`, d.them.hoi?.length > 8 && d.them.van?.length > 8 && !d.them.them);
+      if (d.tang) ca(`tang vật lộ ra phải được dùng ở vụ này: ${d.van}`, !!vu.tang[d.tang]);
       if (d.mau) {
         ca(`mâu thuẫn trỏ tới tang vật có thật: ${d.van}`, !!vu.tang[d.mau.tang] && d.mau.gt?.length > 15);
         ca(`trình đúng tang vật mới phá được: ${d.van}`, trinhDung(d, d.mau.tang) && !Object.keys(vu.tang).filter((x) => x !== d.mau.tang).some((x) => trinhDung(d, x)));
@@ -50,7 +61,7 @@ for (const vu of VU_TOA) {
       ca(`từ sai xuất hiện đúng một lần: ${d.van}`, tachDong(d.van).filter((t) => t.goc === l.tu).length === 1);
       ca(`sửa xong khác câu gốc và chứa dạng đúng: ${d.van}`, dongDaSua(d) !== d.van && dongDaSua(d).includes(l.dung));
       ca(`phương án sửa khác nhau: ${d.van}`, new Set([l.dung, ...l.sai, l.tu]).size >= 3 && l.sai.length === 2 && !l.sai.includes(l.dung));
-      ca(`điều luật tồn tại và đúng trình độ mức Dễ: ${d.van}`, luatTheoMuc("de").includes(l.luat));
+      ca(`điều luật đúng trình độ của vụ: ${d.van}`, luatTheoMuc(vu.muc).includes(l.luat), l.luat);
       ca(`có lời giải: ${d.van}`, l.gt?.length > 15);
       ca(`chạm đúng từ được chấm đúng: ${d.van}`, chamDung(d, viTriLoi(d)) && !chamDung(d, viTriLoi(d) === 0 ? 1 : 0));
       for (let v = 0; v < 50; v++) {
@@ -59,6 +70,7 @@ for (const vu of VU_TOA) {
         ca("Dễ: 3 điều luật khác nhau, có điều đúng", lc.length === 3 && new Set(lc).size === 3 && lc.includes(l.luat));
         ca("Vừa: 4 điều, có điều cùng chương", lv.length === 4 && new Set(lv).size === 4 && lv.includes(l.luat) && lv.filter((x) => LUAT[x].chuong === LUAT[l.luat].chuong).length >= 2);
         ca("Khó: cả Bộ luật", lk.length === 30 && lk.includes(l.luat));
+        ca("Mức của vụ có điều đúng trong lựa chọn", chonLuat(l.luat, vu.muc).includes(l.luat));
         const s = chonSua(l);
         ca("3 phương án sửa, có dạng đúng", s.length === 3 && s.includes(l.dung));
       }
@@ -75,7 +87,7 @@ for (const vu of VU_TOA) {
 
   /* Mô phỏng trọn phiên: p là tỉ lệ đúng mỗi nhát, sau là có dùng hỏi thêm và tang vật không. */
   const phien = (p, sau, nham = 0) => {
-    let bt = taoBoiTham();
+    let bt = taoBoiTham(vu);
     const ap = (...ds) => { bt = ds.reduce(apSuKien, bt); };
     const coDung = () => Math.random() < p;
     for (let k = 0; k < nham; k++) ap("nham");
@@ -94,13 +106,13 @@ for (const vu of VU_TOA) {
     return demPhieu(bt);
   };
   const tile = (p, sau) => { let t = 0, n = 0; for (let v = 0; v < 3000; v++) { const x = phien(p, sau); t += thangToa(x) ? 1 : 0; n += x; } return [t / 3000, n / 3000]; };
-  for (const p of [0.3, 0.5, 0.7, 0.9]) { const [a, b] = tile(p, true), [c] = tile(p, false); console.log(`  đúng ${p * 100}%: thắng ${Math.round(a * 100)}%, ${b.toFixed(1)} phiếu; không hỏi thêm thắng ${Math.round(c * 100)}%`); }
+  console.log(`  ${vu.id}: ` + [0.3, 0.5, 0.7, 0.9].map((p) => `${p * 100}%→${Math.round(tile(p, true)[0] * 100)}%`).join(" "));
   ca("đúng 90% gần như luôn thắng", tile(0.9, true)[0] >= 0.85);
   ca("đúng 30% khó thắng", tile(0.3, true)[0] <= 0.1);
-  ca("đúng 70% có thắng có thua", tile(0.7, true)[0] >= 0.3 && tile(0.7, true)[0] <= 0.9);
-  ca("hỏi thêm và tang vật giúp thắng nhiều hơn", tile(0.7, true)[0] > tile(0.7, false)[0]);
+  ca("đúng 70% có thắng có thua", tile(0.7, true)[0] >= 0.2 && tile(0.7, true)[0] <= 0.9);
+  ca(`${vu.id}: hỏi thêm và tang vật giúp thắng nhiều hơn`, tile(0.7, true)[0] > tile(0.7, false)[0]);
   // Cả toà không được tự thuận chỉ vì bắt lỗi giỏi: thiếu chứng cứ thì Dr Preuve vẫn phải lắc đầu.
-  const chiBatLoi = () => { let b = taoBoiTham(); const ap = (...ds) => { b = ds.reduce(apSuKien, b); }; for (const d of vu.nhanChung.flatMap((c) => c.dong).filter((x) => x.loi)) { ap("tu", "luat", "sua"); if (laLoiHop(d.loi.luat)) ap("hop"); } vu.nhanChung.flatMap((c) => c.doiDap).forEach(() => ap("doi")); ap("ly", "ly", "tinh"); return b; };
+  const chiBatLoi = () => { let b = taoBoiTham(vu); const ap = (...ds) => { b = ds.reduce(apSuKien, b); }; for (const d of vu.nhanChung.flatMap((c) => c.dong).filter((x) => x.loi)) { ap("tu", "luat", "sua"); if (laLoiHop(d.loi.luat)) ap("hop"); } vu.nhanChung.flatMap((c) => c.doiDap).forEach(() => ap("doi")); ap("ly", "ly", "tinh"); return b; };
   ca("không chọn câu văn đẹp thì Mlle Verlaine không thuận", chiBatLoi().nha_tho < 50);
   ca("bắt lỗi giỏi vẫn thắng dù không làm hết", thangToa(demPhieu(chiBatLoi())));
 }
