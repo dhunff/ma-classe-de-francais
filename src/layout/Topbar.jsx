@@ -33,11 +33,12 @@ export default function Topbar({
 
        Không cần `sticky`: nó nằm SẴN trong tấm thẻ nội dung và chỉ <main> mới cuộn
        (xem AppLayout). z-30 để menu thả xuống nằm trên nội dung. KHÔNG đặt
-       overflow-hidden ở thanh: nó sẽ cắt mất các menu đó, nên vạch màu đáy là
-       phần tử riêng. */
-    <header className="mcf-rise relative z-30 shrink-0 px-3 pt-3 md:px-6 md:pt-4" style={{ "--mcf-delay": "60ms" }}>
-      <div className="relative flex h-16 items-center gap-2 rounded-2xl bg-surface bg-[linear-gradient(100deg,rgb(var(--mcf-primary-rgb)/0.14)_0%,rgb(var(--mcf-primary-rgb)/0.03)_38%,transparent_64%)] px-3 shadow-[0_10px_28px_rgb(var(--mcf-primary-rgb)/0.14)] ring-1 ring-primary/10 md:gap-3 md:px-5">
-        <span aria-hidden className="absolute inset-x-6 bottom-0 h-[3px] rounded-t-full bg-gradient-to-r from-primary via-violet-500 to-rose-500" />
+       overflow-hidden ở thanh: nó sẽ cắt mất các menu đó.
+
+       Góc bo đồng tâm với tấm thẻ: thẻ bo 2.5rem, thanh cách mép 0.75rem nên bo
+       1.75rem. Đổi một trong ba số này thì phải đổi cả hai số kia. */
+    <header className="mcf-rise relative z-30 shrink-0 p-3 pb-0" style={{ "--mcf-delay": "60ms" }}>
+      <div className="relative flex h-16 items-center gap-2 rounded-2xl bg-surface md:rounded-[1.75rem] bg-[linear-gradient(100deg,rgb(var(--mcf-primary-rgb)/0.14)_0%,rgb(var(--mcf-primary-rgb)/0.03)_38%,transparent_64%)] px-3 shadow-[0_10px_28px_rgb(var(--mcf-primary-rgb)/0.14)] ring-1 ring-primary/10 md:gap-3 md:px-5">
         <button
           type="button"
           onClick={onOpenMenu}
