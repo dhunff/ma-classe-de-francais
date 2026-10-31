@@ -1,13 +1,19 @@
 // Phiên toà: dữ liệu vụ án, điều luật, và luật chấm ba nhát.
-import { LUAT, VU_TOA } from "../src/content/troChoi/phienToa.js";
-import { UY_TIN_DAU, SO_BOI_THAM, SO_NHAT, tachDong, viTriLoi, dongDaSua, chamDung, tongNhat, chonTuDe, chonLuat, chonSua, khopSua, giayDoc, phieuThuan, thangToa, diemCuoi } from "../src/screens/student/phienToa/luat.js";
+import { LUAT, CHUONG, VU_TOA } from "../src/content/troChoi/phienToa.js";
+import { UY_TIN_DAU, SO_BOI_THAM, SO_NHAT, SO_HOI, dongHien, luatTheoMuc, chuongCo, trinhDung, tachDong, viTriLoi, dongDaSua, chamDung, tongNhat, chonTuDe, chonLuat, chonSua, khopSua, giayDoc, phieuThuan, thangToa, diemCuoi } from "../src/screens/student/phienToa/luat.js";
 
 let dat = 0, hong = 0;
 const ca = (ten, ok, chiTiet = "") => { if (ok) dat++; else { hong++; console.log("✗", ten, chiTiet); } };
 
 ca("số điều luật không trùng", new Set(Object.values(LUAT).map((l) => l.so)).size === Object.keys(LUAT).length);
-for (const [ma, l] of Object.entries(LUAT)) ca(`${ma}: có tên và giải thích`, l.ten?.length > 3 && l.mo?.length > 15);
-ca("nội dung không có dấu gạch dài", !JSON.stringify([LUAT, VU_TOA]).includes("—"));
+for (const [ma, l] of Object.entries(LUAT)) {
+  ca(`${ma}: đủ tên, giải thích, ví dụ`, l.ten?.length > 3 && l.mo?.length > 15 && l.vd?.length > 5);
+  ca(`${ma}: chương và trình độ hợp lệ`, !!CHUONG[l.chuong] && ["A1", "A2", "B1", "B2"].includes(l.cap));
+}
+ca("Bộ luật khoảng 30 điều, số liền nhau", Object.keys(LUAT).length === 30 && Object.values(LUAT).map((l) => l.so).sort((a, b) => a - b).every((s, k) => s === k + 1));
+ca("mọi chương đều có điều luật", chuongCo(Object.keys(LUAT)).length === Object.keys(CHUONG).length);
+ca("Bộ luật lớn dần theo mức", luatTheoMuc("de").length < luatTheoMuc("vua").length && luatTheoMuc("vua").length < luatTheoMuc("kho").length && luatTheoMuc("kho").length === 30);
+ca("nội dung không có dấu gạch dài", !JSON.stringify([LUAT, CHUONG, VU_TOA]).includes("—"));
 
 for (const vu of VU_TOA) {
   ca(`${vu.id}: đủ lời mở và kết`, vu.mo?.length > 20 && vu.thang?.length > 20 && vu.thua?.length > 20 && !!vu.bi_cao);
@@ -15,32 +21,49 @@ for (const vu of VU_TOA) {
   for (const nc of vu.nhanChung) {
     ca(`${nc.ten}: có giới thiệu và màu`, nc.gioiThieu?.length > 10 && /^#/.test(nc.mau));
     ca(`${nc.ten}: có dòng lỗi lẫn dòng đúng`, nc.dong.some((d) => d.loi) && nc.dong.some((d) => !d.loi));
-    for (const d of nc.dong) {
+    ca(`${nc.ten}: lượt hỏi đủ dùng cho dòng ẩn`, nc.dong.filter((d) => d.them).length <= SO_HOI);
+    const tatCa = nc.dong.flatMap((d) => (d.them ? [d, d.them] : [d]));
+    ca(`${nc.ten}: chưa hỏi thì chưa thấy dòng ẩn`, dongHien(nc).length === nc.dong.length && dongHien(nc).every((d) => !d.laThem));
+    const mo = Object.fromEntries(nc.dong.map((_, i) => [i, true]));
+    ca(`${nc.ten}: hỏi hết thì thấy đủ, id không trùng`, dongHien(nc, mo).length === tatCa.length && new Set(dongHien(nc, mo).map((d) => d.id)).size === tatCa.length);
+    for (const d of tatCa) {
       ca(`có bản dịch: ${d.van}`, d.dich?.length > 5);
+      if (d.them) ca(`câu hỏi thêm: ${d.van}`, d.them.hoi?.length > 8 && d.them.van?.length > 8 && !d.them.them);
+      if (d.mau) {
+        ca(`mâu thuẫn trỏ tới tang vật có thật: ${d.van}`, !!vu.tang[d.mau.tang] && d.mau.gt?.length > 15);
+        ca(`trình đúng tang vật mới phá được: ${d.van}`, trinhDung(d, d.mau.tang) && !Object.keys(vu.tang).filter((x) => x !== d.mau.tang).some((x) => trinhDung(d, x)));
+        ca(`dòng mâu thuẫn không kiêm lỗi: ${d.van}`, !d.loi);
+      }
+      if (d.tang) ca(`tang vật nhận được có thật: ${d.van}`, !!vu.tang[d.tang] && !vu.tangVat.includes(d.tang));
       if (!d.loi) continue;
       const l = d.loi;
       ca(`từ sai xuất hiện đúng một lần: ${d.van}`, tachDong(d.van).filter((t) => t.goc === l.tu).length === 1);
       ca(`sửa xong khác câu gốc và chứa dạng đúng: ${d.van}`, dongDaSua(d) !== d.van && dongDaSua(d).includes(l.dung));
       ca(`phương án sửa khác nhau: ${d.van}`, new Set([l.dung, ...l.sai, l.tu]).size >= 3 && l.sai.length === 2 && !l.sai.includes(l.dung));
-      ca(`điều luật tồn tại: ${d.van}`, !!LUAT[l.luat]);
+      ca(`điều luật tồn tại và đúng trình độ mức Dễ: ${d.van}`, luatTheoMuc("de").includes(l.luat));
       ca(`có lời giải: ${d.van}`, l.gt?.length > 15);
       ca(`chạm đúng từ được chấm đúng: ${d.van}`, chamDung(d, viTriLoi(d)) && !chamDung(d, viTriLoi(d) === 0 ? 1 : 0));
       for (let v = 0; v < 50; v++) {
         ca(`mức Dễ có từ sai trong 3 từ: ${d.van}`, (() => { const r = chonTuDe(d); return r.length === 3 && r.some((t) => t.k === viTriLoi(d)) && new Set(r.map((t) => t.k)).size === 3; })());
-        const lc = chonLuat(l.luat);
-        ca("3 điều luật khác nhau, có điều đúng", lc.length === 3 && new Set(lc).size === 3 && lc.includes(l.luat));
+        const lc = chonLuat(l.luat, "de"), lv = chonLuat(l.luat, "vua"), lk = chonLuat(l.luat, "kho");
+        ca("Dễ: 3 điều luật khác nhau, có điều đúng", lc.length === 3 && new Set(lc).size === 3 && lc.includes(l.luat));
+        ca("Vừa: 4 điều, có điều cùng chương", lv.length === 4 && new Set(lv).size === 4 && lv.includes(l.luat) && lv.filter((x) => LUAT[x].chuong === LUAT[l.luat].chuong).length >= 2);
+        ca("Khó: cả Bộ luật", lk.length === 30 && lk.includes(l.luat));
         const s = chonSua(l);
         ca("3 phương án sửa, có dạng đúng", s.length === 3 && s.includes(l.dung));
       }
     }
-    for (const d of nc.dong.filter((x) => !x.loi)) ca(`dòng đúng không chấm được: ${d.van}`, tachDong(d.van).every((_, k) => !chamDung(d, k)) && chonTuDe(d).length === 3);
+    for (const d of tatCa.filter((x) => !x.loi)) ca(`dòng đúng không chấm được: ${d.van}`, tachDong(d.van).every((_, k) => !chamDung(d, k)) && chonTuDe(d).length === 3);
   }
   const tong = tongNhat(vu);
-  ca(`${vu.id}: đủ nhát chia hết cho ${SO_NHAT}`, tong > 0 && tong % SO_NHAT === 0);
+  ca(`${vu.id}: tổng nhát gồm cả lỗi ẩn và mâu thuẫn`, tong === vu.nhanChung.flatMap((c) => c.dong.flatMap((d) => (d.them ? [d, d.them] : [d]))).reduce((n, d) => n + (d.loi ? SO_NHAT : 0) + (d.mau ? 1 : 0), 0) && tong > 0);
   ca("đúng hết, uy tín đầy thì đủ 7 phiếu", phieuThuan(tong, tong, UY_TIN_DAU) === SO_BOI_THAM && thangToa(SO_BOI_THAM));
   ca("sai hết thì thua", !thangToa(phieuThuan(0, tong, 1)));
   ca("chỉ chạm đúng từ mà sai luật, sai sửa, mất nhiều uy tín thì thua", !thangToa(phieuThuan(tong / 3, tong, 1)));
   ca("đúng 2/3 nhát, còn 3 uy tín thì thắng", thangToa(phieuThuan(Math.round(tong * 2 / 3), tong, 3)));
+  const lo = vu.nhanChung.reduce((n, c) => n + c.dong.filter((d) => d.loi).length, 0) * SO_NHAT;
+  ca("chỉ phá lỗi thấy sẵn, không hỏi thêm, vẫn thắng được", lo < tong && thangToa(phieuThuan(lo, tong, UY_TIN_DAU)));
+  ca("có hỏi thêm và tang vật thì nhiều phiếu hơn", phieuThuan(tong, tong, 4) > phieuThuan(lo, tong, 4));
 }
 ca("sửa: bỏ khoảng trắng và hoa thường, giữ dấu", khopSua(" Allée ", "allée") && !khopSua("allee", "allée"));
 ca("giờ đọc có sàn và tăng theo độ dài", giayDoc("a b") === 5 && giayDoc(Array(20).fill("x").join(" ")) === 18);
