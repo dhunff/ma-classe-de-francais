@@ -16,7 +16,7 @@ import GioHocWidget from "./GioHocWidget.jsx";
 import KeHoachThi from "./KeHoachThi.jsx";
 import LichSapToi from "./LichSapToi.jsx";
 import TourGioiThieu from "../../shared/TourGioiThieu.jsx";
-import { DeXuatBai, TroChoi, DongDeuKyNang, chonDeXuat } from "./TrangChuKhoi.jsx";
+import { DeXuatBai, TroChoi, DeXuatTroChoi, DongDeuKyNang, chonDeXuat } from "./TrangChuKhoi.jsx";
 
 /* Trang chủ học sinh.
 
@@ -101,6 +101,9 @@ export default function StudentDashboard({
           {/* 26/10 (chủ dự án): Trò chơi & thử thách lên đầu, ngay dưới banner. */}
           <Rise delay={60}>
             <TroChoi />
+          </Rise>
+          <Rise delay={90}>
+            <DeXuatTroChoi />
           </Rise>
 
 

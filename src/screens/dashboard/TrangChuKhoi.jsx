@@ -1,18 +1,20 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { Headphones, BookOpen, PenLine, Puzzle, Languages, Mic, ArrowRight, Map, Swords, Layers, Timer, TrendingUp, BookA, Gamepad2 } from "lucide-react";
+import { Headphones, BookOpen, PenLine, Puzzle, Languages, Mic, ArrowRight, Map, Swords, Layers, Timer, TrendingUp, BookA, Gamepad2, Play } from "lucide-react";
 import { supabase } from "../../storageShim.js";
 import { tr } from "../../shared/i18n.jsx";
 import { nhanHoSo } from "../../shared/nhanHoSo.js";
 import { exSkills } from "../../shared/exercises.js";
 import { Leon } from "../../shared/leon.jsx";
 import { keHoach, CAP } from "../../shared/deXuat.js";
+import { troChoiDeXuat } from "../student/danhMucTroChoi.js";
 
 /* Ba khối mới của trang chủ học sinh (08/10): trang chủ giờ chủ yếu là ĐỀ XUẤT
  * và TRÒ CHƠI; số liệu bài được giao đã sang trang « Bài tập được giao ».
  *
  *   · DeXuatBai      : chọn bài luyện tập cho riêng người học, kèm LÝ DO.
  *   · TroChoi        : lối vào Lộ trình, Thách đấu, Flashcard, Thi thử.
+ *   · DeXuatTroChoi  : dải thẻ trò chơi tự trôi ngang.
  *   · DongDeuKyNang  : mức độ đồng đều theo kỹ năng, dạng thanh ngang có nhãn.
  *
  * Mọi con số và lý do tính từ dữ liệu thật (quy tắc 1): kỹ năng yếu lấy từ
@@ -237,6 +239,93 @@ export function TroChoi() {
             </span>
           </Link>
         ))}
+      </div>
+    </section>
+  );
+}
+
+/* ─────────── Đề xuất trò chơi (31/10, chủ dự án) ───────────
+ * Dải thẻ tự trôi ngang, ba trò có ảnh Léon đứng đầu. Thẻ giữ đúng tỉ lệ thẻ ở sảnh (276:224)
+ * để Léon đứng y như bên đó. Trôi bằng scrollLeft chứ không bằng animation CSS: nhờ vậy điện
+ * thoại vẫn vuốt tay được. Dải vẽ hai lần để nối vòng; bản thứ hai ẩn khỏi trình đọc màn hình
+ * và phím Tab. Người dùng chọn giảm chuyển động thì chỉ còn một bản, vuốt tay. */
+const TOC_DO_TROI = 34; // px mỗi giây
+
+function TheDeXuat({ tc, an = false }) {
+  const { ma, Icon, nen, ten, moNgan, leon } = tc;
+  return (
+    <Link to={`/etudiant/tro-choi/${ma}`} tabIndex={an ? -1 : undefined} aria-hidden={an || undefined} draggable={false}
+      className={`group relative flex h-[224px] w-[276px] shrink-0 flex-col overflow-hidden rounded-3xl bg-gradient-to-br ${nen} p-4 text-white no-underline shadow-md transition-transform duration-200 ease-out hover:-translate-y-1 active:scale-[0.985]`}>
+      {leon
+        ? <img src={leon.src} alt="" aria-hidden loading="lazy" draggable={false} style={leon.kieu} className={`mcf-leon-nen mcf-leon-giu pointer-events-none absolute w-auto select-none object-contain object-right-bottom transition-transform duration-500 ease-out group-hover:scale-105 ${leon.lop}`} />
+        : <>
+            <span aria-hidden className="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-white/15" />
+            <Icon aria-hidden size={100} strokeWidth={1.2} className="absolute -bottom-6 -right-4 text-white/15" />
+          </>}
+      <span className="relative grid h-10 w-10 place-items-center rounded-xl bg-white/25"><Icon size={20} /></span>
+      <span className={`relative mt-3 text-lg font-extrabold leading-tight ${leon?.chu ?? ""}`}>{ten}</span>
+      <span className={`relative mt-1 line-clamp-3 text-[13px] leading-snug text-white/90 ${leon?.chu ?? ""}`}>{moNgan}</span>
+      <span className="relative mt-auto inline-flex items-center gap-1 self-start rounded-full bg-white px-3.5 py-1 text-xs font-bold text-[#111] transition-transform group-hover:translate-x-0.5"><Play size={12} /> {tr("Chơi", "Jouer", "Play")}</span>
+    </Link>
+  );
+}
+
+export function DeXuatTroChoi() {
+  const ds = troChoiDeXuat();
+  const khung = useRef(null);
+  const motBan = useRef(null);
+  const dung = useRef(false);
+  const [giamChuyenDong] = useState(() => window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false);
+
+  useEffect(() => {
+    if (giamChuyenDong) return undefined;
+    let raf = 0;
+    let truoc = 0;
+    let viTri = 0; // scrollLeft bị làm tròn khi đọc lại, nên giữ phần lẻ ở đây
+    const buoc = (bayGio) => {
+      const el = khung.current;
+      const dai = motBan.current?.offsetWidth ?? 0;
+      if (el && dai > 0 && truoc && !dung.current) {
+        if (Math.abs(el.scrollLeft - viTri) > 2) viTri = el.scrollLeft; // vừa vuốt tay: đi tiếp từ chỗ đó
+        viTri += TOC_DO_TROI * Math.min(bayGio - truoc, 100) / 1000;
+        if (viTri >= dai) viTri -= dai;
+        el.scrollLeft = viTri;
+      }
+      truoc = bayGio;
+      raf = requestAnimationFrame(buoc);
+    };
+    raf = requestAnimationFrame(buoc);
+    return () => cancelAnimationFrame(raf);
+  }, [giamChuyenDong]);
+
+  /* Chuột và bàn phím: đang ở trong dải thì dừng. Chạm tay: nghỉ thêm một lúc sau khi nhấc tay. */
+  const henChay = useRef(0);
+  useEffect(() => () => clearTimeout(henChay.current), []);
+  const dungLai = () => { clearTimeout(henChay.current); dung.current = true; };
+  const chayLai = (cho = 0) => { clearTimeout(henChay.current); henChay.current = setTimeout(() => { dung.current = false; }, cho); };
+
+  return (
+    <section>
+      <div className="mb-1 flex items-center justify-between gap-3">
+        <h2 className="m-0 text-lg font-extrabold text-ink">{tr("Đề xuất trò chơi", "Jeux à découvrir", "Games to try")}</h2>
+        <Link to="/etudiant/tro-choi" className="inline-flex shrink-0 items-center gap-1 text-sm font-bold text-primary no-underline hover:underline">
+          {tr("Tất cả", "Tout voir", "See all")} <ArrowRight size={14} />
+        </Link>
+      </div>
+      <div ref={khung}
+        onPointerEnter={(e) => { if (e.pointerType === "mouse") dungLai(); }}
+        onPointerLeave={(e) => { if (e.pointerType === "mouse") chayLai(); }}
+        onTouchStart={dungLai} onTouchEnd={() => chayLai(2500)} onTouchCancel={() => chayLai(2500)}
+        onFocus={dungLai} onBlur={() => chayLai()}
+        className="mcf-troi-bien no-scrollbar flex overflow-x-auto py-2">
+        <div ref={motBan} className="flex shrink-0 gap-4 pr-4">
+          {ds.map((tc) => <TheDeXuat key={tc.ma} tc={tc} />)}
+        </div>
+        {!giamChuyenDong && (
+          <div aria-hidden className="flex shrink-0 gap-4 pr-4">
+            {ds.map((tc) => <TheDeXuat key={tc.ma} tc={tc} an />)}
+          </div>
+        )}
       </div>
     </section>
   );
