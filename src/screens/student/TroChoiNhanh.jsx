@@ -21,6 +21,22 @@ import { MUC_CHOI, khopCap, docDanhTuGioi, docMuaChu, phuongAnNghia, docCauNghe,
  * là một trò. Câu hỏi dựng từ kho có sẵn (xem shared/troChoiNhanh.js); điểm, kỷ lục và XP
  * ghi qua RPC ghi_tro_choi, mỗi lượt cũng tính một ngày học cho chuỗi. */
 
+/* Mô tả một dòng trên thẻ ở sảnh (31/10, chủ dự án). Bản đầy đủ `mo` vẫn dùng ở màn luật chơi. */
+const MO_NGAN = {
+  flashcard: ["Lật thẻ, ôn từ đúng lúc.", "Cartes et révision espacée.", "Flip cards, review on time."],
+  thach_dau: ["Đấu từ vựng 1 chọi 1.", "Duel de vocabulaire 1 contre 1.", "1-on-1 vocabulary duel."],
+  gioi_tinh: ["Phân loại danh từ vào LE hay LA.", "Triez les noms : LE ou LA.", "Sort nouns into LE or LA."],
+  nghe_chon: ["Nghe rồi ghép băng đúng thứ tự.", "Écoutez, remettez dans l'ordre.", "Listen, then put clips in order."],
+  mua_chu: ["Bắt từ trước khi chạm đất.", "Attrapez les mots qui tombent.", "Catch words before they land."],
+  xep_cau: ["Móc từ thành câu, đưa tàu tới ga.", "Accrochez les mots en phrase.", "Hook words into a sentence."],
+  san_loi: ["Khoanh lỗi trước giờ in báo.", "Corrigez avant l'impression.", "Fix mistakes before print."],
+  dung_sai: ["Làm luật sư, bắt lỗi lời khai.", "Avocat, traquez les fautes.", "Be the lawyer, catch the errors."],
+  chep_nhanh: ["Nghe và giải mã 5 bức điện.", "Écoutez, décodez 5 messages.", "Listen and decode 5 messages."],
+  noi_mo_khoa: ["Đọc thoại rồi nói thuộc lòng.", "Lisez, puis dites de mémoire.", "Read, then say it from memory."],
+  tham_tu: ["9 vụ án, truy tìm P.G.", "9 affaires, traquez P.G.", "9 cases, hunt down P.G."],
+  do_vui: ["Gameshow vòng quanh nước Pháp.", "Jeu télé à travers la France.", "A TV quiz around France."],
+  phieu_luu: ["12 tháng du học cùng Léon.", "12 mois d'études avec Léon.", "12 student months with Léon."],
+};
 const TRO_CHOI = () => [
   /* 28/10 (chủ dự án): Flashcard vào sảnh, nhóm Ôn luyện. */
   { ma: "flashcard", den: "/etudiant/bo-the", nhom: "on", Icon: Layers, nen: "from-teal-500 to-emerald-600",
@@ -101,7 +117,7 @@ function Sanh({ ds }) {
       <div className="grid gap-4 md:grid-cols-3">
         {ds.filter((x) => x.nhom === nhom).map(({ ma, den, Icon, nen, ten, mo, leon }) => (
           <Link key={ma} to={den ?? `/etudiant/tro-choi/${ma}`}
-            className={`group relative flex min-h-[220px] flex-col overflow-hidden rounded-3xl bg-gradient-to-br ${nen} p-5 text-white no-underline shadow-[0_14px_30px_rgba(0,0,0,0.12)] transition-transform duration-200 ease-out hover:-translate-y-1 active:scale-[0.985]`}>
+            className={`group relative flex min-h-[258px] flex-col overflow-hidden rounded-3xl bg-gradient-to-br ${nen} p-5 text-white no-underline shadow-[0_14px_30px_rgba(0,0,0,0.12)] transition-transform duration-200 ease-out hover:-translate-y-1 active:scale-[0.985]`}>
             {leon
               ? <img src={leon.src} alt="" aria-hidden loading="lazy" draggable={false} style={leon.kieu} className={`mcf-leon-nen pointer-events-none absolute w-auto select-none object-contain object-right-bottom transition-transform duration-500 ease-out group-hover:scale-105 ${leon.lop}`} />
               : <>
@@ -109,8 +125,8 @@ function Sanh({ ds }) {
                   <Icon aria-hidden size={110} strokeWidth={1.2} className="absolute -bottom-6 -right-4 text-white/15" />
                 </>}
             <span className="relative grid h-12 w-12 place-items-center rounded-2xl bg-white/25"><Icon size={24} /></span>
-            <span className={`relative mt-4 text-xl font-extrabold ${leon?.chu ?? ""}`}>{ten}</span>
-            <span className={`relative mt-1 text-sm leading-snug text-white/90 ${leon?.chu ?? ""}`}>{mo}</span>
+            <span className="relative mt-4 text-xl font-extrabold">{ten}</span>
+            <span className={`relative mt-1 text-sm leading-snug text-white/90 ${leon?.chu ?? ""}`}>{MO_NGAN[ma] ? tr(...MO_NGAN[ma]) : mo}</span>
             <span className="relative mt-auto flex items-center justify-between pt-4 text-sm font-bold">
               {den ? <span className="inline-flex items-center gap-1.5 rounded-full bg-white/20 px-3 py-1"><Icon size={14} /> {ma === "thach_dau" ? "PvP" : tr("Ôn", "Révision", "Review")}</span>
                 : <span className="inline-flex items-center gap-1 rounded-full bg-white/20 px-2.5 py-1 text-xs" title={tr("Kỷ lục Dễ · Vừa · Khó", "Records Facile · Moyen · Difficile", "Best Easy · Medium · Hard")}>
