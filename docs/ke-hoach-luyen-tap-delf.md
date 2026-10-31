@@ -15,7 +15,7 @@ Kế hoạch gồm 4 trình độ × 4 kỹ năng, tổng 188 bài. 42 bài đan
 
 **Đã chốt mặc định (đổi được):**
 
-- Làm A1, A2, B1, B2. Kho B2+ và C1 giữ nguyên, không mở rộng, vì C1 thuộc DALF.
+- Tài liệu này chi tiết A1, A2, B1, B2. Bản đầy đủ gồm cả DALF C1, C2 nằm ở `docs/ke-hoach-ky-nang-DELF-DALF.xlsx` (112 kỹ năng nhỏ, 278 bài), và file Excel đó là bản mới nhất.
 - Soạn theo format 2 của DELF (phần hiểu chủ yếu QCM), như ghi chú trong `docs/format-de-thi-DELF-A1-B2.xlsx`.
 - Ngữ pháp, Từ vựng, Dịch không bị xoá, chúng chuyển thành nhóm « Nền tảng » hỗ trợ bốn kỹ năng.
 - Ưu tiên A1–A2 trước: đó là nhóm đang có trình độ ghi rõ nhiều nhất (24 hồ sơ Débutant, A1, A2 so với 3 hồ sơ B2) và thư viện hổng nặng nhất.
