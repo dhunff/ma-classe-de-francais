@@ -23,8 +23,8 @@ import { MUC_CHOI, khopCap, docDanhTuGioi, docMuaChu, phuongAnNghia, docCauNghe,
 
 /* Mô tả ngắn trên thẻ ở sảnh cho hai trò có Léon đứng cạnh chữ (31/10, chủ dự án). Các trò khác và màn luật chơi dùng `mo`. */
 const MO_NGAN = {
-  do_vui: ["Gameshow vòng quanh nước Pháp.", "Jeu télé à travers la France.", "A TV quiz around France."],
-  phieu_luu: ["12 tháng du học cùng Léon.", "12 mois d'études avec Léon.", "12 student months with Léon."],
+  do_vui: ["Gameshow cùng MC Léon: tự chọn địa danh trên bản đồ, đua với bà Minette tới chung kết.", "Jeu télé avec Léon : choisissez vos étapes, défiez Minette et visez la finale à Paris.", "TV quiz with Léon: pick your stops, race Minette, reach the Paris final."],
+  phieu_luu: ["Sống 12 tháng du học cùng Léon: tự chọn việc mỗi tuần, giữ tiền, sức và tinh thần.", "12 mois d'études avec Léon : choisissez chaque semaine, gérez argent, énergie et moral.", "12 student months with Léon: choose each week, manage money, energy and mood."],
 };
 const TRO_CHOI = () => [
   /* 28/10 (chủ dự án): Flashcard vào sảnh, nhóm Ôn luyện. */
