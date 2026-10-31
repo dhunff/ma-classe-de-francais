@@ -87,7 +87,7 @@ export const STUDENT_NAV = [
      phải mục menu thường". Sai — kết quả là một màn hình không ai tới được, tức
      là chưa làm xong. Chỗ cảnh báo trước khi tính giờ nằm ở màn chờ của chính
      ExamMode, không phải ở việc giấu lối vào. */
-  { to: "/etudiant/examen", nhom: "thi", labelKey: "nav.exam", Icon: Timer },
+  { to: "/etudiant/examen", nhom: "hoc", labelKey: "nav.exam", Icon: Timer },
   /* « Kết quả thi » rời menu 08/10: vào bằng nút trong màn Thi thử. */
   /* « Thẻ ghi nhớ » (/etudiant/the-ghi-nho) ĐÃ GỠ — 09/09/2026.
      Đó là thẻ SM-2 sinh từ chính câu học sinh làm sai. Flashcard giờ là bộ do
@@ -106,7 +106,7 @@ export const STUDENT_NAV = [
   { to: "/etudiant/calendrier", nhom: "toi", labelKey: "nav.calendar", Icon: CalendarDays },
   /* « Bài tập được giao » (08/10): gộp « Cần làm » + « Đã nộp » thành hai tab
      của một mục, đặt ngay dưới Lịch theo yêu cầu chủ dự án. */
-  { to: "/etudiant/devoirs", nhom: "thi", labelKey: "nav.assigned", Icon: ClipboardList, view: "todo" },
+  { to: "/etudiant/devoirs", nhom: "hoc", labelKey: "nav.assigned", Icon: ClipboardList, view: "todo" },
   { to: "/etudiant/compte", nhom: "toi", labelKey: "nav.account", Icon: UserRound, view: "settings" },
   /* 28/10 (chủ dự án): FAQ ở CUỐI thanh bên, chỗ ô « Cần trợ giúp » cũ (nhóm tro_giup, mt-auto), mở bản trong vỏ app của trang /faq. */
   { to: "/etudiant/faq", nhom: "tro_giup", labelKey: "nav.faq", Icon: LifeBuoy },
@@ -115,15 +115,13 @@ export const STUDENT_NAV = [
 /* 13/10: thanh bên chia NHÓM (trường `nhom`). Danh sách giữ nguyên thứ tự
    khai báo cho mọi chỗ khác; chỉ thanh bên sắp lại theo thứ tự nhóm dưới đây.
    31/10 (chủ dự án): Trang chủ tách riêng thành nhóm « chinh », không có tiêu đề. */
-export const THU_TU_NHOM = { prof: ["chinh", "tong", "lop", "noi_dung"], eleve: ["chinh", "hoc", "on", "thi", "toi", "tro_giup"] };
-/* 27/10 (chủ dự án): phân mục lại thanh bên học sinh. Học tập = học bài mới;
-   Ôn luyện = tự luyện + ôn + chơi; Bài tập & thi = việc có hạn / có chấm;
+export const THU_TU_NHOM = { prof: ["chinh", "tong", "lop", "noi_dung"], eleve: ["chinh", "hoc", "on", "toi", "tro_giup"] };
+/* 31/10 (chủ dự án): phần đầu gom Học tập, Bài tập được giao, Thi thử; Ôn luyện = Luyện tập + Trò chơi;
    Của tôi = tiến độ và tài khoản. Thứ tự trong nhóm theo danh sách dưới,
    mục không có tên ở đây giữ thứ tự gốc của mảng, xếp sau. */
 const THU_TU_MUC_HS = [
-  "/etudiant/dashboard", "/etudiant/ngu-phap", "/etudiant/nghe-noi",
+  "/etudiant/dashboard", "/etudiant/ngu-phap", "/etudiant/nghe-noi", "/etudiant/devoirs", "/etudiant/examen",
   "/etudiant/entrainement", "/etudiant/bo-the", "/etudiant/tro-choi", "/etudiant/thach-dau",
-  "/etudiant/devoirs", "/etudiant/examen",
   "/etudiant/tien-bo", "/etudiant/calendrier", "/etudiant/compte", "/etudiant/faq",
 ];
 const viTriMuc = (to) => { const i = THU_TU_MUC_HS.indexOf(to); return i < 0 ? 999 : i; };
