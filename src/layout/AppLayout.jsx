@@ -98,7 +98,7 @@ export default function AppLayout({
           onOpenMenu={() => setMenuOpen(true)}
         />
 
-        <main ref={mainRef} className="min-w-0 flex-1 overflow-y-auto px-4 pb-8 md:px-8">
+        <main ref={mainRef} className="min-w-0 flex-1 overflow-y-auto px-4 pb-8 pt-4 md:px-8">
           <LeonTheoTrang path={location.pathname} className="mt-1 mb-4" />
           <Outlet context={{ query }} />
         </main>
