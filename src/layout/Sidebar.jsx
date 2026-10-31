@@ -17,6 +17,23 @@ const tenNhom = (n) => ({
   tro_giup: tr("Trợ giúp", "Aide", "Help"),
 }[n] ?? n);
 
+/* Tiêu đề nhóm (31/10, chủ dự án): hạt thoi mang màu riêng của nhóm, chữ đậm, vạch mờ dần sang phải.
+   Hai bảng màu vì trên nền xanh cần sắc sáng, còn trong ngăn kéo nền `surface` cần sắc đậm. */
+const MAU_NHOM = {
+  hoc: ["bg-sky-300", "bg-sky-500"], on: ["bg-amber-300", "bg-amber-500"], thi: ["bg-rose-300", "bg-rose-500"],
+  toi: ["bg-emerald-300", "bg-emerald-500"], tro_giup: ["bg-white", "bg-soft"],
+  tong: ["bg-sky-300", "bg-sky-500"], lop: ["bg-emerald-300", "bg-emerald-500"], noi_dung: ["bg-amber-300", "bg-amber-500"],
+};
+function TieuNhom({ nhom, onBlue }) {
+  return (
+    <span className="mb-1.5 flex items-center gap-2 pl-3 pr-1">
+      <span aria-hidden className={`h-2 w-2 shrink-0 rotate-45 rounded-[2px] ${MAU_NHOM[nhom]?.[onBlue ? 0 : 1] ?? "bg-soft"}`} />
+      <span className={`whitespace-nowrap text-[11px] font-black uppercase tracking-[0.14em] ${onBlue ? "text-white" : "text-ink"}`}>{tenNhom(nhom)}</span>
+      <span aria-hidden className={`h-px min-w-0 flex-1 bg-gradient-to-r ${onBlue ? "from-white/45" : "from-line"} to-transparent`} />
+    </span>
+  );
+}
+
 /* Thanh điều hướng trái — nằm thẳng trên nền xanh của khung, không có nền
    riêng.
 
@@ -90,10 +107,10 @@ function NavList({ role, t, expanded, onNavigate, onBlue = true }) {
     <MotionConfig reducedMotion="user">
     <nav className={`flex flex-1 flex-col ${onBlue ? "pl-3" : "px-3"}`} aria-label={t("nav.primary")}>
       {navTheoNhom(role).map(({ nhom, muc }, gi) => (
-        <div key={nhom} className={nhom === "tro_giup" ? "mt-auto pb-2 pt-4" : gi ? "mt-4 [@media(max-height:760px)]:mt-2" : ""}>
-          {/* Tên nhóm khi mở rộng; khi thu gọn thì một vạch ngắn ngăn nhóm. */}
+        <div key={nhom} className={nhom === "tro_giup" ? "mt-auto pb-2 pt-4" : nhom === "chinh" ? "mb-1" : gi ? "mt-4 [@media(max-height:760px)]:mt-2" : ""}>
+          {/* Tên nhóm khi mở rộng; khi thu gọn thì một vạch ngắn ngăn nhóm. Nhóm « chinh » đứng riêng, không có tên. */}
           {expanded ? (
-            <span className={`mb-1.5 block px-3 text-[10px] font-extrabold uppercase tracking-[0.16em] ${onBlue ? "text-white/55" : "text-soft"}`}>{tenNhom(nhom)}</span>
+            nhom !== "chinh" && <TieuNhom nhom={nhom} onBlue={onBlue} />
           ) : gi > 0 && (
             <span aria-hidden className={`mx-auto mb-3 block h-px w-8 ${onBlue ? "bg-white/25" : "bg-line"}`} />
           )}
@@ -284,7 +301,9 @@ export default function Sidebar({
           <span className="absolute -left-16 -top-16 h-56 w-56 rounded-full bg-white/10 blur-2xl" />
           <span className="absolute -bottom-20 left-6 h-48 w-48 rounded-full bg-sky-300/15 blur-3xl" />
         </span>
-        <div className={`relative flex shrink-0 items-center px-4 ${expanded ? "justify-end" : "justify-center"}`}>
+        {/* 31/10 (chủ dự án): tên web ở trên cùng, nút thu gọn nằm cùng hàng; thu gọn thì xếp dọc. */}
+        <div className={`relative flex shrink-0 pb-5 [@media(max-height:760px)]:pb-2 ${expanded ? "items-center justify-between pr-4" : "flex-col items-center gap-3"}`}>
+          <Brand expanded={expanded} />
           {onToggle && (
             <button
               type="button"
@@ -296,10 +315,6 @@ export default function Sidebar({
               {expanded ? <ChevronLeft size={16} /> : <ChevronRight size={16} />}
             </button>
           )}
-        </div>
-
-        <div className="shrink-0 py-5 [@media(max-height:760px)]:py-2">
-          <Brand expanded={expanded} />
         </div>
 
         {/* Màn hình thấp (laptop nhỏ, 18/10): danh sách cuộn trong cột thay vì bị cắt.
@@ -334,7 +349,8 @@ export default function Sidebar({
           open ? "translate-x-0" : "-translate-x-full",
         ].join(" ")}
       >
-        <div className="flex shrink-0 items-center justify-end px-4 pt-4">
+        <div className="flex shrink-0 items-center justify-between py-4 pr-4">
+          <Brand expanded onBlue={false} />
           <button
             type="button"
             onClick={onClose}
@@ -343,10 +359,6 @@ export default function Sidebar({
           >
             <X size={19} />
           </button>
-        </div>
-
-        <div className="shrink-0 py-3">
-          <Brand expanded onBlue={false} />
         </div>
 
         {/* Ngăn kéo luôn mở rộng. Toàn bộ phần dưới cuộn được (18/10): trên điện

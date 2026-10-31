@@ -19,7 +19,7 @@ import {
 export const ROLE_HOME = { prof: "/professeur/dashboard", eleve: "/etudiant/dashboard" };
 
 export const TEACHER_NAV = [
-  { to: "/professeur/dashboard", nhom: "tong", labelKey: "nav.dashboard", Icon: LayoutDashboard },
+  { to: "/professeur/dashboard", nhom: "chinh", labelKey: "nav.dashboard", Icon: LayoutDashboard },
   { to: "/professeur/exercices", nhom: "noi_dung", labelKey: "nav.exercises", Icon: BookOpen, view: "list" },
   { to: "/professeur/eleves", nhom: "lop", labelKey: "nav.students", Icon: Users, view: "students" },
   { to: "/professeur/statistiques", nhom: "tong", labelKey: "nav.stats", Icon: BarChart3, view: "stats" },
@@ -62,7 +62,7 @@ export const TEACHER_NAV = [
 ];
 
 export const STUDENT_NAV = [
-  { to: "/etudiant/dashboard", nhom: "hoc", labelKey: "nav.dashboard", Icon: House },
+  { to: "/etudiant/dashboard", nhom: "chinh", labelKey: "nav.dashboard", Icon: House },
   /* « Học ngữ pháp » (15/10): lý thuyết theo trình độ + thực hành ngay. Đứng ngay
      sau Trang chủ (16/10, theo chủ dự án). */
   /* Lộ trình học tập — cây kỹ năng A1 → C1. Không có `view`: route riêng
@@ -113,8 +113,9 @@ export const STUDENT_NAV = [
 ];
 
 /* 13/10: thanh bên chia NHÓM (trường `nhom`). Danh sách giữ nguyên thứ tự
-   khai báo cho mọi chỗ khác; chỉ thanh bên sắp lại theo thứ tự nhóm dưới đây. */
-export const THU_TU_NHOM = { prof: ["tong", "lop", "noi_dung"], eleve: ["hoc", "on", "thi", "toi", "tro_giup"] };
+   khai báo cho mọi chỗ khác; chỉ thanh bên sắp lại theo thứ tự nhóm dưới đây.
+   31/10 (chủ dự án): Trang chủ tách riêng thành nhóm « chinh », không có tiêu đề. */
+export const THU_TU_NHOM = { prof: ["chinh", "tong", "lop", "noi_dung"], eleve: ["chinh", "hoc", "on", "thi", "toi", "tro_giup"] };
 /* 27/10 (chủ dự án): phân mục lại thanh bên học sinh. Học tập = học bài mới;
    Ôn luyện = tự luyện + ôn + chơi; Bài tập & thi = việc có hạn / có chấm;
    Của tôi = tiến độ và tài khoản. Thứ tự trong nhóm theo danh sách dưới,

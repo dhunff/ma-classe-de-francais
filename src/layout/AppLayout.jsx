@@ -58,7 +58,7 @@ export default function AppLayout({
        mảng chói. Nền khung đổi sang xanh navy gần đen — thanh bên vẫn "xanh
        đậm hoặc đen" như thiết kế muốn, và chữ trắng vẫn đọc được trên cả hai
        bản. */
-    <div className="flex h-[100dvh] w-full overflow-hidden bg-primary font-sans text-ink dark:bg-[#0e1526]">
+    <div className="flex h-[100dvh] w-full overflow-hidden bg-primary bg-[linear-gradient(165deg,rgba(255,255,255,0.14)_0%,rgba(255,255,255,0)_42%,rgba(0,0,0,0.18)_100%)] font-sans text-ink dark:bg-[#0e1526]">
       <Sidebar
         role={session?.role}
         session={session}
