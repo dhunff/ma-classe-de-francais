@@ -214,10 +214,17 @@ export function TroChoi() {
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5">
         {o.map((x) => (
           <Link key={x.to} to={x.to}
-            className={`group relative flex min-h-[132px] flex-col justify-between overflow-hidden rounded-3xl 2xl:aspect-[3/4] 2xl:min-h-0 bg-gradient-to-br ${x.nen} p-4 text-white no-underline shadow-md transition-transform duration-200 ease-out hover:-translate-y-1 active:scale-[0.985]`}>
+            className={`group relative flex min-h-[132px] w-full flex-col justify-between self-stretch rounded-3xl 2xl:aspect-[3/4] 2xl:min-h-[auto] bg-gradient-to-br ${x.nen} p-4 text-white no-underline shadow-md transition-transform duration-200 ease-out hover:-translate-y-1 active:scale-[0.985]`}>
             {/* 28/10: thẻ đứng 3:4. Chữ dồn lên trên ngay dưới biểu tượng, mũi tên « Vào » ở đáy;
-                hình nền mờ to hơn, lùi xuống góc dưới để không đè lên chữ. */}
-            <x.Icon size={96} strokeWidth={1.2} className="pointer-events-none absolute -bottom-5 -right-5 opacity-15 transition-transform duration-300 group-hover:-rotate-6 group-hover:scale-110" />
+                hình nền mờ to hơn, lùi xuống góc dưới để không đè lên chữ.
+                31/10: 3:4 chỉ là chiều cao TỐI THIỂU. Khoá cứng (min-h-0) thì tên dài hai dòng tràn
+                xuống và « Vào » lệch so với thẻ bên cạnh; self-stretch giữ cả hàng cao bằng nhau.
+                overflow-hidden phải nằm ở lớp hình nền: đặt trên thẻ thì trình duyệt bỏ chiều cao
+                tối thiểu theo nội dung và lỗi trên quay lại. w-full chặn tỉ lệ 3:4 nới rộng thẻ ra
+                khỏi ô lưới khi thẻ cao thêm. */}
+            <span aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden rounded-3xl">
+              <x.Icon size={96} strokeWidth={1.2} className="absolute -bottom-5 -right-5 opacity-15 transition-transform duration-300 group-hover:-rotate-6 group-hover:scale-110" />
+            </span>
             <span className="relative flex flex-col gap-3">
               <span className="grid h-11 w-11 place-items-center rounded-2xl bg-white/20"><x.Icon size={22} /></span>
               <span>
