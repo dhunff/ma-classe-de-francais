@@ -264,7 +264,7 @@ Ký hiệu tiêu chí viết và nói lấy từ `delfGrille.js` và `grillePO.j
 | B2-CO-4 | Theo dõi lập luận | Luận điểm, phản đề, ví dụ | qcm | 2 | Bài 1, 2 |
 | B2-CO-5 | Hiểu từ theo ngữ cảnh | Thành ngữ và từ trừu tượng | qcm | 1 | Toàn bài |
 
-**Đạt được cho DELF:** giữ được 25 điểm phần nghe mà không cần hiểu từng từ, và không mất bình tĩnh ở bài chỉ nghe một lần.
+**Đạt được cho DELF:** theo được tài liệu dài mà không cần hiểu từng từ, và không mất bình tĩnh ở bài chỉ nghe một lần.
 
 #### Đọc (CE): 60 phút, 25 điểm, 3 bài
 
