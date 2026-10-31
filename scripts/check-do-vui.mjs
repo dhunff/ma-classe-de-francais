@@ -3,7 +3,7 @@ import { CAU } from "../src/content/troChoi/doVui.js";
 import { DIA_DANH, LOI_MUC, LOI_MINETTE } from "../src/content/troChoi/doVuiDiaDanh.js";
 import { GOI_Y, MOC_SU, NGHE, SU_KIEN } from "../src/content/troChoi/doVuiDang.js";
 import { DANG, dangKe, rutDacBiet, dungThuTu, lichSuKien, rutSuKien, hauQua, dungDapAn } from "../src/screens/student/doVui/dangCau.js";
-import { GOC, SO_DUNG, SO_LUA_CHON, CAU_CHUNG_KET, CO_CHUNG_KET, VE_DAU, P_MINETTE, moO, cauCua, diemDen, rutCau, rutChungKet, chieu, diemCau, thangTour, heSoChuoi, giaVe, luaChon, demCo, mucKhoHon, chiemDuoc, minetteDi, traThuong, diaDanh, boHai, binhChon, leonDoan, diemCuoi } from "../src/screens/student/doVui/luat.js";
+import { GOC, SO_DUNG, SO_LUA_CHON, CAU_CHUNG_KET, CO_CHUNG_KET, VE_DAU, P_MINETTE, moO, cauCua, diemDen, rutCau, rutChungKet, chieu, diemCau, thangTour, VUNG, huyHieu, DOI_DAU_CU, temTuDauCu, gopTem, thieuTem, vanHopLe, heSoChuoi, giaVe, luaChon, demCo, mucKhoHon, chiemDuoc, minetteDi, traThuong, diaDanh, boHai, binhChon, leonDoan, diemCuoi } from "../src/screens/student/doVui/luat.js";
 
 let dat = 0, hong = 0;
 const ca = (ten, ok, chiTiet = "") => { if (ok) dat++; else { hong++; console.log("✗", ten, chiTiet); } };
@@ -116,6 +116,17 @@ for (const muc of MUC) for (let v = 0; v < 300; v++) {
   const a = rutSuKien(muc, []), b = rutSuKien(muc, [a.loai]);
   ca("sự kiện không trùng loại", a.loai !== b.loai && a.muc === muc);
 }
+
+// Hộ chiếu và ván dở.
+ca("dấu cũ đổi sang địa danh có thật", Object.values(DOI_DAU_CU).every((id) => ids.has(id)) && Object.keys(DOI_DAU_CU).length === 9);
+ca("dấu cũ đổi đúng, bỏ khoá lạ", JSON.stringify(temTuDauCu({ loire: 300, la: 1 })) === '{"chambord":1}' && Object.keys(temTuDauCu(null)).length === 0);
+ca("gộp tem lấy số lớn hơn", JSON.stringify(gopTem({ a: 1, b: 2 }, { a: 2 }, null)) === '{"a":2,"b":2}');
+ca("chỉ gửi tem máy chủ thiếu", thieuTem({ a: 2, b: 1 }, { a: 2, b: 0 }).length === 1 && thieuTem({ a: 1 }, undefined).length === 1);
+ca("mọi địa danh thuộc một vùng có huy hiệu", DIA_DANH.every((d) => VUNG.includes(d.vung)));
+ca("đủ tem cả vùng mới có huy hiệu", !huyHieu({ nantes: 1 }).includes("loire") && huyHieu({ nantes: 1, orleans: 1, amboise: 1, chambord: 1 }).includes("loire") && huyHieu({ ajaccio: 1 }).includes("corse") && huyHieu({}).length === 0);
+const van = { ban: 1, muc: "vua", buoc: "chon", lo: [GOC, "lyon"], mnLo: [GOC], ds: [], i: 0, toi: null };
+ca("ván hợp lệ", vanHopLe(van));
+ca("ván hỏng bị loại", !vanHopLe(null) && !vanHopLe({}) && !vanHopLe({ ...van, ban: 2 }) && !vanHopLe({ ...van, buoc: "mo" }) && !vanHopLe({ ...van, lo: ["atlantide"] }) && !vanHopLe({ ...van, buoc: "hoi" }) && !vanHopLe({ ...van, buoc: "suKien" }) && !vanHopLe({ ...van, buoc: "xongDung" }));
 
 /* Giả lập trọn Tour với luật thật, người chơi chọn ngẫu nhiên. Tỉ lệ thắng phải tăng theo tỉ lệ đúng. */
 function tour(muc, p) {

@@ -1,23 +1,38 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Landmark, UtensilsCrossed, Mountain, ScrollText, Palette, Star, Stamp, MapPin, TrainFront, Ticket, Flag, Flame, Users, Phone, Hourglass, Scissors, Coins, LifeBuoy, Trophy, Lightbulb, Map as IconBanDo, ListOrdered, Headphones, Store, UserRound, BadgeAlert } from "lucide-react";
+import { Landmark, UtensilsCrossed, Mountain, ScrollText, Palette, Star, Stamp, MapPin, TrainFront, Ticket, Flag, Flame, Users, Phone, Hourglass, Scissors, Coins, LifeBuoy, Trophy, Lightbulb, Map as IconBanDo, ListOrdered, Headphones, Store, UserRound, BadgeAlert, BookMarked, CloudOff, Play } from "lucide-react";
 import CauTracNghiem from "../CauTracNghiem.jsx";
 import BanDoPhap from "./BanDoPhap.jsx";
 import { Minette, PhaoGiay } from "./Minette.jsx";
 import { NutNghe, XepMoc, useCoGiongPhap } from "./CauDacBiet.jsx";
+import HoChieu from "./HoChieu.jsx";
 import { GIO_DANG, HE_SO_GOI_Y, dangKe, rutDacBiet, dungDapAn, lichSuKien, rutSuKien, hauQua } from "./dangCau.js";
 import { LOI_MUC, LOI_MINETTE } from "../../../content/troChoi/doVuiDiaDanh.js";
-import { GOC, SO_DUNG, VE_DAU, CUOC_TOI_DA, THEM_GIO, CO_CHUNG_KET, DIEM_MOI_VE, THUONG_THANG, P_MINETTE, TRO_GIUP, diaDanh, moO, diemDen, rutCau, rutChungKet, diemCau, heSoSao, heSoChuoi, thangTour, luaChon, demCo, mucKhoHon, chiemDuoc, minetteDi, loaiThuong, traThuong, boHai, binhChon, leonDoan, diemCuoi } from "./luat.js";
+import { GOC, SO_DUNG, VE_DAU, CUOC_TOI_DA, THEM_GIO, CO_CHUNG_KET, DIEM_MOI_VE, THUONG_THANG, P_MINETTE, TRO_GIUP, diaDanh, moO, diemDen, rutCau, rutChungKet, diemCau, heSoSao, heSoChuoi, thangTour, luaChon, demCo, mucKhoHon, chiemDuoc, minetteDi, loaiThuong, traThuong, boHai, binhChon, leonDoan, diemCuoi, temTuDauCu, gopTem, thieuTem, vanHopLe } from "./luat.js";
 import { tr } from "../../../shared/i18n.jsx";
 import { phat } from "../../../shared/amThanh.js";
 import { Leon, leonVai } from "../../../shared/leon.jsx";
 
 /* « Le Grand Quiz de France »: Tour de France (31/10). Xuất phát ở Paris, người chơi tự chọn từng điểm
    dừng trên bản đồ, trả lời câu của nơi đó, rồi về Paris chung kết. Thắng thua là cuộc đua cờ với bà
-   Minette: chiếm nơi nào được số cờ bằng số sao nơi đó (xem luat.js). Tem theo địa danh tạm lưu ở
-   trình duyệt (khoá mới, dấu chín chặng cũ ở mcf-do-vui-v1 giữ nguyên); điểm thật ghi qua ghi_tro_choi. */
+   Minette: chiếm nơi nào được số cờ bằng số sao nơi đó (xem luat.js). Tem và ván dở ghi ở máy trước, rồi đẩy
+   lên máy chủ nếu được (migration 176), nên chưa chạy migration thì game vẫn chơi được; điểm thật ghi
+   qua ghi_tro_choi. Dấu chín chặng cũ ở mcf-do-vui-v1 đổi một lần sang tem, khoá cũ giữ nguyên. */
 const KHOA_TEM = "mcf-do-vui-tem-v1";
+const KHOA_CU = "mcf-do-vui-v1", KHOA_DA_DOI = "mcf-do-vui-da-doi-cu", KHOA_CHU = "mcf-do-vui-tem-chu", KHOA_VAN = "mcf-do-vui-van-v1";
 const docTem = () => { try { return JSON.parse(localStorage.getItem(KHOA_TEM)) || {}; } catch { return {}; } };
-const luuTem = (id, diem) => { try { const t = docTem(); t[id] = Math.max(t[id] ?? 0, diem); localStorage.setItem(KHOA_TEM, JSON.stringify(t)); } catch { /* bỏ qua */ } };
+const ghiTem = (t) => { try { localStorage.setItem(KHOA_TEM, JSON.stringify(t)); } catch { /* bỏ qua */ } };
+const luuTem = (id, diem) => ghiTem(gopTem(docTem(), { [id]: diem }));
+const doiDauCu = () => {
+  try {
+    if (localStorage.getItem(KHOA_DA_DOI)) return;
+    ghiTem(gopTem(docTem(), temTuDauCu(JSON.parse(localStorage.getItem(KHOA_CU)))));
+    localStorage.setItem(KHOA_DA_DOI, "1");
+  } catch { /* bỏ qua */ }
+};
+const docChu = () => { try { return localStorage.getItem(KHOA_CHU); } catch { return null; } };
+const ghiChu_ = (uid) => { try { localStorage.setItem(KHOA_CHU, uid); } catch { /* bỏ qua */ } };
+const docVan = () => { try { const v = JSON.parse(localStorage.getItem(KHOA_VAN)); return vanHopLe(v) ? v : null; } catch { return null; } };
+const ghiVan = (v) => { try { if (v) localStorage.setItem(KHOA_VAN, JSON.stringify(v)); else localStorage.removeItem(KHOA_VAN); } catch { /* bỏ qua */ } };
 
 const LOAI = {
   di_tich: { Icon: Landmark, ten: () => tr("Di tích", "Monument", "Monument") },
@@ -69,10 +84,13 @@ const LoiLeon = ({ cam, children }) => (
   </div>
 );
 
-export default function DoVui({ muc = "vua", he, onXong }) {
+export default function DoVui({ muc = "vua", he, onXong, kho }) {
   const GIAY = Math.round(20 * (he?.gio ?? 1));
   const [buoc, setBuoc] = useState("mo");         // mo | suKien | chon | tau | hoi | xongDung | ket
-  const [tem, setTem] = useState(docTem);
+  const [tem, setTem] = useState(() => { doiDauCu(); return docTem(); });
+  const [vanDo, setVanDo] = useState(null);       // ván dở tìm thấy lúc mở trò, chờ người chơi quyết
+  const [may, setMay] = useState(kho ? "cho" : "ok");   // cho | ok | loi: tình trạng lưu máy chủ
+  const [xemHc, setXemHc] = useState(false);
   const [lo, setLo] = useState([GOC]);            // lộ trình, phần tử đầu là Paris
   const [toi, setToi] = useState(null);           // điểm đang tới
   const [ds, setDs] = useState([]);               // câu của điểm dừng này
@@ -100,6 +118,7 @@ export default function DoVui({ muc = "vua", he, onXong }) {
   const lichSk = useRef(lichSuKien());
   const daLoaiSk = useRef([]);
   const daDang = useRef([]);                      // dạng câu đặc biệt đã gặp trong Tour
+  const uid = useRef(null), choGui = useRef(undefined), henGui = useRef(null);
   const kq = useRef({ diem: 0, dung: 0, tong: 0 });
   const dung = useRef({ dung: 0 });               // số câu đúng ở điểm dừng hiện tại
   const daHoi = useRef([]);
@@ -180,11 +199,49 @@ export default function DoVui({ muc = "vua", he, onXong }) {
     return () => clearInterval(t);
   }, [buoc, i, chon == null]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  /* Mở trò: lấy ván mới nhất giữa máy và máy chủ, gộp tem hai bên. Tem trên trình duyệt của tài khoản khác thì bỏ qua. */
+  useEffect(() => {
+    if (!kho) { setVanDo(docVan()); return undefined; }
+    let song = true;
+    kho.doc().then((r) => {
+      if (!song) return;
+      if (!r || r.loi) { setMay("loi"); setVanDo(docVan()); return; }
+      uid.current = r.uid; setMay("ok");
+      const m = docVan(), vMay = m?.nguoi && m.nguoi !== r.uid ? null : m, sv = vanHopLe(r.van) ? r.van : null;
+      setVanDo(!sv ? vMay : !vMay || (sv.luc ?? 0) >= (vMay.luc ?? 0) ? sv : vMay);
+      const chuTem = docChu(), temMay = !chuTem || chuTem === r.uid ? docTem() : {}, gop = gopTem(r.tem, temMay);
+      ghiTem(gop); ghiChu_(r.uid); setTem(gop);
+      const thieu = thieuTem(temMay, r.tem);
+      if (thieu.length) kho.luuTem(thieu).then((k) => { if (k?.loi) setMay("loi"); });
+    });
+    return () => { song = false; };
+  }, [kho]);
+
+  /* Ghi máy ngay, ghi máy chủ sau một nhịp để mỗi cú bấm không thành một lượt gọi mạng. Ván chỉ lưu
+     từ lúc bắt đầu Tour; chuyến tàu lưu thành màn hỏi vì câu đã rút sẵn. */
+  const guiVan = (v) => { choGui.current = undefined; kho?.luu(v).then((r) => setMay(r?.loi ? "loi" : "ok")); };
+  useEffect(() => {
+    if (buoc === "mo") return;
+    const v = { ban: 1, muc, luc: Date.now(), nguoi: uid.current, buoc: buoc === "tau" ? "hoi" : buoc, lo, toi, ds, i, chon, ve, cuoc, chuoi, daDung, an, binh, leonChon, mnLo, chu, coKet, mnDung, bienCo, soGoiY, sk, skChon, skDoi, boSan, kq: kq.current, dung: dung.current, daHoi: daHoi.current, lich: lichSk.current, daLoai: daLoaiSk.current, daDang: daDang.current };
+    ghiVan(v);
+    if (kho) { choGui.current = v; clearTimeout(henGui.current); henGui.current = setTimeout(() => guiVan(v), 1500); }
+  }, [buoc, i, chon, ve, cuoc, daDung, chu, skChon, skDoi, soGoiY, an, binh, leonChon]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => () => { clearTimeout(henGui.current); if (choGui.current !== undefined) kho?.luu(choGui.current); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const xoaVan = () => { clearTimeout(henGui.current); choGui.current = undefined; ghiVan(null); kho?.luu(null); };
+  const choiTiep = (v) => {
+    setLo(v.lo); setToi(v.toi); setDs(v.ds); setI(v.i); setChon(v.chon); setVe(v.ve); setCuoc(v.cuoc); setChuoi(v.chuoi); setDaDung(v.daDung); setAn(v.an); setBinh(v.binh); setLeonChon(v.leonChon);
+    setMnLo(v.mnLo); setChu(v.chu); setCoKet(v.coKet); setMnDung(v.mnDung); setBienCo(v.bienCo); setSoGoiY(v.soGoiY); setSk(v.sk); setSkChon(v.skChon); setSkDoi(v.skDoi); setBoSan(v.boSan);
+    kq.current = v.kq; dung.current = v.dung; daHoi.current = v.daHoi; lichSk.current = v.lich; daLoaiSk.current = v.daLoai; daDang.current = v.daDang;
+    phat("tiep"); setBuoc(v.buoc);
+  };
+  const ghiTemMoi = (id, d) => { luuTem(id, d); setTem(docTem()); kho?.luuTem([{ noi: id, diem: d }]).then((r) => { if (r?.loi) setMay("loi"); }); };
+
   const tiepCau = () => {
     if (i + 1 < ds.length) { moiCau(); setI(i + 1); return; }
-    if (chungKet) { phat(thangTour(coBan, coMn) ? "thang" : "thua"); setBuoc("ket"); return; }
+    if (chungKet) { if (coKet.ban > 0) ghiTemMoi(GOC, dung.current.dung); phat(thangTour(coBan, coMn) ? "thang" : "thua"); setBuoc("ket"); return; }
     const d = dung.current.dung, duoc = chiemDuoc(d, ds.length, cuaMinette);
-    if (d > 0) { luuTem(toi, d); setTem(docTem()); }
+    if (d > 0) ghiTemMoi(toi, d);
     const thuong = d === ds.length ? traThuong(noi, daDung) : null;
     if (thuong === "ve") setVe((v) => v + 1);
     if (thuong === "tro_giup") setDaDung(daDung.slice(0, -1));
@@ -238,6 +295,9 @@ export default function DoVui({ muc = "vua", he, onXong }) {
     </div>
   );
 
+  const canhBaoMay = may === "loi" && <p className="m-0 mt-3 flex items-center gap-2 rounded-xl bg-white/10 px-3 py-2 text-xs text-white/80"><CloudOff size={14} className="shrink-0" />{tr("Chưa nối được máy chủ, tem và ván dở tạm lưu trên trình duyệt này.", "Serveur injoignable : progression gardée sur ce navigateur.", "Server unreachable: progress is kept in this browser.")}</p>;
+  if (xemHc) return <div className={nen}><HoChieu tem={tem} ghiChu={canhBaoMay} onDong={() => setXemHc(false)} /></div>;
+
   if (buoc === "mo") return (
     <div className={nen}>
       <LoiLeon cam="phap">{LOI_MUC[muc].mo}</LoiLeon>
@@ -249,8 +309,12 @@ export default function DoVui({ muc = "vua", he, onXong }) {
         <li className="flex gap-2 rounded-xl bg-white/10 p-2.5"><LifeBuoy size={15} className="mt-px shrink-0 text-amber-300" />{tr("Bốn trợ giúp, mỗi loại dùng một lần. Đúng liên tiếp thì điểm nhân lên tới ×2.", "Quatre jokers, un usage chacun. Les séries multiplient les points jusqu'à ×2.", "Four lifelines, one use each. Streaks multiply points up to ×2.")}</li>
       </ul>
       <p className="m-0 mt-3 text-center text-xs text-white/70">{tr(`${moSet.size} địa danh đang chờ bạn. Mỗi Tour chỉ đi được ${SO_DUNG} nơi, nên hãy chọn khôn ngoan.`, `${moSet.size} lieux vous attendent. ${SO_DUNG} étapes par Tour : choisissez bien.`, `${moSet.size} places await. ${SO_DUNG} stops per Tour: choose wisely.`)}</p>
-      <div className="mt-4 text-center">
-        <button type="button" onClick={() => { phat("batDau"); setBuoc("chon"); }} className="cursor-pointer rounded-full border-0 bg-amber-400 px-8 py-3 font-sans text-base font-extrabold text-[#140b33] shadow-[0_6px_0_#b45309] active:translate-y-1 active:shadow-none">{tr("Lên tàu!", "En voiture !", "All aboard!")}</button>
+      {canhBaoMay}
+      {vanDo && vanDo.muc !== muc && <p className="m-0 mt-3 rounded-xl bg-white/10 px-3 py-2 text-center text-xs text-white/80">{tr("Bạn còn một Tour dở ở mức khác. Chọn lại mức đó để chơi tiếp, còn lên tàu ở đây sẽ xoá Tour đó.", "Un Tour est en cours à un autre niveau. Le départ ici l'effacera.", "A Tour is in progress at another level. Starting here erases it.")}</p>}
+      <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
+        {vanDo?.muc === muc && <button type="button" onClick={() => choiTiep(vanDo)} className="flex cursor-pointer items-center gap-2 rounded-full border-0 bg-amber-400 px-6 py-3 font-sans text-base font-extrabold text-[#140b33] shadow-[0_6px_0_#b45309] active:translate-y-1 active:shadow-none"><Play size={17} />{tr(`Chơi tiếp (điểm dừng ${Math.min(vanDo.lo.length, SO_DUNG)}/${SO_DUNG})`, `Continuer (étape ${Math.min(vanDo.lo.length, SO_DUNG)}/${SO_DUNG})`, `Continue (stop ${Math.min(vanDo.lo.length, SO_DUNG)}/${SO_DUNG})`)}</button>}
+        <button type="button" onClick={() => { phat("batDau"); setBuoc("chon"); }} className={vanDo?.muc === muc ? "cursor-pointer rounded-full border-0 bg-white/15 px-5 py-3 font-sans text-sm font-extrabold text-white" : "cursor-pointer rounded-full border-0 bg-amber-400 px-8 py-3 font-sans text-base font-extrabold text-[#140b33] shadow-[0_6px_0_#b45309] active:translate-y-1 active:shadow-none"}>{vanDo?.muc === muc ? tr("Tour mới", "Nouveau Tour", "New Tour") : tr("Lên tàu!", "En voiture !", "All aboard!")}</button>
+        <button type="button" onClick={() => setXemHc(true)} className="flex cursor-pointer items-center gap-2 rounded-full border-0 bg-white/15 px-5 py-3 font-sans text-sm font-extrabold text-white"><BookMarked size={16} />{tr("Hộ chiếu", "Passeport", "Passport")}</button>
       </div>
     </div>
   );
@@ -439,8 +503,9 @@ export default function DoVui({ muc = "vua", he, onXong }) {
       </dl>
       <div className="mx-auto mt-4 max-w-sm">{banDo({ nhan: [GOC] })}</div>
       <LoiLeon cam={thang ? "cuoi-lon" : "co-len"}>{thang ? LOI_MUC[muc].thang : LOI_MUC[muc].thua}</LoiLeon>
-      <div className="mt-5 text-right">
-        <button type="button" onClick={() => onXong({ diem: tongDiem, dung: kq.current.dung, tong: kq.current.tong })}
+      <div className="mt-5 flex flex-wrap justify-end gap-2">
+        <button type="button" onClick={() => setXemHc(true)} className="flex cursor-pointer items-center gap-2 rounded-full border-0 bg-white/15 px-5 py-2.5 font-sans text-sm font-extrabold text-white"><BookMarked size={15} />{tr("Hộ chiếu", "Passeport", "Passport")}</button>
+        <button type="button" onClick={() => { xoaVan(); onXong({ diem: tongDiem, dung: kq.current.dung, tong: kq.current.tong }); }}
           className="cursor-pointer rounded-full border-0 bg-amber-400 px-6 py-2.5 font-sans text-sm font-extrabold text-[#140b33]">{tr("Lưu điểm", "Enregistrer", "Save score")} →</button>
       </div>
     </div>

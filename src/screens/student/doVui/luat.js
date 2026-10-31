@@ -105,4 +105,16 @@ export function leonDoan(muc, an = [], rng = Math.random) {
   return sai[Math.floor(rng() * sai.length)];
 }
 
+/* Hộ chiếu: đủ tem mọi nơi trong một vùng thì có huy hiệu vùng đó. */
+export const VUNG = [...new Set(DIA_DANH.map((d) => d.vung))];
+export const huyHieu = (tem) => VUNG.filter((v) => DIA_DANH.filter((d) => d.vung === v).every((d) => tem[d.id] != null));
+/* Dấu của 9 chặng cũ (trước Tour de France) đổi sang tem của nơi tiêu biểu trong chặng đó. */
+export const DOI_DAU_CU = { paris: "paris", normandie: "mont-saint-michel", provence: "marseille", lyon: "lyon", bordeaux: "bordeaux", alsace: "strasbourg", loire: "chambord", lettres: "besancon", finale: "paris" };
+export const temTuDauCu = (dau) => Object.fromEntries(Object.keys(dau ?? {}).filter((id) => DOI_DAU_CU[id]).map((id) => [DOI_DAU_CU[id], 1]));
+export const gopTem = (...ds) => ds.reduce((g, t) => { Object.entries(t ?? {}).forEach(([id, d]) => { g[id] = Math.max(g[id] ?? 0, d); }); return g; }, {});
+export const thieuTem = (may, sv) => Object.entries(may).filter(([id, d]) => (sv?.[id] ?? -1) < d).map(([noi, diem]) => ({ noi, diem }));
+/* Ván đọc lại từ máy hay máy chủ có thể cũ hoặc hỏng: thà bỏ ván còn hơn làm vỡ màn chơi. */
+const BUOC_LUU = ["chon", "suKien", "hoi", "xongDung", "ket"];
+export const vanHopLe = (v) => !!v && v.ban === 1 && BUOC_LUU.includes(v.buoc) && ["de", "vua", "kho"].includes(v.muc) && Array.isArray(v.lo) && v.lo.every((id) => diaDanh(id)) && Array.isArray(v.mnLo) && v.mnLo.every((id) => diaDanh(id)) && Array.isArray(v.ds) && (v.buoc !== "hoi" || !!v.ds[v.i]) && (v.toi == null || !!diaDanh(v.toi)) && (v.buoc !== "suKien" || !!v.sk) && (v.buoc !== "xongDung" || !!v.bienCo);
+
 export const diemCuoi = (diem, ve, thang) => diem + ve * DIEM_MOI_VE + (thang ? THUONG_THANG : 0);
