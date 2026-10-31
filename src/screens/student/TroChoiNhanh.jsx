@@ -79,7 +79,7 @@ const TRO_CHOI = () => [
   { ma: "noi_mo_khoa", nhom: "ng", Icon: Drama, nen: "from-rose-500 to-red-600",
     ten: tr("Sân khấu Léon", "Le théâtre de Léon", "Léon's theatre"),
     mo: tr("Bạn là diễn viên: đọc thoại vài giây, màn nhung kéo kín, rồi nói thuộc lòng. 3 cảnh, dùng lượt chấm phát âm trong ngày.", "Lisez la réplique, le rideau tombe, dites-la de mémoire. 3 scènes.", "Read your line, the curtain closes, say it from memory. 3 scenes.") },
-  { ma: "tham_tu", nhom: "dv", Icon: Search, nen: "from-slate-600 to-indigo-700", leon: { src: "/leon/tham-tu-lon.webp", lop: "mcf-leon-ro top-1.5 -right-[13px] h-[274px] max-w-none", chu: "max-w-[60%]" },
+  { ma: "tham_tu", nhom: "dv", Icon: Search, nen: "from-slate-600 to-indigo-700", leon: { src: "/leon/tham-tu-lon.webp", lop: "mcf-leon-ro top-[2%] -right-[14%] h-[105%] max-w-none", chu: "max-w-[60%]" },
     ten: tr("Thám tử Léon", "Détective Léon", "Detective Léon"),
     mo: tr("Làm trợ lý cho Thanh tra Léon: 9 vụ án, đọc manh mối tiếng Pháp và lần ra kẻ bí ẩn P.G.", "Assistez l'inspecteur Léon : 9 affaires, des indices en français et le mystérieux P.G.", "Assist Inspector Léon: 9 cases, French clues and the mysterious P.G.") },
   { ma: "do_vui", nhom: "dv", Icon: Landmark, nen: "from-blue-600 to-red-500", leon: { src: "/leon/mc-lon.webp", lop: "mcf-leon-ro top-2 -right-[120px] h-[240px] max-w-none", chu: "max-w-[60%]", kieu: { "--mcf-mat-a": "68%", "--mcf-mat-b": "84%" } },
