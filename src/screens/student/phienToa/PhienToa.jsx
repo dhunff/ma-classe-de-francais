@@ -1,15 +1,17 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { Gavel, Scale, BookOpen, Check, ChevronLeft, ChevronRight, Undo2, MessageCircleQuestion, FileText, Flag } from "lucide-react";
+import { Gavel, Scale, BookOpen, Check, ChevronLeft, ChevronRight, Undo2, MessageCircleQuestion, FileText, Flag, Ban, CheckCheck, Feather } from "lucide-react";
 import { tr } from "../../../shared/i18n.jsx";
 import { phat } from "../../../shared/amThanh.js";
 import { Leon } from "../../../shared/leon.jsx";
-import { LUAT, CHUONG, VU_TOA } from "../../../content/troChoi/phienToa.js";
+import { LUAT, CHUONG, VU_TOA, BOI_THAM } from "../../../content/troChoi/phienToa.js";
 import { PhaoGiay } from "../doVui/Minette.jsx";
 import BoLuat from "./BoLuat.jsx";
-import { UY_TIN_DAU, SO_BOI_THAM, PHIEU_THANG, DIEM_NHAT, DIEM_UY_TIN, THUONG_THANG, SO_HOI, DIEM_MAU, dongHien, trinhDung, chuongCo, tachDong, viTriLoi, dongDaSua, chamDung, tongNhat, chonTuDe, chonLuat, chonSua, khopSua, giayDoc, phieuThuan, thangToa, diemCuoi } from "./luat.js";
+import { NhanChung, Corbeau, BoiThamMat } from "./NhanVat.jsx";
+import { UY_TIN_DAU, SO_BOI_THAM, PHIEU_THANG, DIEM_NHAT, DIEM_UY_TIN, THUONG_THANG, SO_HOI, DIEM_MAU, taoBoiTham, apSuKien, demPhieu, laThuan, laLoiHop, dapCorbeau, giayCorbeau, dongHien, trinhDung, chuongCo, tachDong, viTriLoi, dongDaSua, chamDung, chonTuDe, chonLuat, chonSua, khopSua, giayDoc, thangToa, diemCuoi } from "./luat.js";
 
 /* Phiên toà (31/10): tranh tụng theo nhịp. Nhân chứng khai từng dòng, người chơi hô OBJECTION rồi đi ba nhát:
    chỉ từ sai, viện điều luật, sửa lại. Hỏi thêm làm lộ dòng khai ẩn, trình tang vật phá mâu thuẫn; cả hai không bắt buộc nhưng thêm phiếu.
+   Sau mỗi nhân chứng Maître Corbeau phản đối ngược, cuối phiên là bài biện hộ rồi bảy bồi thẩm bỏ phiếu.
    Bản 60 giây cũ vẫn ở DungSai, chọn ở chế độ « Phiên nhanh ». */
 const nen = "relative mt-6 overflow-hidden rounded-[2rem] bg-[#1d0f17] bg-[radial-gradient(ellipse_at_top,#6b1730_0,transparent_62%)] p-4 text-white sm:p-5";
 const nutChinh = "cursor-pointer rounded-full border-0 bg-amber-400 px-6 py-2.5 font-sans text-sm font-extrabold text-[#2a1020]";
@@ -21,32 +23,19 @@ const LoiLeon = ({ cam = "lam-viec", children }) => (
   </div>
 );
 
-/* Nhân chứng vẽ bằng SVG: bị bắt lỗi thì mắt tròn, đổ mồ hôi. */
-const NhanChung = ({ mau, loi, size = 64 }) => (
-  <svg viewBox="0 0 64 64" width={size} height={size} aria-hidden className={`shrink-0 ${loi ? "mcf-rung" : "mcf-pt-tho"}`}>
-    <path d="M10 64c2-16 12-22 22-22s20 6 22 22z" fill={mau} />
-    <circle cx="32" cy="27" r="16" fill="#fcd9b6" />
-    <path d="M15 26c0-14 9-18 17-18s17 4 17 18c-4-6-9-9-17-9s-13 3-17 9z" fill="#3b2417" />
-    {loi
-      ? <g fill="#1d0f17"><circle cx="26" cy="28" r="3" /><circle cx="38" cy="28" r="3" /><ellipse cx="32" cy="37" rx="2.5" ry="3" /></g>
-      : <g fill="none" stroke="#1d0f17" strokeWidth="2" strokeLinecap="round"><path d="M23 28h5M36 28h5" /><path d="M28 37q4 2 8 0" /></g>}
-    {loi && <path d="M49 22c2 3 3 5 1 6s-3-1-1-6z" fill="#7dd3fc" />}
-  </svg>
-);
-
-/* Bảy ghế bồi thẩm: vàng là đang nghiêng về bạn. */
-const BoiTham = ({ phieu, moLan }) => (
-  <div className="flex items-center gap-1.5" role="img" aria-label={tr(`${phieu}/${SO_BOI_THAM} bồi thẩm nghiêng về bạn`, `${phieu}/${SO_BOI_THAM} jurés pour vous`, `${phieu}/${SO_BOI_THAM} jurors for you`)}>
-    {Array.from({ length: SO_BOI_THAM }, (_, k) => (
-      <span key={`${k}-${k < phieu}`} style={moLan ? { animationDelay: `${k * 0.18}s` } : undefined} className={`h-5 w-3.5 rounded-t-full ${moLan ? "mcf-sao-no" : "mcf-nay"} ${k < phieu ? "bg-amber-400" : "bg-white/20"}`} />
-    ))}
-  </div>
-);
+/* Bảy ghế bồi thẩm: ghế vàng là người đang nghiêng về bạn. */
+const BoiTham = ({ bt }) => {
+  const phieu = demPhieu(bt);
+  return (
+    <div className="flex items-center gap-1.5" role="img" aria-label={tr(`${phieu}/${SO_BOI_THAM} bồi thẩm nghiêng về bạn`, `${phieu}/${SO_BOI_THAM} jurés pour vous`, `${phieu}/${SO_BOI_THAM} jurors for you`)}>
+      {BOI_THAM.map((b) => <span key={`${b.ma}-${laThuan(bt[b.ma])}`} title={b.ten} className={`mcf-nay h-5 w-3.5 rounded-t-full ${laThuan(bt[b.ma]) ? "bg-amber-400" : "bg-white/20"}`} />)}
+    </div>
+  );
+};
 
 export default function PhienToa({ muc = "vua", he, onXong }) {
   const vu = VU_TOA[0];
-  const tongSo = useMemo(() => tongNhat(vu), [vu]);
-  const [buoc, setBuoc] = useState("mo");       // mo | khai | phan | tang | boLuat | luat | sua | sauLoi | chuyen | ket
+  const [buoc, setBuoc] = useState("mo");       // mo | khai | phan | tang | boLuat | luat | sua | sauLoi | corbeau | chuyen | bienHo | bauPhieu | ket
   const [nc, setNc] = useState(0);              // nhân chứng đang khai
   const [d, setD] = useState(0);                // dòng đang khai
   const [daPha, setDaPha] = useState({});       // "nc:id": lời khai đã bị phá, hoặc mâu thuẫn đã bị phá
@@ -54,6 +43,13 @@ export default function PhienToa({ muc = "vua", he, onXong }) {
   const [luotHoi, setLuotHoi] = useState(SO_HOI);
   const [tang, setTang] = useState(() => vu.tangVat);
   const [hoiLuc, setHoiLuc] = useState(null);   // câu luật sư vừa hỏi
+  const [bt, setBt] = useState(taoBoiTham);     // điểm tin của bảy bồi thẩm
+  const [cI, setCI] = useState(0);              // lượt phản đối của Corbeau
+  const [cKq, setCKq] = useState(null);         // true | false sau khi đáp
+  const [bI, setBI] = useState(0);              // lượt của bài biện hộ
+  const [bChon, setBChon] = useState(null);     // câu vừa chọn cho bài biện hộ
+  const [baiNoi, setBaiNoi] = useState([]);
+  const batDauC = useRef(0);
   const [uy, setUy] = useState(UY_TIN_DAU);
   const [bao, setBao] = useState(null);         // lời toà sau mỗi lượt: { cam, chu }
   const [no, setNo] = useState(0);              // tăng mỗi lần hô OBJECTION để chữ đập lại từ đầu
@@ -67,12 +63,15 @@ export default function PhienToa({ muc = "vua", he, onXong }) {
   const dong = ds[d], khoa = `${nc}:${dong.id}`, daSua = !!dong.loi && !!daPha[khoa], daMau = !!dong.mau && !!daPha[khoa];
   const conLoi = ds.some((x) => x.loi && !daPha[`${nc}:${x.id}`]);
   const tuDe = useMemo(() => chonTuDe(dong), [dong]);
-  const phieu = phieuThuan(kq.current.dung, tongSo, uy);
+  const phieu = demPhieu(bt);
+  const su = (...ds) => setBt((b) => ds.reduce(apSuKien, b));
+  const cauC = N.doiDap?.[cI], dsBH = useMemo(() => vu.bienHo.map((b) => [...b.pa].sort(() => Math.random() - 0.5)), [vu]);
+  const gioC = giayCorbeau(he?.gio ?? 1);
 
-  const ketThuc = () => { setBuoc("ket"); phat(thangToa(phieu) ? "thang" : "thua"); };
+  const sangLuotMoi = () => { if (nc + 1 < vu.nhanChung.length) setBuoc("chuyen"); else { setBI(0); setBChon(null); setBuoc("bienHo"); } };
   const matUy = (chu) => {
     const m = uy - 1;
-    setUy(m); phat("sai");
+    setUy(m); phat("sai"); su("nham");
     if (m <= 0) { setBuoc("ket"); return true; }
     setBao({ cam: "co-len", chu });
     return false;
@@ -89,9 +88,31 @@ export default function PhienToa({ muc = "vua", he, onXong }) {
       else matUy(tr("Bạn để lọt sơ hở, toà mất kiên nhẫn. Nhân chứng khai lại, bạn mất 1 uy tín.", "Une faille vous a échappé : -1 crédibilité.", "You missed a flaw: -1 credibility."));
       return;
     }
-    setHoiLuc(null);
-    if (nc + 1 < vu.nhanChung.length) { setBuoc("chuyen"); return; }
-    ketThuc();
+    setHoiLuc(null); setBao(null); setCI(0); setCKq(null);
+    if (N.doiDap?.length) { batDauC.current = Date.now(); phat("canhBao"); setNo(no + 1); setBuoc("corbeau"); } else sangLuotMoi();
+  };
+  const traCorbeau = (chapNhan) => {
+    if (cKq != null) return;
+    const ok = chapNhan != null && dapCorbeau(cauC, chapNhan);
+    kq.current.tong++;
+    if (ok) { kq.current.dung++; kq.current.diem += DIEM_NHAT; phat("dung"); su("doi"); if (Date.now() - batDauC.current < gioC * 500) su("nhanh"); } else { phat("sai"); su("doi_sai"); }
+    setCKq(ok);
+  };
+  const traCMoi = useRef(traCorbeau);
+  traCMoi.current = traCorbeau;
+  const tiepCorbeau = () => {
+    if (cI + 1 < N.doiDap.length) { setCI(cI + 1); setCKq(null); batDauC.current = Date.now(); setNo(no + 1); phat("canhBao"); return; }
+    sangLuotMoi();
+  };
+  const chonBH = (c) => {
+    if (bChon) return;
+    kq.current.tong++;
+    if (c.sai) { phat("sai"); su("sai_cau"); } else { kq.current.dung++; kq.current.diem += DIEM_NHAT; phat("dung"); su(c.tag); }
+    setBChon(c); setBaiNoi([...baiNoi, c]);
+  };
+  const tiepBH = () => {
+    if (bI + 1 < vu.bienHo.length) { setBI(bI + 1); setBChon(null); return; }
+    phat("nop"); setBuoc("bauPhieu");
   };
   const hoiThem = () => {
     setLuotHoi(luotHoi - 1); setBao(null);
@@ -112,12 +133,19 @@ export default function PhienToa({ muc = "vua", he, onXong }) {
     kq.current.tong++;
     setBuoc("khai");
     if (!trinhDung(dong, id)) { matUy(tr("Tang vật này không liên quan tới dòng khai đó. Toà bác, mất 1 uy tín.", "Cette pièce ne prouve rien ici : -1 crédibilité.", "That exhibit proves nothing here: -1 credibility.")); return; }
-    kq.current.dung++; kq.current.diem += DIEM_MAU; phat("combo");
+    kq.current.dung++; kq.current.diem += DIEM_MAU; phat("combo"); su("tang");
     setDaPha({ ...daPha, [khoa]: true }); setNo(no + 1);
     setBao({ cam: "tuyet-voi", chu: dong.mau.gt });
   };
   const tiepMoi = useRef(tiep);
   tiepMoi.current = tiep;
+
+  // Đồng hồ của Corbeau: không đáp kịp thì tính như đáp sai.
+  useEffect(() => {
+    if (buoc !== "corbeau" || cKq != null) return undefined;
+    const h = setTimeout(() => traCMoi.current(null), gioC * 1000);
+    return () => clearTimeout(h);
+  }, [buoc, cI, cKq, gioC]);
 
   // Mức Khó: lời khai tự chạy, lỡ là qua.
   const giay = giayDoc(daSua ? dongDaSua(dong) : dong.van, he?.gio ?? 1) + (hoiLuc ? 3 : 0);
@@ -135,14 +163,14 @@ export default function PhienToa({ muc = "vua", he, onXong }) {
       matUy(dong.loi ? tr("Dòng này có lỗi, nhưng không phải từ đó. Phản đối bị bác, mất 1 uy tín.", "Pas ce mot-là. Objection rejetée : -1 crédibilité.", "Not that word. Overruled: -1 credibility.") : tr("Dòng này không có lỗi. Phản đối bị bác, mất 1 uy tín.", "Cette phrase est correcte. Objection rejetée : -1 crédibilité.", "That line is correct. Overruled: -1 credibility."));
       return;
     }
-    kq.current.dung++; kq.current.diem += DIEM_NHAT; phat("dung");
+    kq.current.dung++; kq.current.diem += DIEM_NHAT; phat("dung"); su("tu");
     setDsLuat(chonLuat(dong.loi.luat, muc)); setKetQua({}); setBuoc("luat");
   };
   const vien = (ma) => {
     const ok = ma === dong.loi.luat;
     kq.current.tong++;
     if (ok) { kq.current.dung++; kq.current.diem += DIEM_NHAT; }
-    phat(ok ? "dung" : "sai");
+    phat(ok ? "dung" : "sai"); su(ok ? "luat" : "sai_luat");
     setKetQua({ luat: ok }); setDsSua(chonSua(dong.loi)); setBuoc("sua");
   };
   const sua = (dap) => {
@@ -150,13 +178,15 @@ export default function PhienToa({ muc = "vua", he, onXong }) {
     kq.current.tong++;
     if (ok) { kq.current.dung++; kq.current.diem += DIEM_NHAT; }
     phat(ok && ketQua.luat ? "combo" : ok ? "dung" : "sai");
+    su(ok ? "sua" : "sai_sua");
+    if (ok && ketQua.luat && laLoiHop(dong.loi.luat)) su("hop");
     setKetQua({ ...ketQua, sua: ok }); setDaPha({ ...daPha, [khoa]: true }); setBuoc("sauLoi");
   };
   const sauLoi = () => {
     setBuoc("khai");
     if (!conLoi) setBao({ cam: "lam-viec", chu: tr("Hết lỗi đang thấy. Bạn có thể hỏi thêm, trình tang vật, hoặc kết thúc thẩm vấn.", "Plus de faute visible. Questionnez encore ou terminez.", "No visible errors left. Ask more or finish.") });
   };
-  const moiNhanChung = () => { setNc(nc + 1); setD(0); setBao(null); setHoiLuc(null); setLuotHoi(SO_HOI); setBuoc("khai"); };
+  const moiNhanChung = () => { setNc(nc + 1); setD(0); setBao(null); setHoiLuc(null); setLuotHoi(SO_HOI); setCI(0); setCKq(null); setBuoc("khai"); };
 
   const dauToa = (
     <div className="mb-3 flex flex-wrap items-center justify-between gap-3 text-xs font-bold">
@@ -167,7 +197,7 @@ export default function PhienToa({ muc = "vua", he, onXong }) {
         </span>
         <span className="tabular-nums">{kq.current.diem}</span>
       </span>
-      <div className="w-full"><BoiTham phieu={phieu} /></div>
+      <div className="w-full"><BoiTham bt={bt} /></div>
     </div>
   );
   const nguoiKhai = (loi) => (
@@ -208,7 +238,9 @@ export default function PhienToa({ muc = "vua", he, onXong }) {
           <li key={k} className="flex gap-2 rounded-xl bg-white/10 p-2.5"><span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-amber-400 text-[11px] font-black text-[#2a1020]">{k + 1}</span>{x}</li>
         ))}
       </ol>
-      <p className="m-0 mt-3 text-center text-xs text-white/75">{tr(`Phản đối nhầm mất 1 uy tín, hết ${UY_TIN_DAU} uy tín là thua phiên. Cần ${PHIEU_THANG}/${SO_BOI_THAM} phiếu bồi thẩm để thắng.`, `Objection infondée : -1 crédibilité. Il faut ${PHIEU_THANG}/${SO_BOI_THAM} voix.`, `A wrong objection costs 1 credibility. You need ${PHIEU_THANG}/${SO_BOI_THAM} votes.`)}</p>
+      <div className="mt-3 flex items-center gap-3 rounded-xl bg-black/25 p-2.5"><Corbeau size={52} /><p className="m-0 text-xs leading-snug text-white/85">{tr("Maître Corbeau, luật sư bên kia, sẽ phản đối ngược lại bạn. Có lúc ông ấy đúng, có lúc chỉ là dọa.", "Maître Corbeau vous répliquera. Parfois il a raison, parfois il bluffe.", "Maître Corbeau will object back. Sometimes he's right, sometimes he bluffs.")}</p></div>
+      <div className="mt-3 flex flex-wrap justify-center gap-1">{BOI_THAM.map((b) => <span key={b.ma} title={`${b.ten}: ${b.thich}`}><BoiThamMat bt={b} size={36} /></span>)}</div>
+      <p className="m-0 mt-2 text-center text-xs text-white/75">{tr(`Bảy bồi thẩm mỗi người coi trọng một điều, cần ${PHIEU_THANG}/${SO_BOI_THAM} phiếu để thắng. Phản đối nhầm mất 1 uy tín, hết ${UY_TIN_DAU} uy tín là thua phiên.`, `Sept jurés, chacun ses priorités. Il faut ${PHIEU_THANG}/${SO_BOI_THAM} voix.`, `Seven jurors, each with their priorities. You need ${PHIEU_THANG}/${SO_BOI_THAM} votes.`)}</p>
       <div className="mt-4 text-center"><button type="button" onClick={() => { phat("batDau"); setBuoc("khai"); }} className={nutChinh}><Gavel size={16} className="mr-2 inline" />{tr("Khai mạc phiên toà", "Ouvrir l'audience", "Open the hearing")}</button></div>
     </div>
   );
@@ -312,6 +344,77 @@ export default function PhienToa({ muc = "vua", he, onXong }) {
     </div>
   );
 
+  if (buoc === "corbeau") return (
+    <div className={nen}>
+      {cKq == null && <span key={no} aria-hidden className="mcf-pt-obj pointer-events-none absolute inset-x-0 top-1/3 z-10 text-center text-5xl font-black tracking-wider text-violet-400 sm:text-7xl">OBJECTION!</span>}
+      {dauToa}
+      <div className="flex items-start gap-3">
+        <Corbeau cam={cKq == null ? "kieu" : cKq ? "tuc" : "cuoi"} />
+        <div className="min-w-0"><p lang="fr" className="m-0 text-sm font-extrabold">Maître Corbeau</p><p lang="fr" className="mcf-cau-vao m-0 mt-1 rounded-3xl rounded-tl-md bg-violet-500/25 px-4 py-2.5 text-sm font-semibold">{cauC.loi}</p>{muc === "de" && <p className="m-0 mt-1 text-xs text-white/70">{cauC.dich}</p>}</div>
+      </div>
+      {toGiay(<p lang="fr" className="m-0 text-lg font-semibold">{cauC.cau}</p>, cKq === false ? "mcf-rung" : "")}
+      {cKq == null
+        ? <>
+            <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-white/15" aria-hidden><div key={cI} className="mcf-pt-gio h-full bg-violet-400" style={{ animationDuration: `${gioC}s` }} /></div>
+            <p className="m-0 mt-3 text-center text-sm font-extrabold text-amber-300">{tr("Câu này có sai như ông ấy nói không?", "A-t-il raison ?", "Is he right?")}</p>
+            <div className="mt-3 flex flex-wrap justify-center gap-3">
+              <button type="button" onClick={() => traCorbeau(false)} className="flex cursor-pointer items-center gap-2 rounded-xl border-0 bg-red-600 px-5 py-3 font-sans text-sm font-black text-white shadow-[0_5px_0_#7f1d1d] active:translate-y-1 active:shadow-none"><Ban size={17} />{tr("Câu đúng, bác phản đối", "Rejetée", "Overrule")}</button>
+              <button type="button" onClick={() => traCorbeau(true)} className="flex cursor-pointer items-center gap-2 rounded-xl border-0 bg-emerald-700 px-5 py-3 font-sans text-sm font-black text-white shadow-[0_5px_0_#064e3b] active:translate-y-1 active:shadow-none"><CheckCheck size={17} />{tr("Câu sai, nhận lỗi", "Retenue", "Sustain")}</button>
+            </div>
+          </>
+        : <>
+            <LoiLeon cam={cKq ? "tuyet-voi" : "co-len"}>{cKq ? tr("Đáp trả chuẩn xác! ", "Bien répondu ! ", "Well answered! ") : tr("Bồi thẩm đoàn không hài lòng. ", "Le jury fronce les sourcils. ", "The jury frowns. ")}{cauC.gt} <span lang="fr" className="font-bold text-amber-300">Article {LUAT[cauC.luat].so}.</span></LoiLeon>
+            <div className="mt-4 text-right"><button type="button" onClick={tiepCorbeau} className={nutChinh}>{tr("Tiếp tục", "Continuer", "Continue")} →</button></div>
+          </>}
+    </div>
+  );
+
+  if (buoc === "bienHo") {
+    const b = vu.bienHo[bI];
+    return (
+      <div className={nen}>
+        {dauToa}
+        <p className="m-0 flex items-center gap-2 text-sm font-extrabold text-amber-300"><Feather size={16} />{tr("Bài biện hộ", "La plaidoirie", "Closing speech")} {bI + 1}/{vu.bienHo.length} · {b.hoi}</p>
+        {baiNoi.length > (bChon ? 1 : 0) && toGiay(<p lang="fr" className="m-0 text-sm italic text-[#6b5a45]">{baiNoi.slice(0, bChon ? -1 : undefined).filter((x) => !x.sai).map((x) => x.van).join(" ")}</p>)}
+        <div className="mt-3 grid gap-2">
+          {dsBH[bI].map((c) => {
+            const da = bChon === c;
+            return (
+              <button key={c.van} type="button" disabled={!!bChon} onClick={() => chonBH(c)} className={`rounded-xl border-2 border-solid p-3 text-left font-sans text-[#2a1020] ${da ? (c.sai ? "mcf-rung border-red-600 bg-red-100" : "border-emerald-600 bg-emerald-100") : "border-[#a08868] bg-[#fbf6ea]"} ${bChon ? (da ? "" : "opacity-40") : "cursor-pointer hover:-translate-y-0.5"}`}>
+                <span lang="fr" className="block text-base font-semibold">{c.van}</span>
+                {muc === "de" && <span className="block text-xs text-[#6b5a45]">{c.dich}</span>}
+              </button>
+            );
+          })}
+        </div>
+        {bChon && <>
+          <LoiLeon cam={bChon.sai ? "co-len" : "tuyet-voi"}>{bChon.sai ? <>{tr("Sai ngữ pháp ngay trong bài biện hộ! ", "Une faute en pleine plaidoirie ! ", "A mistake in your closing! ")}{bChon.sai}</> : bChon.tag === "ly" ? tr("Lý lẽ chắc chắn, các bồi thẩm ưa chứng cứ gật đầu.", "Argument solide.", "Solid argument.") : bChon.tag === "dep" ? tr("Câu văn hay, Mlle Verlaine rưng rưng.", "Belle formule.", "Beautiful phrase.") : tr("Lời lẽ chân thành chạm đến Mme Voisine.", "Des mots sincères.", "Sincere words.")}</LoiLeon>
+          <div className="mt-4 text-right"><button type="button" onClick={tiepBH} className={nutChinh}>{bI + 1 < vu.bienHo.length ? tr("Câu tiếp", "Suite", "Next") : tr("Mời bồi thẩm bỏ phiếu", "Le jury délibère", "Jury votes")} →</button></div>
+        </>}
+      </div>
+    );
+  }
+
+  if (buoc === "bauPhieu") return (
+    <div className={nen}>
+      <p className="m-0 text-center text-xs font-bold uppercase tracking-[0.3em] text-amber-300">{tr("Bồi thẩm đoàn bỏ phiếu", "Le jury vote", "The jury votes")}</p>
+      <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
+        {BOI_THAM.map((b, k) => {
+          const thuan = laThuan(bt[b.ma]);
+          return (
+            <div key={b.ma} style={{ animationDelay: `${k * 0.45}s` }} className={`mcf-pt-phieu rounded-xl p-2.5 text-center ${thuan ? "bg-amber-400 text-[#2a1020]" : "bg-white/10 text-white"}`}>
+              <span className="flex justify-center"><BoiThamMat bt={b} thuan={thuan} /></span>
+              <p lang="fr" className="m-0 mt-1 text-xs font-extrabold">{b.ten}</p>
+              <p className="m-0 text-[11px] leading-tight opacity-85">{b.thich}</p>
+              <p lang="fr" className="m-0 mt-1 text-xs font-black uppercase tracking-wide">{thuan ? "Non coupable" : "Coupable"}</p>
+            </div>
+          );
+        })}
+      </div>
+      <div className="mt-4 text-right"><button type="button" onClick={() => { phat(thangToa(phieu) ? "thang" : "thua"); setBuoc("ket"); }} className={`mcf-pt-phieu ${nutChinh}`} style={{ animationDelay: "3.2s" }}><Gavel size={15} className="mr-1.5 inline" />{tr("Nghe phán quyết", "Le verdict", "Hear the verdict")}</button></div>
+    </div>
+  );
+
   if (buoc === "chuyen") {
     const sau = vu.nhanChung[nc + 1];
     return (
@@ -324,14 +427,14 @@ export default function PhienToa({ muc = "vua", he, onXong }) {
     );
   }
 
-  const thang = thangToa(phieu), tongDiem = diemCuoi(kq.current.diem, uy, thang);
+  const thang = uy > 0 && thangToa(phieu), tongDiem = diemCuoi(kq.current.diem, uy, thang);
   return (
     <div className={nen}>
       {thang && <PhaoGiay nhieu />}
       <p className="m-0 text-center text-xs font-bold uppercase tracking-[0.3em] text-amber-300">{tr("Phán quyết", "Le verdict", "Verdict")}</p>
       <Gavel size={46} className="mcf-pt-bua mx-auto mt-3 block text-amber-300" aria-hidden />
       <p className="mcf-sao-no m-0 mt-2 text-center text-3xl font-black uppercase tracking-widest" style={{ animationDelay: "1.4s" }}>{thang ? "Non coupable" : "Coupable"}</p>
-      <div className="mt-3 flex justify-center"><BoiTham phieu={phieu} moLan /></div>
+      <div className="mt-3 flex justify-center"><BoiTham bt={bt} /></div>
       <p className="m-0 mt-2 text-center text-xs text-white/75 tabular-nums">{tr(`${phieu}/${SO_BOI_THAM} phiếu cho bị cáo ${vu.bi_cao}`, `${phieu}/${SO_BOI_THAM} voix pour ${vu.bi_cao}`, `${phieu}/${SO_BOI_THAM} votes for ${vu.bi_cao}`)}</p>
       <LoiLeon cam={thang ? "tuyet-voi" : "co-len"}>{thang ? vu.thang : vu.thua}</LoiLeon>
       <dl className="mx-auto mt-4 grid max-w-xs grid-cols-[1fr_auto] gap-x-4 gap-y-1 text-sm">

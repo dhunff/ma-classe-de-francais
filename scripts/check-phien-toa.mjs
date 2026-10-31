@@ -1,6 +1,6 @@
 // Phiên toà: dữ liệu vụ án, điều luật, và luật chấm ba nhát.
-import { LUAT, CHUONG, VU_TOA } from "../src/content/troChoi/phienToa.js";
-import { UY_TIN_DAU, SO_BOI_THAM, SO_NHAT, SO_HOI, dongHien, luatTheoMuc, chuongCo, trinhDung, tachDong, viTriLoi, dongDaSua, chamDung, tongNhat, chonTuDe, chonLuat, chonSua, khopSua, giayDoc, phieuThuan, thangToa, diemCuoi } from "../src/screens/student/phienToa/luat.js";
+import { LUAT, CHUONG, VU_TOA, BOI_THAM } from "../src/content/troChoi/phienToa.js";
+import { UY_TIN_DAU, SO_BOI_THAM, SO_NHAT, SO_HOI, dongHien, luatTheoMuc, chuongCo, trinhDung, tachDong, viTriLoi, dongDaSua, chamDung, tongNhat, chonTuDe, chonLuat, chonSua, khopSua, giayDoc, thangToa, diemCuoi, BANG_TAC_DONG, taoBoiTham, apSuKien, demPhieu, laLoiHop, dapCorbeau, giayCorbeau } from "../src/screens/student/phienToa/luat.js";
 
 let dat = 0, hong = 0;
 const ca = (ten, ok, chiTiet = "") => { if (ok) dat++; else { hong++; console.log("✗", ten, chiTiet); } };
@@ -13,7 +13,12 @@ for (const [ma, l] of Object.entries(LUAT)) {
 ca("Bộ luật khoảng 30 điều, số liền nhau", Object.keys(LUAT).length === 30 && Object.values(LUAT).map((l) => l.so).sort((a, b) => a - b).every((s, k) => s === k + 1));
 ca("mọi chương đều có điều luật", chuongCo(Object.keys(LUAT)).length === Object.keys(CHUONG).length);
 ca("Bộ luật lớn dần theo mức", luatTheoMuc("de").length < luatTheoMuc("vua").length && luatTheoMuc("vua").length < luatTheoMuc("kho").length && luatTheoMuc("kho").length === 30);
-ca("nội dung không có dấu gạch dài", !JSON.stringify([LUAT, CHUONG, VU_TOA]).includes("—"));
+ca("nội dung không có dấu gạch dài", !JSON.stringify([LUAT, CHUONG, VU_TOA, BOI_THAM]).includes("—"));
+ca("đủ 7 bồi thẩm, mã không trùng", BOI_THAM.length === SO_BOI_THAM && new Set(BOI_THAM.map((b) => b.ma)).size === SO_BOI_THAM);
+for (const b of BOI_THAM) { ca(`${b.ma}: đủ tên, sở thích, hình`, b.ten?.length > 2 && b.thich?.length > 8 && /^M/.test(b.toc) && /^#/.test(b.mau)); ca(`${b.ma}: có sự kiện tác động riêng`, Object.values(BANG_TAC_DONG).some((t) => (t[b.ma] ?? 0) !== 0)); }
+for (const [su, t] of Object.entries(BANG_TAC_DONG)) ca(`${su}: chỉ tác động lên bồi thẩm có thật`, Object.keys(t).every((k) => k === "ca" || BOI_THAM.some((b) => b.ma === k)));
+ca("bồi thẩm mới vào chưa thuận ai", demPhieu(taoBoiTham()) === 0);
+ca("điểm tin kẹp trong 0 đến 100", Object.values(Array.from({ length: 80 }).reduce((b) => apSuKien(b, "dep"), taoBoiTham())).every((d) => d >= 0 && d <= 100));
 
 for (const vu of VU_TOA) {
   ca(`${vu.id}: đủ lời mở và kết`, vu.mo?.length > 20 && vu.thang?.length > 20 && vu.thua?.length > 20 && !!vu.bi_cao);
@@ -21,6 +26,11 @@ for (const vu of VU_TOA) {
   for (const nc of vu.nhanChung) {
     ca(`${nc.ten}: có giới thiệu và màu`, nc.gioiThieu?.length > 10 && /^#/.test(nc.mau));
     ca(`${nc.ten}: có dòng lỗi lẫn dòng đúng`, nc.dong.some((d) => d.loi) && nc.dong.some((d) => !d.loi));
+    ca(`${nc.ten}: Corbeau có đủ hai kiểu, thật và dọa`, nc.doiDap?.some((c) => c.dung) && nc.doiDap?.some((c) => !c.dung));
+    for (const c of nc.doiDap ?? []) {
+      ca(`Corbeau: đủ nội dung: ${c.cau}`, c.loi?.length > 10 && c.dich?.length > 10 && c.gt?.length > 15 && !!LUAT[c.luat]);
+      ca(`Corbeau: chấm đúng hai chiều: ${c.cau}`, dapCorbeau(c, !c.dung) && !dapCorbeau(c, c.dung));
+    }
     ca(`${nc.ten}: lượt hỏi đủ dùng cho dòng ẩn`, nc.dong.filter((d) => d.them).length <= SO_HOI);
     const tatCa = nc.dong.flatMap((d) => (d.them ? [d, d.them] : [d]));
     ca(`${nc.ten}: chưa hỏi thì chưa thấy dòng ẩn`, dongHien(nc).length === nc.dong.length && dongHien(nc).every((d) => !d.laThem));
@@ -55,18 +65,48 @@ for (const vu of VU_TOA) {
     }
     for (const d of tatCa.filter((x) => !x.loi)) ca(`dòng đúng không chấm được: ${d.van}`, tachDong(d.van).every((_, k) => !chamDung(d, k)) && chonTuDe(d).length === 3);
   }
-  const tong = tongNhat(vu);
-  ca(`${vu.id}: tổng nhát gồm cả lỗi ẩn và mâu thuẫn`, tong === vu.nhanChung.flatMap((c) => c.dong.flatMap((d) => (d.them ? [d, d.them] : [d]))).reduce((n, d) => n + (d.loi ? SO_NHAT : 0) + (d.mau ? 1 : 0), 0) && tong > 0);
-  ca("đúng hết, uy tín đầy thì đủ 7 phiếu", phieuThuan(tong, tong, UY_TIN_DAU) === SO_BOI_THAM && thangToa(SO_BOI_THAM));
-  ca("sai hết thì thua", !thangToa(phieuThuan(0, tong, 1)));
-  ca("chỉ chạm đúng từ mà sai luật, sai sửa, mất nhiều uy tín thì thua", !thangToa(phieuThuan(tong / 3, tong, 1)));
-  ca("đúng 2/3 nhát, còn 3 uy tín thì thắng", thangToa(phieuThuan(Math.round(tong * 2 / 3), tong, 3)));
-  const lo = vu.nhanChung.reduce((n, c) => n + c.dong.filter((d) => d.loi).length, 0) * SO_NHAT;
-  ca("chỉ phá lỗi thấy sẵn, không hỏi thêm, vẫn thắng được", lo < tong && thangToa(phieuThuan(lo, tong, UY_TIN_DAU)));
-  ca("có hỏi thêm và tang vật thì nhiều phiếu hơn", phieuThuan(tong, tong, 4) > phieuThuan(lo, tong, 4));
+  ca(`${vu.id}: tổng nhát dương`, tongNhat(vu) > 0);
+  ca(`${vu.id}: bài biện hộ đủ 3 lượt`, vu.bienHo?.length === 3);
+  for (const b of vu.bienHo) {
+    ca(`biện hộ: có đúng một câu sai ngữ pháp: ${b.hoi}`, b.pa.length === 3 && b.pa.filter((c) => c.sai).length === 1);
+    for (const c of b.pa) ca(`biện hộ: kiểu lập luận hợp lệ: ${c.van}`, c.dich?.length > 8 && (c.sai?.length > 10 || ["ly", "dep", "tinh"].includes(c.tag)));
+  }
+  ca("biện hộ: chọn được đủ ba kiểu lập luận trong vụ", new Set(vu.bienHo.flatMap((b) => b.pa.map((c) => c.tag).filter(Boolean))).size === 3);
+
+  /* Mô phỏng trọn phiên: p là tỉ lệ đúng mỗi nhát, sau là có dùng hỏi thêm và tang vật không. */
+  const phien = (p, sau, nham = 0) => {
+    let bt = taoBoiTham();
+    const ap = (...ds) => { bt = ds.reduce(apSuKien, bt); };
+    const coDung = () => Math.random() < p;
+    for (let k = 0; k < nham; k++) ap("nham");
+    const dsDong = vu.nhanChung.flatMap((c) => c.dong.flatMap((d) => (d.them && sau && coDung() ? [d, d.them] : [d])));
+    for (const d of dsDong) {
+      if (d.mau && coDung()) ap("tang");
+      if (!d.loi) continue;
+      if (!coDung()) { if (Math.random() < 0.5) ap("nham"); continue; }
+      ap("tu");
+      const l = coDung(), s = coDung();
+      ap(l ? "luat" : "sai_luat", s ? "sua" : "sai_sua");
+      if (l && s && laLoiHop(d.loi.luat)) ap("hop");
+    }
+    for (const c of vu.nhanChung.flatMap((x) => x.doiDap)) { if (coDung()) { ap("doi"); if (coDung()) ap("nhanh"); } else ap("doi_sai"); }
+    for (const b of vu.bienHo) { if (coDung()) { const co = b.pa.filter((c) => !c.sai); ap(co[Math.floor(Math.random() * co.length)].tag); } else ap("sai_cau"); }
+    return demPhieu(bt);
+  };
+  const tile = (p, sau) => { let t = 0, n = 0; for (let v = 0; v < 3000; v++) { const x = phien(p, sau); t += thangToa(x) ? 1 : 0; n += x; } return [t / 3000, n / 3000]; };
+  for (const p of [0.3, 0.5, 0.7, 0.9]) { const [a, b] = tile(p, true), [c] = tile(p, false); console.log(`  đúng ${p * 100}%: thắng ${Math.round(a * 100)}%, ${b.toFixed(1)} phiếu; không hỏi thêm thắng ${Math.round(c * 100)}%`); }
+  ca("đúng 90% gần như luôn thắng", tile(0.9, true)[0] >= 0.85);
+  ca("đúng 30% khó thắng", tile(0.3, true)[0] <= 0.1);
+  ca("đúng 70% có thắng có thua", tile(0.7, true)[0] >= 0.3 && tile(0.7, true)[0] <= 0.9);
+  ca("hỏi thêm và tang vật giúp thắng nhiều hơn", tile(0.7, true)[0] > tile(0.7, false)[0]);
+  // Cả toà không được tự thuận chỉ vì bắt lỗi giỏi: thiếu chứng cứ thì Dr Preuve vẫn phải lắc đầu.
+  const chiBatLoi = () => { let b = taoBoiTham(); const ap = (...ds) => { b = ds.reduce(apSuKien, b); }; for (const d of vu.nhanChung.flatMap((c) => c.dong).filter((x) => x.loi)) { ap("tu", "luat", "sua"); if (laLoiHop(d.loi.luat)) ap("hop"); } vu.nhanChung.flatMap((c) => c.doiDap).forEach(() => ap("doi")); ap("ly", "ly", "tinh"); return b; };
+  ca("không chọn câu văn đẹp thì Mlle Verlaine không thuận", chiBatLoi().nha_tho < 50);
+  ca("bắt lỗi giỏi vẫn thắng dù không làm hết", thangToa(demPhieu(chiBatLoi())));
 }
 ca("sửa: bỏ khoảng trắng và hoa thường, giữ dấu", khopSua(" Allée ", "allée") && !khopSua("allee", "allée"));
 ca("giờ đọc có sàn và tăng theo độ dài", giayDoc("a b") === 5 && giayDoc(Array(20).fill("x").join(" ")) === 18);
+ca("Corbeau nhân giờ theo mức", giayCorbeau(1) === 14 && giayCorbeau(0.75) < giayCorbeau(1.3));
 ca("điểm cuối cộng uy tín và thưởng thắng", diemCuoi(900, 2, true) === 1300 && diemCuoi(900, 2, false) === 1000);
 
 console.log(`check:phientoa ${dat}/${dat + hong}`);

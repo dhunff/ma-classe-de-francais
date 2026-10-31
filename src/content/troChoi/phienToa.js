@@ -4,10 +4,24 @@
  * loi: { tu: đúng một từ sai trong dòng, dung: dạng đúng, sai: hai dạng nhiễu, luat: mã điều luật, gt: lời giải }.
  * them: dòng khai ẩn, chỉ lộ khi luật sư « Hỏi thêm » ở dòng đó. hoi là câu luật sư hỏi, tang là tang vật nhận được.
  * mau: { tang, gt }: dòng mâu thuẫn với tang vật tang, phải trình đúng tang vật mới phá được.
- * tangVat: tang vật có sẵn từ đầu phiên, TANG_THEM: tang vật chỉ có sau khi hỏi thêm.
+ * tangVat: tang vật có sẵn từ đầu phiên, tang: mọi tang vật của vụ.
+ * doiDap: Maître Corbeau phản đối sau mỗi nhân chứng. cau là câu bị phản đối, dung: câu thật sự đúng (tức ông ấy nói sai),
+ *   loi là lời ông ấy, dich bản dịch, luat điều luật liên quan, gt lời giải.
+ * bienHo: ba lượt chọn câu cho bài biện hộ. tag: ly | dep | tinh là kiểu lập luận, sai: câu mắc lỗi ngữ pháp kèm gt.
  * Tình huống hư cấu. Không dùng dấu gạch dài. */
 
 /* Chương của Bộ luật. Mỗi điều: chuong, cap (trình độ), so (số điều), ten, mo, vd (ví dụ đúng). */
+/* Bảy bồi thẩm. thich: điều người đó coi trọng, hiện ở cảnh bỏ phiếu. Mã trùng với BANG_TAC_DONG trong phienToa/luat.js. */
+export const BOI_THAM = [
+  { ma: "kho_tinh", ten: "Mme Puriste", thich: "soi từng lỗi hợp giống số", mau: "#7c3aed", da: "#fcd9b6", mauToc: "#e5e7eb", kinh: true, toc: "M11 26c-1-12 6-17 13-17s14 5 13 17c-3-6-7-8-13-8s-10 2-13 8z" },
+  { ma: "voi_vang", ten: "M. Pressé", thich: "thích người trả lời nhanh", mau: "#0369a1", da: "#e8b98f", mauToc: "#111827", toc: "M12 22c2-9 7-11 12-11s10 2 12 11c-4-3-8-4-12-4s-8 1-12 4z" },
+  { ma: "nha_tho", ten: "Mlle Verlaine", thich: "yêu lời văn đẹp", mau: "#be185d", da: "#fcd9b6", mauToc: "#92400e", toc: "M9 34c-2-18 7-25 15-25s17 7 15 25c-2-8-3-13-6-15-5 2-13 2-18 0-3 2-4 7-6 15z" },
+  { ma: "cong_chung", ten: "Me Notaire", thich: "chỉ tin điều luật viện dẫn đúng", mau: "#374151", da: "#f3d1b0", mauToc: "#6b7280", kinh: true, toc: "M12 24c0-8 6-13 12-13s12 5 12 13c-2-5-3-6-5-7-4 1-10 1-14 0-2 1-3 2-5 7z" },
+  { ma: "bac_si", ten: "Dr Preuve", thich: "cần chứng cứ rõ ràng", mau: "#047857", da: "#c98f65", mauToc: "#1f2937", toc: "M12 23c1-9 7-12 12-12s11 3 12 12c-7-5-17-5-24 0z" },
+  { ma: "sinh_vien", ten: "Julien", thich: "muốn thấy câu được sửa đúng", mau: "#b45309", da: "#fcd9b6", mauToc: "#451a03", toc: "M11 25c-1-7 3-15 13-15 8 0 14 6 13 15-2-4-5-7-8-7-1 2-3 3-6 3-2 0-3-1-4-2-3 1-6 3-8 6z" },
+  { ma: "hang_xom", ten: "Mme Voisine", thich: "ghét phản đối vô căn cứ", mau: "#9f1239", da: "#e8b98f", mauToc: "#57534e", toc: "M12 25c-2-9 5-15 12-15s14 6 12 15c-1-3-3-6-5-7-5 2-9 2-14 0-2 1-4 4-5 7z" },
+];
+
 export const CHUONG = {
   nom: "Le nom et l'article",
   adj: "L'adjectif",
@@ -55,6 +69,23 @@ export const VU_TOA = [
     id: "livre-recettes",
     ten: "L'affaire du livre de recettes",
     bi_cao: "Thomas",
+    bienHo: [
+      { hoi: "Mở đầu bài biện hộ", pa: [
+        { van: "Mesdames et messieurs, les faits sont clairs.", dich: "Thưa quý vị, sự việc đã rõ ràng.", tag: "ly" },
+        { van: "Mesdames et messieurs, Thomas est un jeune homme honnête.", dich: "Thưa quý vị, Thomas là một chàng trai trung thực.", tag: "tinh" },
+        { van: "Mesdames et messieurs, les faits sont clair.", dich: "Thưa quý vị, sự việc đã rõ ràng.", sai: "« Faits » là số nhiều nên phải viết « clairs »." },
+      ] },
+      { hoi: "Lập luận chính", pa: [
+        { van: "La feuille de présence prouve qu'il n'était pas là.", dich: "Bảng chấm công chứng minh cậu ấy không có mặt.", tag: "ly" },
+        { van: "La vérité finit toujours par lever, comme le pain du matin.", dich: "Sự thật rồi sẽ nở ra, như ổ bánh mì buổi sớm.", tag: "dep" },
+        { van: "Les témoins a menti devant vous.", dich: "Các nhân chứng đã nói dối trước quý vị.", sai: "Chủ ngữ số nhiều nên phải là « ont menti »." },
+      ] },
+      { hoi: "Lời kết", pa: [
+        { van: "Rendez-lui son travail et sa dignité.", dich: "Hãy trả lại cho cậu ấy công việc và phẩm giá.", tag: "tinh" },
+        { van: "Que la justice soit douce comme un croissant chaud.", dich: "Mong công lý ngọt ngào như chiếc bánh sừng bò nóng.", tag: "dep" },
+        { van: "Je vous demande de le acquitter.", dich: "Tôi xin quý vị tha bổng cậu ấy.", sai: "« Le » trước nguyên âm phải lược âm: « de l'acquitter »." },
+      ] },
+    ],
     tangVat: ["feuille"],
     tang: {
       feuille: { ten: "Feuille de présence", van: "Lundi : Thomas arrive à 9 h.", dich: "Thứ Hai: Thomas đến lúc 9 giờ." },
@@ -67,6 +98,10 @@ export const VU_TOA = [
       {
         ten: "Claire Lefort", vai: "Chủ tiệm bánh", mau: "#be185d",
         gioiThieu: "Nhân chứng đầu tiên là bà Claire Lefort, chủ tiệm bánh. Nhớ rằng người nói là phụ nữ nhé.",
+        doiDap: [
+          { cau: "Thomas est arrivé à neuf heures.", dung: true, loi: "Objection ! Il faut écrire « arrivée » avec un e !", dich: "Phản đối! Phải viết « arrivée » có chữ e!", luat: "hop_etre", gt: "Thomas là nam, số ít, nên « arrivé » là đúng. Corbeau cố tình dồn bạn." },
+          { cau: "Mon client n'a pas pris le livres.", dung: false, loi: "Objection ! « Livres » est au pluriel, il faut « les livres » !", dich: "Phản đối! « Livres » là số nhiều, phải là « les livres »!", luat: "mao_tu_giong", gt: "Corbeau nói đúng: mạo từ phải hợp số với danh từ, viết « les livres » hoặc « le livre »." },
+        ],
         dong: [
           { van: "Je m'appelle Claire Lefort et je suis boulangère depuis vingt ans.", dich: "Tôi tên Claire Lefort, làm thợ bánh đã hai mươi năm." },
           { van: "Lundi matin, je suis allé à la boulangerie à six heures.", dich: "Sáng thứ Hai, tôi đến tiệm bánh lúc sáu giờ.",
@@ -82,6 +117,10 @@ export const VU_TOA = [
       {
         ten: "Louis Renard", vai: "Khách quen", mau: "#0369a1",
         gioiThieu: "Nhân chứng thứ hai là ông Louis Renard, khách quen của tiệm. Ông ấy nói rất tự tin, đừng để bị lừa.",
+        doiDap: [
+          { cau: "Thomas a pris son sac.", dung: true, loi: "Objection ! Thomas est un homme, il faut dire « sa sac » !", dich: "Phản đối! Thomas là đàn ông, phải nói « sa sac »!", luat: "so_huu", gt: "« Sac » giống đực nên dùng « son ». Tính từ sở hữu theo vật được sở hữu, không theo người." },
+          { cau: "Thomas et Claire travaille ensemble.", dung: false, loi: "Objection ! Le sujet est au pluriel, il faut « travaillent » !", dich: "Phản đối! Chủ ngữ số nhiều, phải là « travaillent »!", luat: "chia_dong_tu", gt: "Corbeau nói đúng: hai người làm chủ ngữ nên động từ chia số nhiều." },
+        ],
         dong: [
           { van: "Je suis un client fidèle de cette boulangerie.", dich: "Tôi là khách quen của tiệm bánh này.",
             them: { hoi: "Vous venez ici tous les jours ?", van: "Oui, sauf quand je vais chez l'opticien.", dich: "Vâng, trừ những hôm tôi đi hiệu kính.", tang: "recu" } },

@@ -1,6 +1,6 @@
 /* Luật của phiên toà (31/10): hàm thuần, không đụng giao diện. Mỗi lỗi trong lời khai gồm ba nhát:
    chỉ đúng từ, viện đúng điều luật, sửa đúng dạng. Bắt nhầm thì mất uy tín, hết uy tín là thua phiên. */
-import { LUAT, CHUONG } from "../../../content/troChoi/phienToa.js";
+import { LUAT, CHUONG, BOI_THAM } from "../../../content/troChoi/phienToa.js";
 
 const tron = (a, rng = Math.random) => { const b = [...a]; for (let i = b.length - 1; i > 0; i--) { const j = Math.floor(rng() * (i + 1)); [b[i], b[j]] = [b[j], b[i]]; } return b; };
 
@@ -11,6 +11,8 @@ export const DIEM_NHAT = 100;
 export const DIEM_UY_TIN = 50;
 export const THUONG_THANG = 300;
 export const SO_NHAT = 3;
+export const GIAY_CORBEAU = 14;      // giây để đáp lại Maître Corbeau, nhân theo mức
+export const NGUONG_THUAN = 50;
 export const SO_HOI = 3;            // lượt hỏi thêm cho mỗi nhân chứng
 export const DIEM_MAU = 150;        // phá được một mâu thuẫn bằng tang vật
 const CAP_MUC = { de: ["A1", "A2"], vua: ["A1", "A2", "B1"], kho: ["A1", "A2", "B1", "B2"] };
@@ -59,8 +61,37 @@ export const khopSua = (go, dung) => go.trim().toLowerCase() === dung.toLowerCas
 /* Mức Khó: lời khai tự chạy, đủ giờ đọc theo độ dài dòng. */
 export const giayDoc = (van, heSo = 1) => Math.round(Math.max(5, van.split(" ").length * 0.9) * heSo);
 
-/* Bảy bồi thẩm: phần lớn nhìn số nhát đúng, phần còn lại nhìn uy tín của luật sư. */
-export const phieuThuan = (dung, tong, uy) => Math.min(SO_BOI_THAM, Math.round(SO_BOI_THAM * (0.7 * (tong ? dung / tong : 0) + 0.3 * (uy / UY_TIN_DAU))));
+/* Bảy bồi thẩm: mỗi người một điểm tin, đạt NGUONG_THUAN thì bỏ phiếu cho bị cáo. Mỗi sự kiện đẩy cả toà
+   một chút (ca) và đẩy mạnh người coi trọng nó, nên muốn đủ phiếu phải chơi trọn nhiều kỹ năng. */
+const DIEM_TIN_DAU = 26;
+export const BANG_TAC_DONG = {
+  tu: { ca: 2 },
+  luat: { ca: 1, cong_chung: 13 },
+  sai_luat: { ca: -2, cong_chung: -12 },
+  sua: { ca: 1, sinh_vien: 13 },
+  sai_sua: { ca: -2, sinh_vien: -12 },
+  hop: { kho_tinh: 13 },
+  tang: { ca: 2, bac_si: 24 },
+  nham: { ca: -4, hang_xom: -14 },
+  doi: { ca: 1 },
+  doi_sai: { ca: -4, voi_vang: -6 },
+  nhanh: { voi_vang: 16 },
+  ly: { ca: 1, cong_chung: 10, bac_si: 10 },
+  dep: { ca: 1, nha_tho: 24 },
+  tinh: { ca: 1, hang_xom: 22 },
+  sai_cau: { ca: -6, kho_tinh: -14 },
+};
+export const taoBoiTham = () => Object.fromEntries(BOI_THAM.map((b) => [b.ma, DIEM_TIN_DAU]));
+export const apSuKien = (bt, su) => {
+  const t = BANG_TAC_DONG[su];
+  return Object.fromEntries(Object.entries(bt).map(([ma, d]) => [ma, Math.max(0, Math.min(100, d + (t.ca ?? 0) + (t[ma] ?? 0)))]));
+};
+export const laThuan = (d) => d >= NGUONG_THUAN;
+export const demPhieu = (bt) => Object.values(bt).filter(laThuan).length;
 export const thangToa = (phieu) => phieu >= PHIEU_THANG;
+/* Lỗi hợp giống số là nơi Mme Puriste để ý nhất. */
+export const laLoiHop = (ma) => ["adj", "passe"].includes(LUAT[ma].chuong) || ma === "mao_tu_giong";
+export const dapCorbeau = (c, chapNhan) => chapNhan === !c.dung;
+export const giayCorbeau = (heSo = 1) => Math.round(GIAY_CORBEAU * heSo);
 export const trinhDung = (dong, tang) => dong.mau?.tang === tang;
 export const diemCuoi = (diem, uy, thang) => diem + uy * DIEM_UY_TIN + (thang ? THUONG_THANG : 0);

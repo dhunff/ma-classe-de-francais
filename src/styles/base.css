@@ -340,7 +340,11 @@ mark.de-to:hover { background: #facc15; }
 .mcf-pt-tho { animation: mcfPtTho 2.8s ease-in-out infinite; }
 @keyframes mcfPtGio { from { width: 100%; } to { width: 0; } }
 .mcf-pt-gio { animation: mcfPtGio linear both; }
-@media (prefers-reduced-motion: reduce) { .mcf-dong, .mcf-song, .mcf-toa-vao, .mcf-tau-chay, .mcf-dv-mach, .mcf-dv-ve, .mcf-dv-co, .mcf-dv-bay, .mcf-dv-bang, .mcf-dv-meo, .mcf-dv-duoi, .mcf-dv-cot, .mcf-pt-bua, .mcf-pt-tho { animation: none; } .mcf-pt-obj { display: none; } .mcf-dv-dua { transition: none; } .mcf-dv-tau { animation-duration: 1ms; } }
+@keyframes mcfPtPhieu { from { opacity: 0; transform: perspective(500px) rotateY(90deg); } to { opacity: 1; transform: none; } }
+.mcf-pt-phieu { animation: mcfPtPhieu .5s cubic-bezier(.22,1,.36,1) both; }
+@keyframes mcfPtCanh { 0%,100% { transform: rotate(0); } 50% { transform: rotate(-7deg); } }
+.mcf-pt-canh { transform-box: fill-box; transform-origin: 80% 10%; animation: mcfPtCanh 2.2s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .mcf-dong, .mcf-song, .mcf-toa-vao, .mcf-tau-chay, .mcf-dv-mach, .mcf-dv-ve, .mcf-dv-co, .mcf-dv-bay, .mcf-dv-bang, .mcf-dv-meo, .mcf-dv-duoi, .mcf-dv-cot, .mcf-pt-bua, .mcf-pt-tho, .mcf-pt-phieu, .mcf-pt-canh { animation: none; } .mcf-pt-obj { display: none; } .mcf-dv-dua { transition: none; } .mcf-dv-tau { animation-duration: 1ms; } }
 
 /* ── Bong bóng Leon (LeonNoi, 30/10) ── bật ra, ba chấm đang gõ, chữ hiện, Leon gật một cái. */
 @keyframes mcfBongBat { 0% { opacity: 0; transform: scale(.5) rotate(-4deg); } 65% { opacity: 1; transform: scale(1.05) rotate(1deg); } 100% { opacity: 1; transform: none; } }
