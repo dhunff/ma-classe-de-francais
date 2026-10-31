@@ -1,6 +1,8 @@
 // Đố vui nước Pháp: kho câu, địa danh, và luật chọn đường có kẹt ở mức nào không.
 import { CAU } from "../src/content/troChoi/doVui.js";
 import { DIA_DANH, LOI_MUC, LOI_MINETTE } from "../src/content/troChoi/doVuiDiaDanh.js";
+import { GOI_Y, MOC_SU, NGHE, SU_KIEN } from "../src/content/troChoi/doVuiDang.js";
+import { DANG, dangKe, rutDacBiet, dungThuTu, lichSuKien, rutSuKien, hauQua, dungDapAn } from "../src/screens/student/doVui/dangCau.js";
 import { GOC, SO_DUNG, SO_LUA_CHON, CAU_CHUNG_KET, CO_CHUNG_KET, VE_DAU, P_MINETTE, moO, cauCua, diemDen, rutCau, rutChungKet, chieu, diemCau, thangTour, heSoChuoi, giaVe, luaChon, demCo, mucKhoHon, chiemDuoc, minetteDi, traThuong, diaDanh, boHai, binhChon, leonDoan, diemCuoi } from "../src/screens/student/doVui/luat.js";
 
 let dat = 0, hong = 0;
@@ -23,7 +25,7 @@ for (const c of CAU) {
   ca(`có lời giải: ${c.q}`, c.gt?.length > 10);
 }
 ca("câu không trùng", new Set(CAU.map((c) => c.q)).size === CAU.length);
-const chu = JSON.stringify([CAU, DIA_DANH, LOI_MUC, LOI_MINETTE]);
+const chu = JSON.stringify([CAU, DIA_DANH, LOI_MUC, LOI_MINETTE, GOI_Y, MOC_SU, NGHE, SU_KIEN]);
 ca("nội dung không có dấu gạch dài", !chu.includes("—"));
 
 // Tên địa danh hiện ngay trên màn hỏi, nên đáp án không được là chính nó. Mỗi nơi đủ câu cho mọi mức.
@@ -75,6 +77,44 @@ for (const muc of MUC) for (let v = 0; v < 300; v++) {
   const pt = binhChon(muc, an), ks = Object.keys(pt).map(Number);
   ca("bình chọn đủ 100%, không có đáp án đã bỏ, không âm", ks.reduce((n, k) => n + pt[k], 0) === 100 && ks.every((k) => !an.includes(k) && pt[k] >= 0), JSON.stringify(pt));
   ca("Léon không chọn đáp án đã bỏ", !an.includes(leonDoan(muc, an)));
+}
+
+// Dạng câu mới và sự kiện.
+for (const d of DIA_DANH.filter((x) => x.id !== GOC)) {
+  const g = GOI_Y[d.id];
+  ca(`${d.id}: đủ 3 gợi ý hai thứ tiếng`, g?.vi.length === 3 && g?.fr.length === 3 && new Set([...g.vi, ...g.fr]).size === 6);
+  const ten = d.ten.toLowerCase().replace(/^(plages du |dune du |puy de |pays d')/, "");
+  for (const x of g ? [...g.vi, ...g.fr] : []) ca(`${d.id}: gợi ý không chứa tên « ${x} »`, !x.toLowerCase().includes(ten));
+}
+ca("gợi ý không thừa địa danh lạ", Object.keys(GOI_Y).every((id) => ids.has(id) && id !== GOC));
+ca("mốc lịch sử không trùng năm", new Set(MOC_SU.map((m) => m.nam)).size === MOC_SU.length);
+for (const m of MOC_SU) ca(`mốc đủ hai thứ tiếng: ${m.nam}`, m.vi?.length > 8 && m.fr?.length > 8);
+for (const c of [...NGHE, ...SU_KIEN]) {
+  ca(`đủ 4 phương án: ${c.q}`, c.pa.length === 4 && new Set(c.pa).size === 4);
+  ca(`mức hợp lệ: ${c.q}`, MUC.includes(c.muc));
+}
+for (const c of NGHE) ca(`câu nghe có lời và giải thích: ${c.q}`, c.loi?.length > 15 && c.gt?.length > 10);
+for (const c of SU_KIEN) ca(`sự kiện có đoạn đọc và bản dịch: ${c.q}`, c.van?.length > 30 && c.dich?.length > 20);
+for (const m of MUC) { ca(`${m}: đủ câu nghe`, NGHE.filter((c) => c.muc === m).length >= 5); for (const l of ["dinh_cong", "ban_dia", "cho_phien"]) ca(`${m}: đủ sự kiện ${l}`, SU_KIEN.filter((s) => s.muc === m && s.loai === l).length >= 2); }
+ca("sự kiện: hậu quả đúng luật", hauQua("dinh_cong", false, []).ve === -1 && hauQua("dinh_cong", true, []).ve === 0 && hauQua("ban_dia", true, []).namNam && !hauQua("ban_dia", false, []).namNam && hauQua("cho_phien", true, ["leon"]).doi && hauQua("cho_phien", true, []).ve === 1 && hauQua("cho_phien", false, ["leon"]).ve === 0);
+for (const muc of MUC) for (let v = 0; v < 300; v++) {
+  const da = []; for (let k = 0; k < SO_DUNG - 1; k++) da.push(dangKe(da, true));
+  ca("bốn dạng đầu không lặp", new Set(da).size === DANG.length, da.join());
+  ca("không có giọng thì không ra câu nghe", !dangKe([], false).includes("nghe"));
+  const lo = [GOC, "lyon", "nice"];
+  for (const dang of DANG) {
+    const c = rutDacBiet(dang, muc, lo);
+    ca(`${dang}: có câu hỏi, đáp án, lời giải`, c.q?.length > 5 && c.pa[0]?.length > 2 && c.gt?.length > 5, JSON.stringify(c));
+    ca(`${dang}: mức đúng`, c.muc === muc);
+    if (dang === "doan") { ca("doan: nơi chưa đi", !lo.includes(c.noi)); ca("doan: 4 tên khác nhau", new Set(c.pa).size === 4); }
+    if (dang === "ban_do") { ca("ban_do: đích nằm trong các chấm", c.cham.includes(c.dich) && !lo.includes(c.dich)); ca("ban_do: đủ chấm, khác vùng", c.cham.length >= 4 && new Set(c.cham.map((x) => diaDanh(x).vung)).size === c.cham.length); }
+    if (dang === "xep") { const dung = c.su.map((_, k) => k).sort((a, b) => c.su[a].nam - c.su[b].nam); ca("xep: thứ tự đúng được chấm đúng", dungThuTu(c.su, dung)); ca("xep: đảo ngược thì sai", !dungThuTu(c.su, [...dung].reverse())); ca("xep: thiếu thì chưa đúng", !dungThuTu(c.su, dung.slice(0, 2))); }
+    ca(`${dang}: helper trắc nghiệm`, dungDapAn(c) === (dang === "doan" || dang === "nghe"));
+  }
+  const l = lichSuKien();
+  ca("lịch sự kiện: 2 lần, sau điểm dừng 1 đến 4", l.length === 2 && l[0] !== l[1] && l.every((x) => x >= 1 && x <= SO_DUNG - 1));
+  const a = rutSuKien(muc, []), b = rutSuKien(muc, [a.loai]);
+  ca("sự kiện không trùng loại", a.loai !== b.loai && a.muc === muc);
 }
 
 /* Giả lập trọn Tour với luật thật, người chơi chọn ngẫu nhiên. Tỉ lệ thắng phải tăng theo tỉ lệ đúng. */

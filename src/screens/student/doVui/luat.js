@@ -4,7 +4,7 @@ import { DIA_DANH } from "../../../content/troChoi/doVuiDiaDanh.js";
 import { CAU } from "../../../content/troChoi/doVui.js";
 
 /* Bản riêng của tron: shared/troChoiNhanh.js kéo theo Supabase, còn file này phải chạy được trong check:dovui. */
-const tron = (a) => { const b = [...a]; for (let i = b.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [b[i], b[j]] = [b[j], b[i]]; } return b; };
+export const tron = (a) => { const b = [...a]; for (let i = b.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [b[i], b[j]] = [b[j], b[i]]; } return b; };
 
 export const SO_DUNG = 5;       // điểm dừng trước chung kết
 export const CAU_MOI_DUNG = 2;  // nơi có ít câu hơn thì hỏi hết chỗ có

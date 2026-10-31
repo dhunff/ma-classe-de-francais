@@ -40,10 +40,10 @@ export default function BanDoPhap({ moSet, onChon, nhan, dangO, dangToi, diDuoc 
           </g>
         );
       })}
-      {mnO && <g transform={`translate(${mnO.x + (mnLo.length === 1 ? 4 : 0)} ${mnO.y + (mnLo.length === 1 ? 2 : 0)})`}><MeoBanDo /></g>}
+      {mnO && <g pointerEvents="none" transform={`translate(${mnO.x + (mnLo.length === 1 ? 4 : 0)} ${mnO.y + (mnLo.length === 1 ? 2 : 0)})`}><MeoBanDo /></g>}
       {b
-        ? <g key={dangToi + "-tau"} className="mcf-dv-tau" style={{ "--tu-x": `${a.x}px`, "--tu-y": `${a.y}px`, "--toi-x": `${b.x}px`, "--toi-y": `${b.y}px` }}><DauTau /></g>
-        : <g transform={`translate(${a.x} ${a.y})`}><DauTau /></g>}
+        ? <g key={dangToi + "-tau"} pointerEvents="none" className="mcf-dv-tau" style={{ "--tu-x": `${a.x}px`, "--tu-y": `${a.y}px`, "--toi-x": `${b.x}px`, "--toi-y": `${b.y}px` }}><DauTau /></g>
+        : <g pointerEvents="none" transform={`translate(${a.x} ${a.y})`}><DauTau /></g>}
     </svg>
   );
 }

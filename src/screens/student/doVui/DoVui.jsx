@@ -1,8 +1,10 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Landmark, UtensilsCrossed, Mountain, ScrollText, Palette, Star, Stamp, MapPin, TrainFront, Ticket, Flag, Flame, Users, Phone, Hourglass, Scissors, Coins, LifeBuoy, Trophy } from "lucide-react";
+import { Landmark, UtensilsCrossed, Mountain, ScrollText, Palette, Star, Stamp, MapPin, TrainFront, Ticket, Flag, Flame, Users, Phone, Hourglass, Scissors, Coins, LifeBuoy, Trophy, Lightbulb, Map as IconBanDo, ListOrdered, Headphones, Store, UserRound, BadgeAlert } from "lucide-react";
 import CauTracNghiem from "../CauTracNghiem.jsx";
 import BanDoPhap from "./BanDoPhap.jsx";
 import { Minette, PhaoGiay } from "./Minette.jsx";
+import { NutNghe, XepMoc, useCoGiongPhap } from "./CauDacBiet.jsx";
+import { GIO_DANG, HE_SO_GOI_Y, dangKe, rutDacBiet, dungDapAn, lichSuKien, rutSuKien, hauQua } from "./dangCau.js";
 import { LOI_MUC, LOI_MINETTE } from "../../../content/troChoi/doVuiDiaDanh.js";
 import { GOC, SO_DUNG, VE_DAU, CUOC_TOI_DA, THEM_GIO, CO_CHUNG_KET, DIEM_MOI_VE, THUONG_THANG, P_MINETTE, TRO_GIUP, diaDanh, moO, diemDen, rutCau, rutChungKet, diemCau, heSoSao, heSoChuoi, thangTour, luaChon, demCo, mucKhoHon, chiemDuoc, minetteDi, loaiThuong, traThuong, boHai, binhChon, leonDoan, diemCuoi } from "./luat.js";
 import { tr } from "../../../shared/i18n.jsx";
@@ -29,6 +31,17 @@ const GIUP = {
   khan_gia: { Icon: Users, ten: () => tr("Khán giả", "Public", "Audience") },
   leon: { Icon: Phone, ten: () => tr("Gọi Léon", "Appeler Léon", "Call Léon") },
   them_gio: { Icon: Hourglass, ten: () => `+${THEM_GIO}s` },
+};
+const NHAN_DANG = {
+  doan: { Icon: Lightbulb, ten: () => tr("Địa danh bí ẩn", "Lieu mystère", "Mystery place") },
+  ban_do: { Icon: IconBanDo, ten: () => tr("Chỉ trên bản đồ", "Sur la carte", "On the map") },
+  xep: { Icon: ListOrdered, ten: () => tr("Dòng thời gian", "Frise du temps", "Timeline") },
+  nghe: { Icon: Headphones, ten: () => tr("Nghe hiểu", "À l'écoute", "Listening") },
+};
+const SK = {
+  dinh_cong: { Icon: BadgeAlert, ten: () => tr("Đình công!", "Grève !", "Strike!"), mo: () => tr("Tàu dừng giữa đường, trên bảng có thông báo. Đọc kỹ để khỏi mất vé.", "Le train s'arrête. Lisez bien l'annonce.", "The train stops. Read the notice carefully.") },
+  ban_dia: { Icon: UserRound, ten: () => tr("Người bản địa", "Rencontre", "A local"), mo: () => tr("Một người dân bắt chuyện với bạn. Hiểu được thì họ mách nhỏ cho câu tiếp theo.", "Un habitant vous parle. Comprenez-le et il vous aidera.", "A local talks to you. Understand and they will help.") },
+  cho_phien: { Icon: Store, ten: () => tr("Chợ phiên", "Jour de marché", "Market day"), mo: () => tr("Tàu dừng cạnh một phiên chợ. Hiểu người bán thì có món hời.", "Le train s'arrête près d'un marché. Comprenez le marchand.", "The train stops by a market. Understand the seller.") },
 };
 const GIAY_TAU = 1100;
 const ngauNhien = (ds) => ds[Math.floor(Math.random() * ds.length)];
@@ -58,7 +71,7 @@ const LoiLeon = ({ cam, children }) => (
 
 export default function DoVui({ muc = "vua", he, onXong }) {
   const GIAY = Math.round(20 * (he?.gio ?? 1));
-  const [buoc, setBuoc] = useState("mo");         // mo | chon | tau | hoi | xongDung | ket
+  const [buoc, setBuoc] = useState("mo");         // mo | suKien | chon | tau | hoi | xongDung | ket
   const [tem, setTem] = useState(docTem);
   const [lo, setLo] = useState([GOC]);            // lộ trình, phần tử đầu là Paris
   const [toi, setToi] = useState(null);           // điểm đang tới
@@ -78,6 +91,15 @@ export default function DoVui({ muc = "vua", he, onXong }) {
   const [coKet, setCoKet] = useState({ ban: 0, mn: 0 });  // cờ giành ở chung kết
   const [mnDung, setMnDung] = useState(null);     // Minette trả lời câu chung kết này ra sao
   const [bienCo, setBienCo] = useState(null);     // tổng kết điểm dừng vừa xong
+  const [soGoiY, setSoGoiY] = useState(1);        // số gợi ý đã mở ở câu địa danh bí ẩn
+  const [sk, setSk] = useState(null);             // sự kiện đang hiện
+  const [skChon, setSkChon] = useState(null);     // đáp án đã chọn ở sự kiện
+  const [skDoi, setSkDoi] = useState("");         // đề nghị đổi vé ở chợ: "" | moi | xong
+  const [boSan, setBoSan] = useState(false);      // người bản địa đã mách: câu kế tiếp tự bỏ hai đáp án sai
+  const coGiong = useCoGiongPhap();
+  const lichSk = useRef(lichSuKien());
+  const daLoaiSk = useRef([]);
+  const daDang = useRef([]);                      // dạng câu đặc biệt đã gặp trong Tour
   const kq = useRef({ diem: 0, dung: 0, tong: 0 });
   const dung = useRef({ dung: 0 });               // số câu đúng ở điểm dừng hiện tại
   const daHoi = useRef([]);
@@ -90,23 +112,31 @@ export default function DoVui({ muc = "vua", he, onXong }) {
   const chungKet = toi === GOC;
   const noi = toi ? diaDanh(toi) : null;
   const cuaMinette = !!toi && chu[toi] === "minette";
-  const gioCau = cuaMinette && muc === "kho" ? Math.round(GIAY * 0.7) : GIAY;   // mức Khó không còn mức cao hơn nên nơi bà chiếm bớt giờ
+  const cauNay = buoc === "hoi" ? ds[i] : null;
+  const gioCau = (cuaMinette && muc === "kho" ? Math.round(GIAY * 0.7) : GIAY) + (GIO_DANG[cauNay?.dang] ?? 0);   // mức Khó không còn mức cao hơn nên nơi bà chiếm bớt giờ
   const luaCh = useMemo(() => luaChon(diDuoc, lo[lo.length - 1], ve), [diDuoc, lo, ve]);
   const coBan = demCo(chu, "ban") + coKet.ban, coMn = demCo(chu, "minette") + coKet.mn;
 
-  const moiCau = () => { setChon(null); setCuoc(0); setAn([]); setBinh(null); setLeonChon(null); setMnDung(null); };
+  const moiCau = () => { setChon(null); setCuoc(0); setAn([]); setBinh(null); setLeonChon(null); setMnDung(null); setSoGoiY(1); };
 
   const veDich = useCallback((id) => {
     const lc = luaCh.find((d) => d.id === id);
     if (lc && !lc.du) return;
     if (lc) setVe((v) => v - lc.gia);
     phat("batDau"); setToi(id); setBuoc("tau");
-    const ca = id === GOC ? rutChungKet(muc, daHoi.current) : rutCau(id, chu[id] === "minette" ? mucKhoHon(muc) : muc);
+    const mucCau = chu[id] === "minette" ? mucKhoHon(muc) : muc;
+    const ca = id === GOC ? rutChungKet(muc, daHoi.current) : rutCau(id, mucCau);
     daHoi.current = [...daHoi.current, ...ca.map((c) => c.q)];
+    if (id !== GOC) {
+      const dang = dangKe(daDang.current, coGiong);
+      daDang.current = [...daDang.current, dang];
+      ca[ca.length - 1] = rutDacBiet(dang, mucCau, [...lo, id, GOC]);
+    }
     setDs(ca); setI(0); moiCau(); dung.current = { dung: 0 };
+    if (boSan) { setAn(boHai()); setBoSan(false); }
     const ms = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ? 0 : GIAY_TAU;
     window.setTimeout(() => setBuoc("hoi"), ms);
-  }, [muc, luaCh, chu]);
+  }, [muc, luaCh, chu, lo, coGiong, boSan]);
 
   const tra = useCallback((k) => {
     if (chon != null || !noi) return;
@@ -114,7 +144,8 @@ export default function DoVui({ muc = "vua", he, onXong }) {
     kq.current.tong++;
     if (ok) {
       const moi = chuoi + 1;
-      kq.current.dung++; dung.current.dung++; kq.current.diem += diemCau(con, noi.sao, moi, cuoc);
+      const heSo = ds[i]?.dang === "doan" ? HE_SO_GOI_Y[soGoiY - 1] : 1;
+      kq.current.dung++; dung.current.dung++; kq.current.diem += Math.round(diemCau(con, noi.sao, moi, cuoc) * heSo);
       setChuoi(moi); setVe((v) => v + 1 + cuoc);
       if (moi >= 3) phat("combo");
     } else { setChuoi(0); setVe((v) => v - cuoc); }
@@ -123,7 +154,7 @@ export default function DoVui({ muc = "vua", he, onXong }) {
       setMnDung(mn);
       setCoKet((c) => ({ ban: c.ban + (ok ? CO_CHUNG_KET : 0), mn: c.mn + (mn ? CO_CHUNG_KET : 0) }));
     }
-  }, [chon, noi, con, chuoi, cuoc, chungKet, muc]);
+  }, [chon, noi, con, chuoi, cuoc, chungKet, muc, ds, i, soGoiY]);
   // Đồng hồ giữ hàm tra của lúc nó khởi động, nên hết giờ phải gọi bản mới nhất, kẻo mất vé đã cược.
   const traMoi = useRef(tra);
   traMoi.current = tra;
@@ -168,7 +199,24 @@ export default function DoVui({ muc = "vua", he, onXong }) {
     setBienCo({ duoc, cuaM: cuaMinette, thuong, loai, loi: ngauNhien(LOI_MINETTE[loai]).replace("{noi}", loai === "mat" ? noi.ten : mv ? diaDanh(mv.id).ten : noi.ten) });
     setBuoc("xongDung");
   };
-  const roiDung = () => { const m = [...lo, toi]; setLo(m); setToi(null); setBuoc("chon"); };
+  const roiDung = () => {
+    const m = [...lo, toi];
+    setLo(m); setToi(null);
+    if (!lichSk.current.includes(m.length - 1)) { setBuoc("chon"); return; }
+    const s = rutSuKien(muc, daLoaiSk.current);
+    daLoaiSk.current = [...daLoaiSk.current, s.loai];
+    setSk(s); setSkChon(null); setSkDoi(""); phat("canhBao"); setBuoc("suKien");
+  };
+  const traSk = (k) => {
+    if (skChon != null) return;
+    setSkChon(k);
+    const ok = k === 0, hq = hauQua(sk.loai, ok, daDung);
+    phat(ok ? "dung" : "sai");
+    if (hq.ve) setVe((v) => Math.max(0, v + hq.ve));
+    if (hq.namNam) setBoSan(true);
+    if (hq.doi) setSkDoi("moi");
+  };
+  const doiVe = () => { setVe((v) => v - 1); setDaDung(daDung.slice(0, -1)); setSkDoi("xong"); phat("sao"); };
 
   // Gọi như hàm, không dựng thành component: component khai trong thân hàm sẽ gắn lại sau mỗi lần vẽ và làm chuyến tàu chạy lại từ đầu.
   const banDo = (them) => (
@@ -206,6 +254,32 @@ export default function DoVui({ muc = "vua", he, onXong }) {
       </div>
     </div>
   );
+
+  if (buoc === "suKien") {
+    const { Icon, ten, mo } = SK[sk.loai], ok = skChon === 0;
+    return (
+      <div className={nen}>
+        {thanhTour()}
+        <p className="mcf-sao-no m-0 flex items-center justify-center gap-2 text-lg font-black uppercase tracking-widest text-amber-300"><Icon size={22} />{ten()}</p>
+        <p className="m-0 mt-1 text-center text-xs text-white/75">{mo()}</p>
+        <div lang="fr" className="mcf-cau-vao mt-4 rounded-xl border-2 border-solid border-[#7c2d12] bg-[#fef3c7] px-4 py-4 text-base font-bold leading-relaxed text-[#431407] shadow-[0_8px_18px_rgba(0,0,0,0.35)]">{sk.van}</div>
+        {skChon != null && <p className="mcf-cau-vao m-0 mt-2 text-center text-xs italic text-white/75">{sk.dich}</p>}
+        <p lang={sk.muc === "de" ? undefined : "fr"} className="m-0 mt-4 text-center text-base font-extrabold">{sk.q}</p>
+        <CauTracNghiem key={sk.q} pa={sk.pa} onTra={traSk} daChon={skChon} laPhap={sk.muc !== "de"} kieu="tv" />
+        {skChon != null && <>
+          <LoiLeon cam={ok ? "tuyet-voi" : "xin-loi"}>
+            {sk.loai === "dinh_cong" && (ok ? tr("Đọc hiểu tốt! Bạn đổi tuyến kịp, không mất vé nào.", "Bien lu ! Vous changez d'itinéraire sans perdre de billet.", "Well read! You reroute without losing a ticket.") : tr("Đọc sai nên lỡ chuyến, mất 1 vé.", "Mal lu : vous perdez 1 billet.", "Misread: you lose 1 ticket."))}
+            {sk.loai === "ban_dia" && (ok ? tr("Người bản địa mách nhỏ: câu đầu ở điểm dừng tới sẽ tự bỏ hai đáp án sai.", "L'habitant vous aide : deux mauvaises réponses en moins à la prochaine question.", "The local helps: two wrong answers gone next question.") : tr("Chưa hiểu ý nhau rồi, đành chào tạm biệt.", "Vous ne vous êtes pas compris. Au revoir !", "You didn't quite understand each other."))}
+            {sk.loai === "cho_phien" && (!ok ? tr("Chưa hiểu người bán nên bỏ lỡ món hời.", "Vous n'avez pas compris : pas d'affaire aujourd'hui.", "You missed the bargain.") : skDoi === "moi" ? tr("Người bán đồng ý đổi: 1 vé lấy lại 1 trợ giúp đã dùng.", "Le marchand accepte : 1 billet contre 1 joker.", "The seller offers: 1 ticket for 1 lifeline.") : skDoi === "xong" ? tr("Đổi xong! Trợ giúp đã trở lại.", "Échange fait, joker récupéré !", "Done, lifeline back!") : tr("Người bán tặng bạn 1 vé vì bạn chưa cần trợ giúp.", "Le marchand vous offre 1 billet.", "The seller gives you 1 ticket."))}
+          </LoiLeon>
+          <div className="mt-4 flex flex-wrap justify-end gap-2">
+            {skDoi === "moi" && <button type="button" disabled={ve < 1} onClick={doiVe} className={`rounded-full border-0 bg-pink-500 px-5 py-2.5 font-sans text-sm font-extrabold text-white ${ve < 1 ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}>{tr("Đổi 1 vé", "Échanger 1 billet", "Trade 1 ticket")}</button>}
+            <button type="button" onClick={() => setBuoc("chon")} className="cursor-pointer rounded-full border-0 bg-amber-400 px-6 py-2.5 font-sans text-sm font-extrabold text-[#140b33]">{tr("Đi tiếp", "Continuer", "Continue")} →</button>
+          </div>
+        </>}
+      </div>
+    );
+  }
 
   if (buoc === "chon") {
     if (hetTour) return (
@@ -293,6 +367,7 @@ export default function DoVui({ muc = "vua", he, onXong }) {
           </span>
           <p className="m-0 flex items-center justify-center gap-1.5 rounded-xl bg-pink-500/30 p-1 text-center text-xs font-extrabold tabular-nums"><Minette size={26} cam={mnDung === true ? "vui" : mnDung === false ? "buon" : "tu-tin"} /><Flag size={13} className="fill-white" />{coMn}</p>
         </div>
+        {c.dang && <p className="mcf-sao-no m-0 mt-2 flex items-center justify-center gap-1.5 text-xs font-black uppercase tracking-widest text-sky-300">{React.createElement(NHAN_DANG[c.dang].Icon, { size: 15 })}{NHAN_DANG[c.dang].ten()}</p>}
         {chuoi >= 2 && <p key={chuoi} className="mcf-nay m-0 mt-2 flex items-center justify-center gap-1 text-xs font-extrabold text-orange-300"><Flame size={15} className="mcf-lua-nhun fill-orange-400" />{tr(`Chuỗi ${chuoi}`, `Série de ${chuoi}`, `${chuoi} in a row`)} · ×{String(heSoChuoi(chuoi + (chon == null ? 1 : 0))).replace(".", ",")}</p>}
         <div className="mt-4 flex items-center gap-1.5" aria-hidden>
           {ds.map((_, k) => <span key={k} className={`h-2 flex-1 rounded-full ${k < i ? "bg-amber-400" : k === i ? "bg-white" : "bg-white/15"}`} />)}
@@ -301,10 +376,15 @@ export default function DoVui({ muc = "vua", he, onXong }) {
           {chon === 0 && <PhaoGiay />}
           {chon != null && (chon === 0 || cuoc > 0) && <span className={`mcf-dv-bay absolute right-3 top-2 flex items-center gap-1 text-sm font-black ${chon === 0 ? "text-amber-300" : "text-red-300"}`}><Ticket size={15} />{chon === 0 ? `+${1 + cuoc}` : `-${cuoc}`}</span>}
           <p lang={c.muc === "de" ? undefined : "fr"} className="m-0 text-xl font-extrabold leading-snug">{c.q}</p>
+          {c.dang === "doan" && <ol className="m-0 mt-3 grid list-none gap-1.5 p-0 text-left text-sm font-semibold text-white/90">
+            {c.goiY.slice(0, chon != null ? 3 : soGoiY).map((g, k) => <li key={k} lang={c.muc === "de" ? undefined : "fr"} className="mcf-cau-vao flex gap-2 rounded-lg bg-white/10 px-3 py-2"><Lightbulb size={15} className="mt-0.5 shrink-0 text-amber-300" />{g}</li>)}
+          </ol>}
         </div>
+        {c.dang === "doan" && chon == null && soGoiY < c.goiY.length && <div className="mt-2 text-center"><button type="button" onClick={() => { phat("lat"); setSoGoiY(soGoiY + 1); }} className="cursor-pointer rounded-full border-0 bg-sky-500/30 px-4 py-1.5 font-sans text-xs font-extrabold text-white hover:bg-sky-500/50">{tr("Mở gợi ý tiếp", "Indice suivant", "Next clue")} ({tr("điểm", "pts", "pts")} ×{String(HE_SO_GOI_Y[soGoiY]).replace(".", ",")})</button></div>}
+        {c.dang === "nghe" && <NutNghe key={c.loi} loi={c.loi} toc={he?.toc ?? 1} daTra={chon != null} />}
         {chon == null && <>
           <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
-            {TRO_GIUP.map((ten) => {
+            {TRO_GIUP.filter((ten) => ten === "them_gio" || dungDapAn(c)).map((ten) => {
               const { Icon, ten: nhan } = GIUP[ten], het = daDung.includes(ten);
               return <button key={ten} type="button" disabled={het} onClick={() => dungGiup(ten)} className={`flex items-center gap-1.5 rounded-full border-0 px-3 py-1.5 font-sans text-xs font-extrabold ${het ? "cursor-not-allowed bg-white/5 text-white/30 line-through" : "cursor-pointer bg-white/15 text-white hover:bg-white/25"}`}><Icon size={14} />{nhan()}</button>;
             })}
@@ -319,7 +399,11 @@ export default function DoVui({ muc = "vua", he, onXong }) {
           </div>
           {leonChon != null && <LoiLeon cam="tai-nghe">{tr("Léon nghe máy: ", "Léon au bout du fil : ", "Léon on the line: ")}<strong lang="fr">{c.pa[leonChon]}</strong>{tr(", nhưng ta không dám thề đâu nhé!", ", mais je n'en jurerais pas !", ", but don't quote me on that!")}</LoiLeon>}
         </>}
-        <CauTracNghiem key={c.q} pa={c.pa} onTra={tra} daChon={chon} laPhap kieu="tv" an={an} phanTram={binh} />
+        {dungDapAn(c)
+          ? <CauTracNghiem key={c.q} pa={c.pa} onTra={tra} daChon={chon} laPhap={c.muc !== "de" || !c.dang || c.dang === "doan"} kieu="tv" an={an} phanTram={binh} />
+          : c.dang === "xep"
+            ? <XepMoc key={c.pa[0]} su={c.su} laPhap={c.muc !== "de"} daChon={chon} onXong={(ok) => tra(ok ? 0 : 1)} />
+            : <div className="mx-auto mt-4 max-w-md">{banDo(chon == null ? { onChon: (id) => tra(id === c.dich ? 0 : 1), diDuoc: c.cham } : { diDuoc: [c.dich], nhan: [c.dich] })}</div>}
         {chon != null && <>
           {chungKet && mnDung != null && <LoiMinette cam={mnDung ? "vui" : "buon"}>{mnDung ? tr(`Ta cũng đúng câu này: +${CO_CHUNG_KET} cờ.`, `Moi aussi, j'ai juste : +${CO_CHUNG_KET} drapeaux.`, `I got it too: +${CO_CHUNG_KET} flags.`) : tr("Zut ! Câu này ta sai mất rồi.", "Zut ! Celle-là, je l'ai ratée.", "Zut! I missed that one.")}</LoiMinette>}
           <LoiLeon cam={chon === 0 ? "tuyet-voi" : chon === -1 ? "ngac-nhien" : "xin-loi"}>
