@@ -71,10 +71,10 @@ const TRO_CHOI = () => [
   { ma: "tham_tu", nhom: "dv", Icon: Search, nen: "from-slate-600 to-indigo-700", leon: { src: "/leon/tham-tu-lon.webp", lop: "mcf-leon-ro top-[2%] -right-[14%] h-[105%] max-w-none", chu: "max-w-[60%]" },
     ten: tr("Thám tử Léon", "Détective Léon", "Detective Léon"),
     mo: tr("Làm trợ lý cho Thanh tra Léon: 9 vụ án, đọc manh mối tiếng Pháp và lần ra kẻ bí ẩn P.G.", "Assistez l'inspecteur Léon : 9 affaires, des indices en français et le mystérieux P.G.", "Assist Inspector Léon: 9 cases, French clues and the mysterious P.G.") },
-  { ma: "do_vui", nhom: "dv", Icon: Landmark, nen: "from-blue-600 to-red-500", leon: { src: "/leon/mc-lon.webp", lop: "mcf-leon-ro top-2 -right-[120px] h-[240px] max-w-none", chu: "max-w-[60%]", kieu: { "--mcf-mat-a": "68%", "--mcf-mat-b": "84%" } },
+  { ma: "do_vui", nhom: "dv", Icon: Landmark, nen: "from-blue-600 to-red-500", leon: { src: "/leon/mc-lon.webp", lop: "mcf-leon-ro top-[2%] -right-[17%] h-[105%] max-w-none", chu: "max-w-[60%]" },
     ten: tr("Đố vui nước Pháp", "Quiz France", "France quiz"),
     mo: tr("Gameshow vòng quanh nước Pháp do MC Léon dẫn: tự chọn từng địa danh trên bản đồ, đua cùng bà Minette, về Paris chung kết.", "Un jeu télé à travers la France : choisissez vos étapes sur la carte, puis finale à Paris.", "A TV quiz around France: pick your stops on the map, then the final in Paris.") },
-  { ma: "phieu_luu", nhom: "dv", Icon: MapPinned, nen: "from-amber-500 to-orange-600", leon: { src: "/leon/du-hoc-lon.webp", lop: "mcf-leon-ro top-2 -right-[110px] h-[240px] max-w-none", chu: "max-w-[60%]", kieu: { "--mcf-mat-a": "68%", "--mcf-mat-b": "84%" } },
+  { ma: "phieu_luu", nhom: "dv", Icon: MapPinned, nen: "from-amber-500 to-orange-600", leon: { src: "/leon/du-hoc-lon.webp", lop: "mcf-leon-ro top-[2%] -right-[37%] h-[105%] max-w-none", chu: "max-w-[60%]", kieu: { "--mcf-mat-a": "57%", "--mcf-mat-b": "77%" } },
     ten: tr("Một năm ở Paris", "Une année à Paris", "A year in Paris"),
     mo: tr("Sống 12 tháng du học cùng Léon: mỗi tuần tự chọn việc, giữ tiền, sức và tinh thần, đối đáp đúng sắc thái.", "12 mois de vie étudiante avec Léon : choisissez chaque semaine, gérez argent, énergie et moral.", "12 months of student life with Léon: choose each week, manage money, energy and mood.") },
 ];
