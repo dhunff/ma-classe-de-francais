@@ -3,7 +3,7 @@ import { Landmark, UtensilsCrossed, Mountain, ScrollText, Palette, Star, Stamp, 
 import CauTracNghiem from "../CauTracNghiem.jsx";
 import BanDoPhap from "./BanDoPhap.jsx";
 import { LOI_MUC } from "../../../content/troChoi/doVuiDiaDanh.js";
-import { GOC, SO_DUNG, diaDanh, moO, cauCua, diemDen, rutCau, rutChungKet, diemCau, heSoSao, thangTour } from "./luat.js";
+import { GOC, SO_DUNG, diaDanh, moO, diemDen, rutCau, rutChungKet, diemCau, heSoSao, thangTour } from "./luat.js";
 import { tr } from "../../../shared/i18n.jsx";
 import { phat } from "../../../shared/amThanh.js";
 import { Leon, leonVai } from "../../../shared/leon.jsx";
@@ -109,7 +109,7 @@ export default function DoVui({ muc = "vua", he, onXong }) {
     <div className={nen}>
       <LoiLeon cam="phap">{LOI_MUC[muc].mo}</LoiLeon>
       <div className="mt-4">{banDo({ nhan: [GOC] })}</div>
-      <p className="m-0 mt-3 text-center text-xs text-white/70">{tr(`${moSet.size} địa danh đang mở ở mức này. Chấm mờ sẽ mở khi có thêm câu hỏi.`, `${moSet.size} lieux ouverts à ce niveau. Les points pâles ouvriront plus tard.`, `${moSet.size} places open at this level. Faded dots open later.`)}</p>
+      <p className="m-0 mt-3 text-center text-xs text-white/70">{tr(`${moSet.size} địa danh đang chờ bạn. Mỗi Tour chỉ đi được ${SO_DUNG} nơi, nên hãy chọn khôn ngoan.`, `${moSet.size} lieux vous attendent. ${SO_DUNG} étapes par Tour : choisissez bien.`, `${moSet.size} places await. ${SO_DUNG} stops per Tour: choose wisely.`)}</p>
       <div className="mt-4 text-center">
         <button type="button" onClick={() => { phat("batDau"); setBuoc("chon"); }} className="cursor-pointer rounded-full border-0 bg-amber-400 px-8 py-3 font-sans text-base font-extrabold text-[#140b33] shadow-[0_6px_0_#b45309] active:translate-y-1 active:shadow-none">{tr("Lên tàu!", "En voiture !", "All aboard!")}</button>
       </div>
@@ -141,7 +141,7 @@ export default function DoVui({ muc = "vua", he, onXong }) {
                   <span className="min-w-0 flex-1">
                     <span className="flex items-center justify-between gap-2"><span lang="fr" className="text-base font-extrabold">{d.ten}</span>{tem[d.id] != null && <Stamp size={16} className="shrink-0 text-[#b91c1c]" aria-label={tr("Đã có tem", "Tampon obtenu", "Stamped")} />}</span>
                     <span className="block text-xs leading-snug">{d.mo}</span>
-                    <span className="mt-1 flex items-center gap-2 text-[11px] font-bold text-[#9a3412]">{ten()}<span className="rounded-full bg-[#7c2d12] px-1.5 py-0.5"><Sao n={d.sao} /></span>{heSo > 1 && <span>{tr("điểm", "pts", "pts")} ×{String(heSo).replace(".", ",")}</span>}<span className="ml-auto">{cauCua(d.id, muc).length > 1 ? tr("2 câu", "2 questions", "2 questions") : tr("1 câu", "1 question", "1 question")}</span></span>
+                    <span className="mt-1 flex items-center gap-2 text-[11px] font-bold text-[#9a3412]">{ten()}<span className="rounded-full bg-[#7c2d12] px-1.5 py-0.5"><Sao n={d.sao} /></span>{heSo > 1 && <span>{tr("điểm", "pts", "pts")} ×{String(heSo).replace(".", ",")}</span>}</span>
                   </span>
                 </button>
               );

@@ -3,7 +3,11 @@
  * Pháp đơn giản, Khó hỏi bằng tiếng Pháp B1–B2. Lời giải (gt) tiếng Việt.
  * pa[0] luôn là đáp án đúng. KHÔNG dùng dấu gạch dài (quy tắc 7). */
 
-export const CAU = [
+import { CAU_DE } from "./doVuiDe.js";
+import { CAU_VUA } from "./doVuiVua.js";
+import { CAU_KHO } from "./doVuiKho.js";
+
+const CAU_GOC = [
   /* Từ chặng cũ: Paris (de) */
   { noi: "paris", muc: "de", q: "Tháp Eiffel được hoàn thành năm nào?", pa: ["1889","1789","1920","1950"], gt: "Tháp hoàn thành năm 1889 cho Triển lãm Thế giới (Exposition universelle), đúng 100 năm sau Cách mạng 1789." },
   { noi: "paris", muc: "de", q: "Con sông nào chảy qua Paris?", pa: ["La Seine","La Loire","Le Rhône","La Garonne"], gt: "La Seine chia Paris thành « rive droite » (bờ phải) và « rive gauche » (bờ trái)." },
@@ -12,14 +16,14 @@ export const CAU = [
   { noi: "paris", muc: "de", q: "Nhà thờ Đức Bà Paris có tên tiếng Pháp là gì?", pa: ["Notre-Dame de Paris","Le Sacré-Cœur","La Sainte-Chapelle","Saint-Sulpice"], gt: "Notre-Dame de Paris, nghĩa đen « Đức Bà của chúng ta ». Nhà thờ mở cửa lại năm 2024 sau vụ cháy 2019." },
   /* Từ chặng cũ: Normandie & Bretagne (de) */
   { noi: "quimper", muc: "de", q: "Món bánh mỏng nổi tiếng nhất của Bretagne là gì?", pa: ["La crêpe","La baguette","Le croissant","Le macaron"], gt: "La crêpe (ngọt) và la galette (mặn, bột kiều mạch) là niềm tự hào của Bretagne." },
-  { noi: "mont-saint-michel", muc: "de", q: "Tu viện xây trên đảo đá, bị thủy triều bao quanh ở Normandie tên là gì?", pa: ["Le Mont-Saint-Michel","Le château de Chambord","La cité de Carcassonne","Le palais des Papes"], gt: "Le Mont-Saint-Michel: khi triều lên, đảo gần như tách hẳn khỏi đất liền." },
+  { noi: "plages-debarquement", muc: "de", q: "Tu viện xây trên đảo đá, bị thủy triều bao quanh ở Normandie tên là gì?", pa: ["Le Mont-Saint-Michel","Le château de Chambord","La cité de Carcassonne","Le palais des Papes"], gt: "Le Mont-Saint-Michel: khi triều lên, đảo gần như tách hẳn khỏi đất liền." },
   { noi: "pays-auge", muc: "de", q: "Loại pho mát mềm nổi tiếng nào mang tên một làng ở Normandie?", pa: ["Le camembert","Le roquefort","Le comté","Le reblochon"], gt: "Camembert là tên một ngôi làng ở Normandie. Roquefort ở miền Nam, comté ở Jura, reblochon ở Savoie." },
   { noi: "pays-auge", muc: "de", q: "Đồ uống lên men từ táo, rất phổ biến ở Normandie và Bretagne?", pa: ["Le cidre","Le champagne","Le pastis","Le cognac"], gt: "Le cidre (rượu táo nhẹ) thường uống kèm crêpe trong một chiếc bát nhỏ (bolée)." },
   { noi: "plages-debarquement", muc: "de", q: "Ngày D-Day, quân Đồng minh đổ bộ lên bờ biển Normandie là ngày nào?", pa: ["6 juin 1944","14 juillet 1789","11 novembre 1918","8 mai 1945"], gt: "Le 6 juin 1944, cuộc đổ bộ lớn nhất lịch sử, mở đầu giải phóng nước Pháp." },
   /* Từ chặng cũ: Provence & Côte d'Azur (de) */
   { noi: "valensole", muc: "de", q: "Những cánh đồng hoa màu tím nổi tiếng của Provence là hoa gì?", pa: ["La lavande","La tulipe","La rose","Le tournesol"], gt: "La lavande (oải hương) nở rộ khoảng tháng Sáu, tháng Bảy." },
-  { noi: "marseille", muc: "de", q: "Thành phố cảng lớn nhất nước Pháp, quê hương món súp cá bouillabaisse?", pa: ["Marseille","Nice","Lyon","Bordeaux"], gt: "Marseille, thành phố lâu đời nhất nước Pháp, do người Hy Lạp lập ra khoảng năm 600 trước Công nguyên." },
-  { noi: "cannes", muc: "de", q: "Liên hoan phim quốc tế nổi tiếng với giải « Cành cọ vàng » diễn ra ở đâu?", pa: ["Cannes","Nice","Avignon","Toulon"], gt: "Festival de Cannes, mỗi tháng Năm. Giải cao nhất: la Palme d'or." },
+  { noi: "valensole", muc: "de", q: "Thành phố cảng lớn nhất nước Pháp, quê hương món súp cá bouillabaisse?", pa: ["Marseille","Nice","Lyon","Bordeaux"], gt: "Marseille, thành phố lâu đời nhất nước Pháp, do người Hy Lạp lập ra khoảng năm 600 trước Công nguyên." },
+  { noi: "nice", muc: "de", q: "Liên hoan phim quốc tế nổi tiếng với giải « Cành cọ vàng » diễn ra ở đâu?", pa: ["Cannes","Nice","Avignon","Toulon"], gt: "Festival de Cannes, mỗi tháng Năm. Giải cao nhất: la Palme d'or." },
   { noi: "nice", muc: "de", q: "Món rau hầm truyền thống của Provence (cà tím, bí, ớt, cà chua)?", pa: ["La ratatouille","Le cassoulet","La choucroute","Le pot-au-feu"], gt: "La ratatouille, món rau hầm của vùng Nice và Provence." },
   { noi: "marseille", muc: "de", q: "Trò chơi ném bóng sắt rất được yêu thích ở miền Nam nước Pháp?", pa: ["La pétanque","Le rugby","Le croquet","Le golf"], gt: "La pétanque ra đời ở La Ciotat, gần Marseille, năm 1907." },
   /* Từ chặng cũ: Lyon & les Alpes (vua) */
@@ -30,7 +34,7 @@ export const CAU = [
   { noi: "lyon", muc: "vua", q: "À Lyon, les frères Lumière ont inventé…", pa: ["le cinématographe","le téléphone","l'avion","la radio"], gt: "Năm 1895, anh em Lumière chiếu bộ phim đầu tiên với chiếc « cinématographe »." },
   /* Từ chặng cũ: Bordeaux & le Sud-Ouest (vua) */
   { noi: "bordeaux", muc: "vua", q: "La région de Bordeaux est surtout connue pour…", pa: ["son vin","ses volcans","ses stations de ski","ses champs de lavande"], gt: "Bordeaux là một trong những vùng rượu vang nổi tiếng nhất thế giới." },
-  { noi: "dune-pilat", muc: "vua", q: "Comment s'appelle la plus haute dune d'Europe, près d'Arcachon ?", pa: ["La dune du Pilat","La dune Blanche","La dune d'Or","La dune du Nord"], gt: "La dune du Pilat cao hơn 100 m, nhìn ra Đại Tây Dương." },
+  { noi: "bordeaux", muc: "vua", q: "Comment s'appelle la plus haute dune d'Europe, près d'Arcachon ?", pa: ["La dune du Pilat","La dune Blanche","La dune d'Or","La dune du Nord"], gt: "La dune du Pilat cao hơn 100 m, nhìn ra Đại Tây Dương." },
   { noi: "toulouse", muc: "vua", q: "Qu'est-ce qu'il y a surtout dans un cassoulet ?", pa: ["Des haricots blancs et de la viande","Du poisson et du riz","Des pâtes et du fromage","Des pommes et de la crème"], gt: "Le cassoulet: đậu trắng hầm với xúc xích, thịt vịt hoặc thịt lợn, đặc sản vùng Toulouse và Castelnaudary." },
   { noi: "gavarnie", muc: "vua", q: "Quelles montagnes séparent la France de l'Espagne ?", pa: ["Les Pyrénées","Les Alpes","Le Jura","Les Vosges"], gt: "Les Pyrénées chạy dọc biên giới Pháp và Tây Ban Nha." },
   { noi: "toulouse", muc: "vua", q: "Pourquoi appelle-t-on Toulouse « la ville rose » ?", pa: ["À cause de la couleur de ses briques","À cause de ses fleurs","À cause de son vin rosé","À cause de ses couchers de soleil"], gt: "Nhà cửa ở Toulouse xây bằng gạch nung màu hồng cam." },
@@ -41,8 +45,8 @@ export const CAU = [
   { noi: "nancy", muc: "vua", q: "La quiche vient de quelle région ?", pa: ["La Lorraine","La Bretagne","La Provence","La Corse"], gt: "« La quiche lorraine », bánh trứng kem với thịt xông khói, quê ở Lorraine." },
   { noi: "strasbourg", muc: "vua", q: "Dans l'histoire, l'Alsace a souvent changé de pays. Avec quel voisin ?", pa: ["L'Allemagne","L'Italie","L'Espagne","La Suisse"], gt: "Alsace nhiều lần đổi chủ giữa Pháp và Đức, nên tên làng và món ăn mang dấu ấn Đức." },
   /* Từ chặng cũ: Val de Loire (kho) */
-  { noi: "chambord", muc: "kho", q: "Quel château de la Loire est célèbre pour son escalier à double révolution, souvent attribué à l'influence de Léonard de Vinci ?", pa: ["Chambord","Chenonceau","Versailles","Amboise"], gt: "Chambord: hai cầu thang xoắn lồng vào nhau, hai người đi lên xuống không bao giờ gặp nhau." },
-  { noi: "amboise", muc: "kho", q: "Où Léonard de Vinci a-t-il passé les dernières années de sa vie ?", pa: ["Au Clos Lucé, à Amboise","À Florence","Au Louvre","À Chambord"], gt: "Theo lời mời của vua François Ier, Léonard sống ở Clos Lucé (Amboise) và mất ở đó năm 1519." },
+  { noi: "amboise", muc: "kho", q: "Quel château de la Loire est célèbre pour son escalier à double révolution, souvent attribué à l'influence de Léonard de Vinci ?", pa: ["Chambord","Chenonceau","Versailles","Amboise"], gt: "Chambord: hai cầu thang xoắn lồng vào nhau, hai người đi lên xuống không bao giờ gặp nhau." },
+  { noi: "chambord", muc: "kho", q: "Où Léonard de Vinci a-t-il passé les dernières années de sa vie ?", pa: ["Au Clos Lucé, à Amboise","À Florence","Au Louvre","À Chambord"], gt: "Theo lời mời của vua François Ier, Léonard sống ở Clos Lucé (Amboise) và mất ở đó năm 1519." },
   { noi: "amboise", muc: "kho", q: "Pourquoi surnomme-t-on Chenonceau « le château des Dames » ?", pa: ["Parce que plusieurs femmes l'ont construit, embelli ou protégé","Parce que seules les femmes pouvaient y entrer","Parce que c'était une école de filles","Parce qu'une reine l'a construit seule"], gt: "Nhiều phụ nữ nối tiếp nhau xây dựng, tô điểm và bảo vệ lâu đài qua các thế kỷ." },
   { noi: "orleans", muc: "kho", q: "Quelle héroïne a libéré Orléans, assiégée par les Anglais, en 1429 ?", pa: ["Jeanne d'Arc","Catherine de Médicis","Marie-Antoinette","Simone Veil"], gt: "Jeanne d'Arc giải vây Orléans năm 1429 trong Chiến tranh Trăm năm." },
   { noi: "orleans", muc: "kho", q: "On présente souvent la Loire comme…", pa: ["le dernier grand fleuve sauvage de France","le plus court fleuve de France","le fleuve qui traverse Paris","un fleuve entièrement canalisé"], gt: "Loire ít bị đắp đập, nắn dòng, nên thường được gọi là « dernier fleuve sauvage »." },
@@ -59,3 +63,5 @@ export const CAU = [
   { noi: "paris", muc: "kho", q: "Dans l'expression « avoir le cafard », le mot « cafard » veut dire…", pa: ["la tristesse, le moral bas","une très grande faim","une colère soudaine","la fatigue après le sport"], gt: "« Cafard » nghĩa đen là con gián, nhưng « avoir le cafard » là buồn, chán nản." },
   { noi: "paris", muc: "kho", q: "Depuis la réforme de 2016, combien de régions compte la France métropolitaine ?", pa: ["13","22","27","101"], gt: "Từ 2016: 13 vùng ở chính quốc (22 vùng trước đó). 101 là số tỉnh (départements) tính cả hải ngoại." },
 ];
+
+export const CAU = [...CAU_GOC, ...CAU_DE, ...CAU_VUA, ...CAU_KHO];

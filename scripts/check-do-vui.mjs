@@ -26,6 +26,13 @@ ca("câu không trùng", new Set(CAU.map((c) => c.q)).size === CAU.length);
 const chu = JSON.stringify([CAU, DIA_DANH, LOI_MUC]);
 ca("nội dung không có dấu gạch dài", !chu.includes("—"));
 
+// Tên địa danh hiện ngay trên màn hỏi, nên đáp án không được là chính nó. Mỗi nơi đủ câu cho mọi mức.
+for (const c of CAU.filter((x) => x.noi !== GOC)) {
+  const ten = DIA_DANH.find((d) => d.id === c.noi)?.ten ?? "?";
+  ca(`${c.noi}: đáp án không trùng tên nơi: ${c.pa[0]}`, !c.pa[0].toLowerCase().includes(ten.toLowerCase()));
+}
+for (const d of DIA_DANH) for (const m of MUC) ca(`${d.id} (${m}): ít nhất 3 câu`, cauCua(d.id, m).length >= 3, cauCua(d.id, m).length);
+
 // Lời mở hiện TRƯỚC khi chọn nên không được chứa đáp án đúng của chính nơi đó.
 for (const d of DIA_DANH) for (const c of CAU.filter((x) => x.noi === d.id))
   ca(`${d.id}: lời mở không lộ đáp án « ${c.pa[0]} »`, c.pa[0].length < 4 || !d.mo.toLowerCase().includes(c.pa[0].toLowerCase()));
