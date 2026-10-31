@@ -58,8 +58,9 @@ export const chonCanh = (s, ma, CANH, NHANH) => {
   return lai != null ? { truyen: lai } : null;
 };
 
+export const HIEU_CAU = { dung: { phap: 2, tt: 1 }, sai: { tt: -6 } };
 export const sauCau = (s, k, ok) => {
-  const x = cong(s, ok ? { phap: 2, tt: 1 } : { tt: -6 });
+  const x = cong(s, ok ? HIEU_CAU.dung : HIEU_CAU.sai);
   return {
     ...x, da: s.da.includes(k) ? s.da : [...s.da, k], tong: s.tong + 1, dung: s.dung + (ok ? 1 : 0), diem: s.diem + (ok ? 100 : 0),
     saiLai: ok ? s.saiLai.filter((j) => j !== k) : [...s.saiLai.filter((j) => j !== k), k],

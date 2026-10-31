@@ -1,5 +1,5 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
-import { GraduationCap, BriefcaseBusiness, Users, Compass, BedDouble, Wallet, BatteryMedium, Heart, Languages, MapPin, UserRound, Thermometer, ArrowRight, Sparkles, Save, CalendarDays, Contact, Snowflake } from "lucide-react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { GraduationCap, BriefcaseBusiness, Users, Compass, BedDouble, Wallet, BatteryMedium, Heart, Languages, MapPin, UserRound, Thermometer, ArrowRight, Sparkles, Save, CalendarDays, Contact, Snowflake, CircleHelp } from "lucide-react";
 import { CHUONG } from "../../../content/troChoi/phieuLuu.js";
 import { NHAN_VAT, NHANH } from "../../../content/troChoi/parisNhanh.js";
 import { LICH_THANG } from "../../../content/troChoi/parisThang.js";
@@ -8,6 +8,7 @@ import { ChoNoel, ThuNha } from "./ManPhu.jsx";
 import { NutKyUc, KhoKyUc } from "./KyUc.jsx";
 import ManKet, { KHOA_CHO } from "./ManKet.jsx";
 import HoSoNam, { DongMay } from "./HoSoNam.jsx";
+import HuongDanNam from "./HuongDanNam.jsx";
 import { tr } from "../../../shared/i18n.jsx";
 import { phat } from "../../../shared/amThanh.js";
 import { Leon } from "../../../shared/leon.jsx";
@@ -20,6 +21,8 @@ import { HIEU_UNG, batDau, chuanHoa, chonCanh, sauCau, sauNhanh, sauPhu, viecTha
    mỗi khi người chơi lưu. Từ giai đoạn 2 cảnh đi theo hoạt động đã chọn, xen cảnh rẽ nhánh ở parisNhanh.js. */
 const KHOA = "mcf-mot-nam-v1";
 const KHOA_CU = "mcf-phieu-luu-v1";
+const KHOA_HD = "mcf-mot-nam-da-xem-hd";
+const daXemHd = () => { try { return localStorage.getItem(KHOA_HD) === "1"; } catch { return true; } };
 const docVan = () => { try { return chuanHoa(JSON.parse(localStorage.getItem(KHOA))); } catch { return null; } };
 const ghiVan = (s) => { try { if (s) localStorage.setItem(KHOA, JSON.stringify(s)); else localStorage.removeItem(KHOA); } catch { /* chế độ riêng tư: bỏ qua */ } };
 const thuongCu = () => { try { return Object.keys(JSON.parse(localStorage.getItem(KHOA_CU)) || {}).length * 50; } catch { return 0; } };
@@ -88,7 +91,7 @@ function NguoiQuen({ s }) {
   );
 }
 
-function DauMan({ s }) {
+function DauMan({ s, onHd }) {
   const T = THANG()[s.thang], C = CHI_SO();
   const Thanh = ({ ma }) => {
     const [Icon, ten] = C[ma], v = s[ma], thap = v <= 20;
@@ -112,6 +115,7 @@ function DauMan({ s }) {
           <p className="m-0 text-xs font-bold text-white/85">{tr(`Tuần ${s.tuan + 1}/4 · Tháng ${s.thang + 1}/12`, `Semaine ${s.tuan + 1}/4 · Mois ${s.thang + 1}/12`, `Week ${s.tuan + 1}/4 · Month ${s.thang + 1}/12`)} · {DANH()[danhXung(s.phap)]}</p>
         </div>
         <p className="m-0 flex items-center gap-1 rounded-full bg-black/25 px-3 py-1 text-sm font-black tabular-nums"><Wallet size={15} /> {s.tien} €</p>
+        <button type="button" onClick={onHd} aria-label={tr("Cách chơi", "Comment jouer", "How to play")} title={tr("Cách chơi", "Comment jouer", "How to play")} className="grid h-8 w-8 shrink-0 cursor-pointer place-items-center rounded-full border-0 bg-black/25 text-white"><CircleHelp size={16} /></button>
       </div>
       <div className="mt-3 grid grid-cols-3 gap-3"><Thanh ma="nl" /><Thanh ma="tt" /><Thanh ma="phap" /></div>
     </div>
@@ -132,6 +136,8 @@ export default function MotNam({ onXong, kho }) {
   const [vp, setVp] = useState(null);           // mini game / thư nhà đang mở
   const [yn, setYn] = useState(null);           // thành ngữ Léon dạy ở tuần yên ả
   const [xem, setXem] = useState(null);         // { tab, cu }: bản đồ, sổ tay, album đang mở
+  const [hd, setHd] = useState(() => !daXemHd());   // cách chơi: tự mở lần đầu
+  const dongHd = useCallback(() => { setHd(false); try { localStorage.setItem(KHOA_HD, "1"); } catch { /* bỏ qua */ } }, []);
   const nhanhXao = useMemo(() => (nh ? tron(nh.lua) : []), [nh]);
   const thuong = useMemo(thuongCu, []);
   const uid = useRef(null), daGui = useRef(null), choGui = useRef(undefined), henGui = useRef(null);
@@ -191,11 +197,15 @@ export default function MotNam({ onXong, kho }) {
 
   if (!san) return <div className="mt-6 grid place-items-center rounded-[2rem] bg-surface p-10 shadow-[0_8px_30px_rgb(0,0,0,0.06)]"><Leon cam="chao" size={72} className="mcf-dong" /><p className="m-0 mt-2 text-sm font-bold text-soft">{tr("Léon đang tìm lại năm của bạn…", "Léon retrouve votre année…", "Léon is finding your year…")}</p></div>;
 
+  const hopHd = hd && <HuongDanNam hoat={HOAT()} Chip={Chip} onDong={dongHd} />;
+
   if (!s) return (
     <div className="mt-6 overflow-hidden rounded-[2rem] bg-surface shadow-[0_8px_30px_rgb(0,0,0,0.06)]">
+      {hopHd}
       <div className="bg-gradient-to-br from-amber-500 to-orange-600 p-6 text-white">
         <p className="m-0 text-xs font-extrabold uppercase tracking-widest text-white/85">{tr("Bắt đầu năm du học", "Début de l'année", "Start your year")}</p>
         <p className="m-0 mt-1 text-2xl font-black" lang="fr">Une année à Paris</p>
+        <button type="button" onClick={() => setHd(true)} className="mt-3 cursor-pointer rounded-full border-0 bg-white/20 px-4 py-1.5 font-sans text-xs font-bold text-white"><CircleHelp size={14} className="mr-1 inline align-[-3px]" />{tr("Cách chơi", "Comment jouer", "How to play")}</button>
       </div>
       <div className="p-5">
         <LoiLeon cam="chao">{tr("Chào bạn! Ta là Léon. Mười hai tháng tới, mỗi tuần bạn tự chọn đi học, làm thêm, gặp bạn hay khám phá Paris. Nhớ giữ tiền, sức khoẻ và tinh thần nhé. Cuối mỗi tháng phải trả tiền nhà đấy!", "Salut ! Moi, c'est Léon. Pendant douze mois, chaque semaine, tu choisis : cours, travail, amis ou découverte de Paris. Garde de l'argent, de l'énergie et du moral. Le loyer tombe chaque fin de mois !", "Hi! I'm Léon. For twelve months, each week you choose: class, work, friends or exploring Paris. Watch your money, energy and mood. Rent is due every month!")}</LoiLeon>
@@ -216,7 +226,7 @@ export default function MotNam({ onXong, kho }) {
 
   const ky = { noi: noiSangDen(s, CANH, VIEC_THEO_ID, DIA_DIEM), anh: anhDaCo(s, ALBUM), cau: cauHay(s, CANH, VIEC_THEO_ID) };
   const daThay = () => ({ noi: ky.noi.map((d) => d.id), anh: ky.anh.length, cau: ky.cau.length + s.ngu.length });
-  const khung = (con) => <div className="mt-6 overflow-hidden rounded-[2rem] bg-surface shadow-[0_8px_30px_rgb(0,0,0,0.06)]"><DauMan s={s} /><div className="p-5">{con}</div></div>;
+  const khung = (con) => <div className="mt-6 overflow-hidden rounded-[2rem] bg-surface shadow-[0_8px_30px_rgb(0,0,0,0.06)]">{hopHd}<DauMan s={s} onHd={() => setHd(true)} /><div className="p-5">{con}</div></div>;
   const luuDiem = (x) => { const r = { diem: x.diem, dung: x.dung, tong: Math.max(1, x.tong) }, sau = { ...x, diem: 0, dung: 0, tong: 0 }; luuNgay(sau); setS(sau); onXong(r); };   // ghi ngay: onXong gỡ màn này trước khi effect kịp chạy
 
   if (buoc === "lich") {
@@ -231,6 +241,7 @@ export default function MotNam({ onXong, kho }) {
       moCanh({ ...cong(s, HIEU_UNG[ma]), hdThang: [...s.hdThang, ma], doDang: { hd: ma } }, ma);
     };
     return khung(<>
+      {may === "loi" && <div className="mb-4"><DongMay may={may} /></div>}
       {s.tuan === 0 && LICH_THANG[s.thang]?.mo && <div className="mb-4"><LoiLeon cam="nhay-mat">{LICH_THANG[s.thang].mo}</LoiLeon></div>}
       <p className="m-0 flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-widest text-orange-600"><CalendarDays size={14} /> {tr("Tuần này bạn định làm gì?", "Que faire cette semaine ?", "What's the plan this week?")}</p>
       {s.buocLam && <p className="m-0 mt-2 rounded-2xl bg-orange-50 px-4 py-2 text-sm text-ink dark:bg-orange-950/40">{tr("Bạn đang nợ Léon tiền nhà, tuần này phải đi làm.", "Tu dois le loyer à Léon : cette semaine, au travail.", "You owe Léon the rent: work this week.")}</p>}
