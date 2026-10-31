@@ -21,19 +21,8 @@ import { MUC_CHOI, khopCap, docDanhTuGioi, docMuaChu, phuongAnNghia, docCauNghe,
  * là một trò. Câu hỏi dựng từ kho có sẵn (xem shared/troChoiNhanh.js); điểm, kỷ lục và XP
  * ghi qua RPC ghi_tro_choi, mỗi lượt cũng tính một ngày học cho chuỗi. */
 
-/* Mô tả một dòng trên thẻ ở sảnh (31/10, chủ dự án). Bản đầy đủ `mo` vẫn dùng ở màn luật chơi. */
+/* Mô tả ngắn trên thẻ ở sảnh cho hai trò có Léon đứng cạnh chữ (31/10, chủ dự án). Các trò khác và màn luật chơi dùng `mo`. */
 const MO_NGAN = {
-  flashcard: ["Lật thẻ, ôn từ đúng lúc.", "Cartes et révision espacée.", "Flip cards, review on time."],
-  thach_dau: ["Đấu từ vựng 1 chọi 1.", "Duel de vocabulaire 1 contre 1.", "1-on-1 vocabulary duel."],
-  gioi_tinh: ["Phân loại danh từ vào LE hay LA.", "Triez les noms : LE ou LA.", "Sort nouns into LE or LA."],
-  nghe_chon: ["Nghe rồi ghép băng đúng thứ tự.", "Écoutez, remettez dans l'ordre.", "Listen, then put clips in order."],
-  mua_chu: ["Bắt từ trước khi chạm đất.", "Attrapez les mots qui tombent.", "Catch words before they land."],
-  xep_cau: ["Móc từ thành câu, đưa tàu tới ga.", "Accrochez les mots en phrase.", "Hook words into a sentence."],
-  san_loi: ["Khoanh lỗi trước giờ in báo.", "Corrigez avant l'impression.", "Fix mistakes before print."],
-  dung_sai: ["Làm luật sư, bắt lỗi lời khai.", "Avocat, traquez les fautes.", "Be the lawyer, catch the errors."],
-  chep_nhanh: ["Nghe và giải mã 5 bức điện.", "Écoutez, décodez 5 messages.", "Listen and decode 5 messages."],
-  noi_mo_khoa: ["Đọc thoại rồi nói thuộc lòng.", "Lisez, puis dites de mémoire.", "Read, then say it from memory."],
-  tham_tu: ["9 vụ án, truy tìm P.G.", "9 affaires, traquez P.G.", "9 cases, hunt down P.G."],
   do_vui: ["Gameshow vòng quanh nước Pháp.", "Jeu télé à travers la France.", "A TV quiz around France."],
   phieu_luu: ["12 tháng du học cùng Léon.", "12 mois d'études avec Léon.", "12 student months with Léon."],
 };
