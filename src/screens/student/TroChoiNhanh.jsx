@@ -14,7 +14,7 @@ import PhienToa from "./phienToa/PhienToa.jsx";
 import MotNam from "./paris/MotNam.jsx";
 import { tr } from "../../shared/i18n.jsx";
 import { phat } from "../../shared/amThanh.js";
-import { Leon, leonVai } from "../../shared/leon.jsx";
+import { Leon, LeonNoi, leonVai } from "../../shared/leon.jsx";
 import { MUC_CHOI, khopCap, docDanhTuGioi, docMuaChu, phuongAnNghia, docCauNghe, phuongAnCau, ghiTroChoi, docKyLuc, docXepCau, docSanLoi, docDungSai, tron } from "../../shared/troChoiNhanh.js";
 
 /* Ba trò chơi nhanh (27/10, migration 168). /etudiant/tro-choi là sảnh, /etudiant/tro-choi/:ma
@@ -184,43 +184,44 @@ function ManChoi({ tc }) {
       </div>
 
       {buoc === "chon" && (
-        <div className="mt-6 rounded-3xl bg-surface p-6 text-center shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
-          <div className="mb-5 flex items-start gap-3 text-left">
-            <Leon cam="nhay-mat" size={60} className="shrink-0" />
-            <p className="m-0 rounded-3xl rounded-tl-md bg-surface2 px-4 py-3 text-sm leading-relaxed text-ink">{tr("Luật chơi đây: ", "Voici la règle : ", "Here are the rules: ")}{tc.mo}</p>
-          </div>
+        <div className="relative mt-6 overflow-hidden rounded-3xl bg-surface p-6 text-center shadow-[0_8px_30px_rgb(0,0,0,0.06)]">
+          {/* 31/10: nền mang màu của chính trò đó, bong bóng Leon có đuôi, thẻ mức tô màu đầy đủ. */}
+          <div aria-hidden className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${tc.nen} opacity-[0.14]`} />
+          <div aria-hidden className={`pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-gradient-to-br ${tc.nen} opacity-30 blur-2xl`} />
+          <div className="relative">
+          <LeonNoi cam="nhay-mat" size={64} className="mb-6 text-left">{tr("Luật chơi đây: ", "Voici la règle : ", "Here are the rules: ")}{tc.mo}</LeonNoi>
           {tc.kieu && <>
-            <p className="m-0 text-sm font-bold text-soft">{tr("Cách chơi", "Mode", "Mode")}</p>
-            <div className="mb-5 mt-3 grid gap-2 sm:grid-cols-3">
+            <p className="m-0 text-sm font-extrabold text-ink">{tr("Cách chơi", "Mode", "Mode")}</p>
+            <div className="mb-6 mt-3 grid gap-2 sm:grid-cols-3">
               {tc.kieu.map((k) => (
-                <button key={k.ma} type="button" onClick={() => setKieu(k.ma)}
-                  className={`cursor-pointer rounded-2xl border-2 border-solid px-3 py-3 text-left font-sans transition-colors ${kieu === k.ma ? "border-primary bg-primary-soft" : "border-line bg-surface hover:border-primary/40"}`}>
-                  <span className="block text-sm font-extrabold text-ink">{k.ten}</span>
-                  <span className="mt-0.5 block text-xs text-soft">{k.mo}</span>
+                <button key={k.ma} type="button" onClick={() => setKieu(k.ma)} aria-pressed={kieu === k.ma}
+                  className={`cursor-pointer rounded-2xl border-0 px-3 py-3 text-left font-sans transition-transform duration-200 ${kieu === k.ma ? `bg-gradient-to-br ${tc.nen} -translate-y-0.5 text-white shadow-lg` : "bg-surface text-ink shadow-sm hover:-translate-y-0.5"}`}>
+                  <span className="block text-sm font-extrabold">{k.ten}</span>
+                  <span className={`mt-0.5 block text-xs ${kieu === k.ma ? "text-white/90" : "text-soft"}`}>{k.mo}</span>
                 </button>
               ))}
             </div>
           </>}
           {tc.ma !== "phieu_luu" && <>
-          <p className="m-0 text-sm font-bold text-soft">{tr("Mức độ", "Difficulté", "Difficulty")}</p>
-          {/* Chọn mức (28/10): ba thẻ lớn, vạch cường độ 1–3, mô tả ngắn và dấu tích ở thẻ đang chọn */}
+          <p className="m-0 text-sm font-extrabold text-ink">{tr("Mức độ", "Difficulté", "Difficulty")}</p>
+          {/* Chọn mức: ba thẻ màu, vạch cường độ 1–3, thẻ đang chọn nổi lên có viền và dấu tích. */}
           <div className="mx-auto mt-3 grid max-w-2xl gap-3 sm:grid-cols-3">
-            {[["de", tr("Dễ", "Facile", "Easy"), "A1–A2", tr("Từ quen, nhiều thời gian", "Mots courants, plus de temps", "Common words, more time"), "bg-ok", "border-ok", "text-ok", "mim-cuoi"],
-              ["vua", tr("Vừa", "Moyen", "Medium"), "A2–B1", tr("Nhịp chuẩn, có bẫy nhẹ", "Rythme normal, quelques pièges", "Normal pace, light traps"), "bg-warn", "border-warn", "text-warn", "nhay-mat"],
-              ["kho", tr("Khó", "Difficile", "Hard"), "B1–B2", tr("Nhanh hơn, từ khó, ít gợi ý", "Plus rapide, moins d'aide", "Faster, harder, fewer hints"), "bg-danger", "border-danger", "text-danger", "quyet-tam"]].map(([m, ten, cap, mo, nen, vien, chu, cam], j) => {
+            {[["de", tr("Dễ", "Facile", "Easy"), "A1–A2", tr("Từ quen, nhiều thời gian", "Mots courants, plus de temps", "Common words, more time"), "from-emerald-500 to-teal-600", "text-white", "text-white/90", "ring-emerald-400", "bg-white", "text-teal-700", "mim-cuoi"],
+              ["vua", tr("Vừa", "Moyen", "Medium"), "A2–B1", tr("Nhịp chuẩn, có bẫy nhẹ", "Rythme normal, quelques pièges", "Normal pace, light traps"), "from-amber-300 to-orange-400", "text-amber-950", "text-amber-950/80", "ring-amber-400", "bg-amber-950", "text-amber-200", "nhay-mat"],
+              ["kho", tr("Khó", "Difficile", "Hard"), "B1–B2", tr("Nhanh hơn, từ khó, ít gợi ý", "Plus rapide, moins d'aide", "Faster, harder, fewer hints"), "from-rose-500 to-fuchsia-600", "text-white", "text-white/90", "ring-rose-400", "bg-white", "text-rose-600", "quyet-tam"]].map(([m, ten, cap, mo, nen, chu, chuPhu, vien, dau, chuDau, cam], j) => {
               const chon = muc === m;
               return (
                 <button key={m} type="button" onClick={() => setMuc(m)} aria-pressed={chon}
-                  className={`relative flex cursor-pointer items-center gap-3 rounded-2xl border-2 border-solid p-3 text-left font-sans transition-[transform,box-shadow,border-color] duration-200 sm:flex-col sm:items-center sm:p-4 sm:text-center ${chon ? `${vien} bg-surface -translate-y-0.5 shadow-lg` : "border-line bg-surface2 hover:-translate-y-0.5 hover:border-soft/40"}`}>
-                  {chon && <span className={`absolute right-2 top-2 grid h-6 w-6 place-items-center rounded-full ${nen} text-white`}><Check size={14} strokeWidth={3} /></span>}
-                  <Leon cam={cam} size={48} className={`shrink-0 transition-[filter,opacity] ${chon ? "" : "opacity-60 grayscale"}`} />
+                  className={`relative flex cursor-pointer items-center gap-3 rounded-2xl border-0 bg-gradient-to-br ${nen} ${chu} p-3 text-left font-sans transition-[transform,box-shadow,opacity] duration-200 sm:flex-col sm:items-center sm:p-4 sm:text-center ${chon ? `-translate-y-1 shadow-xl ring-4 ${vien} ring-offset-2 ring-offset-surface` : "opacity-80 shadow-sm hover:-translate-y-0.5 hover:opacity-100"}`}>
+                  {chon && <span className={`mcf-nay absolute right-2 top-2 grid h-6 w-6 place-items-center rounded-full ${dau} ${chuDau}`}><Check size={14} strokeWidth={3} /></span>}
+                  <span className="grid h-14 w-14 shrink-0 place-items-center rounded-full bg-white/30"><Leon cam={cam} size={48} /></span>
                   <span className="min-w-0 flex-1 sm:flex-none">
                     <span className="flex items-center gap-2 sm:justify-center">
-                      <span className={`text-lg font-extrabold ${chon ? chu : "text-ink"}`}>{ten}</span>
-                      <span aria-hidden className="flex items-end gap-0.5">{[0, 1, 2].map((k) => <span key={k} className={`w-1.5 rounded-sm ${["h-2", "h-3", "h-4"][k]} ${k <= j ? (chon ? nen : "bg-soft") : "bg-line"}`} />)}</span>
+                      <span className="text-lg font-extrabold">{ten}</span>
+                      <span aria-hidden className="flex items-end gap-0.5">{[0, 1, 2].map((k) => <span key={k} className={`w-1.5 rounded-sm ${["h-2", "h-3", "h-4"][k]} ${k <= j ? dau : "bg-black/20"}`} />)}</span>
                     </span>
-                    <span className="mt-0.5 block text-xs font-bold text-soft">{cap}</span>
-                    <span className="mt-1 block text-xs leading-snug text-soft">{mo}</span>
+                    <span className={`mt-0.5 block text-xs font-bold ${chuPhu}`}>{cap}</span>
+                    <span className={`mt-1 block text-xs leading-snug ${chuPhu}`}>{mo}</span>
                   </span>
                 </button>
               );
@@ -228,9 +229,10 @@ function ManChoi({ tc }) {
           </div>
           </>}
           <button type="button" onClick={() => { phat("batDau"); setVan((v) => v + 1); setBuoc("choi"); }}
-            className="mt-6 inline-flex cursor-pointer items-center gap-2 rounded-full border-0 bg-primary px-8 py-3 font-sans text-base font-extrabold text-on-primary shadow-[0_10px_24px_rgb(var(--mcf-primary-rgb)/0.3)] active:scale-[0.97]">
+            className={`mt-7 inline-flex cursor-pointer items-center gap-2 rounded-full border-0 bg-gradient-to-br ${tc.nen} px-9 py-3.5 font-sans text-base font-extrabold text-white shadow-[0_12px_26px_rgba(0,0,0,0.22)] transition-transform hover:-translate-y-0.5 active:scale-[0.97]`}>
             <Play size={18} /> {tr("Bắt đầu", "Commencer", "Start")}
           </button>
+          </div>
         </div>
       )}
 

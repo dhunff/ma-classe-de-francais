@@ -33,6 +33,7 @@ import ThamTu from "./screens/student/thamTu/ThamTu.jsx";
 import MotNam from "./screens/student/paris/MotNam.jsx";
 import DoVui from "./screens/student/doVui/DoVui.jsx";
 import PhienToa from "./screens/student/phienToa/PhienToa.jsx";
+import TroChoiNhanh from "./screens/student/TroChoiNhanh.jsx";
 /* Giả máy chủ cho Thám tử (chỉ trang xem thử): ghi trong bộ nhớ, bảng hạng cố định. */
 const SV_TT = { vu: {}, chon: {} };
 /* Giả lập máy chủ của Một năm ở Paris: window.__motNam để đọc, đặt .hong = true để thử nhánh lỗi. */
@@ -730,6 +731,7 @@ function Preview() {
     ["/etudiant/mot-nam", "Một năm ở Paris"],
     ["/etudiant/do-vui", "Đố vui nước Pháp"],
     ["/etudiant/phien-toa", "Phiên toà ngữ pháp"],
+    ["/etudiant/tro-choi/dung_sai", "Màn chọn mức trò chơi"],
     ["/etudiant/tham-tu-mau", "Thám tử Léon (mức vừa)"],
     ["/etudiant/tham-tu-de", "Thám tử Léon (mức dễ)"],
     ["/etudiant/hoan-ho-so", "Hoàn thiện hồ sơ (mới đăng ký)"],
@@ -893,6 +895,7 @@ function Preview() {
           <Route path="/etudiant/hoan-ho-so" element={<><Controls /><HoanThienHoSo fixture={{ prenom: "Linh" }} /></>} />
           <Route path="/etudiant/tham-tu-de" element={<><Controls /><ThamTu muc="de" onXong={() => {}} /></>} />
           <Route path="/etudiant/tham-tu-mau" element={<><Controls /><ThamTu muc="vua" onXong={() => {}} /></>} />
+          <Route path="/etudiant/tro-choi/:ma" element={<><Controls /><TroChoiNhanh /></>} />
           <Route path="/etudiant/phien-toa" element={<><Controls /><div className="mx-auto max-w-5xl"><PhienToa muc={new URLSearchParams(window.location.search).get("muc") ?? "vua"} he={{ gio: 1 }} onXong={(r) => { window.__phienToa = r; }} /></div></>} />
           <Route path="/etudiant/do-vui" element={<><Controls /><div className="mx-auto max-w-5xl"><DoVui muc={new URLSearchParams(window.location.search).get("muc") ?? "de"} he={{ gio: 1 }} onXong={(r) => { window.__doVui = r; }} /></div></>} />
           <Route path="/etudiant/mot-nam" element={<><Controls /><MotNam onXong={() => {}} kho={KHO_PN_GIA} /></>} />
