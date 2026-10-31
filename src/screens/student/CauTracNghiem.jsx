@@ -5,7 +5,7 @@ import { tron } from "../../shared/troChoiNhanh.js";
 /* kieu: "manh" = mảnh giấy ghim (Thám tử) · "tv" = bốn ô màu A–D (Đố vui)
    · "thoai" = bong bóng lời thoại của người chơi (Phiêu lưu). */
 const MAU_TV = ["bg-rose-500", "bg-sky-500", "bg-amber-500", "bg-emerald-500"];
-export default function CauTracNghiem({ pa, onTra, daChon, laPhap, kieu, bo, an = [] }) {
+export default function CauTracNghiem({ pa, onTra, daChon, laPhap, kieu, bo, an = [], phanTram }) {
   const thuTu = React.useMemo(() => tron(pa.map((x, k) => ({ x, k }))), [pa]);
   const lang = laPhap ? "fr" : undefined;
   if (kieu === "tv") return (
@@ -13,9 +13,11 @@ export default function CauTracNghiem({ pa, onTra, daChon, laPhap, kieu, bo, an 
       {thuTu.map(({ x, k }, j) => {
         const dung = daChon != null && k === 0, mo = daChon != null && !dung;
         return (
-          <button key={k} type="button" onClick={() => onTra(k)} lang={lang}
-            className={`flex min-h-[72px] cursor-pointer items-center gap-3 rounded-xl border-0 ${MAU_TV[j]} px-4 py-3 text-left font-sans text-base font-bold text-white shadow-[0_5px_0_rgba(0,0,0,0.25)] transition-[opacity,transform] duration-200 active:translate-y-1 active:shadow-none ${dung ? "scale-[1.03] ring-4 ring-white" : ""} ${mo ? "opacity-30" : ""}`}>
-            <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-black/20 text-sm">{"ABCD"[j]}</span>{x}
+          <button key={k} type="button" disabled={an.includes(k)} onClick={() => onTra(k)} lang={lang}
+            className={`relative flex min-h-[72px] cursor-pointer items-center gap-3 overflow-hidden rounded-xl border-0 ${MAU_TV[j]} px-4 py-3 text-left font-sans text-base font-bold text-white shadow-[0_5px_0_rgba(0,0,0,0.25)] transition-[opacity,transform] duration-200 active:translate-y-1 active:shadow-none ${dung ? "scale-[1.03] ring-4 ring-white" : ""} ${an.includes(k) ? "hidden" : mo ? "opacity-30" : ""}`}>
+            {phanTram?.[k] != null && <span aria-hidden className="mcf-dv-cot absolute inset-y-0 left-0 bg-black/20" style={{ width: `${phanTram[k]}%` }} />}
+            <span className="relative grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-black/20 text-sm">{"ABCD"[j]}</span><span className="relative min-w-0 flex-1">{x}</span>
+            {phanTram?.[k] != null && <span className="relative shrink-0 text-sm font-black tabular-nums">{phanTram[k]}%</span>}
           </button>
         );
       })}

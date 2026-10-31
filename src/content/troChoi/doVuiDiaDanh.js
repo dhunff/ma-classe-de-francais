@@ -38,6 +38,13 @@ export const DIA_DANH = [
 ];
 
 /* Lời MC theo mức. tu: đoạn mở đầu Tour; thang, thua: lời kết. */
+/* Lời bà Minette sau mỗi lượt đi. {noi} là tên địa danh. */
+export const LOI_MINETTE = {
+  chiem: ["Merci beaucoup ! {noi} là của ta rồi.", "{noi} ư? Dễ như ăn một chiếc croissant.", "Cờ của ta đã cắm ở {noi}. À toi, mon petit !", "Ta tới {noi} trước nhé. Le chat gagne toujours."],
+  hut: ["Hừm, câu hỏi ở {noi} khó thật. Ta sẽ quay lại.", "Zut ! Ta chưa giữ được {noi}.", "{noi} hôm nay không chiều ta. Mais ce n'est pas fini !"],
+  mat: ["Sao? Bạn dám lấy lại {noi} của ta? Impressionnant.", "Oh là là ! Cờ của ta ở {noi} đâu rồi?"],
+};
+
 export const LOI_MUC = {
   de: {
     mo: "Bonsoir la France ! Ta là Léon, MC của « Le Grand Quiz de France ». Năm nay trường quay lên đường: bạn tự chọn từng điểm dừng trên bản đồ, đua cùng bà Minette, mèo vô địch ba mùa liền, rồi về Paris dự chung kết.",
