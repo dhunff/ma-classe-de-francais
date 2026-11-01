@@ -5,7 +5,7 @@
  * theo đúng dạng đề DELF (phỏng vấn radio, tranh luận, chuyên mục, phóng sự),
  * mỗi câu hỏi có câu trích làm bằng chứng.
  *
- * Kịch bản do FRACILE viết; đề bài ghi rõ « voix de synthèse ».
+ * Kịch bản do FRACILE viết.
  * Chạy: TTS_ADMIN_TOKEN=… node scripts/nhap/lo8_nghe_b1_b2.mjs > lo8.sql */
 import { readFileSync } from "node:fs";
 import { toRows } from "../../src/shared/exerciseMap.js";
@@ -197,7 +197,7 @@ for (const b of BAI) {
   if (!kq.ok) { console.error(b.tep, kq); process.exit(1); }
   console.error(`✔ ${b.tep}: ${Math.round(kq.so_byte / 1024)} KB, ${b.cau.length} câu`);
   const ex = { title: "[NHÁP] " + b.tieuDe, level: b.level, skills: ["Écoute"], id: id("nhap"), audioUrl: kq.url, questions: b.cau,
-    consigne: "<p>Écoutez le document (deux écoutes), puis répondez aux questions.</p><p><em>Enregistrement réalisé avec une voix de synthèse (giọng tổng hợp).</em></p>",
+    consigne: "<p>Écoutez le document (deux écoutes), puis répondez aux questions.</p>",
     usageType: "assignment", targeted: true, assignedTo: ["__nhap__"], assignedClasses: [], assignedExtra: [], createdAt: Date.now() };
   const { exRow, qRows } = toRows(ex, "assignment");
   const cot = Object.keys(exRow);

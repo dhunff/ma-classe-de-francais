@@ -1,8 +1,8 @@
 /* TẠO BÀI NGHE BẰNG GIỌNG TỔNG HỢP (02/10) — OpenAI text-to-speech.
  *
  * Chủ dự án chọn giọng tổng hợp cho các bài nghe tự viết (docs/nghe/
- * kich-ban-nghe.md). Mọi bài tạo ra ở đây phải được GHI RÕ « giọng tổng hợp »
- * trong đề bài — không giới thiệu như audio bản xứ.
+ * kich-ban-nghe.md). 01/11: chủ dự án bỏ dòng ghi « giọng tổng hợp » trong đề bài
+ * (migration 178); trang pháp lý vẫn nói rõ, đừng giới thiệu là audio bản xứ.
  *
  * Gọi bằng một trong hai:
  *   · JWT giáo viên (app_metadata.role = 'prof'), hoặc

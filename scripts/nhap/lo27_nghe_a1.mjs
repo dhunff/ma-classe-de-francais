@@ -2,7 +2,7 @@
  *
  * Bài gắn vào cây bằng meta.kyNang + meta.thuTu, không cần sửa kyNang.js. Bài nền
  * (trong `mienPhi` của kỹ năng) miễn phí, phần còn lại là bài VIP giá 19.000 đ.
- * Tạo audio bằng tao-audio, giọng tổng hợp, đề bài ghi rõ.
+ * Tạo audio bằng tao-audio, giọng tổng hợp.
  *
  * Chạy: TTS_ADMIN_TOKEN=… node scripts/nhap/lo27_nghe_a1.mjs > lo27.sql
  * Thêm KHO=1 để chỉ dựng SQL kiểm tra, không gọi TTS. */
@@ -38,7 +38,6 @@ const CONSIGNE = {
   "A1-CO-4": "<p>Écoutez les dialogues, puis associez chaque dialogue à la bonne situation.</p>",
   "A1-CO-5": "<p>Écoutez le message. Pour chaque objet, choisissez Oui s'il faut le prendre ou s'il est présent, sinon Non.</p>",
 };
-const NHAC = "<p><em>Enregistrement réalisé avec une voix de synthèse (giọng tổng hợp).</em></p>";
 
 const BAI = dungBai({ qcm, oui, dien, ghep });
 const moc = Date.UTC(2026, 10, 1);
@@ -66,7 +65,7 @@ for (const [i, b] of BAI.entries()) {
   }
   const ex = {
     title: b.tieuDe, level: "A1", skills: ["Écoute"], id: `a1co${String(i + 1).padStart(2, "0")}${id("x").slice(-6)}`, audioUrl: url, questions: b.cau,
-    consigne: (CONSIGNE[b.ma] || "<p>Écoutez le document, puis répondez aux questions.</p>") + NHAC,
+    consigne: CONSIGNE[b.ma] || "<p>Écoutez le document, puis répondez aux questions.</p>",
     imageUrl: "", usageType: "practice", targeted: false, assignedTo: [], assignedClasses: [], assignedExtra: [], createdAt: moc + i * 1000,
     vocabulaire: b.tu.map((x) => "• " + x).join("\n"), explications: b.meo.map((x) => "• " + x).join("\n"),
     kyNang: b.ma, vong: b.vong, thuTu,

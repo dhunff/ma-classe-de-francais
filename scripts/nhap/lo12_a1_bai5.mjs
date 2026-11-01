@@ -32,7 +32,7 @@ const yn = (doVat, co) => ({ id: id("q"), type: "qcm", prompt: `Inès parle de :
 const ex = {
   id: id("nhap"), title: "Écoute A1 · Đề 1 · Exercice 5 : la valise du week-end", level: "A1", skills: ["Écoute"],
   usageType: "practice", targeted: false, createdAt: Date.now(),
-  consigne: "<p>Vous allez entendre un message. Quels objets sont donnés dans le message ? Vous entendez le nom de l'objet : cochez « Oui ». Sinon, cochez « Non ». Puis vous allez entendre à nouveau le message.</p><p><em>Enregistrement réalisé avec une voix de synthèse (giọng tổng hợp).</em></p>",
+  consigne: "<p>Vous allez entendre un message. Quels objets sont donnés dans le message ? Vous entendez le nom de l'objet : cochez « Oui ». Sinon, cochez « Non ». Puis vous allez entendre à nouveau le message.</p>",
   audioUrl: kq.url,
   questions: [yn("un maillot de bain", true), yn("un parapluie", false), yn("des lunettes de soleil", true), yn("un livre", false), yn("un chargeur", true)],
 };

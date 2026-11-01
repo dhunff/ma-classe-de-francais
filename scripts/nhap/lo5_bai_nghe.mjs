@@ -4,8 +4,7 @@
  *         biến môi trường, URL + khoá anon đọc từ .env) → mp3 ở kho `nghe`.
  * Bước 2: in SQL tạo 9 bài NHÁP « Écoute » trỏ tới các mp3 đó.
  *
- * Đề bài ghi rõ « giọng tổng hợp » — chủ dự án chọn TTS 02/10; đừng gỡ dòng đó
- * để bài trông như audio bản xứ.
+ * 01/11: chủ dự án bỏ dòng ghi « giọng tổng hợp » trong đề bài (migration 178).
  *
  * Chạy: TTS_ADMIN_TOKEN=… node scripts/nhap/lo5_bai_nghe.mjs > lo5.sql */
 import { readFileSync } from "node:fs";
@@ -153,7 +152,7 @@ for (const b of BAI) {
   if (!kq.ok) { console.error(b.ten, kq); process.exit(1); }
   console.error(`✔ ${b.ten}: ${Math.round(kq.so_byte / 1024)} KB, ${kq.so_doan} đoạn`);
   const ex = { title: "[NHÁP] " + b.tieuDe, level: b.level, skills: ["Écoute"], id: id("nhap"),
-    consigne: "<p>Écoutez le document, puis répondez aux questions.</p><p><em>Enregistrement réalisé avec une voix de synthèse (giọng tổng hợp).</em></p>",
+    consigne: "<p>Écoutez le document, puis répondez aux questions.</p>",
     audioUrl: kq.url, questions: b.cau, usageType: "assignment",
     targeted: true, assignedTo: ["__nhap__"], assignedClasses: [], assignedExtra: [], createdAt: Date.now() };
   const { exRow, qRows } = toRows(ex, "assignment");

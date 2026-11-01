@@ -38,7 +38,6 @@ const ghep = (prompt, items, choix, dap) => {
 
 const CHAM = "Parle en français de France, lentement et très clairement, comme pour des débutants.";
 const RADIO = "Parle en français de France, comme une annonce dans une gare, lentement et clairement.";
-const DOC = "<p><em>Enregistrement réalisé avec une voix de synthèse (giọng tổng hợp).</em></p>";
 
 /* ───────────── COMPRÉHENSION DE L'ORAL ───────────── */
 const CO = [
@@ -169,7 +168,7 @@ CO.forEach((b, k) => {
   if (!kq[k].ok) { console.error(b.ten, kq[k]); process.exit(1); }
   console.error(`✔ ${b.ten}: ${Math.round(kq[k].so_byte / 1024)} KB`);
   const ex = { ...chung, id: id("nhap"), title: "[NHÁP] " + b.tieuDe, level: "A1", skills: ["Écoute"],
-    consigne: b.consigne + DOC, audioUrl: kq[k].url, questions: b.cau, createdAt: Date.now() };
+    consigne: b.consigne, audioUrl: kq[k].url, questions: b.cau, createdAt: Date.now() };
   ghi(ex); PHAN.push(["CO", ex.id, k ? 0 : 20, k ? 0 : 25]);
 });
 CE.forEach((b, k) => {

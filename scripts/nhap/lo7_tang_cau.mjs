@@ -139,7 +139,7 @@ for (const b of A2_NGHE) {
   if (!kq.ok) { console.error(b.tep, kq); process.exit(1); }
   console.error(`✔ ${b.tep}: ${Math.round(kq.so_byte / 1024)} KB`);
   idNghe.push(baiMoi({ title: "[NHÁP] " + b.tieuDe, level: "A2", skills: ["Écoute"], audioUrl: kq.url, questions: b.cau,
-    consigne: "<p>Écoutez le document (deux écoutes), puis répondez aux questions.</p><p><em>Enregistrement réalisé avec une voix de synthèse (giọng tổng hợp).</em></p>" }));
+    consigne: "<p>Écoutez le document (deux écoutes), puis répondez aux questions.</p>" }));
 }
 const idDoc = A2_DOC.map((b) => baiMoi({ title: "[NHÁP] " + b.tieuDe, level: "A2", skills: ["Lecture"], consigne: b.consigne, readingText: b.readingText, questions: b.cau }));
 themCau("[NHÁP] Écoute C1 : le changement climatique", THEM_KHI_HAU);

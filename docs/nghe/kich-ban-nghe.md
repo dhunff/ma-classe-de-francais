@@ -2,7 +2,7 @@
 
 **ĐÃ THU (02/10):** cả 9 bài bằng giọng tổng hợp OpenAI (Edge Function `tao-audio`,
 kho `nghe`), thành 9 bài nháp « Écoute » — `scripts/nhap/lo5_bai_nghe.mjs`. Đề bài
-mỗi bài ghi rõ « voix de synthèse ».
+từ 01/11 đề bài không ghi « voix de synthèse » nữa.
 
 Nguồn audio sạch bản quyền cho A1–B1 theo chủ đề xã hội **không có** (xem phần
 cuối). Nên FRACILE tự viết kịch bản rồi thu âm — FRACILE giữ toàn quyền.
