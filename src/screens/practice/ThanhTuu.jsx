@@ -78,7 +78,7 @@ export default function ThanhTuu({ exercises, hist, biKhoa, ten }) {
   const mo = (cn, tenCn) => setXem({ ...cn, ten: tenCn });
   const moTaKy = (k) => {
     if (k.du) return tr("Xem chứng nhận", "Voir le certificat", "View certificate");
-    if (k.sapCo) return tr(`Đạt ${k.dat}/${k.tong}, ${k.sapCo} kỹ năng đang soạn bài`, `${k.dat}/${k.tong} validées, ${k.sapCo} en préparation`, `${k.dat}/${k.tong} passed, ${k.sapCo} being prepared`);
+    if (k.sapCo) return tr(`Đạt ${k.dat}/${k.tong}, còn kỹ năng đang soạn`, `${k.dat}/${k.tong} validées, d'autres en préparation`, `${k.dat}/${k.tong} passed, others being prepared`);
     return tr(`Đạt ${k.dat}/${k.tong} kỹ năng nhỏ`, `${k.dat}/${k.tong} sous-compétences validées`, `${k.dat}/${k.tong} sub-skills passed`);
   };
   return (

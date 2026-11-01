@@ -10,8 +10,8 @@ import { hangBai, hangKyNho, hangSau, tinhKyLon } from "../../shared/hangLuyenTa
 import HuyHieuHang from "./HuyHieuHang.jsx";
 
 /* Màn Luyện tập theo trình độ (01/11/2026): trình độ → kỹ năng lớn → kỹ năng nhỏ
- * → bài. Mọi số đếm từ `exercises` + `hist`; `duKien` là số bài trong kế hoạch và
- * luôn được ghi rõ là kế hoạch. Luật khoá ở shared/tienTrinhLuyenTap.js. */
+ * → bài. Mọi số đếm từ `exercises` + `hist`; số bài kế hoạch (`duKien`) không hiện cho học sinh.
+ * Luật khoá ở shared/tienTrinhLuyenTap.js. */
 
 /* Cùng bốn dải màu với lưới kỹ năng cũ (ngoại lệ màu nhận dạng, chữ trắng trên nền đậm). */
 export const KY = () => ({
@@ -40,7 +40,7 @@ function NhanBuoc({ o }) {
     return <span className="text-xs font-bold text-warn">{o.xong.length ? tr(`Đang luyện · ${o.xong.length}/${o.coTheLam.length} bài`, `En cours · ${o.xong.length}/${o.coTheLam.length}`, `In progress · ${o.xong.length}/${o.coTheLam.length}`) : tr(`${o.bai.length} bài · VIP mở sẵn`, `${o.bai.length} ex. · ouvert par le VIP`, `${o.bai.length} ex. · open with VIP`)}</span>;
   }
   if (o.buoc === "vip") return <span className="text-xs font-bold text-warn">{tr(`${o.phi.length} bài VIP · không chặn đường đi`, `${o.phi.length} ex. VIP · n'empêche pas d'avancer`, `${o.phi.length} VIP ex. · doesn't block your path`)}</span>;
-  return <span className="text-xs font-semibold text-soft">{tr(`Đang soạn bài · kế hoạch ${o.kn.duKien} bài`, `En préparation · ${o.kn.duKien} ex. prévus`, `Being prepared · ${o.kn.duKien} ex. planned`)}</span>;
+  return <span className="text-xs font-semibold text-soft">{tr("Đang soạn", "En préparation", "Being prepared")}</span>;
 }
 
 /* Dấu tròn trên đường: nối dọc bằng một vạch, nên thấy ngay mình đang ở đâu. */
@@ -93,7 +93,7 @@ function TheKyLon({ ky, m, duong, hist, onMo, onThanhTuu }) {
           {cn.du
             ? tr("Đã nhận chứng nhận, bấm để xem", "Certificat obtenu, cliquez pour le voir", "Certificate earned, click to view")
             : cn.sapCo
-              ? tr(`Chứng nhận: đạt ${cn.dat}/${cn.tong}, ${cn.sapCo} kỹ năng đang soạn bài`, `Certificat : ${cn.dat}/${cn.tong}, ${cn.sapCo} en préparation`, `Certificate: ${cn.dat}/${cn.tong}, ${cn.sapCo} being prepared`)
+              ? tr(`Chứng nhận: đạt ${cn.dat}/${cn.tong}, còn kỹ năng đang soạn`, `Certificat : ${cn.dat}/${cn.tong}, compétences en préparation`, `Certificate: ${cn.dat}/${cn.tong}, skills being prepared`)
               : tr(`Chứng nhận: đạt ${cn.dat}/${cn.tong} kỹ năng nhỏ`, `Certificat : ${cn.dat}/${cn.tong} sous-compétences`, `Certificate: ${cn.dat}/${cn.tong} sub-skills`)}
         </span>
         {cn.hang && <HuyHieuHang hang={cn.hang} size={24} />}
@@ -464,9 +464,6 @@ export function ChiTietKyNho({ ma, exercises, hist, biKhoa, onBack, onMoKyNho, c
             );
           })}
         </div>
-      )}
-      {o.bai.length < o.kn.duKien && (
-        <p className="m-0 mt-4 text-sm text-soft">{tr(`Đang có ${o.bai.length} bài. Kế hoạch ${o.kn.duKien} bài: ${o.kn.mienPhi} miễn phí, ${o.kn.duKien - o.kn.mienPhi} VIP.`, `${o.bai.length} ex. disponibles. Prévu : ${o.kn.duKien}, dont ${o.kn.mienPhi} gratuits et ${o.kn.duKien - o.kn.mienPhi} VIP.`, `${o.bai.length} ex. available. Planned: ${o.kn.duKien}, ${o.kn.mienPhi} free and ${o.kn.duKien - o.kn.mienPhi} VIP.`)}</p>
       )}
 
       {(truoc || sau) && (
