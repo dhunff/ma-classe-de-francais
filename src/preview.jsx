@@ -713,6 +713,15 @@ const BAI_THU = {
     { id: "c6", type: "fill", prompt: "Il arrive à ______ heures.", accepted: "huit" },
   ],
 };
+const BAI_DOC_THU = {
+  id: "thu-bai-doc", title: "Lecture A1 : pour aller à la poste", level: "A1", skills: ["Lecture"], skill: "Lecture",
+  consigne: "<p>Lisez ce plan et ces indications, puis répondez aux questions.</p>",
+  readingText: '<p><img src="/images/doc-a1/ville.svg" alt="Plan" /></p><p><img src="/images/doc-a1/immeuble.svg" alt="Plan" /></p><p><img src="/images/doc-a1/chemins.svg" alt="Plan" /></p><div class="mcf-bang"><table><thead><tr><th>Heure</th><th>Lundi</th><th>Mardi</th></tr></thead><tbody><tr><td>8 h</td><td>maths</td><td>français</td></tr></tbody></table></div>',
+  questions: [
+    { id: "d1", type: "qcm", prompt: "La poste, c'est le bâtiment…", options: ["A", "B", "C"] },
+    { id: "d2", type: "tableau", prompt: "Le mardi, Emma a ce cours ?", colonnes: [{ id: "k", titre: "Mardi" }], criteres: [{ id: "a", texte: "français" }, { id: "b", texte: "anglais" }] },
+  ],
+};
 const chamThu = async (tl) => ({
   score: 4, max: 6,
   results: Object.fromEntries(BAI_THU.questions.map((q, i) => [q.id, { correct: i % 3 !== 1 && tl[q.id] != null, expected: q.options?.[1] ?? null }])),
@@ -726,6 +735,7 @@ function LuyenCapThu() {
   const [baoKhoa, setBaoKhoa] = useState(null);
   const [vipThu, setVipThu] = useState(false);
   const [lamBai, setLamBai] = useState(false);
+  const [baiDoc, setBaiDoc] = useState(false);
   const moBuoc = (o) => (o.buoc === "khoa" ? setBaoKhoa("Làm xong bước trước để mở bước này.") : (setBaoKhoa(null), setMa(o.kn.ma)));
   const ids = Object.values(KY_NANG).flatMap((c) => Object.values(c).flat()).flatMap((k) => k.bai.map((id) => ({ id, level: k.ma.slice(0, 2), title: "Écoute " + k.ma.slice(0, 2) + " : bài mẫu " + id.slice(-4), questions: [{}, {}, {}, {}, {}], price: 19000, vong: "hoc" })));
   for (const [i, v] of [[1, "on"]]) { const e = ids.find((x) => x.id === KY_NANG.B1.CO[1].bai[i]); if (e) e.vong = v; }
@@ -746,7 +756,8 @@ function LuyenCapThu() {
     <div className="mx-auto max-w-5xl p-4">
       <label className="mb-4 flex items-center gap-2 text-sm font-bold text-ink"><input type="checkbox" checked={vipThu} onChange={(e) => setVipThu(e.target.checked)} /> Xem như VIP</label>
       <label className="mb-4 flex items-center gap-2 text-sm font-bold text-ink"><input type="checkbox" checked={lamBai} onChange={(e) => setLamBai(e.target.checked)} /> Xem màn làm bài</label>
-      {lamBai && <React.Suspense fallback={null}><PracticeWorkspaceThu ex={BAI_THU} back={() => setLamBai(false)} onFinish={() => {}} chamBang={chamThu} kyNho="A1-CO-1" /></React.Suspense>}
+      <label className="mb-4 flex items-center gap-2 text-sm font-bold text-ink"><input type="checkbox" checked={baiDoc} onChange={(e) => setBaiDoc(e.target.checked)} /> Bài đọc</label>
+      {lamBai && <React.Suspense fallback={null}><PracticeWorkspaceThu key={String(baiDoc)} ex={baiDoc ? BAI_DOC_THU : BAI_THU} back={() => setLamBai(false)} onFinish={() => {}} chamBang={chamThu} kyNho="A1-CO-1" /></React.Suspense>}
       {lamBai ? null :      <>
       {ma && <div className="mb-4"><MeoKyNho ma={ma} /></div>}
       {ma ? <ChiTietKyNho ma={ma} exercises={ids} hist={hist} biKhoa={biKhoa} onBack={() => { setBaoKhoa(null); setMa(null); }} onMoKyNho={moBuoc} canhBao={baoKhoa} laVip={vipThu} onMuaVip={() => {}} giaVip="99.000 ₫" onLam={() => {}} renderThe={the} />

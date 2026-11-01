@@ -67,7 +67,7 @@ export default function SplitPane({ audioUrl, readingText, stickyTop = 8, nen, d
       </div>
 
       <div
-        className="mcf-scroll grid min-w-0 gap-6 overflow-y-auto pr-1"
+        className="mcf-scroll grid min-w-0 grid-cols-[minmax(0,1fr)] gap-6 overflow-y-auto pr-1"
         style={{ flex: "5 1 340px", position: "sticky", top: stickyTop, maxHeight: "76vh" }}
       >
         {children}

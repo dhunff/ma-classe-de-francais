@@ -149,7 +149,7 @@ function TableauCompare({ q, value, onChange, readOnly, correction, dapAn }) {
   const set = (key, v) => { if (readOnly) return; onChange({ ...value, [key]: value?.[key] === v ? undefined : v }); };
   return (
     <div style={{ overflowX: "auto" }} className="mcf-scroll">
-      <table style={{ borderCollapse: "collapse", width: "100%", minWidth: 420, fontSize: 13.5 }}>
+      <table style={{ borderCollapse: "collapse", width: "100%", minWidth: q.colonnes.length > 1 ? 420 : 0, fontSize: 13.5 }}>
         <thead>
           <tr>
             <th rowSpan={2} style={{ border: `1px solid ${C.line}`, padding: "8px 12px", textAlign: "left", background: "var(--mcf-surface2)", position: "sticky", left: 0, zIndex: 1 }}></th>
