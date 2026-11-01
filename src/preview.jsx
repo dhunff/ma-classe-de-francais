@@ -714,7 +714,7 @@ function LuyenCapThu() {
   const the = (ex) => <div className="rounded-2xl border border-solid border-line bg-surface p-4 text-sm font-bold text-ink">{ex.title}{hist[ex.id] ? " · đã làm" : ""}</div>;
   return (
     <div className="mx-auto max-w-5xl p-4">
-      {ma ? <ChiTietKyNho ma={ma} exercises={ids} hist={hist} biKhoa={biKhoa} onBack={() => setMa(null)} onMoKyNho={(o) => setMa(o.kn.ma)} renderThe={the} />
+      {ma ? <ChiTietKyNho ma={ma} exercises={ids} hist={hist} biKhoa={biKhoa} onBack={() => setMa(null)} onMoKyNho={(o) => setMa(o.kn.ma)} renderThe={the} laVip={false} onMuaVip={() => {}} />
         : <LuyenTheoCap cap={cap} capHoSo="B1" onDoiCap={setCap} exercises={ids} hist={hist} biKhoa={biKhoa} canhBao={baoKhoa}
             onMoKyNho={(o) => (o.buoc === "khoa" ? setBaoKhoa("Làm xong bước trước để mở bước này.") : setMa(o.kn.ma))} />}
     </div>

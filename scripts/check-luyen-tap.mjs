@@ -16,6 +16,7 @@ ca("tên đủ ba thứ tiếng", moi.every((k) => k.vi && k.fr && k.en));
 ca("không có dấu gạch dài", moi.every((k) => ![k.vi, k.fr, k.en].join().includes("—")));
 ca("mã khớp vị trí trong cây", moi.every((k) => timKyNho(k.ma)?.kn === k));
 ca("số bài kế hoạch hợp lệ", moi.every((k) => k.duKien > 0 && k.bai.length <= k.duKien));
+ca("mỗi kỹ năng có bài miễn phí trong kế hoạch", moi.every((k) => k.mienPhi > 0 && k.mienPhi <= k.duKien));
 const ids = moi.flatMap((k) => k.bai);
 ca("một bài không nằm ở hai kỹ năng", new Set(ids).size === ids.length);
 
@@ -35,7 +36,9 @@ ca("đúng 70% là đạt", tinhKyNho({ ...ds[0], bai: [] }, ex, xong("x0", 7, 1
 const thieu = ex.filter((e) => e.id !== "x0");
 ca("kỹ năng chưa có bài không chặn bước sau", buoc({}, undefined, thieu).startsWith("sapCo,hienTai"));
 /* Ngõ cụt 2: bài trả phí bị khoá không được chặn. */
-ca("bài khoá phí không chặn bước sau", buoc({}, (e) => e.id === "x0").startsWith("sapCo,hienTai"));
+ca("bài khoá phí không chặn bước sau", buoc({}, (e) => e.id === "x0").startsWith("vip,hienTai"));
+ca("bước VIP vẫn đếm được số bài khoá", tinhKyNho({ ...ds[0], bai: [] }, ex, {}, () => true).phi.length === 1);
+ca("VIP không có bài khoá", tinhKyNho({ ...ds[0], bai: [] }, ex, {}).phi.length === 0);
 /* Ngõ cụt 3: bài tự luận không có điểm vẫn tính là xong. */
 ca("bài không có điểm vẫn qua được", buoc({ x0: { best: 0, max: 0, tries: 1 } }).startsWith("xong,hienTai"));
 ca("bản ghi cũ best = -1 không tính điểm", tinhKyNho({ ...ds[0], bai: [] }, ex, { x0: { best: -1, max: 10, tries: 1 } }).tb === null);

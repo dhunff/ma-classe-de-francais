@@ -379,14 +379,15 @@ ${r.error?.message ?? ""}`); return; }
           onBuy={() => { const e = doiXp; setDoiXp(null); setPayFor(e); }}
           onVip={() => { setDoiXp(null); setPayFor(goiVip(t("vip.pay_title"))); }}
           onDone={(soDu) => { setXp(soDu); setDoiXp(null); baoXpDoi(); sauKhiMoKhoa(); }} />}
-        <ChiTietKyNho ma={view.ma} exercises={exercises} hist={hist} biKhoa={biKhoa}
+        <ChiTietKyNho ma={view.ma} exercises={exercises} hist={hist} biKhoa={biKhoa} laVip={fullAccess}
+          onMuaVip={() => { if (isGuest) return requireLogin(); setPayFor(goiVip(t("vip.pay_title"))); }}
           onBack={() => setView({ page: "home" })} onMoKyNho={moKyNho}
           renderThe={(ex) => (
             <ExerciseCard ex={ex} premium={isPremium(ex)} locked={biKhoa(ex)} best={hist[ex.id]} t={t}
               typesLabel={[...new Set(ex.questions.map((q) => QTYPES[q.type]))].join(" + ")} folderLabel={null}
               onStart={() => { if (isGuest) return requireLogin(); setView({ page: "quiz", kyNho: view.ma, exId: ex.id }); }}
               onPickMaterial={(kind) => setMatModal({ exId: ex.id, kind })}
-              onBuy={() => setPayFor(ex)}
+              onBuy={() => { if (isGuest) return requireLogin(); setPayFor(ex); }}
               onDoiXp={role === "eleve" ? () => setDoiXp(ex) : null}
               teacherActions={null} />
           )} />
@@ -1008,7 +1009,7 @@ ${r.error?.message ?? ""}`); return; }
       )}
       {!teacher && !thuVien ? (
         <LuyenTheoCap cap={capMacDinh(capChon, capHoSo, exercises, hist)} capHoSo={capHoSo} onDoiCap={doiCap}
-          exercises={exercises} hist={hist} biKhoa={biKhoa} onMoKyNho={moKyNho} canhBao={canhBaoLt} />
+          exercises={exercises} hist={hist} biKhoa={biKhoa} onMoKyNho={moKyNho} canhBao={canhBaoLt} laVip={fullAccess} />
       ) : (
       <div id="tour-xp-grid" className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
         {CATS.map((cat, i) => {

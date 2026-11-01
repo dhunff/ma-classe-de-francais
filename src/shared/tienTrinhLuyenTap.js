@@ -6,7 +6,11 @@
  * ══ KHÔNG ĐƯỢC CÓ NGÕ CỤT ══
  * Phần lớn kỹ năng nhỏ chưa có bài, và một số bài trả phí. Nếu những chỗ đó tính là
  * « chưa xong » thì học sinh kẹt vĩnh viễn ở một bước không làm được. Nên kỹ năng
- * chưa có bài và bài đang khoá phí đều KHÔNG chặn bước sau. Khoá chỉ là giao diện. */
+ * chưa có bài và bài đang khoá phí đều KHÔNG chặn bước sau. Khoá chỉ là giao diện.
+ *
+ * ══ VIP (01/11) ══ Không chia theo trình độ. Học sinh thường đi hết đường bằng bài
+ * nền; VIP là phần luyện sâu. Hàng rào thật vẫn là cờ isPremium của từng bài +
+ * can_open_exercise ở máy chủ, file này chỉ đọc `biKhoa`. */
 import { KY_NANG } from "../content/luyenTap/kyNang.js";
 
 export const CAP_DO = Object.keys(KY_NANG);
@@ -38,17 +42,18 @@ export function tinhKyNho(kn, exercises, hist, biKhoa = () => false) {
   else if (xong.length === 0) muc = "chua";
   else if (xong.length === coTheLam.length && (tb === null || tb >= NGUONG_DAT)) muc = "dat";
   else muc = "dang";
-  return { kn, bai, coTheLam, xong, tb, muc };
+  return { kn, bai, coTheLam, xong, tb, muc, phi: bai.filter(biKhoa) };
 }
 
-/* Đường đi trong một kỹ năng lớn. buoc: "xong" | "hienTai" | "khoa" | "sapCo".
+/* Đường đi trong một kỹ năng lớn. buoc: "xong" | "hienTai" | "khoa" | "sapCo" | "vip".
+   "vip": mọi bài đang có đều khoá phí, mở xem được nhưng không chặn bước sau.
    Chỉ MỘT bước hienTai: bước đầu tiên có bài mà chưa đạt. */
 export function duongKyLon(cap, ky, exercises, hist, biKhoa) {
   let daGapHienTai = false;
   return KY_NANG[cap][ky].map((kn) => {
     const o = tinhKyNho(kn, exercises, hist, biKhoa);
     let buoc;
-    if (o.muc === "trong") buoc = "sapCo";
+    if (o.muc === "trong") buoc = o.bai.length ? "vip" : "sapCo";
     else if (o.muc === "dat") buoc = "xong";
     else if (!daGapHienTai) { buoc = "hienTai"; daGapHienTai = true; }
     else buoc = "khoa";
