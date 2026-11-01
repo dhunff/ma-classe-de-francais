@@ -381,7 +381,7 @@ export function ChiTietKyNho({ ma, exercises, hist, biKhoa, onBack, onMoKyNho, l
                       {tt === "khoa" ? (
                         <div className="relative h-full">
                           <div aria-hidden inert="" className="pointer-events-none h-full opacity-50">{renderThe(ex)}</div>
-                          <p className="absolute inset-x-3 bottom-3 m-0 rounded-2xl bg-surface2 px-3 py-2.5 text-center text-sm font-bold text-ink shadow-sm">{tr("Làm xong bài trước để mở", "Terminez l'exercice précédent", "Finish the previous exercise")}</p>
+                          <p className="absolute inset-x-3 top-1/2 m-0 -translate-y-1/2 rounded-2xl bg-surface2 px-3 py-2.5 text-center text-sm font-bold text-ink shadow-sm">{tr("Làm xong bài trước để mở", "Terminez l'exercice précédent", "Finish the previous exercise")}</p>
                         </div>
                       ) : renderThe(ex)}
                     </li>
