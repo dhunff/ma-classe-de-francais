@@ -24,7 +24,7 @@ import { TuVungBai, GiaiThichBai } from "./screens/practice/TaiLieuBai.jsx";
 import Builder from "./screens/teacher/Builder.jsx";
 import PaymentModal from "./screens/student/PaymentModal.jsx";
 import VipBanner from "./screens/practice/VipBanner.jsx";
-import { goiVip, vipConHan } from "./shared/vip.js";
+import { VIP, goiVip, vipConHan } from "./shared/vip.js";
 import PremiumLockCard from "./screens/student/PremiumLockCard.jsx";
 import DoiXpModal from "./screens/practice/DoiXpModal.jsx";
 import { docXp, baoXpDoi } from "./shared/xp.js";
@@ -369,7 +369,7 @@ ${r.error?.message ?? ""}`); return; }
   /* -------- Một kỹ năng nhỏ trong cây trình độ -------- */
   if (view.page === "kyNho") {
     return (
-      <div className="mx-auto max-w-5xl">
+      <div className="mx-auto max-w-6xl">
         {MatModal()}
         {payFor && <PaymentModal ex={payFor} student={name} config={payCfg}
           onClose={() => setPayFor(null)}
@@ -380,7 +380,7 @@ ${r.error?.message ?? ""}`); return; }
           onVip={() => { setDoiXp(null); setPayFor(goiVip(t("vip.pay_title"))); }}
           onDone={(soDu) => { setXp(soDu); setDoiXp(null); baoXpDoi(); sauKhiMoKhoa(); }} />}
         <ChiTietKyNho ma={view.ma} exercises={exercises} hist={hist} biKhoa={biKhoa} laVip={fullAccess}
-          onMuaVip={() => { if (isGuest) return requireLogin(); setPayFor(goiVip(t("vip.pay_title"))); }}
+          onMuaVip={() => { if (isGuest) return requireLogin(); setPayFor(goiVip(t("vip.pay_title"))); }} giaVip={fmtPrice(VIP.gia)}
           onBack={() => setView({ page: "home" })} onMoKyNho={moKyNho}
           onLam={(ex) => { if (isGuest) return requireLogin(); setView({ page: "quiz", kyNho: view.ma, exId: ex.id }); }}
           renderThe={(ex) => (
