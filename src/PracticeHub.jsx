@@ -1564,12 +1564,17 @@ export function PracticeWorkspace({ ex, back, onFinish, soTu = false, chamBang =
           </div>
         ) : q.type === "open" ? (
           <>
-            {laNoi ? (q.audioMau && (
-              <button type="button" onClick={() => new Audio(q.audioMau).play().catch(() => {})}
-                className="inline-flex cursor-pointer items-center gap-2 rounded-xl border-0 bg-surface2 px-3 py-2 font-sans text-sm font-bold text-ink">
-                <Volume2 size={16} /> {tr("Nghe câu mẫu", "Écouter le modèle", "Listen to the model")}
-              </button>
-            )) : <KhungViet value={a || ""} readOnly={!!graded} onChange={(html) => setAnswers({ ...answers, [q.id]: html })} />}
+            {laNoi ? (
+              <div className="grid gap-3">
+                {q.audioMau && (
+                  <button type="button" onClick={() => new Audio(q.audioMau).play().catch(() => {})}
+                    className="inline-flex w-fit cursor-pointer items-center gap-2 rounded-xl border-0 bg-surface2 px-3 py-2 font-sans text-sm font-bold text-ink">
+                    <Volume2 size={16} /> {tr("Nghe câu mẫu", "Écouter le modèle", "Listen to the model")}
+                  </button>
+                )}
+                <GhiAmBaiNoi gon exerciseId={ex.id} cauId={q.id} gioiHanGiay={120} />
+              </div>
+            ) : <KhungViet value={a || ""} readOnly={!!graded} onChange={(html) => setAnswers({ ...answers, [q.id]: html })} />}
             {graded && (q.model || baiMau[q.id]) && (
               <div style={{ marginTop: 12, background: C.okSoft, border: `1.5px solid ${C.ok}55`, borderRadius: 12, padding: "12px 15px" }}>
                 <strong>{tr("Đáp án gợi ý:", "Réponse suggérée :", "Suggested answer:")}</strong>
@@ -1639,17 +1644,11 @@ export function PracticeWorkspace({ ex, back, onFinish, soTu = false, chamBang =
         </div>
       )}
 
+      {laNoi && <p className="m-0 mb-4 text-sm font-semibold text-soft">{tr("Mỗi câu ghi âm riêng. Ghi xong có thể nghe lại và bấm « AI nhận xét ». Bài nói không có điểm.", "Chaque question a son enregistrement. Réécoutez puis demandez l'avis de l'IA. L'oral n'est pas noté.", "Each question has its own recording. Listen back, then ask for AI feedback. Speaking is not scored.")}</p>}
       <SplitPane audioUrl={ex.audioLuyen || ex.audioUrl} readingText={ex.readingText} stickyTop={zen ? FOCUS_TOP : 8} nen={mauKn.dai} dam={dam}>
         {questionCards}
       </SplitPane>
       </BocSoTu>
-
-      {laNoi && (
-        <div className="mt-5">
-          <GhiAmBaiNoi exerciseId={ex.id} gioiHanGiay={300}
-            moTa={tr("Bấm ghi âm rồi nói lần lượt từng câu. Xong thì nghe lại và bấm « AI nhận xét » để xem góp ý. Bài nói không có điểm.", "Enregistrez-vous, phrase après phrase. Réécoutez puis demandez l'avis de l'IA. L'oral n'est pas noté.", "Record yourself, one item at a time. Listen back, then ask for AI feedback. Speaking is not scored.")} />
-        </div>
-      )}
 
       {!graded ? (
         <>

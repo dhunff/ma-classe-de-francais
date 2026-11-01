@@ -23,7 +23,11 @@ import { LeonNoi } from "../../shared/leon.jsx";
 const dongHo = (giay) =>
   `${String(Math.floor(giay / 60)).padStart(2, "0")}:${String(giay % 60).padStart(2, "0")}`;
 
-export default function GhiAmBaiNoi({ examId, exerciseId, gioiHanGiay = 900, moTa = null }) {
+/* Một lúc chỉ một bộ ghi chạy: bài Luyện tập có nhiều bộ ghi, mỗi câu một bộ. */
+let mayDangChay = null;
+
+/* `cauId`: ghi riêng cho một câu. `gon`: bản nằm trong thẻ câu hỏi, bỏ khung và tiêu đề. */
+export default function GhiAmBaiNoi({ examId, exerciseId, cauId, gon = false, gioiHanGiay = 900, moTa = null }) {
   const [trangThai, setTrangThai] = useState("cho");   // cho · dangGhi · dangLuu · xong · loi
   const [loi, setLoi] = useState("");
   const [giay, setGiay] = useState(0);
@@ -50,8 +54,8 @@ export default function GhiAmBaiNoi({ examId, exerciseId, gioiHanGiay = 900, moT
   }, []);
 
   useEffect(() => {
-    dsBaiNoi({ examId, exerciseId }).then(setDsCu);
-  }, [examId, exerciseId]);
+    dsBaiNoi({ examId, exerciseId, cauId }).then(setDsCu);
+  }, [examId, exerciseId, cauId]);
 
   const batDau = async () => {
     setLoi("");
@@ -73,7 +77,7 @@ export default function GhiAmBaiNoi({ examId, exerciseId, gioiHanGiay = 900, moT
         clearInterval(dongHoRef.current);
         const blob = new Blob(manhRef.current, { type: may.mimeType });
         setTrangThai("dangLuu");
-        const kq = await luuBaiNoi({ blob, examId, exerciseId });
+        const kq = await luuBaiNoi({ blob, examId, exerciseId, cauId });
         if (!kq.ok) {
           setTrangThai("loi");
           setLoi({
@@ -85,8 +89,10 @@ export default function GhiAmBaiNoi({ examId, exerciseId, gioiHanGiay = 900, moT
           return;
         }
         setTrangThai("xong");
-        setDsCu(await dsBaiNoi({ examId, exerciseId }));
+        setDsCu(await dsBaiNoi({ examId, exerciseId, cauId }));
       };
+      try { mayDangChay?.stop(); } catch { /* đã dừng */ }
+      mayDangChay = may;
       mayRef.current = may;
       may.start();
       setGiay(0);
@@ -113,20 +119,20 @@ export default function GhiAmBaiNoi({ examId, exerciseId, gioiHanGiay = 900, moT
   const moNghe = async (duongDan) => setNghe(await duongNghe(duongDan));
 
   return (
-    <div className="rounded-2xl border border-solid border-line bg-surface p-5">
-      <div className="flex items-center gap-2">
+    <div className={gon ? "" : "rounded-2xl border border-solid border-line bg-surface p-5"}>
+      {!gon && <div className="flex items-center gap-2">
         <Mic size={18} className="text-primary" aria-hidden />
         <h3 className="m-0 text-base font-bold text-ink">{tr("Ghi âm bài nói", "Enregistrer la production orale", "Record your speaking")}</h3>
-      </div>
+      </div>}
 
       {/* Nói thẳng là KHÔNG chấm. Im lặng ở đây thì người học chờ một con số
           không bao giờ tới, và nghĩ hệ thống hỏng. */}
-      <p className="m-0 mt-2 text-sm text-soft">
+      {!gon && <p className="m-0 mt-2 text-sm text-soft">
         {/* 14/10: phần nói ĐƯỢC CHẤM (AI chấm theo grille ở trang Kết quả thi, hoặc tự chấm). */}
         {moTa ?? tr("Ghi âm bài nói của bạn. Nộp xong, AI chấm theo thang DELF chính thức ở trang « Kết quả thi »; bạn cũng có thể tự chấm lại theo từng tiêu chí.", "Enregistrez-vous. Après l’envoi, l’IA vous note avec la grille DELF officielle dans « Mes résultats » ; vous pouvez aussi vous auto-évaluer.", "Record yourself. After submitting, the AI grades you with the official DELF grid in « My results »; you can also self-assess.")}
-      </p>
+      </p>}
 
-      <div className="mt-4 flex flex-wrap items-center gap-3">
+      <div className={`${gon ? "" : "mt-4 "}flex flex-wrap items-center gap-3`}>
         {trangThai !== "dangGhi" ? (
           <button type="button" onClick={batDau} disabled={trangThai === "dangLuu"}
             className="flex cursor-pointer items-center gap-2 rounded-full border-0 bg-primary px-5 py-2.5
@@ -167,10 +173,10 @@ export default function GhiAmBaiNoi({ examId, exerciseId, gioiHanGiay = 900, moT
       {/* Danh sách bản ghi. Mới nhất trước, và giữ lại tất cả — nghe lại ba lần
           thu cách nhau vài tuần là cách duy nhất tự thấy mình tiến bộ. */}
       {dsCu.length > 0 && (
-        <div className="mt-4 border-0 border-t border-solid border-line pt-4">
-          <p className="m-0 text-xs font-bold uppercase tracking-wider text-soft">
+        <div className={gon ? "mt-3" : "mt-4 border-0 border-t border-solid border-line pt-4"}>
+          {!gon && <p className="m-0 text-xs font-bold uppercase tracking-wider text-soft">
             {tr("Bản đã ghi (", "Enregistrements (", "Recordings (")}{dsCu.length})
-          </p>
+          </p>}
           <ul className="m-0 mt-2 list-none space-y-2 p-0">
             {dsCu.map((b) => (
               <li key={b.duongDan} className="flex flex-wrap items-center gap-3">
@@ -187,7 +193,7 @@ export default function GhiAmBaiNoi({ examId, exerciseId, gioiHanGiay = 900, moT
                 </button>
                 <span className="text-xs text-soft">
                   {b.luc ? new Date(b.luc).toLocaleString("vi-VN") : b.ten}
-                  {b.bytes ? ` · ${Math.round(b.bytes / 1024)} KB` : ""}
+                  {b.bytes && !gon ? ` · ${Math.round(b.bytes / 1024)} KB` : ""}
                 </span>
                 {nx[b.duongDan] && !nx[b.duongDan].dang && <KhungNhanXet kq={nx[b.duongDan]} />}
               </li>

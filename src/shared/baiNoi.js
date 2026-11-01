@@ -8,6 +8,8 @@ import { supabase } from "../storageShim.js";
  *
  *     <user_id>/<exam_id>/<exercise_id>-<mốc thời gian>.webm
  *
+ * Bài nói ở Luyện tập ghi riêng từng câu: <exercise_id>__c<question_id>-<mốc>.webm
+ *
  * Nhờ vậy phân quyền chỉ cần so đoạn thư mục đầu với `auth.uid()` (policy ở
  * migration 057), và không có bảng phụ nào để lệch với kho file. Một bảng
  * `bai_noi` sẽ phải đồng bộ với danh sách file thật, và hai nguồn sự thật thì
@@ -42,7 +44,9 @@ const MIME_NHAN = ["audio/webm", "audio/ogg", "audio/mpeg", "audio/mp4", "audio/
 export const mimeDungDuoc = (mime) =>
   MIME_NHAN.includes(String(mime || "").split(";")[0].trim());
 
-export async function luuBaiNoi({ blob, examId, exerciseId }) {
+const tienTo = (exerciseId, cauId) => (cauId ? `${exerciseId}__c${cauId}` : exerciseId);
+
+export async function luuBaiNoi({ blob, examId, exerciseId, cauId }) {
   if (!blob || !blob.size) return { ok: false, loi: "trong" };
   if (!mimeDungDuoc(blob.type)) return { ok: false, loi: "dinh_dang", chiTiet: blob.type };
 
@@ -53,7 +57,7 @@ export async function luuBaiNoi({ blob, examId, exerciseId }) {
   /* Mốc thời gian trong tên file, KHÔNG ghi đè bản cũ. Ghi đè là mất bản trước
      mà không ai biết; thêm file thì giữ được cả quá trình luyện tập — vốn là
      thứ có ích duy nhất khi không chấm điểm. */
-  const ten = `${uid}/${examId ?? "khong-de"}/${exerciseId}-${Date.now()}.${duoiTu(blob.type)}`;
+  const ten = `${uid}/${examId ?? "khong-de"}/${tienTo(exerciseId, cauId)}-${Date.now()}.${duoiTu(blob.type)}`;
 
   const { error } = await supabase.storage.from(KHO)
     .upload(ten, blob, { contentType: blob.type, upsert: false });
@@ -77,7 +81,7 @@ export async function duongNghe(duongDan, giay = 3600) {
  * Không nhận `userId` từ chỗ gọi: truyền id người khác vào thì đây thành cửa
  * nghe trộm. RLS vẫn chặn, nhưng một hàm mà chỉ RLS mới cứu được là một hàm
  * viết sai. */
-export async function dsBaiNoi({ examId, exerciseId }) {
+export async function dsBaiNoi({ examId, exerciseId, cauId }) {
   const { data: u } = await supabase.auth.getUser();
   const uid = u?.user?.id;
   if (!uid) return [];
@@ -87,7 +91,7 @@ export async function dsBaiNoi({ examId, exerciseId }) {
   if (error) return [];
 
   return (data ?? [])
-    .filter((f) => !exerciseId || f.name.startsWith(exerciseId + "-"))
+    .filter((f) => !exerciseId || f.name.startsWith(tienTo(exerciseId, cauId) + "-"))
     .map((f) => ({
       ten: f.name,
       duongDan: `${uid}/${examId ?? "khong-de"}/${f.name}`,

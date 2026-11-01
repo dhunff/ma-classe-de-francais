@@ -13,7 +13,7 @@ export const dungBai = ({ noi, qcm, doc }) => {
   const DE_THE = "<p>Regardez chaque carte. Enregistrez-vous : posez une question avec ce mot.</p>";
   const DE_VAI = "<p>Vous jouez le client. Regardez les prix. Enregistrez-vous : dites chaque phrase de votre rôle.</p>";
   const DE_LS = "<p>Choisissez la bonne phrase pour chaque situation. Puis enregistrez-vous pour la dernière situation.</p>";
-  const DE_DOC = "<p>Écoutez chaque phrase, puis répétez. Enregistrez toutes les phrases à la suite.</p>";
+  const DE_DOC = "<p>Écoutez chaque phrase, répétez, puis enregistrez-vous.</p>";
   return [
   /* ───────── A1-PO-1 : trả lời về bản thân ───────── */
   { ma: "A1-PO-1", vong: "hoc", tieuDe: tq("comment tu t'appelles ?"), tep: "a1-noi-ban-than", de: DE_HOI, giong: "nova",
@@ -36,7 +36,7 @@ export const dungBai = ({ noi, qcm, doc }) => {
     cau: [noi("Tu habites où ?", "J'habite à Lyon."), noi("Tu as quel âge ?", "J'ai vingt-deux ans."), noi("Qu'est-ce que tu aimes ?", "J'aime la musique."), noi("Tu as des frères ?", "Oui, j'ai un frère."), noi("Tu parles quelles langues ?", "Je parle vietnamien et un peu français."), noi("Qu'est-ce que tu fais dans la vie ?", "Je suis étudiante.")],
     tu: ["une langue (nom féminin) : ngôn ngữ", "un peu (expression) : một chút", "qu'est-ce que tu fais dans la vie ? (expression) : bạn làm nghề gì?", "je parle (expression) : tôi nói", "étudiant, étudiante (nom) : sinh viên"],
     meo: ["Câu hỏi được xáo: nghe từ khoá rồi trả lời ngay.", "Không hiểu thì nói: Pouvez-vous répéter, s'il vous plaît ?"] },
-  { ma: "A1-PO-1", vong: "chot", tieuDe: tq("l'entretien"), tep: "a1-noi-entretien", de: "<p>Comme à l'examen : répondez sans vous arrêter. Enregistrez toutes vos réponses à la suite.</p>", giong: "nova",
+  { ma: "A1-PO-1", vong: "chot", tieuDe: tq("l'entretien"), tep: "a1-noi-entretien", de: "<p>Comme à l'examen : répondez sans vous arrêter. Enregistrez chaque réponse.</p>", giong: "nova",
     cau: [noi("Bonjour. Comment vous appelez-vous ?", "Bonjour. Je m'appelle Lan Nguyen."), noi("Quel âge avez-vous ?", "J'ai vingt-deux ans."), noi("Où habitez-vous ?", "J'habite à Lyon."), noi("Quelle est votre profession ?", "Je suis étudiante."), noi("Parlez-moi de votre famille.", "Nous sommes quatre : mon père, ma mère, mon frère et moi."), noi("Qu'est-ce que vous aimez faire ?", "J'aime lire et aller au cinéma.")],
     tu: ["un entretien (nom masculin) : phần hỏi đáp", "vous (pronom) : ông, bà, anh, chị", "votre (adjectif) : của ông, bà", "parlez-moi de (expression) : hãy kể về", "nous sommes quatre (expression) : nhà có bốn người"],
     meo: ["Phòng thi dùng vous với giám khảo.", "Nói liền mạch khoảng một phút, không dừng lâu."] },

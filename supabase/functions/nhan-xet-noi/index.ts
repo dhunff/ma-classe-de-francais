@@ -81,10 +81,12 @@ Deno.serve(async (req) => {
   if (laVip) { const tran = await tranVip(admin, userId, "nhan-xet-noi"); if (tran) return tran; }
 
   // Đề bài: exerciseId nằm trong tên file `<uid>/<exam>/<exerciseId>-<mốc>.<đuôi>`.
+  // Bài Luyện tập ghi riêng từng câu: `<exerciseId>__c<questionId>-<mốc>.<đuôi>`.
   const tenFile = duongDan.split("/").pop() ?? "";
-  const exerciseId = tenFile.replace(/-\d{10,}\.[a-z0-9]+$/i, "");
+  const [exerciseId, cauId] = tenFile.replace(/-\d{10,}\.[a-z0-9]+$/i, "").split("__c");
   const { data: ex } = await admin.from("exercises").select("title, level, consigne").eq("id", exerciseId).maybeSingle();
-  const deBai = [ex?.title, ex?.consigne].filter(Boolean).join("\n").replace(/<[^>]+>/g, " ").slice(0, 2000);
+  const { data: cau } = cauId ? await admin.from("questions").select("prompt").eq("id", cauId).eq("exercise_id", exerciseId).maybeSingle() : { data: null };
+  const deBai = [ex?.title, ex?.consigne, cau?.prompt].filter(Boolean).join("\n").replace(/<[^>]+>/g, " ").slice(0, 2000);
 
   const { data: file, error: loiTai } = await admin.storage.from(KHO).download(duongDan);
   if (loiTai || !file) return json(404, { ok: false, ma: "KHONG_THAY_BAN_GHI" });
