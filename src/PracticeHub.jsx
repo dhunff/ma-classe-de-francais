@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useLayoutEffect, useCallback, useMe
 import { createPortal } from "react-dom";
 import { useLocation } from "react-router-dom";
 import {
-  Shapes, Timer, Headphones, BookOpen, PenLine, Puzzle, BookA, ArrowRight, Play, PackageOpen, Star, Users, RefreshCw, ChevronRight,
+  Shapes, Timer, Headphones, Mic, Volume2, BookOpen, PenLine, Puzzle, BookA, ArrowRight, Play, PackageOpen, Star, Users, RefreshCw, ChevronRight,
   RotateCcw, CheckCircle2, XCircle, Plus, ChevronLeft, PartyPopper, Trash2, Pencil, Copy, MoreVertical, Folder, FolderPlus, Image as ImageIcon, ChevronDown, Lightbulb, FileCheck,
 } from "lucide-react";
 import { C, S, QTYPES, VF_OPTS, LEVEL_COLORS } from "./shared/tokens.js";
@@ -16,6 +16,7 @@ import { TableauCompare, OrdreBlocks, ConfirmSubmitModal } from "./screens/stude
 import RichTextEditor from "./editor/RichTextEditor.jsx";
 import { GhepCap, DienPhieu, AnhLuaChon } from "./screens/student/dangMoi.jsx";
 import KhungViet from "./screens/practice/KhungViet.jsx";
+import GhiAmBaiNoi from "./screens/exam/GhiAmBaiNoi.jsx";
 import SplitPane from "./screens/practice/SplitPane.jsx";
 import FocusShell, { FOCUS_TOP } from "./screens/practice/FocusShell.jsx";
 import { BocSoTu } from "./screens/practice/SoTuMoi.jsx";
@@ -76,6 +77,8 @@ const CATS = [
   { skill: "Vocabulaire", key: "vocab", Icon: BookA, color: "#8F5E22", pastel: "#F7EFE3", tuoi: "linear-gradient(135deg,#FBBF24,#F97316)", dai: "linear-gradient(135deg,#C2410C,#9A3412)", dam: "#C2410C" },
   { skill: "__autres__", key: "others", Icon: Shapes, color: "#626A85", pastel: "#EFF0F3", tuoi: "linear-gradient(135deg,#22D3EE,#0891B2)", dai: "linear-gradient(135deg,#0E7490,#155E75)", dam: "#0E7490" },
 ];
+/* Bài nói không nằm trong sáu danh mục của Thư viện nên có màu riêng ở màn làm bài. */
+const MAU_NOI = { dai: "linear-gradient(135deg,#7C3AED,#5B21B6)", dam: "#6D28D9", Icon: Mic };
 const MAIN_SKILLS = CATS.filter((c) => !c.skill.startsWith("__")).map((c) => c.skill);
 const inCat = (ex, sk) => sk === "__autres__"
   ? exSkills(ex).every((s) => !MAIN_SKILLS.includes(s))
@@ -1422,9 +1425,11 @@ export function PracticeWorkspace({ ex, back, onFinish, soTu = false, chamBang =
     : (answers[q.id] || "").trim() !== "");
   const fmtLeft = (s) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
 
-  const mauKn = CATS.find((c) => c.skill === catOf(ex));
+  const laNoi = !!ex.ghiAm;
+  const canLam = laNoi ? autos : ex.questions;
+  const mauKn = exSkills(ex).includes("Production orale") ? MAU_NOI : CATS.find((c) => c.skill === catOf(ex));
   const dam = mauKn.dam;
-  const moiCau = ex.questions.map((q) => ({ id: q.id, xong: isQuestionAnswered(q, answers) }));
+  const moiCau = canLam.map((q) => ({ id: q.id, xong: isQuestionAnswered(q, answers) }));
   const soCauXong = moiCau.filter((c) => c.xong).length;
   const toiCau = (id) => document.getElementById(`cau-${id}`)?.scrollIntoView({ block: "center", behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
   const tiLeDiem = graded && tongDiem > 0 ? score / tongDiem : null;
@@ -1442,7 +1447,7 @@ export function PracticeWorkspace({ ex, back, onFinish, soTu = false, chamBang =
           <span key={daChon ? "co" : "chua"} className={"grid h-10 w-10 shrink-0 place-items-center rounded-2xl text-base font-extrabold tabular-nums " + (graded ? (good === true ? "bg-ok text-white" : good === false ? "bg-danger text-white" : "bg-surface2 text-ink") : daChon ? "mcf-nay text-white" : "bg-surface2 text-ink")}
             style={!graded && daChon ? { background: dam } : undefined}>{i + 1}</span>
           <p className="m-0 min-w-0 flex-1 self-center text-base font-bold leading-snug text-ink">{choTrong(q.prompt)}</p>
-          <span className="shrink-0 pt-1 text-xs font-semibold text-soft">{QTYPES[q.type]}</span>
+          <span className="shrink-0 pt-1 text-xs font-semibold text-soft">{laNoi && q.type === "open" ? tr("Nói", "À l'oral", "Speak") : QTYPES[q.type]}</span>
         </div>
 
         {q.type === "qcm" ? (
@@ -1559,7 +1564,12 @@ export function PracticeWorkspace({ ex, back, onFinish, soTu = false, chamBang =
           </div>
         ) : q.type === "open" ? (
           <>
-            <KhungViet value={a || ""} readOnly={!!graded} onChange={(html) => setAnswers({ ...answers, [q.id]: html })} />
+            {laNoi ? (q.audioMau && (
+              <button type="button" onClick={() => new Audio(q.audioMau).play().catch(() => {})}
+                className="inline-flex cursor-pointer items-center gap-2 rounded-xl border-0 bg-surface2 px-3 py-2 font-sans text-sm font-bold text-ink">
+                <Volume2 size={16} /> {tr("Nghe câu mẫu", "Écouter le modèle", "Listen to the model")}
+              </button>
+            )) : <KhungViet value={a || ""} readOnly={!!graded} onChange={(html) => setAnswers({ ...answers, [q.id]: html })} />}
             {graded && (q.model || baiMau[q.id]) && (
               <div style={{ marginTop: 12, background: C.okSoft, border: `1.5px solid ${C.ok}55`, borderRadius: 12, padding: "12px 15px" }}>
                 <strong>{tr("Đáp án gợi ý:", "Réponse suggérée :", "Suggested answer:")}</strong>
@@ -1597,7 +1607,7 @@ export function PracticeWorkspace({ ex, back, onFinish, soTu = false, chamBang =
       )}
     <FocusShell zen={zen} setZen={setZen} title={ex.title}
       meta={[ex.level, exSkills(ex).join(" + "), tr(`${ex.questions.length} câu`, `${ex.questions.length} questions`, `${ex.questions.length} questions`), ex.timeLimit && !graded ? tr(`Thời gian làm bài: ${ex.timeLimit} phút`, `Temps limite : ${ex.timeLimit} min`, `Time limit: ${ex.timeLimit} min`) : null]}
-      answered={ex.questions.length - getUnansweredQuestionsCount(answers, ex.questions)} total={ex.questions.length}
+      answered={canLam.length - getUnansweredQuestionsCount(answers, canLam)} total={canLam.length}
       remaining={!graded ? remaining : null} mau={{ nen: mauKn.dai, dam, Icon: mauKn.Icon }}>
       {/* Thu vào giữa, chừa hai bên (23/10, theo chủ dự án). */}
       <div className="mx-auto max-w-6xl">
@@ -1634,11 +1644,18 @@ export function PracticeWorkspace({ ex, back, onFinish, soTu = false, chamBang =
       </SplitPane>
       </BocSoTu>
 
+      {laNoi && (
+        <div className="mt-5">
+          <GhiAmBaiNoi exerciseId={ex.id} gioiHanGiay={300}
+            moTa={tr("Bấm ghi âm rồi nói lần lượt từng câu. Xong thì nghe lại và bấm « AI nhận xét » để xem góp ý. Bài nói không có điểm.", "Enregistrez-vous, phrase après phrase. Réécoutez puis demandez l'avis de l'IA. L'oral n'est pas noté.", "Record yourself, one item at a time. Listen back, then ask for AI feedback. Speaking is not scored.")} />
+        </div>
+      )}
+
       {!graded ? (
         <>
         {/* Chừa bên phải cho nút Léon nổi ở góc màn hình khi màn chưa đủ rộng. */}
         <div className="sticky bottom-3 z-20 mt-5 mr-[4.5rem] flex items-center gap-3 rounded-2xl border border-solid border-line bg-surface p-2.5 shadow-lg 2xl:mr-0">
-          <span className="shrink-0 pl-1.5 text-sm font-bold tabular-nums text-ink">{tr(`Đã làm ${soCauXong}/${moiCau.length}`, `${soCauXong}/${moiCau.length} réponses`, `${soCauXong}/${moiCau.length} answered`)}</span>
+          {moiCau.length > 0 && <span className="shrink-0 pl-1.5 text-sm font-bold tabular-nums text-ink">{tr(`Đã làm ${soCauXong}/${moiCau.length}`, `${soCauXong}/${moiCau.length} réponses`, `${soCauXong}/${moiCau.length} answered`)}</span>}
           {moiCau.length > 1 && moiCau.length <= 30 && (
             <span className="hidden min-w-0 flex-1 flex-wrap gap-1 sm:flex">
               {moiCau.map((c, i) => (
@@ -1654,10 +1671,10 @@ export function PracticeWorkspace({ ex, back, onFinish, soTu = false, chamBang =
             style={{ background: dam, opacity: dangCham ? 0.6 : 1, cursor: dangCham ? "wait" : "pointer" }}
             onClick={() => {
               if (dangCham) return;
-              const n = getUnansweredQuestionsCount(answers, ex.questions);
+              const n = getUnansweredQuestionsCount(answers, canLam);
               if (n > 0) setConfirmCount(n); else grade(false);
             }}>
-            {dangCham ? tr("Đang chấm…", "Correction en cours…", "Grading…") : <><span className="sm:hidden">{tr("Nộp bài", "Envoyer", "Submit")}</span><span className="hidden sm:inline">{t("submit_button")}</span></>}
+            {dangCham ? tr("Đang chấm…", "Correction en cours…", "Grading…") : <>{laNoi ? tr("Hoàn thành bài", "Terminer", "Finish") : <><span className="sm:hidden">{tr("Nộp bài", "Envoyer", "Submit")}</span><span className="hidden sm:inline">{t("submit_button")}</span></>}</>}
           </button>
         </div>
         {confirmCount != null && (
@@ -1678,7 +1695,7 @@ export function PracticeWorkspace({ ex, back, onFinish, soTu = false, chamBang =
             <HuyHieuHang hang={hangTuTiLe(tiLeDiem)} size={64} />
           </div>
           <div className="flex flex-col items-center px-5 py-5">
-          {opens.length > 0 && <p className="m-0 text-sm text-soft">{t("exercise.open_note", { n: opens.length })}</p>}
+          {opens.length > 0 && !laNoi && <p className="m-0 text-sm text-soft">{t("exercise.open_note", { n: opens.length })}</p>}
           {/* Câu sai có nhãn point_gram → gợi ý bài « Học ngữ pháp » (16/10). */}
           <GoiYNguPhap level={ex.level} nhan={autos.filter((q) => q.pointGram && !isGood(q)).map((q) => q.pointGram)} />
           <button type="button" onClick={retry}

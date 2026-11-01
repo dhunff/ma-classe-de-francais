@@ -23,7 +23,7 @@ import { LeonNoi } from "../../shared/leon.jsx";
 const dongHo = (giay) =>
   `${String(Math.floor(giay / 60)).padStart(2, "0")}:${String(giay % 60).padStart(2, "0")}`;
 
-export default function GhiAmBaiNoi({ examId, exerciseId, gioiHanGiay = 900 }) {
+export default function GhiAmBaiNoi({ examId, exerciseId, gioiHanGiay = 900, moTa = null }) {
   const [trangThai, setTrangThai] = useState("cho");   // cho · dangGhi · dangLuu · xong · loi
   const [loi, setLoi] = useState("");
   const [giay, setGiay] = useState(0);
@@ -123,7 +123,7 @@ export default function GhiAmBaiNoi({ examId, exerciseId, gioiHanGiay = 900 }) {
           không bao giờ tới, và nghĩ hệ thống hỏng. */}
       <p className="m-0 mt-2 text-sm text-soft">
         {/* 14/10: phần nói ĐƯỢC CHẤM (AI chấm theo grille ở trang Kết quả thi, hoặc tự chấm). */}
-        {tr("Ghi âm bài nói của bạn. Nộp xong, AI chấm theo thang DELF chính thức ở trang « Kết quả thi »; bạn cũng có thể tự chấm lại theo từng tiêu chí.", "Enregistrez-vous. Après l’envoi, l’IA vous note avec la grille DELF officielle dans « Mes résultats » ; vous pouvez aussi vous auto-évaluer.", "Record yourself. After submitting, the AI grades you with the official DELF grid in « My results »; you can also self-assess.")}
+        {moTa ?? tr("Ghi âm bài nói của bạn. Nộp xong, AI chấm theo thang DELF chính thức ở trang « Kết quả thi »; bạn cũng có thể tự chấm lại theo từng tiêu chí.", "Enregistrez-vous. Après l’envoi, l’IA vous note avec la grille DELF officielle dans « Mes résultats » ; vous pouvez aussi vous auto-évaluer.", "Record yourself. After submitting, the AI grades you with the official DELF grid in « My results »; you can also self-assess.")}
       </p>
 
       <div className="mt-4 flex flex-wrap items-center gap-3">

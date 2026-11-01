@@ -45,6 +45,8 @@ export const EX_META = [
   "folderId", "customCat",
   /* Tài liệu bổ trợ (09/10): thiếu ở đây thì giáo viên lưu bài là mất. */
   "vocabulaire", "explications",
+  /* Bài nói ở màn luyện tập (01/11): bật bộ ghi âm. */
+  "ghiAm",
   /* isPremium + price: Builder.jsx:336 ghi hai trường này khi giáo viên bật
      "bài trả phí". Thiếu chúng ở đây thì `toRows` lặng lẽ vứt đi — giáo viên
      bật khoá, bấm lưu, bài quay về miễn phí, và KHÔNG có gì báo. Cả tường phí
