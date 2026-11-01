@@ -42,9 +42,9 @@ import { Lock } from "lucide-react";
 import { anhMacDinh } from "./shared/anhMacDinh.js";
 import { choTrong } from "./shared/choTrong.jsx";
 import OTraLoi from "./screens/practice/OTraLoi.jsx";
-import { LuyenTheoCap, ChiTietKyNho, MeoKyNho } from "./screens/practice/LuyenTheoCap.jsx";
+import { LuyenTheoCap, ChiTietKyNho, MeoKyNho, TheKhoa, ManKhoaThuTu, loiKhoa } from "./screens/practice/LuyenTheoCap.jsx";
 import ThanhTuu from "./screens/practice/ThanhTuu.jsx";
-import { capMacDinh, duongKyLon, timKyNho, kyNhoCuaBai } from "./shared/tienTrinhLuyenTap.js";
+import { capMacDinh, duongKyLon, timKyNho, kyNhoCuaBai, khoaThuTu } from "./shared/tienTrinhLuyenTap.js";
 
 /* ============================================================
    PRACTICE HUB v3 — Tự luyện tập
@@ -135,6 +135,8 @@ function PracticeHubInner({ role = "eleve", name = "", accounts = [], onRequireL
   const [canhBaoLt, setCanhBaoLt] = useState(null);
   const doiCap = (c) => { setCapChon(c); setCanhBaoLt(null); try { localStorage.setItem("mcf-luyen-cap", c); } catch { /* bỏ qua */ } };
   const biKhoa = useCallback((ex) => !teacher && !fullAccess && isPremium(ex) && !hasAccess(access, name, ex.id), [teacher, fullAccess, access, name]);
+  /* Thứ tự của cây áp cho cả Thư viện và mọi đường mở thẳng. Giáo viên không bị chặn. */
+  const khoaBai = (ex) => (teacher ? null : khoaThuTu(ex, exercises, hist, biKhoa, fullAccess));
   const napHoSo = () => supabase.from("profiles").select("has_premium_access, vip_den, level").limit(1).maybeSingle()
     .then(({ data }) => { setToanQuyen(!!data?.has_premium_access); setVipDen(data?.vip_den ?? null); setCapHoSo(data?.level === "Débutant" ? "A1" : data?.level ?? null); })
     .catch(() => {});
@@ -331,6 +333,19 @@ ${r.error?.message ?? ""}`); return; }
       );
     }
 
+    /* Chờ có lịch sử rồi mới xét thứ tự: chưa có thì bài đã làm cũng bị tính là chưa làm. */
+    if (!teacher && !loaded) return null;
+    const khoa = khoaBai(ex);
+    if (khoa) {
+      return (
+        <>
+          {payFor && <PaymentModal ex={payFor} student={name} config={payCfg} onClose={() => setPayFor(null)} onUnlocked={sauKhiMoKhoa} />}
+          <ManKhoaThuTu khoa={khoa} onDi={() => setView({ page: "kyNho", ma: khoa.kn.ma })} onBack={back} laVip={fullAccess}
+            onMuaVip={() => { if (isGuest) return requireLogin(); setPayFor(goiVip(t("vip.pay_title"))); }} giaVip={fmtPrice(VIP.gia)} />
+        </>
+      );
+    }
+
     /* Tường phí, phía giao diện.
      *
      * Điều kiện KHÔNG phải `canOpen(...)`. Nó là "bài trả phí mà server không
@@ -354,6 +369,12 @@ ${r.error?.message ?? ""}`); return; }
   }
 
   const muaVip = () => { if (isGuest) return requireLogin(); setPayFor(goiVip(t("vip.pay_title"))); };
+
+  /* Thẻ bài ở Thư viện: bài chưa tới lượt thì che lại và chỉ về bước phải làm. */
+  const boKhoa = (ex, the) => {
+    const k = khoaBai(ex);
+    return k ? <TheKhoa key={ex.id} loiNhan={loiKhoa(k)} onDi={() => setView({ page: "kyNho", ma: k.kn.ma })}>{the}</TheKhoa> : the;
+  };
 
   /* Bấm một bước trên đường đi. Bước khoá không mở, nhưng nói rõ phải làm gì trước.
      VIP không bao giờ gặp bước khoá: duongKyLon trả "tuDo" thay cho "khoa". */
@@ -484,7 +505,7 @@ ${r.error?.message ?? ""}`); return; }
                   {unclassified.map((ex) => {
                     const types = [...new Set(ex.questions.map((q) => QTYPES[q.type]))].join(" + ");
                     const locked = !teacher && !fullAccess && isPremium(ex) && !hasAccess(access, name, ex.id);
-                    return (
+                    return boKhoa(ex, (
                       <ExerciseCard key={ex.id} ex={ex} premium={isPremium(ex)} locked={locked} best={hist[ex.id]} typesLabel={types} folderLabel={null} t={t}
                         onStart={() => { if (isGuest) return requireLogin(); setView({ page: "quiz", cat: "__autres__", exId: ex.id }); }}
                         onPickMaterial={(kind) => setMatModal({ exId: ex.id, kind })}
@@ -495,7 +516,7 @@ ${r.error?.message ?? ""}`); return; }
                           { label: "Dupliquer", icon: <Copy size={16} />, onClick: () => duplicate(ex) },
                           { label: "Supprimer", icon: <Trash2 size={16} />, danger: true, onClick: () => removeEx(ex.id) },
                         ]} />
-                    );
+                    ));
                   })}
                 </div>
               </div>
@@ -751,7 +772,7 @@ ${r.error?.message ?? ""}`); return; }
               const types = [...new Set(ex.questions.map((q) => QTYPES[q.type]))].join(" + ");
               /* Giáo viên luôn xem được bài của chính mình; chỉ học sinh mới bị khoá. */
               const locked = !teacher && !fullAccess && isPremium(ex) && !hasAccess(access, name, ex.id);
-              return (
+              return boKhoa(ex, (
                 <ExerciseCard
                   key={ex.id}
                   ex={ex}
@@ -772,7 +793,7 @@ ${r.error?.message ?? ""}`); return; }
                     { label: "Supprimer", icon: <Trash2 size={16} />, danger: true, onClick: () => removeEx(ex.id) },
                   ]}
                 />
-              );
+              ));
             })}
           </div>
         )}

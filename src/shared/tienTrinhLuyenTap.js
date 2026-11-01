@@ -11,7 +11,10 @@
  * ══ VIP (01/11) ══ Không chia theo trình độ. Học sinh thường đi hết đường bằng bài
  * nền; VIP là phần luyện sâu. Hàng rào thật vẫn là cờ isPremium của từng bài +
  * can_open_exercise ở máy chủ, file này chỉ đọc `biKhoa`. Đặc quyền của VIP: không phải
- * mở kỹ năng nhỏ lần lượt. Thứ tự này chỉ ở giao diện, máy chủ không chặn theo bước. */
+ * mở kỹ năng nhỏ lần lượt. Thứ tự này chỉ ở giao diện, máy chủ không chặn theo bước.
+ *
+ * ══ THỨ TỰ NGOÀI CÂY ══ Thư viện bài và mọi đường mở thẳng (ô tìm kiếm, gợi ý) cũng theo
+ * cùng luật, qua `khoaThuTu`. Bài không nằm trong cây thì không bị chặn. */
 import { KY_NANG } from "../content/luyenTap/kyNang.js";
 
 export const CAP_DO = Object.keys(KY_NANG);
@@ -108,3 +111,17 @@ export const timKyNho = (ma) => {
   const kn = KY_NANG[cap]?.[ky]?.find((x) => x.ma === ma);
   return kn ? { cap, ky, kn } : null;
 };
+
+/* Một bài mở từ NGOÀI cây có đang vướng thứ tự không. null là mở được.
+   loai "buoc": kỹ năng của bài chưa tới lượt, `kn` là bước phải làm trước.
+   loai "bai": bài chưa tới lượt trong chính kỹ năng của nó, VIP cũng phải theo.
+   Bài đã làm luôn mở lại được. Bài khoá phí trả null: việc đó của tường phí. */
+export function khoaThuTu(ex, exercises, hist, biKhoa = () => false, laVip = false) {
+  const ma = kyNhoCuaBai(ex);
+  const f = ma && timKyNho(ma);
+  if (!f || biKhoa(ex) || daLam(hist[ex.id])) return null;
+  const duong = duongKyLon(f.cap, f.ky, exercises, hist, biKhoa, laVip);
+  const o = duong.find((x) => x.kn.ma === ma);
+  if (o.buoc === "khoa") return { loai: "buoc", kn: duong.find((x) => x.buoc === "hienTai").kn };
+  return dsBaiKyNho(o, hist, biKhoa).find((b) => b.ex.id === ex.id)?.tt === "khoa" ? { loai: "bai", kn: o.kn } : null;
+}

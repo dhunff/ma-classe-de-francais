@@ -122,6 +122,50 @@ function CanhBaoKhoa({ noiDung, onMuaVip, giaVip }) {
   );
 }
 
+/* Lời báo bài vướng thứ tự, dùng cho kết quả của khoaThuTu. */
+export const loiKhoa = (k) => (k.loai === "buoc"
+  ? tr(`Làm xong « ${tenKn(k.kn)} » trước để mở bài này`, `Terminez d'abord « ${tenKn(k.kn)} » pour ouvrir cet exercice`, `Finish "${tenKn(k.kn)}" first to unlock this exercise`)
+  : tr(`Làm xong bài trước trong « ${tenKn(k.kn)} » để mở`, `Terminez l'exercice précédent de « ${tenKn(k.kn)} »`, `Finish the previous exercise in "${tenKn(k.kn)}"`));
+
+const nhanDiToi = () => tr("Tới bước đang học", "Aller à l'étape en cours", "Go to my current step");
+
+/* Thẻ bài chưa tới lượt: vẫn nhìn thấy nhưng che lại, kể cả nút tài liệu trong thẻ. */
+export function TheKhoa({ loiNhan, onDi, children }) {
+  return (
+    <div className="relative h-full">
+      <div aria-hidden inert="" className="pointer-events-none h-full opacity-50">{children}</div>
+      <div className="absolute inset-x-3 top-1/2 -translate-y-1/2 rounded-2xl bg-surface2 px-3 py-2.5 text-center shadow-sm">
+        <p className="m-0 text-sm font-bold text-ink">{loiNhan}</p>
+        {onDi && (
+          <button type="button" onClick={onDi} className="mt-1 inline-flex cursor-pointer items-center gap-1 border-0 bg-transparent p-0 font-sans text-sm font-bold text-primary hover:underline">
+            {nhanDiToi()} <ArrowRight size={14} />
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* Mở thẳng một bài chưa tới lượt (ô tìm kiếm, gợi ý): chặn ở màn làm bài và chỉ đường. */
+export function ManKhoaThuTu({ khoa, onDi, onBack, laVip, onMuaVip, giaVip }) {
+  return (
+    <div className="mx-auto flex max-w-xl flex-col items-center rounded-3xl border border-solid border-line bg-surface px-6 py-8 text-center shadow-sm">
+      <Leon cam="quyet-tam" size={88} />
+      <h2 className="m-0 mt-3 text-xl font-extrabold text-ink">{tr("Bài này chưa tới lượt", "Cet exercice n'est pas encore ouvert", "This exercise isn't open yet")}</h2>
+      <p className="m-0 mt-1 text-sm text-soft">{loiKhoa(khoa)}.</p>
+      <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
+        <button type="button" onClick={onDi} className="inline-flex cursor-pointer items-center gap-1.5 rounded-2xl border-0 bg-primary px-5 py-3 font-sans text-sm font-extrabold text-on-primary">
+          {nhanDiToi()} <ArrowRight size={16} />
+        </button>
+        {khoa.loai === "buoc" && !laVip && <NutVip onClick={onMuaVip} gia={giaVip} />}
+      </div>
+      <button type="button" onClick={onBack} className="mt-4 inline-flex cursor-pointer items-center gap-1 border-0 bg-transparent p-1 font-sans text-sm font-bold text-soft hover:text-primary">
+        <ChevronLeft size={16} /> {tr("Quay lại", "Retour", "Back")}
+      </button>
+    </div>
+  );
+}
+
 /* Trang một trình độ: chọn trình độ, bước tiếp theo, bốn kỹ năng lớn. */
 export function LuyenTheoCap({ cap, capHoSo, onDoiCap, exercises, hist, biKhoa, onMoKyNho, canhBao, laVip, onMuaVip, giaVip, onThanhTuu }) {
   const moiCap = useMemo(() => Object.fromEntries(CAP_DO.map((c) => [c, tongCap(c, exercises, hist, biKhoa, laVip)])), [exercises, hist, biKhoa, laVip]);
@@ -426,12 +470,9 @@ export function ChiTietKyNho({ ma, exercises, hist, biKhoa, onBack, onMoKyNho, c
                   {bai.map(({ ex, tt }) => (
                     <li key={ex.id} className="relative min-w-0">
                       <DauBai tt={tt} stt={trenDuong.findIndex((b) => b.ex.id === ex.id) + 1} hang={hangBai(hist[ex.id])} />
-                      {tt === "khoa" ? (
-                        <div className="relative h-full">
-                          <div aria-hidden inert="" className="pointer-events-none h-full opacity-50">{renderThe(ex)}</div>
-                          <p className="absolute inset-x-3 top-1/2 m-0 -translate-y-1/2 rounded-2xl bg-surface2 px-3 py-2.5 text-center text-sm font-bold text-ink shadow-sm">{tr("Làm xong bài trước để mở", "Terminez l'exercice précédent", "Finish the previous exercise")}</p>
-                        </div>
-                      ) : renderThe(ex)}
+                      {tt === "khoa"
+                        ? <TheKhoa loiNhan={tr("Làm xong bài trước để mở", "Terminez l'exercice précédent", "Finish the previous exercise")}>{renderThe(ex)}</TheKhoa>
+                        : renderThe(ex)}
                     </li>
                   ))}
                 </ol>

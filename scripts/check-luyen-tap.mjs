@@ -2,7 +2,7 @@
 /* Kiểm cây Luyện tập theo trình độ: dữ liệu cây và luật tiến trình.
  * Lỗi đáng sợ nhất là NGÕ CỤT: một bước không làm được chặn mọi bước sau. */
 import { KY_NANG } from "../src/content/luyenTap/kyNang.js";
-import { CAP_DO, KY_LON, tinhKyNho, duongKyLon, dsBaiKyNho, tongCap, capMacDinh, baiCuaKyNang, timKyNho, NGUONG_DAT } from "../src/shared/tienTrinhLuyenTap.js";
+import { CAP_DO, KY_LON, tinhKyNho, duongKyLon, dsBaiKyNho, tongCap, capMacDinh, baiCuaKyNang, timKyNho, khoaThuTu, NGUONG_DAT } from "../src/shared/tienTrinhLuyenTap.js";
 import { hangTuTiLe, hangBai, hangKyNho, hangSau, tinhKyLon, tinhCap, THANG_HANG } from "../src/shared/hangLuyenTap.js";
 
 let dau = 0, rot = 0;
@@ -57,6 +57,23 @@ ca("VIP: bước gợi ý vẫn bắt đầu từ đầu đường", tongCap("A1
 ca("VIP: học sinh thường vẫn bị khoá", buoc({}).includes("khoa") && !buoc({}).includes("tuDo"));
 const lamNhay = xong(ex[ex.length - 1].id);
 ca("VIP: nhảy cóc không tính là đủ chứng nhận", !tinhKyLon(duongKyLon("A1", "CO", ex, lamNhay, undefined, true), lamNhay).du);
+
+/* Thứ tự khi mở bài từ ngoài cây: Thư viện, ô tìm kiếm. */
+const kt = (e, hist = {}, bk, vip, bai = ex) => khoaThuTu(e, bai, hist, bk, vip);
+ca("ngoài cây: bài của bước hiện tại mở được", kt(ex[0]) === null);
+ca("ngoài cây: bước chưa tới lượt bị chặn, chỉ về bước phải làm", kt(ex[1])?.loai === "buoc" && kt(ex[1])?.kn.ma === ds[0].ma);
+ca("ngoài cây: chưa đạt 70% thì bước sau vẫn chặn", kt(ex[1], xong("x0", 6, 10))?.loai === "buoc");
+ca("ngoài cây: đạt bước trước thì mở", kt(ex[1], xong("x0")) === null);
+ca("ngoài cây: VIP không vướng thứ tự bước", kt(ex[1], {}, undefined, true) === null);
+ca("ngoài cây: bài đã làm điểm thấp ở bước khoá vẫn mở lại được", kt(ex[3], xong("x3", 5, 10)) === null);
+ca("ngoài cây: bài khoá phí để tường phí lo", kt(ex[1], {}, () => true) === null);
+ca("ngoài cây: bài không thuộc cây không bị chặn", kt({ id: "z", level: "A1", skill: "Grammaire" }) === null);
+const baNoi = [{ id: "n1", kyNang: ds[0].ma }, { id: "n2", kyNang: ds[0].ma }];
+ca("ngoài cây: bài sau trong kỹ năng bị chặn", kt(baNoi[1], {}, undefined, false, baNoi)?.loai === "bai");
+ca("ngoài cây: VIP vẫn theo thứ tự bài trong kỹ năng", kt(baNoi[1], {}, undefined, true, baNoi)?.loai === "bai");
+ca("ngoài cây: xong bài trước thì mở bài sau", kt(baNoi[1], xong("n1"), undefined, false, baNoi) === null);
+/* Không ngõ cụt: mọi bài bị chặn đều chỉ tới một bước đang làm được. */
+ca("ngoài cây: không có ngõ cụt", ex.every((e) => { const k = kt(e); return !k || duongKyLon("A1", "CO", ex, {}).find((o) => o.kn.ma === k.kn.ma).buoc === "hienTai"; }));
 
 /* Thứ tự bài trong kỹ năng nhỏ. */
 const hai = [{ id: "a" }, { id: "b" }, { id: "c" }];
