@@ -1,10 +1,9 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { Headphones, BookOpen, PenLine, Mic, Check, Lock, Play, Clock, ArrowRight, ChevronLeft, Sparkles, RotateCcw, Crown, Star, Lightbulb, FileCheck } from "lucide-react";
+import { Headphones, BookOpen, PenLine, Mic, Check, Lock, Play, Clock, ArrowRight, ChevronLeft, Sparkles, RotateCcw, Crown } from "lucide-react";
 import { tr } from "../../shared/i18n.jsx";
 import { Leon } from "../../shared/leon.jsx";
 import { phat } from "../../shared/amThanh.js";
 import { FloatingLayer } from "../../shared/ui.jsx";
-import { giaXp } from "../../shared/premium.js";
 import { GHI_CHU } from "../../content/luyenTap/ghiChuKyNang.js";
 import { CAP_DO, KY_LON, tongCap, duongKyLon, dsBaiKyNho, timKyNho, NGUONG_DAT } from "../../shared/tienTrinhLuyenTap.js";
 
@@ -157,27 +156,17 @@ export function LuyenTheoCap({ cap, capHoSo, onDoiCap, exercises, hist, biKhoa, 
   );
 }
 
-/* Tên bài trong danh sách: bỏ tiền tố lặp lại « Écoute A1 : », vì trang đã nói rõ
-   trình độ và kỹ năng. Chỉ đổi lúc hiển thị, tên trong kho giữ nguyên. */
-const tenGon = (t) => {
-  const c = String(t || "").replace(/^(Écoute|Lecture|Écrit)\s+[A-C][12]\s*:\s*/i, "");
-  return c.charAt(0).toUpperCase() + c.slice(1);
-};
 const VONG = () => [
   ["hoc", tr("Học", "Découverte", "Learn"), tr("Gặp kỹ năng lần đầu, mỗi bài một chủ đề", "Première rencontre, un thème par exercice", "First contact, one topic per exercise")],
   ["on", tr("Ôn", "Révision", "Review"), tr("Quay lại sau khoảng 3 ngày để nhớ lâu hơn", "À refaire environ 3 jours plus tard", "Come back about 3 days later")],
   ["chot", tr("Chốt", "Bilan", "Final check"), tr("Sau khoảng 10 ngày, từ 85% là nắm chắc", "Environ 10 jours plus tard, 85 % pour maîtriser", "About 10 days later, 85% means mastered")],
 ];
-const TAI_LIEU = () => [
-  ["vocab", BookOpen, tr("Từ vựng", "Vocabulaire", "Vocabulary")],
-  ["expl", Lightbulb, tr("Giải thích", "Explications", "Explanations")],
-  ["corrige", FileCheck, tr("Đề và đáp án", "Sujet et corrigé", "Task and answer key")],
-];
 
 /* Dải tiến độ: mỗi bài một vạch, nhìn là biết còn mấy bài và mình đang ở đâu. */
 function DaiBai({ ds }) {
+  const xong = ds.filter((b) => b.tt === "xong").length;
   return (
-    <div className="flex gap-1" role="img" aria-label={tr(`${ds.filter((b) => b.tt === "xong").length} trên ${ds.length} bài đã làm`, `${ds.filter((b) => b.tt === "xong").length} exercices faits sur ${ds.length}`, `${ds.filter((b) => b.tt === "xong").length} of ${ds.length} exercises done`)}>
+    <div className="flex gap-1" role="img" aria-label={tr(`${xong} trên ${ds.length} bài đã làm`, `${xong} exercices faits sur ${ds.length}`, `${xong} of ${ds.length} exercises done`)}>
       {ds.map(({ ex, tt }) => (
         <span key={ex.id} className={`h-2 min-w-0 flex-1 rounded-full ${tt === "xong" ? "bg-white" : tt === "tiepTheo" ? "mcf-lt-vach bg-white/70" : tt === "phi" ? "border border-dashed border-white/70" : "bg-white/30"}`} />
       ))}
@@ -185,80 +174,42 @@ function DaiBai({ ds }) {
   );
 }
 
-/* Từ vựng, giải thích, đáp án: gom vào một nút để hàng bài không rối. */
-function NutTaiLieu({ onChon }) {
+/* Mẹo trước khi làm: chỉ là nút bóng đèn, bấm mới mở. */
+function NutMeo({ ghi }) {
   const ref = useRef(null);
   const [mo, setMo] = useState(false);
   return (
-    <span ref={ref} className="inline-flex">
-      <button type="button" onClick={() => setMo((v) => !v)} aria-haspopup="menu" aria-expanded={mo}
-        aria-label={tr("Tài liệu của bài", "Ressources de l'exercice", "Exercise resources")} title={tr("Từ vựng, giải thích, đáp án", "Vocabulaire, explications, corrigé", "Vocabulary, tips, answer key")}
-        className="grid h-10 w-10 cursor-pointer place-items-center rounded-xl border border-solid border-line bg-surface text-soft transition-colors hover:border-primary hover:text-primary">
-        <BookOpen size={17} />
+    <span ref={ref} className="inline-flex shrink-0">
+      <button type="button" onClick={() => setMo((v) => !v)} aria-expanded={mo} aria-label={tr("Mẹo trước khi làm", "Conseils avant de commencer", "Tips before you start")} title={tr("Mẹo trước khi làm", "Conseils avant de commencer", "Tips before you start")}
+        className="grid h-12 w-12 cursor-pointer place-items-center rounded-2xl border-0 bg-white/25 text-2xl leading-none transition-transform hover:scale-110 motion-reduce:hover:scale-100">
+        <span aria-hidden>💡</span>
       </button>
-      <FloatingLayer anchorRef={ref} open={mo} onClose={() => setMo(false)} width={210} radius={16} padding={6}>
-        {TAI_LIEU().map(([k, Icon, ten]) => (
-          <button key={k} type="button" role="menuitem" onClick={() => { setMo(false); onChon(k); }}
-            className="flex w-full cursor-pointer items-center gap-2.5 rounded-xl border-0 bg-transparent px-3.5 py-2.5 text-left font-[inherit] text-sm font-semibold text-ink hover:bg-bg">
-            <Icon size={16} /> {ten}
-          </button>
-        ))}
+      <FloatingLayer anchorRef={ref} open={mo} onClose={() => setMo(false)} width={320} radius={18} padding={16}>
+        <dl className="m-0 flex flex-col gap-3 text-sm leading-relaxed">
+          {[[tr("Cần có", "Il faut connaître", "You need"), ghi.can], [tr("Lưu ý", "Attention", "Note"), ghi.luu], [tr("Lỗi hay mắc", "Erreur fréquente", "Common mistake"), ghi.loi], [tr("Mẹo", "Astuce", "Tip"), ghi.meo]].map(([t, n]) => (
+            <div key={t}>
+              <dt className="font-bold text-ink">{t}</dt>
+              <dd className="m-0 text-soft">{n}</dd>
+            </div>
+          ))}
+        </dl>
       </FloatingLayer>
     </span>
   );
 }
 
-function HangBai({ ex, tt, stt, hist, lam, taiLieu, mua, doiXp, dinhGia }) {
-  const h = hist[ex.id];
-  const pct = h && h.max > 0 && h.best >= 0 ? Math.round((h.best / h.max) * 100) : null;
-  const nQ = ex.questions?.length ?? 0;
-  const xp = tt === "phi" ? giaXp(ex) : null;
-  const moDuoc = tt === "xong" || tt === "tiepTheo";
+/* Dấu thứ tự ở góc thẻ: thẻ bài giữ nguyên như Thư viện, dấu này nói bài đang ở đâu. */
+function DauBai({ tt, stt }) {
   return (
-    <li className={`flex flex-wrap items-center gap-x-3 gap-y-2 px-4 py-3 ${tt === "tiepTheo" ? "bg-primary-soft" : ""}`}>
-      <span className={`grid h-9 w-9 shrink-0 place-items-center rounded-full text-sm font-extrabold ${tt === "xong" ? "bg-ok text-white" : tt === "tiepTheo" ? "bg-primary text-on-primary" : tt === "phi" ? "bg-warn-soft text-warn" : "bg-surface2 text-soft"}`}>
-        {tt === "xong" ? <Check size={17} strokeWidth={3} /> : tt === "khoa" ? <Lock size={14} /> : tt === "phi" ? <Crown size={15} /> : stt}
-      </span>
-      <span className="min-w-0 flex-1 basis-40">
-        <span className={`block text-[15px] font-bold leading-snug ${tt === "khoa" ? "text-soft" : "text-ink"}`}>{tenGon(ex.title)}</span>
-        <span className="block text-xs text-soft">
-          {tt === "khoa" ? tr("Làm xong bài trước để mở", "Terminez l'exercice précédent", "Finish the previous exercise")
-            : tt === "phi" ? tr("Bài VIP, không bắt buộc", "Exercice VIP, facultatif", "VIP exercise, optional")
-            : pct !== null ? tr(`Tốt nhất ${pct}%`, `Meilleur score ${pct} %`, `Best score ${pct}%`)
-            : nQ ? tr(`${nQ} câu`, `${nQ} question${nQ > 1 ? "s" : ""}`, `${nQ} question${nQ > 1 ? "s" : ""}`) : ""}
-        </span>
-      </span>
-      <span className="flex shrink-0 items-center gap-2">
-        {moDuoc && <NutTaiLieu onChon={(k) => taiLieu(ex, k)} />}
-        {tt === "tiepTheo" && (
-          <button type="button" onClick={() => lam(ex)} className="inline-flex h-10 cursor-pointer items-center gap-1.5 rounded-xl border-0 bg-primary px-4 font-sans text-sm font-extrabold text-on-primary">
-            <Play size={13} className="fill-current" /> {tr("Làm bài", "Commencer", "Start")}
-          </button>
-        )}
-        {tt === "xong" && (
-          <button type="button" onClick={() => lam(ex)} className="inline-flex h-10 cursor-pointer items-center gap-1.5 rounded-xl border border-solid border-line bg-surface px-3.5 font-sans text-sm font-bold text-ink hover:border-primary">
-            <RotateCcw size={14} /> {tr("Làm lại", "Refaire", "Retry")}
-          </button>
-        )}
-        {tt === "phi" && xp && doiXp && (
-          <button type="button" onClick={() => doiXp(ex)} className="inline-flex h-10 cursor-pointer items-center gap-1 rounded-xl border border-solid border-line bg-surface px-3 font-sans text-sm font-bold text-primary hover:border-primary">
-            <Star size={14} /> {xp} XP
-          </button>
-        )}
-        {tt === "phi" && (
-          <button type="button" onClick={() => mua(ex)} className="inline-flex h-10 cursor-pointer items-center rounded-xl border border-solid border-line bg-surface px-3 font-sans text-sm font-bold text-ink hover:border-primary">
-            {dinhGia(ex.price)}
-          </button>
-        )}
-      </span>
-    </li>
+    <span className={`absolute -left-2 -top-2 z-10 grid h-9 w-9 place-items-center rounded-full text-sm font-extrabold shadow-md ${tt === "xong" ? "bg-ok text-white" : tt === "tiepTheo" ? "bg-primary text-on-primary" : tt === "phi" ? "bg-warn-soft text-warn" : "bg-surface2 text-soft"}`}>
+      {tt === "xong" ? <Check size={17} strokeWidth={3} /> : tt === "khoa" ? <Lock size={14} /> : tt === "phi" ? <Crown size={15} /> : stt}
+    </span>
   );
 }
 
-/* Trang một kỹ năng nhỏ: một danh sách bài chia theo vòng Học, Ôn, Chốt, cạnh đó là
-   ghi chú trước khi làm. Bỏ thẻ ảnh lớn: ở đây học sinh cần thấy cả lộ trình trong một
-   màn hình, không phải lướt qua từng ảnh giống nhau. */
-export function ChiTietKyNho({ ma, exercises, hist, biKhoa, onBack, onMoKyNho, laVip, onMuaVip, onLam, onTaiLieu, onMua, onDoiXp, dinhGia }) {
+/* Trang một kỹ năng nhỏ: thẻ bài giữ nguyên như Thư viện, xếp lưới theo vòng Học, Ôn,
+   Chốt. Thẻ chưa tới lượt vẫn nhìn thấy, nhưng che lại và nói rõ cần làm gì trước. */
+export function ChiTietKyNho({ ma, exercises, hist, biKhoa, onBack, onMoKyNho, laVip, onMuaVip, onLam, renderThe }) {
   const f = timKyNho(ma);
   if (!f) return null;
   const m = KY()[f.ky];
@@ -285,11 +236,12 @@ export function ChiTietKyNho({ ma, exercises, hist, biKhoa, onBack, onMoKyNho, l
       </button>
 
       <header className="mcf-cau-vao mb-4 rounded-3xl px-6 py-5 text-white" style={{ background: m.nen }}>
-        <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-3">
           <div className="min-w-[14rem] flex-1">
             <p className="m-0 text-sm font-bold text-white/85">{tr(`Bước ${i + 1} trên ${duong.length}`, `Étape ${i + 1} sur ${duong.length}`, `Step ${i + 1} of ${duong.length}`)}</p>
             <h2 className="m-0 mt-0.5 text-3xl font-extrabold leading-tight tracking-tight [text-wrap:balance]">{tenKn(o.kn)}</h2>
           </div>
+          {ghi && <NutMeo ghi={ghi} />}
           {tiep && (
             <button type="button" onClick={() => onLam(tiep.ex)} className="inline-flex shrink-0 cursor-pointer items-center gap-2 rounded-2xl border-0 bg-white px-5 py-3 font-sans text-sm font-extrabold shadow-md transition-transform hover:-translate-y-0.5 motion-reduce:hover:translate-y-0" style={{ color: m.dam }}>
               <Play size={14} className="fill-current" /> {o.xong.length ? tr("Làm bài tiếp theo", "Exercice suivant", "Next exercise") : tr("Làm bài đầu tiên", "Premier exercice", "First exercise")}
@@ -333,48 +285,38 @@ export function ChiTietKyNho({ ma, exercises, hist, biKhoa, onBack, onMoKyNho, l
         </p>
       )}
 
-      <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_300px]">
-        <div className="min-w-0">
-          {ds.length === 0 ? (
-            <div className="flex flex-col items-center rounded-3xl border border-solid border-line bg-surface px-6 py-12 text-center">
-              <Clock size={38} strokeWidth={1.5} className="mb-3 text-soft" />
-              <p className="m-0 text-lg font-extrabold text-ink">{tr("Bài tập đang được soạn", "Exercices en préparation", "Exercises are being prepared")}</p>
-              <p className="m-0 mt-1 max-w-md text-sm text-soft">{tr("Kỹ năng này chưa có bài nên không chặn đường của bạn. Bạn có thể sang bước khác.", "Cette compétence n'a pas encore d'exercice : elle ne bloque pas votre parcours.", "This skill has no exercises yet, so it doesn't block your path.")}</p>
-            </div>
-          ) : (
-            <div className="flex flex-col gap-5">
-              {nhom.map(([k, ten, moTa, bai]) => (
-                <section key={k}>
-                  <h3 className="m-0 text-lg font-extrabold text-ink">{ten}</h3>
-                  <p className="m-0 mb-2 text-sm text-soft">{moTa}</p>
-                  <ol className="m-0 list-none divide-x-0 divide-y divide-solid divide-line overflow-hidden rounded-2xl border border-solid border-line bg-surface p-0">
-                    {bai.map(({ ex, tt }) => (
-                      <HangBai key={ex.id} ex={ex} tt={tt} stt={ds.findIndex((b) => b.ex.id === ex.id) + 1} hist={hist} lam={onLam} taiLieu={onTaiLieu} mua={onMua} doiXp={onDoiXp} dinhGia={dinhGia} />
-                    ))}
-                  </ol>
-                </section>
-              ))}
-            </div>
-          )}
-          {o.bai.length < o.kn.duKien && (
-            <p className="m-0 mt-3 text-sm text-soft">{tr(`Đang có ${o.bai.length} bài. Kế hoạch ${o.kn.duKien} bài: ${o.kn.mienPhi} miễn phí, ${o.kn.duKien - o.kn.mienPhi} VIP.`, `${o.bai.length} ex. disponibles. Prévu : ${o.kn.duKien}, dont ${o.kn.mienPhi} gratuits et ${o.kn.duKien - o.kn.mienPhi} VIP.`, `${o.bai.length} ex. available. Planned: ${o.kn.duKien}, ${o.kn.mienPhi} free and ${o.kn.duKien - o.kn.mienPhi} VIP.`)}</p>
-          )}
+      {ds.length === 0 ? (
+        <div className="flex flex-col items-center rounded-3xl border border-solid border-line bg-surface px-6 py-12 text-center">
+          <Clock size={38} strokeWidth={1.5} className="mb-3 text-soft" />
+          <p className="m-0 text-lg font-extrabold text-ink">{tr("Bài tập đang được soạn", "Exercices en préparation", "Exercises are being prepared")}</p>
+          <p className="m-0 mt-1 max-w-md text-sm text-soft">{tr("Kỹ năng này chưa có bài nên không chặn đường của bạn. Bạn có thể sang bước khác.", "Cette compétence n'a pas encore d'exercice : elle ne bloque pas votre parcours.", "This skill has no exercises yet, so it doesn't block your path.")}</p>
         </div>
-
-        {ghi && (
-          <aside className="rounded-2xl border border-solid border-line bg-surface p-4 lg:sticky lg:top-4">
-            <h3 className="m-0 flex items-center gap-2 text-base font-extrabold text-ink"><Lightbulb size={17} className="text-warn" /> {tr("Trước khi làm", "Avant de commencer", "Before you start")}</h3>
-            <dl className="m-0 mt-3 flex flex-col gap-3 text-sm leading-relaxed">
-              {[[tr("Cần có", "Il faut connaître", "You need"), ghi.can], [tr("Lưu ý", "Attention", "Note"), ghi.luu], [tr("Lỗi hay mắc", "Erreur fréquente", "Common mistake"), ghi.loi], [tr("Mẹo", "Astuce", "Tip"), ghi.meo]].map(([t, n]) => (
-                <div key={t}>
-                  <dt className="font-bold text-ink">{t}</dt>
-                  <dd className="m-0 text-soft">{n}</dd>
-                </div>
-              ))}
-            </dl>
-          </aside>
-        )}
-      </div>
+      ) : (
+        <div className="flex flex-col gap-6">
+          {nhom.map(([k, ten, moTa, bai]) => (
+            <section key={k}>
+              <h3 className="m-0 text-lg font-extrabold text-ink">{ten}</h3>
+              <p className="m-0 mb-3 text-sm text-soft">{moTa}</p>
+              <ol className="m-0 grid list-none gap-5 p-0 sm:grid-cols-2 lg:grid-cols-3">
+                {bai.map(({ ex, tt }) => (
+                  <li key={ex.id} className="relative min-w-0">
+                    <DauBai tt={tt} stt={ds.findIndex((b) => b.ex.id === ex.id) + 1} />
+                    {tt === "khoa" ? (
+                      <div className="relative h-full">
+                        <div aria-hidden inert="" className="pointer-events-none h-full opacity-50">{renderThe(ex)}</div>
+                        <p className="absolute inset-x-3 bottom-3 m-0 rounded-2xl bg-surface2 px-3 py-2.5 text-center text-sm font-bold text-ink shadow-sm">{tr("Làm xong bài trước để mở", "Terminez l'exercice précédent", "Finish the previous exercise")}</p>
+                      </div>
+                    ) : renderThe(ex)}
+                  </li>
+                ))}
+              </ol>
+            </section>
+          ))}
+        </div>
+      )}
+      {o.bai.length < o.kn.duKien && (
+        <p className="m-0 mt-4 text-sm text-soft">{tr(`Đang có ${o.bai.length} bài. Kế hoạch ${o.kn.duKien} bài: ${o.kn.mienPhi} miễn phí, ${o.kn.duKien - o.kn.mienPhi} VIP.`, `${o.bai.length} ex. disponibles. Prévu : ${o.kn.duKien}, dont ${o.kn.mienPhi} gratuits et ${o.kn.duKien - o.kn.mienPhi} VIP.`, `${o.bai.length} ex. available. Planned: ${o.kn.duKien}, ${o.kn.mienPhi} free and ${o.kn.duKien - o.kn.mienPhi} VIP.`)}</p>
+      )}
 
       {(truoc || sau) && (
         <nav aria-label={tr("Kỹ năng khác", "Autres compétences", "Other skills")} className="mt-6 flex gap-3">

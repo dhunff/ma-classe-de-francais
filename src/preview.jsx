@@ -712,9 +712,10 @@ function LuyenCapThu() {
     [b1.CE[0].bai[0]]: { best: 1, max: 1, tries: 1, at: 1 },
   };
   const biKhoa = (ex) => ex.id === b1.CE[1].bai[0];
+  const the = (ex) => <div className="flex h-44 items-end rounded-3xl border border-solid border-line bg-surface p-4 text-sm font-bold text-ink">{ex.title}</div>;
   return (
     <div className="mx-auto max-w-5xl p-4">
-      {ma ? <ChiTietKyNho ma={ma} exercises={ids} hist={hist} biKhoa={biKhoa} onBack={() => setMa(null)} onMoKyNho={(o) => setMa(o.kn.ma)} laVip={false} onMuaVip={() => {}} onLam={() => {}} onTaiLieu={() => {}} onMua={() => {}} onDoiXp={() => {}} dinhGia={(g) => `${g} đ`} />
+      {ma ? <ChiTietKyNho ma={ma} exercises={ids} hist={hist} biKhoa={biKhoa} onBack={() => setMa(null)} onMoKyNho={(o) => setMa(o.kn.ma)} laVip={false} onMuaVip={() => {}} onLam={() => {}} renderThe={the} />
         : <LuyenTheoCap cap={cap} capHoSo="B1" onDoiCap={setCap} exercises={ids} hist={hist} biKhoa={biKhoa} canhBao={baoKhoa}
             onMoKyNho={(o) => (o.buoc === "khoa" ? setBaoKhoa("Làm xong bước trước để mở bước này.") : setMa(o.kn.ma))} />}
     </div>

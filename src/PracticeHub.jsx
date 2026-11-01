@@ -381,11 +381,17 @@ ${r.error?.message ?? ""}`); return; }
           onDone={(soDu) => { setXp(soDu); setDoiXp(null); baoXpDoi(); sauKhiMoKhoa(); }} />}
         <ChiTietKyNho ma={view.ma} exercises={exercises} hist={hist} biKhoa={biKhoa} laVip={fullAccess}
           onMuaVip={() => { if (isGuest) return requireLogin(); setPayFor(goiVip(t("vip.pay_title"))); }}
-          onBack={() => setView({ page: "home" })} onMoKyNho={moKyNho} dinhGia={fmtPrice}
+          onBack={() => setView({ page: "home" })} onMoKyNho={moKyNho}
           onLam={(ex) => { if (isGuest) return requireLogin(); setView({ page: "quiz", kyNho: view.ma, exId: ex.id }); }}
-          onTaiLieu={(ex, kind) => setMatModal({ exId: ex.id, kind })}
-          onMua={(ex) => { if (isGuest) return requireLogin(); setPayFor(ex); }}
-          onDoiXp={role === "eleve" ? (ex) => setDoiXp(ex) : null} />
+          renderThe={(ex) => (
+            <ExerciseCard ex={ex} premium={isPremium(ex)} locked={biKhoa(ex)} best={hist[ex.id]} t={t}
+              typesLabel={[...new Set(ex.questions.map((q) => QTYPES[q.type]))].join(" + ")} folderLabel={null}
+              onStart={() => { if (isGuest) return requireLogin(); setView({ page: "quiz", kyNho: view.ma, exId: ex.id }); }}
+              onPickMaterial={(kind) => setMatModal({ exId: ex.id, kind })}
+              onBuy={() => { if (isGuest) return requireLogin(); setPayFor(ex); }}
+              onDoiXp={role === "eleve" ? () => setDoiXp(ex) : null}
+              teacherActions={null} />
+          )} />
       </div>
     );
   }
