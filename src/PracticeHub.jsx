@@ -47,7 +47,7 @@ import { choTrong } from "./shared/choTrong.jsx";
 import OTraLoi from "./screens/practice/OTraLoi.jsx";
 import { LuyenTheoCap, ChiTietKyNho, MeoKyNho, ManKhoaThuTu } from "./screens/practice/LuyenTheoCap.jsx";
 import ThanhTuu from "./screens/practice/ThanhTuu.jsx";
-import { capMacDinh, duongKyLon, timKyNho, kyNhoCuaBai, khoaThuTu } from "./shared/tienTrinhLuyenTap.js";
+import { capMacDinh, duongKyLon, timKyNho, kyNhoCuaBai, khoaThuTu, gopDiemNoi } from "./shared/tienTrinhLuyenTap.js";
 
 /* ============================================================
    PRACTICE HUB v3 — Tự luyện tập
@@ -1278,6 +1278,10 @@ export function PracticeWorkspace({ ex, back, onFinish, soTu = false, chamBang =
   const [remaining, setRemaining] = useState(null);
   /* Bài mẫu của câu viết tự do: học sinh không có `q.model` (migration 022), máy chủ chỉ trả sau khi nộp. */
   const [baiMau, setBaiMau] = useState({});
+  /* Điểm từng câu nói: { [q.id]: "cho" | số | null }. luotLai: mốc bấm Làm lại, bản ghi cũ hơn không tính. */
+  const [diemNoi, setDiemNoi] = useState({});
+  const [luotLai, setLuotLai] = useState(0);
+  const baoDiem = useCallback((id, d) => setDiemNoi((x) => ({ ...x, [id]: d })), []);
   const [zen, setZen] = useState(false); // 🧘 chế độ tập trung
   const [imgZoom, setImgZoom] = useState(false); // 🔍 lightbox ảnh đề bài
   const answersRef = useRef(answers); answersRef.current = answers;
@@ -1364,18 +1368,19 @@ export function PracticeWorkspace({ ex, back, onFinish, soTu = false, chamBang =
 
     /* Đặt kết quả máy chủ CÙNG LÚC với bật `graded` (React gộp hai lần đặt state),
        nên lần vẽ đầu tiên của màn kết quả đã có đúng/sai thật. */
-    if (res) { setRemote(res.results); setDiemMayChu({ score: res.score, max: res.max }); }
+    const kq = res ? gopDiemNoi(res.score, res.max, ex.ghiAm ? Object.values(diemNoi) : []) : null;
+    if (res) { setRemote(res.results); setDiemMayChu(kq); }
     setGraded(timedOut ? "timeout" : true);
     if (!res) phat("sai");
-    else if (res.max) {
-      const tl = res.score / res.max;
+    else if (kq.max) {
+      const tl = kq.score / kq.max;
       setTimeout(() => phat(tl >= 0.8 ? "thang" : tl >= 0.5 ? "dung" : "thua"), 450);
     }
 
     /* Điểm lấy từ máy chủ khi có. Tự cộng lại ở đây là mở đường cho hai con số
        lệch nhau — màn hình hiện một đằng, lịch sử lưu một nẻo. */
-    const score = res ? res.score : autos.reduce((n, q) => n + (isGood(q) ? 1 : 0), 0);
-    onFinish(score, res ? res.max : (autos.length || 0));
+    const score = kq ? kq.score : autos.reduce((n, q) => n + (isGood(q) ? 1 : 0), 0);
+    onFinish(score, kq ? kq.max : (autos.length || 0));
   };
   /* Đáp án của câu điền từ / chia động từ.
    *
@@ -1394,6 +1399,7 @@ export function PracticeWorkspace({ ex, back, onFinish, soTu = false, chamBang =
     phat("tiep");
     moLuc.current = Date.now();
     gradedRef.current = false; setGraded(false); setAnswers({}); setRemote(null); setDiemMayChu(null);
+    setDiemNoi({}); setLuotLai(Date.now());
   };
 
   /* Điểm hiển thị phải cộng theo ĐƠN VỊ, không theo số câu: một bảng OUI/NON
@@ -1426,6 +1432,7 @@ export function PracticeWorkspace({ ex, back, onFinish, soTu = false, chamBang =
   const fmtLeft = (s) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
 
   const laNoi = !!ex.ghiAm;
+  const doiChamNoi = Object.values(diemNoi).includes("cho");
   const canLam = laNoi ? autos : ex.questions;
   const mauKn = exSkills(ex).includes("Production orale") ? MAU_NOI : CATS.find((c) => c.skill === catOf(ex));
   const dam = mauKn.dam;
@@ -1572,7 +1579,7 @@ export function PracticeWorkspace({ ex, back, onFinish, soTu = false, chamBang =
                     <Volume2 size={16} /> {tr("Nghe câu mẫu", "Écouter le modèle", "Listen to the model")}
                   </button>
                 )}
-                <GhiAmBaiNoi gon mau={dam} exerciseId={ex.id} cauId={q.id} gioiHanGiay={120} />
+                <GhiAmBaiNoi key={luotLai} gon mau={dam} exerciseId={ex.id} cauId={q.id} gioiHanGiay={120} tuLuc={luotLai} khoa={!!graded} onDiem={baoDiem} />
               </div>
             ) : <KhungViet value={a || ""} readOnly={!!graded} onChange={(html) => setAnswers({ ...answers, [q.id]: html })} />}
             {graded && (q.model || baiMau[q.id]) && (
@@ -1665,14 +1672,14 @@ export function PracticeWorkspace({ ex, back, onFinish, soTu = false, chamBang =
           {!zen && remaining != null && (
             <span className={`ml-auto rounded-xl px-3 py-2 text-base font-extrabold tabular-nums ${remaining <= 60 ? "bg-danger-soft text-danger" : "bg-surface2 text-ink"}`}>{fmtLeft(remaining)}</span>
           )}
-          <button type="button" disabled={dangCham} className={`${!zen && remaining != null ? "" : "ml-auto"} h-11 shrink-0 rounded-xl border-0 px-4 font-sans text-sm font-extrabold text-white shadow-md sm:px-6 transition-transform hover:-translate-y-0.5 motion-reduce:hover:translate-y-0`}
-            style={{ background: dam, opacity: dangCham ? 0.6 : 1, cursor: dangCham ? "wait" : "pointer" }}
+          <button type="button" disabled={dangCham || doiChamNoi} className={`${!zen && remaining != null ? "" : "ml-auto"} h-11 shrink-0 rounded-xl border-0 px-4 font-sans text-sm font-extrabold text-white shadow-md sm:px-6 transition-transform hover:-translate-y-0.5 motion-reduce:hover:translate-y-0`}
+            style={{ background: dam, opacity: dangCham || doiChamNoi ? 0.6 : 1, cursor: dangCham || doiChamNoi ? "wait" : "pointer" }}
             onClick={() => {
               if (dangCham) return;
               const n = getUnansweredQuestionsCount(answers, canLam);
               if (n > 0) setConfirmCount(n); else grade(false);
             }}>
-            {dangCham ? tr("Đang chấm…", "Correction en cours…", "Grading…") : <>{laNoi ? tr("Hoàn thành bài", "Terminer", "Finish") : <><span className="sm:hidden">{tr("Nộp bài", "Envoyer", "Submit")}</span><span className="hidden sm:inline">{t("submit_button")}</span></>}</>}
+            {dangCham || doiChamNoi ? tr("Đang chấm…", "Correction en cours…", "Grading…") : <>{laNoi ? tr("Hoàn thành bài", "Terminer", "Finish") : <><span className="sm:hidden">{tr("Nộp bài", "Envoyer", "Submit")}</span><span className="hidden sm:inline">{t("submit_button")}</span></>}</>}
           </button>
         </div>
         {confirmCount != null && (
@@ -1687,8 +1694,8 @@ export function PracticeWorkspace({ ex, back, onFinish, soTu = false, chamBang =
             <Leon cam={tiLeDiem === null || tiLeDiem >= 0.7 ? "yeah" : "quyet-tam"} size={84} className="shrink-0" />
             <div className="min-w-0 text-left">
               {graded === "timeout" && <p className="m-0 mb-1 text-sm font-bold">{t("exercise.timeout")}</p>}
-              <p className="m-0 text-2xl font-extrabold leading-tight">{autos.length > 0 ? t("exercise.score_result", { score, total: tongDiem }) : t("exercise.finished")}</p>
-              {perfect && autos.length > 0 && <p className="m-0 mt-1 text-sm font-semibold">{t("exercise.perfect")}</p>}
+              <p className="m-0 text-2xl font-extrabold leading-tight">{tongDiem > 0 ? t("exercise.score_result", { score, total: tongDiem }) : t("exercise.finished")}</p>
+              {perfect && <p className="m-0 mt-1 text-sm font-semibold">{t("exercise.perfect")}</p>}
             </div>
             <HuyHieuHang hang={hangTuTiLe(tiLeDiem)} size={64} />
           </div>

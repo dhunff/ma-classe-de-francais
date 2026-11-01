@@ -103,6 +103,15 @@ export function capMacDinh(daChon, capHoSo, exercises, hist) {
   return moiNhat ? moiNhat.level : CAP_DO[0];
 }
 
+/* Điểm bài nói ở Luyện tập: mỗi câu thang 10, câu chấm máy (QCM) quy về cùng thang. Chỉ câu đã có
+   điểm mới tính: học sinh không có micro, hết lượt AI hay AI lỗi thì câu đó bỏ qua chứ không thành
+   0, nếu không sẽ kẹt vĩnh viễn ở bước dưới 70%. Không câu nói nào có điểm thì giữ nguyên điểm máy. */
+export function gopDiemNoi(score, max, diemNoi) {
+  const co = diemNoi.filter((d) => Number.isInteger(d) && d >= 0 && d <= 10);
+  if (!co.length) return { score, max };
+  return { score: score * 10 + co.reduce((a, b) => a + b, 0), max: (max + co.length) * 10 };
+}
+
 /* Kỹ năng nhỏ của một bài, kể cả bài mở từ Thư viện: gắn bằng meta.kyNang hoặc id trong cây. */
 export const kyNhoCuaBai = (ex) => ex.kyNang || Object.values(KY_NANG).flatMap((c) => Object.values(c).flat()).find((k) => k.bai.includes(ex.id))?.ma || null;
 

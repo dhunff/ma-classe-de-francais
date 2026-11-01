@@ -53,7 +53,9 @@ function NutGhiGon({ trangThai, giay, toiDa, mau, onBam }) {
 let mayDangChay = null;
 
 /* `cauId`: ghi riêng cho một câu. `gon`: bản nằm trong thẻ câu hỏi, bỏ khung và tiêu đề. */
-export default function GhiAmBaiNoi({ examId, exerciseId, cauId, gon = false, mau = "var(--mcf-primary)", gioiHanGiay = 900, moTa = null }) {
+/* Luyện tập: `tuLuc` chỉ tính bản ghi từ lượt làm lại này, `khoa` cấm ghi thêm sau khi đã nộp,
+   `onDiem(cauId, "cho" | số | null)` báo điểm cho màn làm bài. */
+export default function GhiAmBaiNoi({ examId, exerciseId, cauId, gon = false, mau = "var(--mcf-primary)", gioiHanGiay = 900, moTa = null, tuLuc = 0, khoa = false, onDiem = null }) {
   const [trangThai, setTrangThai] = useState("cho");   // cho · dangGhi · dangLuu · xong · loi
   const [loi, setLoi] = useState("");
   const [giay, setGiay] = useState(0);
@@ -64,8 +66,10 @@ export default function GhiAmBaiNoi({ examId, exerciseId, cauId, gon = false, ma
   const [nx, setNx] = useState({});
   const xinNhanXet = async (duongDan) => {
     setNx((x) => ({ ...x, [duongDan]: { dang: true } }));
+    onDiem?.(cauId, "cho");
     const kq = await aiNhanXet(duongDan);
     setNx((x) => ({ ...x, [duongDan]: kq }));
+    onDiem?.(cauId, Number.isInteger(kq?.nhan_xet?.diem) ? kq.nhan_xet.diem : null);
   };
 
   const mayRef = useRef(null);
@@ -81,8 +85,12 @@ export default function GhiAmBaiNoi({ examId, exerciseId, cauId, gon = false, ma
   }, []);
 
   useEffect(() => {
-    dsBaiNoi({ examId, exerciseId, cauId }).then((ds) => { setDsCu(ds); setDaTai(true); });
-  }, [examId, exerciseId, cauId]);
+    dsBaiNoi({ examId, exerciseId, cauId }).then((ds) => {
+      const con = gon ? ds.filter((b) => (b.luc ?? 0) >= tuLuc) : ds;
+      setDsCu(con); setDaTai(true);
+      if (gon && con[0]) xinNhanXet(con[0].duongDan);   // đã chấm rồi thì máy chủ trả lại, không tốn lượt
+    });
+  }, [examId, exerciseId, cauId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const batDau = async () => {
     setLoi("");
@@ -117,6 +125,7 @@ export default function GhiAmBaiNoi({ examId, exerciseId, cauId, gon = false, ma
         }
         setTrangThai("xong");
         setDsCu(await dsBaiNoi({ examId, exerciseId, cauId }));
+        if (gon) xinNhanXet(kq.duongDan);
       };
       try { mayDangChay?.stop(); } catch { /* đã dừng */ }
       mayDangChay = may;
@@ -159,7 +168,7 @@ export default function GhiAmBaiNoi({ examId, exerciseId, cauId, gon = false, ma
         {moTa ?? tr("Ghi âm bài nói của bạn. Nộp xong, AI chấm theo thang DELF chính thức ở trang « Kết quả thi »; bạn cũng có thể tự chấm lại theo từng tiêu chí.", "Enregistrez-vous. Après l’envoi, l’IA vous note avec la grille DELF officielle dans « Mes résultats » ; vous pouvez aussi vous auto-évaluer.", "Record yourself. After submitting, the AI grades you with the official DELF grid in « My results »; you can also self-assess.")}
       </p>}
 
-      {gon ? daTai && !dsCu.length && <NutGhiGon trangThai={trangThai} giay={giay} toiDa={gioiHanGiay} mau={mau} onBam={trangThai === "dangGhi" ? dung : batDau} /> : (
+      {gon ? daTai && !dsCu.length && !khoa && <NutGhiGon trangThai={trangThai} giay={giay} toiDa={gioiHanGiay} mau={mau} onBam={trangThai === "dangGhi" ? dung : batDau} /> : (
 <div className="mt-4 flex flex-wrap items-center gap-3">
         {trangThai !== "dangGhi" ? (
           <button type="button" onClick={batDau} disabled={trangThai === "dangLuu"}
@@ -214,12 +223,14 @@ export default function GhiAmBaiNoi({ examId, exerciseId, cauId, gon = false, ma
                              font-semibold text-ink transition-colors hover:bg-primary-soft hover:text-primary">
                   {tr("Nghe lại", "Réécouter", "Listen again")}
                 </button>
+                {gon ? <DiemCau nx={nx[b.duongDan]} onLai={() => xinNhanXet(b.duongDan)} /> : (
                 <button type="button" onClick={() => xinNhanXet(b.duongDan)} disabled={nx[b.duongDan]?.dang}
                   className="flex cursor-pointer items-center gap-1.5 rounded-lg border-0 bg-primary-soft px-3 py-1.5 font-sans text-xs
                              font-semibold text-primary transition-colors hover:bg-primary hover:text-white disabled:cursor-wait disabled:opacity-60">
                   {nx[b.duongDan]?.dang ? <Loader2 size={13} className="mcf-spin" aria-hidden /> : null}
                   {tr("AI nhận xét", "Avis de l'IA", "AI feedback")}
                 </button>
+                )}
                 {!gon && <span className="text-xs text-soft">
                   {b.luc ? new Date(b.luc).toLocaleString("vi-VN") : b.ten}
                   {b.bytes ? ` · ${Math.round(b.bytes / 1024)} KB` : ""}
@@ -237,6 +248,16 @@ export default function GhiAmBaiNoi({ examId, exerciseId, cauId, gon = false, ma
       )}
     </div>
   );
+}
+
+/* Điểm một câu ở Luyện tập. Chấm lỗi thì cho chấm lại: bản ghi vẫn còn, lần lỗi không tốn lượt. */
+function DiemCau({ nx, onLai }) {
+  if (!nx || nx.dang) return <span className="inline-flex items-center gap-1.5 text-xs font-bold text-soft"><Loader2 size={13} className="mcf-spin" aria-hidden /> {tr("Đang chấm…", "Correction…", "Scoring…")}</span>;
+  if (!Number.isInteger(nx.nhan_xet?.diem)) {
+    return <button type="button" onClick={onLai} className="cursor-pointer rounded-lg border-0 bg-primary-soft px-3 py-1.5 font-sans text-xs font-semibold text-primary">{tr("Chấm lại", "Réessayer", "Try again")}</button>;
+  }
+  const d = nx.nhan_xet.diem;
+  return <span className={`rounded-lg px-3 py-1.5 text-sm font-extrabold tabular-nums ${d >= 7 ? "bg-ok-soft text-ok" : d >= 5 ? "bg-warn-soft text-warn" : "bg-danger-soft text-danger"}`}>{d}/10</span>;
 }
 
 /* Khung hiện nhận xét của AI cho một bản ghi. Không có điểm số — cố ý. */

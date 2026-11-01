@@ -2,7 +2,7 @@
 /* Kiểm cây Luyện tập theo trình độ: dữ liệu cây và luật tiến trình.
  * Lỗi đáng sợ nhất là NGÕ CỤT: một bước không làm được chặn mọi bước sau. */
 import { KY_NANG } from "../src/content/luyenTap/kyNang.js";
-import { CAP_DO, KY_LON, tinhKyNho, duongKyLon, dsBaiKyNho, tongCap, capMacDinh, baiCuaKyNang, timKyNho, khoaThuTu, NGUONG_DAT } from "../src/shared/tienTrinhLuyenTap.js";
+import { CAP_DO, KY_LON, tinhKyNho, duongKyLon, dsBaiKyNho, tongCap, capMacDinh, baiCuaKyNang, timKyNho, khoaThuTu, gopDiemNoi, NGUONG_DAT } from "../src/shared/tienTrinhLuyenTap.js";
 import { chonDeXuat } from "../src/shared/deXuat.js";
 import { hangTuTiLe, hangBai, hangKyNho, hangSau, tinhKyLon, tinhCap, THANG_HANG } from "../src/shared/hangLuyenTap.js";
 
@@ -75,6 +75,14 @@ ca("ngoài cây: VIP vẫn theo thứ tự bài trong kỹ năng", kt(baNoi[1], 
 ca("ngoài cây: xong bài trước thì mở bài sau", kt(baNoi[1], xong("n1"), undefined, false, baNoi) === null);
 /* Không ngõ cụt: mọi bài bị chặn đều chỉ tới một bước đang làm được. */
 ca("ngoài cây: không có ngõ cụt", ex.every((e) => { const k = kt(e); return !k || duongKyLon("A1", "CO", ex, {}).find((o) => o.kn.ma === k.kn.ma).buoc === "hienTai"; }));
+
+/* Điểm bài nói. */
+const gop = (s, m, d) => { const k = gopDiemNoi(s, m, d); return `${k.score}/${k.max}`; };
+ca("điểm nói: cộng các câu, thang 10", gop(0, 0, [8, 6]) === "14/20");
+ca("điểm nói: gộp với câu chấm máy cùng thang", gop(3, 5, [10]) === "40/60");
+ca("điểm nói: câu chưa chấm không thành 0", gop(0, 0, [9, undefined, null, "cho"]) === "9/10");
+ca("điểm nói: không chấm được câu nào thì không có điểm, không ngõ cụt", gopDiemNoi(0, 0, [null]).max === 0);
+ca("điểm nói: giá trị ngoài thang bị bỏ", gop(0, 0, [11, -1, 7]) === "7/10");
 
 /* Gợi ý ở trang chủ không được chứa bài chưa tới lượt. */
 const coCau = ex.map((e) => ({ ...e, questions: [{}], skill: "Écoute" }));
