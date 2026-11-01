@@ -1,8 +1,11 @@
-import React, { useEffect, useMemo, useRef } from "react";
-import { Headphones, BookOpen, PenLine, Mic, Check, Lock, Play, Clock, ArrowRight, ChevronLeft, Sparkles, RotateCcw, Crown } from "lucide-react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { Headphones, BookOpen, PenLine, Mic, Check, Lock, Play, Clock, ArrowRight, ChevronLeft, Sparkles, RotateCcw, Crown, Star, Lightbulb, FileCheck } from "lucide-react";
 import { tr } from "../../shared/i18n.jsx";
 import { Leon } from "../../shared/leon.jsx";
 import { phat } from "../../shared/amThanh.js";
+import { FloatingLayer } from "../../shared/ui.jsx";
+import { giaXp } from "../../shared/premium.js";
+import { GHI_CHU } from "../../content/luyenTap/ghiChuKyNang.js";
 import { CAP_DO, KY_LON, tongCap, duongKyLon, dsBaiKyNho, timKyNho, NGUONG_DAT } from "../../shared/tienTrinhLuyenTap.js";
 
 /* Màn Luyện tập theo trình độ (01/11/2026): trình độ → kỹ năng lớn → kỹ năng nhỏ
@@ -154,8 +157,108 @@ export function LuyenTheoCap({ cap, capHoSo, onDoiCap, exercises, hist, biKhoa, 
   );
 }
 
-/* Trang một kỹ năng nhỏ: các bài theo thứ tự, thẻ bài dùng lại ExerciseCard qua renderThe. */
-export function ChiTietKyNho({ ma, exercises, hist, biKhoa, onBack, onMoKyNho, renderThe, laVip, onMuaVip }) {
+/* Tên bài trong danh sách: bỏ tiền tố lặp lại « Écoute A1 : », vì trang đã nói rõ
+   trình độ và kỹ năng. Chỉ đổi lúc hiển thị, tên trong kho giữ nguyên. */
+const tenGon = (t) => {
+  const c = String(t || "").replace(/^(Écoute|Lecture|Écrit)\s+[A-C][12]\s*:\s*/i, "");
+  return c.charAt(0).toUpperCase() + c.slice(1);
+};
+const VONG = () => [
+  ["hoc", tr("Học", "Découverte", "Learn"), tr("Gặp kỹ năng lần đầu, mỗi bài một chủ đề", "Première rencontre, un thème par exercice", "First contact, one topic per exercise")],
+  ["on", tr("Ôn", "Révision", "Review"), tr("Quay lại sau khoảng 3 ngày để nhớ lâu hơn", "À refaire environ 3 jours plus tard", "Come back about 3 days later")],
+  ["chot", tr("Chốt", "Bilan", "Final check"), tr("Sau khoảng 10 ngày, từ 85% là nắm chắc", "Environ 10 jours plus tard, 85 % pour maîtriser", "About 10 days later, 85% means mastered")],
+];
+const TAI_LIEU = () => [
+  ["vocab", BookOpen, tr("Từ vựng", "Vocabulaire", "Vocabulary")],
+  ["expl", Lightbulb, tr("Giải thích", "Explications", "Explanations")],
+  ["corrige", FileCheck, tr("Đề và đáp án", "Sujet et corrigé", "Task and answer key")],
+];
+
+/* Dải tiến độ: mỗi bài một vạch, nhìn là biết còn mấy bài và mình đang ở đâu. */
+function DaiBai({ ds }) {
+  return (
+    <div className="flex gap-1" role="img" aria-label={tr(`${ds.filter((b) => b.tt === "xong").length} trên ${ds.length} bài đã làm`, `${ds.filter((b) => b.tt === "xong").length} exercices faits sur ${ds.length}`, `${ds.filter((b) => b.tt === "xong").length} of ${ds.length} exercises done`)}>
+      {ds.map(({ ex, tt }) => (
+        <span key={ex.id} className={`h-2 min-w-0 flex-1 rounded-full ${tt === "xong" ? "bg-white" : tt === "tiepTheo" ? "mcf-lt-vach bg-white/70" : tt === "phi" ? "border border-dashed border-white/70" : "bg-white/30"}`} />
+      ))}
+    </div>
+  );
+}
+
+/* Từ vựng, giải thích, đáp án: gom vào một nút để hàng bài không rối. */
+function NutTaiLieu({ onChon }) {
+  const ref = useRef(null);
+  const [mo, setMo] = useState(false);
+  return (
+    <span ref={ref} className="inline-flex">
+      <button type="button" onClick={() => setMo((v) => !v)} aria-haspopup="menu" aria-expanded={mo}
+        aria-label={tr("Tài liệu của bài", "Ressources de l'exercice", "Exercise resources")} title={tr("Từ vựng, giải thích, đáp án", "Vocabulaire, explications, corrigé", "Vocabulary, tips, answer key")}
+        className="grid h-10 w-10 cursor-pointer place-items-center rounded-xl border border-solid border-line bg-surface text-soft transition-colors hover:border-primary hover:text-primary">
+        <BookOpen size={17} />
+      </button>
+      <FloatingLayer anchorRef={ref} open={mo} onClose={() => setMo(false)} width={210} radius={16} padding={6}>
+        {TAI_LIEU().map(([k, Icon, ten]) => (
+          <button key={k} type="button" role="menuitem" onClick={() => { setMo(false); onChon(k); }}
+            className="flex w-full cursor-pointer items-center gap-2.5 rounded-xl border-0 bg-transparent px-3.5 py-2.5 text-left font-[inherit] text-sm font-semibold text-ink hover:bg-bg">
+            <Icon size={16} /> {ten}
+          </button>
+        ))}
+      </FloatingLayer>
+    </span>
+  );
+}
+
+function HangBai({ ex, tt, stt, hist, lam, taiLieu, mua, doiXp, dinhGia }) {
+  const h = hist[ex.id];
+  const pct = h && h.max > 0 && h.best >= 0 ? Math.round((h.best / h.max) * 100) : null;
+  const nQ = ex.questions?.length ?? 0;
+  const xp = tt === "phi" ? giaXp(ex) : null;
+  const moDuoc = tt === "xong" || tt === "tiepTheo";
+  return (
+    <li className={`flex flex-wrap items-center gap-x-3 gap-y-2 px-4 py-3 ${tt === "tiepTheo" ? "bg-primary-soft" : ""}`}>
+      <span className={`grid h-9 w-9 shrink-0 place-items-center rounded-full text-sm font-extrabold ${tt === "xong" ? "bg-ok text-white" : tt === "tiepTheo" ? "bg-primary text-on-primary" : tt === "phi" ? "bg-warn-soft text-warn" : "bg-surface2 text-soft"}`}>
+        {tt === "xong" ? <Check size={17} strokeWidth={3} /> : tt === "khoa" ? <Lock size={14} /> : tt === "phi" ? <Crown size={15} /> : stt}
+      </span>
+      <span className="min-w-0 flex-1 basis-40">
+        <span className={`block text-[15px] font-bold leading-snug ${tt === "khoa" ? "text-soft" : "text-ink"}`}>{tenGon(ex.title)}</span>
+        <span className="block text-xs text-soft">
+          {tt === "khoa" ? tr("Làm xong bài trước để mở", "Terminez l'exercice précédent", "Finish the previous exercise")
+            : tt === "phi" ? tr("Bài VIP, không bắt buộc", "Exercice VIP, facultatif", "VIP exercise, optional")
+            : pct !== null ? tr(`Tốt nhất ${pct}%`, `Meilleur score ${pct} %`, `Best score ${pct}%`)
+            : nQ ? tr(`${nQ} câu`, `${nQ} question${nQ > 1 ? "s" : ""}`, `${nQ} question${nQ > 1 ? "s" : ""}`) : ""}
+        </span>
+      </span>
+      <span className="flex shrink-0 items-center gap-2">
+        {moDuoc && <NutTaiLieu onChon={(k) => taiLieu(ex, k)} />}
+        {tt === "tiepTheo" && (
+          <button type="button" onClick={() => lam(ex)} className="inline-flex h-10 cursor-pointer items-center gap-1.5 rounded-xl border-0 bg-primary px-4 font-sans text-sm font-extrabold text-on-primary">
+            <Play size={13} className="fill-current" /> {tr("Làm bài", "Commencer", "Start")}
+          </button>
+        )}
+        {tt === "xong" && (
+          <button type="button" onClick={() => lam(ex)} className="inline-flex h-10 cursor-pointer items-center gap-1.5 rounded-xl border border-solid border-line bg-surface px-3.5 font-sans text-sm font-bold text-ink hover:border-primary">
+            <RotateCcw size={14} /> {tr("Làm lại", "Refaire", "Retry")}
+          </button>
+        )}
+        {tt === "phi" && xp && doiXp && (
+          <button type="button" onClick={() => doiXp(ex)} className="inline-flex h-10 cursor-pointer items-center gap-1 rounded-xl border border-solid border-line bg-surface px-3 font-sans text-sm font-bold text-primary hover:border-primary">
+            <Star size={14} /> {xp} XP
+          </button>
+        )}
+        {tt === "phi" && (
+          <button type="button" onClick={() => mua(ex)} className="inline-flex h-10 cursor-pointer items-center rounded-xl border border-solid border-line bg-surface px-3 font-sans text-sm font-bold text-ink hover:border-primary">
+            {dinhGia(ex.price)}
+          </button>
+        )}
+      </span>
+    </li>
+  );
+}
+
+/* Trang một kỹ năng nhỏ: một danh sách bài chia theo vòng Học, Ôn, Chốt, cạnh đó là
+   ghi chú trước khi làm. Bỏ thẻ ảnh lớn: ở đây học sinh cần thấy cả lộ trình trong một
+   màn hình, không phải lướt qua từng ảnh giống nhau. */
+export function ChiTietKyNho({ ma, exercises, hist, biKhoa, onBack, onMoKyNho, laVip, onMuaVip, onLam, onTaiLieu, onMua, onDoiXp, dinhGia }) {
   const f = timKyNho(ma);
   if (!f) return null;
   const m = KY()[f.ky];
@@ -163,42 +266,62 @@ export function ChiTietKyNho({ ma, exercises, hist, biKhoa, onBack, onMoKyNho, r
   const i = duong.findIndex((o) => o.kn.ma === ma);
   const o = duong[i];
   const ds = dsBaiKyNho(o, hist, biKhoa);
-  const sau = duong.slice(i + 1).find((x) => x.buoc !== "sapCo" && x.buoc !== "vip");
+  const truoc = duong[i - 1], sau = duong[i + 1];
+  const tiep = ds.find((b) => b.tt === "tiepTheo");
+  const ghi = GHI_CHU[ma];
   const pct = o.tb === null ? null : Math.round(o.tb * 100);
+  const nhom = VONG().map(([k, ten, moTa]) => [k, ten, moTa, ds.filter((b) => (b.ex.vong || "hoc") === k)]).filter((n) => n[3].length);
+  const NutBuoc = ({ b, huong }) => (
+    <button type="button" onClick={() => onMoKyNho(b, m)} className={`flex min-w-0 flex-1 cursor-pointer items-center gap-2 rounded-2xl border border-solid border-line bg-surface px-4 py-3 font-sans text-sm font-bold text-ink hover:border-primary ${huong === "sau" ? "justify-end text-right" : "text-left"}`}>
+      {huong === "truoc" && <ChevronLeft size={16} className="shrink-0" />}
+      <span className="min-w-0 truncate">{tenKn(b.kn)}</span>
+      {huong === "sau" && <ArrowRight size={16} className="shrink-0" />}
+    </button>
+  );
   return (
-    <div className="mx-auto max-w-3xl">
-      <button type="button" onClick={onBack} className="mb-4 inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-solid border-line bg-surface px-4 py-2 font-sans text-sm font-bold text-ink hover:border-primary">
-        <ChevronLeft size={16} /> {BANG(f.cap)} {f.cap}
+    <div className="mx-auto max-w-5xl">
+      <button type="button" onClick={onBack} className="mb-3 inline-flex cursor-pointer items-center gap-1 rounded-lg border-0 bg-transparent p-1 font-sans text-sm font-bold text-soft hover:text-primary">
+        <ChevronLeft size={16} /> {BANG(f.cap)} {f.cap}: {m.ten}
       </button>
 
-      <header className="mcf-cau-vao relative mb-5 overflow-hidden rounded-3xl p-5 text-white shadow-[0_16px_40px_rgba(0,0,0,0.12)]" style={{ background: m.nen }}>
-        <span aria-hidden className="absolute -right-10 -top-12 h-40 w-40 rounded-full bg-white/15" />
-        <p className="relative m-0 flex items-center gap-2 text-xs font-bold text-white/85"><m.Icon size={15} /> {f.cap} · {m.ten} · {tr(`Bước ${i + 1}/${duong.length}`, `Étape ${i + 1}/${duong.length}`, `Step ${i + 1}/${duong.length}`)}</p>
-        <h2 className="relative m-0 mt-1 text-2xl font-extrabold leading-tight tracking-tight">{tenKn(o.kn)}</h2>
-        <p className="relative m-0 mt-1 text-sm font-semibold text-white/90">
-          {o.buoc === "vip"
-            ? tr(`${o.phi.length} bài VIP`, `${o.phi.length} ex. VIP`, `${o.phi.length} VIP ex.`)
-            : o.bai.length
-            ? tr(`Đã làm ${o.xong.length}/${o.coTheLam.length} bài${pct !== null ? ` · điểm trung bình ${pct}%` : ""}`, `${o.xong.length}/${o.coTheLam.length} faits${pct !== null ? ` · moyenne ${pct} %` : ""}`, `${o.xong.length}/${o.coTheLam.length} done${pct !== null ? ` · average ${pct}%` : ""}`)
-            : tr(`Kế hoạch ${o.kn.duKien} bài`, `${o.kn.duKien} exercices prévus`, `${o.kn.duKien} exercises planned`)}
-        </p>
+      <header className="mcf-cau-vao mb-4 rounded-3xl px-6 py-5 text-white" style={{ background: m.nen }}>
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
+          <div className="min-w-[14rem] flex-1">
+            <p className="m-0 text-sm font-bold text-white/85">{tr(`Bước ${i + 1} trên ${duong.length}`, `Étape ${i + 1} sur ${duong.length}`, `Step ${i + 1} of ${duong.length}`)}</p>
+            <h2 className="m-0 mt-0.5 text-3xl font-extrabold leading-tight tracking-tight [text-wrap:balance]">{tenKn(o.kn)}</h2>
+          </div>
+          {tiep && (
+            <button type="button" onClick={() => onLam(tiep.ex)} className="inline-flex shrink-0 cursor-pointer items-center gap-2 rounded-2xl border-0 bg-white px-5 py-3 font-sans text-sm font-extrabold shadow-md transition-transform hover:-translate-y-0.5 motion-reduce:hover:translate-y-0" style={{ color: m.dam }}>
+              <Play size={14} className="fill-current" /> {o.xong.length ? tr("Làm bài tiếp theo", "Exercice suivant", "Next exercise") : tr("Làm bài đầu tiên", "Premier exercice", "First exercise")}
+            </button>
+          )}
+        </div>
+        {ds.length > 0 && (
+          <div className="mt-4">
+            <DaiBai ds={ds} />
+            <p className="m-0 mt-2 text-sm font-semibold text-white/90">
+              {o.coTheLam.length
+                ? tr(`Đã làm ${o.xong.length} trên ${o.coTheLam.length} bài${pct !== null ? `, trung bình ${pct}%` : ""}`, `${o.xong.length} exercices faits sur ${o.coTheLam.length}${pct !== null ? `, moyenne ${pct} %` : ""}`, `${o.xong.length} of ${o.coTheLam.length} exercises done${pct !== null ? `, average ${pct}%` : ""}`)
+                : tr(`${o.phi.length} bài VIP`, `${o.phi.length} exercices VIP`, `${o.phi.length} VIP exercises`)}
+            </p>
+          </div>
+        )}
       </header>
 
       {o.buoc === "xong" && (
         <div className="mb-4 flex flex-wrap items-center gap-3 rounded-2xl bg-ok-soft px-4 py-3">
           <Sparkles size={18} className="shrink-0 text-ok" />
           <span className="min-w-[10rem] flex-1 text-sm font-bold text-ok">{tr("Bạn đã đạt kỹ năng này.", "Compétence validée.", "You've passed this skill.")}</span>
-          {sau && <button type="button" onClick={() => onMoKyNho(sau, m)} className="inline-flex cursor-pointer items-center gap-1 rounded-xl border-0 bg-ok px-3 py-2 font-sans text-sm font-bold text-white">{tr("Sang bước sau", "Étape suivante", "Next step")} <ArrowRight size={15} /></button>}
         </div>
       )}
       {/* Chỉ mời khi kỹ năng này THẬT SỰ có bài VIP đang khoá: không bán thứ chưa soạn. */}
-      {!laVip && o.phi.length > 0 && (o.buoc === "xong" || o.buoc === "vip") && (
+      {!laVip && o.phi.length > 0 && (
         <div className="mb-4 flex flex-wrap items-center gap-3 rounded-2xl bg-warn-soft px-4 py-3">
           <Crown size={18} className="shrink-0 text-warn" />
           <span className="min-w-[10rem] flex-1 text-sm font-bold text-warn">
-            {o.buoc === "xong"
-              ? tr(`Còn ${o.phi.length} bài VIP để luyện sâu và nhớ lâu hơn.`, `Encore ${o.phi.length} ex. VIP pour approfondir et mieux retenir.`, `${o.phi.length} more VIP ex. to go deeper and remember longer.`)
-              : tr("Kỹ năng này hiện chỉ có bài VIP. Bạn vẫn sang được bước sau.", "Cette compétence n'a pour l'instant que des exercices VIP. Vous pouvez quand même continuer.", "This skill only has VIP exercises for now. You can still move on.")}
+            {o.buoc === "vip"
+              ? tr("Kỹ năng này hiện chỉ có bài VIP. Bạn vẫn sang được bước sau.", "Cette compétence n'a pour l'instant que des exercices VIP. Vous pouvez quand même continuer.", "This skill only has VIP exercises for now. You can still move on.")
+              : tr(`VIP mở thêm ${o.phi.length} bài để luyện sâu và nhớ lâu hơn. Không có vẫn đi tiếp được.`, `VIP ouvre ${o.phi.length} exercices de plus pour approfondir. Vous pouvez continuer sans.`, `VIP unlocks ${o.phi.length} more exercises. You can continue without them.`)}
           </span>
           <button type="button" onClick={onMuaVip} className="inline-flex cursor-pointer items-center gap-1 rounded-xl border-0 bg-primary px-3 py-2 font-sans text-sm font-bold text-on-primary"><Crown size={15} /> {tr("Mở VIP", "Passer VIP", "Go VIP")}</button>
         </div>
@@ -210,37 +333,54 @@ export function ChiTietKyNho({ ma, exercises, hist, biKhoa, onBack, onMoKyNho, r
         </p>
       )}
 
-      {ds.length === 0 ? (
-        <div className="flex flex-col items-center rounded-3xl border border-solid border-line bg-surface px-6 py-12 text-center">
-          <Clock size={38} strokeWidth={1.5} className="mb-3 text-soft" />
-          <p className="m-0 text-lg font-extrabold text-ink">{tr("Bài tập đang được soạn", "Exercices en préparation", "Exercises are being prepared")}</p>
-          <p className="m-0 mt-1 max-w-md text-sm text-soft">{tr("Kỹ năng này chưa có bài nên không chặn đường của bạn. Bạn có thể sang bước khác.", "Cette compétence n'a pas encore d'exercice : elle ne bloque pas votre parcours.", "This skill has no exercises yet, so it doesn't block your path.")}</p>
+      <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_300px]">
+        <div className="min-w-0">
+          {ds.length === 0 ? (
+            <div className="flex flex-col items-center rounded-3xl border border-solid border-line bg-surface px-6 py-12 text-center">
+              <Clock size={38} strokeWidth={1.5} className="mb-3 text-soft" />
+              <p className="m-0 text-lg font-extrabold text-ink">{tr("Bài tập đang được soạn", "Exercices en préparation", "Exercises are being prepared")}</p>
+              <p className="m-0 mt-1 max-w-md text-sm text-soft">{tr("Kỹ năng này chưa có bài nên không chặn đường của bạn. Bạn có thể sang bước khác.", "Cette compétence n'a pas encore d'exercice : elle ne bloque pas votre parcours.", "This skill has no exercises yet, so it doesn't block your path.")}</p>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-5">
+              {nhom.map(([k, ten, moTa, bai]) => (
+                <section key={k}>
+                  <h3 className="m-0 text-lg font-extrabold text-ink">{ten}</h3>
+                  <p className="m-0 mb-2 text-sm text-soft">{moTa}</p>
+                  <ol className="m-0 list-none divide-x-0 divide-y divide-solid divide-line overflow-hidden rounded-2xl border border-solid border-line bg-surface p-0">
+                    {bai.map(({ ex, tt }) => (
+                      <HangBai key={ex.id} ex={ex} tt={tt} stt={ds.findIndex((b) => b.ex.id === ex.id) + 1} hist={hist} lam={onLam} taiLieu={onTaiLieu} mua={onMua} doiXp={onDoiXp} dinhGia={dinhGia} />
+                    ))}
+                  </ol>
+                </section>
+              ))}
+            </div>
+          )}
+          {o.bai.length < o.kn.duKien && (
+            <p className="m-0 mt-3 text-sm text-soft">{tr(`Đang có ${o.bai.length} bài. Kế hoạch ${o.kn.duKien} bài: ${o.kn.mienPhi} miễn phí, ${o.kn.duKien - o.kn.mienPhi} VIP.`, `${o.bai.length} ex. disponibles. Prévu : ${o.kn.duKien}, dont ${o.kn.mienPhi} gratuits et ${o.kn.duKien - o.kn.mienPhi} VIP.`, `${o.bai.length} ex. available. Planned: ${o.kn.duKien}, ${o.kn.mienPhi} free and ${o.kn.duKien - o.kn.mienPhi} VIP.`)}</p>
+          )}
         </div>
-      ) : (
-        <ol className="m-0 flex list-none flex-col gap-4 p-0">
-          {ds.map(({ ex, tt }, n) => (
-            <li key={ex.id} className="flex gap-3">
-              <span className={`mt-3 grid h-8 w-8 shrink-0 place-items-center rounded-full text-sm font-extrabold ${tt === "xong" ? "bg-ok text-white" : tt === "tiepTheo" ? "bg-primary text-on-primary" : tt === "phi" ? "bg-warn-soft text-warn" : "bg-surface2 text-soft"}`}>
-                {tt === "xong" ? <Check size={16} strokeWidth={3} /> : tt === "khoa" ? <Lock size={14} /> : tt === "phi" ? <Crown size={15} /> : n + 1}
-              </span>
-              <div className="min-w-0 max-w-sm flex-1">
-                {tt === "khoa" ? (
-                  <div className="rounded-2xl border border-dashed border-line-strong bg-surface px-4 py-4">
-                    <p className="m-0 text-sm font-bold text-soft">{ex.title}</p>
-                    <p className="m-0 mt-0.5 text-xs text-soft">{tr("Làm xong bài trước để mở bài này", "Terminez l'exercice précédent pour l'ouvrir", "Finish the previous exercise to unlock this one")}</p>
-                  </div>
-                ) : (<>
-                  {ex.vong && ex.vong !== "hoc" && <p className="m-0 mb-1 text-xs font-bold text-soft">{ex.vong === "on" ? tr("Vòng ôn", "Révision", "Review") : tr("Vòng chốt: từ 85% là nắm chắc", "Bilan : 85 % pour maîtriser", "Final check: 85% to master")}</p>}
-                  {renderThe(ex)}
-                </>)}
-              </div>
-            </li>
-          ))}
-        </ol>
-      )}
 
-      {o.bai.length < o.kn.duKien && (
-        <p className="m-0 mt-4 text-center text-xs text-soft">{tr(`Đang có ${o.bai.length} bài. Kế hoạch ${o.kn.duKien} bài: ${o.kn.mienPhi} miễn phí, ${o.kn.duKien - o.kn.mienPhi} VIP.`, `${o.bai.length} ex. disponibles. Prévu : ${o.kn.duKien}, dont ${o.kn.mienPhi} gratuits et ${o.kn.duKien - o.kn.mienPhi} VIP.`, `${o.bai.length} ex. available. Planned: ${o.kn.duKien}, ${o.kn.mienPhi} free and ${o.kn.duKien - o.kn.mienPhi} VIP.`)}</p>
+        {ghi && (
+          <aside className="rounded-2xl border border-solid border-line bg-surface p-4 lg:sticky lg:top-4">
+            <h3 className="m-0 flex items-center gap-2 text-base font-extrabold text-ink"><Lightbulb size={17} className="text-warn" /> {tr("Trước khi làm", "Avant de commencer", "Before you start")}</h3>
+            <dl className="m-0 mt-3 flex flex-col gap-3 text-sm leading-relaxed">
+              {[[tr("Cần có", "Il faut connaître", "You need"), ghi.can], [tr("Lưu ý", "Attention", "Note"), ghi.luu], [tr("Lỗi hay mắc", "Erreur fréquente", "Common mistake"), ghi.loi], [tr("Mẹo", "Astuce", "Tip"), ghi.meo]].map(([t, n]) => (
+                <div key={t}>
+                  <dt className="font-bold text-ink">{t}</dt>
+                  <dd className="m-0 text-soft">{n}</dd>
+                </div>
+              ))}
+            </dl>
+          </aside>
+        )}
+      </div>
+
+      {(truoc || sau) && (
+        <nav aria-label={tr("Kỹ năng khác", "Autres compétences", "Other skills")} className="mt-6 flex gap-3">
+          {truoc ? <NutBuoc b={truoc} huong="truoc" /> : <span className="flex-1" />}
+          {sau ? <NutBuoc b={sau} huong="sau" /> : <span className="flex-1" />}
+        </nav>
       )}
     </div>
   );

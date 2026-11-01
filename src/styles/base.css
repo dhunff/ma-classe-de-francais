@@ -208,7 +208,9 @@ body {
 /* Luyện theo trình độ (01/11): nhịp sáng ở bước đang học. */
 @keyframes mcfLtNhip { 0%,100% { box-shadow: 0 0 0 0 rgb(var(--mcf-primary-rgb, 37 99 235) / .35); } 50% { box-shadow: 0 0 0 7px rgb(var(--mcf-primary-rgb, 37 99 235) / 0); } }
 .mcf-lt-nhip { animation: mcfLtNhip 2s ease-in-out infinite; }
-@media (prefers-reduced-motion: reduce) { .mcf-lt-nhip { animation: none; } }
+@keyframes mcfLtVach { 0%,100% { opacity: 1; } 50% { opacity: .45; } }
+.mcf-lt-vach { animation: mcfLtVach 1.8s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .mcf-lt-nhip, .mcf-lt-vach { animation: none; } }
 /* Bản đồ Lộ trình (09/10): đường tự vẽ, nút nảy vào, vòng sáng màn hiện tại. */
 @keyframes mcfVeDuong { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
 .mcf-ve-duong { stroke-dasharray: 1; stroke-dashoffset: 1; animation: mcfVeDuong 1.2s .2s ease-out forwards; }

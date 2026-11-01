@@ -703,7 +703,8 @@ function LuyenCapThu() {
   const [cap, setCap] = useState("B1");
   const [ma, setMa] = useState(null);
   const [baoKhoa, setBaoKhoa] = useState(null);
-  const ids = Object.values(KY_NANG).flatMap((c) => Object.values(c).flat()).flatMap((k) => k.bai.map((id) => ({ id, level: k.ma.slice(0, 2), title: "Bài mẫu " + k.ma + " · " + id.slice(-4), questions: [] })));
+  const ids = Object.values(KY_NANG).flatMap((c) => Object.values(c).flat()).flatMap((k) => k.bai.map((id) => ({ id, level: k.ma.slice(0, 2), title: "Écoute " + k.ma.slice(0, 2) + " : bài mẫu " + id.slice(-4), questions: [{}, {}, {}, {}, {}], price: 19000, vong: "hoc" })));
+  for (const [i, v] of [[1, "on"]]) { const e = ids.find((x) => x.id === KY_NANG.B1.CO[1].bai[i]); if (e) e.vong = v; }
   const b1 = KY_NANG.B1;
   const hist = {
     [b1.CO[0].bai[0]]: { best: 4, max: 4, tries: 1, at: 2 }, [b1.CO[0].bai[1]]: { best: 4, max: 5, tries: 1, at: 2 },
@@ -711,10 +712,9 @@ function LuyenCapThu() {
     [b1.CE[0].bai[0]]: { best: 1, max: 1, tries: 1, at: 1 },
   };
   const biKhoa = (ex) => ex.id === b1.CE[1].bai[0];
-  const the = (ex) => <div className="rounded-2xl border border-solid border-line bg-surface p-4 text-sm font-bold text-ink">{ex.title}{hist[ex.id] ? " · đã làm" : ""}</div>;
   return (
     <div className="mx-auto max-w-5xl p-4">
-      {ma ? <ChiTietKyNho ma={ma} exercises={ids} hist={hist} biKhoa={biKhoa} onBack={() => setMa(null)} onMoKyNho={(o) => setMa(o.kn.ma)} renderThe={the} laVip={false} onMuaVip={() => {}} />
+      {ma ? <ChiTietKyNho ma={ma} exercises={ids} hist={hist} biKhoa={biKhoa} onBack={() => setMa(null)} onMoKyNho={(o) => setMa(o.kn.ma)} laVip={false} onMuaVip={() => {}} onLam={() => {}} onTaiLieu={() => {}} onMua={() => {}} onDoiXp={() => {}} dinhGia={(g) => `${g} đ`} />
         : <LuyenTheoCap cap={cap} capHoSo="B1" onDoiCap={setCap} exercises={ids} hist={hist} biKhoa={biKhoa} canhBao={baoKhoa}
             onMoKyNho={(o) => (o.buoc === "khoa" ? setBaoKhoa("Làm xong bước trước để mở bước này.") : setMa(o.kn.ma))} />}
     </div>
