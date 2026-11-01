@@ -704,6 +704,8 @@ function LuyenCapThu() {
   const [cap, setCap] = useState("B1");
   const [ma, setMa] = useState(null);
   const [baoKhoa, setBaoKhoa] = useState(null);
+  const [vipThu, setVipThu] = useState(false);
+  const moBuoc = (o) => (o.buoc === "khoa" ? setBaoKhoa("Làm xong bước trước để mở bước này.") : (setBaoKhoa(null), setMa(o.kn.ma)));
   const ids = Object.values(KY_NANG).flatMap((c) => Object.values(c).flat()).flatMap((k) => k.bai.map((id) => ({ id, level: k.ma.slice(0, 2), title: "Écoute " + k.ma.slice(0, 2) + " : bài mẫu " + id.slice(-4), questions: [{}, {}, {}, {}, {}], price: 19000, vong: "hoc" })));
   for (const [i, v] of [[1, "on"]]) { const e = ids.find((x) => x.id === KY_NANG.B1.CO[1].bai[i]); if (e) e.vong = v; }
   const b1 = KY_NANG.B1;
@@ -721,10 +723,11 @@ function LuyenCapThu() {
   const the = (ex) => <div className="flex h-44 items-end rounded-3xl border border-solid border-line bg-surface p-4 text-sm font-bold text-ink">{ex.title}</div>;
   return (
     <div className="mx-auto max-w-5xl p-4">
+      <label className="mb-4 flex items-center gap-2 text-sm font-bold text-ink"><input type="checkbox" checked={vipThu} onChange={(e) => setVipThu(e.target.checked)} /> Xem như VIP</label>
       {ma && <div className="mb-4"><MeoKyNho ma={ma} /></div>}
-      {ma ? <ChiTietKyNho ma={ma} exercises={ids} hist={hist} biKhoa={biKhoa} onBack={() => setMa(null)} onMoKyNho={(o) => setMa(o.kn.ma)} laVip={false} onMuaVip={() => {}} onLam={() => {}} renderThe={the} />
-        : <LuyenTheoCap cap={cap} capHoSo="B1" onDoiCap={setCap} exercises={ids} hist={hist} biKhoa={biKhoa} canhBao={baoKhoa} onThanhTuu={() => setThanhTuu(true)}
-            onMoKyNho={(o) => (o.buoc === "khoa" ? setBaoKhoa("Làm xong bước trước để mở bước này.") : setMa(o.kn.ma))} />}
+      {ma ? <ChiTietKyNho ma={ma} exercises={ids} hist={hist} biKhoa={biKhoa} onBack={() => { setBaoKhoa(null); setMa(null); }} onMoKyNho={moBuoc} canhBao={baoKhoa} laVip={vipThu} onMuaVip={() => {}} giaVip="99.000 ₫" onLam={() => {}} renderThe={the} />
+        : <LuyenTheoCap cap={cap} capHoSo="B1" onDoiCap={setCap} exercises={ids} hist={hist} biKhoa={biKhoa} canhBao={baoKhoa} laVip={vipThu} onMuaVip={() => {}} giaVip="99.000 ₫" onThanhTuu={() => setThanhTuu(true)}
+            onMoKyNho={moBuoc} />}
     </div>
   );
 }

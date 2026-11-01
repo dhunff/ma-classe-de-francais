@@ -47,6 +47,17 @@ ca("chưa có lượt nào thì chưa tính xong", tinhKyNho({ ...ds[0], bai: []
 ca("luôn có đường đi khi còn bài chưa đạt", tongCap("A1", ex, {}).tiepTheo?.kn.ma === "A1-CO-1");
 ca("xong hết thì không còn bước tiếp theo", tongCap("A1", ex, Object.assign({}, ...ex.map((e) => xong(e.id)))).tiepTheo === null);
 
+/* Đặc quyền VIP: không phải mở kỹ năng nhỏ lần lượt. */
+const buocVip = (hist) => duongKyLon("A1", "CO", ex, hist, undefined, true).map((o) => o.buoc);
+ca("VIP: không còn bước khoá", !buocVip({}).includes("khoa"));
+ca("VIP: các bước sau mở sẵn, bước gợi ý vẫn là một", buocVip({}).join().startsWith("hienTai,tuDo,tuDo") && buocVip({}).filter((b) => b === "hienTai").length === 1);
+ca("VIP: đạt bước sau khi chưa làm bước trước", buocVip(xong("x2")).join().startsWith("hienTai,tuDo,xong"));
+ca("VIP: truyền qua tongCap", tongCap("A1", ex, {}, undefined, true).cacKy.find((k) => k.ky === "CO").duong[1].buoc === "tuDo");
+ca("VIP: bước gợi ý vẫn bắt đầu từ đầu đường", tongCap("A1", ex, {}, undefined, true).tiepTheo?.kn.ma === "A1-CO-1");
+ca("VIP: học sinh thường vẫn bị khoá", buoc({}).includes("khoa") && !buoc({}).includes("tuDo"));
+const lamNhay = xong(ex[ex.length - 1].id);
+ca("VIP: nhảy cóc không tính là đủ chứng nhận", !tinhKyLon(duongKyLon("A1", "CO", ex, lamNhay, undefined, true), lamNhay).du);
+
 /* Thứ tự bài trong kỹ năng nhỏ. */
 const hai = [{ id: "a" }, { id: "b" }, { id: "c" }];
 const o2 = { bai: hai };

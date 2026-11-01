@@ -1,7 +1,7 @@
 /* Tiến trình Luyện tập theo trình độ (01/11/2026). Hàm thuần, không gọi mạng.
  *
  * Trình độ mở tự do: học sinh chọn. Bốn kỹ năng lớn đi song song. Trong mỗi kỹ
- * năng lớn, kỹ năng nhỏ mở lần lượt; trong kỹ năng nhỏ, bài mở lần lượt.
+ * năng lớn, kỹ năng nhỏ mở lần lượt (VIP vào thẳng); trong kỹ năng nhỏ, bài mở lần lượt.
  *
  * ══ KHÔNG ĐƯỢC CÓ NGÕ CỤT ══
  * Phần lớn kỹ năng nhỏ chưa có bài, và một số bài trả phí. Nếu những chỗ đó tính là
@@ -10,7 +10,8 @@
  *
  * ══ VIP (01/11) ══ Không chia theo trình độ. Học sinh thường đi hết đường bằng bài
  * nền; VIP là phần luyện sâu. Hàng rào thật vẫn là cờ isPremium của từng bài +
- * can_open_exercise ở máy chủ, file này chỉ đọc `biKhoa`. */
+ * can_open_exercise ở máy chủ, file này chỉ đọc `biKhoa`. Đặc quyền của VIP: không phải
+ * mở kỹ năng nhỏ lần lượt. Thứ tự này chỉ ở giao diện, máy chủ không chặn theo bước. */
 import { KY_NANG } from "../content/luyenTap/kyNang.js";
 
 export const CAP_DO = Object.keys(KY_NANG);
@@ -45,10 +46,11 @@ export function tinhKyNho(kn, exercises, hist, biKhoa = () => false) {
   return { kn, bai, coTheLam, xong, tb, muc, phi: bai.filter(biKhoa) };
 }
 
-/* Đường đi trong một kỹ năng lớn. buoc: "xong" | "hienTai" | "khoa" | "sapCo" | "vip".
+/* Đường đi trong một kỹ năng lớn. buoc: "xong" | "hienTai" | "khoa" | "tuDo" | "sapCo" | "vip".
    "vip": mọi bài đang có đều khoá phí, mở xem được nhưng không chặn bước sau.
+   "tuDo": bước đáng lẽ khoá nhưng học sinh là VIP nên mở sẵn.
    Chỉ MỘT bước hienTai: bước đầu tiên có bài mà chưa đạt. */
-export function duongKyLon(cap, ky, exercises, hist, biKhoa) {
+export function duongKyLon(cap, ky, exercises, hist, biKhoa, laVip = false) {
   let daGapHienTai = false;
   return KY_NANG[cap][ky].map((kn) => {
     const o = tinhKyNho(kn, exercises, hist, biKhoa);
@@ -56,7 +58,7 @@ export function duongKyLon(cap, ky, exercises, hist, biKhoa) {
     if (o.muc === "trong") buoc = o.bai.length ? "vip" : "sapCo";
     else if (o.muc === "dat") buoc = "xong";
     else if (!daGapHienTai) { buoc = "hienTai"; daGapHienTai = true; }
-    else buoc = "khoa";
+    else buoc = laVip ? "tuDo" : "khoa";
     return { ...o, buoc };
   });
 }
@@ -73,8 +75,8 @@ export function dsBaiKyNho(o, hist, biKhoa = () => false) {
   });
 }
 
-export function tongCap(cap, exercises, hist, biKhoa) {
-  const cacKy = KY_LON.map((ky) => ({ ky, duong: duongKyLon(cap, ky, exercises, hist, biKhoa) }));
+export function tongCap(cap, exercises, hist, biKhoa, laVip = false) {
+  const cacKy = KY_LON.map((ky) => ({ ky, duong: duongKyLon(cap, ky, exercises, hist, biKhoa, laVip) }));
   const moi = cacKy.flatMap((k) => k.duong);
   const coBai = moi.filter((o) => o.muc !== "trong");
   return {

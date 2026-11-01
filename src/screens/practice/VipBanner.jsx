@@ -22,7 +22,7 @@ export default function VipBanner({ vipDen, toanQuyen, onMua, t }) {
           {con ? t("vip.active", { ngay: new Date(vipDen).toLocaleDateString("vi-VN") }) : t("vip.title", { gia: fmtPrice(VIP.gia) })}
         </p>
         <ul className="m-0 mt-1 flex list-none flex-wrap gap-x-4 gap-y-1 p-0 text-sm text-ink">
-          {["vip.b1", "vip.b2", "vip.b3"].map((k) => (
+          {["vip.b1", "vip.b2", "vip.b4", "vip.b3"].map((k) => (
             <li key={k} className="inline-flex items-center gap-1.5"><Check size={14} className="text-ok" />{t(k)}</li>
           ))}
         </ul>

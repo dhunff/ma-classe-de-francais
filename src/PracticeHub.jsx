@@ -353,7 +353,10 @@ ${r.error?.message ?? ""}`); return; }
       onFinish={(score, max) => saveHist(ex.id, score, max)} />;
   }
 
-  /* Bấm một bước trên đường đi. Bước khoá không mở, nhưng nói rõ phải làm gì trước. */
+  const muaVip = () => { if (isGuest) return requireLogin(); setPayFor(goiVip(t("vip.pay_title"))); };
+
+  /* Bấm một bước trên đường đi. Bước khoá không mở, nhưng nói rõ phải làm gì trước.
+     VIP không bao giờ gặp bước khoá: duongKyLon trả "tuDo" thay cho "khoa". */
   const moKyNho = (o) => {
     if (o.buoc === "khoa") {
       const f = timKyNho(o.kn.ma);
@@ -380,9 +383,9 @@ ${r.error?.message ?? ""}`); return; }
           onBuy={() => { const e = doiXp; setDoiXp(null); setPayFor(e); }}
           onVip={() => { setDoiXp(null); setPayFor(goiVip(t("vip.pay_title"))); }}
           onDone={(soDu) => { setXp(soDu); setDoiXp(null); baoXpDoi(); sauKhiMoKhoa(); }} />}
-        <ChiTietKyNho ma={view.ma} exercises={exercises} hist={hist} biKhoa={biKhoa} laVip={fullAccess}
-          onMuaVip={() => { if (isGuest) return requireLogin(); setPayFor(goiVip(t("vip.pay_title"))); }} giaVip={fmtPrice(VIP.gia)}
-          onBack={() => setView({ page: "home" })} onMoKyNho={moKyNho}
+        <ChiTietKyNho ma={view.ma} exercises={exercises} hist={hist} biKhoa={biKhoa} laVip={fullAccess} canhBao={canhBaoLt}
+          onMuaVip={muaVip} giaVip={fmtPrice(VIP.gia)}
+          onBack={() => { setCanhBaoLt(null); setView({ page: "home" }); }} onMoKyNho={moKyNho}
           onLam={(ex) => { if (isGuest) return requireLogin(); setView({ page: "quiz", kyNho: view.ma, exId: ex.id }); }}
           renderThe={(ex) => (
             <ExerciseCard ex={ex} premium={isPremium(ex)} locked={biKhoa(ex)} best={hist[ex.id]} t={t}
@@ -1013,7 +1016,7 @@ ${r.error?.message ?? ""}`); return; }
         <ThanhTuu exercises={exercises} hist={hist} biKhoa={biKhoa} ten={name} />
       ) : !teacher && !thuVien ? (
         <LuyenTheoCap cap={capMacDinh(capChon, capHoSo, exercises, hist)} capHoSo={capHoSo} onDoiCap={doiCap}
-          exercises={exercises} hist={hist} biKhoa={biKhoa} onMoKyNho={moKyNho} canhBao={canhBaoLt} laVip={fullAccess} onThanhTuu={() => setThuVien("thanhTuu")} />
+          exercises={exercises} hist={hist} biKhoa={biKhoa} onMoKyNho={moKyNho} canhBao={canhBaoLt} laVip={fullAccess} onMuaVip={muaVip} giaVip={fmtPrice(VIP.gia)} onThanhTuu={() => setThuVien("thanhTuu")} />
       ) : (
       <div id="tour-xp-grid" className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
         {CATS.map((cat, i) => {

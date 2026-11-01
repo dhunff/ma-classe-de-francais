@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { Headphones, BookOpen, PenLine, Mic, Check, Lock, Play, Clock, ArrowRight, ChevronLeft, Sparkles, RotateCcw, Crown, Flag, ListChecks, AlertTriangle, XCircle, Lightbulb, Award } from "lucide-react";
+import { Headphones, BookOpen, PenLine, Mic, Check, Lock, LockOpen, Play, Clock, ArrowRight, ChevronLeft, Sparkles, RotateCcw, Crown, Flag, ListChecks, AlertTriangle, XCircle, Lightbulb, Award } from "lucide-react";
 import { tr } from "../../shared/i18n.jsx";
 import { Leon } from "../../shared/leon.jsx";
 import { phat } from "../../shared/amThanh.js";
@@ -36,6 +36,9 @@ function NhanBuoc({ o }) {
     return <span className="text-xs font-bold text-primary">{o.xong.length ? tr(`Đang luyện · ${o.xong.length}/${o.coTheLam.length} bài`, `En cours · ${o.xong.length}/${o.coTheLam.length}`, `In progress · ${o.xong.length}/${o.coTheLam.length}`) : tr("Học tiếp ở đây", "Continuez ici", "Continue here")}</span>;
   }
   if (o.buoc === "khoa") return <span className="text-xs font-semibold text-soft">{tr(`${o.bai.length} bài · chờ bước trước`, `${o.bai.length} ex. · après l'étape précédente`, `${o.bai.length} ex. · after the previous step`)}</span>;
+  if (o.buoc === "tuDo") {
+    return <span className="text-xs font-bold text-warn">{o.xong.length ? tr(`Đang luyện · ${o.xong.length}/${o.coTheLam.length} bài`, `En cours · ${o.xong.length}/${o.coTheLam.length}`, `In progress · ${o.xong.length}/${o.coTheLam.length}`) : tr(`${o.bai.length} bài · VIP mở sẵn`, `${o.bai.length} ex. · ouvert par le VIP`, `${o.bai.length} ex. · open with VIP`)}</span>;
+  }
   if (o.buoc === "vip") return <span className="text-xs font-bold text-warn">{tr(`${o.phi.length} bài VIP · không chặn đường đi`, `${o.phi.length} ex. VIP · n'empêche pas d'avancer`, `${o.phi.length} VIP ex. · doesn't block your path`)}</span>;
   return <span className="text-xs font-semibold text-soft">{tr(`Đang soạn bài · kế hoạch ${o.kn.duKien} bài`, `En préparation · ${o.kn.duKien} ex. prévus`, `Being prepared · ${o.kn.duKien} ex. planned`)}</span>;
 }
@@ -46,6 +49,7 @@ function DauBuoc({ o, stt, dam }) {
   if (o.buoc === "xong") return <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-ok text-white"><Check size={16} strokeWidth={3} /></span>;
   if (o.buoc === "hienTai") return <span className="mcf-lt-nhip grid h-8 w-8 shrink-0 place-items-center rounded-full text-white" style={{ background: dam }}><Play size={13} className="ml-0.5 fill-current" /></span>;
   if (o.buoc === "khoa") return <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-surface2 text-soft"><Lock size={14} /></span>;
+  if (o.buoc === "tuDo") return <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-warn-soft text-warn"><LockOpen size={14} /></span>;
   if (o.buoc === "vip") return <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-warn-soft text-warn"><Crown size={15} /></span>;
   return <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full border border-dashed border-line-strong bg-surface text-xs font-bold text-soft">{stt}</span>;
 }
@@ -98,9 +102,29 @@ function TheKyLon({ ky, m, duong, hist, onMo, onThanhTuu }) {
   );
 }
 
+/* Báo bước đang khoá, kèm lối vào thẳng bằng VIP. Dùng ở trang trình độ và trang kỹ năng.
+   Bước vừa bấm có thể ở cuối trang, nên tự cuộn tới để học sinh thấy được. */
+function CanhBaoKhoa({ noiDung, onMuaVip, giaVip }) {
+  const ref = useRef(null);
+  useEffect(() => {
+    const giam = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    ref.current?.scrollIntoView({ block: "center", behavior: giam ? "auto" : "smooth" });
+  }, [noiDung]);
+  return (
+    <div ref={ref} role="status" className="mb-4 flex flex-wrap items-center gap-3 rounded-2xl bg-warn-soft px-4 py-3">
+      <Lock size={18} className="shrink-0 text-warn" />
+      <p className="m-0 min-w-[12rem] flex-1 text-sm font-semibold text-warn">
+        {noiDung}
+        <span className="block font-medium text-ink">{tr("Hoặc mở VIP để vào thẳng mọi kỹ năng nhỏ.", "Ou passez VIP pour accéder directement à toutes les sous-compétences.", "Or go VIP to open every sub-skill right away.")}</span>
+      </p>
+      <NutVip onClick={onMuaVip} gia={giaVip} />
+    </div>
+  );
+}
+
 /* Trang một trình độ: chọn trình độ, bước tiếp theo, bốn kỹ năng lớn. */
-export function LuyenTheoCap({ cap, capHoSo, onDoiCap, exercises, hist, biKhoa, onMoKyNho, canhBao, laVip, onThanhTuu }) {
-  const moiCap = useMemo(() => Object.fromEntries(CAP_DO.map((c) => [c, tongCap(c, exercises, hist, biKhoa)])), [exercises, hist, biKhoa]);
+export function LuyenTheoCap({ cap, capHoSo, onDoiCap, exercises, hist, biKhoa, onMoKyNho, canhBao, laVip, onMuaVip, giaVip, onThanhTuu }) {
+  const moiCap = useMemo(() => Object.fromEntries(CAP_DO.map((c) => [c, tongCap(c, exercises, hist, biKhoa, laVip)])), [exercises, hist, biKhoa, laVip]);
   const tong = moiCap[cap];
   const KYN = KY();
   const tiep = tong.tiepTheo;
@@ -132,11 +156,11 @@ export function LuyenTheoCap({ cap, capHoSo, onDoiCap, exercises, hist, biKhoa, 
       {!laVip && (
         <p className="m-0 mb-4 flex items-start gap-2 text-xs font-semibold text-soft">
           <Crown size={14} className="mt-px shrink-0 text-warn" />
-          {tr("Miễn phí: bài nền của mọi kỹ năng ở mọi trình độ. VIP: thêm bài luyện sâu để nhớ lâu và sát đề thi.", "Gratuit : les exercices de base de chaque compétence, à tous les niveaux. VIP : des exercices en plus pour mieux retenir et coller à l'examen.", "Free: core exercises for every skill at every level. VIP: extra practice to remember longer and match the exam.")}
+          {tr("Miễn phí: bài nền của mọi kỹ năng ở mọi trình độ, mở lần lượt từng bước. VIP: vào thẳng mọi kỹ năng nhỏ, thêm bài luyện sâu để nhớ lâu và sát đề thi.", "Gratuit : les exercices de base de chaque compétence, à tous les niveaux, étape par étape. VIP : accès direct à toutes les sous-compétences et exercices en plus pour mieux retenir et coller à l'examen.", "Free: core exercises for every skill at every level, one step at a time. VIP: open any sub-skill right away, plus extra practice to remember longer and match the exam.")}
         </p>
       )}
 
-      {canhBao && <p role="status" className="mb-4 flex items-start gap-2 rounded-2xl bg-warn-soft px-4 py-3 text-sm font-semibold text-warn"><Lock size={16} className="mt-0.5 shrink-0" /> {canhBao}</p>}
+      {canhBao && !laVip && <CanhBaoKhoa noiDung={canhBao} onMuaVip={onMuaVip} giaVip={giaVip} />}
 
       {tiep ? (
         <button id="tour-xp-start" type="button" onClick={() => onMoKyNho(tiep, kyTiep)}
@@ -295,11 +319,11 @@ function DauBai({ tt, stt, hang }) {
    đường dọc: cột trái là mốc thời gian, cột phải là bài. Trong mỗi vòng, bài trên đường đi
    đứng trước, bài VIP đứng sau. Thẻ chưa tới lượt vẫn nhìn thấy, nhưng che lại và nói rõ
    cần làm gì trước. */
-export function ChiTietKyNho({ ma, exercises, hist, biKhoa, onBack, onMoKyNho, laVip, onMuaVip, giaVip, onLam, renderThe }) {
+export function ChiTietKyNho({ ma, exercises, hist, biKhoa, onBack, onMoKyNho, canhBao, laVip, onMuaVip, giaVip, onLam, renderThe }) {
   const f = timKyNho(ma);
   if (!f) return null;
   const m = KY()[f.ky];
-  const duong = duongKyLon(f.cap, f.ky, exercises, hist, biKhoa);
+  const duong = duongKyLon(f.cap, f.ky, exercises, hist, biKhoa, laVip);
   const i = duong.findIndex((o) => o.kn.ma === ma);
   const o = duong[i];
   const ds = dsBaiKyNho(o, hist, biKhoa);
@@ -366,6 +390,7 @@ export function ChiTietKyNho({ ma, exercises, hist, biKhoa, onBack, onMoKyNho, l
         )}
       </header>
 
+      {canhBao && !laVip && <CanhBaoKhoa noiDung={canhBao} onMuaVip={onMuaVip} giaVip={giaVip} />}
       {o.buoc === "xong" && (
         <div className="mb-4 flex flex-wrap items-center gap-3 rounded-2xl bg-ok-soft px-4 py-3">
           <Sparkles size={18} className="shrink-0 text-ok" />
@@ -375,7 +400,9 @@ export function ChiTietKyNho({ ma, exercises, hist, biKhoa, onBack, onMoKyNho, l
       {o.xong.length > 0 && o.xong.length === o.coTheLam.length && o.buoc !== "xong" && (
         <p className="m-0 mb-4 flex items-start gap-2 rounded-2xl bg-warn-soft px-4 py-3 text-sm font-semibold text-warn">
           <RotateCcw size={16} className="mt-0.5 shrink-0" />
-          {tr(`Cần trung bình từ ${NGUONG_DAT * 100}% để sang bước sau. Xem lại lỗi rồi làm lại bài điểm thấp nhé.`, `Il faut ${NGUONG_DAT * 100} % de moyenne pour continuer. Revoyez vos erreurs et refaites l'exercice le plus faible.`, `You need a ${NGUONG_DAT * 100}% average to continue. Review your mistakes and retry your weakest exercise.`)}
+          {laVip
+            ? tr(`Cần trung bình từ ${NGUONG_DAT * 100}% để đạt kỹ năng này. Xem lại lỗi rồi làm lại bài điểm thấp nhé.`, `Il faut ${NGUONG_DAT * 100} % de moyenne pour valider cette compétence. Revoyez vos erreurs et refaites l'exercice le plus faible.`, `You need a ${NGUONG_DAT * 100}% average to pass this skill. Review your mistakes and retry your weakest exercise.`)
+            : tr(`Cần trung bình từ ${NGUONG_DAT * 100}% để sang bước sau. Xem lại lỗi rồi làm lại bài điểm thấp nhé.`, `Il faut ${NGUONG_DAT * 100} % de moyenne pour continuer. Revoyez vos erreurs et refaites l'exercice le plus faible.`, `You need a ${NGUONG_DAT * 100}% average to continue. Review your mistakes and retry your weakest exercise.`)}
         </p>
       )}
 
