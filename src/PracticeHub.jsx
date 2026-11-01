@@ -1273,6 +1273,8 @@ export function PracticeWorkspace({ ex, back, onFinish, soTu = false, chamBang =
   const moLuc = useRef(Date.now());
   const [diemMayChu, setDiemMayChu] = useState(null);  // { score, max } — điểm THẬT, xem chú thích dưới
   const [remaining, setRemaining] = useState(null);
+  /* Bài mẫu của câu viết tự do: học sinh không có `q.model` (migration 022), máy chủ chỉ trả sau khi nộp. */
+  const [baiMau, setBaiMau] = useState({});
   const [zen, setZen] = useState(false); // 🧘 chế độ tập trung
   const [imgZoom, setImgZoom] = useState(false); // 🔍 lightbox ảnh đề bài
   const answersRef = useRef(answers); answersRef.current = answers;
@@ -1286,6 +1288,14 @@ export function PracticeWorkspace({ ex, back, onFinish, soTu = false, chamBang =
   const soTruoc = useRef(0);
   useEffect(() => { if (soDaLam > soTruoc.current && !gradedRef.current) phat("bam"); soTruoc.current = soDaLam; }, [soDaLam]);
   useEffect(() => { if (remaining === 60) phat("sapHet"); }, [remaining]);
+  useEffect(() => {
+    const can = graded && ex ? ex.questions.filter((q) => q.type === "open" && !q.model) : [];
+    if (!can.length) return undefined;
+    let con = true;
+    Promise.all(can.map((q) => supabase.rpc("get_model_answer", { p_question: q.id }).then(({ data }) => [q.id, data], () => [q.id, null])))
+      .then((ds) => { if (con) setBaiMau(Object.fromEntries(ds)); });
+    return () => { con = false; };
+  }, [graded, ex?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ⏱ Đếm ngược (nếu có giới hạn thời gian) — tự chấm khi hết giờ
   useEffect(() => {
@@ -1550,10 +1560,10 @@ export function PracticeWorkspace({ ex, back, onFinish, soTu = false, chamBang =
         ) : q.type === "open" ? (
           <>
             <KhungViet value={a || ""} readOnly={!!graded} onChange={(html) => setAnswers({ ...answers, [q.id]: html })} />
-            {graded && q.model && (
+            {graded && (q.model || baiMau[q.id]) && (
               <div style={{ marginTop: 12, background: C.okSoft, border: `1.5px solid ${C.ok}55`, borderRadius: 12, padding: "12px 15px" }}>
                 <strong>{tr("Đáp án gợi ý:", "Réponse suggérée :", "Suggested answer:")}</strong>
-                <div style={{ marginTop: 4, fontSize: 14.5, fontStyle: "italic", lineHeight: 1.7 }}>{q.model}</div>
+                <div style={{ marginTop: 4, fontSize: 14.5, fontStyle: "italic", lineHeight: 1.7 }}>{q.model || baiMau[q.id]}</div>
               </div>
             )}
           </>

@@ -711,6 +711,8 @@ const BAI_THU = {
     { id: "c4", type: "qcm", prompt: "Le billet coûte…", options: ["2 €", "12 €", "20 €", "22 €"] },
     { id: "c5", type: "vf", prompt: "Le magasin ouvre le dimanche.", answer: 1 },
     { id: "c6", type: "fill", prompt: "Il arrive à ______ heures.", accepted: "huit" },
+    { id: "c7", type: "ordre", prompt: "Remettez les mots en ordre.", elements: [{ id: "a", texte: "J'aime" }, { id: "b", texte: "le thé" }, { id: "c", texte: "mais" }, { id: "d", texte: "je préfère" }, { id: "e", texte: "le café." }] },
+    { id: "c8", type: "open", prompt: "Écrivez votre message.", model: "Salut Thomas ! Samedi, c'est mon anniversaire." },
   ],
 };
 const BAI_DOC_THU = {

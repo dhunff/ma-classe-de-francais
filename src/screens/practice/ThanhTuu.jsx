@@ -104,7 +104,7 @@ export default function ThanhTuu({ exercises, hist, biKhoa, ten }) {
           </li>
         ))}
       </ul>
-      <p className="m-0 mb-6 mt-3 text-sm text-soft">{tr("Mỗi bài lấy điểm cao nhất, nên làm lại chỉ có thể lên hạng. Từ B trở lên là đạt. Viết và Nói chưa có điểm máy chấm nên ghi Hoàn thành, không xếp hạng.", "Chaque exercice compte pour sa meilleure note : refaire ne peut que faire monter. À partir de B, c'est validé. L'écrit et l'oral n'ont pas de note automatique : ils comptent comme terminés, sans rang.", "Each exercise counts its best score, so retrying can only raise your rank. B or above is a pass. Writing and speaking have no automatic score, so they show as completed without a rank.")}</p>
+      <p className="m-0 mb-6 mt-3 text-sm text-soft">{tr("Mỗi bài lấy điểm cao nhất, nên làm lại chỉ có thể lên hạng. Từ B trở lên là đạt. Bài viết tự do và bài nói chưa có điểm máy chấm nên ghi Hoàn thành, không xếp hạng.", "Chaque exercice compte pour sa meilleure note : refaire ne peut que faire monter. À partir de B, c'est validé. Les textes libres et l'oral n'ont pas de note automatique : ils comptent comme terminés, sans rang.", "Each exercise counts its best score, so retrying can only raise your rank. B or above is a pass. Free writing and speaking have no automatic score, so they show as completed without a rank.")}</p>
 
       <div className="flex flex-col gap-5">
         {moiCap.map((c) => {
