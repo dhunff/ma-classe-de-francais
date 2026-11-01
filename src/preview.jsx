@@ -698,6 +698,26 @@ const mockPendingTasks = [
     questions: qs(6), deadline: day(5), createdAt: hoursAgo(20) },
 ];
 
+/* Màn làm bài: chỉ nạp khi bấm xem vì PracticeHub chạm storageShim. Chấm bằng hàm giả,
+   không gọi máy chủ. Đủ dạng hay gặp: đáp án ngắn, đáp án dài, Đúng/Sai, điền từ. */
+const PracticeWorkspaceThu = React.lazy(() => import("./PracticeHub.jsx").then((m) => ({ default: m.PracticeWorkspace })));
+const BAI_THU = {
+  id: "thu-man-lam-bai", title: "Écoute A1 : quelle heure est-il ?", level: "A1", skills: ["Écoute"], skill: "Écoute", audioUrl: "/thu.mp3",
+  consigne: "<p>Écoutez le document, puis répondez aux questions.</p>",
+  questions: [
+    { id: "c1", type: "qcm", prompt: "Phrase 1 : la chambre…", options: ["5", "50", "15"] },
+    { id: "c2", type: "qcm", prompt: "Phrase 2 : le cours commence à…", options: ["19 h", "9 h", "10 h"] },
+    { id: "c3", type: "qcm", prompt: "Marie téléphone à son amie pour…", options: ["l'inviter à une fête d'anniversaire", "lui demander l'adresse de la gare", "annuler le rendez-vous de demain"] },
+    { id: "c4", type: "qcm", prompt: "Le billet coûte…", options: ["2 €", "12 €", "20 €", "22 €"] },
+    { id: "c5", type: "vf", prompt: "Le magasin ouvre le dimanche.", answer: 1 },
+    { id: "c6", type: "fill", prompt: "Il arrive à ______ heures.", accepted: "huit" },
+  ],
+};
+const chamThu = async (tl) => ({
+  score: 4, max: 6,
+  results: Object.fromEntries(BAI_THU.questions.map((q, i) => [q.id, { correct: i % 3 !== 1 && tl[q.id] != null, expected: q.options?.[1] ?? null }])),
+});
+
 /* Luyện theo trình độ: bài lấy theo id trong cây, lịch sử giả đủ các trạng thái
    (đạt, làm lại, đang làm, khoá phí). Dữ liệu giả chỉ sống ở trang này. */
 function LuyenCapThu() {
@@ -705,6 +725,7 @@ function LuyenCapThu() {
   const [ma, setMa] = useState(null);
   const [baoKhoa, setBaoKhoa] = useState(null);
   const [vipThu, setVipThu] = useState(false);
+  const [lamBai, setLamBai] = useState(false);
   const moBuoc = (o) => (o.buoc === "khoa" ? setBaoKhoa("Làm xong bước trước để mở bước này.") : (setBaoKhoa(null), setMa(o.kn.ma)));
   const ids = Object.values(KY_NANG).flatMap((c) => Object.values(c).flat()).flatMap((k) => k.bai.map((id) => ({ id, level: k.ma.slice(0, 2), title: "Écoute " + k.ma.slice(0, 2) + " : bài mẫu " + id.slice(-4), questions: [{}, {}, {}, {}, {}], price: 19000, vong: "hoc" })));
   for (const [i, v] of [[1, "on"]]) { const e = ids.find((x) => x.id === KY_NANG.B1.CO[1].bai[i]); if (e) e.vong = v; }
@@ -724,10 +745,14 @@ function LuyenCapThu() {
   return (
     <div className="mx-auto max-w-5xl p-4">
       <label className="mb-4 flex items-center gap-2 text-sm font-bold text-ink"><input type="checkbox" checked={vipThu} onChange={(e) => setVipThu(e.target.checked)} /> Xem như VIP</label>
+      <label className="mb-4 flex items-center gap-2 text-sm font-bold text-ink"><input type="checkbox" checked={lamBai} onChange={(e) => setLamBai(e.target.checked)} /> Xem màn làm bài</label>
+      {lamBai && <React.Suspense fallback={null}><PracticeWorkspaceThu ex={BAI_THU} back={() => setLamBai(false)} onFinish={() => {}} chamBang={chamThu} kyNho="A1-CO-1" /></React.Suspense>}
+      {lamBai ? null :      <>
       {ma && <div className="mb-4"><MeoKyNho ma={ma} /></div>}
       {ma ? <ChiTietKyNho ma={ma} exercises={ids} hist={hist} biKhoa={biKhoa} onBack={() => { setBaoKhoa(null); setMa(null); }} onMoKyNho={moBuoc} canhBao={baoKhoa} laVip={vipThu} onMuaVip={() => {}} giaVip="99.000 ₫" onLam={() => {}} renderThe={the} />
         : <LuyenTheoCap cap={cap} capHoSo="B1" onDoiCap={setCap} exercises={ids} hist={hist} biKhoa={biKhoa} canhBao={baoKhoa} laVip={vipThu} onMuaVip={() => {}} giaVip="99.000 ₫" onThanhTuu={() => setThanhTuu(true)}
             onMoKyNho={moBuoc} />}
+      </>}
     </div>
   );
 }

@@ -36,7 +36,7 @@ function AudioCard({ src }) {
   );
 }
 
-export default function SplitPane({ audioUrl, readingText, stickyTop = 8, children }) {
+export default function SplitPane({ audioUrl, readingText, stickyTop = 8, nen, dam, children }) {
   const hasMaterial = Boolean(audioUrl || readingText);
 
   if (!hasMaterial) {
@@ -50,7 +50,7 @@ export default function SplitPane({ audioUrl, readingText, stickyTop = 8, childr
   if (!readingText) {
     return (
       <div>
-        <AudioBar src={audioUrl} stickyTop={stickyTop} />
+        <AudioBar src={audioUrl} stickyTop={stickyTop} nen={nen} dam={dam} />
         <div className="grid items-start gap-4 xl:grid-cols-2">{children}</div>
       </div>
     );

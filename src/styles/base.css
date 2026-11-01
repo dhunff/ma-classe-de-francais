@@ -185,6 +185,8 @@ body {
 /* Màn chơi Lộ trình (09/10): chuyển câu, đúng/sai, pháo giấy, tim mất. */
 @keyframes mcfCauVao { from { opacity: 0; transform: translateX(36px) scale(.98); } to { opacity: 1; transform: none; } }
 .mcf-cau-vao { animation: mcfCauVao .42s cubic-bezier(.22,1,.36,1) both; }
+@keyframes mcfSong { 0%,100% { transform: scaleY(1); } 50% { transform: scaleY(.55); } }
+.mcf-song-chay > span { animation: mcfSong 1.1s ease-in-out infinite; animation-delay: calc(var(--i) * -70ms); }
 @keyframes mcfNay { 0% { transform: scale(1); } 40% { transform: scale(1.06); } 70% { transform: scale(.98); } 100% { transform: scale(1); } }
 .mcf-nay { animation: mcfNay .45s cubic-bezier(.34,1.56,.64,1); }
 @keyframes mcfRung { 0%,100% { transform: translateX(0); } 20% { transform: translateX(-8px); } 40% { transform: translateX(7px); } 60% { transform: translateX(-5px); } 80% { transform: translateX(3px); } }
@@ -202,7 +204,7 @@ body {
 @keyframes mcfLuaNhun { 0%,100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-3px) scale(1.12); } }
 .mcf-lua-nhun { animation: mcfLuaNhun .8s ease-in-out infinite; }
 @media (prefers-reduced-motion: reduce) {
-  .mcf-cau-vao, .mcf-nay, .mcf-rung, .mcf-dai-len, .mcf-tim-mat, .mcf-anh-sang, .mcf-phao, .mcf-sao-no, .mcf-lua-nhun { animation: none; }
+  .mcf-song-chay > span, .mcf-cau-vao, .mcf-nay, .mcf-rung, .mcf-dai-len, .mcf-tim-mat, .mcf-anh-sang, .mcf-phao, .mcf-sao-no, .mcf-lua-nhun { animation: none; }
   .mcf-phao { display: none; }
 }
 /* Luyện theo trình độ (01/11): nhịp sáng ở bước đang học. */

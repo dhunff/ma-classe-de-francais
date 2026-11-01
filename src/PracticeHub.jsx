@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useLayoutEffect, useCallback, useMe
 import { createPortal } from "react-dom";
 import { useLocation } from "react-router-dom";
 import {
-  Shapes, Timer, Headphones, BookOpen, PenLine, Puzzle, BookA, ArrowRight, Play, PackageOpen, Award, Target, Star, Users, RefreshCw, ChevronRight,
+  Shapes, Timer, Headphones, BookOpen, PenLine, Puzzle, BookA, ArrowRight, Play, PackageOpen, Star, Users, RefreshCw, ChevronRight,
   RotateCcw, CheckCircle2, XCircle, Plus, ChevronLeft, PartyPopper, Trash2, Pencil, Copy, MoreVertical, Folder, FolderPlus, Image as ImageIcon, ChevronDown, Lightbulb, FileCheck,
 } from "lucide-react";
 import { C, S, QTYPES, VF_OPTS, LEVEL_COLORS } from "./shared/tokens.js";
@@ -34,6 +34,8 @@ import TourGioiThieu from "./shared/TourGioiThieu.jsx";
 import { gradeRemote } from "./shared/gradeRemote.js";
 import { phat } from "./shared/amThanh.js";
 import { Leon } from "./shared/leon.jsx";
+import HuyHieuHang from "./screens/practice/HuyHieuHang.jsx";
+import { hangTuTiLe } from "./shared/hangLuyenTap.js";
 import GoiYNguPhap from "./shared/GoiYNguPhap.jsx";
 import { PAYMENT_KEY, isPremium, hasAccess, fmtPrice, loadAccess } from "./shared/access.js";
 import ExerciseCard from "./screens/practice/ExerciseCard.jsx";
@@ -64,14 +66,15 @@ import { capMacDinh, duongKyLon, timKyNho, kyNhoCuaBai, khoaThuTu } from "./shar
    t(`skill.${key}_sub`) cho phụ đề. Trường `vi` cũ đặt tên sai — nó chứa phụ
    đề tiếng Pháp chứ không phải bản dịch — nên đã bỏ. */
 /* `tuoi`: màu tươi CHỈ cho vòng tròn biểu tượng ở lưới thẻ (biểu tượng trắng).
-   `color` giữ tông đậm vì còn làm màu chữ/viền ở màn trong, cần đủ tương phản. */
+   `color` giữ tông đậm vì còn làm màu chữ/viền ở màn trong, cần đủ tương phản.
+   `dai`, `dam`: dải đầu bài và ô đã chọn ở màn làm bài, đủ đậm cho chữ trắng nhỏ. */
 const CATS = [
-  { skill: "Écoute", key: "listening", Icon: Headphones, color: "#41608F", pastel: "#EAEFF7", tuoi: "linear-gradient(135deg,#60A5FA,#2563EB)" },
-  { skill: "Lecture", key: "reading", Icon: BookOpen, color: "#327654", pastel: "#E7F3EC", tuoi: "linear-gradient(135deg,#34D399,#059669)" },
-  { skill: "Production écrite", key: "writing", Icon: PenLine, color: "#9B3D66", pastel: "#F8EAF0", tuoi: "linear-gradient(135deg,#FB7185,#E11D48)" },
-  { skill: "Grammaire", key: "grammar", Icon: Puzzle, color: "#5B4B9E", pastel: "#EFECF9", tuoi: "linear-gradient(135deg,#A78BFA,#7C3AED)" },
-  { skill: "Vocabulaire", key: "vocab", Icon: BookA, color: "#8F5E22", pastel: "#F7EFE3", tuoi: "linear-gradient(135deg,#FBBF24,#F97316)" },
-  { skill: "__autres__", key: "others", Icon: Shapes, color: "#626A85", pastel: "#EFF0F3", tuoi: "linear-gradient(135deg,#22D3EE,#0891B2)" },
+  { skill: "Écoute", key: "listening", Icon: Headphones, color: "#41608F", pastel: "#EAEFF7", tuoi: "linear-gradient(135deg,#60A5FA,#2563EB)", dai: "linear-gradient(135deg,#2563EB,#1E40AF)", dam: "#1D4ED8" },
+  { skill: "Lecture", key: "reading", Icon: BookOpen, color: "#327654", pastel: "#E7F3EC", tuoi: "linear-gradient(135deg,#34D399,#059669)", dai: "linear-gradient(135deg,#047857,#065F46)", dam: "#047857" },
+  { skill: "Production écrite", key: "writing", Icon: PenLine, color: "#9B3D66", pastel: "#F8EAF0", tuoi: "linear-gradient(135deg,#FB7185,#E11D48)", dai: "linear-gradient(135deg,#E11D48,#9F1239)", dam: "#BE123C" },
+  { skill: "Grammaire", key: "grammar", Icon: Puzzle, color: "#5B4B9E", pastel: "#EFECF9", tuoi: "linear-gradient(135deg,#A78BFA,#7C3AED)", dai: "linear-gradient(135deg,#7C3AED,#5B21B6)", dam: "#6D28D9" },
+  { skill: "Vocabulaire", key: "vocab", Icon: BookA, color: "#8F5E22", pastel: "#F7EFE3", tuoi: "linear-gradient(135deg,#FBBF24,#F97316)", dai: "linear-gradient(135deg,#C2410C,#9A3412)", dam: "#C2410C" },
+  { skill: "__autres__", key: "others", Icon: Shapes, color: "#626A85", pastel: "#EFF0F3", tuoi: "linear-gradient(135deg,#22D3EE,#0891B2)", dai: "linear-gradient(135deg,#0E7490,#155E75)", dam: "#0E7490" },
 ];
 const MAIN_SKILLS = CATS.filter((c) => !c.skill.startsWith("__")).map((c) => c.skill);
 const inCat = (ex, sk) => sk === "__autres__"
@@ -1409,23 +1412,33 @@ export function PracticeWorkspace({ ex, back, onFinish, soTu = false, chamBang =
     : (answers[q.id] || "").trim() !== "");
   const fmtLeft = (s) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
 
+  const mauKn = CATS.find((c) => c.skill === catOf(ex));
+  const dam = mauKn.dam;
+  const moiCau = ex.questions.map((q) => ({ id: q.id, xong: isQuestionAnswered(q, answers) }));
+  const soCauXong = moiCau.filter((c) => c.xong).length;
+  const toiCau = (id) => document.getElementById(`cau-${id}`)?.scrollIntoView({ block: "center", behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+  const tiLeDiem = graded && tongDiem > 0 ? score / tongDiem : null;
+
   const questionCards = ex.questions.map((q, i) => {
     const a = answers[q.id];
     const good = graded && autoQ(q) ? isGood(q) : null;
+    const daChon = isQuestionAnswered(q, answers);
+    /* Đáp án ngắn (số, giờ, giá) thành ô lớn nằm ngang: bấm dễ, đỡ cuộn. Có ảnh thì giữ danh sách. */
+    const oNgan = q.type === "qcm" && q.options.length >= 2 && q.options.length <= 4 && !q.optionImages?.some(Boolean) && q.options.every((o) => String(o).length <= 12);
     return (
-      <div key={q.id} className={"mcf-card rounded-3xl border border-solid bg-surface p-5 shadow-[0_6px_24px_rgba(15,23,42,0.05)] transition-colors " + (graded ? (good === true ? "border-ok/50" : good === false ? "border-danger/50" : "border-line") : isQuestionAnswered(q, a) ? "border-primary/40" : "border-line")}>
-        <div className="mb-3.5 flex items-start gap-3">
-          <span className={"grid h-8 w-8 shrink-0 place-items-center rounded-xl text-sm font-extrabold tabular-nums " + (graded ? (good === true ? "bg-ok text-white" : good === false ? "bg-danger text-white" : "bg-surface2 text-ink") : isQuestionAnswered(q, a) ? "bg-gradient-to-br from-primary to-indigo-600 text-white shadow-[0_4px_12px_rgba(37,99,235,0.3)]" : "bg-primary-soft text-primary")}>{i + 1}</span>
-          <div className="min-w-0 flex-1">
-            <span className="mb-1 inline-block rounded-full bg-surface2 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-soft">{QTYPES[q.type]}</span>
-            <p className="m-0 text-[15.5px] font-bold leading-snug text-ink">{choTrong(q.prompt)}</p>
-          </div>
+      <div key={q.id} id={`cau-${q.id}`} className={"mcf-card rounded-3xl border-2 border-solid bg-surface p-5 shadow-[0_6px_24px_rgba(15,23,42,0.05)] transition-colors " + (graded ? (good === true ? "border-ok" : good === false ? "border-danger" : "border-line") : daChon ? "" : "border-transparent")}
+        style={!graded && daChon ? { borderColor: dam } : undefined}>
+        <div className="mb-4 flex items-start gap-3">
+          <span key={daChon ? "co" : "chua"} className={"grid h-10 w-10 shrink-0 place-items-center rounded-2xl text-base font-extrabold tabular-nums " + (graded ? (good === true ? "bg-ok text-white" : good === false ? "bg-danger text-white" : "bg-surface2 text-ink") : daChon ? "mcf-nay text-white" : "bg-surface2 text-ink")}
+            style={!graded && daChon ? { background: dam } : undefined}>{i + 1}</span>
+          <p className="m-0 min-w-0 flex-1 self-center text-base font-bold leading-snug text-ink">{choTrong(q.prompt)}</p>
+          <span className="shrink-0 pt-1 text-xs font-semibold text-soft">{QTYPES[q.type]}</span>
         </div>
 
         {q.type === "qcm" ? (
-          <div style={{ display: "grid", gap: 8 }}>
+          <div style={oNgan ? { display: "grid", gap: 10, gridTemplateColumns: `repeat(${q.options.length === 4 ? 2 : q.options.length}, minmax(0, 1fr))` } : { display: "grid", gap: 8 }}>
             {q.options.map((o, j) => {
-              let bg = "var(--mcf-surface)", border = C.line, icon = null;
+              let bg = "var(--mcf-surface2)", border = "transparent", icon = null;
               if (graded) {
                 /* ══ VÌ SAO KHÔNG DÙNG `q.answer` ══
                  *
@@ -1448,18 +1461,20 @@ export function PracticeWorkspace({ ex, back, onFinish, soTu = false, chamBang =
                 } else if (!dung && dapAn != null && o === dapAn) {
                   bg = C.okSoft; border = C.ok; icon = <CheckCircle2 size={17} color={C.ok} />;
                 }
-              } else if (j === a) { bg = C.primarySoft; border = C.primary; }
+              } else if (j === a) { bg = dam; border = dam; }
+              const chonChua = j === a && !graded;
               return (
                 <button key={j} disabled={!!graded || dangCham} onClick={() => setAnswers({ ...answers, [q.id]: j })}
                   className={graded ? "" : "transition-all duration-150 hover:-translate-y-px hover:shadow-[0_4px_14px_rgba(37,99,235,0.12)]"}
-                  style={{ display: "flex", alignItems: "center", gap: 12, textAlign: "left", padding: "9px 12px", borderRadius: 14, fontSize: 15,
-                    fontFamily: "inherit", cursor: graded ? "default" : "pointer", background: bg, border: `1.5px solid ${border}`, color: C.ink,
+                  style={{ position: "relative", display: "flex", flexDirection: oNgan ? "column" : "row", alignItems: "center", gap: oNgan ? 4 : 12, textAlign: oNgan ? "center" : "left",
+                    padding: oNgan ? "10px 6px" : "10px 12px", borderRadius: 16, fontSize: oNgan ? 17 : 15, fontWeight: oNgan || chonChua ? 700 : 500,
+                    fontFamily: "inherit", cursor: graded ? "default" : "pointer", background: bg, border: `2px solid ${border}`, color: chonChua ? "#fff" : C.ink,
                     /* Gạch ngang CHỈ khi ô này là lựa chọn SAI. Điều kiện cũ
                        `j !== q.answer` luôn đúng với học sinh (q.answer rỗng),
                        nên ô họ chọn bị gạch cả khi làm đúng — chữ gạch ngang
                        trên một ô đang tô xanh đọc ra hai nghĩa trái nhau. */
                     textDecoration: graded && j === a && !isGood(q) ? "line-through" : "none" }}>
-                  <span className={"grid h-7 w-7 shrink-0 place-items-center rounded-lg text-xs font-extrabold " + (j === a ? (graded ? (isGood(q) ? "bg-ok text-white" : "bg-danger text-white") : "bg-primary text-on-primary") : "bg-surface2 text-soft")}>{String.fromCharCode(65 + j)}</span> <AnhLuaChon q={q} j={j} /> {o}<span style={{ marginLeft: "auto" }}>{icon}</span>
+                  <span className={(oNgan ? "h-6 w-6 " : "h-7 w-7 ") + "grid shrink-0 place-items-center rounded-lg text-xs font-extrabold " + (j === a ? (graded ? (isGood(q) ? "bg-ok text-white" : "bg-danger text-white") : "bg-white/25 text-white") : "bg-surface text-soft")}>{String.fromCharCode(65 + j)}</span> <AnhLuaChon q={q} j={j} /> {o}<span style={oNgan ? { position: "absolute", top: 8, right: 8 } : { marginLeft: "auto" }}>{icon}</span>
                 </button>
               );
             })}
@@ -1486,7 +1501,7 @@ export function PracticeWorkspace({ ex, back, onFinish, soTu = false, chamBang =
             <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
               {VF_OPTS.map((o, j) => {
                 const sel = a?.choice === j;
-                let bg = sel ? C.primarySoft : "var(--mcf-surface)", border = sel ? C.primary : C.line, col = sel ? C.primary : C.ink;
+                let bg = sel ? dam : "var(--mcf-surface2)", border = sel ? dam : "transparent", col = sel ? "#fff" : C.ink;
                 if (graded) {
                   /* Cùng lỗi, cùng cách sửa như khối qcm ở trên: với học sinh
                      `q.answer` là undefined từ migration 022. `expected` của
@@ -1506,7 +1521,7 @@ export function PracticeWorkspace({ ex, back, onFinish, soTu = false, chamBang =
                     onClick={() => setAnswers({ ...answers, [q.id]: { choice: j, just: j === 2 ? "" : (a?.just || "") } })}
                     style={{ padding: "10px 22px", borderRadius: 999, fontSize: 14.5, fontWeight: 700,
                       cursor: graded ? "default" : "pointer", fontFamily: "inherit",
-                      border: `1.5px solid ${border}`, background: bg, color: col }}>
+                      border: `2px solid ${border}`, background: bg, color: col }}>
                     {/* Dấu ✓ đi theo đúng ô được tô xanh ở trên, không theo
                         `q.answer` — với học sinh nó là undefined nên dấu này
                         trước đây không bao giờ hiện. */}
@@ -1571,21 +1586,13 @@ export function PracticeWorkspace({ ex, back, onFinish, soTu = false, chamBang =
         </div>
       )}
     <FocusShell zen={zen} setZen={setZen} title={ex.title}
-      meta={[ex.level, exSkills(ex).join(" + "), tr(`${ex.questions.length} questions`, `${ex.questions.length} câu`, `${ex.questions.length} questions`), ex.timeLimit && !graded ? tr(`Temps limite : ${ex.timeLimit} min`, `Thời gian làm bài: ${ex.timeLimit} phút`, `Time limit: ${ex.timeLimit} min`) : null]}
+      meta={[ex.level, exSkills(ex).join(" + "), tr(`${ex.questions.length} câu`, `${ex.questions.length} questions`, `${ex.questions.length} questions`), ex.timeLimit && !graded ? tr(`Thời gian làm bài: ${ex.timeLimit} phút`, `Temps limite : ${ex.timeLimit} min`, `Time limit: ${ex.timeLimit} min`) : null]}
       answered={ex.questions.length - getUnansweredQuestionsCount(answers, ex.questions)} total={ex.questions.length}
-      remaining={!graded ? remaining : null}>
-      {!zen && remaining != null && !graded && (
-        <div style={{ position: "fixed", bottom: 20, right: 20, zIndex: 100, display: "flex", alignItems: "center", gap: 8,
-          padding: "10px 18px", borderRadius: 999, background: remaining <= 60 ? C.danger : "#111827", color: "#fff", border: "1px solid var(--mcf-line)",
-          fontWeight: 800, fontSize: 17, boxShadow: "0 8px 22px rgba(27,37,89,.35)", fontVariantNumeric: "tabular-nums" }}>
-          {fmtLeft(remaining)}
-        </div>
-      )}
-
+      remaining={!graded ? remaining : null} mau={{ nen: mauKn.dai, dam, Icon: mauKn.Icon }}>
       {/* Thu vào giữa, chừa hai bên (23/10, theo chủ dự án). */}
       <div className="mx-auto max-w-6xl">
       <BocSoTu bat={soTu} ex={ex} stickyTop={zen ? FOCUS_TOP : 8}>
-      {ex.consigne && <KhoiDeBai html={ex.consigne} />}
+      {ex.consigne && <KhoiDeBai html={ex.consigne} dam={dam} />}
 
       {ex.imageUrl && (
         <div style={{ marginBottom: 16 }}>
@@ -1612,22 +1619,37 @@ export function PracticeWorkspace({ ex, back, onFinish, soTu = false, chamBang =
         </div>
       )}
 
-      <SplitPane audioUrl={ex.audioLuyen || ex.audioUrl} readingText={ex.readingText} stickyTop={zen ? FOCUS_TOP : 8}>
+      <SplitPane audioUrl={ex.audioLuyen || ex.audioUrl} readingText={ex.readingText} stickyTop={zen ? FOCUS_TOP : 8} nen={mauKn.dai} dam={dam}>
         {questionCards}
       </SplitPane>
       </BocSoTu>
 
       {!graded ? (
         <>
-        <button style={{ ...S.btn(true), marginTop: 20, opacity: dangCham ? 0.6 : 1, cursor: dangCham ? "wait" : "pointer" }}
-          disabled={dangCham}
-          onClick={() => {
-            if (dangCham) return;
-            const n = getUnansweredQuestionsCount(answers, ex.questions);
-            if (n > 0) setConfirmCount(n); else grade(false);
-          }}>
-          {dangCham ? tr("Đang chấm…", "Correction en cours…", "Grading…") : t("submit_button")}
-        </button>
+        {/* Chừa bên phải cho nút Léon nổi ở góc màn hình khi màn chưa đủ rộng. */}
+        <div className="sticky bottom-3 z-20 mt-5 mr-[4.5rem] flex items-center gap-3 rounded-2xl border border-solid border-line bg-surface p-2.5 shadow-lg 2xl:mr-0">
+          <span className="shrink-0 pl-1.5 text-sm font-bold tabular-nums text-ink">{tr(`Đã làm ${soCauXong}/${moiCau.length}`, `${soCauXong}/${moiCau.length} réponses`, `${soCauXong}/${moiCau.length} answered`)}</span>
+          {moiCau.length > 1 && moiCau.length <= 30 && (
+            <span className="hidden min-w-0 flex-1 flex-wrap gap-1 sm:flex">
+              {moiCau.map((c, i) => (
+                <button key={c.id} type="button" onClick={() => toiCau(c.id)} aria-label={tr(`Tới câu ${i + 1}`, `Aller à la question ${i + 1}`, `Go to question ${i + 1}`)}
+                  className={`grid h-7 w-7 cursor-pointer place-items-center rounded-lg border-0 font-sans text-xs font-bold tabular-nums ${c.xong ? "text-white" : "bg-surface2 text-soft"}`} style={c.xong ? { background: dam } : undefined}>{i + 1}</button>
+              ))}
+            </span>
+          )}
+          {!zen && remaining != null && (
+            <span className={`ml-auto rounded-xl px-3 py-2 text-base font-extrabold tabular-nums ${remaining <= 60 ? "bg-danger-soft text-danger" : "bg-surface2 text-ink"}`}>{fmtLeft(remaining)}</span>
+          )}
+          <button type="button" disabled={dangCham} className={`${!zen && remaining != null ? "" : "ml-auto"} h-11 shrink-0 rounded-xl border-0 px-4 font-sans text-sm font-extrabold text-white shadow-md sm:px-6 transition-transform hover:-translate-y-0.5 motion-reduce:hover:translate-y-0`}
+            style={{ background: dam, opacity: dangCham ? 0.6 : 1, cursor: dangCham ? "wait" : "pointer" }}
+            onClick={() => {
+              if (dangCham) return;
+              const n = getUnansweredQuestionsCount(answers, ex.questions);
+              if (n > 0) setConfirmCount(n); else grade(false);
+            }}>
+            {dangCham ? tr("Đang chấm…", "Correction en cours…", "Grading…") : <><span className="sm:hidden">{tr("Nộp bài", "Envoyer", "Submit")}</span><span className="hidden sm:inline">{t("submit_button")}</span></>}
+          </button>
+        </div>
         {confirmCount != null && (
           <ConfirmSubmitModal count={confirmCount}
             onCancel={() => setConfirmCount(null)}
@@ -1635,22 +1657,25 @@ export function PracticeWorkspace({ ex, back, onFinish, soTu = false, chamBang =
         )}
         </>
       ) : (
-        <div className="mcf-card mt-5 flex flex-col items-center justify-center rounded-3xl bg-surface py-8 text-center">
-          {graded === "timeout" && <p className="m-0 mb-3 text-sm font-bold text-danger">{t("exercise.timeout")}</p>}
-          {perfect
-            ? <Award size={40} className="mx-auto mb-3 text-ok drop-shadow-[0_0_8px_rgba(34,197,94,0.45)]" />
-            : <Target size={40} className="mx-auto mb-3 text-primary drop-shadow-[0_0_8px_rgba(59,130,246,0.5)]" />}
-          <p className="m-0 mb-1 text-xl font-bold text-ink">
-            {autos.length > 0 ? t("exercise.score_result", { score, total: tongDiem }) : t("exercise.finished")}
-          </p>
-          {perfect && autos.length > 0 && <p className="m-0 text-sm font-semibold text-ok">{t("exercise.perfect")}</p>}
-          {opens.length > 0 && <p className="m-0 mt-1 text-sm text-soft">{t("exercise.open_note", { n: opens.length })}</p>}
+        <div className="mcf-card mt-5 overflow-hidden rounded-3xl bg-surface text-center shadow-md">
+          <div className="flex flex-wrap items-center justify-center gap-4 px-5 py-5 text-white" style={{ background: mauKn.dai }}>
+            <Leon cam={tiLeDiem === null || tiLeDiem >= 0.7 ? "yeah" : "quyet-tam"} size={84} className="shrink-0" />
+            <div className="min-w-0 text-left">
+              {graded === "timeout" && <p className="m-0 mb-1 text-sm font-bold">{t("exercise.timeout")}</p>}
+              <p className="m-0 text-2xl font-extrabold leading-tight">{autos.length > 0 ? t("exercise.score_result", { score, total: tongDiem }) : t("exercise.finished")}</p>
+              {perfect && autos.length > 0 && <p className="m-0 mt-1 text-sm font-semibold">{t("exercise.perfect")}</p>}
+            </div>
+            <HuyHieuHang hang={hangTuTiLe(tiLeDiem)} size={64} />
+          </div>
+          <div className="flex flex-col items-center px-5 py-5">
+          {opens.length > 0 && <p className="m-0 text-sm text-soft">{t("exercise.open_note", { n: opens.length })}</p>}
           {/* Câu sai có nhãn point_gram → gợi ý bài « Học ngữ pháp » (16/10). */}
           <GoiYNguPhap level={ex.level} nhan={autos.filter((q) => q.pointGram && !isGood(q)).map((q) => q.pointGram)} />
           <button type="button" onClick={retry}
             className="mt-5 flex cursor-pointer items-center justify-center gap-2 rounded-full border border-solid border-line bg-surface px-6 py-2.5 font-sans text-sm font-medium text-ink shadow-sm transition-all duration-200 hover:bg-surface2 hover:shadow-md active:scale-95 dark:shadow-none">
             <RotateCcw size={16} /> {t("exercise.retry")}
           </button>
+          </div>
         </div>
       )}
       </div>

@@ -31,13 +31,49 @@ export function MetaLine({ items }) {
   );
 }
 
-export default function FocusShell({ zen, setZen, title, meta = [], answered, total, remaining, children }) {
+/* Đầu bài có màu kỹ năng (01/11): `mau` = { nen, dam, Icon }. Không truyền thì giữ đầu trang
+   cũ. Vòng tiến độ đọc từ `answered`/`total`, cùng nguồn với thanh ở chế độ tập trung. */
+function DauBaiMau({ mau, title, meta, answered, total, onTapTrung }) {
+  const pct = total ? Math.round((answered / total) * 100) : 0;
+  return (
+    <header className="mcf-cau-vao relative mb-5 overflow-hidden rounded-3xl px-5 py-4 text-white shadow-md sm:px-6" style={{ background: mau.nen }}>
+      <mau.Icon aria-hidden size={132} strokeWidth={1.25} className="pointer-events-none absolute -bottom-8 right-24 text-white/10" />
+      <div className="relative flex flex-wrap items-center gap-x-4 gap-y-3">
+        <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-white/20"><mau.Icon size={24} /></span>
+        <div className="min-w-[12rem] flex-1">
+          <h2 className="m-0 font-display text-2xl font-extrabold leading-tight" style={{ textWrap: "balance" }}>{title}</h2>
+          <p className="m-0 mt-2 flex flex-wrap gap-1.5">
+            {meta.filter(Boolean).map((x) => <span key={x} className="rounded-full bg-black/20 px-2.5 py-0.5 text-xs font-bold">{x}</span>)}
+          </p>
+        </div>
+        <div className="flex shrink-0 items-center gap-3">
+          {total > 0 && (
+            <span role="img" aria-label={tr(`Đã làm ${answered} trên ${total} câu`, `${answered} réponses sur ${total}`, `${answered} of ${total} answered`)}
+              className="grid h-14 w-14 place-items-center rounded-full" style={{ background: `conic-gradient(#fff ${pct * 3.6}deg, rgba(255,255,255,0.25) 0)` }}>
+              <span className="grid h-11 w-11 place-items-center rounded-full text-xs font-extrabold tabular-nums" style={{ background: mau.dam }}>{answered}/{total}</span>
+            </span>
+          )}
+          <NutTieng />
+          <button type="button" onClick={onTapTrung} className="h-9 cursor-pointer rounded-full border-0 bg-white px-4 font-sans text-sm font-bold shadow-sm" style={{ color: mau.dam }}>
+            {tr("Chế độ tập trung", "Mode focus", "Focus mode")}
+          </button>
+        </div>
+      </div>
+    </header>
+  );
+}
+
+export default function FocusShell({ zen, setZen, title, meta = [], answered, total, remaining, mau = null, children }) {
   useEffect(() => {
     if (!zen) return;
     const k = (e) => { if (e.key === "Escape") setZen(false); };
     window.addEventListener("keydown", k);
     return () => window.removeEventListener("keydown", k);
   }, [zen, setZen]);
+
+  if (!zen && mau) {
+    return <div><DauBaiMau mau={mau} title={title} meta={meta} answered={answered} total={total} onTapTrung={() => setZen(true)} />{children}</div>;
+  }
 
   if (!zen) {
     return (
