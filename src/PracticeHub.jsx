@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useLayoutEffect, useCallback } from "react";
+import React, { useState, useEffect, useRef, useLayoutEffect, useCallback, useMemo } from "react";
 import { createPortal } from "react-dom";
 import { useLocation } from "react-router-dom";
 import {
@@ -42,7 +42,7 @@ import { Lock } from "lucide-react";
 import { anhMacDinh } from "./shared/anhMacDinh.js";
 import { choTrong } from "./shared/choTrong.jsx";
 import OTraLoi from "./screens/practice/OTraLoi.jsx";
-import { LuyenTheoCap, ChiTietKyNho, MeoKyNho, TheKhoa, ManKhoaThuTu, loiKhoa } from "./screens/practice/LuyenTheoCap.jsx";
+import { LuyenTheoCap, ChiTietKyNho, MeoKyNho, ManKhoaThuTu } from "./screens/practice/LuyenTheoCap.jsx";
 import ThanhTuu from "./screens/practice/ThanhTuu.jsx";
 import { capMacDinh, duongKyLon, timKyNho, kyNhoCuaBai, khoaThuTu } from "./shared/tienTrinhLuyenTap.js";
 
@@ -128,7 +128,7 @@ function PracticeHubInner({ role = "eleve", name = "", accounts = [], onRequireL
   const [vipDen, setVipDen] = useState(null);
   const fullAccess = toanQuyen || vipConHan(vipDen);
   /* Luyện theo trình độ (01/11): học sinh và khách vào cây trình độ, giáo viên giữ màn cũ.
-     « Thư viện bài » giữ nguyên lưới cũ: ngữ pháp, từ vựng, dịch không nằm trong cây. */
+     « Thư viện bài » là bài bổ sung, tách hẳn khỏi cây: học sinh chỉ thấy bài không thuộc cây. */
   const [capHoSo, setCapHoSo] = useState(null);
   const [capChon, setCapChon] = useState(() => { try { return localStorage.getItem("mcf-luyen-cap"); } catch { return null; } });
   const [thuVien, setThuVien] = useState(false);
@@ -137,6 +137,7 @@ function PracticeHubInner({ role = "eleve", name = "", accounts = [], onRequireL
   const biKhoa = useCallback((ex) => !teacher && !fullAccess && isPremium(ex) && !hasAccess(access, name, ex.id), [teacher, fullAccess, access, name]);
   /* Thứ tự của cây áp cho cả Thư viện và mọi đường mở thẳng. Giáo viên không bị chặn. */
   const khoaBai = (ex) => (teacher ? null : khoaThuTu(ex, exercises, hist, biKhoa, fullAccess));
+  const baiThuVien = useMemo(() => (teacher ? exercises : exercises.filter((e) => !kyNhoCuaBai(e))), [teacher, exercises]);
   const napHoSo = () => supabase.from("profiles").select("has_premium_access, vip_den, level").limit(1).maybeSingle()
     .then(({ data }) => { setToanQuyen(!!data?.has_premium_access); setVipDen(data?.vip_den ?? null); setCapHoSo(data?.level === "Débutant" ? "A1" : data?.level ?? null); })
     .catch(() => {});
@@ -370,12 +371,6 @@ ${r.error?.message ?? ""}`); return; }
 
   const muaVip = () => { if (isGuest) return requireLogin(); setPayFor(goiVip(t("vip.pay_title"))); };
 
-  /* Thẻ bài ở Thư viện: bài chưa tới lượt thì che lại và chỉ về bước phải làm. */
-  const boKhoa = (ex, the) => {
-    const k = khoaBai(ex);
-    return k ? <TheKhoa key={ex.id} loiNhan={loiKhoa(k)} onDi={() => setView({ page: "kyNho", ma: k.kn.ma })}>{the}</TheKhoa> : the;
-  };
-
   /* Bấm một bước trên đường đi. Bước khoá không mở, nhưng nói rõ phải làm gì trước.
      VIP không bao giờ gặp bước khoá: duongKyLon trả "tuDo" thay cho "khoa". */
   const moKyNho = (o) => {
@@ -423,11 +418,11 @@ ${r.error?.message ?? ""}`); return; }
 
   /* -------- Sub-view "Autres" : thư mục danh mục con -------- */
   if (view.page === "autres") {
-    const autresEx = exercises.filter((e) => inCat(e, "__autres__"));
+    const autresEx = baiThuVien.filter((e) => inCat(e, "__autres__"));
     const unclassified = autresEx.filter((e) => !e.customCat);
     // « Non classé » retiré : seuls les dossiers créés explicitement apparaissent ;
     // les exercices sans catégorie sont listés directement sous les dossiers.
-    const folders = cats.map((c) => ({ name: c, count: autresEx.filter((e) => e.customCat === c).length }));
+    const folders = cats.map((c) => ({ name: c, count: autresEx.filter((e) => e.customCat === c).length })).filter((d) => teacher || d.count > 0);
     return (
       <div className="mx-auto max-w-5xl">
         {MatModal()}
@@ -505,7 +500,7 @@ ${r.error?.message ?? ""}`); return; }
                   {unclassified.map((ex) => {
                     const types = [...new Set(ex.questions.map((q) => QTYPES[q.type]))].join(" + ");
                     const locked = !teacher && !fullAccess && isPremium(ex) && !hasAccess(access, name, ex.id);
-                    return boKhoa(ex, (
+                    return (
                       <ExerciseCard key={ex.id} ex={ex} premium={isPremium(ex)} locked={locked} best={hist[ex.id]} typesLabel={types} folderLabel={null} t={t}
                         onStart={() => { if (isGuest) return requireLogin(); setView({ page: "quiz", cat: "__autres__", exId: ex.id }); }}
                         onPickMaterial={(kind) => setMatModal({ exId: ex.id, kind })}
@@ -516,7 +511,7 @@ ${r.error?.message ?? ""}`); return; }
                           { label: "Dupliquer", icon: <Copy size={16} />, onClick: () => duplicate(ex) },
                           { label: "Supprimer", icon: <Trash2 size={16} />, danger: true, onClick: () => removeEx(ex.id) },
                         ]} />
-                    ));
+                    );
                   })}
                 </div>
               </div>
@@ -553,7 +548,7 @@ ${r.error?.message ?? ""}`); return; }
 
   if (view.page === "category") {
     const meta = CATS.find((c) => c.skill === view.cat);
-    let all = exercises.filter((e) => inCat(e, view.cat));
+    let all = baiThuVien.filter((e) => inCat(e, view.cat));
     if (view.cat === "__autres__" && view.folder) {
       all = all.filter((e) => e.customCat === view.folder);
     }
@@ -772,7 +767,7 @@ ${r.error?.message ?? ""}`); return; }
               const types = [...new Set(ex.questions.map((q) => QTYPES[q.type]))].join(" + ");
               /* Giáo viên luôn xem được bài của chính mình; chỉ học sinh mới bị khoá. */
               const locked = !teacher && !fullAccess && isPremium(ex) && !hasAccess(access, name, ex.id);
-              return boKhoa(ex, (
+              return (
                 <ExerciseCard
                   key={ex.id}
                   ex={ex}
@@ -793,7 +788,7 @@ ${r.error?.message ?? ""}`); return; }
                     { label: "Supprimer", icon: <Trash2 size={16} />, danger: true, onClick: () => removeEx(ex.id) },
                   ]}
                 />
-              ));
+              );
             })}
           </div>
         )}
@@ -1033,6 +1028,9 @@ ${r.error?.message ?? ""}`); return; }
           ))}
         </div>
       )}
+      {!teacher && thuVien === true && (
+        <p className="m-0 mb-5 text-sm text-soft">{tr("Bài tập bổ sung theo chủ đề: ngữ pháp, từ vựng, dịch. Làm tự do, không tính vào lộ trình theo trình độ.", "Exercices complémentaires par thème : grammaire, vocabulaire, traduction. Libres, ils ne comptent pas dans le parcours par niveau.", "Extra exercises by topic: grammar, vocabulary, translation. Do them freely, they don't count toward the level path.")}</p>
+      )}
       {!teacher && thuVien === "thanhTuu" ? (
         <ThanhTuu exercises={exercises} hist={hist} biKhoa={biKhoa} ten={name} />
       ) : !teacher && !thuVien ? (
@@ -1041,8 +1039,8 @@ ${r.error?.message ?? ""}`); return; }
       ) : (
       <div id="tour-xp-grid" className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
         {CATS.map((cat, i) => {
-          const list = exercises.filter((e) => inCat(e, cat.skill));
-          if (cat.skill === "__autres__" && list.length === 0 && cats.length === 0 && !teacher) return null;
+          const list = baiThuVien.filter((e) => inCat(e, cat.skill));
+          if (list.length === 0 && !teacher) return null;
           const doneCount = list.filter((e) => hist[e.id]).length;
           const pct = list.length ? Math.round((doneCount / list.length) * 100) : 0;
           return (

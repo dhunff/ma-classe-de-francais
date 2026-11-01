@@ -6,7 +6,8 @@
  *   · keHoach(level, goal): suy ra bậc đang học (capChinh), bậc thử sức kế
  *     tiếp trên đường tới mục tiêu (capThu), và các kỹ năng mục tiêu đòi hỏi.
  *   · chonDeXuat(...): chấm điểm từng bài rồi chọn THAM LAM có trừ điểm trùng
- *     kỹ năng, để danh sách không toàn một loại bài.
+ *     kỹ năng, để danh sách không toàn một loại bài. `boQua(ex)` loại bài chưa
+ *     tới lượt trong lộ trình: gợi ý bài bấm vào bị chặn là vô ích.
  * Mọi lý do hiện trên thẻ đều suy ra từ dữ liệu thật (quy tắc 1). */
 import { exSkills } from "./exercises.js";
 
@@ -40,7 +41,7 @@ export function keHoach(level, goal) {
   return { capChinh, capThu, dich: dich >= 0 ? dich : null, kn: m?.kn ?? [], thi: !!m?.thi, goal: goal || "" };
 }
 
-export function chonDeXuat({ practice, hist, skills, level, goal, so = 4 }) {
+export function chonDeXuat({ practice, hist, skills, level, goal, so = 4, boQua = () => false }) {
   if (!Array.isArray(practice) || !practice.length) return [];
   const kh = keHoach(level, goal);
   const daLam = (ex) => hist?.[ex.id] && typeof hist[ex.id].best === "number" && hist[ex.id].best >= 0;
@@ -62,7 +63,7 @@ export function chonDeXuat({ practice, hist, skills, level, goal, so = 4 }) {
     if (ex.isPremium) d -= 1;
     return { ex, d, ly, kn: kn[0] };
   };
-  const ung = practice.filter((ex) => (ex.questions ?? []).length).map(cham)
+  const ung = practice.filter((ex) => (ex.questions ?? []).length && !boQua(ex)).map(cham)
     .sort((a, b) => b.d - a.d || String(b.ex.createdAt ?? "").localeCompare(String(a.ex.createdAt ?? "")));
   /* Chọn tham lam, mỗi bài cùng kỹ năng đã chọn trừ 3 điểm: đủ đa dạng. */
   const chon = [];

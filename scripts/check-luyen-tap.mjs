@@ -3,6 +3,7 @@
  * Lỗi đáng sợ nhất là NGÕ CỤT: một bước không làm được chặn mọi bước sau. */
 import { KY_NANG } from "../src/content/luyenTap/kyNang.js";
 import { CAP_DO, KY_LON, tinhKyNho, duongKyLon, dsBaiKyNho, tongCap, capMacDinh, baiCuaKyNang, timKyNho, khoaThuTu, NGUONG_DAT } from "../src/shared/tienTrinhLuyenTap.js";
+import { chonDeXuat } from "../src/shared/deXuat.js";
 import { hangTuTiLe, hangBai, hangKyNho, hangSau, tinhKyLon, tinhCap, THANG_HANG } from "../src/shared/hangLuyenTap.js";
 
 let dau = 0, rot = 0;
@@ -74,6 +75,13 @@ ca("ngoài cây: VIP vẫn theo thứ tự bài trong kỹ năng", kt(baNoi[1], 
 ca("ngoài cây: xong bài trước thì mở bài sau", kt(baNoi[1], xong("n1"), undefined, false, baNoi) === null);
 /* Không ngõ cụt: mọi bài bị chặn đều chỉ tới một bước đang làm được. */
 ca("ngoài cây: không có ngõ cụt", ex.every((e) => { const k = kt(e); return !k || duongKyLon("A1", "CO", ex, {}).find((o) => o.kn.ma === k.kn.ma).buoc === "hienTai"; }));
+
+/* Gợi ý ở trang chủ không được chứa bài chưa tới lượt. */
+const coCau = ex.map((e) => ({ ...e, questions: [{}], skill: "Écoute" }));
+const boQuaKhoa = (e) => !!khoaThuTu(e, coCau, {});
+const goiY = chonDeXuat({ practice: coCau, hist: {}, skills: [], level: "A1", goal: "DELF A1", boQua: boQuaKhoa }).map((x) => x.ex.id);
+ca("gợi ý: chỉ còn bài mở được", goiY.join() === "x0");
+ca("gợi ý: không truyền boQua thì như cũ", chonDeXuat({ practice: coCau, hist: {}, skills: [], level: "A1", goal: "DELF A1" }).length === 4);
 
 /* Thứ tự bài trong kỹ năng nhỏ. */
 const hai = [{ id: "a" }, { id: "b" }, { id: "c" }];

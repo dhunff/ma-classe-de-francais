@@ -17,6 +17,9 @@ import KeHoachThi from "./KeHoachThi.jsx";
 import LichSapToi from "./LichSapToi.jsx";
 import TourGioiThieu from "../../shared/TourGioiThieu.jsx";
 import { DeXuatBai, TroChoi, DeXuatTroChoi, DongDeuKyNang, chonDeXuat } from "./TrangChuKhoi.jsx";
+import { supabase } from "../../storageShim.js";
+import { vipConHan } from "../../shared/vip.js";
+import { khoaThuTu } from "../../shared/tienTrinhLuyenTap.js";
 
 /* Trang chủ học sinh.
 
@@ -48,6 +51,18 @@ export default function StudentDashboard({
      trống trơn trong khi người đó đã làm cả chục bài. */
   const practiceStore = usePracticeStore(practice);
   const practiceHist = usePracticeHistory(name, practiceHistory);
+  /* Gợi ý phải bỏ bài chưa tới lượt, mà VIP được vào thẳng mọi kỹ năng nhỏ.
+     null là chưa biết: chờ, đừng tạm coi là thường rồi đổi danh sách trước mắt. */
+  const [laVip, setLaVip] = useState(null);
+  useEffect(() => {
+    if (practice) { setLaVip(false); return undefined; }
+    let con = true;
+    supabase.from("profiles").select("has_premium_access, vip_den").limit(1).maybeSingle()
+      .then(({ data }) => { if (con) setLaVip(!!data?.has_premium_access || vipConHan(data?.vip_den)); }, () => { if (con) setLaVip(false); });
+    return () => { con = false; };
+  }, [practice]);
+  /* Bài trả phí chưa mở thì máy chủ không gửi câu hỏi, như ở màn làm bài của PracticeHub. */
+  const khoaPhi = (ex) => !!ex.isPremium && !(ex.questions ?? []).length;
   const skills = skillBreakdown(
     exercises, submissions, name, practiceStore || [], practiceHist || {},
   );
@@ -143,7 +158,7 @@ export default function StudentDashboard({
           <section className="mt-2">
             <Rise delay={160}>
               <DeXuatBai coHoSo={!!(profile?.level && profile?.goal)} level={profile?.level} goal={profile?.goal}
-                dsDeXuat={practiceStore ? chonDeXuat({ practice: practiceStore, hist: practiceHist, skills, level: profile?.level, goal: profile?.goal }) : null}
+                dsDeXuat={practiceStore && practiceHist && laVip !== null ? chonDeXuat({ practice: practiceStore, hist: practiceHist, skills, level: profile?.level, goal: profile?.goal, boQua: (ex) => !!khoaThuTu(ex, practiceStore, practiceHist, khoaPhi, laVip) }) : null}
                 onMo={(ex) => navigate("/etudiant/entrainement", { state: { moBai: ex.id } })} />
             </Rise>
   
