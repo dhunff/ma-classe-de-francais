@@ -229,7 +229,10 @@ export function ChiTietKyNho({ ma, exercises, hist, biKhoa, onBack, onMoKyNho, r
                     <p className="m-0 text-sm font-bold text-soft">{ex.title}</p>
                     <p className="m-0 mt-0.5 text-xs text-soft">{tr("Làm xong bài trước để mở bài này", "Terminez l'exercice précédent pour l'ouvrir", "Finish the previous exercise to unlock this one")}</p>
                   </div>
-                ) : renderThe(ex)}
+                ) : (<>
+                  {ex.vong && ex.vong !== "hoc" && <p className="m-0 mb-1 text-xs font-bold text-soft">{ex.vong === "on" ? tr("Vòng ôn", "Révision", "Review") : tr("Vòng chốt: từ 85% là nắm chắc", "Bilan : 85 % pour maîtriser", "Final check: 85% to master")}</p>}
+                  {renderThe(ex)}
+                </>)}
               </div>
             </li>
           ))}

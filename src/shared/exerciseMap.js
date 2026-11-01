@@ -65,6 +65,8 @@ export const EX_META = [
   /* audioLuyen (08/10, lô 13): file GỐC không có khoảng nghỉ. audioUrl là bản
      kiểu phòng thi cho màn thi; màn luyện tập/bài giao phát audioLuyen. */
   "audioLuyen",
+  /* Cây Luyện tập theo trình độ (01/11): kỹ năng nhỏ, vòng học|on|chot, thứ tự trong kỹ năng. */
+  "kyNang", "vong", "thuTu",
 ];
 export const Q_COLUMNS = ["id", "type", "prompt", "explanation"];
 

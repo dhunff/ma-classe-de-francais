@@ -6,7 +6,7 @@
 export const KY_NANG = {
   A1: {
     CO: [
-      {"ma": "A1-CO-1", "vi": "Nghe số, giờ, ngày, giá", "fr": "Nombres, heures, dates et prix", "en": "Numbers, times, dates and prices", "duKien": 9, "mienPhi": 2, "bai": ["nhapmuof28x003r"]},
+      {"ma": "A1-CO-1", "vi": "Nghe số, giờ, ngày, giá", "fr": "Nombres, heures, dates et prix", "en": "Numbers, times, dates and prices", "duKien": 9, "mienPhi": 2, "bai": []},
       {"ma": "A1-CO-2", "vi": "Hiểu tin nhắn thoại: ai, việc gì, khi nào", "fr": "Messages vocaux : qui, quoi, quand", "en": "Voice messages: who, what, when", "duKien": 6, "mienPhi": 2, "bai": ["nhapmur34xv8013"]},
       {"ma": "A1-CO-3", "vi": "Hiểu thông báo nơi công cộng", "fr": "Annonces dans les lieux publics", "en": "Public announcements", "duKien": 6, "mienPhi": 2, "bai": ["nhapmur351gr014"]},
       {"ma": "A1-CO-4", "vi": "Nhận ra tình huống hội thoại", "fr": "Reconnaître la situation d'un dialogue", "en": "Recognising the situation in a dialogue", "duKien": 5, "mienPhi": 2, "bai": []},

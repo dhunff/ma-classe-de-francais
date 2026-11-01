@@ -25,7 +25,7 @@ const tiLe = (h) => (daLam(h) && h.max > 0 && h.best >= 0 ? h.best / h.max : nul
 export function baiCuaKyNang(kn, exercises) {
   const theoId = new Map(exercises.map((e) => [e.id, e]));
   const coSan = kn.bai.map((id) => theoId.get(id)).filter(Boolean);
-  const them = exercises.filter((e) => e.kyNang === kn.ma && !kn.bai.includes(e.id));
+  const them = exercises.filter((e) => e.kyNang === kn.ma && !kn.bai.includes(e.id)).sort((a, b) => (a.thuTu ?? 0) - (b.thuTu ?? 0));
   return [...coSan, ...them];
 }
 

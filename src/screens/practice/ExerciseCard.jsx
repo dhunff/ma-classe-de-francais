@@ -159,7 +159,7 @@ export default function ExerciseCard({
         <strong className="mb-1 block text-base font-extrabold leading-snug text-ink">{ex.title}</strong>
 
         <div className="text-xs leading-relaxed text-soft">
-          {nQ} {tr("câu", "question", "question")}{nQ > 1 ? "s" : ""}
+          {locked && nQ === 0 ? tr("Bài VIP", "Exercice VIP", "VIP exercise") : <>{nQ} {tr("câu", "question", "question")}{nQ > 1 ? "s" : ""}</>}
           {typesLabel && ` · ${typesLabel}`}
           {ex.audioUrl && " · 🎧"}
           {ex.readingText && " · 📖"}
