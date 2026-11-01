@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useLayoutEffect } from "react";
+import React, { useState, useEffect, useRef, useLayoutEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { useLocation } from "react-router-dom";
 import {
@@ -42,6 +42,8 @@ import { Lock } from "lucide-react";
 import { anhMacDinh } from "./shared/anhMacDinh.js";
 import { choTrong } from "./shared/choTrong.jsx";
 import OTraLoi from "./screens/practice/OTraLoi.jsx";
+import { LuyenTheoCap, ChiTietKyNho } from "./screens/practice/LuyenTheoCap.jsx";
+import { capMacDinh, duongKyLon, timKyNho } from "./shared/tienTrinhLuyenTap.js";
 
 /* ============================================================
    PRACTICE HUB v3 — Tự luyện tập
@@ -124,8 +126,16 @@ function PracticeHubInner({ role = "eleve", name = "", accounts = [], onRequireL
   const [toanQuyen, setToanQuyen] = useState(false);
   const [vipDen, setVipDen] = useState(null);
   const fullAccess = toanQuyen || vipConHan(vipDen);
-  const napHoSo = () => supabase.from("profiles").select("has_premium_access, vip_den").limit(1).maybeSingle()
-    .then(({ data }) => { setToanQuyen(!!data?.has_premium_access); setVipDen(data?.vip_den ?? null); })
+  /* Luyện theo trình độ (01/11): học sinh và khách vào cây trình độ, giáo viên giữ màn cũ.
+     « Thư viện bài » giữ nguyên lưới cũ: ngữ pháp, từ vựng, dịch không nằm trong cây. */
+  const [capHoSo, setCapHoSo] = useState(null);
+  const [capChon, setCapChon] = useState(() => { try { return localStorage.getItem("mcf-luyen-cap"); } catch { return null; } });
+  const [thuVien, setThuVien] = useState(false);
+  const [canhBaoLt, setCanhBaoLt] = useState(null);
+  const doiCap = (c) => { setCapChon(c); setCanhBaoLt(null); try { localStorage.setItem("mcf-luyen-cap", c); } catch { /* bỏ qua */ } };
+  const biKhoa = useCallback((ex) => !teacher && !fullAccess && isPremium(ex) && !hasAccess(access, name, ex.id), [teacher, fullAccess, access, name]);
+  const napHoSo = () => supabase.from("profiles").select("has_premium_access, vip_den, level").limit(1).maybeSingle()
+    .then(({ data }) => { setToanQuyen(!!data?.has_premium_access); setVipDen(data?.vip_den ?? null); setCapHoSo(data?.level === "Débutant" ? "A1" : data?.level ?? null); })
     .catch(() => {});
   useEffect(() => { napHoSo(); }, [name]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -308,7 +318,7 @@ ${r.error?.message ?? ""}`); return; }
 
   if (view.page === "quiz") {
     const ex = exercises.find((e) => e.id === view.exId);
-    const back = () => setView(view.tuTimKiem ? { page: "home" } : { page: "category", cat: view.cat, folder: view.folder, niveau: view.niveau });
+    const back = () => setView(view.kyNho ? { page: "kyNho", ma: view.kyNho } : view.tuTimKiem ? { page: "home" } : { page: "category", cat: view.cat, folder: view.folder, niveau: view.niveau });
     /* Bài mở từ ô tìm kiếm có thể không nằm trong kho luyện tập (giáo viên tìm
        thấy cả bài giao). Nói thẳng thay vì dựng một màn làm bài rỗng. */
     if (!ex) {
@@ -340,6 +350,48 @@ ${r.error?.message ?? ""}`); return; }
 
     return <PracticeWorkspace ex={ex} back={back} soTu={role === "eleve" && !!name}
       onFinish={(score, max) => saveHist(ex.id, score, max)} />;
+  }
+
+  /* Bấm một bước trên đường đi. Bước khoá không mở, nhưng nói rõ phải làm gì trước. */
+  const moKyNho = (o) => {
+    if (o.buoc === "khoa") {
+      const f = timKyNho(o.kn.ma);
+      const dang = duongKyLon(f.cap, f.ky, exercises, hist, biKhoa).find((x) => x.buoc === "hienTai");
+      phat("sai");
+      setCanhBaoLt(tr(`Làm xong « ${dang?.kn.vi} » trước để mở bước này.`, `Terminez d'abord « ${dang?.kn.fr} » pour ouvrir cette étape.`, `Finish "${dang?.kn.en}" first to unlock this step.`));
+      return;
+    }
+    phat("bam");
+    setCanhBaoLt(null);
+    setView({ page: "kyNho", ma: o.kn.ma });
+  };
+
+  /* -------- Một kỹ năng nhỏ trong cây trình độ -------- */
+  if (view.page === "kyNho") {
+    return (
+      <div className="mx-auto max-w-5xl">
+        {MatModal()}
+        {payFor && <PaymentModal ex={payFor} student={name} config={payCfg}
+          onClose={() => setPayFor(null)}
+          onUnlocked={sauKhiMoKhoa} />}
+        {doiXp && <DoiXpModal ex={doiXp} xp={xp} t={t}
+          onClose={() => setDoiXp(null)}
+          onBuy={() => { const e = doiXp; setDoiXp(null); setPayFor(e); }}
+          onVip={() => { setDoiXp(null); setPayFor(goiVip(t("vip.pay_title"))); }}
+          onDone={(soDu) => { setXp(soDu); setDoiXp(null); baoXpDoi(); sauKhiMoKhoa(); }} />}
+        <ChiTietKyNho ma={view.ma} exercises={exercises} hist={hist} biKhoa={biKhoa}
+          onBack={() => setView({ page: "home" })} onMoKyNho={moKyNho}
+          renderThe={(ex) => (
+            <ExerciseCard ex={ex} premium={isPremium(ex)} locked={biKhoa(ex)} best={hist[ex.id]} t={t}
+              typesLabel={[...new Set(ex.questions.map((q) => QTYPES[q.type]))].join(" + ")} folderLabel={null}
+              onStart={() => { if (isGuest) return requireLogin(); setView({ page: "quiz", kyNho: view.ma, exId: ex.id }); }}
+              onPickMaterial={(kind) => setMatModal({ exId: ex.id, kind })}
+              onBuy={() => setPayFor(ex)}
+              onDoiXp={role === "eleve" ? () => setDoiXp(ex) : null}
+              teacherActions={null} />
+          )} />
+      </div>
+    );
   }
 
   /* -------- Sub-view "Autres" : thư mục danh mục con -------- */
@@ -891,7 +943,7 @@ ${r.error?.message ?? ""}`); return; }
               <Leon cam="lam-viec" size={104} className="mcf-leon-bay shrink-0 drop-shadow-[0_12px_18px_rgba(0,0,0,0.3)] max-sm:h-20 max-sm:w-20" />
               <div className="min-w-0 flex-1">
                 <h2 className="m-0 text-3xl font-extrabold tracking-tight">{t("practice.library_title")}</h2>
-                <p className="m-0 mt-1 text-sm text-white/85">{tr("Chọn kỹ năng, chọn trình độ rồi luyện. Mỗi bài có Từ vựng, Giải thích và đáp án sau khi nộp.", "Choisissez une compétence et un niveau. Chaque exercice a son vocabulaire, ses explications et son corrigé après envoi.", "Pick a skill and a level. Every exercise has vocabulary, explanations and an answer key after you submit.")}</p>
+                <p className="m-0 mt-1 text-sm text-white/85">{teacher ? tr("Chọn kỹ năng, chọn trình độ rồi luyện. Mỗi bài có Từ vựng, Giải thích và đáp án sau khi nộp.", "Choisissez une compétence et un niveau. Chaque exercice a son vocabulaire, ses explications et son corrigé après envoi.", "Pick a skill and a level. Every exercise has vocabulary, explanations and an answer key after you submit.") : tr("Chọn trình độ rồi đi lần lượt từng kỹ năng nhỏ. Xong bước này, bước sau tự mở.", "Choisissez un niveau et avancez compétence par compétence. Chaque étape ouvre la suivante.", "Pick a level and go skill by skill. Each step unlocks the next.")}</p>
                 <div className="mt-3 flex flex-wrap gap-2 text-xs font-extrabold">
                   <span className="rounded-full bg-white/20 px-3 py-1">{tong} {tr("bài", "exercices", "exercises")}</span>
                   {!teacher && <span className="rounded-full bg-white/20 px-3 py-1">{daLam} {tr("đã làm", "faits", "done")} · {pct}%</span>}
@@ -944,6 +996,20 @@ ${r.error?.message ?? ""}`); return; }
           { target: "#tour-xp-start", title: t("tour.xp3_title"), content: t("tour.xp3_body"), finishLabel: t("home.start") },
         ]} />
       )}
+      {!teacher && (
+        <div role="tablist" className="mb-5 flex gap-6 border-0 border-b border-solid border-line">
+          {[[false, tr("Theo trình độ", "Par niveau", "By level")], [true, tr("Thư viện bài", "Bibliothèque", "Library")]].map(([k, l]) => (
+            <button key={String(k)} type="button" role="tab" aria-selected={thuVien === k} onClick={() => setThuVien(k)}
+              className={`-mb-px cursor-pointer border-0 border-b-2 border-solid bg-transparent px-1 pb-3 pt-1 font-sans text-sm transition-colors ${thuVien === k ? "border-primary font-semibold text-primary" : "border-transparent text-soft hover:text-ink"}`}>
+              {l}
+            </button>
+          ))}
+        </div>
+      )}
+      {!teacher && !thuVien ? (
+        <LuyenTheoCap cap={capMacDinh(capChon, capHoSo, exercises, hist)} capHoSo={capHoSo} onDoiCap={doiCap}
+          exercises={exercises} hist={hist} biKhoa={biKhoa} onMoKyNho={moKyNho} canhBao={canhBaoLt} />
+      ) : (
       <div id="tour-xp-grid" className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
         {CATS.map((cat, i) => {
           const list = exercises.filter((e) => inCat(e, cat.skill));
@@ -1002,6 +1068,7 @@ ${r.error?.message ?? ""}`); return; }
           );
         })}
       </div>
+      )}
       </>)}
     </div>
   );

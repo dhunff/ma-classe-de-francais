@@ -162,6 +162,8 @@ import TroChoiMan from "./screens/student/TroChoiMan.jsx";
 import Builder from "./screens/teacher/Builder.jsx";
 import XemDeThu from "./screens/teacher/XemDeThu.jsx";
 const THE_CHOI = [["le vent","gió"],["la pluie","mưa"],["l'arbre","cây"],["la montagne","núi"],["la mer","biển"],["le soleil","mặt trời"],["la neige","tuyết"],["le nuage","mây"]].map(([a,b],k)=>({id:"t"+k,matTruoc:a,matSau:b,loai:"n",chuDe:"thoi-tiet"}));
+import { LuyenTheoCap, ChiTietKyNho } from "./screens/practice/LuyenTheoCap.jsx";
+import { KY_NANG } from "./content/luyenTap/kyNang.js";
 import { Lightbulb, PenLine } from "lucide-react";
 import { Avatar, DS_AVATAR } from "./shared/avatars.jsx";
 
@@ -695,6 +697,30 @@ const mockPendingTasks = [
     questions: qs(6), deadline: day(5), createdAt: hoursAgo(20) },
 ];
 
+/* Luyện theo trình độ: bài lấy theo id trong cây, lịch sử giả đủ các trạng thái
+   (đạt, làm lại, đang làm, khoá phí). Dữ liệu giả chỉ sống ở trang này. */
+function LuyenCapThu() {
+  const [cap, setCap] = useState("B1");
+  const [ma, setMa] = useState(null);
+  const [baoKhoa, setBaoKhoa] = useState(null);
+  const ids = Object.values(KY_NANG).flatMap((c) => Object.values(c).flat()).flatMap((k) => k.bai.map((id) => ({ id, level: k.ma.slice(0, 2), title: "Bài mẫu " + k.ma + " · " + id.slice(-4), questions: [] })));
+  const b1 = KY_NANG.B1;
+  const hist = {
+    [b1.CO[0].bai[0]]: { best: 4, max: 4, tries: 1, at: 2 }, [b1.CO[0].bai[1]]: { best: 4, max: 5, tries: 1, at: 2 },
+    [b1.CO[1].bai[0]]: { best: 2, max: 5, tries: 1, at: 3 }, [b1.CO[1].bai[1]]: { best: 5, max: 12, tries: 1, at: 3 },
+    [b1.CE[0].bai[0]]: { best: 1, max: 1, tries: 1, at: 1 },
+  };
+  const biKhoa = (ex) => ex.id === b1.CE[1].bai[0];
+  const the = (ex) => <div className="rounded-2xl border border-solid border-line bg-surface p-4 text-sm font-bold text-ink">{ex.title}{hist[ex.id] ? " · đã làm" : ""}</div>;
+  return (
+    <div className="mx-auto max-w-5xl p-4">
+      {ma ? <ChiTietKyNho ma={ma} exercises={ids} hist={hist} biKhoa={biKhoa} onBack={() => setMa(null)} onMoKyNho={(o) => setMa(o.kn.ma)} renderThe={the} />
+        : <LuyenTheoCap cap={cap} capHoSo="B1" onDoiCap={setCap} exercises={ids} hist={hist} biKhoa={biKhoa} canhBao={baoKhoa}
+            onMoKyNho={(o) => (o.buoc === "khoa" ? setBaoKhoa("Làm xong bước trước để mở bước này.") : setMa(o.kn.ma))} />}
+    </div>
+  );
+}
+
 function Preview() {
   const [dark, setDark] = useState(false);
   const [lang, setLang] = useState("vi");
@@ -748,6 +774,7 @@ function Preview() {
     ["/etudiant/luyen-the", "Luyện Flashcard (thẻ mẫu)"],
     ["/etudiant/xem-lai-dau", "Thách đấu: xem lại câu sai"],
     ["/etudiant/ngu-phap", "Học ngữ pháp"],
+    ["/etudiant/luyen-cap", "Luyện tập theo trình độ"],
     ["/professeur/theo-doi-thu", "Giáo viên: theo dõi học sinh (31 HS)"],
     ["/professeur/soan-bai-thu", "Giáo viên: soạn bài (Builder)"],
     ["/professeur/xem-de-thu", "Giáo viên: xem đề như học sinh"],
@@ -881,6 +908,7 @@ function Preview() {
           <Route path="/etudiant/the-lat" element={<><Controls /><TheLatThu /></>} />
           <Route path="/etudiant/the-bo" element={<><Controls /><TheBoThu /></>} />
           <Route path="/etudiant/neo" element={<><Controls /><NeoThu /></>} />
+          <Route path="/etudiant/luyen-cap" element={<><Controls /><LuyenCapThu /></>} />
           <Route path="/professeur/chon-doan" element={<><Controls /><ChonDoanThu /></>} />
           <Route path="/etudiant/ngu-phap" element={<><Controls /><NguPhap /></>} />
           <Route path="/professeur/theo-doi-thu" element={<><Controls /><div className="p-6"><DanhSachHocSinh accounts={HS_GIA} exercises={[]} onMo={() => {}} onDoi={() => {}} /></div></>} />
