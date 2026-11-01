@@ -163,6 +163,7 @@ import Builder from "./screens/teacher/Builder.jsx";
 import XemDeThu from "./screens/teacher/XemDeThu.jsx";
 const THE_CHOI = [["le vent","gió"],["la pluie","mưa"],["l'arbre","cây"],["la montagne","núi"],["la mer","biển"],["le soleil","mặt trời"],["la neige","tuyết"],["le nuage","mây"]].map(([a,b],k)=>({id:"t"+k,matTruoc:a,matSau:b,loai:"n",chuDe:"thoi-tiet"}));
 import { LuyenTheoCap, ChiTietKyNho, MeoKyNho } from "./screens/practice/LuyenTheoCap.jsx";
+import ThanhTuu from "./screens/practice/ThanhTuu.jsx";
 import { KY_NANG } from "./content/luyenTap/kyNang.js";
 import { Lightbulb, PenLine } from "lucide-react";
 import { Avatar, DS_AVATAR } from "./shared/avatars.jsx";
@@ -712,12 +713,17 @@ function LuyenCapThu() {
     [b1.CE[0].bai[0]]: { best: 1, max: 1, tries: 1, at: 1 },
   };
   const biKhoa = (ex) => ex.id === b1.CE[1].bai[0];
+  /* Màn Thành tựu: A1 làm đủ mỗi kỹ năng một bài, điểm trải đủ các hạng, Viết và Nói không điểm. */
+  const [thanhTuu, setThanhTuu] = useState(false);
+  const a1 = Object.values(KY_NANG.A1).flat().map((k) => ({ id: "tt" + k.ma, level: "A1", kyNang: k.ma, questions: [] }));
+  const histTt = Object.fromEntries(a1.map((e, i) => [e.id, /-(PE|PO)-/.test(e.kyNang) ? { best: 0, max: 0, tries: 1, at: Date.now() } : { best: [20, 18, 15, 19, 17][i % 5], max: 20, tries: 1, at: Date.now() }]));
+  if (thanhTuu) return <div className="mx-auto max-w-5xl p-4"><ThanhTuu exercises={a1} hist={histTt} biKhoa={() => false} ten="Linh Nguyễn" /></div>;
   const the = (ex) => <div className="flex h-44 items-end rounded-3xl border border-solid border-line bg-surface p-4 text-sm font-bold text-ink">{ex.title}</div>;
   return (
     <div className="mx-auto max-w-5xl p-4">
       {ma && <div className="mb-4"><MeoKyNho ma={ma} /></div>}
       {ma ? <ChiTietKyNho ma={ma} exercises={ids} hist={hist} biKhoa={biKhoa} onBack={() => setMa(null)} onMoKyNho={(o) => setMa(o.kn.ma)} laVip={false} onMuaVip={() => {}} onLam={() => {}} renderThe={the} />
-        : <LuyenTheoCap cap={cap} capHoSo="B1" onDoiCap={setCap} exercises={ids} hist={hist} biKhoa={biKhoa} canhBao={baoKhoa}
+        : <LuyenTheoCap cap={cap} capHoSo="B1" onDoiCap={setCap} exercises={ids} hist={hist} biKhoa={biKhoa} canhBao={baoKhoa} onThanhTuu={() => setThanhTuu(true)}
             onMoKyNho={(o) => (o.buoc === "khoa" ? setBaoKhoa("Làm xong bước trước để mở bước này.") : setMa(o.kn.ma))} />}
     </div>
   );

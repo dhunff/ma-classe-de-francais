@@ -1,18 +1,20 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { Headphones, BookOpen, PenLine, Mic, Check, Lock, Play, Clock, ArrowRight, ChevronLeft, Sparkles, RotateCcw, Crown, Flag, ListChecks, AlertTriangle, XCircle, Lightbulb } from "lucide-react";
+import { Headphones, BookOpen, PenLine, Mic, Check, Lock, Play, Clock, ArrowRight, ChevronLeft, Sparkles, RotateCcw, Crown, Flag, ListChecks, AlertTriangle, XCircle, Lightbulb, Award } from "lucide-react";
 import { tr } from "../../shared/i18n.jsx";
 import { Leon } from "../../shared/leon.jsx";
 import { phat } from "../../shared/amThanh.js";
 import { FloatingLayer } from "../../shared/ui.jsx";
 import { GHI_CHU } from "../../content/luyenTap/ghiChuKyNang.js";
 import { CAP_DO, KY_LON, tongCap, duongKyLon, dsBaiKyNho, timKyNho, NGUONG_DAT } from "../../shared/tienTrinhLuyenTap.js";
+import { hangBai, hangKyNho, hangSau, tinhKyLon } from "../../shared/hangLuyenTap.js";
+import HuyHieuHang from "./HuyHieuHang.jsx";
 
 /* Màn Luyện tập theo trình độ (01/11/2026): trình độ → kỹ năng lớn → kỹ năng nhỏ
  * → bài. Mọi số đếm từ `exercises` + `hist`; `duKien` là số bài trong kế hoạch và
  * luôn được ghi rõ là kế hoạch. Luật khoá ở shared/tienTrinhLuyenTap.js. */
 
 /* Cùng bốn dải màu với lưới kỹ năng cũ (ngoại lệ màu nhận dạng, chữ trắng trên nền đậm). */
-const KY = () => ({
+export const KY = () => ({
   CO: { ten: tr("Nghe", "Compréhension de l'oral", "Listening"), Icon: Headphones, nen: "linear-gradient(135deg,#60A5FA,#2563EB)", dam: "#1D4ED8" },
   CE: { ten: tr("Đọc", "Compréhension des écrits", "Reading"), Icon: BookOpen, nen: "linear-gradient(135deg,#34D399,#059669)", dam: "#047857" },
   PE: { ten: tr("Viết", "Production écrite", "Writing"), Icon: PenLine, nen: "linear-gradient(135deg,#FB7185,#E11D48)", dam: "#BE123C" },
@@ -40,6 +42,7 @@ function NhanBuoc({ o }) {
 
 /* Dấu tròn trên đường: nối dọc bằng một vạch, nên thấy ngay mình đang ở đâu. */
 function DauBuoc({ o, stt, dam }) {
+  if (o.buoc === "xong" && hangKyNho(o)) return <HuyHieuHang hang={hangKyNho(o)} size={32} />;
   if (o.buoc === "xong") return <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-ok text-white"><Check size={16} strokeWidth={3} /></span>;
   if (o.buoc === "hienTai") return <span className="mcf-lt-nhip grid h-8 w-8 shrink-0 place-items-center rounded-full text-white" style={{ background: dam }}><Play size={13} className="ml-0.5 fill-current" /></span>;
   if (o.buoc === "khoa") return <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-surface2 text-soft"><Lock size={14} /></span>;
@@ -47,7 +50,8 @@ function DauBuoc({ o, stt, dam }) {
   return <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full border border-dashed border-line-strong bg-surface text-xs font-bold text-soft">{stt}</span>;
 }
 
-function TheKyLon({ ky, m, duong, onMo }) {
+function TheKyLon({ ky, m, duong, hist, onMo, onThanhTuu }) {
+  const cn = tinhKyLon(duong, hist);
   const coBai = duong.filter((o) => o.muc !== "trong");
   const dat = coBai.filter((o) => o.muc === "dat").length;
   const pct = coBai.length ? Math.round((dat / coBai.length) * 100) : 0;
@@ -74,16 +78,28 @@ function TheKyLon({ ky, m, duong, onMo }) {
                 <NhanBuoc o={o} />
                 {o.phi.length > 0 && o.buoc !== "vip" && <span className="ml-2 inline-flex items-center gap-1 align-[-1px] text-xs font-bold text-warn"><Crown size={12} /> +{o.phi.length} VIP</span>}
               </span>
+              {o.buoc !== "xong" && <HuyHieuHang hang={hangKyNho(o)} size={26} />}
             </button>
           </li>
         ))}
       </ol>
+      <button type="button" onClick={onThanhTuu} className="mt-auto flex w-full cursor-pointer items-center gap-2 border-0 border-t border-solid border-line bg-transparent px-5 py-3 text-left font-sans text-xs font-bold text-soft hover:text-primary">
+        <Award size={15} className={`shrink-0 ${cn.du ? "text-warn" : ""}`} />
+        <span className="min-w-0 flex-1">
+          {cn.du
+            ? tr("Đã nhận chứng nhận, bấm để xem", "Certificat obtenu, cliquez pour le voir", "Certificate earned, click to view")
+            : cn.sapCo
+              ? tr(`Chứng nhận: đạt ${cn.dat}/${cn.tong}, ${cn.sapCo} kỹ năng đang soạn bài`, `Certificat : ${cn.dat}/${cn.tong}, ${cn.sapCo} en préparation`, `Certificate: ${cn.dat}/${cn.tong}, ${cn.sapCo} being prepared`)
+              : tr(`Chứng nhận: đạt ${cn.dat}/${cn.tong} kỹ năng nhỏ`, `Certificat : ${cn.dat}/${cn.tong} sous-compétences`, `Certificate: ${cn.dat}/${cn.tong} sub-skills`)}
+        </span>
+        {cn.hang && <HuyHieuHang hang={cn.hang} size={24} />}
+      </button>
     </section>
   );
 }
 
 /* Trang một trình độ: chọn trình độ, bước tiếp theo, bốn kỹ năng lớn. */
-export function LuyenTheoCap({ cap, capHoSo, onDoiCap, exercises, hist, biKhoa, onMoKyNho, canhBao, laVip }) {
+export function LuyenTheoCap({ cap, capHoSo, onDoiCap, exercises, hist, biKhoa, onMoKyNho, canhBao, laVip, onThanhTuu }) {
   const moiCap = useMemo(() => Object.fromEntries(CAP_DO.map((c) => [c, tongCap(c, exercises, hist, biKhoa)])), [exercises, hist, biKhoa]);
   const tong = moiCap[cap];
   const KYN = KY();
@@ -149,7 +165,7 @@ export function LuyenTheoCap({ cap, capHoSo, onDoiCap, exercises, hist, biKhoa, 
       <div id="tour-xp-grid" className="grid grid-cols-1 gap-5 md:grid-cols-2">
         {KY_LON.map((ky) => {
           const k = tong.cacKy.find((x) => x.ky === ky);
-          return <TheKyLon key={ky} ky={ky} m={KYN[ky]} duong={k.duong} onMo={onMoKyNho} />;
+          return <TheKyLon key={ky} ky={ky} m={KYN[ky]} duong={k.duong} hist={hist} onMo={onMoKyNho} onThanhTuu={onThanhTuu} />;
         })}
       </div>
     </div>
@@ -266,7 +282,8 @@ function TieuDeVong({ ten, moTa, khiNao, Icon, nen, xong, tong, soVip }) {
 }
 
 /* Dấu thứ tự ở góc thẻ: thẻ bài giữ nguyên như Thư viện, dấu này nói bài đang ở đâu. */
-function DauBai({ tt, stt }) {
+function DauBai({ tt, stt, hang }) {
+  if (tt === "xong" && hang) return <HuyHieuHang hang={hang} size={36} className="absolute -left-2 -top-2 z-10 shadow-md" />;
   return (
     <span className={`absolute -left-2 -top-2 z-10 grid h-9 w-9 place-items-center rounded-full text-sm font-extrabold shadow-md ${tt === "xong" ? "bg-ok text-white" : tt === "tiepTheo" ? "bg-primary text-on-primary" : tt === "phi" ? "bg-warn-soft text-warn" : "bg-surface2 text-soft"}`}>
       {tt === "xong" ? <Check size={17} strokeWidth={3} /> : tt === "khoa" ? <Lock size={14} /> : tt === "phi" ? <Crown size={15} /> : stt}
@@ -295,6 +312,8 @@ export function ChiTietKyNho({ ma, exercises, hist, biKhoa, onBack, onMoKyNho, l
     return { k, ten, moTa, khiNao, Icon, nen, bai: [...bai.filter((b) => b.tt !== "phi"), ...bai.filter((b) => b.tt === "phi")] };
   }).filter((n) => n.bai.length);
   const moiVip = !laVip && o.phi.length > 0;
+  const hang = hangKyNho(o);
+  const len = hang ? hangSau(o.tb) : null;
   const NutBuoc = ({ b, huong }) => (
     <button type="button" onClick={() => onMoKyNho(b, m)} className={`flex min-w-0 flex-1 cursor-pointer items-center gap-2 rounded-2xl border border-solid border-line bg-surface px-4 py-3 font-sans text-sm font-bold text-ink hover:border-primary ${huong === "sau" ? "justify-end text-right" : "text-left"}`}>
       {huong === "truoc" && <ChevronLeft size={16} className="shrink-0" />}
@@ -310,6 +329,7 @@ export function ChiTietKyNho({ ma, exercises, hist, biKhoa, onBack, onMoKyNho, l
 
       <header className="mcf-cau-vao mb-6 rounded-3xl px-6 py-5 text-white" style={{ background: m.nen }}>
         <div className="flex flex-wrap items-center gap-x-4 gap-y-3">
+          <HuyHieuHang hang={hang} size={60} />
           <div className="min-w-[14rem] flex-1">
             <p className="m-0 text-sm font-bold text-white/85">{tr(`Bước ${i + 1} trên ${duong.length}`, `Étape ${i + 1} sur ${duong.length}`, `Step ${i + 1} of ${duong.length}`)}</p>
             <h2 className="m-0 mt-0.5 text-3xl font-extrabold leading-tight tracking-tight [text-wrap:balance]">{tenKn(o.kn)}</h2>
@@ -331,6 +351,7 @@ export function ChiTietKyNho({ ma, exercises, hist, biKhoa, onBack, onMoKyNho, l
                 {o.coTheLam.length
                   ? tr(`Đã làm ${o.xong.length} trên ${o.coTheLam.length} bài${pct !== null ? `, trung bình ${pct}%` : ""}`, `${o.xong.length} exercices faits sur ${o.coTheLam.length}${pct !== null ? `, moyenne ${pct} %` : ""}`, `${o.xong.length} of ${o.coTheLam.length} exercises done${pct !== null ? `, average ${pct}%` : ""}`)
                   : tr(`${o.phi.length} bài VIP`, `${o.phi.length} exercices VIP`, `${o.phi.length} VIP exercises`)}
+                {len && tr(`. Còn ${len.con}% để lên hạng ${len.hang}`, `. Encore ${len.con} % pour le rang ${len.hang}`, `. ${len.con}% more for rank ${len.hang}`)}
               </span>
               {moiVip && (
                 <span className="inline-flex items-center gap-1.5">
@@ -377,7 +398,7 @@ export function ChiTietKyNho({ ma, exercises, hist, biKhoa, onBack, onMoKyNho, l
                 <ol className="m-0 grid list-none grid-cols-[repeat(auto-fill,minmax(min(100%,17rem),1fr))] gap-5 p-0">
                   {bai.map(({ ex, tt }) => (
                     <li key={ex.id} className="relative min-w-0">
-                      <DauBai tt={tt} stt={trenDuong.findIndex((b) => b.ex.id === ex.id) + 1} />
+                      <DauBai tt={tt} stt={trenDuong.findIndex((b) => b.ex.id === ex.id) + 1} hang={hangBai(hist[ex.id])} />
                       {tt === "khoa" ? (
                         <div className="relative h-full">
                           <div aria-hidden inert="" className="pointer-events-none h-full opacity-50">{renderThe(ex)}</div>

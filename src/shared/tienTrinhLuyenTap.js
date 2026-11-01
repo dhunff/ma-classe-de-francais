@@ -19,7 +19,7 @@ export const NGUONG_DAT = 0.7;
 
 const daLam = (h) => !!h && (h.tries ?? 0) > 0;
 /* best = -1 là bản ghi cũ chưa có điểm, và bài tự luận có max = 0: đã làm, không có điểm. */
-const tiLe = (h) => (daLam(h) && h.max > 0 && h.best >= 0 ? h.best / h.max : null);
+export const tiLe = (h) => (daLam(h) && h.max > 0 && h.best >= 0 ? h.best / h.max : null);
 
 /* Bài của một kỹ năng nhỏ: danh sách id đã gắn sẵn, rồi tới bài gắn qua `ex.kyNang`. */
 export function baiCuaKyNang(kn, exercises) {

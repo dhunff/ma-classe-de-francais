@@ -211,6 +211,24 @@ body {
 @keyframes mcfLtVach { 0%,100% { opacity: 1; } 50% { opacity: .45; } }
 .mcf-lt-vach { animation: mcfLtVach 1.8s ease-in-out infinite; }
 @media (prefers-reduced-motion: reduce) { .mcf-lt-nhip, .mcf-lt-vach { animation: none; } }
+/* Hạng S: vệt sáng lướt qua chậm. */
+.mcf-hang-s { position: relative; overflow: hidden; }
+.mcf-hang-s::after { content: ""; position: absolute; inset: 0 auto 0 -70%; width: 45%; background: linear-gradient(100deg, transparent, rgba(255,255,255,.8), transparent); transform: skewX(-20deg); animation: mcfHangS 3.6s ease-in-out infinite; }
+@keyframes mcfHangS { 0%, 60% { left: -70%; } 100% { left: 130%; } }
+@media (prefers-reduced-motion: reduce) { .mcf-hang-s::after { animation: none; display: none; } }
+/* Tờ chứng nhận: giấy trắng, khung vàng ở cả hai bản sáng tối (ngoại lệ màu: đây là một tờ giấy để in). */
+.mcf-cn-giay { background: #FFFDF7; color: #1F2937; padding: 14px; border-radius: 6px; box-shadow: 0 24px 60px rgba(0,0,0,.4); }
+.mcf-cn-khung { border: 2px solid #B45309; outline: 1px solid #B45309; outline-offset: -8px; padding: 32px 24px; }
+.mcf-cn-nhan { font-family: Georgia, "Times New Roman", serif; font-size: 30px; font-weight: 700; color: #92400E; }
+.mcf-cn-ten { font-family: Georgia, "Times New Roman", serif; font-size: 34px; font-style: italic; overflow-wrap: anywhere; }
+.mcf-cn-chu { font-size: 11px; color: #4B5563; }
+@media print {
+  @page { size: A4 landscape; margin: 10mm; }
+  body > *:not(.mcf-in-cn) { display: none !important; }
+  .mcf-in-cn { position: static !important; background: none !important; padding: 0 !important; overflow: visible !important; }
+  .mcf-cn-nut { display: none !important; }
+  .mcf-cn-giay { max-width: none; box-shadow: none; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
 /* Bảng mẹo: bóng đèn sáng lên khi mở, từng mục hiện nối nhau. */
 @keyframes mcfMeoHien { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 .mcf-meo-dong { animation: mcfMeoHien .28s ease-out both; }

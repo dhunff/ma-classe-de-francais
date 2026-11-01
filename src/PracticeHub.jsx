@@ -43,6 +43,7 @@ import { anhMacDinh } from "./shared/anhMacDinh.js";
 import { choTrong } from "./shared/choTrong.jsx";
 import OTraLoi from "./screens/practice/OTraLoi.jsx";
 import { LuyenTheoCap, ChiTietKyNho, MeoKyNho } from "./screens/practice/LuyenTheoCap.jsx";
+import ThanhTuu from "./screens/practice/ThanhTuu.jsx";
 import { capMacDinh, duongKyLon, timKyNho, kyNhoCuaBai } from "./shared/tienTrinhLuyenTap.js";
 
 /* ============================================================
@@ -1000,7 +1001,7 @@ ${r.error?.message ?? ""}`); return; }
       )}
       {!teacher && (
         <div role="tablist" className="mb-5 flex gap-6 border-0 border-b border-solid border-line">
-          {[[false, tr("Theo trình độ", "Par niveau", "By level")], [true, tr("Thư viện bài", "Bibliothèque", "Library")]].map(([k, l]) => (
+          {[[false, tr("Theo trình độ", "Par niveau", "By level")], [true, tr("Thư viện bài", "Bibliothèque", "Library")], ["thanhTuu", tr("Thành tựu", "Réussites", "Achievements")]].map(([k, l]) => (
             <button key={String(k)} type="button" role="tab" aria-selected={thuVien === k} onClick={() => setThuVien(k)}
               className={`-mb-px cursor-pointer border-0 border-b-2 border-solid bg-transparent px-1 pb-3 pt-1 font-sans text-sm transition-colors ${thuVien === k ? "border-primary font-semibold text-primary" : "border-transparent text-soft hover:text-ink"}`}>
               {l}
@@ -1008,9 +1009,11 @@ ${r.error?.message ?? ""}`); return; }
           ))}
         </div>
       )}
-      {!teacher && !thuVien ? (
+      {!teacher && thuVien === "thanhTuu" ? (
+        <ThanhTuu exercises={exercises} hist={hist} biKhoa={biKhoa} ten={name} />
+      ) : !teacher && !thuVien ? (
         <LuyenTheoCap cap={capMacDinh(capChon, capHoSo, exercises, hist)} capHoSo={capHoSo} onDoiCap={doiCap}
-          exercises={exercises} hist={hist} biKhoa={biKhoa} onMoKyNho={moKyNho} canhBao={canhBaoLt} laVip={fullAccess} />
+          exercises={exercises} hist={hist} biKhoa={biKhoa} onMoKyNho={moKyNho} canhBao={canhBaoLt} laVip={fullAccess} onThanhTuu={() => setThuVien("thanhTuu")} />
       ) : (
       <div id="tour-xp-grid" className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
         {CATS.map((cat, i) => {

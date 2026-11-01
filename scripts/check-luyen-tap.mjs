@@ -2,7 +2,8 @@
 /* Kiểm cây Luyện tập theo trình độ: dữ liệu cây và luật tiến trình.
  * Lỗi đáng sợ nhất là NGÕ CỤT: một bước không làm được chặn mọi bước sau. */
 import { KY_NANG } from "../src/content/luyenTap/kyNang.js";
-import { CAP_DO, KY_LON, tinhKyNho, duongKyLon, dsBaiKyNho, tongCap, capMacDinh, baiCuaKyNang, timKyNho } from "../src/shared/tienTrinhLuyenTap.js";
+import { CAP_DO, KY_LON, tinhKyNho, duongKyLon, dsBaiKyNho, tongCap, capMacDinh, baiCuaKyNang, timKyNho, NGUONG_DAT } from "../src/shared/tienTrinhLuyenTap.js";
+import { hangTuTiLe, hangBai, hangKyNho, hangSau, tinhKyLon, tinhCap, THANG_HANG } from "../src/shared/hangLuyenTap.js";
 
 let dau = 0, rot = 0;
 const ca = (ten, dung) => { if (dung) dau++; else { rot++; console.log("  RỚT:", ten); } };
@@ -59,6 +60,33 @@ ca("trình độ: chọn tay thắng hồ sơ", capMacDinh("B1", "A2", [], {}) =
 ca("trình độ: rơi về hồ sơ", capMacDinh(null, "A2", [], {}) === "A2");
 ca("trình độ: giá trị lạ về A1", capMacDinh("xyz", "Débutant", [], {}) === "A1");
 ca("trình độ: theo bài vừa làm", capMacDinh(null, null, [{ id: "a", level: "B2" }], xong("a")) === "B2");
+
+/* Hạng S, A, B, C, D, F và chứng nhận. */
+ca("hạng: đủ sáu bậc, giảm dần", THANG_HANG.map((h) => h.hang).join("") === "SABCDF" && THANG_HANG.every((h, i, a) => !i || h.tu < a[i - 1].tu));
+ca("hạng: B đúng bằng ngưỡng Đạt của tiến trình", THANG_HANG.find((h) => h.hang === "B").tu === NGUONG_DAT);
+ca("hạng: đúng mốc", [[1, "S"], [0.95, "S"], [0.94, "A"], [0.85, "A"], [0.84, "B"], [7 / 10, "B"], [0.69, "C"], [0.6, "C"], [0.59, "D"], [0.5, "D"], [0.49, "F"], [0, "F"]].every(([x, h]) => hangTuTiLe(x) === h));
+ca("hạng: không có điểm thì không có hạng", hangTuTiLe(null) === null && hangBai({ best: 0, max: 0, tries: 1 }) === null && hangBai({ best: -1, max: 10, tries: 1 }) === null);
+ca("hạng bài: lấy điểm cao nhất", hangBai({ best: 9, max: 10, tries: 3 }) === "A");
+ca("hạng sau: còn bao nhiêu", hangSau(0.9)?.hang === "S" && hangSau(0.9)?.con === 5 && hangSau(0.95) === null && hangSau(0.3)?.hang === "D");
+const haiBai = [{ id: "h1", kyNang: ds[0].ma }, { id: "h2", kyNang: ds[0].ma }];
+const oHai = (hist) => tinhKyNho(ds[0], haiBai, hist);
+ca("hạng kỹ năng: làm một phần thì chưa có hạng", hangKyNho(oHai(xong("h1"))) === null);
+ca("hạng kỹ năng: làm đủ thì có hạng", hangKyNho(oHai({ ...xong("h1"), ...xong("h2", 7) })) === "B");
+ca("hạng kỹ năng: tự luận không có hạng", hangKyNho(oHai({ ...xong("h1", 0, 0), ...xong("h2", 0, 0) })) === null);
+const heDu = Object.assign({}, ...ex.map((e) => xong(e.id)));
+const kl = (bai, hist, bk) => tinhKyLon(duongKyLon("A1", "CO", bai, hist, bk), hist);
+ca("chứng nhận: đạt mọi kỹ năng nhỏ thì nhận, kèm hạng", kl(ex, heDu).du && kl(ex, heDu).hang === "A");
+ca("chứng nhận: thiếu một kỹ năng thì chưa", !kl(ex, Object.assign({}, ...ex.slice(1).map((e) => xong(e.id)))).du);
+ca("chứng nhận: dưới Đạt thì chưa", !kl(ex, Object.assign({}, ...ex.map((e) => xong(e.id, 5)))).du);
+ca("chứng nhận: kỹ năng đang soạn thì chưa, dù đường đi không chặn", kl(ex.slice(0, -1), heDu).sapCo === 1 && !kl(ex.slice(0, -1), heDu).du);
+ca("chứng nhận: kỹ năng chỉ có bài VIP không chặn", kl(ex, heDu, (e) => e.id === ex[ex.length - 1].id).du);
+ca("chứng nhận: chưa làm gì thì chưa", !kl(ex, {}).du);
+ca("chứng nhận: thời điểm là lần làm mới nhất", kl(ex, { ...heDu, ...{ [ex[0].id]: { best: 9, max: 10, tries: 1, at: 7 } } }).luc === 7);
+ca("chứng nhận trình độ: đủ bốn kỹ năng lớn mới nhận", !tinhCap("A1", ex, heDu, () => false).du && tinhCap("A1", ex, heDu, () => false).kyLon.find((k) => k.ky === "CO").du);
+const caCap = Object.values(KY_NANG.A1).flat().map((k) => ({ id: "c" + k.ma, level: "A1", kyNang: k.ma, questions: [] }));
+const viet = (e) => timKyNho(e.kyNang).ky === "PE" || timKyNho(e.kyNang).ky === "PO";
+const capDu = tinhCap("A1", caCap, Object.assign({}, ...caCap.map((e) => (viet(e) ? xong(e.id, 0, 0) : xong(e.id)))), () => false);
+ca("chứng nhận trình độ: Viết, Nói không điểm vẫn hoàn thành, hạng từ Nghe, Đọc", capDu.du && capDu.hang === "A" && capDu.kyLon.find((k) => k.ky === "PE").hang === null);
 
 console.log(`check:luyentap: ${dau} đạt, ${rot} rớt`);
 process.exit(rot ? 1 : 0);
