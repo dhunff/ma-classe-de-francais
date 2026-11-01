@@ -3,7 +3,7 @@
  * ═══════════════════════════════════════════════════════════════════════════
  *
  * Học sinh bấm « AI nhận xét » cạnh một bản ghi âm của CHÍNH MÌNH:
- *   1. OpenAI `gpt-transcribe` chép lời bản ghi (tiếng Pháp).
+ *   1. OpenAI `whisper-1` chép lời bản ghi (tiếng Pháp).
  *   2. Model chữ (mặc định gpt-6-luna, cùng biến PE_AI_MODEL với chấm PE)
  *      nhận xét bằng tiếng Việt dựa trên BẢN CHÉP LỜI.
  *
@@ -25,7 +25,7 @@
  * · Trần 25 MB (giới hạn của OpenAI) — đọc từ metadata trước khi tải.
  *
  * Biến môi trường: OPENAI_API_KEY (đã đặt cho cham-pe), PE_AI_MODEL (tuỳ
- * chọn), PO_STT_MODEL (tuỳ chọn, mặc định gpt-transcribe).
+ * chọn), PO_STT_MODEL (tuỳ chọn, mặc định whisper-1).
  */
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.112.4";
 import { CORS, json } from "../_shared/cors.ts";
@@ -39,7 +39,9 @@ const HAN_MUC_CAU = 30;
 const CUA_SO_GIO = 24;
 const TRAN_BYTE = 25 * 1024 * 1024;
 const MODEL_CHU = "gpt-6-luna";
-const MODEL_STT = "gpt-transcribe";
+/* 02/11: đổi từ gpt-transcribe, model đó chưa từng ra kết quả nào trong po_ai_nhan_xet, còn whisper-1
+   đang chạy thật ở cham-phat-am. */
+const MODEL_STT = "whisper-1";
 const DUOI_NHAN = /\.(webm|mp3|mp4|m4a|wav|mpeg|mpga)$/i; // OpenAI KHÔNG nhận ogg
 
 Deno.serve(async (req) => {
@@ -105,7 +107,7 @@ Deno.serve(async (req) => {
   // 1. Chép lời
   const form = new FormData();
   form.append("file", file, tenFile);
-  form.append("model", docTheo ? (Deno.env.get("PA_STT_MODEL") || "whisper-1") : (Deno.env.get("PO_STT_MODEL") || MODEL_STT));
+  form.append("model", Deno.env.get(docTheo ? "PA_STT_MODEL" : "PO_STT_MODEL") || MODEL_STT);
   if (cau) form.append("language", "fr");
   let r1: Response;
   try {
