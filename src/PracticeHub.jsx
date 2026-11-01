@@ -1572,7 +1572,7 @@ export function PracticeWorkspace({ ex, back, onFinish, soTu = false, chamBang =
                     <Volume2 size={16} /> {tr("Nghe câu mẫu", "Écouter le modèle", "Listen to the model")}
                   </button>
                 )}
-                <GhiAmBaiNoi gon exerciseId={ex.id} cauId={q.id} gioiHanGiay={120} />
+                <GhiAmBaiNoi gon mau={dam} exerciseId={ex.id} cauId={q.id} gioiHanGiay={120} />
               </div>
             ) : <KhungViet value={a || ""} readOnly={!!graded} onChange={(html) => setAnswers({ ...answers, [q.id]: html })} />}
             {graded && (q.model || baiMau[q.id]) && (

@@ -23,11 +23,38 @@ import { LeonNoi } from "../../shared/leon.jsx";
 const dongHo = (giay) =>
   `${String(Math.floor(giay / 60)).padStart(2, "0")}:${String(giay % 60).padStart(2, "0")}`;
 
+/* Sóng trang trí của nút ghi, chỉ chuyển động khi đang ghi. */
+const SONG_GHI = [40, 70, 100, 60, 85, 45, 75, 100, 55, 80, 40, 65];
+
+/* Nút ghi nằm trong thẻ câu hỏi: cả dải là nút bấm, màu theo kỹ năng, chuyển đỏ khi đang ghi. */
+function NutGhiGon({ trangThai, coBan, giay, toiDa, mau, onBam }) {
+  const dangGhi = trangThai === "dangGhi", dangLuu = trangThai === "dangLuu", xong = trangThai === "xong";
+  const nhan = dangGhi ? tr("Đang ghi, bấm để dừng", "Enregistrement, cliquez pour arrêter", "Recording, click to stop")
+    : dangLuu ? tr("Đang lưu…", "Enregistrement…", "Saving…")
+    : xong ? tr("Đã lưu, bấm để ghi lại", "Enregistré, cliquez pour recommencer", "Saved, click to record again")
+    : coBan ? tr("Bấm để ghi lại", "Cliquez pour recommencer", "Click to record again") : tr("Bấm để ghi âm", "Cliquez pour enregistrer", "Click to record");
+  return (
+    <button type="button" onClick={onBam} disabled={dangLuu}
+      className={`flex w-full items-center gap-3 rounded-2xl border-0 p-2 pr-4 text-left font-sans transition-colors ${dangGhi ? "bg-danger-soft" : "bg-surface2"} ${dangLuu ? "cursor-wait" : "cursor-pointer"}`}>
+      <span className={`grid h-11 w-11 shrink-0 place-items-center rounded-full text-white shadow-md ${dangGhi ? "mcf-ghi-nhip bg-danger" : xong ? "bg-ok" : ""}`} style={dangGhi || xong ? undefined : { background: mau }}>
+        {dangGhi ? <Square size={15} className="fill-current" aria-hidden /> : dangLuu ? <Loader2 size={18} className="mcf-spin" aria-hidden /> : xong ? <CheckCircle2 size={20} aria-hidden /> : <Mic size={20} aria-hidden />}
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className={`block text-sm font-bold ${dangGhi ? "text-danger" : "text-ink"}`}>{nhan}</span>
+        {dangGhi && <span className="block text-xs font-bold tabular-nums text-danger">{dongHo(giay)} / {dongHo(toiDa)}</span>}
+      </span>
+      <span aria-hidden className={`hidden h-7 w-24 shrink-0 items-center gap-[3px] sm:flex ${dangGhi ? "mcf-song-chay text-danger" : "opacity-40"}`} style={dangGhi ? undefined : { color: mau }}>
+        {SONG_GHI.map((cao, i) => <span key={i} className="min-w-0 flex-1 rounded-full bg-current" style={{ height: `${cao}%`, "--i": i }} />)}
+      </span>
+    </button>
+  );
+}
+
 /* Một lúc chỉ một bộ ghi chạy: bài Luyện tập có nhiều bộ ghi, mỗi câu một bộ. */
 let mayDangChay = null;
 
 /* `cauId`: ghi riêng cho một câu. `gon`: bản nằm trong thẻ câu hỏi, bỏ khung và tiêu đề. */
-export default function GhiAmBaiNoi({ examId, exerciseId, cauId, gon = false, gioiHanGiay = 900, moTa = null }) {
+export default function GhiAmBaiNoi({ examId, exerciseId, cauId, gon = false, mau = "var(--mcf-primary)", gioiHanGiay = 900, moTa = null }) {
   const [trangThai, setTrangThai] = useState("cho");   // cho · dangGhi · dangLuu · xong · loi
   const [loi, setLoi] = useState("");
   const [giay, setGiay] = useState(0);
@@ -132,37 +159,39 @@ export default function GhiAmBaiNoi({ examId, exerciseId, cauId, gon = false, gi
         {moTa ?? tr("Ghi âm bài nói của bạn. Nộp xong, AI chấm theo thang DELF chính thức ở trang « Kết quả thi »; bạn cũng có thể tự chấm lại theo từng tiêu chí.", "Enregistrez-vous. Après l’envoi, l’IA vous note avec la grille DELF officielle dans « Mes résultats » ; vous pouvez aussi vous auto-évaluer.", "Record yourself. After submitting, the AI grades you with the official DELF grid in « My results »; you can also self-assess.")}
       </p>}
 
-      <div className={`${gon ? "" : "mt-4 "}flex flex-wrap items-center gap-3`}>
-        {trangThai !== "dangGhi" ? (
-          <button type="button" onClick={batDau} disabled={trangThai === "dangLuu"}
-            className="flex cursor-pointer items-center gap-2 rounded-full border-0 bg-primary px-5 py-2.5
-                       text-sm font-bold text-on-primary transition hover:opacity-90
-                       disabled:cursor-not-allowed disabled:opacity-60">
-            {trangThai === "dangLuu"
-              ? <><Loader2 size={15} className="mcf-spin" aria-hidden /> {tr("Đang lưu…", "Enregistrement…", "Saving…")}</>
-              : <><Mic size={15} aria-hidden /> {dsCu.length ? tr("Ghi lại", "Réenregistrer", "Record again") : tr("Bắt đầu ghi", "Commencer l'enregistrement", "Start recording")}</>}
-          </button>
-        ) : (
-          <button type="button" onClick={dung}
-            className="flex cursor-pointer items-center gap-2 rounded-full border-0 bg-danger px-5 py-2.5
-                       text-sm font-bold text-white transition hover:opacity-90">
-            <Square size={15} aria-hidden /> {tr("Dừng", "Arrêter", "Stop")}
-          </button>
-        )}
-
-        {trangThai === "dangGhi" && (
-          <span className="flex items-center gap-2 text-sm font-bold tabular-nums text-danger">
-            <span aria-hidden className="h-2.5 w-2.5 animate-pulse rounded-full bg-danger" />
-            {dongHo(giay)} / {dongHo(gioiHanGiay)}
-          </span>
-        )}
-
-        {trangThai === "xong" && (
-          <span className="flex items-center gap-1.5 text-sm font-bold text-ok">
-            <CheckCircle2 size={15} aria-hidden /> {tr("Đã lưu", "Enregistré", "Saved")}
-          </span>
-        )}
+      {gon ? <NutGhiGon trangThai={trangThai} coBan={dsCu.length > 0} giay={giay} toiDa={gioiHanGiay} mau={mau} onBam={trangThai === "dangGhi" ? dung : batDau} /> : (
+<div className="mt-4 flex flex-wrap items-center gap-3">
+        {trangThai !== "dangGhi" ? (
+          <button type="button" onClick={batDau} disabled={trangThai === "dangLuu"}
+            className="flex cursor-pointer items-center gap-2 rounded-full border-0 bg-primary px-5 py-2.5
+                       text-sm font-bold text-on-primary transition hover:opacity-90
+                       disabled:cursor-not-allowed disabled:opacity-60">
+            {trangThai === "dangLuu"
+              ? <><Loader2 size={15} className="mcf-spin" aria-hidden /> {tr("Đang lưu…", "Enregistrement…", "Saving…")}</>
+              : <><Mic size={15} aria-hidden /> {dsCu.length ? tr("Ghi lại", "Réenregistrer", "Record again") : tr("Bắt đầu ghi", "Commencer l'enregistrement", "Start recording")}</>}
+          </button>
+        ) : (
+          <button type="button" onClick={dung}
+            className="flex cursor-pointer items-center gap-2 rounded-full border-0 bg-danger px-5 py-2.5
+                       text-sm font-bold text-white transition hover:opacity-90">
+            <Square size={15} aria-hidden /> {tr("Dừng", "Arrêter", "Stop")}
+          </button>
+        )}
+
+        {trangThai === "dangGhi" && (
+          <span className="flex items-center gap-2 text-sm font-bold tabular-nums text-danger">
+            <span aria-hidden className="h-2.5 w-2.5 animate-pulse rounded-full bg-danger" />
+            {dongHo(giay)} / {dongHo(gioiHanGiay)}
+          </span>
+        )}
+
+        {trangThai === "xong" && (
+          <span className="flex items-center gap-1.5 text-sm font-bold text-ok">
+            <CheckCircle2 size={15} aria-hidden /> {tr("Đã lưu", "Enregistré", "Saved")}
+          </span>
+        )}
       </div>
+      )}
 
       {loi && (
         <p className="m-0 mt-3 flex items-start gap-2 rounded-xl bg-danger-soft p-3 text-xs font-bold text-danger">
