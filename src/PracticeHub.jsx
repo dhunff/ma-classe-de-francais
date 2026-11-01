@@ -1428,7 +1428,7 @@ export function PracticeWorkspace({ ex, back, onFinish, soTu = false, chamBang =
     return (
       <div key={q.id} id={`cau-${q.id}`} className={"mcf-card rounded-3xl border-2 border-solid bg-surface p-5 shadow-[0_6px_24px_rgba(15,23,42,0.05)] transition-colors " + (graded ? (good === true ? "border-ok" : good === false ? "border-danger" : "border-line") : daChon ? "" : "border-transparent")}
         style={!graded && daChon ? { borderColor: dam } : undefined}>
-        <div className="mb-4 flex items-start gap-3">
+        <div className="mb-3 flex items-start gap-3">
           <span key={daChon ? "co" : "chua"} className={"grid h-10 w-10 shrink-0 place-items-center rounded-2xl text-base font-extrabold tabular-nums " + (graded ? (good === true ? "bg-ok text-white" : good === false ? "bg-danger text-white" : "bg-surface2 text-ink") : daChon ? "mcf-nay text-white" : "bg-surface2 text-ink")}
             style={!graded && daChon ? { background: dam } : undefined}>{i + 1}</span>
           <p className="m-0 min-w-0 flex-1 self-center text-base font-bold leading-snug text-ink">{choTrong(q.prompt)}</p>
@@ -1436,7 +1436,7 @@ export function PracticeWorkspace({ ex, back, onFinish, soTu = false, chamBang =
         </div>
 
         {q.type === "qcm" ? (
-          <div style={oNgan ? { display: "grid", gap: 10, gridTemplateColumns: `repeat(${q.options.length === 4 ? 2 : q.options.length}, minmax(0, 1fr))` } : { display: "grid", gap: 8 }}>
+          <div style={oNgan ? { display: "grid", gap: 8, gridTemplateColumns: `repeat(${q.options.length === 4 ? 2 : q.options.length}, minmax(0, 1fr))` } : { display: "grid", gap: 6 }}>
             {q.options.map((o, j) => {
               let bg = "var(--mcf-surface2)", border = "transparent", icon = null;
               if (graded) {
@@ -1466,15 +1466,15 @@ export function PracticeWorkspace({ ex, back, onFinish, soTu = false, chamBang =
               return (
                 <button key={j} disabled={!!graded || dangCham} onClick={() => setAnswers({ ...answers, [q.id]: j })}
                   className={graded ? "" : "transition-all duration-150 hover:-translate-y-px hover:shadow-[0_4px_14px_rgba(37,99,235,0.12)]"}
-                  style={{ position: "relative", display: "flex", flexDirection: oNgan ? "column" : "row", alignItems: "center", gap: oNgan ? 4 : 12, textAlign: oNgan ? "center" : "left",
-                    padding: oNgan ? "10px 6px" : "10px 12px", borderRadius: 16, fontSize: oNgan ? 17 : 15, fontWeight: oNgan || chonChua ? 700 : 500,
+                  style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: oNgan ? "center" : "flex-start", gap: oNgan ? 8 : 10, textAlign: "left",
+                    padding: oNgan ? "6px 6px" : "6px 10px", borderRadius: 12, fontSize: 14.5, fontWeight: oNgan || chonChua ? 700 : 500,
                     fontFamily: "inherit", cursor: graded ? "default" : "pointer", background: bg, border: `2px solid ${border}`, color: chonChua ? "#fff" : C.ink,
                     /* Gạch ngang CHỈ khi ô này là lựa chọn SAI. Điều kiện cũ
                        `j !== q.answer` luôn đúng với học sinh (q.answer rỗng),
                        nên ô họ chọn bị gạch cả khi làm đúng — chữ gạch ngang
                        trên một ô đang tô xanh đọc ra hai nghĩa trái nhau. */
                     textDecoration: graded && j === a && !isGood(q) ? "line-through" : "none" }}>
-                  <span className={(oNgan ? "h-6 w-6 " : "h-7 w-7 ") + "grid shrink-0 place-items-center rounded-lg text-xs font-extrabold " + (j === a ? (graded ? (isGood(q) ? "bg-ok text-white" : "bg-danger text-white") : "bg-white/25 text-white") : "bg-surface text-soft")}>{String.fromCharCode(65 + j)}</span> <AnhLuaChon q={q} j={j} /> {o}<span style={oNgan ? { position: "absolute", top: 8, right: 8 } : { marginLeft: "auto" }}>{icon}</span>
+                  <span className={"grid h-6 w-6 shrink-0 place-items-center rounded-md text-[11px] font-extrabold " + (j === a ? (graded ? (isGood(q) ? "bg-ok text-white" : "bg-danger text-white") : "bg-white/25 text-white") : "bg-surface text-soft")}>{String.fromCharCode(65 + j)}</span> <AnhLuaChon q={q} j={j} /> {o}<span style={oNgan ? { position: "absolute", top: "50%", right: 6, transform: "translateY(-50%)" } : { marginLeft: "auto" }}>{icon}</span>
                 </button>
               );
             })}

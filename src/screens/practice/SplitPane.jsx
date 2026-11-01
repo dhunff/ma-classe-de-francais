@@ -40,7 +40,7 @@ export default function SplitPane({ audioUrl, readingText, stickyTop = 8, nen, d
   const hasMaterial = Boolean(audioUrl || readingText);
 
   if (!hasMaterial) {
-    return <div className="mx-auto grid max-w-3xl gap-4">{children}</div>;
+    return <div className="mx-auto grid max-w-3xl gap-6">{children}</div>;
   }
 
   /* Chỉ có audio (07/10): không chia cột. Khoang trái chỉ chứa một trình phát
@@ -51,7 +51,7 @@ export default function SplitPane({ audioUrl, readingText, stickyTop = 8, nen, d
     return (
       <div>
         <AudioBar src={audioUrl} stickyTop={stickyTop} nen={nen} dam={dam} />
-        <div className="grid items-start gap-4 xl:grid-cols-2">{children}</div>
+        <div className="grid items-start gap-6 xl:grid-cols-2">{children}</div>
       </div>
     );
   }
@@ -67,7 +67,7 @@ export default function SplitPane({ audioUrl, readingText, stickyTop = 8, nen, d
       </div>
 
       <div
-        className="mcf-scroll grid min-w-0 gap-4 overflow-y-auto pr-1"
+        className="mcf-scroll grid min-w-0 gap-6 overflow-y-auto pr-1"
         style={{ flex: "5 1 340px", position: "sticky", top: stickyTop, maxHeight: "76vh" }}
       >
         {children}
