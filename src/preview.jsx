@@ -162,7 +162,7 @@ import TroChoiMan from "./screens/student/TroChoiMan.jsx";
 import Builder from "./screens/teacher/Builder.jsx";
 import XemDeThu from "./screens/teacher/XemDeThu.jsx";
 const THE_CHOI = [["le vent","gió"],["la pluie","mưa"],["l'arbre","cây"],["la montagne","núi"],["la mer","biển"],["le soleil","mặt trời"],["la neige","tuyết"],["le nuage","mây"]].map(([a,b],k)=>({id:"t"+k,matTruoc:a,matSau:b,loai:"n",chuDe:"thoi-tiet"}));
-import { LuyenTheoCap, ChiTietKyNho } from "./screens/practice/LuyenTheoCap.jsx";
+import { LuyenTheoCap, ChiTietKyNho, MeoKyNho } from "./screens/practice/LuyenTheoCap.jsx";
 import { KY_NANG } from "./content/luyenTap/kyNang.js";
 import { Lightbulb, PenLine } from "lucide-react";
 import { Avatar, DS_AVATAR } from "./shared/avatars.jsx";
@@ -715,6 +715,7 @@ function LuyenCapThu() {
   const the = (ex) => <div className="flex h-44 items-end rounded-3xl border border-solid border-line bg-surface p-4 text-sm font-bold text-ink">{ex.title}</div>;
   return (
     <div className="mx-auto max-w-5xl p-4">
+      {ma && <div className="mb-4"><MeoKyNho ma={ma} /></div>}
       {ma ? <ChiTietKyNho ma={ma} exercises={ids} hist={hist} biKhoa={biKhoa} onBack={() => setMa(null)} onMoKyNho={(o) => setMa(o.kn.ma)} laVip={false} onMuaVip={() => {}} onLam={() => {}} renderThe={the} />
         : <LuyenTheoCap cap={cap} capHoSo="B1" onDoiCap={setCap} exercises={ids} hist={hist} biKhoa={biKhoa} canhBao={baoKhoa}
             onMoKyNho={(o) => (o.buoc === "khoa" ? setBaoKhoa("Làm xong bước trước để mở bước này.") : setMa(o.kn.ma))} />}

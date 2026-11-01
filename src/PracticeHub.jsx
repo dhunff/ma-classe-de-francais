@@ -42,8 +42,8 @@ import { Lock } from "lucide-react";
 import { anhMacDinh } from "./shared/anhMacDinh.js";
 import { choTrong } from "./shared/choTrong.jsx";
 import OTraLoi from "./screens/practice/OTraLoi.jsx";
-import { LuyenTheoCap, ChiTietKyNho } from "./screens/practice/LuyenTheoCap.jsx";
-import { capMacDinh, duongKyLon, timKyNho } from "./shared/tienTrinhLuyenTap.js";
+import { LuyenTheoCap, ChiTietKyNho, MeoKyNho } from "./screens/practice/LuyenTheoCap.jsx";
+import { capMacDinh, duongKyLon, timKyNho, kyNhoCuaBai } from "./shared/tienTrinhLuyenTap.js";
 
 /* ============================================================
    PRACTICE HUB v3 — Tự luyện tập
@@ -348,7 +348,7 @@ ${r.error?.message ?? ""}`); return; }
         price={ex.price ? fmtPrice(ex.price) : ""} />;
     }
 
-    return <PracticeWorkspace ex={ex} back={back} soTu={role === "eleve" && !!name}
+    return <PracticeWorkspace ex={ex} back={back} soTu={role === "eleve" && !!name} kyNho={view.kyNho || kyNhoCuaBai(ex)}
       onFinish={(score, max) => saveHist(ex.id, score, max)} />;
   }
 
@@ -1230,7 +1230,7 @@ function HubMenu({ onEdit, onDup, onDel, onMove }) {
 /* ============ Workspace tự luyện — chấm ngay ============ */
 /* `chamBang` (23/10): hàm chấm thay cho gradeRemote, cùng hình dạng kết quả, dùng cho
    « Bài luyện của tôi » (câu ghép từ nhiều bài, chấm bằng cham-on-tap). */
-export function PracticeWorkspace({ ex, back, onFinish, soTu = false, chamBang = null }) {
+export function PracticeWorkspace({ ex, back, onFinish, soTu = false, chamBang = null, kyNho = null }) {
   const [answers, setAnswers] = useState({});
   const [confirmCount, setConfirmCount] = useState(null);   // ⚠️ copie incomplète
   const t = useT();
@@ -1539,7 +1539,12 @@ export function PracticeWorkspace({ ex, back, onFinish, soTu = false, chamBang =
 
   return (
     <>
-      {!zen && <button style={{ ...S.btn(false), marginBottom: 16 }} onClick={back}><ChevronLeft size={16} /> {t("practice.back")}</button>}
+      {!zen && (
+        <div className="mb-4 flex flex-wrap items-center gap-3">
+          <button style={S.btn(false)} onClick={back}><ChevronLeft size={16} /> {t("practice.back")}</button>
+          {kyNho && <MeoKyNho ma={kyNho} />}
+        </div>
+      )}
     <FocusShell zen={zen} setZen={setZen} title={ex.title}
       meta={[ex.level, exSkills(ex).join(" + "), tr(`${ex.questions.length} questions`, `${ex.questions.length} câu`, `${ex.questions.length} questions`), ex.timeLimit && !graded ? tr(`Temps limite : ${ex.timeLimit} min`, `Thời gian làm bài: ${ex.timeLimit} phút`, `Time limit: ${ex.timeLimit} min`) : null]}
       answered={ex.questions.length - getUnansweredQuestionsCount(answers, ex.questions)} total={ex.questions.length}

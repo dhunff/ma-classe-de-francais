@@ -98,6 +98,9 @@ export function capMacDinh(daChon, capHoSo, exercises, hist) {
   return moiNhat ? moiNhat.level : CAP_DO[0];
 }
 
+/* Kỹ năng nhỏ của một bài, kể cả bài mở từ Thư viện: gắn bằng meta.kyNang hoặc id trong cây. */
+export const kyNhoCuaBai = (ex) => ex.kyNang || Object.values(KY_NANG).flatMap((c) => Object.values(c).flat()).find((k) => k.bai.includes(ex.id))?.ma || null;
+
 export const timKyNho = (ma) => {
   const [cap, ky] = ma.split("-");
   const kn = KY_NANG[cap]?.[ky]?.find((x) => x.ma === ma);

@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { Headphones, BookOpen, PenLine, Mic, Check, Lock, Play, Clock, ArrowRight, ChevronLeft, Sparkles, RotateCcw, Crown } from "lucide-react";
+import { Headphones, BookOpen, PenLine, Mic, Check, Lock, Play, Clock, ArrowRight, ChevronLeft, Sparkles, RotateCcw, Crown, Flag, ListChecks, AlertTriangle, XCircle, Lightbulb } from "lucide-react";
 import { tr } from "../../shared/i18n.jsx";
 import { Leon } from "../../shared/leon.jsx";
 import { phat } from "../../shared/amThanh.js";
@@ -156,10 +156,11 @@ export function LuyenTheoCap({ cap, capHoSo, onDoiCap, exercises, hist, biKhoa, 
   );
 }
 
+/* Ba vòng ba màu riêng, tách khỏi bốn màu kỹ năng (ngoại lệ màu nhận dạng, chữ trắng trên nền đậm). */
 const VONG = () => [
-  ["hoc", tr("Học", "Découverte", "Learn"), tr("Gặp kỹ năng lần đầu, mỗi bài một chủ đề", "Première rencontre, un thème par exercice", "First contact, one topic per exercise")],
-  ["on", tr("Ôn", "Révision", "Review"), tr("Quay lại sau khoảng 3 ngày để nhớ lâu hơn", "À refaire environ 3 jours plus tard", "Come back about 3 days later")],
-  ["chot", tr("Chốt", "Bilan", "Final check"), tr("Sau khoảng 10 ngày, từ 85% là nắm chắc", "Environ 10 jours plus tard, 85 % pour maîtriser", "About 10 days later, 85% means mastered")],
+  ["hoc", tr("Học", "Découverte", "Learn"), tr("Gặp kỹ năng lần đầu, mỗi bài một chủ đề", "Première rencontre, un thème par exercice", "First contact, one topic per exercise"), tr("Làm ngay", "Maintenant", "Start now"), BookOpen, "linear-gradient(160deg,#0284C7,#075985)"],
+  ["on", tr("Ôn", "Révision", "Review"), tr("Quay lại để nhớ lâu hơn", "Revenez pour mieux retenir", "Come back to remember longer"), tr("Sau khoảng 3 ngày", "Environ 3 jours après", "About 3 days later"), RotateCcw, "linear-gradient(160deg,#7C3AED,#5B21B6)"],
+  ["chot", tr("Chốt", "Bilan", "Final check"), tr("Từ 85% là nắm chắc", "85 % pour maîtriser", "85% means mastered"), tr("Sau khoảng 10 ngày", "Environ 10 jours après", "About 10 days later"), Flag, "linear-gradient(160deg,#EA580C,#9A3412)"],
 ];
 
 /* Dải tiến độ: mỗi bài một vạch, nhìn là biết còn mấy bài và mình đang ở đâu. */
@@ -174,25 +175,52 @@ function DaiBai({ ds }) {
   );
 }
 
-/* Mẹo trước khi làm: chỉ là nút bóng đèn, bấm mới mở. */
-function NutMeo({ ghi }) {
+/* Mẹo của một kỹ năng nhỏ: chỉ là nút bóng đèn, bấm mới mở. Dùng ở trang kỹ năng (nằm trên
+   dải màu, `tren="mau"`) và trong màn làm bài (nằm trên nền thường). */
+export function MeoKyNho({ ma, tren = "nen" }) {
   const ref = useRef(null);
   const [mo, setMo] = useState(false);
+  const f = timKyNho(ma);
+  const ghi = GHI_CHU[ma];
+  if (!f || !ghi) return null;
+  const m = KY()[f.ky];
+  const ten = tr("Mẹo làm bài", "Conseils", "Tips");
+  const muc = [
+    [ListChecks, tr("Cần có", "Il faut connaître", "You need"), ghi.can, "bg-primary-soft", "bg-primary text-on-primary", "text-primary"],
+    [AlertTriangle, tr("Lưu ý", "Attention", "Note"), ghi.luu, "bg-warn-soft", "bg-warn text-white", "text-warn"],
+    [XCircle, tr("Lỗi hay mắc", "Erreur fréquente", "Common mistake"), ghi.loi, "bg-danger-soft", "bg-danger text-white", "text-danger"],
+    [Lightbulb, tr("Mẹo", "Astuce", "Tip"), ghi.meo, "bg-ok-soft", "bg-ok text-white", "text-ok"],
+  ];
   return (
     <span ref={ref} className="inline-flex shrink-0">
-      <button type="button" onClick={() => setMo((v) => !v)} aria-expanded={mo} aria-label={tr("Mẹo trước khi làm", "Conseils avant de commencer", "Tips before you start")} title={tr("Mẹo trước khi làm", "Conseils avant de commencer", "Tips before you start")}
-        className="grid h-12 w-12 cursor-pointer place-items-center rounded-2xl border-0 bg-white/25 text-2xl leading-none transition-transform hover:scale-110 motion-reduce:hover:scale-100">
-        <span aria-hidden>💡</span>
+      <button type="button" onClick={() => setMo((v) => !v)} aria-expanded={mo} aria-label={ten} title={ten}
+        className={tren === "mau"
+          ? "grid h-12 w-12 cursor-pointer place-items-center rounded-2xl border-0 bg-white/25 text-2xl leading-none"
+          : "inline-flex cursor-pointer items-center gap-2 rounded-2xl border border-solid border-line bg-surface px-4 py-2 font-sans text-sm font-bold text-ink hover:border-primary"}>
+        <span aria-hidden className={`mcf-den ${tren === "mau" ? "" : "text-lg leading-none"} ${mo ? "mcf-den-bat" : ""}`}>💡</span>
+        {tren !== "mau" && ten}
       </button>
-      <FloatingLayer anchorRef={ref} open={mo} onClose={() => setMo(false)} width={320} radius={18} padding={16}>
-        <dl className="m-0 flex flex-col gap-3 text-sm leading-relaxed">
-          {[[tr("Cần có", "Il faut connaître", "You need"), ghi.can], [tr("Lưu ý", "Attention", "Note"), ghi.luu], [tr("Lỗi hay mắc", "Erreur fréquente", "Common mistake"), ghi.loi], [tr("Mẹo", "Astuce", "Tip"), ghi.meo]].map(([t, n]) => (
-            <div key={t}>
-              <dt className="font-bold text-ink">{t}</dt>
-              <dd className="m-0 text-soft">{n}</dd>
+      <FloatingLayer anchorRef={ref} open={mo} onClose={() => setMo(false)} width={Math.min(360, window.innerWidth - 16)} align={tren === "mau" ? "right" : "left"} radius={22} padding={0} animate>
+        <div className="overflow-hidden rounded-[21px]">
+          <div className="relative flex items-center gap-3 overflow-hidden px-4 py-3 text-white" style={{ background: m.nen }}>
+            <Leon cam="hoc" size={52} className="shrink-0" />
+            <div className="min-w-0">
+              <p className="m-0 text-base font-extrabold leading-tight">{ten}</p>
+              <p className="m-0 text-xs font-semibold text-white/90">{tenKn(f.kn)}</p>
             </div>
-          ))}
-        </dl>
+          </div>
+          <div className="flex max-h-[min(60vh,28rem)] flex-col gap-2 overflow-y-auto p-3">
+            {muc.map(([Icon, nhan, noiDung, nen, oIcon, chu], i) => (
+              <div key={nhan} className={`mcf-meo-dong flex gap-3 rounded-2xl p-3 ${nen}`} style={{ animationDelay: `${i * 60}ms` }}>
+                <span className={`grid h-8 w-8 shrink-0 place-items-center rounded-xl ${oIcon}`}><Icon size={16} /></span>
+                <div className="min-w-0">
+                  <p className={`m-0 text-sm font-extrabold ${chu}`}>{nhan}</p>
+                  <p className="m-0 text-sm leading-relaxed text-ink">{noiDung}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </FloatingLayer>
     </span>
   );
@@ -211,10 +239,30 @@ function NutVip({ onClick, gia }) {
   );
 }
 
-/* Mốc đầu mỗi vòng: đi hết bài trong vòng thì thành dấu tích. */
-function DauVong({ stt, hetBai, dangLam, dam }) {
-  if (hetBai) return <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-ok text-white"><Check size={17} strokeWidth={3} /></span>;
-  return <span className={`grid h-9 w-9 shrink-0 place-items-center rounded-full text-sm font-extrabold ${dangLam ? "text-white" : "bg-surface2 text-soft"}`} style={dangLam ? { background: dam } : undefined}>{stt}</span>;
+/* Tiêu đề một vòng: tấm màu riêng, biểu tượng mờ làm nền, ghi khi nào làm và đã làm tới đâu.
+   Đi hết bài trong vòng thì biểu tượng thành dấu tích. */
+function TieuDeVong({ ten, moTa, khiNao, Icon, nen, xong, tong, soVip }) {
+  const het = tong > 0 && xong === tong;
+  return (
+    <div className="relative overflow-hidden rounded-3xl p-4 text-white shadow-md" style={{ background: nen }}>
+      <Icon aria-hidden size={92} strokeWidth={1.5} className="pointer-events-none absolute -bottom-4 -right-4 text-white/15" />
+      <div className="relative flex items-center justify-between gap-2">
+        <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-white/25">{het ? <Check size={18} strokeWidth={3} /> : <Icon size={18} />}</span>
+        <span className="rounded-full bg-black/25 px-2.5 py-1 text-right text-[11px] font-bold leading-tight">{khiNao}</span>
+      </div>
+      <h3 className="relative m-0 mt-3 text-2xl font-extrabold leading-none">{ten}</h3>
+      <p className="relative m-0 mt-1.5 text-[13px] font-medium leading-snug">{moTa}</p>
+      {tong > 0 && (
+        <div className="relative mt-3 h-1.5 overflow-hidden rounded-full bg-white/25">
+          <span className="block h-full rounded-full bg-white" style={{ width: `${(xong / tong) * 100}%` }} />
+        </div>
+      )}
+      <p className="relative m-0 mt-1.5 flex flex-wrap items-center gap-x-2 text-xs font-bold">
+        {tong > 0 && <span className="tabular-nums">{tr(`${xong}/${tong} bài`, `${xong}/${tong} ex.`, `${xong}/${tong} ex.`)}</span>}
+        {soVip > 0 && <span className="inline-flex items-center gap-1"><Crown size={12} /> {soVip} VIP</span>}
+      </p>
+    </div>
+  );
 }
 
 /* Dấu thứ tự ở góc thẻ: thẻ bài giữ nguyên như Thư viện, dấu này nói bài đang ở đâu. */
@@ -240,13 +288,12 @@ export function ChiTietKyNho({ ma, exercises, hist, biKhoa, onBack, onMoKyNho, l
   const ds = dsBaiKyNho(o, hist, biKhoa);
   const truoc = duong[i - 1], sau = duong[i + 1];
   const tiep = ds.find((b) => b.tt === "tiepTheo");
-  const ghi = GHI_CHU[ma];
   const pct = o.tb === null ? null : Math.round(o.tb * 100);
   const trenDuong = ds.filter((b) => b.tt !== "phi");
-  const nhom = VONG().map(([k, ten, moTa]) => {
+  const nhom = VONG().map(([k, ten, moTa, khiNao, Icon, nen]) => {
     const bai = ds.filter((b) => (b.ex.vong || "hoc") === k);
-    return [k, ten, moTa, [...bai.filter((b) => b.tt !== "phi"), ...bai.filter((b) => b.tt === "phi")]];
-  }).filter((n) => n[3].length);
+    return { k, ten, moTa, khiNao, Icon, nen, bai: [...bai.filter((b) => b.tt !== "phi"), ...bai.filter((b) => b.tt === "phi")] };
+  }).filter((n) => n.bai.length);
   const moiVip = !laVip && o.phi.length > 0;
   const NutBuoc = ({ b, huong }) => (
     <button type="button" onClick={() => onMoKyNho(b, m)} className={`flex min-w-0 flex-1 cursor-pointer items-center gap-2 rounded-2xl border border-solid border-line bg-surface px-4 py-3 font-sans text-sm font-bold text-ink hover:border-primary ${huong === "sau" ? "justify-end text-right" : "text-left"}`}>
@@ -267,7 +314,7 @@ export function ChiTietKyNho({ ma, exercises, hist, biKhoa, onBack, onMoKyNho, l
             <p className="m-0 text-sm font-bold text-white/85">{tr(`Bước ${i + 1} trên ${duong.length}`, `Étape ${i + 1} sur ${duong.length}`, `Step ${i + 1} of ${duong.length}`)}</p>
             <h2 className="m-0 mt-0.5 text-3xl font-extrabold leading-tight tracking-tight [text-wrap:balance]">{tenKn(o.kn)}</h2>
           </div>
-          {ghi && <NutMeo ghi={ghi} />}
+          <MeoKyNho ma={ma} tren="mau" />
           {/* Chỉ mời khi kỹ năng này THẬT SỰ có bài VIP đang khoá: không bán thứ chưa soạn. */}
           {moiVip && <NutVip onClick={onMuaVip} gia={giaVip} />}
           {tiep && (
@@ -319,23 +366,13 @@ export function ChiTietKyNho({ ma, exercises, hist, biKhoa, onBack, onMoKyNho, l
         </div>
       ) : (
         <div className="flex flex-col gap-8">
-          {nhom.map(([k, ten, moTa, bai], iv) => {
+          {nhom.map(({ k, ten, moTa, khiNao, Icon, nen, bai }, iv) => {
             const conLaiDuong = bai.filter((b) => b.tt !== "phi");
-            const xongVong = conLaiDuong.filter((b) => b.tt === "xong").length;
-            const soVip = bai.length - conLaiDuong.length;
             return (
-              <section key={k} className="relative grid gap-4 lg:grid-cols-[10rem_minmax(0,1fr)] lg:gap-6">
-                {iv < nhom.length - 1 && <span aria-hidden className="absolute -bottom-8 left-[17px] top-0 hidden w-0.5 bg-line lg:block" />}
-                <div className="relative flex items-start gap-3 self-start bg-bg lg:sticky lg:top-3 lg:flex-col lg:gap-2 lg:pb-3">
-                  <DauVong stt={iv + 1} hetBai={conLaiDuong.length > 0 && xongVong === conLaiDuong.length} dangLam={bai.some((b) => b.tt === "tiepTheo")} dam={m.dam} />
-                  <div className="min-w-0">
-                    <h3 className="m-0 text-lg font-extrabold leading-tight text-ink">{ten}</h3>
-                    <p className="m-0 mt-1 text-sm leading-snug text-soft">{moTa}</p>
-                    <p className="m-0 mt-1.5 flex flex-wrap items-center gap-x-2 text-xs font-bold text-soft">
-                      {conLaiDuong.length > 0 && <span className="tabular-nums">{tr(`${xongVong}/${conLaiDuong.length} bài`, `${xongVong}/${conLaiDuong.length} ex.`, `${xongVong}/${conLaiDuong.length} ex.`)}</span>}
-                      {soVip > 0 && <span className="inline-flex items-center gap-1 text-warn"><Crown size={12} /> {soVip} VIP</span>}
-                    </p>
-                  </div>
+              <section key={k} className="relative grid gap-4 lg:grid-cols-[11rem_minmax(0,1fr)] lg:gap-6">
+                {iv < nhom.length - 1 && <span aria-hidden className="absolute -bottom-8 left-[5.5rem] top-0 hidden border-0 border-l-2 border-dashed border-line lg:block" />}
+                <div className="relative self-start lg:sticky lg:top-3">
+                  <TieuDeVong ten={ten} moTa={moTa} khiNao={khiNao} Icon={Icon} nen={nen} tong={conLaiDuong.length} xong={conLaiDuong.filter((b) => b.tt === "xong").length} soVip={bai.length - conLaiDuong.length} />
                 </div>
                 <ol className="m-0 grid list-none grid-cols-[repeat(auto-fill,minmax(min(100%,17rem),1fr))] gap-5 p-0">
                   {bai.map(({ ex, tt }) => (

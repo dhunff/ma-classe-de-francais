@@ -211,6 +211,13 @@ body {
 @keyframes mcfLtVach { 0%,100% { opacity: 1; } 50% { opacity: .45; } }
 .mcf-lt-vach { animation: mcfLtVach 1.8s ease-in-out infinite; }
 @media (prefers-reduced-motion: reduce) { .mcf-lt-nhip, .mcf-lt-vach { animation: none; } }
+/* Bảng mẹo: bóng đèn sáng lên khi mở, từng mục hiện nối nhau. */
+@keyframes mcfMeoHien { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+.mcf-meo-dong { animation: mcfMeoHien .28s ease-out both; }
+.mcf-den { display: inline-block; transition: transform .18s ease, filter .18s ease; }
+button:hover > .mcf-den { transform: rotate(-12deg) scale(1.12); }
+.mcf-den-bat { filter: drop-shadow(0 0 8px #FACC15); transform: scale(1.12); }
+@media (prefers-reduced-motion: reduce) { .mcf-meo-dong { animation: none; } .mcf-den { transition: none; } button:hover > .mcf-den, .mcf-den-bat { transform: none; } }
 /* Nút Mở VIP: nền vàng kim như thẻ VIP thật (ngoại lệ màu nhận dạng, chữ nâu sẫm), rê chuột thì vệt sáng quét qua. */
 .mcf-nut-vip { position: relative; overflow: hidden; background: linear-gradient(180deg, #FDE68A, #FBBF24 55%, #F59E0B); color: #451A03; box-shadow: inset 0 1px 0 rgba(255,255,255,.75), 0 0 0 1px rgba(146,64,14,.35), 0 8px 20px rgba(120,53,15,.35); transition: transform .18s ease, box-shadow .18s ease; }
 .mcf-nut-vip::after { content: ""; position: absolute; inset: 0 auto 0 -60%; width: 40%; background: linear-gradient(100deg, transparent, rgba(255,255,255,.75), transparent); transform: skewX(-20deg); pointer-events: none; }
