@@ -1644,7 +1644,6 @@ export function PracticeWorkspace({ ex, back, onFinish, soTu = false, chamBang =
         </div>
       )}
 
-      {laNoi && <p className="m-0 mb-4 text-sm font-semibold text-soft">{tr("Mỗi câu ghi âm riêng. Ghi xong có thể nghe lại và bấm « AI nhận xét ». Bài nói không có điểm.", "Chaque question a son enregistrement. Réécoutez puis demandez l'avis de l'IA. L'oral n'est pas noté.", "Each question has its own recording. Listen back, then ask for AI feedback. Speaking is not scored.")}</p>}
       <SplitPane audioUrl={ex.audioLuyen || ex.audioUrl} readingText={ex.readingText} stickyTop={zen ? FOCUS_TOP : 8} nen={mauKn.dai} dam={dam}>
         {questionCards}
       </SplitPane>

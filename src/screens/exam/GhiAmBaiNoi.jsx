@@ -26,18 +26,17 @@ const dongHo = (giay) =>
 /* Sóng trang trí của nút ghi, chỉ chuyển động khi đang ghi. */
 const SONG_GHI = [40, 70, 100, 60, 85, 45, 75, 100, 55, 80, 40, 65];
 
-/* Nút ghi nằm trong thẻ câu hỏi: cả dải là nút bấm, màu theo kỹ năng, chuyển đỏ khi đang ghi. */
-function NutGhiGon({ trangThai, coBan, giay, toiDa, mau, onBam }) {
-  const dangGhi = trangThai === "dangGhi", dangLuu = trangThai === "dangLuu", xong = trangThai === "xong";
+/* Nút ghi nằm trong thẻ câu hỏi: cả dải là nút bấm, màu theo kỹ năng, chuyển đỏ khi đang ghi.
+   Mỗi câu chỉ ghi một lần: có bản ghi rồi thì nút này không hiện nữa. */
+function NutGhiGon({ trangThai, giay, toiDa, mau, onBam }) {
+  const dangGhi = trangThai === "dangGhi", dangLuu = trangThai === "dangLuu";
   const nhan = dangGhi ? tr("Đang ghi, bấm để dừng", "Enregistrement, cliquez pour arrêter", "Recording, click to stop")
-    : dangLuu ? tr("Đang lưu…", "Enregistrement…", "Saving…")
-    : xong ? tr("Đã lưu, bấm để ghi lại", "Enregistré, cliquez pour recommencer", "Saved, click to record again")
-    : coBan ? tr("Bấm để ghi lại", "Cliquez pour recommencer", "Click to record again") : tr("Bấm để ghi âm", "Cliquez pour enregistrer", "Click to record");
+    : dangLuu ? tr("Đang lưu…", "Enregistrement…", "Saving…") : tr("Bấm để ghi âm", "Cliquez pour enregistrer", "Click to record");
   return (
     <button type="button" onClick={onBam} disabled={dangLuu}
       className={`flex w-full items-center gap-3 rounded-2xl border-0 p-2 pr-4 text-left font-sans transition-colors ${dangGhi ? "bg-danger-soft" : "bg-surface2"} ${dangLuu ? "cursor-wait" : "cursor-pointer"}`}>
-      <span className={`grid h-11 w-11 shrink-0 place-items-center rounded-full text-white shadow-md ${dangGhi ? "mcf-ghi-nhip bg-danger" : xong ? "bg-ok" : ""}`} style={dangGhi || xong ? undefined : { background: mau }}>
-        {dangGhi ? <Square size={15} className="fill-current" aria-hidden /> : dangLuu ? <Loader2 size={18} className="mcf-spin" aria-hidden /> : xong ? <CheckCircle2 size={20} aria-hidden /> : <Mic size={20} aria-hidden />}
+      <span className={`grid h-11 w-11 shrink-0 place-items-center rounded-full text-white shadow-md ${dangGhi ? "mcf-ghi-nhip bg-danger" : ""}`} style={dangGhi ? undefined : { background: mau }}>
+        {dangGhi ? <Square size={15} className="fill-current" aria-hidden /> : dangLuu ? <Loader2 size={18} className="mcf-spin" aria-hidden /> : <Mic size={20} aria-hidden />}
       </span>
       <span className="min-w-0 flex-1">
         <span className={`block text-sm font-bold ${dangGhi ? "text-danger" : "text-ink"}`}>{nhan}</span>
@@ -59,6 +58,7 @@ export default function GhiAmBaiNoi({ examId, exerciseId, cauId, gon = false, ma
   const [loi, setLoi] = useState("");
   const [giay, setGiay] = useState(0);
   const [dsCu, setDsCu] = useState([]);
+  const [daTai, setDaTai] = useState(false);
   const [nghe, setNghe] = useState(null);
   /* AI nhận xét (27/09): { [duongDan]: { dang } | { ok, nhan_xet, chep_loi } | { ok:false, ma, thong_bao } } */
   const [nx, setNx] = useState({});
@@ -81,7 +81,7 @@ export default function GhiAmBaiNoi({ examId, exerciseId, cauId, gon = false, ma
   }, []);
 
   useEffect(() => {
-    dsBaiNoi({ examId, exerciseId, cauId }).then(setDsCu);
+    dsBaiNoi({ examId, exerciseId, cauId }).then((ds) => { setDsCu(ds); setDaTai(true); });
   }, [examId, exerciseId, cauId]);
 
   const batDau = async () => {
@@ -159,7 +159,7 @@ export default function GhiAmBaiNoi({ examId, exerciseId, cauId, gon = false, ma
         {moTa ?? tr("Ghi âm bài nói của bạn. Nộp xong, AI chấm theo thang DELF chính thức ở trang « Kết quả thi »; bạn cũng có thể tự chấm lại theo từng tiêu chí.", "Enregistrez-vous. Après l’envoi, l’IA vous note avec la grille DELF officielle dans « Mes résultats » ; vous pouvez aussi vous auto-évaluer.", "Record yourself. After submitting, the AI grades you with the official DELF grid in « My results »; you can also self-assess.")}
       </p>}
 
-      {gon ? <NutGhiGon trangThai={trangThai} coBan={dsCu.length > 0} giay={giay} toiDa={gioiHanGiay} mau={mau} onBam={trangThai === "dangGhi" ? dung : batDau} /> : (
+      {gon ? daTai && !dsCu.length && <NutGhiGon trangThai={trangThai} giay={giay} toiDa={gioiHanGiay} mau={mau} onBam={trangThai === "dangGhi" ? dung : batDau} /> : (
 <div className="mt-4 flex flex-wrap items-center gap-3">
         {trangThai !== "dangGhi" ? (
           <button type="button" onClick={batDau} disabled={trangThai === "dangLuu"}
@@ -202,12 +202,12 @@ export default function GhiAmBaiNoi({ examId, exerciseId, cauId, gon = false, ma
       {/* Danh sách bản ghi. Mới nhất trước, và giữ lại tất cả — nghe lại ba lần
           thu cách nhau vài tuần là cách duy nhất tự thấy mình tiến bộ. */}
       {dsCu.length > 0 && (
-        <div className={gon ? "mt-3" : "mt-4 border-0 border-t border-solid border-line pt-4"}>
+        <div className={gon ? "" : "mt-4 border-0 border-t border-solid border-line pt-4"}>
           {!gon && <p className="m-0 text-xs font-bold uppercase tracking-wider text-soft">
             {tr("Bản đã ghi (", "Enregistrements (", "Recordings (")}{dsCu.length})
           </p>}
           <ul className="m-0 mt-2 list-none space-y-2 p-0">
-            {dsCu.map((b) => (
+            {(gon ? dsCu.slice(0, 1) : dsCu).map((b) => (
               <li key={b.duongDan} className="flex flex-wrap items-center gap-3">
                 <button type="button" onClick={() => moNghe(b.duongDan)}
                   className="cursor-pointer rounded-lg border-0 bg-surface2 px-3 py-1.5 text-xs
@@ -220,10 +220,10 @@ export default function GhiAmBaiNoi({ examId, exerciseId, cauId, gon = false, ma
                   {nx[b.duongDan]?.dang ? <Loader2 size={13} className="mcf-spin" aria-hidden /> : null}
                   {tr("AI nhận xét", "Avis de l'IA", "AI feedback")}
                 </button>
-                <span className="text-xs text-soft">
+                {!gon && <span className="text-xs text-soft">
                   {b.luc ? new Date(b.luc).toLocaleString("vi-VN") : b.ten}
-                  {b.bytes && !gon ? ` · ${Math.round(b.bytes / 1024)} KB` : ""}
-                </span>
+                  {b.bytes ? ` · ${Math.round(b.bytes / 1024)} KB` : ""}
+                </span>}
                 {nx[b.duongDan] && !nx[b.duongDan].dang && <KhungNhanXet kq={nx[b.duongDan]} />}
               </li>
             ))}
