@@ -5,7 +5,7 @@
  * Học sinh vừa thi PO trong thi thử, mở màn tự chấm và bấm « AI gợi ý »:
  *   1. Tìm bản ghi MỚI NHẤT của chính người đó cho bài PO của lượt thi này
  *      (kho riêng tư bai-noi, thư mục `<uid>/<exam_id>/`).
- *   2. Chép lời (gpt-transcribe), rồi model chữ đề xuất một mức cho TỪNG tiêu
+ *   2. Chép lời (whisper-1, như nhan-xet-noi từ 02/11), rồi model chữ đề xuất một mức cho TỪNG tiêu
  *      chí của grille PO chính thức (supabase/functions/_shared/grillePO.js).
  *   3. Lưu vào po_cham.ai_goi_y. KHÔNG ghi vào điểm: học sinh phải tự bấm.
  *
@@ -81,7 +81,7 @@ Deno.serve(async (req) => {
 
   const form = new FormData();
   form.append("file", file, tep.name);
-  form.append("model", Deno.env.get("PO_STT_MODEL") || "gpt-transcribe");
+  form.append("model", Deno.env.get("PO_STT_MODEL") || "whisper-1");
   const r1 = await fetch("https://api.openai.com/v1/audio/transcriptions", { method: "POST", headers: { authorization: `Bearer ${KHOA}` }, body: form }).catch(() => null);
   if (!r1?.ok) return json(502, { ok: false, ma: "AI_TRA_LOI_LOI", buoc: "chep_loi" });
   const chepLoi = String((await r1.json().catch(() => null))?.text ?? "").trim();
