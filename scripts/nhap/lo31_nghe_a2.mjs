@@ -56,11 +56,21 @@ for (const [i, b] of BAI.entries()) {
   const thuTu = kn.bai.length + demKn[b.ma];
   const mienPhi = thuTu <= kn.mienPhi;
   let url = `https://kho.invalid/${b.tep}.mp3`;
-  if (!KHO) {
-    const r = await fetch(URL_FN, { method: "POST", headers: { apikey: env.VITE_SUPABASE_ANON_KEY, Authorization: `Bearer ${env.VITE_SUPABASE_ANON_KEY}`, "x-admin-token": TOKEN, "Content-Type": "application/json" },
-      body: JSON.stringify({ ten: b.tep, doan: b.doan.map(([giong, chu]) => ({ giong, cach: CHAM, chu })) }) });
-    const kq = await r.json();
-    if (!kq.ok) { console.error(b.tep, JSON.stringify(kq).slice(0, 200)); process.exit(1); }
+  /* 02/11: lần chạy đầu đứt mạng ở bài 21, nên file đã có trong kho thì dùng lại, không tạo lại. */
+  const daCo = `${env.VITE_SUPABASE_URL}/storage/v1/object/public/nghe/${b.tep}.mp3`;
+  if (!KHO && (await fetch(daCo, { method: "HEAD" }).catch(() => null))?.ok) {
+    url = daCo;
+    console.error(`= ${b.tep}: đã có trong kho, dùng lại`);
+  } else if (!KHO) {
+    let kq = null;
+    for (let lan = 1; lan <= 3 && !kq; lan++) {
+      try {
+        const r = await fetch(URL_FN, { method: "POST", headers: { apikey: env.VITE_SUPABASE_ANON_KEY, Authorization: `Bearer ${env.VITE_SUPABASE_ANON_KEY}`, "x-admin-token": TOKEN, "Content-Type": "application/json" },
+          body: JSON.stringify({ ten: b.tep, doan: b.doan.map(([giong, chu]) => ({ giong, cach: CHAM, chu })) }) });
+        kq = await r.json();
+      } catch (e) { console.error(`  ${b.tep}: lỗi mạng lần ${lan} (${e.cause?.code ?? e.message})`); }
+    }
+    if (!kq?.ok) { console.error(b.tep, JSON.stringify(kq).slice(0, 200)); process.exit(1); }
     url = kq.url;
     console.error(`✔ ${b.tep}: ${Math.round(kq.so_byte / 1024)} KB, ${b.cau.length} câu, ${mienPhi ? "miễn phí" : "VIP"}`);
   } else console.error(`· ${b.ma} #${thuTu} ${b.tep}: ${b.cau.length} câu, ${b.doan.length} đoạn, ${mienPhi ? "miễn phí" : "VIP"}`);
