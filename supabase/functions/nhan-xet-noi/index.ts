@@ -39,8 +39,8 @@ const HAN_MUC_CAU = 30;
 const CUA_SO_GIO = 24;
 const TRAN_BYTE = 25 * 1024 * 1024;
 const MODEL_CHU = "gpt-6-luna";
-/* 02/11: đổi từ gpt-transcribe, model đó chưa từng ra kết quả nào trong po_ai_nhan_xet, còn whisper-1
-   đang chạy thật ở cham-phat-am. */
+/* 02/11: đổi từ gpt-transcribe vì tưởng model đó không chạy, về sau mới thấy nó đã chấm được 17 bản .m4a
+   trong po_ai_nhan_xet. Giữ whisper-1 vì đang chạy thật ở cham-phat-am; chưa đo ở hàm này. */
 const MODEL_STT = "whisper-1";
 const DUOI_NHAN = /\.(webm|mp3|mp4|m4a|wav|mpeg|mpga)$/i; // OpenAI KHÔNG nhận ogg
 
