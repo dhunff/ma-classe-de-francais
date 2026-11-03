@@ -20,10 +20,16 @@ import { KY_NANG } from "../content/luyenTap/kyNang.js";
 export const CAP_DO = Object.keys(KY_NANG);
 export const KY_LON = ["CO", "CE", "PE", "PO"];
 export const NGUONG_DAT = 0.7;
+/* Dưới mức này là hạng F (03/11): bài điểm F chặn bài sau và chặn đạt kỹ năng, kể cả khi
+   trung bình kỹ năng vẫn từ 70%. Làm lại được D trở lên (điểm cao nhất) là gỡ chặn. */
+export const NGUONG_F = 0.5;
 
 const daLam = (h) => !!h && (h.tries ?? 0) > 0;
 /* best = -1 là bản ghi cũ chưa có điểm, và bài tự luận có max = 0: đã làm, không có điểm. */
 export const tiLe = (h) => (daLam(h) && h.max > 0 && h.best >= 0 ? h.best / h.max : null);
+/* Cộng 1e-9 giống hangTuTiLe để 5/10 không rơi xuống F vì sai số dấu phẩy động. Bài không có điểm
+   máy chấm (Viết, Nói) không bao giờ là F. */
+export const biF = (h) => { const x = tiLe(h); return x !== null && x + 1e-9 < NGUONG_F; };
 
 /* Bài của một kỹ năng nhỏ: danh sách id đã gắn sẵn, rồi tới bài gắn qua `ex.kyNang`. */
 export function baiCuaKyNang(kn, exercises) {
@@ -41,12 +47,13 @@ export function tinhKyNho(kn, exercises, hist, biKhoa = () => false) {
   const xong = coTheLam.filter((e) => daLam(hist[e.id]));
   const diem = xong.map((e) => tiLe(hist[e.id])).filter((x) => x !== null);
   const tb = diem.length ? diem.reduce((a, b) => a + b, 0) / diem.length : null;
+  const baiF = xong.filter((e) => biF(hist[e.id]));
   let muc;
   if (coTheLam.length === 0) muc = "trong";
   else if (xong.length === 0) muc = "chua";
-  else if (xong.length === coTheLam.length && (tb === null || tb >= NGUONG_DAT)) muc = "dat";
+  else if (xong.length === coTheLam.length && !baiF.length && (tb === null || tb >= NGUONG_DAT)) muc = "dat";
   else muc = "dang";
-  return { kn, bai, coTheLam, xong, tb, muc, phi: bai.filter(biKhoa) };
+  return { kn, bai, coTheLam, xong, tb, muc, baiF, phi: bai.filter(biKhoa) };
 }
 
 /* Đường đi trong một kỹ năng lớn. buoc: "xong" | "hienTai" | "khoa" | "tuDo" | "sapCo" | "vip".
@@ -66,15 +73,20 @@ export function duongKyLon(cap, ky, exercises, hist, biKhoa, laVip = false) {
   });
 }
 
-/* Trình tự bài trong kỹ năng nhỏ: bài mở khi mọi bài làm được phía trước đã làm.
-   Bài đã làm luôn mở lại được; bài khoá phí đứng riêng, không chặn bài sau. */
+/* Trình tự bài trong kỹ năng nhỏ: bài mở khi mọi bài làm được phía trước đã làm, và không bài
+   nào phía trước bị F. Bài đã làm luôn mở lại được; bài khoá phí đứng riêng, không chặn bài sau.
+   Bài chưa tới lượt vì một bài F phía trước có `doF` là bài đó, để giao diện nói rõ phải làm lại bài nào. */
 export function dsBaiKyNho(o, hist, biKhoa = () => false) {
   let conMo = true;
+  let doF = null;
   return o.bai.map((ex) => {
     if (biKhoa(ex)) return { ex, tt: "phi" };
-    if (daLam(hist[ex.id])) return { ex, tt: "xong" };
+    if (daLam(hist[ex.id])) {
+      if (conMo && biF(hist[ex.id])) { doF = ex; conMo = false; }
+      return { ex, tt: "xong" };
+    }
     if (conMo) { conMo = false; return { ex, tt: "tiepTheo" }; }
-    return { ex, tt: "khoa" };
+    return { ex, tt: "khoa", ...(doF ? { doF } : {}) };
   });
 }
 
@@ -131,6 +143,8 @@ export function baiTiepTheo(ex, exercises, hist, biKhoa = () => false, laVip = f
   if (!f) return null;
   /* Màn kết quả có thể hiện trước khi điểm vừa nộp vào `hist`: coi bài này như đã làm. */
   if (!daLam(hist[ex.id])) hist = { ...hist, [ex.id]: { tries: 1, best: -1, max: 0 } };
+  /* Bài vừa làm còn điểm F: không gợi ý đi tiếp đâu cả, kể cả VIP, phải làm lại bài này trước. */
+  if (biF(hist[ex.id])) return null;
   const toiLuot = (o) => dsBaiKyNho(o, hist, biKhoa).filter((b) => b.tt === "tiepTheo" && b.ex.id !== ex.id).map((b) => b.ex);
   const duong = duongKyLon(f.cap, f.ky, exercises, hist, biKhoa, laVip);
   const i = duong.findIndex((o) => o.kn.ma === ma);
@@ -146,7 +160,8 @@ export function baiTiepTheo(ex, exercises, hist, biKhoa = () => false, laVip = f
 
 /* Một bài mở từ NGOÀI cây có đang vướng thứ tự không. null là mở được.
    loai "buoc": kỹ năng của bài chưa tới lượt, `kn` là bước phải làm trước.
-   loai "bai": bài chưa tới lượt trong chính kỹ năng của nó, VIP cũng phải theo.
+   loai "bai": bài chưa tới lượt trong chính kỹ năng của nó, VIP cũng phải theo; `doF` là bài
+   điểm F phải làm lại nếu chính nó đang chặn.
    Bài đã làm luôn mở lại được. Bài khoá phí trả null: việc đó của tường phí. */
 export function khoaThuTu(ex, exercises, hist, biKhoa = () => false, laVip = false) {
   const ma = kyNhoCuaBai(ex);
@@ -155,5 +170,6 @@ export function khoaThuTu(ex, exercises, hist, biKhoa = () => false, laVip = fal
   const duong = duongKyLon(f.cap, f.ky, exercises, hist, biKhoa, laVip);
   const o = duong.find((x) => x.kn.ma === ma);
   if (o.buoc === "khoa") return { loai: "buoc", kn: duong.find((x) => x.buoc === "hienTai").kn };
-  return dsBaiKyNho(o, hist, biKhoa).find((b) => b.ex.id === ex.id)?.tt === "khoa" ? { loai: "bai", kn: o.kn } : null;
+  const b = dsBaiKyNho(o, hist, biKhoa).find((x) => x.ex.id === ex.id);
+  return b?.tt === "khoa" ? { loai: "bai", kn: o.kn, ...(b.doF ? { doF: b.doF } : {}) } : null;
 }

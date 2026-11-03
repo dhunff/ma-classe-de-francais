@@ -5,7 +5,7 @@ import { Leon } from "../../shared/leon.jsx";
 import { phat } from "../../shared/amThanh.js";
 import { FloatingLayer } from "../../shared/ui.jsx";
 import { GHI_CHU } from "../../content/luyenTap/ghiChuKyNang.js";
-import { CAP_DO, KY_LON, tongCap, duongKyLon, dsBaiKyNho, timKyNho, NGUONG_DAT } from "../../shared/tienTrinhLuyenTap.js";
+import { CAP_DO, KY_LON, tongCap, duongKyLon, dsBaiKyNho, timKyNho, NGUONG_DAT, NGUONG_F } from "../../shared/tienTrinhLuyenTap.js";
 import { hangBai, hangKyNho, hangSau, tinhKyLon } from "../../shared/hangLuyenTap.js";
 import HuyHieuHang from "./HuyHieuHang.jsx";
 
@@ -125,6 +125,7 @@ function CanhBaoKhoa({ noiDung, onMuaVip, giaVip }) {
 /* Lời báo bài vướng thứ tự, dùng cho kết quả của khoaThuTu. */
 const loiKhoa = (k) => (k.loai === "buoc"
   ? tr(`Làm xong « ${tenKn(k.kn)} » trước để mở bài này`, `Terminez d'abord « ${tenKn(k.kn)} » pour ouvrir cet exercice`, `Finish "${tenKn(k.kn)}" first to unlock this exercise`)
+  : k.doF ? tr(`Bài « ${k.doF.title} » đang điểm F. Làm lại đạt từ ${NGUONG_F * 100}% để mở bài này`, `L'exercice « ${k.doF.title} » est noté F. Refaites-le avec au moins ${NGUONG_F * 100} % pour ouvrir celui-ci`, `"${k.doF.title}" is graded F. Redo it with at least ${NGUONG_F * 100}% to unlock this one`)
   : tr(`Làm xong bài trước trong « ${tenKn(k.kn)} » để mở`, `Terminez l'exercice précédent de « ${tenKn(k.kn)} »`, `Finish the previous exercise in "${tenKn(k.kn)}"`));
 
 /* Mở thẳng một bài chưa tới lượt (ô tìm kiếm): chặn ở màn làm bài và chỉ đường. */
@@ -422,7 +423,13 @@ export function ChiTietKyNho({ ma, exercises, hist, biKhoa, onBack, onMoKyNho, c
           <span className="min-w-[10rem] flex-1 text-sm font-bold text-ok">{tr("Bạn đã đạt kỹ năng này.", "Compétence validée.", "You've passed this skill.")}</span>
         </div>
       )}
-      {o.xong.length > 0 && o.xong.length === o.coTheLam.length && o.buoc !== "xong" && (
+      {o.baiF.length > 0 && (
+        <p className="m-0 mb-4 flex items-start gap-2 rounded-2xl bg-danger-soft px-4 py-3 text-sm font-semibold text-danger">
+          <RotateCcw size={16} className="mt-0.5 shrink-0" />
+          {tr(`Bài « ${o.baiF[0].title} » đang điểm F. Làm lại đạt từ ${NGUONG_F * 100}% để đi tiếp.`, `L'exercice « ${o.baiF[0].title} » est noté F. Refaites-le avec au moins ${NGUONG_F * 100} % pour continuer.`, `"${o.baiF[0].title}" is graded F. Redo it with at least ${NGUONG_F * 100}% to continue.`)}
+        </p>
+      )}
+      {!o.baiF.length && o.xong.length > 0 && o.xong.length === o.coTheLam.length && o.buoc !== "xong" && (
         <p className="m-0 mb-4 flex items-start gap-2 rounded-2xl bg-warn-soft px-4 py-3 text-sm font-semibold text-warn">
           <RotateCcw size={16} className="mt-0.5 shrink-0" />
           {laVip
@@ -448,13 +455,13 @@ export function ChiTietKyNho({ ma, exercises, hist, biKhoa, onBack, onMoKyNho, c
                   <TieuDeVong ten={ten} moTa={moTa} khiNao={khiNao} Icon={Icon} nen={nen} tong={conLaiDuong.length} xong={conLaiDuong.filter((b) => b.tt === "xong").length} soVip={bai.length - conLaiDuong.length} />
                 </div>
                 <ol className="m-0 grid list-none grid-cols-[repeat(auto-fill,minmax(min(100%,17rem),1fr))] gap-5 p-0">
-                  {bai.map(({ ex, tt }) => (
+                  {bai.map(({ ex, tt, doF }) => (
                     <li key={ex.id} className="relative min-w-0">
                       <DauBai tt={tt} stt={trenDuong.findIndex((b) => b.ex.id === ex.id) + 1} hang={hangBai(hist[ex.id])} />
                       {tt === "khoa" ? (
                         <div className="relative h-full">
                           <div aria-hidden inert="" className="pointer-events-none h-full opacity-50">{renderThe(ex)}</div>
-                          <p className="absolute inset-x-3 top-1/2 m-0 -translate-y-1/2 rounded-2xl bg-surface2 px-3 py-2.5 text-center text-sm font-bold text-ink shadow-sm">{tr("Làm xong bài trước để mở", "Terminez l'exercice précédent", "Finish the previous exercise")}</p>
+                          <p className="absolute inset-x-3 top-1/2 m-0 -translate-y-1/2 rounded-2xl bg-surface2 px-3 py-2.5 text-center text-sm font-bold text-ink shadow-sm">{doF ? tr("Làm lại bài điểm F để mở", "Refaites l'exercice noté F", "Redo the F-graded exercise") : tr("Làm xong bài trước để mở", "Terminez l'exercice précédent", "Finish the previous exercise")}</p>
                         </div>
                       ) : renderThe(ex)}
                     </li>

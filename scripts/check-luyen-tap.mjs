@@ -144,5 +144,15 @@ ca("bài tiếp theo: bỏ qua bài khoá phí", tiep("a", xong("a"), (e) => e.i
 ca("bài tiếp theo: bài ngoài cây thì không có", baiTiepTheo({ id: "z", questions: [] }, tiepCay, {}) === null);
 ca("bài tiếp theo: gợi ý không bao giờ vướng thứ tự", ["a", "b"].every((id) => { const h = xong(id); const t = baiTiepTheo(tiepCay.find((e) => e.id === id), tiepCay, h); return !t || khoaThuTu(t, tiepCay, h) === null; }));
 
+/* Điểm F chặn (03/11): bài dưới 50% không mở bài sau, không cho đạt kỹ năng, không gợi ý đi tiếp. */
+ca("F: bài sau khoá, nhớ bài F nào chặn", dsBaiKyNho(o2, xong("a", 4)).map((b) => b.tt).join() === "xong,khoa,khoa" && dsBaiKyNho(o2, xong("a", 4))[1].doF?.id === "a");
+ca("F: đúng 50% là D, không chặn", tt(xong("a", 5)) === "xong,tiepTheo,khoa");
+ca("F: làm lại lên D thì mở (lấy điểm cao nhất)", tt({ a: { best: 6, max: 10, tries: 2, at: 1 } }) === "xong,tiepTheo,khoa");
+ca("F: bài tự luận không điểm không bao giờ là F", tt(xong("a", 0, 0)) === "xong,tiepTheo,khoa");
+ca("F: bài khoá phí không tính, bài F vẫn chặn sau nó", tt(xong("a", 2), (e) => e.id === "b") === "xong,phi,khoa");
+ca("F: kỹ năng chưa đạt dù trung bình từ 70%", (() => { const bon = ["f1", "f2", "f3", "f4"].map((id) => ({ id, kyNang: ds[0].ma })); const h = { ...xong("f1", 4), ...xong("f2", 10), ...xong("f3", 10), ...xong("f4", 10) }; const o = tinhKyNho(ds[0], bon, h); return o.tb >= NGUONG_DAT && o.muc === "dang" && o.baiF.length === 1 && hangKyNho(o) === null; })());
+ca("F: không gợi ý bài tiếp theo, kể cả VIP", tiep("a", xong("a", 3)) === null && tiep("b", { ...xong("a"), ...xong("b", 3) }, undefined, true) === null);
+ca("F: mở thẳng từ Thư viện cũng bị chặn, kèm bài F", kt(tiepCay[1], xong("a", 3), undefined, true, tiepCay)?.doF?.id === "a");
+
 console.log(`check:luyentap: ${dau} đạt, ${rot} rớt`);
 process.exit(rot ? 1 : 0);

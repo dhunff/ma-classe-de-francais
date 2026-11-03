@@ -5,19 +5,20 @@
  * kỹ năng có thêm bài, hạng và chứng nhận tạm ẩn tới khi làm đủ bài mới.
  *
  * Ngưỡng B = NGUONG_DAT: từ B trở lên là Đạt và mở bước sau, C, D, F là chưa đạt.
+ * Ngưỡng D = NGUONG_F: một bài F chặn bài sau trong kỹ năng nhỏ (tienTrinhLuyenTap.js).
  * Bài không có điểm máy chấm (Viết, Nói: max = 0) KHÔNG có hạng, không suy ra một con số.
  *
  * Chứng nhận kỹ năng lớn đòi đạt MỌI kỹ năng nhỏ, và mọi kỹ năng nhỏ phải có bài rồi: kỹ
  * năng đang soạn không chặn đường đi nhưng có chặn chứng nhận, vì chưa luyện thì chưa thể
  * nói là hoàn thành. Kỹ năng chỉ có bài VIP thì không chặn, để chứng nhận không nằm sau tường phí. */
-import { CAP_DO, NGUONG_DAT, tongCap, tiLe } from "./tienTrinhLuyenTap.js";
+import { CAP_DO, NGUONG_DAT, NGUONG_F, tongCap, tiLe } from "./tienTrinhLuyenTap.js";
 
 export const THANG_HANG = [
   { hang: "S", tu: 0.95 },
   { hang: "A", tu: 0.85 },
   { hang: "B", tu: NGUONG_DAT },
   { hang: "C", tu: 0.6 },
-  { hang: "D", tu: 0.5 },
+  { hang: "D", tu: NGUONG_F },
   { hang: "F", tu: 0 },
 ];
 
@@ -28,8 +29,9 @@ export const hangTuTiLe = (x) => (x === null || x === undefined ? null : THANG_H
 
 export const hangBai = (h) => hangTuTiLe(tiLe(h));
 
-/* Hạng kỹ năng nhỏ chỉ có khi đã làm đủ bài làm được: làm một bài chưa nói lên cả kỹ năng. */
-export const hangKyNho = (o) => (o.coTheLam.length > 0 && o.xong.length === o.coTheLam.length ? hangTuTiLe(o.tb) : null);
+/* Hạng kỹ năng nhỏ chỉ có khi đã làm đủ bài làm được: làm một bài chưa nói lên cả kỹ năng.
+   Còn bài điểm F thì kỹ năng chưa đạt, nên cũng chưa có hạng dù trung bình cao. */
+export const hangKyNho = (o) => (o.coTheLam.length > 0 && o.xong.length === o.coTheLam.length && !o.baiF?.length ? hangTuTiLe(o.tb) : null);
 
 /* Hạng kế tiếp và số điểm phần trăm còn thiếu. Hạng S thì không còn gì để lên. */
 export function hangSau(x) {

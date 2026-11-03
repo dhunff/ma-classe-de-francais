@@ -47,7 +47,7 @@ import { choTrong } from "./shared/choTrong.jsx";
 import OTraLoi from "./screens/practice/OTraLoi.jsx";
 import { LuyenTheoCap, ChiTietKyNho, MeoKyNho, ManKhoaThuTu } from "./screens/practice/LuyenTheoCap.jsx";
 import ThanhTuu from "./screens/practice/ThanhTuu.jsx";
-import { capMacDinh, duongKyLon, timKyNho, kyNhoCuaBai, khoaThuTu, gopDiemNoi, baiTiepTheo } from "./shared/tienTrinhLuyenTap.js";
+import { capMacDinh, duongKyLon, timKyNho, kyNhoCuaBai, khoaThuTu, gopDiemNoi, baiTiepTheo, NGUONG_F } from "./shared/tienTrinhLuyenTap.js";
 
 /* ============================================================
    PRACTICE HUB v3 — Tự luyện tập
@@ -1706,6 +1706,10 @@ export function PracticeWorkspace({ ex, back, onFinish, soTu = false, chamBang =
           {opens.length > 0 && !laNoi && <p className="m-0 text-sm text-soft">{t("exercise.open_note", { n: opens.length })}</p>}
           {/* Câu sai có nhãn point_gram → gợi ý bài « Học ngữ pháp » (16/10). */}
           <GoiYNguPhap level={ex.level} nhan={autos.filter((q) => q.pointGram && !isGood(q)).map((q) => q.pointGram)} />
+          {/* Điểm F chặn bài sau trong cây (03/11): nói rõ vì sao không có nút « Bài tiếp theo ». */}
+          {soTu && kyNho && !baiTiep && hangTuTiLe(tiLeDiem) === "F" && (
+            <p className="m-0 mt-1 max-w-md text-sm font-semibold text-danger">{tr(`Bài điểm F chưa mở được bài sau. Xem lại lỗi rồi làm lại, đạt từ ${NGUONG_F * 100}% là đi tiếp được.`, `Avec la note F, l'exercice suivant reste fermé. Revoyez vos erreurs et refaites-le : dès ${NGUONG_F * 100} %, vous pourrez continuer.`, `An F doesn't unlock the next exercise. Review your mistakes and try again: from ${NGUONG_F * 100}% you can move on.`)}</p>
+          )}
           <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
             <button type="button" onClick={retry}
               className="flex cursor-pointer items-center justify-center gap-2 rounded-full border border-solid border-line bg-surface px-6 py-2.5 font-sans text-sm font-medium text-ink shadow-sm transition-all duration-200 hover:bg-surface2 hover:shadow-md active:scale-95 dark:shadow-none">
