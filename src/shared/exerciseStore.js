@@ -23,7 +23,12 @@ import { fromRows, toRows } from "./exerciseMap.js";
    KHÔNG báo lỗi khi cắt — chỉ trả về ít dòng hơn. Thư viện hiện có 416 câu nên
    chưa chạm ngưỡng, nhưng chạm rồi thì triệu chứng là vài bài tự dưng thiếu
    câu cuối, build xanh, không có gì trong console. Lấy theo trang cho xong
-   chuyện, đừng chờ tới lúc phải đi tìm. */
+   chuyện, đừng chờ tới lúc phải đi tìm.
+
+   03/11: lấy theo trang thì thứ tự phải DUY NHẤT, nên luôn thêm `id` sau cùng. Trước đó câu hỏi
+   chỉ sắp theo `ord`; hàng nghìn câu có cùng ord nên Postgres trả thứ tự khác nhau giữa hai lần
+   gọi `range`, có câu rơi vào khe giữa hai trang và biến mất (bài 5 câu hiện 4, máy chủ vẫn chấm
+   trên 5). */
 const CO_TRANG = 1000;
 
 async function layHet(query) {
@@ -48,7 +53,7 @@ export async function loadExercises(store) {
   thieuDuLieuAn = null;
   const [exRes, qRes] = await Promise.all([
     layHet(() => supabase.from("exercises").select("*").eq("store", store)
-      .order("created_at", { ascending: true })),
+      .order("created_at", { ascending: true }).order("id", { ascending: true })),
     /* LIỆT KÊ CỘT, KHÔNG DÙNG `*`.
      *
      * Từ migration 022, `answer_key` không cấp SELECT cho anon/authenticated.
@@ -60,7 +65,7 @@ export async function loadExercises(store) {
      * mức CỘT thì mọi `select("*")` trên bảng đó thành quả bom hẹn giờ. */
     layHet(() => supabase.from("questions")
       .select("id, exercise_id, ord, type, prompt, payload, explanation, competence, point_gram")
-      .order("ord", { ascending: true })),
+      .order("ord", { ascending: true }).order("id", { ascending: true })),
   ]);
   if (exRes.error) return [];
 

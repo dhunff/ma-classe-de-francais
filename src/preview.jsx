@@ -771,7 +771,7 @@ function LuyenCapThu() {
       <label className="mb-4 flex items-center gap-2 text-sm font-bold text-ink"><input type="checkbox" checked={lamBai} onChange={(e) => setLamBai(e.target.checked)} /> Xem màn làm bài</label>
       <label className="mb-4 flex items-center gap-2 text-sm font-bold text-ink"><input type="checkbox" checked={baiDoc} onChange={(e) => setBaiDoc(e.target.checked)} /> Bài đọc</label>
       <label className="mb-4 flex items-center gap-2 text-sm font-bold text-ink"><input type="checkbox" checked={baiNoi} onChange={(e) => setBaiNoi(e.target.checked)} /> Bài nói</label>
-      {lamBai && <React.Suspense fallback={null}><PracticeWorkspaceThu key={`${baiDoc}${baiNoi}`} ex={baiNoi ? BAI_NOI_THU : baiDoc ? BAI_DOC_THU : BAI_THU} back={() => setLamBai(false)} onFinish={() => {}} chamBang={chamThu} kyNho="A1-CO-1" /></React.Suspense>}
+      {lamBai && <React.Suspense fallback={null}><PracticeWorkspaceThu key={`${baiDoc}${baiNoi}`} ex={baiNoi ? BAI_NOI_THU : baiDoc ? BAI_DOC_THU : BAI_THU} back={() => setLamBai(false)} onFinish={() => {}} chamBang={chamThu} kyNho="A1-CO-1" baiTiep={{ title: "Bài thử tiếp theo", mo: () => setLamBai(false) }} /></React.Suspense>}
       {lamBai ? null :      <>
       {ma && <div className="mb-4"><MeoKyNho ma={ma} /></div>}
       {ma ? <ChiTietKyNho ma={ma} exercises={ids} hist={hist} biKhoa={biKhoa} onBack={() => { setBaoKhoa(null); setMa(null); }} onMoKyNho={moBuoc} canhBao={baoKhoa} laVip={vipThu} onMuaVip={() => {}} giaVip="99.000 ₫" onLam={() => {}} renderThe={the} />

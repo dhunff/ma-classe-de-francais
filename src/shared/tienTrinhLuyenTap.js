@@ -121,6 +121,29 @@ export const timKyNho = (ma) => {
   return kn ? { cap, ky, kn } : null;
 };
 
+/* Bài nên làm sau khi nộp `ex` (03/11, nút « Bài tiếp theo » ở màn kết quả). null là không có.
+   Trước hết là bài tới lượt kế tiếp trong cùng kỹ năng nhỏ; hết bài thì sang bước mở được đầu tiên
+   phía sau trên đường đi (hienTai, hoặc tuDo với VIP), cuối cùng quay lại các bước phía trước.
+   Không bao giờ trả bài khoá phí hay bài chưa tới lượt, nên khoaThuTu không chặn bài được gợi ý. */
+export function baiTiepTheo(ex, exercises, hist, biKhoa = () => false, laVip = false) {
+  const ma = kyNhoCuaBai(ex);
+  const f = ma && timKyNho(ma);
+  if (!f) return null;
+  /* Màn kết quả có thể hiện trước khi điểm vừa nộp vào `hist`: coi bài này như đã làm. */
+  if (!daLam(hist[ex.id])) hist = { ...hist, [ex.id]: { tries: 1, best: -1, max: 0 } };
+  const toiLuot = (o) => dsBaiKyNho(o, hist, biKhoa).filter((b) => b.tt === "tiepTheo" && b.ex.id !== ex.id).map((b) => b.ex);
+  const duong = duongKyLon(f.cap, f.ky, exercises, hist, biKhoa, laVip);
+  const i = duong.findIndex((o) => o.kn.ma === ma);
+  const cungKy = toiLuot(duong[i]);
+  if (cungKy.length) return cungKy[0];
+  for (const o of [...duong.slice(i + 1), ...duong.slice(0, i)]) {
+    if (o.buoc !== "hienTai" && o.buoc !== "tuDo") continue;
+    const b = toiLuot(o);
+    if (b.length) return b[0];
+  }
+  return null;
+}
+
 /* Một bài mở từ NGOÀI cây có đang vướng thứ tự không. null là mở được.
    loai "buoc": kỹ năng của bài chưa tới lượt, `kn` là bước phải làm trước.
    loai "bai": bài chưa tới lượt trong chính kỹ năng của nó, VIP cũng phải theo.

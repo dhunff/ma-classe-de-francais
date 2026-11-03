@@ -2,7 +2,7 @@
 /* Kiểm cây Luyện tập theo trình độ: dữ liệu cây và luật tiến trình.
  * Lỗi đáng sợ nhất là NGÕ CỤT: một bước không làm được chặn mọi bước sau. */
 import { KY_NANG } from "../src/content/luyenTap/kyNang.js";
-import { CAP_DO, KY_LON, tinhKyNho, duongKyLon, dsBaiKyNho, tongCap, capMacDinh, baiCuaKyNang, timKyNho, khoaThuTu, gopDiemNoi, NGUONG_DAT } from "../src/shared/tienTrinhLuyenTap.js";
+import { CAP_DO, KY_LON, tinhKyNho, duongKyLon, dsBaiKyNho, tongCap, capMacDinh, baiCuaKyNang, timKyNho, khoaThuTu, gopDiemNoi, baiTiepTheo, NGUONG_DAT } from "../src/shared/tienTrinhLuyenTap.js";
 import { chonDeXuat } from "../src/shared/deXuat.js";
 import { hangTuTiLe, hangBai, hangKyNho, hangSau, tinhKyLon, tinhCap, THANG_HANG } from "../src/shared/hangLuyenTap.js";
 
@@ -131,6 +131,18 @@ const caCap = Object.values(KY_NANG.A1).flat().map((k) => ({ id: "c" + k.ma, lev
 const viet = (e) => timKyNho(e.kyNang).ky === "PE" || timKyNho(e.kyNang).ky === "PO";
 const capDu = tinhCap("A1", caCap, Object.assign({}, ...caCap.map((e) => (viet(e) ? xong(e.id, 0, 0) : xong(e.id)))), () => false);
 ca("chứng nhận trình độ: Viết, Nói không điểm vẫn hoàn thành, hạng từ Nghe, Đọc", capDu.du && capDu.hang === "A" && capDu.kyLon.find((k) => k.ky === "PE").hang === null);
+
+/* Bài tiếp theo ở màn kết quả (03/11): bước 1 có hai bài a, b; các bước sau mỗi bước một bài. */
+const tiepCay = [{ id: "a", level: "A1", kyNang: ds[0].ma, thuTu: 1, questions: [] }, { id: "b", level: "A1", kyNang: ds[0].ma, thuTu: 2, questions: [] }, ...ex.slice(1)];
+const tiep = (id, hist, bk, vip) => baiTiepTheo(tiepCay.find((e) => e.id === id), tiepCay, hist, bk, vip)?.id ?? null;
+ca("bài tiếp theo: bài kế trong cùng kỹ năng", tiep("a", xong("a")) === "b");
+ca("bài tiếp theo: điểm chưa kịp lưu vẫn ra bài kế", tiep("a", {}) === "b");
+ca("bài tiếp theo: xong kỹ năng thì sang bước sau", tiep("b", { ...xong("a"), ...xong("b") }) === "x1");
+ca("bài tiếp theo: chưa đạt thì không nhảy sang bước đang khoá", tiep("b", { ...xong("a", 5), ...xong("b", 5) }) === null);
+ca("bài tiếp theo: VIP thì sang bước sau dù chưa đạt", tiep("b", { ...xong("a", 5), ...xong("b", 5) }, undefined, true) === "x1");
+ca("bài tiếp theo: bỏ qua bài khoá phí", tiep("a", xong("a"), (e) => e.id === "b") === "x1");
+ca("bài tiếp theo: bài ngoài cây thì không có", baiTiepTheo({ id: "z", questions: [] }, tiepCay, {}) === null);
+ca("bài tiếp theo: gợi ý không bao giờ vướng thứ tự", ["a", "b"].every((id) => { const h = xong(id); const t = baiTiepTheo(tiepCay.find((e) => e.id === id), tiepCay, h); return !t || khoaThuTu(t, tiepCay, h) === null; }));
 
 console.log(`check:luyentap: ${dau} đạt, ${rot} rớt`);
 process.exit(rot ? 1 : 0);

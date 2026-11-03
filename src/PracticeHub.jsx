@@ -47,7 +47,7 @@ import { choTrong } from "./shared/choTrong.jsx";
 import OTraLoi from "./screens/practice/OTraLoi.jsx";
 import { LuyenTheoCap, ChiTietKyNho, MeoKyNho, ManKhoaThuTu } from "./screens/practice/LuyenTheoCap.jsx";
 import ThanhTuu from "./screens/practice/ThanhTuu.jsx";
-import { capMacDinh, duongKyLon, timKyNho, kyNhoCuaBai, khoaThuTu, gopDiemNoi } from "./shared/tienTrinhLuyenTap.js";
+import { capMacDinh, duongKyLon, timKyNho, kyNhoCuaBai, khoaThuTu, gopDiemNoi, baiTiepTheo } from "./shared/tienTrinhLuyenTap.js";
 
 /* ============================================================
    PRACTICE HUB v3 — Tự luyện tập
@@ -371,8 +371,11 @@ ${r.error?.message ?? ""}`); return; }
         price={ex.price ? fmtPrice(ex.price) : ""} />;
     }
 
-    return <PracticeWorkspace ex={ex} back={back} soTu={role === "eleve" && !!name} kyNho={view.kyNho || kyNhoCuaBai(ex)}
-      onFinish={(score, max) => saveHist(ex.id, score, max)} />;
+    /* key: sang bài tiếp theo phải dựng màn làm bài mới, không mang theo đáp án, điểm của bài trước. */
+    const tiep = teacher ? null : baiTiepTheo(ex, exercises, hist, biKhoa, fullAccess);
+    return <PracticeWorkspace key={ex.id} ex={ex} back={back} soTu={role === "eleve" && !!name} kyNho={view.kyNho || kyNhoCuaBai(ex)}
+      onFinish={(score, max) => saveHist(ex.id, score, max)}
+      baiTiep={tiep && { title: tiep.title, mo: () => { setView({ page: "quiz", kyNho: kyNhoCuaBai(tiep), exId: tiep.id }); window.scrollTo(0, 0); } }} />;
   }
 
   const muaVip = () => { if (isGuest) return requireLogin(); setPayFor(goiVip(t("vip.pay_title"))); };
@@ -1261,7 +1264,7 @@ function HubMenu({ onEdit, onDup, onDel, onMove }) {
 /* ============ Workspace tự luyện — chấm ngay ============ */
 /* `chamBang` (23/10): hàm chấm thay cho gradeRemote, cùng hình dạng kết quả, dùng cho
    « Bài luyện của tôi » (câu ghép từ nhiều bài, chấm bằng cham-on-tap). */
-export function PracticeWorkspace({ ex, back, onFinish, soTu = false, chamBang = null, kyNho = null }) {
+export function PracticeWorkspace({ ex, back, onFinish, soTu = false, chamBang = null, kyNho = null, baiTiep = null }) {
   const [answers, setAnswers] = useState({});
   const [confirmCount, setConfirmCount] = useState(null);   // ⚠️ copie incomplète
   const t = useT();
@@ -1703,10 +1706,19 @@ export function PracticeWorkspace({ ex, back, onFinish, soTu = false, chamBang =
           {opens.length > 0 && !laNoi && <p className="m-0 text-sm text-soft">{t("exercise.open_note", { n: opens.length })}</p>}
           {/* Câu sai có nhãn point_gram → gợi ý bài « Học ngữ pháp » (16/10). */}
           <GoiYNguPhap level={ex.level} nhan={autos.filter((q) => q.pointGram && !isGood(q)).map((q) => q.pointGram)} />
-          <button type="button" onClick={retry}
-            className="mt-5 flex cursor-pointer items-center justify-center gap-2 rounded-full border border-solid border-line bg-surface px-6 py-2.5 font-sans text-sm font-medium text-ink shadow-sm transition-all duration-200 hover:bg-surface2 hover:shadow-md active:scale-95 dark:shadow-none">
-            <RotateCcw size={16} /> {t("exercise.retry")}
-          </button>
+          <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
+            <button type="button" onClick={retry}
+              className="flex cursor-pointer items-center justify-center gap-2 rounded-full border border-solid border-line bg-surface px-6 py-2.5 font-sans text-sm font-medium text-ink shadow-sm transition-all duration-200 hover:bg-surface2 hover:shadow-md active:scale-95 dark:shadow-none">
+              <RotateCcw size={16} /> {t("exercise.retry")}
+            </button>
+            {baiTiep && (
+              <button type="button" onClick={baiTiep.mo} title={baiTiep.title}
+                className="flex cursor-pointer items-center justify-center gap-2 rounded-full border-0 px-6 py-2.5 font-sans text-sm font-extrabold text-white shadow-md transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg active:scale-95 motion-reduce:hover:translate-y-0"
+                style={{ background: dam }}>
+                {tr("Bài tiếp theo", "Exercice suivant", "Next exercise")} <ArrowRight size={16} />
+              </button>
+            )}
+          </div>
           </div>
         </div>
       )}
