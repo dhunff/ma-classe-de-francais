@@ -162,6 +162,11 @@ import TroChoiMan from "./screens/student/TroChoiMan.jsx";
 import Builder from "./screens/teacher/Builder.jsx";
 import XemDeThu from "./screens/teacher/XemDeThu.jsx";
 const THE_CHOI = [["le vent","gió"],["la pluie","mưa"],["l'arbre","cây"],["la montagne","núi"],["la mer","biển"],["le soleil","mặt trời"],["la neige","tuyết"],["le nuage","mây"]].map(([a,b],k)=>({id:"t"+k,matTruoc:a,matSau:b,loai:"n",chuDe:"thoi-tiet"}));
+import LoiNgheBai from "./screens/practice/LoiNgheBai.jsx";
+const LOI_NGHE_THU = {
+  loi: [{ giong: "alloy", chu: "Dialogue un." }, { giong: "shimmer", chu: "Un aller simple pour Lyon, s'il vous plaît." }, { giong: "onyx", chu: "Ça fait quarante euros." }, { giong: "alloy", chu: "Dialogue deux." }, { giong: "echo", chu: "Pardon, ce bus va à la mairie ?" }],
+  phan_tich: { loai: "Bốn đoạn hội thoại ngắn", chu_de: "Hỏi đường và đi lại bằng tàu, xe buýt, taxi.", y_chinh: ["Hội thoại 1: mua vé tàu một chiều đi Lyon, 40 euro.", "Hội thoại 2: hỏi xe buýt có đến toà thị chính không."] },
+};
 import { LuyenTheoCap, ChiTietKyNho, MeoKyNho } from "./screens/practice/LuyenTheoCap.jsx";
 import ThanhTuu from "./screens/practice/ThanhTuu.jsx";
 import { KY_NANG } from "./content/luyenTap/kyNang.js";
@@ -761,6 +766,7 @@ function LuyenCapThu() {
   const biKhoa = (ex) => ex.id === b1.CE[1].bai[0];
   /* Màn Thành tựu: A1 làm đủ mỗi kỹ năng một bài, điểm trải đủ các hạng, Viết và Nói không điểm. */
   const [thanhTuu, setThanhTuu] = useState(false);
+  const [loiNghe, setLoiNghe] = useState(false);
   const a1 = Object.values(KY_NANG.A1).flat().map((k) => ({ id: "tt" + k.ma, level: "A1", kyNang: k.ma, questions: [] }));
   const histTt = Object.fromEntries(a1.map((e, i) => [e.id, /-(PE|PO)-/.test(e.kyNang) ? { best: 0, max: 0, tries: 1, at: Date.now() } : { best: [20, 18, 15, 19, 17][i % 5], max: 20, tries: 1, at: Date.now() }]));
   if (thanhTuu) return <div className="mx-auto max-w-5xl p-4"><ThanhTuu exercises={a1} hist={histTt} biKhoa={() => false} ten="Linh Nguyễn" /></div>;
@@ -771,6 +777,8 @@ function LuyenCapThu() {
       <label className="mb-4 flex items-center gap-2 text-sm font-bold text-ink"><input type="checkbox" checked={lamBai} onChange={(e) => setLamBai(e.target.checked)} /> Xem màn làm bài</label>
       <label className="mb-4 flex items-center gap-2 text-sm font-bold text-ink"><input type="checkbox" checked={baiDoc} onChange={(e) => setBaiDoc(e.target.checked)} /> Bài đọc</label>
       <label className="mb-4 flex items-center gap-2 text-sm font-bold text-ink"><input type="checkbox" checked={baiNoi} onChange={(e) => setBaiNoi(e.target.checked)} /> Bài nói</label>
+      <label className="mb-4 flex items-center gap-2 text-sm font-bold text-ink"><input type="checkbox" checked={loiNghe} onChange={(e) => setLoiNghe(e.target.checked)} /> Lời nghe và phân tích</label>
+      {loiNghe && <LoiNgheBai key={String(vipThu)} exId="thu" onMuaVip={() => {}} thu={vipThu ? LOI_NGHE_THU : { khoa: "vip" }} />}
       {lamBai && <React.Suspense fallback={null}><PracticeWorkspaceThu key={`${baiDoc}${baiNoi}`} ex={baiNoi ? BAI_NOI_THU : baiDoc ? BAI_DOC_THU : BAI_THU} back={() => setLamBai(false)} onFinish={() => {}} chamBang={chamThu} kyNho="A1-CO-1" baiTiep={{ title: "Bài thử tiếp theo", mo: () => setLamBai(false) }} /></React.Suspense>}
       {lamBai ? null :      <>
       {ma && <div className="mb-4"><MeoKyNho ma={ma} /></div>}

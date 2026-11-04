@@ -40,6 +40,7 @@ import { hangTuTiLe } from "./shared/hangLuyenTap.js";
 import GoiYNguPhap from "./shared/GoiYNguPhap.jsx";
 import { PAYMENT_KEY, isPremium, hasAccess, fmtPrice, loadAccess } from "./shared/access.js";
 import ExerciseCard from "./screens/practice/ExerciseCard.jsx";
+import LoiNgheBai from "./screens/practice/LoiNgheBai.jsx";
 import { supabase } from "./storageShim.js";
 import { Lock } from "lucide-react";
 import { anhMacDinh } from "./shared/anhMacDinh.js";
@@ -373,9 +374,15 @@ ${r.error?.message ?? ""}`); return; }
 
     /* key: sang bài tiếp theo phải dựng màn làm bài mới, không mang theo đáp án, điểm của bài trước. */
     const tiep = teacher ? null : baiTiepTheo(ex, exercises, hist, biKhoa, fullAccess);
-    return <PracticeWorkspace key={ex.id} ex={ex} back={back} soTu={role === "eleve" && !!name} kyNho={view.kyNho || kyNhoCuaBai(ex)}
-      onFinish={(score, max) => saveHist(ex.id, score, max)}
-      baiTiep={tiep && { title: tiep.title, mo: () => { setView({ page: "quiz", kyNho: kyNhoCuaBai(tiep), exId: tiep.id }); window.scrollTo(0, 0); } }} />;
+    return (
+      <>
+        {payFor && <PaymentModal ex={payFor} student={name} config={payCfg} onClose={() => setPayFor(null)} onUnlocked={sauKhiMoKhoa} />}
+        <PracticeWorkspace key={ex.id} ex={ex} back={back} soTu={role === "eleve" && !!name} kyNho={view.kyNho || kyNhoCuaBai(ex)}
+          onFinish={(score, max) => saveHist(ex.id, score, max)}
+          onMuaVip={fullAccess ? null : () => setPayFor(goiVip(t("vip.pay_title")))}
+          baiTiep={tiep && { title: tiep.title, mo: () => { setView({ page: "quiz", kyNho: kyNhoCuaBai(tiep), exId: tiep.id }); window.scrollTo(0, 0); } }} />
+      </>
+    );
   }
 
   const muaVip = () => { if (isGuest) return requireLogin(); setPayFor(goiVip(t("vip.pay_title"))); };
@@ -1264,7 +1271,7 @@ function HubMenu({ onEdit, onDup, onDel, onMove }) {
 /* ============ Workspace tự luyện — chấm ngay ============ */
 /* `chamBang` (23/10): hàm chấm thay cho gradeRemote, cùng hình dạng kết quả, dùng cho
    « Bài luyện của tôi » (câu ghép từ nhiều bài, chấm bằng cham-on-tap). */
-export function PracticeWorkspace({ ex, back, onFinish, soTu = false, chamBang = null, kyNho = null, baiTiep = null }) {
+export function PracticeWorkspace({ ex, back, onFinish, soTu = false, chamBang = null, kyNho = null, baiTiep = null, onMuaVip = null }) {
   const [answers, setAnswers] = useState({});
   const [confirmCount, setConfirmCount] = useState(null);   // ⚠️ copie incomplète
   const t = useT();
@@ -1723,6 +1730,8 @@ export function PracticeWorkspace({ ex, back, onFinish, soTu = false, chamBang =
               </button>
             )}
           </div>
+          {/* Lời nghe và phân tích (04/11): chỉ VIP, server tự kiểm (rpc xem_loi_nghe). */}
+          {ex.audioUrl && soTu && <div className="w-full max-w-3xl"><LoiNgheBai exId={ex.id} onMuaVip={onMuaVip} /></div>}
           </div>
         </div>
       )}
