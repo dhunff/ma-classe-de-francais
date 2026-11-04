@@ -1,0 +1,3651 @@
+{
+"rows": [
+{
+"cau": [
+{
+"expl": "« je vous écris parce que mon séjour ne se passe pas bien ».",
+"id": "qmvzig1sp000",
+"key": {
+"answer": 2
+},
+"ord": 1,
+"payload": {
+"options": [
+"remercier l'hôtel",
+"réserver une chambre",
+"se plaindre de son séjour"
+]
+},
+"prompt": "Paul Garnier écrit pour…",
+"type": "qcm"
+},
+{
+"expl": "« la climatisation de ma chambre ne fonctionne pas depuis trois jours ».",
+"id": "qmvzig1sp001",
+"key": {
+"answer": 1
+},
+"ord": 2,
+"payload": {
+"options": [
+"Il y a trop de bruit.",
+"La climatisation est en panne.",
+"La chambre est sale."
+]
+},
+"prompt": "Quel est le problème dans la chambre ?",
+"type": "qcm"
+},
+{
+"expl": "« j'ai signalé le problème à la réception deux fois ». Ba là số ngày máy lạnh hỏng.",
+"id": "qmvzig1sp002",
+"key": {
+"answer": 2
+},
+"ord": 3,
+"payload": {
+"options": [
+"une fois",
+"trois fois",
+"deux fois"
+]
+},
+"prompt": "Combien de fois a-t-il prévenu la réception ?",
+"type": "qcm"
+},
+{
+"expl": "« le petit déjeuner devait être compris dans le prix de la chambre ».",
+"id": "qmvzig1sp003",
+"key": {
+"answer": 2
+},
+"ord": 4,
+"payload": {
+"options": [
+"coûte douze euros",
+"n'est pas servi",
+"est inclus dans le prix"
+]
+},
+"prompt": "Normalement, le petit déjeuner…",
+"type": "qcm"
+},
+{
+"expl": "« je vous demande de me donner une autre chambre et de me rembourser le petit déjeuner ».",
+"id": "qmvzig1sp004",
+"key": {
+"answer": 0
+},
+"ord": 5,
+"payload": {
+"options": [
+"changer de chambre et être remboursé",
+"parler au directeur au téléphone",
+"partir avant samedi"
+]
+},
+"prompt": "Que demande Paul Garnier ?",
+"type": "qcm"
+},
+{
+"expl": "« je pars samedi ».",
+"id": "qmvzig1sp005",
+"key": {
+"answer": 0
+},
+"ord": 6,
+"payload": {
+"options": [
+"Vrai",
+"Faux"
+]
+},
+"prompt": "Paul Garnier quitte l'hôtel samedi.",
+"type": "qcm"
+},
+{
+"expl": "« personne n'est venu la réparer ».",
+"id": "qmvzig1sp006",
+"key": {
+"answer": 1
+},
+"ord": 7,
+"payload": {
+"options": [
+"Vrai",
+"Faux"
+]
+},
+"prompt": "Un employé a réparé la climatisation.",
+"type": "qcm"
+}
+],
+"consigne": "<p>Lisez cette lettre, puis répondez aux questions.</p>",
+"id": "a2ce011su03l",
+"kn": "A2-CE-1",
+"title": "Lecture A2 : une lettre au directeur",
+"tt": "5",
+"van": "<p>Monsieur le Directeur,</p><p>Je loge à l'hôtel Bellevue depuis le 3 juillet, dans la chambre 214. Je vous écris parce que mon séjour ne se passe pas bien.</p><p>D'abord, la climatisation de ma chambre ne fonctionne pas depuis trois jours. J'ai signalé le problème à la réception deux fois, mais personne n'est venu la réparer.</p><p>Ensuite, le petit déjeuner devait être compris dans le prix de la chambre. Pourtant, ce matin, on m'a demandé de payer douze euros.</p><p>Je pars samedi. D'ici là, je vous demande de me donner une autre chambre et de me rembourser le petit déjeuner.</p><p>Je vous remercie de votre réponse rapide.</p><p>Cordialement,</p><p>Paul Garnier</p>",
+"vip": "true",
+"vong": "on"
+},
+{
+"cau": [
+{
+"expl": "« nous avons encore besoin de deux personnes pour vendre les billets ».",
+"id": "qmvzig1sp007",
+"key": {
+"answer": 2
+},
+"ord": 1,
+"payload": {
+"options": [
+"annuler le spectacle",
+"inviter le public",
+"trouver des personnes pour vendre les billets"
+]
+},
+"prompt": "Courriel 1 : Sarah écrit surtout pour…",
+"type": "qcm"
+},
+{
+"expl": "« le vendredi 20 juin ».",
+"id": "qmvzig1sp008",
+"key": {
+"answer": 1
+},
+"ord": 2,
+"payload": {
+"options": [
+"jeudi",
+"20 juin",
+"10 juin"
+]
+},
+"prompt": "Courriel 1 : le spectacle a lieu le…",
+"type": "qcm"
+},
+{
+"expl": "« merci de me répondre avant le 10 juin ».",
+"id": "qmvzig1sp009",
+"key": {
+"answer": 0
+},
+"ord": 3,
+"payload": {
+"options": [
+"10 juin",
+"mardi",
+"20 juin"
+]
+},
+"prompt": "Courriel 1 : il faut répondre avant le…",
+"type": "qcm"
+},
+{
+"expl": "« la répétition de mardi est déplacée à jeudi ».",
+"id": "qmvzig1sp00a",
+"key": {
+"answer": 1
+},
+"ord": 4,
+"payload": {
+"options": [
+"mardi",
+"jeudi",
+"vendredi"
+]
+},
+"prompt": "Courriel 1 : cette semaine, la répétition a lieu…",
+"type": "qcm"
+},
+{
+"expl": "« je peux m'occuper des billets, mais seulement jusqu'à 20 h 30 ».",
+"id": "qmvzig1sp00b",
+"key": {
+"answer": 0
+},
+"ord": 5,
+"payload": {
+"options": [
+"vendre les billets, mais pas toute la soirée",
+"garder les enfants de Sarah",
+"jouer dans le spectacle"
+]
+},
+"prompt": "Courriel 2 : Marc accepte de…",
+"type": "qcm"
+},
+{
+"expl": "« je suis en déplacement pour mon travail ». Việc trông con là tối diễn.",
+"id": "qmvzig1sp00c",
+"key": {
+"answer": 2
+},
+"ord": 6,
+"payload": {
+"options": [
+"Il est malade.",
+"Il garde ses enfants.",
+"Il voyage pour son travail."
+]
+},
+"prompt": "Courriel 2 : pourquoi Marc ne vient-il pas jeudi ?",
+"type": "qcm"
+},
+{
+"expl": "« est-ce que tu peux m'envoyer le texte de la nouvelle scène ? ».",
+"id": "qmvzig1sp00d",
+"key": {
+"answer": 0
+},
+"ord": 7,
+"payload": {
+"options": [
+"le texte de la nouvelle scène",
+"un billet gratuit",
+"l'adresse de la salle"
+]
+},
+"prompt": "Courriel 2 : Marc demande…",
+"type": "qcm"
+},
+{
+"expl": "« seulement jusqu'à 20 h 30 » : vở diễn bắt đầu lúc 20 h, Marc về trước khi hết.",
+"id": "qmvzig1sp00e",
+"key": {
+"answer": 1
+},
+"ord": 8,
+"payload": {
+"options": [
+"Vrai",
+"Faux"
+]
+},
+"prompt": "Marc restera jusqu'à la fin du spectacle.",
+"type": "qcm"
+}
+],
+"consigne": "<p>Lisez ces deux courriels, puis répondez aux questions.</p>",
+"id": "a2ce021sw03m",
+"kn": "A2-CE-1",
+"title": "Lecture A2 : deux courriels",
+"tt": "6",
+"van": "<p><strong>Courriel 1</strong></p><p><strong>De :</strong> Sarah Benali</p><p><strong>À :</strong> Club de théâtre</p><p><strong>Objet :</strong> Spectacle de fin d'année</p><p>Bonjour à tous,</p><p>Notre spectacle aura lieu le vendredi 20 juin à 20 h, à la salle des fêtes. Nous avons encore besoin de deux personnes pour vendre les billets à l'entrée. Qui est disponible ? Merci de me répondre avant le 10 juin.</p><p>Autre chose : la répétition de mardi est déplacée à jeudi, même heure.</p><p>Sarah</p><p><strong>Courriel 2</strong></p><p><strong>De :</strong> Marc Dubois</p><p><strong>À :</strong> Sarah Benali</p><p><strong>Objet :</strong> RE : Spectacle de fin d'année</p><p>Bonjour Sarah,</p><p>Je peux m'occuper des billets, mais seulement jusqu'à 20 h 30 : après, je dois rentrer garder mes enfants. Par contre, je ne pourrai pas venir à la répétition de jeudi, car je suis en déplacement pour mon travail. Est-ce que tu peux m'envoyer le texte de la nouvelle scène ?</p><p>Bonne soirée,</p><p>Marc</p>",
+"vip": "true",
+"vong": "chot"
+},
+{
+"cau": [
+{
+"expl": "« ouvert 24 heures sur 24, tous les jours de l'année ».",
+"id": "qmvzig1sp00f",
+"key": {
+"answer": 1
+},
+"ord": 1,
+"payload": {
+"options": [
+"seulement la journée",
+"tous les jours, à toute heure",
+"du lundi au vendredi"
+]
+},
+"prompt": "Le service fonctionne…",
+"type": "qcm"
+},
+{
+"expl": "« avec votre adresse e-mail et une carte bancaire ».",
+"id": "qmvzig1sp00g",
+"key": {
+"answer": 2
+},
+"ord": 2,
+"payload": {
+"options": [
+"une photo",
+"une pièce d'identité",
+"une adresse e-mail et une carte bancaire"
+]
+},
+"prompt": "Pour créer un compte, il faut…",
+"type": "qcm"
+},
+{
+"expl": "« il faut avoir 14 ans ou plus ».",
+"id": "qmvzig1sp00h",
+"key": {
+"answer": 1
+},
+"ord": 3,
+"payload": {
+"options": [
+"Vrai",
+"Faux"
+]
+},
+"prompt": "Un enfant de 12 ans peut louer un vélo.",
+"type": "qcm"
+},
+{
+"expl": "« le code reçu par sms ».",
+"id": "qmvzig1sp00i",
+"key": {
+"answer": 1
+},
+"ord": 4,
+"payload": {
+"options": [
+"par e-mail",
+"par SMS",
+"sur l'écran"
+]
+},
+"prompt": "Le code pour prendre le vélo arrive…",
+"type": "qcm"
+},
+{
+"expl": "« rangez-le dans n'importe quelle station et attendez le signal vert ».",
+"id": "qmvzig1sp00j",
+"key": {
+"answer": 1
+},
+"ord": 5,
+"payload": {
+"options": [
+"appeler le service",
+"le ranger dans une station et attendre le signal vert",
+"le rendre à la station de départ"
+]
+},
+"prompt": "Pour rendre le vélo, on doit…",
+"type": "qcm"
+},
+{
+"expl": "« la première demi-heure est gratuite » : 30 phút đầu miễn phí, 30 phút sau 1 €.",
+"id": "qmvzig1sp00k",
+"key": {
+"answer": 1
+},
+"ord": 6,
+"payload": {
+"options": [
+"2 €",
+"1 €",
+"rien"
+]
+},
+"prompt": "Une location d'une heure coûte…",
+"type": "qcm"
+},
+{
+"expl": "« une somme de 150 € sera prélevée sur votre carte ».",
+"id": "qmvzig1sp00l",
+"key": {
+"answer": 0
+},
+"ord": 7,
+"payload": {
+"options": [
+"150 €",
+"30 €",
+"15 €"
+]
+},
+"prompt": "Si on garde le vélo plus de 24 heures, on paie…",
+"type": "qcm"
+}
+],
+"consigne": "<p>Lisez ce mode d'emploi, puis répondez aux questions.</p>",
+"id": "a2ce031sw03n",
+"kn": "A2-CE-2",
+"title": "Lecture A2 : mode d'emploi du vélo en libre-service",
+"tt": "6",
+"van": "<p><strong>VéloCité : comment louer un vélo ?</strong></p><p>Le service est ouvert 24 heures sur 24, tous les jours de l'année.</p><p>1. Choisissez une station et touchez l'écran de la borne.</p><p>2. Si c'est votre première location, créez un compte avec votre adresse e-mail et une carte bancaire. Attention : il faut avoir 14 ans ou plus.</p><p>3. Choisissez un vélo libre et entrez le code reçu par SMS.</p><p>4. Pour rendre le vélo, rangez-le dans n'importe quelle station et attendez le signal vert.</p><p>Prix : la première demi-heure est gratuite. Ensuite, chaque demi-heure coûte 1 €. Abonnement à l'année : 30 € (15 € pour les étudiants).</p><p>Attention : si le vélo n'est pas rendu après 24 heures, une somme de 150 € sera prélevée sur votre carte.</p>",
+"vip": "true",
+"vong": "on"
+},
+{
+"cau": [
+{
+"expl": "« avoir entre 12 et 17 ans et habiter dans la commune » : Inès đủ cả hai điều kiện.",
+"id": "qmvzig1sp00m",
+"key": {
+"answer": 0
+},
+"ord": 1,
+"payload": {
+"options": [
+"Oui",
+"Non"
+]
+},
+"prompt": "Inès a 15 ans, elle habite dans la commune et elle est libre toute la semaine. Elle peut s'inscrire ?",
+"type": "qcm"
+},
+{
+"expl": "« avoir entre 12 et 17 ans » : 18 tuổi là quá tuổi.",
+"id": "qmvzig1sp00n",
+"key": {
+"answer": 1
+},
+"ord": 2,
+"payload": {
+"options": [
+"Oui",
+"Non"
+]
+},
+"prompt": "Hugo a 18 ans et il habite dans la commune. Il peut s'inscrire ?",
+"type": "qcm"
+},
+{
+"expl": "« les participants doivent être présents les cinq jours ».",
+"id": "qmvzig1sp00o",
+"key": {
+"answer": 1
+},
+"ord": 3,
+"payload": {
+"options": [
+"Oui",
+"Non"
+]
+},
+"prompt": "Léa a 13 ans, elle habite dans la commune, mais elle part en vacances le 9 juillet. Elle peut s'inscrire ?",
+"type": "qcm"
+},
+{
+"expl": "« sauf pour les membres de la maison des jeunes : 25 € ».",
+"id": "qmvzig1sp00p",
+"key": {
+"answer": 2
+},
+"ord": 4,
+"payload": {
+"options": [
+"40 €",
+"12 €",
+"25 €"
+]
+},
+"prompt": "Pour un membre de la Maison des jeunes, l'atelier coûte…",
+"type": "qcm"
+},
+{
+"expl": "« chaque participant apporte un tablier ». Dụng cụ đã có sẵn: « le matériel est fourni ».",
+"id": "qmvzig1sp00q",
+"key": {
+"answer": 0
+},
+"ord": 5,
+"payload": {
+"options": [
+"un tablier",
+"les ingrédients",
+"des ustensiles de cuisine"
+]
+},
+"prompt": "Que faut-il apporter ?",
+"type": "qcm"
+},
+{
+"expl": "« inscription à l'accueil, seulement le mercredi ».",
+"id": "qmvzig1sp00r",
+"key": {
+"answer": 2
+},
+"ord": 6,
+"payload": {
+"options": [
+"tous les jours",
+"le 7 juillet",
+"le mercredi"
+]
+},
+"prompt": "Quand peut-on s'inscrire ?",
+"type": "qcm"
+},
+{
+"expl": "« avec une autorisation des parents ».",
+"id": "qmvzig1sp00s",
+"key": {
+"answer": 1
+},
+"ord": 7,
+"payload": {
+"options": [
+"une photo",
+"une autorisation des parents",
+"un certificat médical"
+]
+},
+"prompt": "Pour s'inscrire, il faut…",
+"type": "qcm"
+}
+],
+"consigne": "<p>Lisez cette annonce, puis répondez aux questions.</p>",
+"id": "a2ce041sw03o",
+"kn": "A2-CE-2",
+"title": "Lecture A2 : qui peut s'inscrire ?",
+"tt": "7",
+"van": "<p><strong>Atelier cuisine du monde : inscriptions ouvertes</strong></p><p>La Maison des jeunes organise un atelier de cuisine du 7 au 11 juillet, de 14 h à 17 h.</p><p>Conditions : avoir entre 12 et 17 ans et habiter dans la commune. Les participants doivent être présents les cinq jours.</p><p>Le prix est de 40 € pour la semaine, sauf pour les membres de la Maison des jeunes : 25 €. Le matériel est fourni, mais chaque participant apporte un tablier.</p><p>Places limitées à 12. Inscription à l'accueil, seulement le mercredi, avec une autorisation des parents.</p>",
+"vip": "true",
+"vong": "chot"
+},
+{
+"cau": [
+{
+"expl": "TGV: 7 h 00 đến 9 h 00, hai giờ. Ouigo: hai giờ năm phút.",
+"id": "qmvzig1sp00t",
+"key": {
+"answer": 1
+},
+"ord": 1,
+"payload": {
+"options": [
+"le Ouigo 7811",
+"le TGV 6601",
+"le TER 17703"
+]
+},
+"prompt": "Le trajet le plus court est avec…",
+"type": "qcm"
+},
+{
+"expl": "Ouigo 25 €, rẻ nhất trong bảng.",
+"id": "qmvzig1sp00u",
+"key": {
+"answer": 1
+},
+"ord": 2,
+"payload": {
+"options": [
+"de l'Intercités 5905",
+"du Ouigo 7811",
+"du TER 17703"
+]
+},
+"prompt": "Le billet le moins cher est celui…",
+"type": "qcm"
+},
+{
+"expl": "Cột Changement: « 2 changements ».",
+"id": "qmvzig1sp00v",
+"key": {
+"answer": 1
+},
+"ord": 3,
+"payload": {
+"options": [
+"jamais",
+"deux fois",
+"une fois"
+]
+},
+"prompt": "Avec l'Intercités, il faut changer de train…",
+"type": "qcm"
+},
+{
+"expl": "Chỉ TGV đến lúc 9 h 00. TER 12 h 15 và Ouigo 12 h 20 là sau 12 giờ.",
+"id": "qmvzig1sq011",
+"key": {
+"answers": {
+"rmvzig1sp00x_cmvzig1sp00w": "OUI",
+"rmvzig1sp00y_cmvzig1sp00w": "NON",
+"rmvzig1sp00z_cmvzig1sp00w": "NON",
+"rmvzig1sp010_cmvzig1sp00w": "NON"
+}
+},
+"ord": 4,
+"payload": {
+"colonnes": [
+{
+"id": "cmvzig1sp00w",
+"titre": "Avant midi"
+}
+],
+"criteres": [
+{
+"id": "rmvzig1sp00x",
+"texte": "TGV 6601"
+},
+{
+"id": "rmvzig1sp00y",
+"texte": "TER 17703"
+},
+{
+"id": "rmvzig1sp00z",
+"texte": "Ouigo 7811"
+},
+{
+"id": "rmvzig1sp010",
+"texte": "Intercités 5905"
+}
+]
+},
+"prompt": "Ce train arrive à Lyon avant midi ?",
+"type": "tableau"
+},
+{
+"expl": "Cột Changement ghi « direct » cho TGV và Ouigo.",
+"id": "qmvzig1sq017",
+"key": {
+"answers": {
+"rmvzig1sq013_cmvzig1sq012": "OUI",
+"rmvzig1sq014_cmvzig1sq012": "NON",
+"rmvzig1sq015_cmvzig1sq012": "OUI",
+"rmvzig1sq016_cmvzig1sq012": "NON"
+}
+},
+"ord": 5,
+"payload": {
+"colonnes": [
+{
+"id": "cmvzig1sq012",
+"titre": "Direct"
+}
+],
+"criteres": [
+{
+"id": "rmvzig1sq013",
+"texte": "TGV 6601"
+},
+{
+"id": "rmvzig1sq014",
+"texte": "TER 17703"
+},
+{
+"id": "rmvzig1sq015",
+"texte": "Ouigo 7811"
+},
+{
+"id": "rmvzig1sq016",
+"texte": "Intercités 5905"
+}
+]
+},
+"prompt": "Ce train est direct ?",
+"type": "tableau"
+},
+{
+"expl": "« les grandes valises sont payantes (5 €) » : Ouigo 25 € cộng 5 € là 30 €, Intercités chỉ 29 €.",
+"id": "qmvzig1sq018",
+"key": {
+"answer": 0
+},
+"ord": 6,
+"payload": {
+"options": [
+"l'Intercités 5905",
+"le Ouigo 7811",
+"le TER 17703"
+]
+},
+"prompt": "Marc a une grande valise. Pour lui, le voyage le moins cher est avec…",
+"type": "qcm"
+}
+],
+"consigne": "<p>Lisez ce tableau, puis répondez aux questions.</p>",
+"id": "a2ce051sw03p",
+"kn": "A2-CE-3",
+"title": "Lecture A2 : quel train choisir ?",
+"tt": "2",
+"van": "<p>Vous partez de Paris pour aller à Lyon samedi. Voici les trains possibles.</p><div class=\"mcf-bang\"><table><thead><tr><th>Train</th><th>Départ</th><th>Arrivée</th><th>Changement</th><th>Prix</th></tr></thead><tbody><tr><td>TGV 6601</td><td>7 h 00</td><td>9 h 00</td><td>direct</td><td>89 €</td></tr><tr><td>TER 17703</td><td>7 h 30</td><td>12 h 15</td><td>1 changement à Dijon</td><td>35 €</td></tr><tr><td>Ouigo 7811</td><td>10 h 15</td><td>12 h 20</td><td>direct</td><td>25 €</td></tr><tr><td>Intercités 5905</td><td>13 h 40</td><td>18 h 50</td><td>2 changements</td><td>29 €</td></tr></tbody></table></div><p>Dans les trains Ouigo, il n'y a pas de voiture-bar et les grandes valises sont payantes (5 €).</p>",
+"vip": null,
+"vong": "hoc"
+},
+{
+"cau": [
+{
+"expl": "A: samedi, 15 €, en forêt. B: samedi, 18 €, mais « dans les salles du musée ». C: dimanche, 45 €, sur le lac.",
+"id": "qmvzig1sq01f",
+"key": {
+"answers": {
+"rmvzig1sq01c_cmvzig1sq019": "OUI",
+"rmvzig1sq01c_cmvzig1sq01a": "OUI",
+"rmvzig1sq01c_cmvzig1sq01b": "NON",
+"rmvzig1sq01d_cmvzig1sq019": "OUI",
+"rmvzig1sq01d_cmvzig1sq01a": "OUI",
+"rmvzig1sq01d_cmvzig1sq01b": "NON",
+"rmvzig1sq01e_cmvzig1sq019": "OUI",
+"rmvzig1sq01e_cmvzig1sq01a": "NON",
+"rmvzig1sq01e_cmvzig1sq01b": "OUI"
+}
+},
+"ord": 1,
+"payload": {
+"colonnes": [
+{
+"id": "cmvzig1sq019",
+"titre": "A. Randonnée"
+},
+{
+"id": "cmvzig1sq01a",
+"titre": "B. Photo"
+},
+{
+"id": "cmvzig1sq01b",
+"titre": "C. Voile"
+}
+],
+"criteres": [
+{
+"id": "rmvzig1sq01c",
+"texte": "L'activité a lieu le samedi."
+},
+{
+"id": "rmvzig1sq01d",
+"texte": "Elle coûte moins de 20 € par mois."
+},
+{
+"id": "rmvzig1sq01e",
+"texte": "Elle se passe dehors."
+}
+]
+},
+"prompt": "Pour chaque activité, cochez OUI ou NON.",
+"type": "tableau"
+},
+{
+"expl": "Chỉ cột A có OUI ở cả ba hàng.",
+"id": "qmvzig1sq01g",
+"key": {
+"answer": 0
+},
+"ord": 2,
+"payload": {
+"options": [
+"la randonnée",
+"la photo",
+"la voile"
+]
+},
+"prompt": "Quelle activité convient à Léa ?",
+"type": "qcm"
+},
+{
+"expl": "« départ en bus devant la mairie ».",
+"id": "qmvzig1sq01h",
+"key": {
+"answer": 2
+},
+"ord": 3,
+"payload": {
+"options": [
+"du musée",
+"de la gare",
+"devant la mairie"
+]
+},
+"prompt": "Le club de randonnée part…",
+"type": "qcm"
+},
+{
+"expl": "« appareil photo prêté ».",
+"id": "qmvzig1sq01i",
+"key": {
+"answer": 0
+},
+"ord": 4,
+"payload": {
+"options": [
+"emprunter un appareil photo",
+"faire des photos en forêt",
+"acheter un appareil moins cher"
+]
+},
+"prompt": "À l'atelier photo, on peut…",
+"type": "qcm"
+},
+{
+"expl": "« navette gratuite depuis la gare ».",
+"id": "qmvzig1sq01j",
+"key": {
+"answer": 0
+},
+"ord": 5,
+"payload": {
+"options": [
+"une navette gratuite",
+"un bus payant",
+"un parking"
+]
+},
+"prompt": "Pour aller à l'école de voile, il y a…",
+"type": "qcm"
+},
+{
+"expl": "« dès 14 ans ».",
+"id": "qmvzig1sq01k",
+"key": {
+"answer": 1
+},
+"ord": 6,
+"payload": {
+"options": [
+"16 ans",
+"14 ans",
+"12 ans"
+]
+},
+"prompt": "Pour la randonnée, il faut avoir au moins…",
+"type": "qcm"
+}
+],
+"consigne": "<p>Lisez ces annonces, puis répondez aux questions.</p>",
+"id": "a2ce061sw03q",
+"kn": "A2-CE-3",
+"title": "Lecture A2 : quelle activité pour Léa ?",
+"tt": "3",
+"van": "<p>Léa a 16 ans. Elle cherche une activité pour le samedi. Elle veut payer moins de 20 € par mois et elle aime être dehors.</p><p><strong>A. Club de randonnée Les Sentiers</strong> : sorties en forêt tous les samedis, de 9 h à 16 h. Départ en bus devant la mairie. Cotisation : 15 € par mois. Dès 14 ans.</p><p><strong>B. Atelier photo du musée</strong> : le mercredi et le samedi après-midi, dans les salles du musée. 18 € par mois. Appareil photo prêté.</p><p><strong>C. École de voile du lac</strong> : le dimanche matin. 45 € par mois. Navette gratuite depuis la gare. Dès 12 ans.</p>",
+"vip": "true",
+"vong": "hoc"
+},
+{
+"cau": [
+{
+"expl": "Đọc từng cột Animaux, Piscine, Parking của bảng.",
+"id": "qmvzig1sq01r",
+"key": {
+"answers": {
+"rmvzig1sq01o_cmvzig1sq01l": "NON",
+"rmvzig1sq01o_cmvzig1sq01m": "OUI",
+"rmvzig1sq01o_cmvzig1sq01n": "OUI",
+"rmvzig1sq01p_cmvzig1sq01l": "OUI",
+"rmvzig1sq01p_cmvzig1sq01m": "OUI",
+"rmvzig1sq01p_cmvzig1sq01n": "NON",
+"rmvzig1sq01q_cmvzig1sq01l": "OUI",
+"rmvzig1sq01q_cmvzig1sq01m": "OUI",
+"rmvzig1sq01q_cmvzig1sq01n": "NON"
+}
+},
+"ord": 1,
+"payload": {
+"colonnes": [
+{
+"id": "cmvzig1sq01l",
+"titre": "Hôtel du Lac"
+},
+{
+"id": "cmvzig1sq01m",
+"titre": "Les Pins"
+},
+{
+"id": "cmvzig1sq01n",
+"titre": "Le Central"
+}
+],
+"criteres": [
+{
+"id": "rmvzig1sq01o",
+"texte": "Les animaux sont acceptés."
+},
+{
+"id": "rmvzig1sq01p",
+"texte": "Il y a une piscine."
+},
+{
+"id": "rmvzig1sq01q",
+"texte": "Il y a un parking."
+}
+]
+},
+"prompt": "Pour chaque hôtel, cochez OUI ou NON.",
+"type": "tableau"
+},
+{
+"expl": "Gia đình cần nhận chó và có bể bơi: chỉ Les Pins có cả hai.",
+"id": "qmvzig1sq01s",
+"key": {
+"answer": 0
+},
+"ord": 2,
+"payload": {
+"options": [
+"Les Pins",
+"Le Central",
+"l'Hôtel du Lac"
+]
+},
+"prompt": "Quel hôtel convient à la famille Martin ?",
+"type": "qcm"
+},
+{
+"expl": "120 € cộng 10 € cho con chó là 130 € một đêm, nhân ba đêm là 390 €.",
+"id": "qmvzig1sq01t",
+"key": {
+"answer": 2
+},
+"ord": 3,
+"payload": {
+"options": [
+"130 €",
+"360 €",
+"390 €"
+]
+},
+"prompt": "Pour trois nuits aux Pins avec le chien, la famille paie…",
+"type": "qcm"
+},
+{
+"expl": "Cột Distance du lac: 100 m.",
+"id": "qmvzig1sq01u",
+"key": {
+"answer": 2
+},
+"ord": 4,
+"payload": {
+"options": [
+"Les Pins",
+"Le Central",
+"l'Hôtel du Lac"
+]
+},
+"prompt": "L'hôtel le plus près du lac est…",
+"type": "qcm"
+},
+{
+"expl": "Le Central: 95 € một đêm.",
+"id": "qmvzig1sq01v",
+"key": {
+"answer": 1
+},
+"ord": 5,
+"payload": {
+"options": [
+"l'Hôtel du Lac",
+"Le Central",
+"Les Pins"
+]
+},
+"prompt": "L'hôtel le moins cher est…",
+"type": "qcm"
+},
+{
+"expl": "Hàng Le Central, cột Parking: « non ».",
+"id": "qmvzig1sq01w",
+"key": {
+"answer": 1
+},
+"ord": 6,
+"payload": {
+"options": [
+"Vrai",
+"Faux"
+]
+},
+"prompt": "On peut garer sa voiture au Central.",
+"type": "qcm"
+}
+],
+"consigne": "<p>Lisez ce tableau, puis répondez aux questions.</p>",
+"id": "a2ce071sw03r",
+"kn": "A2-CE-3",
+"title": "Lecture A2 : trois hôtels",
+"tt": "4",
+"van": "<p>La famille Martin (deux adultes et deux enfants) cherche un hôtel à Annecy pour trois nuits en août. Elle voyage avec son chien et veut une piscine.</p><div class=\"mcf-bang\"><table><thead><tr><th>Hôtel</th><th>Prix par nuit (famille)</th><th>Piscine</th><th>Animaux</th><th>Parking</th><th>Distance du lac</th></tr></thead><tbody><tr><td>Hôtel du Lac</td><td>180 €</td><td>oui</td><td>non</td><td>oui</td><td>100 m</td></tr><tr><td>Les Pins</td><td>120 €</td><td>oui</td><td>oui (10 € par nuit)</td><td>oui</td><td>2 km</td></tr><tr><td>Le Central</td><td>95 €</td><td>non</td><td>oui</td><td>non</td><td>800 m</td></tr></tbody></table></div>",
+"vip": "true",
+"vong": "on"
+},
+{
+"cau": [
+{
+"expl": "« près de l'université » : fac là cách nói ngắn của université.",
+"id": "qmvzig1sq01x",
+"key": {
+"answer": 2
+},
+"ord": 1,
+"payload": {
+"options": [
+"l'annonce A",
+"l'annonce D",
+"l'annonce E"
+]
+},
+"prompt": "Karim commence ses études en septembre et cherche un logement pas loin de la fac. Quelle annonce l'intéresse ?",
+"type": "qcm"
+},
+{
+"expl": "« de 6 h à 23 h » : mở từ 6 giờ sáng.",
+"id": "qmvzig1sq01y",
+"key": {
+"answer": 0
+},
+"ord": 2,
+"payload": {
+"options": [
+"l'annonce C",
+"l'annonce B",
+"l'annonce A"
+]
+},
+"prompt": "Anne travaille toute la journée et veut faire du sport tôt le matin. Quelle annonce l'intéresse ?",
+"type": "qcm"
+},
+{
+"expl": "« garde vos enfants le week-end ».",
+"id": "qmvzig1sq01z",
+"key": {
+"answer": 2
+},
+"ord": 3,
+"payload": {
+"options": [
+"l'annonce E",
+"l'annonce D",
+"l'annonce B"
+]
+},
+"prompt": "Julien sort samedi soir et cherche quelqu'un pour s'occuper de ses deux enfants. Quelle annonce l'intéresse ?",
+"type": "qcm"
+},
+{
+"expl": "« cours de français pour adultes, le soir ».",
+"id": "qmvzig1sq020",
+"key": {
+"answer": 1
+},
+"ord": 4,
+"payload": {
+"options": [
+"l'annonce E",
+"l'annonce A",
+"l'annonce C"
+]
+},
+"prompt": "Mei vient d'arriver en France et veut apprendre la langue après son travail. Quelle annonce l'intéresse ?",
+"type": "qcm"
+},
+{
+"expl": "« pour enfants de 6 à 9 ans ».",
+"id": "qmvzig1sq021",
+"key": {
+"answer": 2
+},
+"ord": 5,
+"payload": {
+"options": [
+"11 ans",
+"5 ans",
+"7 ans"
+]
+},
+"prompt": "Le vélo de l'annonce D convient à un enfant de…",
+"type": "qcm"
+},
+{
+"expl": "« premier mois gratuit ».",
+"id": "qmvzig1sq022",
+"key": {
+"answer": 2
+},
+"ord": 6,
+"payload": {
+"options": [
+"est à moitié prix",
+"coûte 10 €",
+"est gratuit"
+]
+},
+"prompt": "À la salle de sport, le premier mois…",
+"type": "qcm"
+}
+],
+"consigne": "<p>Lisez ces petites annonces, puis répondez aux questions.</p>",
+"id": "a2ce081sx03s",
+"kn": "A2-CE-3",
+"title": "Lecture A2 : quel document pour qui ?",
+"tt": "5",
+"van": "<p><strong>Annonce A</strong> : cours de français pour adultes, le soir de 19 h à 21 h. Débutants acceptés. 60 € le trimestre.</p><p><strong>Annonce B</strong> : étudiante sérieuse garde vos enfants le week-end. 10 € de l'heure.</p><p><strong>Annonce C</strong> : salle de sport ouverte 7 jours sur 7, de 6 h à 23 h. Premier mois gratuit.</p><p><strong>Annonce D</strong> : vends vélo d'enfant, bon état, 40 €. Pour enfants de 6 à 9 ans.</p><p><strong>Annonce E</strong> : cherche colocataire pour un appartement de 3 pièces, près de l'université. 400 € par mois.</p>",
+"vip": "true",
+"vong": "chot"
+},
+{
+"cau": [
+{
+"expl": "« n'utilise plus de bouteilles ni de gobelets en plastique ».",
+"id": "qmvzig1sq023",
+"key": {
+"answer": 2
+},
+"ord": 1,
+"payload": {
+"options": [
+"d'une école qui recycle le plastique",
+"d'une nouvelle cantine",
+"d'une école qui n'utilise plus de plastique"
+]
+},
+"prompt": "Cet article parle…",
+"type": "qcm"
+},
+{
+"expl": "« l'idée vient des élèves de cm2 ».",
+"id": "qmvzig1sq024",
+"key": {
+"answer": 1
+},
+"ord": 2,
+"payload": {
+"options": [
+"la directrice",
+"des élèves",
+"la mairie"
+]
+},
+"prompt": "Qui a eu l'idée ?",
+"type": "qcm"
+},
+{
+"expl": "« payée par la mairie ».",
+"id": "qmvzig1sq025",
+"key": {
+"answer": 2
+},
+"ord": 3,
+"payload": {
+"options": [
+"les parents",
+"l'école",
+"la mairie"
+]
+},
+"prompt": "Les gourdes ont été payées par…",
+"type": "qcm"
+},
+{
+"expl": "« servis dans de grands pots en verre ».",
+"id": "qmvzig1sq026",
+"key": {
+"answer": 0
+},
+"ord": 4,
+"payload": {
+"options": [
+"dans des pots en verre",
+"dans des gourdes",
+"dans des gobelets"
+]
+},
+"prompt": "À la cantine, les yaourts sont servis…",
+"type": "qcm"
+},
+{
+"expl": "« certains parents avaient peur que les gourdes soient trop lourdes ».",
+"id": "qmvzig1sq027",
+"key": {
+"answer": 0
+},
+"ord": 5,
+"payload": {
+"options": [
+"Vrai",
+"Faux"
+]
+},
+"prompt": "Au début, certains parents n'étaient pas rassurés.",
+"type": "qcm"
+},
+{
+"expl": "« l'école a jeté 8 000 objets en plastique de moins ».",
+"id": "qmvzig1sq028",
+"key": {
+"answer": 1
+},
+"ord": 6,
+"payload": {
+"options": [
+"800",
+"8 000",
+"3 000"
+]
+},
+"prompt": "En trois mois, l'école a jeté combien d'objets en plastique de moins ?",
+"type": "qcm"
+},
+{
+"expl": "« deux autres écoles de la ville vont suivre l'exemple en janvier » : sắp làm, chưa làm.",
+"id": "qmvzig1sq029",
+"key": {
+"answer": 1
+},
+"ord": 7,
+"payload": {
+"options": [
+"Vrai",
+"Faux"
+]
+},
+"prompt": "D'autres écoles de Rennes font déjà la même chose.",
+"type": "qcm"
+}
+],
+"consigne": "<p>Lisez cet article, puis répondez aux questions.</p>",
+"id": "a2ce091sx03t",
+"kn": "A2-CE-4",
+"title": "Lecture A2 : moins de plastique à l'école",
+"tt": "3",
+"van": "<p><strong>Une école dit adieu au plastique</strong></p><p>Depuis la rentrée de septembre, l'école primaire Jules-Ferry, à Rennes, n'utilise plus de bouteilles ni de gobelets en plastique. L'idée vient des élèves de CM2, qui ont étudié la pollution des océans en classe de sciences.</p><p>Chaque enfant a reçu une gourde en métal, payée par la mairie. À la cantine, les yaourts sont maintenant servis dans de grands pots en verre. « Au début, certains parents avaient peur que les gourdes soient trop lourdes dans les cartables, explique la directrice, Mme Roux. Mais aujourd'hui, tout le monde est content. »</p><p>En trois mois, l'école a jeté 8 000 objets en plastique de moins. Deux autres écoles de la ville vont suivre l'exemple en janvier.</p>",
+"vip": "true",
+"vong": "hoc"
+},
+{
+"cau": [
+{
+"expl": "« il a travaillé comme ingénieur ».",
+"id": "qmvzig1sq02a",
+"key": {
+"answer": 2
+},
+"ord": 1,
+"payload": {
+"options": [
+"professeur",
+"boulanger à Lyon",
+"ingénieur"
+]
+},
+"prompt": "Avant, Antoine était…",
+"type": "qcm"
+},
+{
+"expl": "« je voulais travailler avec mes mains et voir mes clients ».",
+"id": "qmvzig1sq02b",
+"key": {
+"answer": 0
+},
+"ord": 2,
+"payload": {
+"options": [
+"travailler avec ses mains et voir ses clients",
+"habiter à Lyon",
+"gagner plus d'argent"
+]
+},
+"prompt": "Il a changé de métier parce qu'il voulait…",
+"type": "qcm"
+},
+{
+"expl": "« il n'a pas de magasin ».",
+"id": "qmvzig1sq02c",
+"key": {
+"answer": 1
+},
+"ord": 3,
+"payload": {
+"options": [
+"Vrai",
+"Faux"
+]
+},
+"prompt": "Antoine a une boulangerie dans son village.",
+"type": "qcm"
+},
+{
+"expl": "« il livre son pain à vélo ».",
+"id": "qmvzig1sq02d",
+"key": {
+"answer": 0
+},
+"ord": 4,
+"payload": {
+"options": [
+"à vélo",
+"à pied",
+"en camionnette"
+]
+},
+"prompt": "Comment Antoine livre-t-il son pain ?",
+"type": "qcm"
+},
+{
+"expl": "« de la farine produite dans la région ».",
+"id": "qmvzig1sq02e",
+"key": {
+"answer": 2
+},
+"ord": 5,
+"payload": {
+"options": [
+"de l'étranger",
+"de Lyon",
+"de la région"
+]
+},
+"prompt": "Sa farine vient…",
+"type": "qcm"
+},
+{
+"expl": "« où il vend aussi des gâteaux ».",
+"id": "qmvzig1sq02f",
+"key": {
+"answer": 0
+},
+"ord": 6,
+"payload": {
+"options": [
+"des gâteaux",
+"des fruits",
+"de la farine"
+]
+},
+"prompt": "Au marché de Crest, il vend aussi…",
+"type": "qcm"
+},
+{
+"expl": "« ouvrir une petite école pour apprendre à faire du pain aux enfants ».",
+"id": "qmvzig1sq02g",
+"key": {
+"answer": 0
+},
+"ord": 7,
+"payload": {
+"options": [
+"Vrai",
+"Faux"
+]
+},
+"prompt": "Antoine aimerait enseigner son métier aux enfants.",
+"type": "qcm"
+}
+],
+"consigne": "<p>Lisez cet article, puis répondez aux questions.</p>",
+"id": "a2ce101sx03u",
+"kn": "A2-CE-4",
+"title": "Lecture A2 : un boulanger pas comme les autres",
+"tt": "4",
+"van": "<p><strong>Antoine, boulanger à vélo</strong></p><p>Antoine Morel a 29 ans. Pendant cinq ans, il a travaillé comme ingénieur dans une grande entreprise à Lyon. Mais en 2024, il a tout quitté pour apprendre le métier de boulanger. « Je voulais travailler avec mes mains et voir mes clients », raconte-t-il.</p><p>Aujourd'hui, Antoine vit dans un village de la Drôme. Il n'a pas de magasin : chaque matin, il livre son pain à vélo dans trois villages, avec une remorque. Il prépare environ 150 pains par jour, seulement avec de la farine produite dans la région.</p><p>Le mardi, il ne travaille pas. Le samedi, on le trouve au marché de Crest, où il vend aussi des gâteaux. Son rêve ? Ouvrir une petite école pour apprendre à faire du pain aux enfants.</p>",
+"vip": "true",
+"vong": "on"
+},
+{
+"cau": [
+{
+"expl": "« tous les jeudis de juillet et d'août, de 18 h à minuit ».",
+"id": "qmvzig1sq02h",
+"key": {
+"answer": 0
+},
+"ord": 1,
+"payload": {
+"options": [
+"le jeudi soir, en été",
+"tous les soirs de l'année",
+"le samedi matin"
+]
+},
+"prompt": "Le marché de nuit a lieu…",
+"type": "qcm"
+},
+{
+"expl": "« le marché a été créé par une association de commerçants ».",
+"id": "qmvzig1sq02i",
+"key": {
+"answer": 2
+},
+"ord": 2,
+"payload": {
+"options": [
+"la mairie",
+"les habitants du quartier",
+"une association de commerçants"
+]
+},
+"prompt": "Qui a créé ce marché ?",
+"type": "qcm"
+},
+{
+"expl": "« beaucoup de gens travaillent la journée ».",
+"id": "qmvzig1sq02j",
+"key": {
+"answer": 2
+},
+"ord": 3,
+"payload": {
+"options": [
+"les producteurs de la région",
+"les touristes",
+"les personnes qui travaillent la journée"
+]
+},
+"prompt": "Selon Claire Dumas, le marché est pratique pour…",
+"type": "qcm"
+},
+{
+"expl": "« pour la troisième année ».",
+"id": "qmvzig1sq02k",
+"key": {
+"answer": 1
+},
+"ord": 4,
+"payload": {
+"options": [
+"Vrai",
+"Faux"
+]
+},
+"prompt": "C'est la première année du marché de nuit.",
+"type": "qcm"
+},
+{
+"expl": "« des tables supplémentaires ont été installées, et un concert gratuit aura lieu ».",
+"id": "qmvzig1sq02l",
+"key": {
+"answer": 0
+},
+"ord": 5,
+"payload": {
+"options": [
+"plus de tables et des concerts",
+"des producteurs étrangers",
+"une ouverture jusqu'à 2 h"
+]
+},
+"prompt": "Qu'est-ce qui est nouveau cette année ?",
+"type": "qcm"
+},
+{
+"expl": "« seul regret des habitants du quartier : le bruit après 23 heures ».",
+"id": "qmvzig1sq02m",
+"key": {
+"answer": 0
+},
+"ord": 6,
+"payload": {
+"options": [
+"Vrai",
+"Faux"
+]
+},
+"prompt": "Les habitants du quartier se plaignent du bruit tard le soir.",
+"type": "qcm"
+}
+],
+"consigne": "<p>Lisez cet article, puis répondez aux questions.</p>",
+"id": "a2ce111sy03v",
+"kn": "A2-CE-4",
+"title": "Lecture A2 : le marché de nuit",
+"tt": "5",
+"van": "<p><strong>Le marché de nuit revient à Bordeaux</strong></p><p>Pour la troisième année, le marché de nuit s'installe sur les quais de Bordeaux tous les jeudis de juillet et d'août, de 18 h à minuit. Une soixantaine de producteurs de la région y vendent fruits, fromages, vins et plats chauds.</p><p>Le marché a été créé par une association de commerçants. « Beaucoup de gens travaillent la journée et n'ont pas le temps d'aller au marché le matin, explique sa présidente, Claire Dumas. Le soir, ils peuvent faire leurs courses tranquillement et dîner sur place. »</p><p>Le succès est réel : l'an dernier, plus de 5 000 personnes sont venues chaque soir. Cette année, des tables supplémentaires ont été installées, et un concert gratuit aura lieu le premier jeudi de chaque mois. Seul regret des habitants du quartier : le bruit après 23 heures.</p>",
+"vip": "true",
+"vong": "chot"
+},
+{
+"cau": [
+{
+"expl": "« est gratuit le premier dimanche du mois » : gratuit là sans payer.",
+"id": "qmvzig1sq02n",
+"key": {
+"answer": 1
+},
+"ord": 1,
+"payload": {
+"options": [
+"Le musée ouvre seulement le dimanche.",
+"Le premier dimanche du mois, on entre sans payer.",
+"Le premier dimanche, le musée est fermé."
+]
+},
+"prompt": "Phrase 1 veut dire :",
+"type": "qcm"
+},
+{
+"expl": "« jusqu'à nouvel ordre » : cho tới khi có thông báo mới.",
+"id": "qmvzig1sq02o",
+"key": {
+"answer": 0
+},
+"ord": 2,
+"payload": {
+"options": [
+"On ne sait pas quand le magasin va rouvrir.",
+"Le magasin vend des outils pour les travaux.",
+"Le magasin rouvre aujourd'hui."
+]
+},
+"prompt": "Phrase 2 veut dire :",
+"type": "qcm"
+},
+{
+"expl": "« il est interdit de fumer dans le bâtiment ».",
+"id": "qmvzig1sq02p",
+"key": {
+"answer": 0
+},
+"ord": 3,
+"payload": {
+"options": [
+"On ne peut pas fumer à l'intérieur.",
+"On peut fumer dans le bâtiment.",
+"Le bâtiment vend des cigarettes."
+]
+},
+"prompt": "Phrase 3 veut dire :",
+"type": "qcm"
+},
+{
+"expl": "« supprimé » là bị huỷ, không phải chậm.",
+"id": "qmvzig1sq02q",
+"key": {
+"answer": 1
+},
+"ord": 4,
+"payload": {
+"options": [
+"Il neige dans le train.",
+"Le train ne roule pas à cause du mauvais temps.",
+"Le train a du retard à cause de la neige."
+]
+},
+"prompt": "Phrase 4 veut dire :",
+"type": "qcm"
+},
+{
+"expl": "« les enfants de moins de 6 ans ne paient pas ».",
+"id": "qmvzig1sq02r",
+"key": {
+"answer": 2
+},
+"ord": 5,
+"payload": {
+"options": [
+"Les enfants de 6 ans paient moitié prix.",
+"Les enfants ne peuvent pas entrer.",
+"C'est gratuit pour les petits enfants."
+]
+},
+"prompt": "Phrase 5 veut dire :",
+"type": "qcm"
+},
+{
+"expl": "« au moins 48 heures à l'avance » : 48 giờ là hai ngày.",
+"id": "qmvzig1sq02s",
+"key": {
+"answer": 2
+},
+"ord": 6,
+"payload": {
+"options": [
+"On peut réserver le jour même.",
+"La réservation coûte 48 €.",
+"Il faut réserver deux jours avant, ou plus tôt."
+]
+},
+"prompt": "Phrase 6 veut dire :",
+"type": "qcm"
+},
+{
+"expl": "« nous sommes complets » : hết chỗ, không phải mọi người đều có mặt.",
+"id": "qmvzig1sq02t",
+"key": {
+"answer": 0
+},
+"ord": 7,
+"payload": {
+"options": [
+"Il n'y a plus de place ce soir.",
+"Le restaurant ferme tôt ce soir.",
+"Nous sommes tous là ce soir."
+]
+},
+"prompt": "Phrase 7 veut dire :",
+"type": "qcm"
+},
+{
+"expl": "« cadet » là em, « banlieue » là ngoại ô (không liên quan banque).",
+"id": "qmvzig1sq02u",
+"key": {
+"answer": 0
+},
+"ord": 8,
+"payload": {
+"options": [
+"Mon petit frère vit près de la ville, pas dans le centre.",
+"Mon grand frère habite en ville.",
+"Mon frère travaille dans une banque."
+]
+},
+"prompt": "Phrase 8 veut dire :",
+"type": "qcm"
+}
+],
+"consigne": "<p>Lisez ces phrases, puis répondez aux questions.</p>",
+"id": "a2ce121sy03w",
+"kn": "A2-CE-5",
+"title": "Lecture A2 : ça veut dire la même chose",
+"tt": "1",
+"van": "<p>1. Le musée est gratuit le premier dimanche du mois.</p><p>2. Le magasin est fermé pour travaux jusqu'à nouvel ordre.</p><p>3. Il est interdit de fumer dans le bâtiment.</p><p>4. Le train a été supprimé à cause de la neige.</p><p>5. Les enfants de moins de 6 ans ne paient pas.</p><p>6. Réservation obligatoire au moins 48 heures à l'avance.</p><p>7. Nous sommes complets ce soir.</p><p>8. Mon frère cadet habite en banlieue.</p>",
+"vip": null,
+"vong": "hoc"
+},
+{
+"cau": [
+{
+"expl": "Người nằm viện là bà của Emma: « ma grand-mère est à l'hôpital ».",
+"id": "qmvzig1sq02v",
+"key": {
+"answer": 0
+},
+"ord": 1,
+"payload": {
+"options": [
+"s'excuser et proposer un autre moment",
+"inviter Nora à son anniversaire",
+"dire qu'elle est à l'hôpital"
+]
+},
+"prompt": "Emma écrit pour…",
+"type": "qcm"
+},
+{
+"expl": "« je vais la voir à lille ce week-end ».",
+"id": "qmvzig1sq02w",
+"key": {
+"answer": 2
+},
+"ord": 2,
+"payload": {
+"options": [
+"à l'hôpital pour se soigner",
+"à la fête de Nora",
+"chez sa famille, dans une autre ville"
+]
+},
+"prompt": "Ce week-end, Emma sera…",
+"type": "qcm"
+},
+{
+"expl": "« celui qui a ouvert le mois dernier ». Văn bản nói « près de la gare », không phải trong ga.",
+"id": "qmvzig1sq02x",
+"key": {
+"answer": 2
+},
+"ord": 3,
+"payload": {
+"options": [
+"est fermé le mardi",
+"est dans la gare",
+"est nouveau"
+]
+},
+"prompt": "Le restaurant italien…",
+"type": "qcm"
+},
+{
+"expl": "« j'ai déjà réservé une table pour 20 h, mais je peux changer l'heure si tu préfères ».",
+"id": "qmvzig1sq02y",
+"key": {
+"answer": 1
+},
+"ord": 4,
+"payload": {
+"options": [
+"mardi à 20 h, sans changement possible",
+"mardi, mais l'heure peut changer",
+"samedi à 20 h"
+]
+},
+"prompt": "La table est réservée…",
+"type": "qcm"
+},
+{
+"expl": "« mais je ne veux pas rater ta fête ! » : rater là bỏ lỡ.",
+"id": "qmvzig1sq02z",
+"key": {
+"answer": 0
+},
+"ord": 5,
+"payload": {
+"options": [
+"Je veux quand même fêter ton anniversaire avec toi.",
+"Je n'aime pas les fêtes.",
+"Je vais arriver en retard à ta fête."
+]
+},
+"prompt": "« Je ne veux pas rater ta fête » veut dire :",
+"type": "qcm"
+},
+{
+"expl": "« je ne pourrai pas venir à ton anniversaire samedi ».",
+"id": "qmvzig1sq030",
+"key": {
+"answer": 1
+},
+"ord": 6,
+"payload": {
+"options": [
+"Vrai",
+"Faux"
+]
+},
+"prompt": "Emma ira à l'anniversaire de Nora samedi.",
+"type": "qcm"
+}
+],
+"consigne": "<p>Lisez ce message, puis répondez aux questions.</p>",
+"id": "a2ce131sy03x",
+"kn": "A2-CE-5",
+"title": "Lecture A2 : attention au piège",
+"tt": "2",
+"van": "<p>Salut Nora !</p><p>Je suis désolée, je ne pourrai pas venir à ton anniversaire samedi : ma grand-mère est à l'hôpital et je vais la voir à Lille ce week-end. Mais je ne veux pas rater ta fête ! Est-ce qu'on peut se voir mardi soir ?</p><p>Je t'invite au restaurant italien près de la gare, celui qui a ouvert le mois dernier. J'ai déjà réservé une table pour 20 h, mais je peux changer l'heure si tu préfères.</p><p>Bisous,</p><p>Emma</p>",
+"vip": null,
+"vong": "hoc"
+},
+{
+"cau": [
+{
+"expl": "« après six mois de travaux » : sáu tháng là nửa năm.",
+"id": "qmvzig1sq031",
+"key": {
+"answer": 1
+},
+"ord": 1,
+"payload": {
+"options": [
+"pendant six semaines",
+"pendant une demi-année",
+"pendant deux mois"
+]
+},
+"prompt": "La piscine a été fermée…",
+"type": "qcm"
+},
+{
+"expl": "« du mardi au dimanche » : thứ hai không mở.",
+"id": "qmvzig1sq032",
+"key": {
+"answer": 0
+},
+"ord": 2,
+"payload": {
+"options": [
+"ne reçoit pas de public",
+"ferme à 22 h",
+"ouvre à 10 h"
+]
+},
+"prompt": "Le lundi, la piscine…",
+"type": "qcm"
+},
+{
+"expl": "« nocturne le jeudi jusqu'à 22 h ».",
+"id": "qmvzig1sq033",
+"key": {
+"answer": 0
+},
+"ord": 3,
+"payload": {
+"options": [
+"tard le soir",
+"seulement le matin",
+"toute la nuit"
+]
+},
+"prompt": "Le jeudi, on peut nager…",
+"type": "qcm"
+},
+{
+"expl": "« entrée libre pour les moins de 4 ans » : entrée libre là miễn phí.",
+"id": "qmvzig1sq034",
+"key": {
+"answer": 1
+},
+"ord": 4,
+"payload": {
+"options": [
+"coûte 2,50 €",
+"ne coûte rien",
+"est interdite"
+]
+},
+"prompt": "Pour un enfant de 3 ans, l'entrée…",
+"type": "qcm"
+},
+{
+"expl": "« carte de 10 entrées : 32 € » : 32 € chia 10 là 3,20 €.",
+"id": "qmvzig1sq035",
+"key": {
+"answer": 2
+},
+"ord": 5,
+"payload": {
+"options": [
+"3 €",
+"4 €",
+"3,20 €"
+]
+},
+"prompt": "Avec la carte de 10 entrées, une entrée revient à…",
+"type": "qcm"
+},
+{
+"expl": "« deux entrées offertes » : 8 vé giá 4 € là 32 €, được thêm 2 vé.",
+"id": "qmvzig1sq036",
+"key": {
+"answer": 0
+},
+"ord": 6,
+"payload": {
+"options": [
+"On paie huit entrées et on en reçoit dix.",
+"On peut venir à deux.",
+"Deux entrées coûtent moins cher."
+]
+},
+"prompt": "« Deux entrées offertes » veut dire :",
+"type": "qcm"
+},
+{
+"expl": "« seuls les maillots sont acceptés ».",
+"id": "qmvzig1sq037",
+"key": {
+"answer": 1
+},
+"ord": 7,
+"payload": {
+"options": [
+"acheter un maillot à la piscine",
+"porter un maillot de bain",
+"porter un short de bain"
+]
+},
+"prompt": "Pour nager, il faut…",
+"type": "qcm"
+},
+{
+"expl": "« fermeture exceptionnelle le 14 juillet ».",
+"id": "qmvzig1sq038",
+"key": {
+"answer": 1
+},
+"ord": 8,
+"payload": {
+"options": [
+"l'entrée est gratuite",
+"il est impossible de nager",
+"la piscine ouvre plus tard"
+]
+},
+"prompt": "Le 14 juillet, …",
+"type": "qcm"
+}
+],
+"consigne": "<p>Lisez ces informations, puis répondez aux questions.</p>",
+"id": "a2ce141sy03y",
+"kn": "A2-CE-5",
+"title": "Lecture A2 : autrement dit",
+"tt": "3",
+"van": "<p><strong>Piscine des Glycines : informations pratiques</strong></p><p>La piscine ouvre ses portes le mardi 3 juin, après six mois de travaux.</p><p>Horaires : du mardi au dimanche, de 10 h à 19 h. Nocturne le jeudi jusqu'à 22 h.</p><p>Tarifs : adulte 4 €, enfant 2,50 €. Entrée libre pour les moins de 4 ans.</p><p>Carte de 10 entrées : 32 € (deux entrées offertes).</p><p>Les shorts de bain sont interdits : seuls les maillots sont acceptés.</p><p>Fermeture exceptionnelle le 14 juillet.</p>",
+"vip": "true",
+"vong": "hoc"
+},
+{
+"cau": [
+{
+"expl": "« comme pour les livres » : prêter là cho mượn, không phải bán.",
+"id": "qmvzig1sq039",
+"key": {
+"answer": 2
+},
+"ord": 1,
+"payload": {
+"options": [
+"On peut jouer à la bibliothèque pendant deux semaines.",
+"La bibliothèque vend des jeux de société depuis lundi.",
+"La bibliothèque prête maintenant des jeux, avec les mêmes règles que pour les livres."
+]
+},
+"prompt": "Texte 1 : quel est le bon résumé ?",
+"type": "qcm"
+},
+{
+"expl": "« reporté » là dời lại, không phải huỷ; « les billets restent valables ».",
+"id": "qmvzig1sq03a",
+"key": {
+"answer": 1
+},
+"ord": 2,
+"payload": {
+"options": [
+"Le concert est annulé et les billets sont remboursés.",
+"Le concert aura lieu plus tard et on garde son billet.",
+"Le concert a lieu sous la pluie le 14 septembre."
+]
+},
+"prompt": "Texte 2 : quel est le bon résumé ?",
+"type": "qcm"
+},
+{
+"expl": "« reste ouvert pendant les vacances de noël, mais seulement le midi ».",
+"id": "qmvzig1sq03b",
+"key": {
+"answer": 0
+},
+"ord": 3,
+"payload": {
+"options": [
+"Pendant les vacances, on peut déjeuner au restaurant universitaire, mais pas dîner.",
+"Pendant les vacances, il ouvre midi et soir.",
+"Le restaurant universitaire ferme pendant Noël."
+]
+},
+"prompt": "Texte 3 : quel est le bon résumé ?",
+"type": "qcm"
+},
+{
+"expl": "« part à la retraite » : nghỉ hưu, thôi đi làm.",
+"id": "qmvzig1sq03c",
+"key": {
+"answer": 1
+},
+"ord": 4,
+"payload": {
+"options": [
+"Le voisin change d'entreprise pour voyager.",
+"Le voisin arrête de travailler et a des projets de voyages et de famille.",
+"Le voisin part en voyage d'affaires avec ses petits-enfants."
+]
+},
+"prompt": "Texte 4 : quel est le bon résumé ?",
+"type": "qcm"
+},
+{
+"expl": "« toutes les 10 minutes au lieu de toutes les 20 minutes ».",
+"id": "qmvzig1sq03d",
+"key": {
+"answer": 1
+},
+"ord": 5,
+"payload": {
+"options": [
+"Les bus de la ligne 3 seront plus lents.",
+"Il y aura deux fois plus de bus sur la ligne 3.",
+"Les bus de la ligne 3 ne passeront plus en mars."
+]
+},
+"prompt": "Texte 5 : quel est le bon résumé ?",
+"type": "qcm"
+},
+{
+"expl": "« pas besoin d'expérience, mais il faut être disponible dès 6 heures ».",
+"id": "qmvzig1sq03e",
+"key": {
+"answer": 1
+},
+"ord": 6,
+"payload": {
+"options": [
+"La boulangerie ouvre seulement le week-end.",
+"La boulangerie recrute quelqu'un, même sans expérience, qui peut commencer très tôt.",
+"La boulangerie cherche un boulanger expérimenté."
+]
+},
+"prompt": "Texte 6 : quel est le bon résumé ?",
+"type": "qcm"
+}
+],
+"consigne": "<p>Lisez ces six textes, puis répondez aux questions.</p>",
+"id": "a2ce151sy03z",
+"kn": "A2-CE-5",
+"title": "Lecture A2 : le bon résumé",
+"tt": "4",
+"van": "<p><strong>Texte 1.</strong> Depuis lundi, la bibliothèque prête aussi des jeux de société. On peut emprunter trois jeux pour deux semaines, comme pour les livres.</p><p><strong>Texte 2.</strong> Le concert de samedi est reporté à cause de la pluie. Les billets restent valables pour la nouvelle date, le 14 septembre.</p><p><strong>Texte 3.</strong> Bonne nouvelle pour les étudiants : le restaurant universitaire reste ouvert pendant les vacances de Noël, mais seulement le midi.</p><p><strong>Texte 4.</strong> Mon voisin part à la retraite après quarante ans dans la même entreprise. Il veut enfin voyager et passer du temps avec ses petits-enfants.</p><p><strong>Texte 5.</strong> À partir du 1er mars, les bus de la ligne 3 passeront toutes les 10 minutes au lieu de toutes les 20 minutes.</p><p><strong>Texte 6.</strong> La boulangerie du coin cherche un vendeur pour les week-ends. Pas besoin d'expérience, mais il faut être disponible dès 6 heures.</p>",
+"vip": "true",
+"vong": "on"
+},
+{
+"cau": [
+{
+"expl": "« ce cours est déjà complet ».",
+"id": "qmvzig1sq03f",
+"key": {
+"answer": 2
+},
+"ord": 1,
+"payload": {
+"options": [
+"il est trop cher",
+"le professeur est absent",
+"il n'y a plus de place"
+]
+},
+"prompt": "Mme Leroy ne peut pas suivre le cours du soir parce qu'…",
+"type": "qcm"
+},
+{
+"expl": "« du samedi matin », « avec le même professeur ».",
+"id": "qmvzig1sq03g",
+"key": {
+"answer": 0
+},
+"ord": 2,
+"payload": {
+"options": [
+"un autre horaire avec le même professeur",
+"un cours pour débutants",
+"un autre professeur le soir"
+]
+},
+"prompt": "L'école propose…",
+"type": "qcm"
+},
+{
+"expl": "« le prix ne change pas ».",
+"id": "qmvzig1sq03h",
+"key": {
+"answer": 0
+},
+"ord": 3,
+"payload": {
+"options": [
+"autant que le cours du soir",
+"moins cher que le cours du soir",
+"180 € de plus"
+]
+},
+"prompt": "Le cours du samedi coûte…",
+"type": "qcm"
+},
+{
+"expl": "« nous vous rembourserons dans un délai de quinze jours » : quinze jours là khoảng hai tuần.",
+"id": "qmvzig1sq03i",
+"key": {
+"answer": 1
+},
+"ord": 4,
+"payload": {
+"options": [
+"paie 15 € de plus",
+"récupère son argent en deux semaines environ",
+"commence le 4 octobre"
+]
+},
+"prompt": "Si Mme Leroy choisit la liste d'attente, elle…",
+"type": "qcm"
+},
+{
+"expl": "« de 9 h à 11 h ».",
+"id": "qmvzig1sq03j",
+"key": {
+"answer": 2
+},
+"ord": 5,
+"payload": {
+"options": [
+"neuf heures",
+"onze heures",
+"deux heures"
+]
+},
+"prompt": "Le cours du samedi dure…",
+"type": "qcm"
+},
+{
+"expl": "« d'ici vendredi ».",
+"id": "qmvzig1sq03k",
+"key": {
+"answer": 2
+},
+"ord": 6,
+"payload": {
+"options": [
+"le samedi 4 octobre",
+"dans quinze jours",
+"avant la fin de la semaine"
+]
+},
+"prompt": "Mme Leroy doit répondre…",
+"type": "qcm"
+}
+],
+"consigne": "<p>Lisez ce courriel, puis répondez aux questions.</p>",
+"id": "a2ce161sy040",
+"kn": "A2-CE-5",
+"title": "Lecture A2 : six pièges",
+"tt": "5",
+"van": "<p><strong>De :</strong> École Langues Vivantes</p><p><strong>À :</strong> Mme Leroy</p><p><strong>Objet :</strong> Votre inscription au cours d'anglais</p><p>Bonjour madame Leroy,</p><p>Nous avons bien reçu votre inscription au cours d'anglais du soir, niveau intermédiaire. Malheureusement, ce cours est déjà complet. Nous pouvons vous proposer une place dans le cours du samedi matin, de 9 h à 11 h, avec le même professeur, M. Brown.</p><p>Le premier cours aura lieu le samedi 4 octobre. Le prix ne change pas : 180 € pour le trimestre. Si vous préférez attendre une place le soir, nous vous inscrirons sur la liste d'attente et nous vous rembourserons dans un délai de quinze jours.</p><p>Merci de nous donner votre réponse d'ici vendredi.</p><p>Cordialement,</p><p>Le secrétariat</p>",
+"vip": "true",
+"vong": "chot"
+},
+{
+"cau": [
+{
+"expl": "« le samedi 14 juin ».",
+"id": "qmvg3fe81016",
+"key": {
+"answer": 2
+},
+"ord": 1,
+"payload": {
+"options": [
+"le 1er mai",
+"le dimanche 14 juin",
+"le samedi 14 juin"
+]
+},
+"prompt": "Le mariage a lieu…",
+"type": "qcm"
+},
+{
+"expl": "« Cérémonie à 15 h à la mairie de Saint-Malo ».",
+"id": "qmvg3fe81017",
+"key": {
+"answer": 2
+},
+"ord": 2,
+"payload": {
+"options": [
+"au château",
+"à l'hôtel des Remparts",
+"à la mairie de Saint-Malo"
+]
+},
+"prompt": "Où a lieu la cérémonie ?",
+"type": "qcm"
+},
+{
+"expl": "« à partir de 20 h ».",
+"id": "qmvg3fe81018",
+"key": {
+"answer": 1
+},
+"ord": 3,
+"payload": {
+"options": [
+"17 h",
+"20 h",
+"15 h"
+]
+},
+"prompt": "À quelle heure commence le dîner ?",
+"type": "qcm"
+},
+{
+"expl": "« Un bus partira de la mairie… pour aller au château ».",
+"id": "qmvg3fe81019",
+"key": {
+"answer": 2
+},
+"ord": 4,
+"payload": {
+"options": [
+"aller à la gare",
+"rentrer à l'hôtel",
+"aller de la mairie au château"
+]
+},
+"prompt": "À quoi sert le bus ?",
+"type": "qcm"
+},
+{
+"expl": "Indiqué entre guillemets.",
+"id": "qmvg3fe8101a",
+"key": {
+"answer": 1
+},
+"ord": 5,
+"payload": {
+"options": [
+"« château de la Roche »",
+"« mariage Léa et Thomas »",
+"son numéro de téléphone"
+]
+},
+"prompt": "Pour réserver une chambre, il faut dire…",
+"type": "qcm"
+},
+{
+"expl": "« répondre avant le 1er mai ».",
+"id": "qmvg3fe8101b",
+"key": {
+"answer": 0
+},
+"ord": 6,
+"payload": {
+"options": [
+"le 1er mai",
+"le 14 juin",
+"le 30 avril"
+]
+},
+"prompt": "Avant quelle date faut-il répondre ?",
+"type": "qcm"
+},
+{
+"expl": null,
+"id": "qmvg3fe8101c",
+"key": {
+"answer": 1,
+"justification": "« Pas de cadeau, s'il vous plaît »."
+},
+"ord": 7,
+"payload": {},
+"prompt": "Les mariés souhaitent recevoir des cadeaux.",
+"type": "vf"
+}
+],
+"consigne": "<p>Vous lisez ce faire-part. Lisez le document puis répondez aux questions.</p>",
+"id": "lo25mvg3fe85024",
+"kn": null,
+"title": "Lecture A2 : une invitation au mariage",
+"tt": null,
+"van": "<p><strong>Léa et Thomas</strong> ont la joie de vous inviter à leur mariage</p><p>le <strong>samedi 14 juin</strong></p><p>Cérémonie à 15 h à la mairie de Saint-Malo, puis vin d'honneur dans les jardins du château de la Roche, à 17 h.</p><p>Le dîner et la soirée dansante auront lieu au château à partir de 20 h.</p><p>Un bus partira de la mairie à 16 h 30 pour aller au château. Pour dormir sur place, des chambres sont réservées à l'hôtel des Remparts (dites « mariage Léa et Thomas »).</p><p>Merci de répondre avant le 1er mai.</p><p>Pas de cadeau, s'il vous plaît : une urne sera à votre disposition pour notre voyage au Japon !</p>",
+"vip": "true",
+"vong": null
+},
+{
+"cau": [
+{
+"expl": "« Nous sommes deux étudiants ».",
+"id": "qmvg3fe8100e",
+"key": {
+"answer": 2
+},
+"ord": 1,
+"payload": {
+"options": [
+"une agence",
+"un propriétaire",
+"deux étudiants"
+]
+},
+"prompt": "Qui écrit l'annonce ?",
+"type": "qcm"
+},
+{
+"expl": "« La chambre fait 12 m² ».",
+"id": "qmvg3fe8100f",
+"key": {
+"answer": 1
+},
+"ord": 2,
+"payload": {
+"options": [
+"21 m²",
+"12 m²",
+"75 m²"
+]
+},
+"prompt": "Quelle est la surface de la chambre ?",
+"type": "qcm"
+},
+{
+"expl": "« charges comprises (eau, électricité, Internet) ».",
+"id": "qmvg3fe8100g",
+"key": {
+"answer": 1
+},
+"ord": 3,
+"payload": {
+"options": [
+"le repas du soir",
+"l'eau, l'électricité et Internet",
+"seulement l'eau"
+]
+},
+"prompt": "Le loyer comprend…",
+"type": "qcm"
+},
+{
+"expl": "« Le tram est à 3 minutes ».",
+"id": "qmvg3fe8100h",
+"key": {
+"answer": 1
+},
+"ord": 4,
+"payload": {
+"options": [
+"l'université",
+"le tram",
+"le marché"
+]
+},
+"prompt": "Qu'est-ce qui est à 3 minutes ?",
+"type": "qcm"
+},
+{
+"expl": null,
+"id": "qmvg3fe8100i",
+"key": {
+"answer": 1,
+"justification": "« non-fumeuse »."
+},
+"ord": 5,
+"payload": {},
+"prompt": "Une personne qui fume peut répondre à l'annonce.",
+"type": "vf"
+},
+{
+"expl": null,
+"id": "qmvg3fe8100j",
+"key": {
+"answer": 1,
+"justification": "« Les animaux ne sont pas acceptés »."
+},
+"ord": 6,
+"payload": {},
+"prompt": "On peut venir avec son chat.",
+"type": "vf"
+},
+{
+"expl": "« Disponible le 1er décembre ».",
+"id": "qmvg3fe8100k",
+"key": {
+"answer": 0
+},
+"ord": 7,
+"payload": {
+"options": [
+"le 1er décembre",
+"tout de suite",
+"le dimanche"
+]
+},
+"prompt": "La chambre est libre…",
+"type": "qcm"
+}
+],
+"consigne": "<p>Vous lisez cette petite annonce. Lisez le document puis répondez aux questions.</p>",
+"id": "lo25mvg3fe84020",
+"kn": null,
+"title": "Lecture A2 : une petite annonce de colocation",
+"tt": null,
+"van": "<p><strong>Cherche colocataire à Bordeaux</strong></p><p>Bonjour ! Nous sommes deux étudiants (Inès, 21 ans, et Hugo, 23 ans) et nous cherchons une troisième personne pour notre appartement de 75 m², quartier Saint-Michel.</p><p>La chambre fait 12 m², avec un lit, un bureau et une grande fenêtre. Cuisine et salle de bain à partager.</p><p>Loyer : 380 € par mois, charges comprises (eau, électricité, Internet).</p><p>Le tram est à 3 minutes et le marché le dimanche matin juste en bas !</p><p>Nous cherchons une personne calme et non-fumeuse. Les animaux ne sont pas acceptés.</p><p>Disponible le 1er décembre. Contact : coloc.stmichel@mail.fr</p>",
+"vip": "true",
+"vong": null
+},
+{
+"cau": [
+{
+"expl": "« Je suis bien arrivée à Lyon ».",
+"id": "qmuof28wy014",
+"key": {
+"answer": 2
+},
+"ord": 1,
+"payload": {
+"options": [
+"À Hanoï",
+"À Marseille",
+"À Lyon",
+"À Paris"
+]
+},
+"prompt": "Où est Camille maintenant ?",
+"type": "qcm"
+},
+{
+"expl": "« samedi dernier ».",
+"id": "qmuof28wy015",
+"key": {
+"answer": 1
+},
+"ord": 2,
+"payload": {
+"options": [
+"Hier",
+"Samedi dernier",
+"Il y a trois jours",
+"Lundi prochain"
+]
+},
+"prompt": "Quand est-elle arrivée ?",
+"type": "qcm"
+},
+{
+"expl": "« petit mais très lumineux ».",
+"id": "qmuof28wy016",
+"key": {
+"answer": 0
+},
+"ord": 3,
+"payload": {
+"options": [
+"Petit et lumineux",
+"Grand et lumineux",
+"Grand et sombre",
+"Petit et sombre"
+]
+},
+"prompt": "Comment est son appartement ?",
+"type": "qcm"
+},
+{
+"expl": "« à dix minutes à pied ».",
+"id": "qmuof28wy017",
+"key": {
+"answer": 2
+},
+"ord": 4,
+"payload": {
+"options": [
+"Une heure à pied",
+"Dix minutes en bus",
+"Dix minutes à pied",
+"Trois minutes à vélo"
+]
+},
+"prompt": "À quelle distance est l'université ?",
+"type": "qcm"
+},
+{
+"expl": "Faux: « Mes cours commencent lundi prochain » (chưa bắt đầu).",
+"id": "qmuof28wy018",
+"key": {
+"answer": 1
+},
+"ord": 5,
+"payload": {
+"options": [
+"Vrai",
+"Faux"
+]
+},
+"prompt": "Ses cours ont déjà commencé.",
+"type": "qcm"
+},
+{
+"expl": "Đoạn văn giải thích ngay: « un restaurant typique de Lyon ».",
+"id": "qmuof28wy019",
+"key": {
+"answer": 2
+},
+"ord": 6,
+"payload": {
+"options": [
+"Un marché",
+"Un quartier",
+"Un restaurant typique",
+"Un musée"
+]
+},
+"prompt": "Qu'est-ce qu'un « bouchon » dans ce message ?",
+"type": "qcm"
+},
+{
+"expl": "« il pleut depuis trois jours ».",
+"id": "qmuof28wy01a",
+"key": {
+"answer": 1
+},
+"ord": 7,
+"payload": {
+"options": [
+"Ses cours",
+"La pluie",
+"Le bruit",
+"Le prix du loyer"
+]
+},
+"prompt": "Quel est le problème de Camille ?",
+"type": "qcm"
+},
+{
+"expl": "« Tu viens me voir pendant les vacances de décembre ? ».",
+"id": "qmuof28wy01b",
+"key": {
+"answer": 3
+},
+"ord": 8,
+"payload": {
+"options": [
+"D'appeler lundi",
+"De visiter l'université",
+"De partir à Paris",
+"De venir en décembre"
+]
+},
+"prompt": "Que propose-t-elle à Linh ?",
+"type": "qcm"
+}
+],
+"consigne": "Lisez le message, puis répondez aux questions.",
+"id": "nhapmuof28x103u",
+"kn": null,
+"title": "Lecture : un message d'une amie",
+"tt": null,
+"van": "<p>Salut Linh !</p><p>Je suis bien arrivée à Lyon samedi dernier. Mon appartement est petit mais très lumineux, et il est à dix minutes à pied de l'université. Mes cours commencent lundi prochain. Pour l'instant, je découvre la ville : hier, j'ai visité le vieux quartier et j'ai mangé dans un bouchon, un restaurant typique de Lyon.</p><p>Le seul problème, c'est le temps : il pleut depuis trois jours ! Tu viens me voir pendant les vacances de décembre ? On pourrait aller ensemble au marché de Noël.</p><p>Bises,<br>Camille</p>",
+"vip": null,
+"vong": null
+},
+{
+"cau": [
+{
+"expl": "Du lundi 18 au vendredi 22.",
+"id": "qmvg3fe8101r",
+"key": {
+"answer": 2
+},
+"ord": 1,
+"payload": {
+"options": [
+"une semaine et demie",
+"2 jours",
+"5 jours"
+]
+},
+"prompt": "Pendant combien de jours dureront les travaux ?",
+"type": "qcm"
+},
+{
+"expl": "Premier paragraphe.",
+"id": "qmvg3fe8101s",
+"key": {
+"answer": 1
+},
+"ord": 2,
+"payload": {
+"options": [
+"refaire les fenêtres",
+"repeindre l'escalier et changer l'ascenseur",
+"changer les portes"
+]
+},
+"prompt": "Quels travaux sont prévus ?",
+"type": "qcm"
+},
+{
+"expl": null,
+"id": "qmvg3fe8101t",
+"key": {
+"answer": 1,
+"justification": "« l'ascenseur ne fonctionnera pas »."
+},
+"ord": 3,
+"payload": {},
+"prompt": "L'ascenseur fonctionnera pendant les travaux.",
+"type": "vf"
+},
+{
+"expl": "« mon fils peut aider ».",
+"id": "qmvg3fe8101u",
+"key": {
+"answer": 0
+},
+"ord": 4,
+"payload": {
+"options": [
+"le fils du propriétaire",
+"les ouvriers",
+"le gardien"
+]
+},
+"prompt": "Qui peut aider à monter les courses ?",
+"type": "qcm"
+},
+{
+"expl": "« de 8 h à 17 h ».",
+"id": "qmvg3fe8101v",
+"key": {
+"answer": 0
+},
+"ord": 5,
+"payload": {
+"options": [
+"17 h",
+"8 h",
+"18 h"
+]
+},
+"prompt": "À quelle heure finissent les ouvriers ?",
+"type": "qcm"
+},
+{
+"expl": "« Ne touchez pas les murs ».",
+"id": "qmvg3fe8101w",
+"key": {
+"answer": 2
+},
+"ord": 6,
+"payload": {
+"options": [
+"partir en vacances",
+"fermer les fenêtres",
+"ne pas toucher les murs"
+]
+},
+"prompt": "Que demande le propriétaire ?",
+"type": "qcm"
+},
+{
+"expl": "« Il y aura du bruit, je m'excuse pour la gêne ».",
+"id": "qmvg3fe8101x",
+"key": {
+"answer": 1
+},
+"ord": 7,
+"payload": {
+"options": [
+"pour le retard",
+"pour le bruit",
+"pour le prix du loyer"
+]
+},
+"prompt": "Pourquoi le propriétaire s'excuse-t-il ?",
+"type": "qcm"
+}
+],
+"consigne": "<p>Vous lisez ce message. Lisez le document puis répondez aux questions.</p>",
+"id": "lo25mvg3fe86027",
+"kn": null,
+"title": "Lecture A2 : un message du propriétaire",
+"tt": null,
+"van": "<p>Bonjour à tous les locataires,</p><p>Je vous informe que des travaux auront lieu dans l'immeuble du lundi 18 au vendredi 22 novembre. Les ouvriers vont repeindre l'escalier et changer l'ascenseur.</p><p>Pendant cette semaine, l'ascenseur ne fonctionnera pas. Pour les personnes âgées ou qui ont des difficultés à marcher, mon fils peut aider à monter les courses : appelez-le au 06 12 34 56 78.</p><p>Les ouvriers travailleront de 8 h à 17 h. Il y aura du bruit, je m'excuse pour la gêne.</p><p>Attention : la peinture sera fraîche. Ne touchez pas les murs et ne laissez pas vos vélos dans l'escalier.</p><p>Merci de votre compréhension.</p><p>M. Durand, propriétaire</p>",
+"vip": null,
+"vong": null
+},
+{
+"cau": [
+{
+"expl": "« 9 h 30 : accueil des familles ».",
+"id": "qmvg3fe8101k",
+"key": {
+"answer": 1
+},
+"ord": 1,
+"payload": {
+"options": [
+"8 h",
+"9 h 30",
+"10 h"
+]
+},
+"prompt": "À quelle heure commence la journée ?",
+"type": "qcm"
+},
+{
+"expl": "« présentation du lycée par la directrice ».",
+"id": "qmvg3fe8101l",
+"key": {
+"answer": 0
+},
+"ord": 2,
+"payload": {
+"options": [
+"la directrice",
+"les professeurs de langues",
+"les élèves de terminale"
+]
+},
+"prompt": "Qui présente le lycée ?",
+"type": "qcm"
+},
+{
+"expl": "« avec des élèves de terminale ».",
+"id": "qmvg3fe8101m",
+"key": {
+"answer": 2
+},
+"ord": 3,
+"payload": {
+"options": [
+"la directrice",
+"le club de robotique",
+"des élèves de terminale"
+]
+},
+"prompt": "Qui fait visiter les salles ?",
+"type": "qcm"
+},
+{
+"expl": null,
+"id": "qmvg3fe8101n",
+"key": {
+"answer": 1,
+"justification": "« réservation obligatoire »."
+},
+"ord": 4,
+"payload": {},
+"prompt": "On peut manger à la cantine sans réserver.",
+"type": "vf"
+},
+{
+"expl": "« 5 € par personne ».",
+"id": "qmvg3fe8101o",
+"key": {
+"answer": 1
+},
+"ord": 5,
+"payload": {
+"options": [
+"gratuit",
+"5 € par personne",
+"5 € par famille"
+]
+},
+"prompt": "Combien coûte le repas ?",
+"type": "qcm"
+},
+{
+"expl": "Langues citées : anglais, espagnol, allemand, chinois.",
+"id": "qmvg3fe8101p",
+"key": {
+"answer": 0
+},
+"ord": 6,
+"payload": {
+"options": [
+"l'italien",
+"l'allemand",
+"le chinois"
+]
+},
+"prompt": "Quelle langue n'est PAS citée ?",
+"type": "qcm"
+},
+{
+"expl": "« Parking gratuit derrière le gymnase ».",
+"id": "qmvg3fe8101q",
+"key": {
+"answer": 0
+},
+"ord": 7,
+"payload": {
+"options": [
+"derrière le gymnase",
+"à la cantine",
+"devant le lycée"
+]
+},
+"prompt": "Où peut-on se garer ?",
+"type": "qcm"
+}
+],
+"consigne": "<p>Vous lisez ce programme. Lisez le document puis répondez aux questions.</p>",
+"id": "lo25mvg3fe85026",
+"kn": null,
+"title": "Lecture A2 : le programme d'une journée portes ouvertes",
+"tt": null,
+"van": "<p><strong>Lycée Victor-Hugo : journée portes ouvertes, samedi 7 mars</strong></p><p>9 h 30 : accueil des familles dans le hall, café offert.</p><p>10 h : présentation du lycée par la directrice (amphithéâtre).</p><p>10 h 45 – 12 h : visite des salles de classe, des laboratoires et du CDI avec des élèves de terminale.</p><p>12 h – 13 h 30 : repas possible à la cantine (5 € par personne, réservation obligatoire).</p><p>14 h : démonstration de robotique par le club des élèves.</p><p>15 h : rencontre avec les professeurs de langues : anglais, espagnol, allemand et chinois.</p><p>Fin de la journée : 16 h. Parking gratuit derrière le gymnase.</p>",
+"vip": null,
+"vong": null
+},
+{
+"cau": [
+{
+"expl": "« arrivé à Marseille vendredi matin en train ».",
+"id": "qmvg3fe8101d",
+"key": {
+"answer": 0
+},
+"ord": 1,
+"payload": {
+"options": [
+"en train",
+"en voiture",
+"en avion"
+]
+},
+"prompt": "Comment Antoine est-il arrivé à Marseille ?",
+"type": "qcm"
+},
+{
+"expl": "« très pratique pour tout visiter à pied ».",
+"id": "qmvg3fe8101e",
+"key": {
+"answer": 0
+},
+"ord": 2,
+"payload": {
+"options": [
+"Il pouvait tout visiter à pied.",
+"Il était bon marché.",
+"Il avait une piscine."
+]
+},
+"prompt": "Pourquoi son hôtel était-il pratique ?",
+"type": "qcm"
+},
+{
+"expl": "« la vue sur la ville et la mer ».",
+"id": "qmvg3fe8101f",
+"key": {
+"answer": 1
+},
+"ord": 3,
+"payload": {
+"options": [
+"le musée",
+"la ville et la mer",
+"les calanques"
+]
+},
+"prompt": "Qu'a-t-il vu depuis Notre-Dame-de-la-Garde ?",
+"type": "qcm"
+},
+{
+"expl": "« c'était un peu cher : 45 euros ».",
+"id": "qmvg3fe8101g",
+"key": {
+"answer": 0
+},
+"ord": 4,
+"payload": {
+"options": [
+"C'était un peu cher.",
+"C'était gratuit.",
+"C'était mauvais."
+]
+},
+"prompt": "Que pense-t-il de la bouillabaisse ?",
+"type": "qcm"
+},
+{
+"expl": "« C'était le meilleur moment du voyage ».",
+"id": "qmvg3fe8101h",
+"key": {
+"answer": 0
+},
+"ord": 5,
+"payload": {
+"options": [
+"nager dans les calanques",
+"visiter le musée",
+"manger la bouillabaisse"
+]
+},
+"prompt": "Quel a été le meilleur moment ?",
+"type": "qcm"
+},
+{
+"expl": "« il a plu toute la journée ».",
+"id": "qmvg3fe8101i",
+"key": {
+"answer": 2
+},
+"ord": 6,
+"payload": {
+"options": [
+"Il faisait trop chaud.",
+"Le bateau était complet.",
+"Il a plu."
+]
+},
+"prompt": "Pourquoi est-il allé au musée dimanche ?",
+"type": "qcm"
+},
+{
+"expl": null,
+"id": "qmvg3fe8101j",
+"key": {
+"answer": 1,
+"justification": "« Je suis reparti le soir » (dimanche)."
+},
+"ord": 7,
+"payload": {},
+"prompt": "Antoine est rentré lundi matin.",
+"type": "vf"
+}
+],
+"consigne": "<p>Vous lisez cet article de blog. Lisez le document puis répondez aux questions.</p>",
+"id": "lo25mvg3fe85025",
+"kn": null,
+"title": "Lecture A2 : un blog de voyage",
+"tt": null,
+"van": "<p><strong>Trois jours à Marseille</strong> (par Antoine, voyageur)</p><p>Je suis arrivé à Marseille vendredi matin en train. Il faisait déjà chaud ! Mon hôtel était près du Vieux-Port, très pratique pour tout visiter à pied.</p><p>Le premier jour, j'ai monté les escaliers jusqu'à Notre-Dame-de-la-Garde : la vue sur la ville et la mer est magnifique. Le soir, j'ai mangé une bouillabaisse, le plat typique, mais c'était un peu cher : 45 euros !</p><p>Samedi, j'ai pris le bateau pour les calanques. Nous avons nagé dans une eau très claire. C'était le meilleur moment du voyage.</p><p>Dimanche, il a plu toute la journée, alors je suis resté au musée des Civilisations (le MuCEM). Je suis reparti le soir, fatigué mais content.</p>",
+"vip": null,
+"vong": null
+},
+{
+"cau": [
+{
+"expl": "Premier point.",
+"id": "qmvg3fe8100z",
+"key": {
+"answer": 0
+},
+"ord": 1,
+"payload": {
+"options": [
+"une pièce d'identité et un justificatif de domicile",
+"payer 10 euros",
+"une photo"
+]
+},
+"prompt": "Pour s'inscrire, il faut…",
+"type": "qcm"
+},
+{
+"expl": "« emprunter 10 documents ».",
+"id": "qmvg3fe81010",
+"key": {
+"answer": 1
+},
+"ord": 2,
+"payload": {
+"options": [
+"3",
+"10",
+"12"
+]
+},
+"prompt": "Combien de documents peut-on emprunter ?",
+"type": "qcm"
+},
+{
+"expl": "« pendant trois semaines ».",
+"id": "qmvg3fe81011",
+"key": {
+"answer": 0
+},
+"ord": 3,
+"payload": {
+"options": [
+"trois semaines",
+"une semaine",
+"un mois"
+]
+},
+"prompt": "Pendant combien de temps ?",
+"type": "qcm"
+},
+{
+"expl": null,
+"id": "qmvg3fe81012",
+"key": {
+"answer": 1,
+"justification": "« sauf les nouveautés »."
+},
+"ord": 4,
+"payload": {},
+"prompt": "On peut prolonger les nouveautés.",
+"type": "vf"
+},
+{
+"expl": "Quatrième point.",
+"id": "qmvg3fe81013",
+"key": {
+"answer": 0
+},
+"ord": 5,
+"payload": {
+"options": [
+"On ne peut plus emprunter pendant une semaine.",
+"On paie une amende.",
+"On perd sa carte."
+]
+},
+"prompt": "Que se passe-t-il en cas de retard ?",
+"type": "qcm"
+},
+{
+"expl": "« seulement dans le hall ».",
+"id": "qmvg3fe81014",
+"key": {
+"answer": 0
+},
+"ord": 6,
+"payload": {
+"options": [
+"dans le hall",
+"dans les salles de lecture",
+"nulle part"
+]
+},
+"prompt": "Où peut-on téléphoner ?",
+"type": "qcm"
+},
+{
+"expl": null,
+"id": "qmvg3fe81015",
+"key": {
+"answer": 0,
+"justification": "« Les boissons avec un couvercle sont acceptées »."
+},
+"ord": 7,
+"payload": {},
+"prompt": "On peut boire un café avec un couvercle dans les salles.",
+"type": "vf"
+}
+],
+"consigne": "<p>Vous lisez ce règlement. Lisez le document puis répondez aux questions.</p>",
+"id": "lo25mvg3fe85023",
+"kn": null,
+"title": "Lecture A2 : le règlement de la bibliothèque",
+"tt": null,
+"van": "<p><strong>Médiathèque Jean-Moulin : règles à respecter</strong></p><p>• L'inscription est gratuite pour tous. Apportez une pièce d'identité et un justificatif de domicile.</p><p>• Vous pouvez emprunter 10 documents (livres, BD, DVD) pendant trois semaines.</p><p>• Vous pouvez prolonger une fois vos emprunts sur Internet, sauf les nouveautés.</p><p>• En cas de retard, vous ne pouvez plus emprunter pendant une semaine.</p><p>• Les téléphones doivent être en mode silencieux. Les appels sont autorisés seulement dans le hall.</p><p>• Il est interdit de manger dans les salles de lecture. Les boissons avec un couvercle sont acceptées.</p><p>• Un espace jeux vidéo est ouvert le samedi après-midi pour les 12-17 ans.</p>",
+"vip": null,
+"vong": null
+},
+{
+"cau": [
+{
+"expl": "« quarante kilomètres ».",
+"id": "qmvg3fe8100s",
+"key": {
+"answer": 0
+},
+"ord": 1,
+"payload": {
+"options": [
+"40",
+"20",
+"15"
+]
+},
+"prompt": "Combien de kilomètres de pistes cyclables la ville a-t-elle créés ?",
+"type": "qcm"
+},
+{
+"expl": "« est infirmière ».",
+"id": "qmvg3fe8100t",
+"key": {
+"answer": 2
+},
+"ord": 2,
+"payload": {
+"options": [
+"professeure",
+"étudiante",
+"infirmière"
+]
+},
+"prompt": "Quel est le métier de Sophie ?",
+"type": "qcm"
+},
+{
+"expl": "« je mets quinze minutes à vélo ».",
+"id": "qmvg3fe8100u",
+"key": {
+"answer": 2
+},
+"ord": 3,
+"payload": {
+"options": [
+"20 minutes",
+"34 minutes",
+"15 minutes"
+]
+},
+"prompt": "Combien de temps Sophie met-elle à vélo ?",
+"type": "qcm"
+},
+{
+"expl": "« je fais du sport sans aller à la salle ».",
+"id": "qmvg3fe8100v",
+"key": {
+"answer": 0
+},
+"ord": 4,
+"payload": {
+"options": [
+"faire du sport",
+"gagner de l'argent",
+"rencontrer des amis"
+]
+},
+"prompt": "Selon Sophie, un avantage du vélo est…",
+"type": "qcm"
+},
+{
+"expl": "30 € moitié prix = 15 €.",
+"id": "qmvg3fe8100w",
+"key": {
+"answer": 2
+},
+"ord": 5,
+"payload": {
+"options": [
+"1 euro",
+"30 euros",
+"15 euros"
+]
+},
+"prompt": "Pour un étudiant, l'abonnement d'un an coûte…",
+"type": "qcm"
+},
+{
+"expl": "« manque de parkings pour vélos près des gares ».",
+"id": "qmvg3fe8100x",
+"key": {
+"answer": 0
+},
+"ord": 6,
+"payload": {
+"options": [
+"du manque de parkings près des gares",
+"du prix des vélos",
+"des pistes trop étroites"
+]
+},
+"prompt": "De quoi se plaignent certains cyclistes ?",
+"type": "qcm"
+},
+{
+"expl": null,
+"id": "qmvg3fe8100y",
+"key": {
+"answer": 1,
+"justification": "« l'hiver, beaucoup reprennent le bus »."
+},
+"ord": 7,
+"payload": {},
+"prompt": "En hiver, tout le monde continue à prendre le vélo.",
+"type": "vf"
+}
+],
+"consigne": "<p>Vous lisez cet article. Lisez le document puis répondez aux questions.</p>",
+"id": "lo25mvg3fe84022",
+"kn": null,
+"title": "Lecture A2 : un article sur le vélo en ville",
+"tt": null,
+"van": "<p><strong>À Nantes, les vélos gagnent la ville</strong></p><p>Depuis deux ans, la ville de Nantes a créé quarante kilomètres de nouvelles pistes cyclables. Résultat : de plus en plus d'habitants vont au travail à vélo.</p><p>Sophie, 34 ans, est infirmière. « Avant, je prenais la voiture et je perdais vingt minutes dans les embouteillages. Maintenant, je mets quinze minutes à vélo et je fais du sport sans aller à la salle ! »</p><p>La ville propose aussi des vélos en location : 1 euro pour une heure, 30 euros pour un an. Les étudiants paient moitié prix.</p><p>Mais tout n'est pas parfait. Certains cyclistes se plaignent du manque de parkings pour vélos près des gares, et l'hiver, beaucoup reprennent le bus.</p>",
+"vip": null,
+"vong": null
+},
+{
+"cau": [
+{
+"expl": "« pour 4 personnes ».",
+"id": "qmvg3fe8100l",
+"key": {
+"answer": 2
+},
+"ord": 1,
+"payload": {
+"options": [
+"6",
+"2",
+"4"
+]
+},
+"prompt": "Cette recette est pour combien de personnes ?",
+"type": "qcm"
+},
+{
+"expl": "« 4 œufs ».",
+"id": "qmvg3fe8100m",
+"key": {
+"answer": 0
+},
+"ord": 2,
+"payload": {
+"options": [
+"4",
+"250",
+"2"
+]
+},
+"prompt": "Combien d'œufs faut-il ?",
+"type": "qcm"
+},
+{
+"expl": "« versez le lait petit à petit ».",
+"id": "qmvg3fe8100n",
+"key": {
+"answer": 2
+},
+"ord": 3,
+"payload": {
+"options": [
+"avant la farine",
+"en une seule fois",
+"petit à petit"
+]
+},
+"prompt": "Comment faut-il verser le lait ?",
+"type": "qcm"
+},
+{
+"expl": "« Laissez reposer la pâte une heure ».",
+"id": "qmvg3fe8100o",
+"key": {
+"answer": 1
+},
+"ord": 4,
+"payload": {
+"options": [
+"une minute",
+"une heure",
+"une nuit"
+]
+},
+"prompt": "Combien de temps la pâte doit-elle reposer ?",
+"type": "qcm"
+},
+{
+"expl": "« une minute de chaque côté ».",
+"id": "qmvg3fe8100p",
+"key": {
+"answer": 1
+},
+"ord": 5,
+"payload": {
+"options": [
+"cinq minutes",
+"une minute",
+"une heure"
+]
+},
+"prompt": "Combien de temps cuit chaque côté ?",
+"type": "qcm"
+},
+{
+"expl": null,
+"id": "qmvg3fe8100q",
+"key": {
+"answer": 0,
+"justification": "« Pour des crêpes salées, enlevez le sucre »."
+},
+"ord": 6,
+"payload": {},
+"prompt": "On peut faire des crêpes salées avec cette recette.",
+"type": "vf"
+},
+{
+"expl": "Étape 3 : ajoutez le beurre fondu.",
+"id": "qmvg3fe8100r",
+"key": {
+"answer": 2
+},
+"ord": 7,
+"payload": {
+"options": [
+"la farine",
+"le sel",
+"le beurre fondu"
+]
+},
+"prompt": "Que met-on en dernier dans la pâte ?",
+"type": "qcm"
+}
+],
+"consigne": "<p>Vous lisez cette recette. Lisez le document puis répondez aux questions.</p>",
+"id": "lo25mvg3fe84021",
+"kn": null,
+"title": "Lecture A2 : une recette de crêpes",
+"tt": null,
+"van": "<p><strong>Crêpes faciles (pour 4 personnes)</strong></p><p><strong>Ingrédients :</strong> 250 g de farine, 4 œufs, un demi-litre de lait, une pincée de sel, 2 cuillères à soupe de sucre, 50 g de beurre fondu.</p><p><strong>Préparation :</strong></p><p>1. Mettez la farine, le sel et le sucre dans un grand bol.</p><p>2. Ajoutez les œufs, puis versez le lait petit à petit en mélangeant.</p><p>3. Ajoutez le beurre fondu. Laissez reposer la pâte une heure.</p><p>4. Faites chauffer une poêle et versez une petite louche de pâte. Faites cuire une minute de chaque côté.</p><p><strong>Conseil :</strong> servez avec du sucre, de la confiture ou du chocolat. Pour des crêpes salées, enlevez le sucre !</p>",
+"vip": null,
+"vong": null
+},
+{
+"cau": [
+{
+"expl": "« À partir du 3 novembre ».",
+"id": "qmvg3fe81007",
+"key": {
+"answer": 1
+},
+"ord": 1,
+"payload": {
+"options": [
+"le 11 novembre",
+"le 3 novembre",
+"le 1er novembre"
+]
+},
+"prompt": "Les nouveaux horaires commencent…",
+"type": "qcm"
+},
+{
+"expl": "« cours pour enfants de 14 h à 16 h ».",
+"id": "qmvg3fe81008",
+"key": {
+"answer": 2
+},
+"ord": 2,
+"payload": {
+"options": [
+"une fermeture",
+"des cours pour adultes",
+"des cours pour enfants"
+]
+},
+"prompt": "Le mercredi après-midi, il y a…",
+"type": "qcm"
+},
+{
+"expl": "« Samedi et dimanche : 9 h – 18 h ».",
+"id": "qmvg3fe81009",
+"key": {
+"answer": 2
+},
+"ord": 3,
+"payload": {
+"options": [
+"12 h",
+"10 h",
+"9 h"
+]
+},
+"prompt": "Le samedi, la piscine ouvre à…",
+"type": "qcm"
+},
+{
+"expl": "« enfant (moins de 12 ans) 2,50 € ».",
+"id": "qmvg3fe8100a",
+"key": {
+"answer": 0
+},
+"ord": 4,
+"payload": {
+"options": [
+"2,50 €",
+"3,50 €",
+"4 €"
+]
+},
+"prompt": "Combien coûte une entrée pour un enfant de 8 ans ?",
+"type": "qcm"
+},
+{
+"expl": "35 € ÷ 10 = 3,50 €.",
+"id": "qmvg3fe8100b",
+"key": {
+"answer": 2
+},
+"ord": 5,
+"payload": {
+"options": [
+"3 €",
+"4 €",
+"3,50 €"
+]
+},
+"prompt": "Avec la carte 10 entrées, une entrée coûte…",
+"type": "qcm"
+},
+{
+"expl": null,
+"id": "qmvg3fe8100c",
+"key": {
+"answer": 1,
+"justification": "« Les shorts de bain sont interdits »."
+},
+"ord": 6,
+"payload": {},
+"prompt": "On peut nager avec un short de bain.",
+"type": "vf"
+},
+{
+"expl": null,
+"id": "qmvg3fe8100d",
+"key": {
+"answer": 0,
+"justification": "« Fermeture exceptionnelle le 11 novembre »."
+},
+"ord": 7,
+"payload": {},
+"prompt": "La piscine est fermée le 11 novembre.",
+"type": "vf"
+}
+],
+"consigne": "<p>Vous lisez cette affiche. Lisez le document puis répondez aux questions.</p>",
+"id": "lo25mvg3fe8401z",
+"kn": null,
+"title": "Lecture A2 : la piscine municipale",
+"tt": null,
+"van": "<p><strong>PISCINE MUNICIPALE DES TILLEULS : NOUVEAUX HORAIRES</strong></p><p>À partir du 3 novembre :</p><p>• Lundi, mardi, jeudi, vendredi : 12 h – 14 h et 17 h – 21 h</p><p>• Mercredi : 10 h – 19 h (cours pour enfants de 14 h à 16 h)</p><p>• Samedi et dimanche : 9 h – 18 h</p><p><strong>Tarifs :</strong> adulte 4 €, enfant (moins de 12 ans) 2,50 €, carte 10 entrées 35 €.</p><p>Le bonnet de bain est obligatoire. Les shorts de bain sont interdits.</p><p>Fermeture exceptionnelle le 11 novembre (jour férié).</p>",
+"vip": null,
+"vong": null
+},
+{
+"cau": [
+{
+"expl": "« je travaille dans une librairie ».",
+"id": "qmvg3fe81000",
+"key": {
+"answer": 0
+},
+"ord": 1,
+"payload": {
+"options": [
+"dans une librairie",
+"dans un musée",
+"dans un restaurant"
+]
+},
+"prompt": "Où travaille Camille ?",
+"type": "qcm"
+},
+{
+"expl": "« Depuis lundi ».",
+"id": "qmvg3fe81001",
+"key": {
+"answer": 2
+},
+"ord": 2,
+"payload": {
+"options": [
+"un mois",
+"novembre",
+"lundi"
+]
+},
+"prompt": "Camille travaille depuis…",
+"type": "qcm"
+},
+{
+"expl": "« je finis à 18 h ».",
+"id": "qmvg3fe81002",
+"key": {
+"answer": 2
+},
+"ord": 3,
+"payload": {
+"options": [
+"9 h 30",
+"17 h",
+"18 h"
+]
+},
+"prompt": "À quelle heure finit-elle ?",
+"type": "qcm"
+},
+{
+"expl": "« surtout Marc, qui m'explique tout ».",
+"id": "qmvg3fe81003",
+"key": {
+"answer": 1
+},
+"ord": 4,
+"payload": {
+"options": [
+"Julien",
+"Marc",
+"sa tante"
+]
+},
+"prompt": "Qui l'aide au travail ?",
+"type": "qcm"
+},
+{
+"expl": null,
+"id": "qmvg3fe81004",
+"key": {
+"answer": 1,
+"justification": "« Je cherche un petit studio »."
+},
+"ord": 5,
+"payload": {},
+"prompt": "Camille a déjà trouvé un studio.",
+"type": "vf"
+},
+{
+"expl": "« j'habite chez ma tante ».",
+"id": "qmvg3fe81005",
+"key": {
+"answer": 1
+},
+"ord": 6,
+"payload": {
+"options": [
+"à l'hôtel",
+"chez sa tante",
+"dans un studio"
+]
+},
+"prompt": "Où habite-t-elle pour l'instant ?",
+"type": "qcm"
+},
+{
+"expl": "« Tu viens me voir en novembre ? ».",
+"id": "qmvg3fe81006",
+"key": {
+"answer": 0
+},
+"ord": 7,
+"payload": {
+"options": [
+"de venir la voir en novembre",
+"de travailler à la librairie",
+"de partager un appartement"
+]
+},
+"prompt": "Que propose Camille à Julien ?",
+"type": "qcm"
+}
+],
+"consigne": "<p>Vous lisez ce courriel. Lisez le document puis répondez aux questions.</p>",
+"id": "lo25mvg3fe8101y",
+"kn": null,
+"title": "Lecture A2 : un courriel de Camille",
+"tt": null,
+"van": "<p><strong>De :</strong> Camille</p><p><strong>Objet :</strong> Mon nouveau travail</p><p>Salut Julien !</p><p>Je t'écris de Lyon ! Depuis lundi, je travaille dans une librairie près de la place Bellecour. Je commence à 9 h 30 et je finis à 18 h. Mes collègues sont très gentils, surtout Marc, qui m'explique tout.</p><p>Le seul problème, c'est le logement : pour l'instant, j'habite chez ma tante, à quarante minutes en bus. Je cherche un petit studio dans le centre.</p><p>Tu viens me voir en novembre ? On pourrait visiter le musée des Confluences et manger dans un bouchon lyonnais.</p><p>Bises,<br>Camille</p>",
+"vip": null,
+"vong": null
+},
+{
+"cau": [
+{
+"expl": "« des jeunes de 18 à 25 ans ».",
+"id": "qmvfc52yx00o",
+"key": {
+"answer": 1
+},
+"ord": 1,
+"payload": {
+"options": [
+"16 à 18 ans",
+"18 à 25 ans",
+"6 à 10 ans"
+]
+},
+"prompt": "Le centre cherche des jeunes de…",
+"type": "qcm"
+},
+{
+"expl": "« enfants de 6 à 10 ans ».",
+"id": "qmvfc52yx00p",
+"key": {
+"answer": 2
+},
+"ord": 2,
+"payload": {
+"options": [
+"3 et 6 ans",
+"10 et 14 ans",
+"6 et 10 ans"
+]
+},
+"prompt": "Les enfants ont entre…",
+"type": "qcm"
+},
+{
+"expl": "« du lundi au vendredi ».",
+"id": "qmvfc52yx00q",
+"key": {
+"answer": 2
+},
+"ord": 3,
+"payload": {
+"options": [
+"le week-end",
+"tous les jours",
+"en semaine"
+]
+},
+"prompt": "Le travail se fait…",
+"type": "qcm"
+},
+{
+"expl": null,
+"id": "qmvfc52yx00r",
+"key": {
+"answer": 1,
+"justification": "« Repas du midi offert »."
+},
+"ord": 4,
+"payload": {},
+"prompt": "Le repas du midi est payant.",
+"type": "vf"
+},
+{
+"expl": null,
+"id": "qmvfc52yx00s",
+"key": {
+"answer": 1,
+"justification": "« il n'est pas obligatoire »."
+},
+"ord": 5,
+"payload": {},
+"prompt": "Il faut obligatoirement avoir le BAFA.",
+"type": "vf"
+},
+{
+"expl": "Sont citées : jeux, piscine, cuisine, peinture.",
+"id": "qmvfc52yx00t",
+"key": {
+"answer": 0
+},
+"ord": 6,
+"payload": {
+"options": [
+"l'équitation",
+"la piscine",
+"la peinture"
+]
+},
+"prompt": "Quelle activité n'est PAS citée ?",
+"type": "qcm"
+},
+{
+"expl": "« proposée fin juin ».",
+"id": "qmvfc52yx00u",
+"key": {
+"answer": 1
+},
+"ord": 7,
+"payload": {
+"options": [
+"début juillet",
+"fin juin",
+"le 30 mai"
+]
+},
+"prompt": "La formation a lieu…",
+"type": "qcm"
+},
+{
+"expl": "« avant le 30 mai ».",
+"id": "qmvfc52yx00v",
+"key": {
+"answer": 0
+},
+"ord": 8,
+"payload": {
+"options": [
+"le 30 mai",
+"le 15 août",
+"le 7 juillet"
+]
+},
+"prompt": "Avant quelle date faut-il envoyer sa candidature ?",
+"type": "qcm"
+}
+],
+"consigne": "<p>Lisez l'annonce puis répondez aux questions.</p>",
+"id": "lo24mvfc52z002p",
+"kn": null,
+"title": "Lecture A2 : une annonce de stage d'été",
+"tt": null,
+"van": "<p><strong>Stage d'été : animateur ou animatrice de centre de loisirs</strong></p><p>Le centre de loisirs « Les Petits Explorateurs » cherche des jeunes de 18 à 25 ans pour s'occuper d'enfants de 6 à 10 ans, du 7 juillet au 15 août.</p><p>Horaires : du lundi au vendredi, de 8 h 30 à 17 h. Repas du midi offert.</p><p>Activités : jeux en plein air, sorties à la piscine, ateliers de cuisine et de peinture.</p><p>Le BAFA (diplôme d'animateur) est un plus, mais il n'est pas obligatoire. Une formation de deux jours est proposée fin juin.</p><p>Envoyez votre CV et une courte lettre avant le 30 mai à recrutement@petits-explorateurs.fr.</p>",
+"vip": "true",
+"vong": null
+}
+]
+}
