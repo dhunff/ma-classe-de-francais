@@ -156,17 +156,18 @@ export default function ExerciseCard({
           )}
         </div>
 
-        <strong className="mb-1 block text-base font-extrabold leading-snug text-ink">{ex.title}</strong>
+        {/* Tên giữ đúng hai dòng (cắt bớt nếu dài) để tên và nút của các thẻ cạnh nhau thẳng hàng. */}
+        <strong className="mb-1 line-clamp-2 min-h-[2.75em] text-base font-extrabold leading-snug text-ink" title={ex.title}>{ex.title}</strong>
 
-        {/* 04/11 (chủ dự án): học sinh không thấy số câu và dạng câu trên thẻ; giáo viên (có
-            teacherActions) vẫn thấy để quản lý kho bài. */}
+        {/* 04/11 (chủ dự án): học sinh không thấy số câu, dạng câu, biểu tượng nghe hay đọc trên thẻ
+            (ảnh thẻ đã cho biết loại bài); giáo viên (có teacherActions) vẫn thấy để quản lý kho bài. */}
         {(() => {
           const ds = [
             locked && nQ === 0 ? tr("Bài VIP", "Exercice VIP", "VIP exercise") : null,
             teacherActions && !(locked && nQ === 0) ? `${nQ} ${tr("câu", "question", "question")}${nQ > 1 ? "s" : ""}` : null,
             teacherActions && typesLabel ? typesLabel : null,
-            ex.audioUrl ? "🎧" : null,
-            ex.readingText ? "📖" : null,
+            teacherActions && ex.audioUrl ? "🎧" : null,
+            teacherActions && ex.readingText ? "📖" : null,
             ex.timeLimit ? `⏱ ${ex.timeLimit} min` : null,
           ].filter(Boolean);
           return ds.length > 0 && <div className="text-xs leading-relaxed text-soft">{ds.join(" · ")}</div>;
