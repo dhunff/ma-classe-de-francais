@@ -457,9 +457,14 @@ export function ChiTietKyNho({ ma, exercises, hist, biKhoa, onBack, onMoKyNho, c
                     <li key={ex.id} className="relative min-w-0">
                       <DauBai tt={tt} stt={trenDuong.findIndex((b) => b.ex.id === ex.id) + 1} hang={hangBai(hist[ex.id])} />
                       {tt === "khoa" ? (
+                        /* 04/11 (chủ dự án): bài chưa tới lượt không lộ tên, ảnh, nhãn. Thẻ thật vẫn
+                           dựng nhưng ẩn hẳn, chỉ để giữ chiều cao cho hàng thẻ thẳng nhau. */
                         <div className="relative h-full">
-                          <div aria-hidden inert="" className="pointer-events-none h-full opacity-50">{renderThe(ex)}</div>
-                          <p className="absolute inset-x-3 top-1/2 m-0 -translate-y-1/2 rounded-2xl bg-surface2 px-3 py-2.5 text-center text-sm font-bold text-ink shadow-sm">{doF ? tr("Làm lại bài điểm F để mở", "Refaites l'exercice noté F", "Redo the F-graded exercise") : tr("Làm xong bài trước để mở", "Terminez l'exercice précédent", "Finish the previous exercise")}</p>
+                          <div aria-hidden inert="" className="pointer-events-none invisible h-full">{renderThe(ex)}</div>
+                          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 rounded-3xl border border-dashed border-line bg-surface2 p-4 text-center">
+                            <span className="grid h-12 w-12 place-items-center rounded-full bg-surface text-soft shadow-sm"><Lock size={20} /></span>
+                            <p className="m-0 text-sm font-bold text-soft">{doF ? tr("Làm lại bài điểm F để mở", "Refaites l'exercice noté F", "Redo the F-graded exercise") : tr("Làm xong bài trước để mở", "Terminez l'exercice précédent", "Finish the previous exercise")}</p>
+                          </div>
                         </div>
                       ) : renderThe(ex)}
                     </li>
