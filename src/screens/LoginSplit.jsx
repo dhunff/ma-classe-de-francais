@@ -37,7 +37,7 @@ function useManRong() {
 function TieuDe({ t, mode }) {
   return (
     <>
-      <img src="/leon/dau.webp" alt="Leon" width={56} height={56} className="h-14 w-14 object-contain" />
+      <img src="/logo-fracile.webp" alt="FRACILE" width={56} height={56} className="h-14 w-14 object-contain" />
       <h1 className="m-0 mt-5 text-2xl font-extrabold tracking-tight text-slate-800 dark:text-white">
         {t(`login.title_${mode}`)}
       </h1>

@@ -30,7 +30,7 @@ function ToChungNhan({ cn, ten, onDong }) {
       </div>
       <article className="mcf-cn-giay w-full max-w-4xl shrink-0">
         <div className="mcf-cn-khung flex flex-col items-center text-center">
-          <div className="flex items-center gap-2"><Leon cam="dau" size={40} /><span className="text-lg font-extrabold">FRACILE</span></div>
+          <div className="flex items-center gap-2"><img src="/logo-fracile.webp" alt="" width={40} height={40} className="h-10 w-10 object-contain" /><span className="text-lg font-extrabold">FRACILE</span></div>
           <p className="mcf-cn-nhan m-0 mt-4">{tr("Chứng nhận hoàn thành", "Certificat de réussite", "Certificate of completion")}</p>
           <p className="m-0 mt-5 text-sm">{tr("Chứng nhận rằng", "Ce certificat atteste que", "This certifies that")}</p>
           <p className="mcf-cn-ten m-0 mt-1">{ten}</p>

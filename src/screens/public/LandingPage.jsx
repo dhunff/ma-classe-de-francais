@@ -182,7 +182,7 @@ export default function LandingPage({ imgSrc = "/images/hero-preview.png" }) {
       <nav className="sticky top-0 z-40 border-0 border-b border-solid border-line/70 bg-bg/80 backdrop-blur-md">
         <div className="mx-auto flex h-16 max-w-6xl items-center gap-6 px-5">
           <Link to="/gioi-thieu" className="flex items-center gap-2 text-lg font-extrabold tracking-tight text-ink no-underline">
-            <img src="/leon/dau.webp" alt="" width={34} height={34} className="h-[34px] w-[34px] object-contain" />FRACILE<span className="text-primary">.</span>
+            <img src="/logo-fracile.webp" alt="" width={34} height={34} className="h-[34px] w-[34px] object-contain" />FRACILE<span className="text-primary">.</span>
           </Link>
           <div className="hidden flex-1 items-center gap-6 text-sm font-semibold text-soft md:flex">
             <a href="#tinh-nang" className="text-soft no-underline hover:text-ink">{tr("Tính năng", "Fonctionnalités", "Features")}</a>
@@ -343,7 +343,7 @@ export default function LandingPage({ imgSrc = "/images/hero-preview.png" }) {
       <footer className="mt-24 bg-primary px-6 pb-8 pt-12 text-white dark:bg-[#0e1526]">
         <div className="mx-auto grid max-w-6xl gap-8 md:grid-cols-[1.4fr_1fr_1fr]">
           <div>
-            <span className="flex items-center gap-2 text-xl font-extrabold"><img src="/leon/dau.webp" alt="" width={36} height={36} className="h-9 w-9 object-contain" />FRACILE</span>
+            <span className="flex items-center gap-2 text-xl font-extrabold"><img src="/logo-fracile.webp" alt="" width={36} height={36} className="h-9 w-9 object-contain" />FRACILE</span>
             <p className="m-0 mt-3 max-w-sm text-sm leading-relaxed text-blue-100">{tr("Nền tảng luyện thi DELF cho học sinh và giáo viên Việt Nam.", "La plateforme de préparation au DELF pour les élèves et enseignants au Vietnam.", "The DELF prep platform for students and teachers in Vietnam.")}</p>
           </div>
           <div className="grid content-start gap-2 text-sm">

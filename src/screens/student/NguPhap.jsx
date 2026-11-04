@@ -627,7 +627,7 @@ function KhungCongKhai({ children }) {
     <div className="min-h-screen bg-bg">
       <div className="sticky top-0 z-20 border-0 border-b border-solid border-line bg-surface/90 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-3">
-          <Link to="/gioi-thieu" className="flex items-center gap-2 text-lg font-extrabold text-primary no-underline"><Leon cam="dau" size={32} /> FRACILE</Link>
+          <Link to="/gioi-thieu" className="flex items-center gap-2 text-lg font-extrabold text-primary no-underline"><img src="/logo-fracile.webp" alt="" width={32} height={32} className="h-8 w-8 object-contain" /> FRACILE</Link>
           <Link to="/ngu-phap" className="text-sm font-bold text-ink no-underline">{tr("Ngữ pháp tiếng Pháp", "Grammaire française", "French grammar")}</Link>
           <Link to="/login" className="ml-auto inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-sm font-bold text-on-primary no-underline hover:opacity-90"><LogIn size={15} /> {tr("Đăng nhập", "Connexion", "Sign in")}</Link>
         </div>

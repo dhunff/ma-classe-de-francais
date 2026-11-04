@@ -172,8 +172,9 @@ function NavList({ role, t, expanded, onNavigate, onBlue = true }) {
    chữ FRACILE đậm kèm chấm đỏ. */
 function Huy({ onBlue, size = "h-11 w-11" }) {
   return (
-    <span className={`relative grid ${size} shrink-0 -rotate-6 place-items-center rounded-2xl transition-transform duration-300 ease-[cubic-bezier(.23,1,.32,1)] group-hover:rotate-0 ${onBlue ? "bg-white shadow-[0_8px_20px_rgba(0,0,0,0.18)] ring-4 ring-white/15" : "bg-primary-soft"}`}>
-      <img src="/leon/dau.webp" alt="" width={34} height={34} className="h-[34px] w-[34px] object-contain" />
+    /* 04/11: logo mới của chủ dự án đã là một ô vuông bo góc, nên không bọc thêm nền. */
+    <span className={`relative grid ${size} shrink-0 -rotate-6 place-items-center transition-transform duration-300 ease-[cubic-bezier(.23,1,.32,1)] group-hover:rotate-0`}>
+      <img src="/logo-fracile.webp" alt="" width={44} height={44} className={`h-full w-full object-contain ${onBlue ? "drop-shadow-[0_6px_14px_rgba(0,0,0,0.25)]" : ""}`} />
     </span>
   );
 }
