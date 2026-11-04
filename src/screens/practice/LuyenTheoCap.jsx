@@ -305,17 +305,15 @@ function NutVip({ onClick, gia }) {
   );
 }
 
-/* Tiêu đề một vòng: tấm màu riêng, biểu tượng mờ làm nền, ghi khi nào làm và đã làm tới đâu.
+/* Tiêu đề một vòng: tấm màu riêng, biểu tượng mờ làm nền, ghi đã làm tới đâu.
    Đi hết bài trong vòng thì biểu tượng thành dấu tích. */
-function TieuDeVong({ ten, moTa, khiNao, Icon, nen, xong, tong, soVip }) {
+function TieuDeVong({ ten, moTa, Icon, nen, xong, tong, soVip }) {
   const het = tong > 0 && xong === tong;
   return (
     <div className="relative overflow-hidden rounded-3xl p-4 text-white shadow-md" style={{ background: nen }}>
       <Icon aria-hidden size={92} strokeWidth={1.5} className="pointer-events-none absolute -bottom-4 -right-4 text-white/15" />
-      <div className="relative flex items-center justify-between gap-2">
-        <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-white/25">{het ? <Check size={18} strokeWidth={3} /> : <Icon size={18} />}</span>
-        <span className="rounded-full bg-black/25 px-2.5 py-1 text-right text-[11px] font-bold leading-tight">{khiNao}</span>
-      </div>
+      {/* 04/11 (chủ dự án): bỏ nhãn khi nào làm (Làm ngay, Sau khoảng 3 ngày, Sau khoảng 10 ngày). */}
+      <span className="relative grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-white/25">{het ? <Check size={18} strokeWidth={3} /> : <Icon size={18} />}</span>
       <h3 className="relative m-0 mt-3 text-2xl font-extrabold leading-none">{ten}</h3>
       <p className="relative m-0 mt-1.5 text-[13px] font-medium leading-snug">{moTa}</p>
       {tong > 0 && (
@@ -357,9 +355,9 @@ export function ChiTietKyNho({ ma, exercises, hist, biKhoa, onBack, onMoKyNho, c
   const tiep = ds.find((b) => b.tt === "tiepTheo");
   const pct = o.tb === null ? null : Math.round(o.tb * 100);
   const trenDuong = ds.filter((b) => b.tt !== "phi");
-  const nhom = VONG().map(([k, ten, moTa, khiNao, Icon, nen]) => {
+  const nhom = VONG().map(([k, ten, moTa, , Icon, nen]) => {
     const bai = ds.filter((b) => (b.ex.vong || "hoc") === k);
-    return { k, ten, moTa, khiNao, Icon, nen, bai: [...bai.filter((b) => b.tt !== "phi"), ...bai.filter((b) => b.tt === "phi")] };
+    return { k, ten, moTa, Icon, nen, bai: [...bai.filter((b) => b.tt !== "phi"), ...bai.filter((b) => b.tt === "phi")] };
   }).filter((n) => n.bai.length);
   const moiVip = !laVip && o.phi.length > 0;
   const hang = hangKyNho(o);
@@ -446,13 +444,13 @@ export function ChiTietKyNho({ ma, exercises, hist, biKhoa, onBack, onMoKyNho, c
         </div>
       ) : (
         <div className="flex flex-col gap-8">
-          {nhom.map(({ k, ten, moTa, khiNao, Icon, nen, bai }, iv) => {
+          {nhom.map(({ k, ten, moTa, Icon, nen, bai }, iv) => {
             const conLaiDuong = bai.filter((b) => b.tt !== "phi");
             return (
               <section key={k} className="relative grid gap-4 lg:grid-cols-[11rem_minmax(0,1fr)] lg:gap-6">
                 {iv < nhom.length - 1 && <span aria-hidden className="absolute -bottom-8 left-[5.5rem] top-0 hidden border-0 border-l-2 border-dashed border-line lg:block" />}
                 <div className="relative self-start lg:sticky lg:top-3">
-                  <TieuDeVong ten={ten} moTa={moTa} khiNao={khiNao} Icon={Icon} nen={nen} tong={conLaiDuong.length} xong={conLaiDuong.filter((b) => b.tt === "xong").length} soVip={bai.length - conLaiDuong.length} />
+                  <TieuDeVong ten={ten} moTa={moTa} Icon={Icon} nen={nen} tong={conLaiDuong.length} xong={conLaiDuong.filter((b) => b.tt === "xong").length} soVip={bai.length - conLaiDuong.length} />
                 </div>
                 <ol className="m-0 grid list-none grid-cols-[repeat(auto-fill,minmax(min(100%,17rem),1fr))] gap-5 p-0">
                   {bai.map(({ ex, tt, doF }) => (
