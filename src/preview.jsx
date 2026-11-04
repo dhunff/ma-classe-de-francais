@@ -164,9 +164,9 @@ import XemDeThu from "./screens/teacher/XemDeThu.jsx";
 const THE_CHOI = [["le vent","gió"],["la pluie","mưa"],["l'arbre","cây"],["la montagne","núi"],["la mer","biển"],["le soleil","mặt trời"],["la neige","tuyết"],["le nuage","mây"]].map(([a,b],k)=>({id:"t"+k,matTruoc:a,matSau:b,loai:"n",chuDe:"thoi-tiet"}));
 import LoiNgheBai from "./screens/practice/LoiNgheBai.jsx";
 const CAU_NGHE_THU = [
-  { explanation: "« Un aller simple pour Lyon » : vé một chiều." },
-  { explanation: "« quarante euros »." },
-  { explanation: "« ce bus va à la mairie ? »." },
+  { prompt: "Dialogue 1 : la personne achète…", explanation: "« Un aller simple pour Lyon » : aller simple là vé một chiều, nên chọn « un billet aller simple »." },
+  { prompt: "Le billet coûte…", explanation: "« quarante euros » = 40 €. Bẫy: 14 € (quatorze)." },
+  { prompt: "Dialogue 2 : la personne demande…", explanation: "« ce bus va à la mairie ? » : hỏi xe buýt có đi qua toà thị chính không." },
 ];
 const LOI_NGHE_THU = {
   loi: [{ giong: "alloy", chu: "Dialogue un." }, { giong: "shimmer", chu: "Un aller simple pour Lyon, s'il vous plaît." }, { giong: "onyx", chu: "Ça fait quarante euros." }, { giong: "alloy", chu: "Dialogue deux." }, { giong: "echo", chu: "Pardon, ce bus va à la mairie ?" }],

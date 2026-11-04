@@ -55,13 +55,23 @@ function toDapAn(chu, manh) {
   if (k < chu.length) ra.push({ chu: chu.slice(k) });
   return ra;
 }
-const Khuc = ({ ds }) => ds.map((k, i) => (k.so
-  ? <mark key={i} title={tr(`Câu ${k.so.join(", ")}`, `Question ${k.so.join(", ")}`, `Question ${k.so.join(", ")}`)} className="rounded bg-ok-soft px-0.5 text-ink">{k.chu}<sup className="ml-0.5 text-[10px] font-extrabold text-ok">{k.so.join(",")}</sup></mark>
+/* Bấm vào đoạn tô xanh để mở lời giải của câu đó ngay dưới đoạn (theo chủ dự án 04/11). */
+const Khuc = ({ ds, dangMo, onMo }) => ds.map((k, i) => (k.so
+  ? (
+    <mark key={i} role="button" tabIndex={0} aria-expanded={dangMo === k.so.join(",")}
+      onClick={() => onMo(k.so)} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onMo(k.so); } }}
+      title={tr("Bấm để xem vì sao chọn đáp án này", "Cliquez pour voir l'explication", "Click to see why")}
+      className={`cursor-pointer rounded px-0.5 text-ink underline decoration-ok/50 decoration-dotted underline-offset-4 outline-none focus-visible:ring-2 focus-visible:ring-ok ${dangMo === k.so.join(",") ? "bg-ok/25" : "bg-ok-soft hover:bg-ok/20"}`}>
+      {k.chu}<sup className="ml-0.5 text-[10px] font-extrabold text-ok">{k.so.join(",")}</sup>
+    </mark>
+  )
   : <React.Fragment key={i}>{k.chu}</React.Fragment>));
+const boThe = (h) => (h || "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
 
 /* `thu`: dữ liệu dựng sẵn cho trang xem thử (preview.html), bỏ qua rpc. `cau`: câu hỏi của bài, để tô đáp án. */
-export default function LoiNgheBai({ exId, onMuaVip, thu, cau }) {
+export default function LoiNgheBai({ exId, onMuaVip, thu, cau, dapAn }) {
   const [kq, setKq] = useState(thu);
+  const [mo, setMo] = useState(null); // { p: số đoạn, so: [số câu] }
   useEffect(() => {
     if (thu !== undefined) return undefined;
     let huy = false;
@@ -110,16 +120,40 @@ export default function LoiNgheBai({ exId, onMuaVip, thu, cau }) {
         <summary className="flex cursor-pointer list-none items-center gap-1.5 text-sm font-bold text-soft">
           <ChevronDown size={15} className="transition-transform group-open:rotate-180" /> {tr("Lời nghe", "Transcription", "Transcript")}
         </summary>
-        {manh.length > 0 && <p className="m-0 mt-2 text-xs text-soft"><mark className="rounded bg-ok-soft px-1 text-ink">{tr("Đoạn tô xanh", "En vert", "Green")}</mark> {tr("là chỗ chứa đáp án, số nhỏ là số câu.", ": l'endroit où se trouve la réponse, avec le numéro de la question.", ": where the answer is, with the question number.")}</p>}
+        {manh.length > 0 && <p className="m-0 mt-2 text-xs text-soft"><mark className="rounded bg-ok-soft px-1 text-ink">{tr("Đoạn tô xanh", "En vert", "Green")}</mark> {tr("là chỗ chứa đáp án, số nhỏ là số câu. Bấm vào để xem vì sao chọn đáp án đó.", ": l'endroit où se trouve la réponse, avec le numéro de la question. Cliquez pour l'explication.", ": where the answer is, with the question number. Click for the explanation.")}</p>}
         <div lang="fr" className="mt-3 grid gap-3 text-[15px] leading-relaxed text-ink">
           {(kq.loi || []).map((d, i) => {
             const moc = d.chu.match(MOC);
             const than = moc ? d.chu.slice(moc[0].length) : d.chu;
+            const moDay = mo?.p === i ? mo.so : null;
             return (
-              <p key={i} className="m-0">
-                {moc && <><strong>{moc[0].trim()}</strong> </>}
-                <Khuc ds={toDapAn(than, manh)} />
-              </p>
+              <div key={i}>
+                <p className="m-0">
+                  {moc && <><strong>{moc[0].trim()}</strong> </>}
+                  <Khuc ds={toDapAn(than, manh)} dangMo={moDay?.join(",")} onMo={(so) => setMo(moDay?.join(",") === so.join(",") ? null : { p: i, so })} />
+                </p>
+                {moDay && (
+                  <div lang="vi" className="mt-2 grid gap-2 rounded-2xl border border-solid border-ok/30 bg-ok-soft p-3 text-sm">
+                    {moDay.map((so) => {
+                      const q = cau?.[so - 1];
+                      const da = q && dapAn ? dapAn(q) : null;
+                      return (
+                        <div key={so}>
+                          <p lang="fr" className="m-0 font-bold text-ink">{tr(`Câu ${so}`, `Question ${so}`, `Question ${so}`)}: {boThe(q?.prompt)}</p>
+                          {da?.chu && (
+                            <p className="m-0 mt-1 text-ink">
+                              <strong className="text-ok">{tr("Đáp án đúng:", "Bonne réponse :", "Correct answer:")}</strong> <span lang="fr">{da.chu}</span>
+                              <span className={`ml-2 text-xs font-bold ${da.dung ? "text-ok" : "text-danger"}`}>{da.dung ? tr("(bạn chọn đúng)", "(votre réponse est juste)", "(you got it)") : tr("(bạn chọn sai)", "(votre réponse est fausse)", "(you missed it)")}</span>
+                            </p>
+                          )}
+                          {/* Nhiều lời giải chỉ là đoạn trích « … »: nói rõ đó là câu trong bài nghe. */}
+                          <p className="m-0 mt-1 text-ink"><strong>{tr("Vì sao:", "Pourquoi :", "Why:")}</strong> {/^«[^»]+»\.?$/.test(boThe(q?.explanation)) && tr("bài nghe nói ", "le document dit ", "the recording says ")}{boThe(q?.explanation)}</p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
             );
           })}
         </div>

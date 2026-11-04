@@ -1405,6 +1405,15 @@ export function PracticeWorkspace({ ex, back, onFinish, soTu = false, chamBang =
     return cuc == null ? "" : String(cuc);
   };
 
+  /* Đáp án đúng của câu trắc nghiệm, cho khung lời giải trong lời nghe (04/11). Như ô tô xanh ở
+     trên: làm đúng thì ô học sinh chọn là đáp án, làm sai thì lấy `expected` máy chủ gửi kèm. */
+  const dapAnQcm = (q) => {
+    if (!graded || q.type !== "qcm") return null;
+    if (isGood(q)) return { dung: true, chu: q.options?.[answers[q.id]] ?? null };
+    const e = remote?.[q.id]?.expected;
+    return { dung: false, chu: e == null ? null : typeof e === "number" ? q.options?.[e] ?? null : String(e) };
+  };
+
   const retry = () => {
     phat("tiep");
     moLuc.current = Date.now();
@@ -1731,7 +1740,7 @@ export function PracticeWorkspace({ ex, back, onFinish, soTu = false, chamBang =
             )}
           </div>
           {/* Lời nghe và phân tích (04/11): chỉ VIP, server tự kiểm (rpc xem_loi_nghe). */}
-          {ex.audioUrl && soTu && <div className="w-full max-w-3xl"><LoiNgheBai exId={ex.id} onMuaVip={onMuaVip} cau={canLam} /></div>}
+          {ex.audioUrl && soTu && <div className="w-full max-w-3xl"><LoiNgheBai exId={ex.id} onMuaVip={onMuaVip} cau={canLam} dapAn={dapAnQcm} /></div>}
           </div>
         </div>
       )}
