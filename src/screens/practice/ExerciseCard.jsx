@@ -158,13 +158,19 @@ export default function ExerciseCard({
 
         <strong className="mb-1 block text-base font-extrabold leading-snug text-ink">{ex.title}</strong>
 
-        <div className="text-xs leading-relaxed text-soft">
-          {locked && nQ === 0 ? tr("Bài VIP", "Exercice VIP", "VIP exercise") : <>{nQ} {tr("câu", "question", "question")}{nQ > 1 ? "s" : ""}</>}
-          {typesLabel && ` · ${typesLabel}`}
-          {ex.audioUrl && " · 🎧"}
-          {ex.readingText && " · 📖"}
-          {ex.timeLimit && ` · ⏱ ${ex.timeLimit} min`}
-        </div>
+        {/* 04/11 (chủ dự án): học sinh không thấy số câu và dạng câu trên thẻ; giáo viên (có
+            teacherActions) vẫn thấy để quản lý kho bài. */}
+        {(() => {
+          const ds = [
+            locked && nQ === 0 ? tr("Bài VIP", "Exercice VIP", "VIP exercise") : null,
+            teacherActions && !(locked && nQ === 0) ? `${nQ} ${tr("câu", "question", "question")}${nQ > 1 ? "s" : ""}` : null,
+            teacherActions && typesLabel ? typesLabel : null,
+            ex.audioUrl ? "🎧" : null,
+            ex.readingText ? "📖" : null,
+            ex.timeLimit ? `⏱ ${ex.timeLimit} min` : null,
+          ].filter(Boolean);
+          return ds.length > 0 && <div className="text-xs leading-relaxed text-soft">{ds.join(" · ")}</div>;
+        })()}
 
         {best && (
           <div className={`mt-1 text-xs font-bold ${best.max && best.best / best.max >= 0.8 ? "text-ok" : "text-primary"}`}>
