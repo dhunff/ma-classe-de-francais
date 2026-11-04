@@ -16,6 +16,7 @@ import AM from "../../content/nguPhap/amThanh.json";
 import HocTapTab from "./HocTapTab.jsx";
 import AM_VD from "../../content/nguPhap/amThanhViDu.json";
 import { choTrong } from "../../shared/choTrong.jsx";
+import GiaiThichNguPhap from "./GiaiThichNguPhap.jsx";
 
 /* « Học ngữ pháp » (15/10, theo chủ dự án): học LÝ THUYẾT trước rồi mới luyện.
  *
@@ -590,12 +591,7 @@ function TrangBai({ bai, ketQua, onGhi, goc, congKhai }) {
                 <h2 className="m-0 flex items-center gap-3 text-lg font-extrabold text-ink">
                   <span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-primary text-sm text-on-primary">{ph.chu}</span>{ph.ten}
                 </h2>
-                {ph.giai && (
-                  <div className="mt-4 rounded-2xl border border-solid border-primary/20 bg-primary-soft/50 p-4">
-                    <p className="m-0 mb-1.5 flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-wider text-primary"><Lightbulb size={14} /> {tr("Giải thích", "Explication", "Explanation")}</p>
-                    <div className="leading-relaxed text-ink [&_h4]:m-0 [&_h4]:mt-3 [&_h4]:text-[13px] [&_h4]:font-extrabold [&_h4]:uppercase [&_h4]:tracking-wide [&_h4]:text-primary [&_h4:first-child]:mt-0 [&_p]:m-0 [&_p]:mt-1" dangerouslySetInnerHTML={{ __html: ph.giai }} />
-                  </div>
-                )}
+                {ph.giai && <GiaiThichNguPhap html={ph.giai} />}
                 {ph.khoi.map((k, j) => <Khoi key={j} k={j === 0 && k.tieuDe === ph.ten ? { ...k, tieuDe: null } : k} />)}
               </article>
               {ph.cau.length > 0 && (
