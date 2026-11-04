@@ -163,6 +163,11 @@ import Builder from "./screens/teacher/Builder.jsx";
 import XemDeThu from "./screens/teacher/XemDeThu.jsx";
 const THE_CHOI = [["le vent","gió"],["la pluie","mưa"],["l'arbre","cây"],["la montagne","núi"],["la mer","biển"],["le soleil","mặt trời"],["la neige","tuyết"],["le nuage","mây"]].map(([a,b],k)=>({id:"t"+k,matTruoc:a,matSau:b,loai:"n",chuDe:"thoi-tiet"}));
 import LoiNgheBai from "./screens/practice/LoiNgheBai.jsx";
+const CAU_NGHE_THU = [
+  { explanation: "« Un aller simple pour Lyon » : vé một chiều." },
+  { explanation: "« quarante euros »." },
+  { explanation: "« ce bus va à la mairie ? »." },
+];
 const LOI_NGHE_THU = {
   loi: [{ giong: "alloy", chu: "Dialogue un." }, { giong: "shimmer", chu: "Un aller simple pour Lyon, s'il vous plaît." }, { giong: "onyx", chu: "Ça fait quarante euros." }, { giong: "alloy", chu: "Dialogue deux." }, { giong: "echo", chu: "Pardon, ce bus va à la mairie ?" }],
   phan_tich: { loai: "Bốn đoạn hội thoại ngắn", chu_de: "Hỏi đường và đi lại bằng tàu, xe buýt, taxi.", y_chinh: ["Hội thoại 1: mua vé tàu một chiều đi Lyon, 40 euro.", "Hội thoại 2: hỏi xe buýt có đến toà thị chính không."] },
@@ -778,7 +783,7 @@ function LuyenCapThu() {
       <label className="mb-4 flex items-center gap-2 text-sm font-bold text-ink"><input type="checkbox" checked={baiDoc} onChange={(e) => setBaiDoc(e.target.checked)} /> Bài đọc</label>
       <label className="mb-4 flex items-center gap-2 text-sm font-bold text-ink"><input type="checkbox" checked={baiNoi} onChange={(e) => setBaiNoi(e.target.checked)} /> Bài nói</label>
       <label className="mb-4 flex items-center gap-2 text-sm font-bold text-ink"><input type="checkbox" checked={loiNghe} onChange={(e) => setLoiNghe(e.target.checked)} /> Lời nghe và phân tích</label>
-      {loiNghe && <LoiNgheBai key={String(vipThu)} exId="thu" onMuaVip={() => {}} thu={vipThu ? LOI_NGHE_THU : { khoa: "vip" }} />}
+      {loiNghe && <LoiNgheBai key={String(vipThu)} exId="thu" onMuaVip={() => {}} thu={vipThu ? LOI_NGHE_THU : { khoa: "vip" }} cau={CAU_NGHE_THU} />}
       {lamBai && <React.Suspense fallback={null}><PracticeWorkspaceThu key={`${baiDoc}${baiNoi}`} ex={baiNoi ? BAI_NOI_THU : baiDoc ? BAI_DOC_THU : BAI_THU} back={() => setLamBai(false)} onFinish={() => {}} chamBang={chamThu} kyNho="A1-CO-1" baiTiep={{ title: "Bài thử tiếp theo", mo: () => setLamBai(false) }} /></React.Suspense>}
       {lamBai ? null :      <>
       {ma && <div className="mb-4"><MeoKyNho ma={ma} /></div>}

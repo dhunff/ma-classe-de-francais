@@ -1731,7 +1731,7 @@ export function PracticeWorkspace({ ex, back, onFinish, soTu = false, chamBang =
             )}
           </div>
           {/* Lời nghe và phân tích (04/11): chỉ VIP, server tự kiểm (rpc xem_loi_nghe). */}
-          {ex.audioUrl && soTu && <div className="w-full max-w-3xl"><LoiNgheBai exId={ex.id} onMuaVip={onMuaVip} /></div>}
+          {ex.audioUrl && soTu && <div className="w-full max-w-3xl"><LoiNgheBai exId={ex.id} onMuaVip={onMuaVip} cau={canLam} /></div>}
           </div>
         </div>
       )}
