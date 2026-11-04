@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { Headphones, BookOpen, PenLine, Puzzle, Languages, Mic, ArrowRight, Map, Swords, Layers, Timer, TrendingUp, BookA, Gamepad2, Play } from "lucide-react";
+import { Headphones, BookOpen, PenLine, Puzzle, Languages, Mic, ArrowRight, Map, Swords, Layers, Timer, TrendingUp, BookA, Gamepad2, Play, Target, Info } from "lucide-react";
 import { supabase } from "../../storageShim.js";
 import { tr } from "../../shared/i18n.jsx";
 import { nhanHoSo } from "../../shared/nhanHoSo.js";
@@ -369,20 +369,20 @@ export function DongDeuKyNang({ skills, ghiChu, gon = false }) {
         </p>
       ) : (
         <>
-          <ul className="m-0 mt-4 grid list-none gap-3.5 p-0">
+          <ul className="m-0 mt-4 grid list-none gap-2.5 p-0">
             {ds.map(({ skill, value }) => {
               const [m, nhan] = muc(value);
               const Icon = IconKN(skill);
               return (
                 <li key={skill} className="grid grid-cols-[auto_1fr] items-center gap-3">
-                  <span className={`grid h-10 w-10 place-items-center rounded-2xl ${MAU[m][2]} ${MAU[m][1]}`}><Icon size={18} /></span>
+                  <span className={`grid h-9 w-9 place-items-center rounded-xl ${MAU[m][2]} ${MAU[m][1]}`}><Icon size={17} /></span>
                   <div className="min-w-0">
                     <div className="flex items-baseline gap-2">
                       <span className="truncate text-sm font-bold text-ink">{tenKN(skill)}</span>
                       <span className={`text-[11px] font-bold ${MAU[m][1]}`}>{nhan()}</span>
                       <span className="ml-auto text-sm font-extrabold tabular-nums text-ink">{value}%</span>
                     </div>
-                    <div className="mt-1.5 h-2.5 overflow-hidden rounded-full bg-surface2">
+                    <div className="mt-1 h-2 overflow-hidden rounded-full bg-surface2">
                       <div className={`h-full w-full rounded-full ${MAU[m][0]} transition-transform duration-[550ms] ease-out`} style={{ transform: `translateX(${Math.max(value, 3) - 100}%)` }} />
                     </div>
                   </div>
@@ -390,14 +390,29 @@ export function DongDeuKyNang({ skills, ghiChu, gon = false }) {
               );
             })}
           </ul>
-          {ds.length > 1 && yeu && (
-            <p className={"m-0 rounded-2xl bg-surface2 text-xs leading-relaxed text-ink " + (gon ? "mt-3 px-3 py-2" : "mt-4 px-4 py-3")}>
-              {tr(`Nên luyện thêm ${tenKN(yeu.skill)}, bài đề xuất đã ưu tiên kỹ năng này.`,
-                `Conseil : ${tenKN(yeu.skill)} est votre point faible. Les recommandations ci-dessus le privilégient.`,
-                `Tip: ${tenKN(yeu.skill)} is your weakest skill. The recommendations above focus on it.`)}
+          {/* 04/11: lời nhắc thành một khung có biểu tượng của kỹ năng yếu nhất, nền theo màu mức của nó. */}
+          {ds.length > 1 && yeu && (() => {
+            const [m] = muc(yeu.value);
+            const IconYeu = IconKN(yeu.skill);
+            return (
+              <div className={`flex items-center gap-3 rounded-2xl ${MAU[m][2]} ` + (gon ? "mt-3 p-3" : "mt-4 p-3.5")}>
+                <span className={`relative grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-surface ${MAU[m][1]} shadow-sm`}>
+                  <IconYeu size={18} />
+                  <Target size={14} className={`absolute -right-1.5 -top-1.5 rounded-full bg-surface p-0.5 ${MAU[m][1]}`} />
+                </span>
+                <div className="min-w-0">
+                  <p className="m-0 text-[11px] font-bold text-soft">{tr("Nên ưu tiên luyện", "À travailler en priorité", "Focus next on")}</p>
+                  <p className={`m-0 text-base font-extrabold leading-tight ${MAU[m][1]}`}>{tenKN(yeu.skill)}</p>
+                  <p className="m-0 mt-0.5 text-xs leading-snug text-ink">{tr("Bài đề xuất cho bạn đã ưu tiên kỹ năng này.", "Les exercices recommandés le privilégient déjà.", "Your recommended exercises already focus on it.")}</p>
+                </div>
+              </div>
+            );
+          })()}
+          {ghiChu && (
+            <p className="m-0 mt-3 flex items-start gap-1.5 border-0 border-t border-solid border-line pt-3 text-[11px] leading-relaxed text-soft">
+              <Info size={13} className="mt-px shrink-0" /><span>{ghiChu}</span>
             </p>
           )}
-          {ghiChu && <p className="m-0 mt-2 text-[11px] text-soft">{ghiChu}</p>}
         </>
       )}
     </section>
