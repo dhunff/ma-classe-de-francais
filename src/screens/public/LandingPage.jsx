@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   Wand2, ArrowRight, CheckCircle2, Headphones, BookOpen, PenLine, Mic,
-  Map, Swords, Layers, Timer, MessageCircle, LogIn, Bot, BookA,
+  Map, Swords, Layers, Timer, MessageCircle, LogIn, BookA, Gamepad2,
 } from "lucide-react";
 import { Leon } from "../../shared/leon.jsx";
 import { docSoLieu } from "../../shared/soLieuCongKhai.js";
@@ -50,6 +50,9 @@ import { useSeo } from "../../shared/seo.js";
  * Nên cả hai câu bị gỡ, và KHÔNG thay bằng « AI chấm »: sản phẩm không làm
  * việc đó. Người đọc trang thấy chữ AI sẽ chờ một phản hồi tự động trong app,
  * và họ sẽ không nhận được.
+ *
+ * (06/11: nay đã có AI chấm thật, qua Edge Function cham-pe và nhan-xet-noi, nên trang viết
+ * « AI chấm bài viết, bài nói ». Trang làm lại cùng ngày: thanh trên còn ba mục, ảnh chụp lại.)
  *
  * Thứ thay vào là thứ có thật và đo được: chấm tự động phần khách quan ở Edge
  * Function `grade`, và thang chấm DELF sáu tiêu chí để học sinh tự đối chiếu
@@ -113,52 +116,40 @@ function HienDan({ children, className = "", tre = 0, as: Tag = "div" }) {
   );
 }
 
-/* Các phần có thật trong sản phẩm (đối chiếu với menu học sinh). */
+/* Các phần có thật trong sản phẩm (đối chiếu với menu học sinh). Viết lại 06/11: bỏ « do giáo viên
+   soạn », thêm lời nghe và phân tích (VIP), trò chơi. */
 const TINH_NANG = () => [
-  { Icon: Map, ten: tr("Lộ trình học tập", "Parcours", "Learning path"), mo: tr("16 chủ đề xã hội, học từ vựng qua từng màn có sao và thử thách.", "16 thèmes de société, vocabulaire en niveaux avec étoiles et défis.", "16 social topics, vocabulary in levels with stars and challenges."), mau: "from-sky-500 to-blue-600" },
-  { Icon: Timer, ten: tr("Thi thử DELF", "Examens blancs DELF", "DELF mock exams"), mo: tr("Đề A1 tới C1 đúng cấu trúc, đồng hồ và lượt nghe như phòng thi.", "Sujets A1 à C1 au bon format, chrono et écoutes comme le jour J.", "A1 to C1 exams in the real format, timed like exam day."), mau: "from-indigo-500 to-violet-600" },
-  { Icon: Layers, ten: "Flashcard", mo: tr("Bộ thẻ do giáo viên soạn, ôn theo lịch lặp lại ngắt quãng.", "Paquets créés par les enseignants, révision espacée.", "Teacher-made decks with spaced repetition."), mau: "from-fuchsia-500 to-purple-600" },
-  { Icon: Swords, ten: tr("Thách đấu", "Défis", "Duels"), mo: tr("Thách bạn bè 10 câu theo chủ đề từ vựng hoặc ngữ pháp.", "Défiez vos amis sur 10 questions de vocabulaire ou de grammaire.", "Challenge friends on 10 vocabulary or grammar questions."), mau: "from-rose-500 to-orange-500" },
-  { Icon: MessageCircle, ten: tr("Hỏi Leon", "Demande à Leon", "Ask Leon"), mo: tr("Trợ lý AI giải thích ngữ pháp, sửa câu tiếng Pháp ngay trong web.", "Assistant IA qui explique la grammaire et corrige vos phrases.", "AI assistant that explains grammar and fixes your sentences."), mau: "from-amber-400 to-orange-500" },
-  { Icon: Bot, ten: tr("AI chấm bài viết", "Correction IA de l'écrit", "AI writing feedback"), mo: tr("Phiếu nhận xét theo grille DELF: điểm từng tiêu chí, câu viết lại.", "Fiche selon la grille DELF : note par critère, phrases corrigées.", "A DELF-grid sheet: score per criterion and rewritten sentences."), mau: "from-emerald-500 to-teal-600" },
+  { Icon: Map, ten: tr("Lộ trình từ vựng", "Parcours de vocabulaire", "Vocabulary path"), mo: tr("Học từ vựng theo chủ đề qua từng màn, có sao và thử thách.", "Le vocabulaire par thèmes, niveau après niveau, avec étoiles et défis.", "Vocabulary by topic, level by level, with stars and challenges."), mau: "from-sky-500 to-blue-600" },
+  { Icon: Layers, ten: "Flashcard", mo: tr("Ôn thẻ theo lịch lặp lại ngắt quãng: thẻ sắp quên sẽ quay lại đúng lúc.", "Révision espacée : les cartes reviennent juste avant l'oubli.", "Spaced repetition: cards come back right before you forget them."), mau: "from-fuchsia-500 to-purple-600" },
+  { Icon: Headphones, ten: tr("Lời nghe và phân tích", "Transcription et analyse", "Transcripts and analysis"), mo: tr("Làm xong bài nghe, xem lại lời nghe, chủ đề và chỗ chứa đáp án (VIP).", "Après l'écoute : transcription, thème et passages des réponses (VIP).", "After listening: transcript, topic and where each answer is (VIP)."), mau: "from-emerald-500 to-teal-600" },
+  { Icon: MessageCircle, ten: tr("Hỏi Léon", "Demande à Léon", "Ask Léon"), mo: tr("Trợ lý AI giải thích ngữ pháp và sửa câu tiếng Pháp ngay trong web.", "Assistant IA qui explique la grammaire et corrige vos phrases.", "AI assistant that explains grammar and fixes your sentences."), mau: "from-amber-400 to-orange-500" },
+  { Icon: Swords, ten: tr("Thách đấu", "Défis", "Duels"), mo: tr("Thách bạn bè 10 câu từ vựng hoặc ngữ pháp, xem ai nhanh hơn.", "Défiez vos amis sur 10 questions de vocabulaire ou de grammaire.", "Challenge friends on 10 vocabulary or grammar questions."), mau: "from-rose-500 to-orange-500" },
+  { Icon: Gamepad2, ten: tr("Trò chơi", "Jeux", "Games"), mo: tr("Trò chơi ngắn để ôn từ, giống và chính tả mà không thấy chán.", "Des jeux courts pour réviser le vocabulaire, le genre et l'orthographe.", "Short games to review vocabulary, gender and spelling."), mau: "from-indigo-500 to-violet-600" },
 ];
 
-/* Nội dung chủ dự án chốt 25/09. Ba chỗ được chỉnh cho khớp sản phẩm thật
-   (quy tắc 1) — xem commit « Trang giới thiệu: nội dung mới ». */
-/* Hàm chứ không hằng: chữ phải đổi theo ngôn ngữ đang chọn (08/10). */
-/* Bốn thẻ « Vì sao chọn FRACILE » (viết lại 18/10: ngắn, đúng tính năng hiện có). */
-const LOI_THE = () => [
-  { Icon: Wand2, ten: tr("Chấm ngay, sửa lỗi ngay", "Corrigé tout de suite", "Graded instantly"),
-    mo: tr("Bài làm được chấm ngay khi nộp, kèm đáp án và lời giải. Bài Viết, bài Nói có AI gợi ý điểm theo thang DELF chính thức để bạn biết mình mất điểm ở đâu.",
-      "Vos réponses sont corrigées dès l'envoi, avec explications. Pour l'écrit et l'oral, l'IA propose une note selon la grille officielle du DELF.",
-      "Answers are graded on submission, with explanations. For writing and speaking, AI suggests a score on the official DELF grid.") },
-  { Icon: BookA, ten: tr("Ngữ pháp từ A0 đến C1, giải thích bằng tiếng Việt", "La grammaire de A0 à C1, expliquée en vietnamien", "Grammar from A0 to C1, explained in Vietnamese"),
-    mo: tr("Hơn 80 bài chia thành phần nhỏ, mỗi phần có giải thích dễ hiểu và bài luyện chấm ngay. Có bài kiểm tra xếp trình độ để biết nên bắt đầu từ đâu.",
-      "Plus de 80 leçons découpées en petites parties, chacune avec explications et exercices corrigés. Un test de niveau indique par où commencer.",
-      "Over 80 lessons split into small parts, each with clear explanations and instant practice. A placement test shows where to start.") },
-  { Icon: Timer, ten: tr("Thi thử như phòng thi thật", "Un examen blanc comme le vrai", "Mock exams like the real thing"),
-    mo: tr("Đề DELF A1 đến DALF C1 đủ bốn kỹ năng: đồng hồ đếm ngược, giới hạn lượt nghe, bốc thăm đề nói. Kết quả quy về thang điểm và ngưỡng đạt như kỳ thi chính thức.",
-      "Sujets du DELF A1 au DALF C1 avec les quatre épreuves : chronomètre, écoutes limitées, tirage au sort de l'oral. Note et seuils comme à l'examen.",
-      "DELF A1 to DALF C1 papers with all four skills: countdown, limited listening, drawn speaking topics. Scored with the official scale and pass marks.") },
-  { Icon: Swords, ten: tr("Học mà chơi, nhớ lâu", "Apprendre en jouant", "Learn by playing"),
-    mo: tr("Lộ trình vượt màn, Thách đấu bạn bè, Flashcard ôn đúng lúc sắp quên, chuỗi ngày học và ôn lại câu sai giúp bạn học đều mỗi ngày.",
-      "Parcours par niveaux, défis entre amis, flashcards au bon moment, séries de jours et révision des erreurs : de quoi apprendre un peu chaque jour.",
-      "Level-based path, duels with friends, spaced-repetition flashcards, study streaks and mistake review keep you learning every day.") },
+/* Ba bước học trên FRACILE (06/11): đúng thứ tự người học đi trong sản phẩm, nên đánh số. */
+const BUOC = () => [
+  { Icon: Map, ten: tr("Chọn trình độ, đi từng bước nhỏ", "Choisissez votre niveau, avancez pas à pas", "Pick your level, go step by step"),
+    mo: tr("Làm bài kiểm tra xếp trình độ hoặc tự chọn từ A1 đến C1. Mỗi kỹ năng chia thành kỹ năng nhỏ, xong bước này thì bước sau tự mở.", "Faites le test de niveau ou choisissez de A1 à C1. Chaque compétence est découpée en petites étapes qui s'ouvrent l'une après l'autre.", "Take the placement test or pick from A1 to C1. Each skill is split into small steps that unlock one after another.") },
+  { Icon: Wand2, ten: tr("Luyện đúng dạng đề, chấm ngay", "Entraînez-vous au format de l'examen", "Practise the exam format, graded instantly"),
+    mo: tr("Mỗi bài là một phần của đề DELF thật, chấm ngay khi nộp, có lời giải bằng tiếng Việt. Bài viết, bài nói có AI nhận xét theo thang điểm chính thức.", "Chaque exercice reprend une partie du vrai DELF, corrigé dès l'envoi, expliqué en vietnamien. L'écrit et l'oral sont évalués par l'IA selon la grille officielle.", "Each exercise mirrors a real DELF task, graded on submission and explained in Vietnamese. Writing and speaking get AI feedback on the official grid.") },
+  { Icon: Timer, ten: tr("Thi thử khi đã sẵn sàng", "Passez un examen blanc", "Sit a mock exam when ready"),
+    mo: tr("Đề DELF A1 đến DALF C1 đủ bốn kỹ năng: đồng hồ đếm ngược, giới hạn lượt nghe, điểm quy về thang và ngưỡng đạt như kỳ thi thật.", "Du DELF A1 au DALF C1, les quatre épreuves : chronomètre, écoutes limitées, note et seuils comme à l'examen.", "DELF A1 to DALF C1 with all four papers: countdown, limited listening, scored with the official scale and pass marks.") },
 ];
 
 
-export default function LandingPage({ imgSrc = "/images/hero-preview.png" }) {
+export default function LandingPage({ imgSrc = "/images/landing-luyen-tap.webp" }) {
   const [so, setSo] = useState(null);
   const [isContactFormOpen, setIsContactFormOpen] = useState(false);
   useSeo({
     tieuDe: "FRACILE: học tiếng Pháp và luyện thi DELF, DALF bằng tiếng Việt",
-    moTa: "Ngữ pháp tiếng Pháp A0 đến C1 giải thích bằng tiếng Việt, đề thi thử DELF A1 đến DALF C1 đủ bốn kỹ năng có chấm điểm, luyện nghe nói, flashcard và thách đấu.",
+    moTa: "Luyện tiếng Pháp theo trình độ A1 đến C1 với bài tập đúng khung đề DELF, chấm ngay, giải thích bằng tiếng Việt; AI nhận xét bài viết, bài nói; ngữ pháp A0 đến C1 và đề thi thử DELF A1 đến DALF C1.",
     duongDan: "/",
     /* Tên thương hiệu dễ bị Google sửa thành « fragile »: khai rõ tên, tên khác và
        trang web để máy tìm kiếm (và AI tìm kiếm) nối đúng thực thể. */
     jsonLd: { "@context": "https://schema.org", "@graph": [
       { "@type": "EducationalOrganization", "@id": "https://www.fracile.vn/#org", name: "FRACILE", alternateName: ["Fracile", "fracile.vn", "FRACILE tiếng Pháp"], url: "https://www.fracile.vn/", logo: "https://www.fracile.vn/logo.png", email: "leon@fracile.vn",
-        description: "Nền tảng học tiếng Pháp và luyện thi DELF, DALF bằng tiếng Việt: ngữ pháp A0 đến C1, đề thi thử DELF A1 đến DALF C1 có chấm điểm." },
+        description: "Nền tảng học tiếng Pháp và luyện thi DELF, DALF bằng tiếng Việt: luyện tập theo trình độ, ngữ pháp A0 đến C1, đề thi thử DELF A1 đến DALF C1 có chấm điểm." },
       { "@type": "WebSite", "@id": "https://www.fracile.vn/#web", name: "FRACILE", alternateName: "Fracile", url: "https://www.fracile.vn/", inLanguage: "vi", publisher: { "@id": "https://www.fracile.vn/#org" } },
     ] },
   });
@@ -170,28 +161,30 @@ export default function LandingPage({ imgSrc = "/images/hero-preview.png" }) {
   }, []);
 
   const KY_NANG_DELF = [
-    ["CO", Headphones, tr("Nghe hiểu", "Compréhension de l'oral", "Listening"), tr("Bài nghe kiểu phòng thi: thời gian đọc câu hỏi, hai lượt nghe, khoảng nghỉ.", "Écoutes comme à l'examen : lecture des questions, deux écoutes, pauses.", "Exam-style audio: reading time, two plays, pauses."), "from-sky-500 to-blue-600"],
-    ["CE", BookOpen, tr("Đọc hiểu", "Compréhension des écrits", "Reading"), tr("Văn bản thật, câu hỏi theo đúng dạng đề, đánh dấu chỗ chứa đáp án khi chữa.", "Textes authentiques, questions au format officiel, correction ancrée dans le texte.", "Authentic texts, official question types, answers anchored in the text."), "from-emerald-500 to-teal-600"],
-    ["PE", PenLine, tr("Viết", "Production écrite", "Writing"), tr("Chấm theo thang DELF từng trình độ, có nhận xét chi tiết từng tiêu chí.", "Évaluée selon la grille DELF de chaque niveau, critère par critère.", "Assessed on the DELF grid for each level, criterion by criterion."), "from-amber-500 to-orange-600"],
-    ["PO", Mic, tr("Nói", "Production orale", "Speaking"), tr("Ghi âm bài nói, nghe lại và nhận nhận xét của AI từ bản chép lời.", "Enregistrez-vous, réécoutez et recevez un avis de l'IA.", "Record yourself, listen back and get AI feedback."), "from-fuchsia-500 to-purple-600"],
+    ["CO", Headphones, tr("Nghe hiểu", "Compréhension de l'oral", "Listening"), tr("Thông báo, tin nhắn, radio, phỏng vấn: nghe theo đúng dạng đề, xem lại lời nghe sau khi làm.", "Annonces, messages, radio, interviews au format de l'examen, transcription après coup.", "Announcements, messages, radio and interviews in exam format, with transcripts afterwards."), "from-sky-500 to-blue-600"],
+    ["CE", BookOpen, tr("Đọc hiểu", "Compréhension des écrits", "Reading"), tr("Thư, quảng cáo, bài báo: trắc nghiệm, bảng tick, ghép tài liệu như trong đề.", "Lettres, annonces, articles : QCM, tableaux, appariements comme à l'examen.", "Letters, ads, articles: multiple choice, tick tables and matching as in the exam."), "from-emerald-500 to-teal-600"],
+    ["PE", PenLine, tr("Viết", "Production écrite", "Writing"), tr("AI chấm theo thang DELF từng trình độ, nhận xét từng tiêu chí, có bài mẫu để đối chiếu.", "L'IA évalue selon la grille DELF de chaque niveau, critère par critère, avec un modèle.", "AI marks on the DELF grid for each level, criterion by criterion, with a model answer."), "from-amber-500 to-orange-600"],
+    ["PO", Mic, tr("Nói", "Production orale", "Speaking"), tr("Ghi âm ngay trên trang, nghe lại và nhận xét của AI về nội dung và phát âm.", "Enregistrez-vous sur la page, réécoutez et recevez l'avis de l'IA.", "Record yourself on the page, listen back and get AI feedback."), "from-fuchsia-500 to-purple-600"],
+  ];
+
+  const NAV = [
+    ["#cach-hoc", tr("Cách học", "Méthode", "How it works")],
+    ["/ngu-phap", tr("Ngữ pháp", "Grammaire", "Grammar")],
+    ["/lich-thi-delf", tr("Lịch thi DELF", "Calendrier DELF", "DELF dates")],
   ];
 
   return (
     <div className="min-h-screen bg-bg">
-      {/* ── THANH TRÊN ── */}
+      {/* ── THANH TRÊN (06/11: gọn còn ba mục; thư viện, grille, FAQ xuống chân trang) ── */}
       <nav className="sticky top-0 z-40 border-0 border-b border-solid border-line/70 bg-bg/80 backdrop-blur-md">
-        <div className="mx-auto flex h-16 max-w-6xl items-center gap-6 px-5">
+        <div className="mx-auto flex h-16 max-w-6xl items-center gap-8 px-5">
           <Link to="/gioi-thieu" className="flex items-center gap-2 text-lg font-extrabold tracking-tight text-ink no-underline">
             <img src="/logo-fracile.webp" alt="" width={34} height={34} className="h-[34px] w-[34px] object-contain" />FRACILE<span className="text-primary">.</span>
           </Link>
-          <div className="hidden flex-1 items-center gap-6 text-sm font-semibold text-soft md:flex">
-            <a href="#tinh-nang" className="text-soft no-underline hover:text-ink">{tr("Tính năng", "Fonctionnalités", "Features")}</a>
-            <a href="#ky-nang" className="text-soft no-underline hover:text-ink">{tr("4 kỹ năng DELF", "Les 4 compétences", "The 4 skills")}</a>
-            <Link to="/decouvrir" className="text-soft no-underline hover:text-ink">{tr("Thư viện bài tập", "Bibliothèque", "Library")}</Link>
-            <Link to="/ngu-phap" className="text-soft no-underline hover:text-ink">{tr("Ngữ pháp", "Grammaire", "Grammar")}</Link>
-            <Link to="/lich-thi-delf" className="text-soft no-underline hover:text-ink">{tr("Lịch thi DELF", "Calendrier DELF", "DELF dates")}</Link>
-            <Link to="/grille-delf" className="text-soft no-underline hover:text-ink">Grille DELF</Link>
-            <Link to="/faq" className="text-soft no-underline hover:text-ink">FAQ</Link>
+          <div className="hidden flex-1 items-center gap-7 text-sm font-semibold md:flex">
+            {NAV.map(([to, ten]) => (to.startsWith("#")
+              ? <a key={to} href={to} className="text-soft no-underline transition-colors hover:text-ink">{ten}</a>
+              : <Link key={to} to={to} className="text-soft no-underline transition-colors hover:text-ink">{ten}</Link>))}
           </div>
           <div className="ml-auto flex items-center gap-2">
             <Link to="/login" className="hidden items-center gap-1.5 rounded-full px-4 py-2 text-sm font-bold text-ink no-underline hover:bg-surface2 sm:inline-flex"><LogIn size={15} />{tr("Đăng nhập", "Connexion", "Sign in")}</Link>
@@ -205,22 +198,22 @@ export default function LandingPage({ imgSrc = "/images/hero-preview.png" }) {
         <span aria-hidden className="pointer-events-none absolute -left-40 -top-40 h-[28rem] w-[28rem] rounded-full bg-primary/15 blur-3xl" />
         <span aria-hidden className="pointer-events-none absolute -right-32 top-20 h-[24rem] w-[24rem] rounded-full bg-indigo-400/15 blur-3xl" />
         <span aria-hidden className="pointer-events-none absolute inset-0 opacity-[0.35] [background-image:radial-gradient(rgb(var(--mcf-line-rgb))_1px,transparent_1px)] [background-size:22px_22px] [mask-image:linear-gradient(to_bottom,black,transparent)]" />
-        <div className="relative mx-auto grid max-w-6xl items-center gap-10 px-5 pb-10 pt-12 lg:grid-cols-2 lg:pt-16">
+        <div className="relative mx-auto grid max-w-6xl items-center gap-10 px-5 pb-10 pt-12 lg:grid-cols-[1fr_1.1fr] lg:pt-16">
           <div className="mcf-cau-vao">
-            <span className="inline-flex items-center gap-2 rounded-full border border-solid border-primary/25 bg-primary-soft px-3 py-1 text-xs font-extrabold uppercase tracking-[0.14em] text-primary">
-              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-primary" />{tr("Luyện thi DELF · A1 tới C1", "Préparation DELF · A1 à C1", "DELF prep · A1 to C1")}
+            <span className="inline-flex items-center gap-2 rounded-full border border-solid border-primary/25 bg-primary-soft px-3 py-1 text-xs font-extrabold text-primary">
+              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-primary" />{tr("Học tiếng Pháp và luyện thi DELF, DALF", "Français et préparation au DELF, DALF", "French and DELF, DALF prep")}
             </span>
-            <h1 className="m-0 mt-5 text-4xl font-extrabold leading-[1.08] tracking-tight text-ink sm:text-6xl" style={{ textWrap: "balance" }}>
-              {tr("Bứt phá điểm số DELF", "Boostez votre score au DELF", "Boost your DELF score")}{" "}
-              <span className="bg-gradient-to-r from-primary to-indigo-500 bg-clip-text text-transparent">{tr("với hệ thống luyện thi toàn diện", "avec une préparation complète", "with complete exam preparation")}</span>
+            <h1 className="m-0 mt-5 text-4xl font-extrabold leading-[1.08] tracking-tight text-ink sm:text-[3.4rem]" style={{ textWrap: "balance" }}>
+              {tr("Học tiếng Pháp mỗi ngày,", "Le français chaque jour,", "French every day,")}{" "}
+              <span className="bg-gradient-to-r from-primary to-indigo-500 bg-clip-text text-transparent">{tr("tự tin bước vào kỳ thi DELF", "le DELF en toute confiance", "the DELF with confidence")}</span>
             </h1>
             <p className="m-0 mt-5 max-w-xl text-base leading-relaxed text-soft sm:text-lg">
-              {tr("Không chỉ là một kho bài tập. FRACILE mang đến lộ trình thực hành sát với đề thi thật, chấm tự động và đối chiếu theo đúng thang chấm DELF chính thức. Giải pháp hoàn hảo giúp học viên tự tin thi đỗ, và giúp giáo viên tối ưu hóa chất lượng giảng dạy.", "Bien plus qu'une banque d'exercices : FRACILE propose un parcours proche du vrai examen, corrigé automatiquement selon la grille officielle du DELF. Pour réussir sereinement, et pour mieux enseigner.", "More than an exercise bank: FRACILE offers practice that mirrors the real exam, graded automatically against the official DELF grid. Pass with confidence, and teach better.")}
+              {tr("Bài luyện theo đúng khung đề DELF, DALF, giải thích bằng tiếng Việt và chấm ngay khi nộp. Bài viết, bài nói có AI nhận xét theo thang điểm chính thức.", "Des exercices au format du DELF et du DALF, expliqués en vietnamien et corrigés dès l'envoi. L'écrit et l'oral sont évalués par l'IA selon la grille officielle.", "Exercises in the DELF and DALF format, explained in Vietnamese and graded on submission. Writing and speaking get AI feedback on the official grid.")}
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link to="/decouvrir"
                 className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-primary to-indigo-600 px-7 py-3.5 text-sm font-extrabold text-white no-underline shadow-[0_14px_30px_rgba(37,99,235,0.35)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_40px_rgba(37,99,235,0.45)] motion-reduce:transition-none">
-                {tr("Trải nghiệm học thử ngay", "Essayer maintenant", "Try it now")} <ArrowRight size={16} />
+                {tr("Học thử miễn phí", "Essayer gratuitement", "Try it free")} <ArrowRight size={16} />
               </Link>
               <button type="button" onClick={() => setIsContactFormOpen(true)}
                 className="cursor-pointer rounded-2xl border border-solid border-line bg-surface px-7 py-3.5 font-sans text-sm font-bold text-ink transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/40 motion-reduce:transition-none">
@@ -228,7 +221,7 @@ export default function LandingPage({ imgSrc = "/images/hero-preview.png" }) {
               </button>
             </div>
             <ul className="m-0 mt-7 grid list-none gap-2 p-0 text-sm font-semibold text-ink sm:grid-cols-2">
-              {[tr("Chấm theo thang DELF chính thức", "Grille officielle du DELF", "Official DELF grid"), tr("Nghe kiểu phòng thi", "Écoutes comme à l'examen", "Exam-style listening"), tr("AI nhận xét bài viết, bài nói", "Avis IA sur l'écrit et l'oral", "AI feedback on writing and speaking"), tr("Ba ngôn ngữ: Việt, Pháp, Anh", "Trois langues : vietnamien, français, anglais", "Three languages: Vietnamese, French, English")].map((x) => (
+              {[tr("Luyện theo trình độ A1 đến C1", "Du niveau A1 au C1", "Levels A1 to C1"), tr("Bài tập đúng khung đề DELF", "Au format officiel du DELF", "Official DELF format"), tr("AI chấm bài viết, bài nói", "Écrit et oral évalués par l'IA", "AI-marked writing and speaking"), tr("Học thử không cần tài khoản", "Essai sans compte", "Try without an account")].map((x) => (
                 <li key={x} className="flex items-center gap-2"><CheckCircle2 size={17} className="shrink-0 text-ok" />{x}</li>
               ))}
             </ul>
@@ -237,15 +230,15 @@ export default function LandingPage({ imgSrc = "/images/hero-preview.png" }) {
         </div>
       </header>
 
-      {/* ── SỐ LIỆU — ĐẾM THẬT ── */}
+      {/* ── SỐ LIỆU: hai ô đầu ĐẾM THẬT ── */}
       <section className="px-5">
         <HienDan className="relative mx-auto max-w-6xl overflow-hidden rounded-[2rem] bg-gradient-to-br from-blue-700 via-primary to-indigo-600 p-6 shadow-[0_24px_60px_rgba(37,99,235,0.3)] sm:p-8">
           <span aria-hidden className="absolute -right-16 -top-16 h-56 w-56 rounded-full bg-white/10" />
           <div className="relative grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <OSoLieu so={so?.baiTap} nhan={tr("Chuyên đề trọng tâm", "Thèmes clés", "Key topics")} phu={tr("Được phân bổ khoa học, bám sát lộ trình từ cơ bản đến nâng cao.", "Organisés progressivement, du niveau débutant au niveau avancé.", "Organised step by step, from beginner to advanced.")} />
-            <OSoLieu so={so?.cauHoi} nhan={tr("Bài tập thực hành", "Exercices", "Practice exercises")} phu={tr("Đa dạng thể loại, phần lớn câu đi kèm lời giải thích cặn kẽ.", "Formats variés, la plupart avec une explication détaillée.", "Varied formats, most with a detailed explanation.")} />
-            <OSoLieu so="4" nhan={tr("Kỹ năng toàn diện", "Toutes les compétences", "All skills")} phu={tr("Rèn luyện đồng đều Nghe - Nói - Đọc - Viết để không có kỹ năng nào bị bỏ lại.", "Compréhension orale, écrite, production orale et écrite : aucune compétence oubliée.", "Listening, speaking, reading and writing: no skill left behind.")} />
-            <OSoLieu so="1" nhan={tr("Nền tảng duy nhất", "Une seule plateforme", "One platform")} phu={tr("Kết nối liền mạch giữa việc tự học của học sinh và công tác quản lý của giáo viên.", "Le travail des élèves et le suivi des enseignants au même endroit.", "Student self-study and teacher management in one place.")} />
+            <OSoLieu so={so?.baiTap} nhan={tr("Bài tập và đề thi", "Exercices et examens", "Exercises and exams")} phu={tr("Từ A1 đến C1, chia theo kỹ năng và trình độ.", "De A1 à C1, classés par compétence et niveau.", "From A1 to C1, by skill and level.")} />
+            <OSoLieu so={so?.cauHoi} nhan={tr("Câu hỏi", "Questions", "Questions")} phu={tr("Phần lớn có lời giải bằng tiếng Việt.", "La plupart avec une explication en vietnamien.", "Most come with a Vietnamese explanation.")} />
+            <OSoLieu so="4" nhan={tr("Kỹ năng DELF", "Compétences du DELF", "DELF skills")} phu={tr("Nghe, Đọc, Viết, Nói, luyện đều cả bốn.", "Écouter, lire, écrire, parler : les quatre.", "Listening, reading, writing, speaking: all four.")} />
+            <OSoLieu so="AI" nhan={tr("Chấm bài viết, bài nói", "Écrit et oral évalués", "Writing and speaking marked")} phu={tr("Theo thang điểm DELF chính thức, nhận xét từng tiêu chí.", "Selon la grille officielle du DELF, critère par critère.", "On the official DELF grid, criterion by criterion.")} />
           </div>
           <p className="relative m-0 mt-4 text-center text-xs text-white/70">
             {tr("Số liệu đọc trực tiếp từ hệ thống, không phải con số quảng cáo.", "Chiffres lus en direct dans le système, pas des chiffres marketing.", "Figures read live from the system, not marketing numbers.")}
@@ -254,33 +247,45 @@ export default function LandingPage({ imgSrc = "/images/hero-preview.png" }) {
       </section>
 
       <div className="mx-auto max-w-6xl px-5">
-        {/* ── LỢI THẾ ── */}
-        <section className="mt-24">
+        {/* ── CÁCH HỌC: ba bước có thứ tự thật ── */}
+        <section id="cach-hoc" className="mt-24 scroll-mt-24">
           <HienDan>
-            <p className="m-0 text-xs font-extrabold uppercase tracking-[0.18em] text-primary">{tr("Vì sao chọn FRACILE", "Pourquoi FRACILE", "Why FRACILE")}</p>
+            <p className="m-0 text-sm font-extrabold text-primary">{tr("Cách học trên FRACILE", "La méthode FRACILE", "How FRACILE works")}</p>
             <h2 className="m-0 mt-2 max-w-2xl text-3xl font-extrabold tracking-tight text-ink sm:text-4xl" style={{ textWrap: "balance" }}>
-              {tr("Bốn thứ khó tìm ở chỗ khác", "Quatre atouts difficiles à trouver ailleurs", "Four things that are hard to find elsewhere")}
+              {tr("Từ bài đầu tiên tới ngày thi, đi theo ba bước", "Du premier exercice au jour de l'examen, en trois étapes", "From your first exercise to exam day, in three steps")}
             </h2>
           </HienDan>
-          <div className="mt-8 grid gap-4 sm:grid-cols-2">
-            {LOI_THE().map(({ Icon, ten, mo }, i) => (
-              <HienDan key={ten} tre={i * 90}
-                className="group relative overflow-hidden rounded-3xl border border-solid border-line bg-surface p-7 hover:-translate-y-1 hover:shadow-[0_20px_50px_rgba(0,0,0,0.08)]">
-                <span aria-hidden className="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-primary/5 transition-transform duration-500 group-hover:scale-150" />
-                <div className="relative grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br from-primary to-indigo-600 text-white shadow-md">
-                  <Icon size={22} />
+          <ol className="m-0 mt-8 grid list-none gap-4 p-0 lg:grid-cols-3">
+            {BUOC().map(({ Icon, ten, mo }, i) => (
+              <HienDan as="li" key={ten} tre={i * 90}
+                className="relative overflow-hidden rounded-3xl border border-solid border-line bg-surface p-7">
+                <span aria-hidden className="pointer-events-none absolute -right-2 -top-6 text-[7rem] font-extrabold leading-none text-primary/[0.07]">{i + 1}</span>
+                <div className="relative flex items-center gap-3">
+                  <span className="grid h-11 w-11 place-items-center rounded-2xl bg-gradient-to-br from-primary to-indigo-600 text-white shadow-md"><Icon size={20} /></span>
+                  <span className="text-sm font-extrabold text-primary">{tr(`Bước ${i + 1}`, `Étape ${i + 1}`, `Step ${i + 1}`)}</span>
                 </div>
                 <h3 className="relative m-0 mt-5 text-lg font-extrabold text-ink">{ten}</h3>
                 <p className="relative m-0 mt-2 text-sm leading-relaxed text-soft">{mo}</p>
               </HienDan>
             ))}
-          </div>
+          </ol>
+        </section>
+
+        {/* ── NGỮ PHÁP: ảnh màn hình thật ── */}
+        <section className="mt-24 grid items-center gap-10 lg:grid-cols-[0.9fr_1.1fr]">
+          <HienDan>
+            <span className="grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 text-white shadow-md"><BookA size={22} /></span>
+            <h2 className="m-0 mt-5 text-3xl font-extrabold tracking-tight text-ink sm:text-4xl" style={{ textWrap: "balance" }}>{tr("Ngữ pháp A0 đến C1, giải thích bằng tiếng Việt", "La grammaire de A0 à C1, expliquée en vietnamien", "Grammar from A0 to C1, explained in Vietnamese")}</h2>
+            <p className="m-0 mt-4 max-w-lg text-base leading-relaxed text-soft">{tr("Hơn 80 bài chia thành phần nhỏ. Mỗi phần có giải thích rõ ràng, bảng, ví dụ có âm thanh và bài luyện chấm ngay.", "Plus de 80 leçons en petites parties, chacune avec explications, tableaux, exemples audio et exercices corrigés.", "Over 80 lessons in small parts, each with explanations, tables, audio examples and instantly graded practice.")}</p>
+            <Link to="/ngu-phap" className="mt-6 inline-flex items-center gap-2 text-sm font-extrabold text-primary no-underline hover:underline">{tr("Xem các bài ngữ pháp", "Voir la grammaire", "Browse the grammar")} <ArrowRight size={15} /></Link>
+          </HienDan>
+          <HienDan tre={120}><KhungTrinhDuyet src="/images/landing-ngu-phap.webp" alt={tr("Bài ngữ pháp Être và avoir trên FRACILE", "Leçon Être et avoir sur FRACILE", "The Être and avoir lesson on FRACILE")} /></HienDan>
         </section>
 
         {/* ── BỐN KỸ NĂNG ── */}
         <section id="ky-nang" className="mt-24 scroll-mt-24">
           <HienDan className="text-center">
-            <p className="m-0 text-xs font-extrabold uppercase tracking-[0.18em] text-primary">DELF</p>
+            <p className="m-0 text-sm font-extrabold text-primary">DELF, DALF</p>
             <h2 className="m-0 mt-2 text-3xl font-extrabold tracking-tight text-ink sm:text-4xl">{tr("Đủ bốn kỹ năng của kỳ thi", "Les quatre compétences de l'examen", "All four exam skills")}</h2>
           </HienDan>
           <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -301,7 +306,7 @@ export default function LandingPage({ imgSrc = "/images/hero-preview.png" }) {
         <section id="tinh-nang" className="mt-24 scroll-mt-24">
           <div className="grid items-end gap-6 lg:grid-cols-[1fr_auto]">
             <HienDan>
-              <p className="m-0 text-xs font-extrabold uppercase tracking-[0.18em] text-primary">{tr("Bên trong FRACILE", "Dans FRACILE", "Inside FRACILE")}</p>
+              <p className="m-0 text-sm font-extrabold text-primary">{tr("Ngoài giờ luyện đề", "En dehors des sujets", "Beyond exam practice")}</p>
               <h2 className="m-0 mt-2 max-w-2xl text-3xl font-extrabold tracking-tight text-ink sm:text-4xl" style={{ textWrap: "balance" }}>{tr("Học đều mỗi ngày mà không thấy chán", "Apprendre chaque jour sans s'ennuyer", "Study every day without getting bored")}</h2>
             </HienDan>
             <HienDan tre={150} className="hidden lg:block"><Leon cam="hoc" size={120} className="mcf-leon-bay" /></HienDan>
@@ -344,17 +349,17 @@ export default function LandingPage({ imgSrc = "/images/hero-preview.png" }) {
         <div className="mx-auto grid max-w-6xl gap-8 md:grid-cols-[1.4fr_1fr_1fr]">
           <div>
             <span className="flex items-center gap-2 text-xl font-extrabold"><img src="/logo-fracile.webp" alt="" width={36} height={36} className="h-9 w-9 object-contain" />FRACILE</span>
-            <p className="m-0 mt-3 max-w-sm text-sm leading-relaxed text-blue-100">{tr("Nền tảng luyện thi DELF cho học sinh và giáo viên Việt Nam.", "La plateforme de préparation au DELF pour les élèves et enseignants au Vietnam.", "The DELF prep platform for students and teachers in Vietnam.")}</p>
+            <p className="m-0 mt-3 max-w-sm text-sm leading-relaxed text-blue-100">{tr("Học tiếng Pháp và luyện thi DELF, DALF bằng tiếng Việt.", "Apprendre le français et préparer le DELF, le DALF, en vietnamien.", "Learn French and prepare for the DELF and DALF, in Vietnamese.")}</p>
           </div>
           <div className="grid content-start gap-2 text-sm">
-            <p className="m-0 text-xs font-extrabold uppercase tracking-wider text-blue-200">{tr("Sản phẩm", "Produit", "Product")}</p>
-            {[["/decouvrir", tr("Thư viện bài tập", "Bibliothèque d'exercices", "Exercise library")], ["/login", tr("Đăng nhập", "Connexion", "Sign in")]].map(([to, ten]) => (
+            <p className="m-0 text-xs font-extrabold uppercase tracking-wider text-blue-200">{tr("Học", "Apprendre", "Learn")}</p>
+            {[["/decouvrir", tr("Thư viện bài tập", "Bibliothèque d'exercices", "Exercise library")], ["/ngu-phap", tr("Ngữ pháp tiếng Pháp", "Grammaire française", "French grammar")], ["/lich-thi-delf", tr("Lịch thi DELF, DALF", "Calendrier DELF, DALF", "DELF, DALF dates")], ["/grille-delf", tr("Grille DELF giải thích", "Grilles DELF expliquées", "DELF grids explained")]].map(([to, ten]) => (
               <Link key={to} to={to} className="text-white no-underline transition-colors hover:text-blue-100">{ten}</Link>
             ))}
           </div>
           <div className="grid content-start gap-2 text-sm">
             <p className="m-0 text-xs font-extrabold uppercase tracking-wider text-blue-200">{tr("Hỗ trợ", "Aide", "Support")}</p>
-            {[["/ngu-phap", tr("Ngữ pháp tiếng Pháp miễn phí", "Grammaire française gratuite", "Free French grammar")], ["/lich-thi-delf", tr("Lịch thi DELF, DALF", "Calendrier DELF, DALF", "DELF, DALF dates")], ["/grille-delf", tr("Grille DELF giải thích", "Grilles DELF expliquées", "DELF grids explained")], ["/faq", tr("Câu hỏi thường gặp", "Questions fréquentes", "FAQ")], ["/dieu-khoan", tr("Điều khoản sử dụng", "Conditions d'utilisation", "Terms of use")], ["/bao-mat", tr("Chính sách bảo mật", "Politique de confidentialité", "Privacy policy")]].map(([to, ten]) => (
+            {[["/faq", tr("Câu hỏi thường gặp", "Questions fréquentes", "FAQ")], ["/login", tr("Đăng nhập", "Connexion", "Sign in")], ["/dieu-khoan", tr("Điều khoản sử dụng", "Conditions d'utilisation", "Terms of use")], ["/bao-mat", tr("Chính sách bảo mật", "Politique de confidentialité", "Privacy policy")]].map(([to, ten]) => (
               <Link key={to} to={to} className="text-white no-underline transition-colors hover:text-blue-100">{ten}</Link>
             ))}
           </div>
@@ -367,15 +372,19 @@ export default function LandingPage({ imgSrc = "/images/hero-preview.png" }) {
   );
 }
 
-/* Ảnh màn hình sản phẩm, đặt ở public/images/hero-preview.png. File chưa có
-   (hoặc hỏng) thì KHÔNG hiện gì — một biểu tượng ảnh vỡ, hay một dòng nhắn
-   cho người làm web, đều không nên lọt tới khách. */
-function AnhHero({ src }) {
+/* Ảnh màn hình sản phẩm trong khung trình duyệt (06/11, chụp lại từ bản đang chạy).
+   File chưa có (hoặc hỏng) thì KHÔNG hiện gì: một biểu tượng ảnh vỡ không nên lọt tới khách. */
+function KhungTrinhDuyet({ src, alt }) {
   const [hong, setHong] = useState(false);
   if (hong) return null;
   return (
-    <img src={src} alt={tr("Màn hình luyện thi DELF của FRACILE", "Écran d'entraînement DELF de FRACILE", "FRACILE DELF practice screen")} onError={() => setHong(true)}
-      className="w-full rounded-2xl border border-solid border-line object-cover shadow-2xl transition-transform duration-300 hover:scale-[1.01] motion-reduce:transition-none" />
+    <div className="overflow-hidden rounded-2xl border border-solid border-line bg-surface shadow-[0_30px_70px_rgba(15,23,42,0.18)]">
+      <div className="flex items-center gap-1.5 border-0 border-b border-solid border-line bg-surface2 px-4 py-2.5">
+        <span className="h-2.5 w-2.5 rounded-full bg-danger/60" /><span className="h-2.5 w-2.5 rounded-full bg-warn/60" /><span className="h-2.5 w-2.5 rounded-full bg-ok/60" />
+        <span className="ml-3 truncate rounded-full bg-surface px-3 py-0.5 text-[11px] font-semibold text-soft">fracile.vn</span>
+      </div>
+      <img src={src} alt={alt} onError={() => setHong(true)} loading="lazy" className="block w-full" />
+    </div>
   );
 }
 
@@ -384,15 +393,15 @@ function AnhHero({ src }) {
 function LeonMoi({ src }) {
   return (
     <div className="relative pb-24 sm:pb-16 lg:pb-20">
-      <AnhHero src={src} />
+      <KhungTrinhDuyet src={src} alt={tr("Màn Luyện tập theo trình độ của FRACILE", "L'écran d'entraînement par niveau de FRACILE", "FRACILE's level-based practice screen")} />
       <div className="pointer-events-none absolute -bottom-6 right-0 flex items-end 2xl:-right-12">
         <Link to="/decouvrir"
           className="mcf-leon-vao-bong group pointer-events-auto relative z-10 mb-44 -mr-6 max-w-[13rem] rounded-3xl rounded-br-md bg-surface px-4 py-3 text-ink no-underline shadow-[0_18px_40px_rgb(0,0,0,0.15)] sm:mb-52">
           <span className="block text-base font-extrabold"><em>Bonjour !</em> 🐾</span>
-          <span className="mt-0.5 block text-[13px] leading-snug text-soft">{tr("Mình là Leon. Vào học thử cùng mình nhé!", "Moi, c'est Leon. Viens essayer avec moi !", "I'm Leon. Come and try it with me!")}</span>
+          <span className="mt-0.5 block text-[13px] leading-snug text-soft">{tr("Mình là Léon. Vào học thử cùng mình nhé!", "Moi, c'est Léon. Viens essayer avec moi !", "I'm Léon. Come and try it with me!")}</span>
           <span className="mt-1.5 inline-flex items-center gap-1 text-sm font-bold text-primary">{tr("Vào thôi", "C'est parti", "Let's go")} <ArrowRight size={14} className="transition-transform group-hover:translate-x-1" /></span>
         </Link>
-        <img src="/leon/leon-lon.webp" alt={tr("Leon, linh vật của FRACILE, đang chào bạn", "Leon, la mascotte de FRACILE, vous accueille", "Leon, FRACILE's mascot, welcomes you")}
+        <img src="/leon/leon-lon.webp" alt={tr("Léon, linh vật của FRACILE, đang chào bạn", "Léon, la mascotte de FRACILE, vous accueille", "Léon, FRACILE's mascot, welcomes you")}
           width={260} height={300} className="mcf-leon-bay h-[230px] w-auto object-contain drop-shadow-[0_16px_24px_rgb(0,0,0,0.18)] sm:h-[300px]" />
       </div>
     </div>
