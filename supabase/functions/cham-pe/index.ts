@@ -45,7 +45,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.112.4";
 import { CORS, json } from "../_shared/cors.ts";
 import { tranVip } from "../_shared/tranVip.ts";
 // @ts-ignore — JS thuần, cố ý không có khai báo kiểu
-import { kiemGoiY, kiemNhanXetLuyen, bocJSON } from "../_shared/goiYPE.js";
+import { kiemGoiY, kiemChamLuyen, bocJSON } from "../_shared/goiYPE.js";
 // @ts-ignore — JS thuần, dùng chung với trình duyệt
 import { chuThuan, kiemTraCoDinh } from "../_shared/loiViet.js";
 
@@ -121,15 +121,16 @@ Deno.serve(async (req) => {
   let than: any = null;
   try { than = await req.json(); } catch { /* để rơi xuống câu kiểm dưới */ }
   const answerId = than?.answerId;
-  const rubric = than?.rubric;
+  let rubric = than?.rubric;
   /* chinhThuc (08/10, theo chủ dự án): AI chấm LÀ điểm phần viết của bài thi
      thử — ghi thẳng answers.score/feedback. Chỉ cho câu CHƯA có điểm, nên mỗi
      bài tốn đúng một lượt gọi; vì vậy chế độ này không trừ vào hạn mức gợi ý. */
   const chinhThuc = than?.chinhThuc === true;
-  /* luyenTap (06/11): nhận xét câu viết tự do ở màn Luyện tập. Không thang DELF, không điểm;
-     tìm câu trả lời theo attemptId + questionId (màn luyện tập không cầm id câu trả lời). */
+  /* luyenTap (06/11): chấm câu viết tự do ở màn Luyện tập, CÓ điểm theo thang DELF của trình độ
+     bài (bản 2 cùng ngày, theo chủ dự án). Tìm câu trả lời theo attemptId + questionId (màn luyện
+     tập không cầm id câu trả lời). Không ghi answers.score: điểm nằm trong pe_ai_goi_y. */
   const luyenTap = than?.luyenTap === true && !chinhThuc;
-  if (luyenTap ? !(than?.attemptId && than?.questionId) : (!answerId || !rubric?.criteria?.length)) {
+  if ((luyenTap ? !(than?.attemptId && than?.questionId) : !answerId) || !rubric?.criteria?.length) {
     return json(400, { ok: false, ma: "THIEU_THAM_SO" });
   }
 
@@ -161,7 +162,7 @@ Deno.serve(async (req) => {
      RLS, nên không có hàng rào nào khác ở đây ngoài chính câu lệnh này. */
   let truyVan = admin
     .from("answers")
-    .select("id, raw, score, attempt_id, question_id, attempts!inner(user_id, finished_at), questions!inner(type, prompt, exercises(level, meta, consigne))")
+    .select("id, raw, score, attempt_id, question_id, attempts!inner(user_id, finished_at), questions!inner(type, prompt, exercises(level, title, meta, consigne))")
     .eq("attempts.user_id", userId);
   truyVan = luyenTap
     ? truyVan.eq("attempt_id", String(than.attemptId)).eq("question_id", String(than.questionId))
@@ -181,8 +182,18 @@ Deno.serve(async (req) => {
   if (chinhThuc && (ans as any).score != null) return json(409, { ok: false, ma: "DA_CO_DIEM" });
   if (luyenTap && (ans as any).questions?.exercises?.meta?.ghiAm) return json(400, { ok: false, ma: "KHONG_PHAI_TU_LUAN" });
   const idCauTraLoi = (ans as any).id;
+  /* Trình độ của bài LẤY TỪ DATABASE, không tin client: thang client gửi phải cùng trình độ, không
+     thì AI chấm bài A2 bằng thang B1. Bài luyện tập không có phiếu điền nên bỏ tiêu chí « fiche »
+     (A1) thay vì để AI chấm một thứ học sinh không được làm. */
+  const capBai = String((ans as any).questions?.exercises?.level ?? "").slice(0, 2).toUpperCase();
+  if (luyenTap) {
+    if (capBai && String(rubric.level ?? "").slice(0, 2).toUpperCase() !== capBai) {
+      return json(400, { ok: false, ma: "SAI_TRINH_DO", cap_bai: capBai });
+    }
+    rubric = { ...rubric, criteria: rubric.criteria.filter((c: any) => c.id !== "fiche") };
+  }
 
-  const tongToiDa = luyenTap ? 0 : rubric.criteria.reduce((n: number, c: any) => n + (Number(c.max_score) || 0), 0);
+  const tongToiDa = rubric.criteria.reduce((n: number, c: any) => n + (Number(c.max_score) || 0), 0);
   /* Phiếu điền (formulaire, A1) cùng lượt làm bài: gộp vào bài để AI chấm cả
      tiêu chí « điền phiếu », rồi ghi phiếu 0/0 điểm (đã tính trong bài viết). */
   let phieu: any[] = [];
@@ -235,7 +246,7 @@ Deno.serve(async (req) => {
      các MỐC ĐIỂM (barème) đúng trình độ — AI phải xếp bài vào một mốc rồi mới
      cho điểm, thay vì đoán một con số. Thang lấy thẳng từ rubric đang hiện cho
      học sinh, nên điểm AI và thang trên màn hình nói cùng một chuyện. */
-  const capDo = String((luyenTap ? (ans as any).questions?.exercises?.level : rubric.level) ?? "B1").slice(0, 2).toUpperCase();
+  const capDo = String((capBai || rubric.level) ?? "B1").slice(0, 2).toUpperCase();
   const KY_VONG: Record<string, string> = {
     A1: "A1 : phrases simples et isolées, vocabulaire élémentaire du quotidien, informations personnelles. Ne pas exiger de connecteurs complexes ; valoriser la communication réussie.",
     A2: "A2 : phrases simples reliées par et, mais, parce que ; décrire, raconter un événement au passé composé, inviter, remercier, s'excuser.",
@@ -243,7 +254,7 @@ Deno.serve(async (req) => {
     B2: "B2 : argumentation structurée et nuancée (introduction, arguments illustrés, conclusion), registre adapté, phrases complexes, vocabulaire précis.",
     C1: "C1 : texte clair, bien structuré, argumentation développée, registre soutenu maîtrisé, grande précision lexicale et syntaxique.",
   };
-  const bangTieuChi = luyenTap ? "" : rubric.criteria.map((c: any) => {
+  const bangTieuChi = rubric.criteria.map((c: any) => {
     const moc = Array.isArray(c.bareme) && c.bareme.length
       ? "\n  Barème : " + c.bareme.map((b: any) => `${b[0]} = ${String(b[1]).slice(0, 120)}`).join(" | ")
       : "";
@@ -269,28 +280,10 @@ Deno.serve(async (req) => {
     dongKiemTra,
   ];
   const JSON_LOI = '  "loi": [ { "trich": "...", "sua": "...", "loai": "...", "giai_thich": "..." } ], "yeu_cau": [ { "y": "...", "dat": "co", "ghi_chu": "..." } ]';
-  const heThongLuyen = [
-    `Tu es professeur de FLE et correcteur DELF. Tu commentes un exercice d'ENTRAÎNEMENT à l'écrit, niveau ${capDo}. Ce n'est pas une épreuve complète : PAS de note, PAS de grille.`,
-    KY_VONG[capDo] ?? "",
-    "Juge la copie par rapport aux attentes du niveau, ni plus ni moins exigeant. Ne jamais inventer d'erreur.",
-    "",
-    "RÉDACTION (en VIETNAMIEN, ton bienveillant et précis de professeur, « bạn ») :",
-    "- tong_quat : 2 à 3 phrases d'appréciation globale.",
-    "- nhan_dinh_trinh_do : une phrase situant la copie par rapport au niveau.",
-    "- diem_manh : 1 à 3 points forts concrets.",
-    "- uu_tien : les 3 actions prioritaires pour progresser, en verbes d'action.",
-    "- cau_mau : jusqu'à 3 phrases de la copie réécrites correctement (goc = original exact, sua = version corrigée, vi_sao = raison en vietnamien).",
-    "- loi_leon : 1 à 2 phrases chaleureuses en VIETNAMIEN, signées par Leon (la mascotte bouledogue de FRACILE), qui citent un vrai point fort. Aucun chiffre.",
-    ...CHI_DAN_LOI,
-    "",
-    "Réponds UNIQUEMENT avec ce JSON :",
-    '{ "tong_quat": "...", "nhan_dinh_trinh_do": "...", "diem_manh": ["..."], "uu_tien": ["...", "...", "..."], "loi_leon": "...",',
-    '  "cau_mau": [ { "goc": "...", "sua": "...", "vi_sao": "..." } ],',
-    JSON_LOI + " }",
-  ].join("\n");
-
   const heThongThi = [
-    `Tu es examinateur-correcteur habilité DELF/DALF. Tu corriges l'épreuve de production écrite du niveau ${capDo}, avec la grille officielle ci-dessous.`,
+    luyenTap
+      ? `Tu es examinateur-correcteur habilité DELF/DALF et professeur de FLE. Tu corriges un exercice d'ENTRAÎNEMENT à la production écrite du niveau ${capDo} : tu notes la copie avec la grille DELF ${capDo} ci-dessous, puis tu montres à l'élève comment gagner des points.`
+      : `Tu es examinateur-correcteur habilité DELF/DALF. Tu corriges l'épreuve de production écrite du niveau ${capDo}, avec la grille officielle ci-dessous.`,
     KY_VONG[capDo] ?? "",
     "",
     "GRILLE (ne rien ajouter, ne rien retirer) :",
@@ -301,6 +294,9 @@ Deno.serve(async (req) => {
     "2. Juge la copie par rapport aux attentes du niveau ${capDo}, ni plus ni moins exigeant.",
     "3. Ne jamais inventer d'erreur. Si un critère est réussi, dis-le.",
     "4. Si la consigne n'est pas respectée (hors sujet, nombre de mots insuffisant), applique-le au critère concerné.",
+    ...(luyenTap ? [
+      "5. Lis d'abord la consigne de CET exercice (ĐỀ BÀI) : c'est elle qui fixe la tâche, les éléments à traiter et le nombre de mots. Un critère de la grille qui parle d'un élément que cette consigne ne demande pas se juge sur ce que la consigne demande vraiment ; ne pénalise pas l'absence d'un élément non demandé.",
+    ] : []),
     "",
     "RÉDACTION DES COMMENTAIRES (en VIETNAMIEN, ton professionnel d'examinateur, vouvoiement « bạn ») :",
     "- diem_manh : ce qui est réussi pour ce critère, concret.",
@@ -312,18 +308,24 @@ Deno.serve(async (req) => {
     "- uu_tien : les 3 actions prioritaires pour gagner des points, formulées en verbes d'action.",
     "- loi_leon : 1 à 2 phrases chaleureuses en VIETNAMIEN, signées par Leon (la mascotte bouledogue de FRACILE), qui encouragent l'élève en citant un vrai point fort ; tu peux glisser une expression française simple (Allez, courage !, C'est super !). Hors de la notation, aucun chiffre.",
     "- cau_mau : jusqu'à 3 phrases de la copie réécrites correctement (goc = original exact, sua = version corrigée en français, vi_sao = raison en vietnamien).",
+    ...(luyenTap ? [
+      "- tang_diem : 1 à 3 actions concrètes pour GAGNER DES POINTS sur CETTE copie, les plus rentables d'abord. Chaque action : tieu_chi = l'id d'un critère de la grille où l'élève n'a pas la note maximale ; viec = quoi faire, en VIETNAMIEN, précis et appuyé sur la copie (ex. « Thêm một đoạn kể ngày chủ nhật: bạn đã làm gì, với ai ») ; them = les points que cette action peut rapporter sur ce critère (au pas de 0,5, sans dépasser le maximum).",
+      "- bai_sua : LA COPIE DE L'ÉLÈVE réécrite en français, corrigée et améliorée pour mériter une très bonne note au niveau ${capDo} : garde ses idées, son plan et sa voix, corrige toutes les erreurs, complète ce que la consigne demande et qui manque, sans dépasser le niveau ${capDo} ni le nombre de mots demandé. Ce n'est pas un modèle générique : c'est SA copie, en mieux.",
+    ] : []),
     ...CHI_DAN_LOI,
     "",
     "Réponds UNIQUEMENT avec ce JSON :",
     '{ "tieu_chi": { "<id>": { "diem": <nombre>, "nhan_xet": "...", "diem_manh": "...", "can_cai_thien": "...", "trich_dan": "..." } },',
     '  "tong_quat": "...", "nhan_dinh_trinh_do": "...", "loi_leon": "...", "uu_tien": ["...", "...", "..."],',
     '  "cau_mau": [ { "goc": "...", "sua": "...", "vi_sao": "..." } ],',
+    ...(luyenTap ? ['  "tang_diem": [ { "tieu_chi": "<id>", "viec": "...", "them": <nombre> } ], "bai_sua": "...",'] : []),
     JSON_LOI + " }",
   ].join("\n").replaceAll("${capDo}", capDo);
 
-  const heThong = luyenTap ? heThongLuyen : heThongThi;
+  const heThong = heThongThi;
   const deBai = chuThuan(deBaiTho).slice(0, 2000);
   const nguoiDung = [
+    ...(luyenTap ? [`TRÌNH ĐỘ: ${capDo}`, `BÀI TẬP: ${String((ans as any).questions?.exercises?.title ?? "").slice(0, 200)}`, ""] : []),
     "ĐỀ BÀI:", deBai || "(không còn trong hệ thống)",
     "", "BÀI LÀM CỦA HỌC SINH:", copie,
   ].join("\n");
@@ -358,7 +360,7 @@ Deno.serve(async (req) => {
         },
         body: JSON.stringify({
           model,
-          max_tokens: 2000,
+          max_tokens: luyenTap ? 4000 : 2000,   // luyện tập còn viết lại cả bài (bai_sua)
           system: heThong,
           messages: [{ role: "user", content: nguoiDung }],
         }),
@@ -387,7 +389,7 @@ Deno.serve(async (req) => {
   /* ── Kiểm khuôn TRƯỚC khi ghi ──
      Bước 4 trong phác thảo cũ ở gradingEngine.js, và là bước duy nhất có thể
      hỏng mà không ai thấy. Xem _shared/goiYPE.js. */
-  const kq: any = luyenTap ? { ...kiemNhanXetLuyen(tho, baiViet), bo: [] } : kiemGoiY(tho, rubric, baiViet);
+  const kq: any = luyenTap ? kiemChamLuyen(tho, rubric, baiViet) : kiemGoiY(tho, rubric, baiViet);
   if (!kq.ok) {
     return json(502, { ok: false, ma: "AI_TRA_VE_SAI_KHUON", ly_do: kq.ly_do });
   }

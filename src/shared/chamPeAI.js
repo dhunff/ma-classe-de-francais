@@ -32,6 +32,7 @@ const CAU = {
   KHONG_PHAI_TU_LUAN: "Chỉ bài tự luận mới xin gợi ý được.",
   CHUA_NOP: "Bài chưa nộp nên chưa xin gợi ý được.",
   BAI_QUA_NGAN: "Bài quá ngắn để chấm.",
+  SAI_TRINH_DO: "Thang chấm không khớp trình độ của bài. Tải lại trang (Ctrl+F5) rồi thử lại.",
   AI_TRA_VE_KHONG_PHAI_JSON:
     "Máy chấm trả về dữ liệu không đọc được. Thử lại một lần nữa.",
   AI_TRA_VE_SAI_KHUON:
@@ -93,18 +94,20 @@ export async function xinGoiYAI(answerId, rubric) {
 
 /* Nhận xét câu viết tự do ở màn Luyện tập (06/11): không điểm, có lỗi tô trong bài và đối chiếu
    yêu cầu của đề. Máy chủ tìm câu trả lời theo lượt làm + câu hỏi, đọc bài từ database. */
-export async function xinNhanXetLuyen(attemptId, questionId) {
-  if (!attemptId || !questionId) return { ok: false, ma: "THIEU_THAM_SO", thongBao: "Bài này chưa được lưu nên chưa nhận xét được." };
-  const { data, error } = await supabase.functions.invoke("cham-pe", { body: { luyenTap: true, attemptId, questionId } });
+/* Bản 2 (06/11): CÓ điểm. `rubric` là thang DELF của trình độ bài (grilleToRubric); máy chủ kiểm
+   thang cùng trình độ với bài trong database rồi mới chấm. */
+export async function xinNhanXetLuyen(attemptId, questionId, rubric) {
+  if (!attemptId || !questionId) return { ok: false, ma: "THIEU_THAM_SO", thongBao: "Bài này chưa được lưu nên chưa chấm được." };
+  const { data, error } = await supabase.functions.invoke("cham-pe", { body: { luyenTap: true, attemptId, questionId, rubric } });
   if (error) {
     let than = null;
     try { than = await error.context?.json?.(); } catch { /* không đọc được thì thôi */ }
     const ma = than?.ma ?? "KHONG_RO";
     if (ma === "HET_LUOT") baoHetLuot({ loai: "pe", hanMuc: than?.han_muc, cuaSoGio: than?.cua_so_gio });
     return { ok: false, ma, thongBao: ma === "HET_LUOT_VIP" ? loiTranVip() : ma === "HET_LUOT" ? noiHetLuot(than)
-      : (CAU[ma] ?? than?.thong_bao ?? "Không xin được nhận xét. Thử lại sau ít phút.") };
+      : (CAU[ma] ?? than?.thong_bao ?? "Chưa chấm được bài lúc này. Thử lại sau ít phút.") };
   }
-  if (!data?.ok) return { ok: false, ma: data?.ma ?? "KHONG_RO", thongBao: CAU[data?.ma] ?? "Không xin được nhận xét." };
+  if (!data?.ok) return { ok: false, ma: data?.ma ?? "KHONG_RO", thongBao: CAU[data?.ma] ?? "Chưa chấm được bài." };
   return { ok: true, goiY: data.goi_y, conLai: data.con_lai };
 }
 

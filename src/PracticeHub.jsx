@@ -874,7 +874,9 @@ ${r.error?.message ?? ""}`); return; }
                   )}
                   {q.type === "tableau" && <TableauCompare q={q} value={q.answers || {}} readOnly correction />}
                   {q.type === "apparier" && <GhepCap q={q} value={q.answers || {}} readOnly correction dapAn={q.answers} />}
-                  {q.type === "open" && (
+                  {q.type === "open" && !teacher && !ex.ghiAm ? (
+                    <div style={{ fontSize: 13, color: C.soft }}>{tr("Câu viết tự do: AI chấm và gợi ý theo chính bài làm của bạn sau khi nộp.", "Expression libre : l'IA corrige et commente votre propre texte après l'envoi.", "Free writing: after you submit, the AI marks and comments on your own text.")}</div>
+                  ) : q.type === "open" && (
                     q.model ? <div style={{ fontSize: 14, fontStyle: "italic", lineHeight: 1.7 }}>💡 {q.model}</div>
                       : <div style={{ fontSize: 13, color: C.soft }}>{tr("Câu tự luận, chưa có đáp án mẫu.", "Réponse libre — pas de corrigé type fourni.", "Open answer, no model answer provided.")}</div>
                   )}
@@ -1309,7 +1311,7 @@ export function PracticeWorkspace({ ex, back, onFinish, soTu = false, chamBang =
   useEffect(() => { if (soDaLam > soTruoc.current && !gradedRef.current) phat("bam"); soTruoc.current = soDaLam; }, [soDaLam]);
   useEffect(() => { if (remaining === 60) phat("sapHet"); }, [remaining]);
   useEffect(() => {
-    const can = graded && ex ? ex.questions.filter((q) => q.type === "open" && !q.model) : [];
+    const can = graded && ex && ex.ghiAm ? ex.questions.filter((q) => q.type === "open" && !q.model) : [];
     if (!can.length) return undefined;
     let con = true;
     Promise.all(can.map((q) => supabase.rpc("get_model_answer", { p_question: q.id }).then(({ data }) => [q.id, data], () => [q.id, null])))
@@ -1605,9 +1607,11 @@ export function PracticeWorkspace({ ex, back, onFinish, soTu = false, chamBang =
               </div>
             ) : <KhungViet value={a || ""} readOnly={!!graded} onChange={(html) => setAnswers({ ...answers, [q.id]: html })} />}
             {graded && !laNoi && luotId && stripHtml(a) !== "" && (
-              <NhanXetVietLuyen key={`${luotId}-${q.id}`} attemptId={luotId} questionId={q.id} baiLam={a} />
+              <NhanXetVietLuyen key={`${luotId}-${q.id}`} attemptId={luotId} questionId={q.id} baiLam={a} level={ex.level} />
             )}
-            {graded && (q.model || baiMau[q.id]) && (
+            {/* 06/11: câu VIẾT không còn « đáp án gợi ý » chung của đề; AI chấm và viết lại chính bài
+                của học sinh (NhanXetVietLuyen). Câu nói vẫn giữ câu mẫu. */}
+            {graded && laNoi && (q.model || baiMau[q.id]) && (
               <div style={{ marginTop: 12, background: C.okSoft, border: `1.5px solid ${C.ok}55`, borderRadius: 12, padding: "12px 15px" }}>
                 <strong>{tr("Đáp án gợi ý:", "Réponse suggérée :", "Suggested answer:")}</strong>
                 <div style={{ marginTop: 4, fontSize: 14.5, fontStyle: "italic", lineHeight: 1.7 }}>{q.model || baiMau[q.id]}</div>

@@ -11,7 +11,7 @@
  * để trôi khỏi nhau. Đây chính là lý do file đó là JS thuần chứ không nằm lẫn
  * trong index.ts.
  */
-import { kiemGoiY, kiemNhanXetLuyen, bocJSON, lamTronBuoc, gonLoiLeon } from "../supabase/functions/_shared/goiYPE.js";
+import { kiemGoiY, kiemNhanXetLuyen, kiemChamLuyen, bocJSON, lamTronBuoc, gonLoiLeon } from "../supabase/functions/_shared/goiYPE.js";
 import { chuThuan, demTu, soTuDeBai, kiemTraCoDinh, locLoi, locYeuCau, chiaDoan } from "../supabase/functions/_shared/loiViet.js";
 
 let pass = 0, fail = 0;
@@ -195,6 +195,24 @@ la(bocJSON("") === null && bocJSON(null) === null, "rỗng/null phải ra null")
   const d2 = chiaDoan(van2, [{ trich: "vons", sua: "avons" }]).find((d) => d.loi != null);
   la(d2 && van2.indexOf("vons", 15) === van2.indexOf(d2.chu, 15) && chiaDoan(van2, [{ trich: "vons", sua: "x" }]).map((d) => d.chu).join("").length === van2.length && chiaDoan(van2, [{ trich: "vons", sua: "x" }])[0].chu === "Nous avons fini et nous ", "chiaDoan: ưu tiên chỗ khớp trọn từ");
   la(chiaDoan("Nous avons", [{ trich: "vons", sua: "x" }]).some((d) => d.loi != null), "chiaDoan: không có chỗ trọn từ thì vẫn tô chỗ khớp");
+
+  /* Bản 2 (06/11): bài luyện viết CÓ điểm, kèm gợi ý tăng điểm và bài viết lại. */
+  const cl = kiemChamLuyen({ tieu_chi: { consigne: 1, lexique: 4, morpho: 2 },
+    tang_diem: [
+      { tieu_chi: "consigne", viec: "Thêm ngày chủ nhật", them: 5 },
+      { tieu_chi: "lexique", viec: "Đã tối đa", them: 1 },
+      { tieu_chi: "khong_co", viec: "Lạ", them: 1 },
+      { tieu_chi: "morpho", viec: "Chia lại động từ", them: 0.7 },
+      { tieu_chi: "morpho", viec: "Trùng tiêu chí", them: 1 },
+      { tieu_chi: "consigne", viec: "", them: 1 },
+    ],
+    bai_sua: "  Salut Paul,\r\nViens !  " }, RUBRIC, van);
+  la(cl.ok && cl.goiY.loai === "luyen" && cl.goiY.tong === 7, "kiemChamLuyen: có điểm, đánh dấu luyện tập");
+  la(cl.goiY.tang_diem.length === 2, `kiemChamLuyen: bỏ tiêu chí lạ, đã tối đa, trùng, việc rỗng (ra ${cl.goiY.tang_diem.length})`);
+  la(cl.goiY.tang_diem[0].tieu_chi === "consigne" && cl.goiY.tang_diem[0].them === 1, "kiemChamLuyen: số điểm thêm kẹp trong phần còn trống, xếp lớn trước");
+  la(cl.goiY.tang_diem[1].them === 0.5, "kiemChamLuyen: số điểm thêm làm tròn bước 0,5");
+  la(cl.goiY.bai_sua === "Salut Paul,\nViens !", "kiemChamLuyen: bài viết lại được cắt khoảng trắng, bỏ \\r");
+  la(!kiemChamLuyen({ tong_quat: "x" }, RUBRIC, van).ok, "kiemChamLuyen: không chấm được tiêu chí nào thì từ chối");
 }
 
 console.log(fail ? `\n${pass} đạt, ${fail} hỏng` : `\n${pass} đạt, 0 hỏng`);

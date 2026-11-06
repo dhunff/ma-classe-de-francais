@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { Award, CheckCircle2, AlertCircle, Quote, ListChecks, PenLine, ChevronDown } from "lucide-react";
+import { Award, ListChecks, PenLine } from "lucide-react";
 import { docGoiYAI } from "../../shared/chamPeAI.js";
 import { tr } from "../../shared/i18n.jsx";
 import { LeonNoi } from "../../shared/leon.jsx";
-import { BaiVietCoLoi, KhoiYeuCau } from "../practice/LoiVietAI.jsx";
+import { BaiVietCoLoi, KhoiYeuCau, TieuChi } from "../practice/LoiVietAI.jsx";
 
 /* Phiếu nhận xét của giám khảo AI (08/10).
  *
@@ -11,45 +11,6 @@ import { BaiVietCoLoi, KhoiYeuCau } from "../practice/LoiVietAI.jsx";
  * thiện, trích dẫn, ưu tiên sửa, câu viết lại). Bản cũ chỉ có `nhan_xet` +
  * `tong_quat` vẫn hiện được: trường thiếu thì khối đó không dựng.
  * Không đọc được bản có cấu trúc → hiện chữ thường trong answers.feedback. */
-
-function Thanh({ diem, max }) {
-  const tl = max ? Math.max(0, Math.min(1, diem / max)) : 0;
-  const mau = tl >= 0.75 ? "bg-ok" : tl >= 0.5 ? "bg-primary" : tl >= 0.25 ? "bg-warn" : "bg-danger";
-  return (
-    <span className="block h-1.5 w-full overflow-hidden rounded-full bg-surface2">
-      <span className={`block h-full rounded-full ${mau}`} style={{ width: `${tl * 100}%` }} />
-    </span>
-  );
-}
-
-function TieuChi({ c, t }) {
-  const [mo, setMo] = useState(false);
-  const coChiTiet = t.diem_manh || t.can_cai_thien || t.trich_dan || t.nhan_xet;
-  return (
-    <li className="rounded-xl border border-solid border-line bg-surface">
-      <button type="button" onClick={() => setMo(!mo)} disabled={!coChiTiet} aria-expanded={mo}
-        className="grid w-full cursor-pointer grid-cols-[1fr_auto] items-center gap-x-3 gap-y-1.5 border-0 bg-transparent px-3 py-2.5 text-left font-sans disabled:cursor-default">
-        <span className="min-w-0">
-          <span className="block truncate text-sm font-bold text-ink">{c.name}</span>
-          {c.name_fr && <span className="block truncate text-[11px] text-soft">{c.name_fr}</span>}
-        </span>
-        <span className="flex items-center gap-1.5 text-sm font-extrabold tabular-nums text-ink">
-          {t.diem}<span className="text-xs font-semibold text-soft">/{c.max_score}</span>
-          {coChiTiet && <ChevronDown size={14} className={`text-soft transition-transform ${mo ? "rotate-180" : ""}`} />}
-        </span>
-        <span className="col-span-2"><Thanh diem={t.diem} max={c.max_score} /></span>
-      </button>
-      {mo && (
-        <div className="grid gap-2 border-0 border-t border-solid border-line px-3 py-3 text-[13px] leading-relaxed">
-          {t.nhan_xet && <p className="m-0 text-ink">{t.nhan_xet}</p>}
-          {t.diem_manh && <p className="m-0 flex gap-2 text-ink"><CheckCircle2 size={14} className="mt-0.5 shrink-0 text-ok" /><span><strong className="text-ok">{tr("Điểm mạnh.", "Points forts.", "Strengths.")}</strong> {t.diem_manh}</span></p>}
-          {t.can_cai_thien && <p className="m-0 flex gap-2 text-ink"><AlertCircle size={14} className="mt-0.5 shrink-0 text-warn" /><span><strong className="text-warn">{tr("Cần cải thiện.", "À améliorer.", "To improve.")}</strong> {t.can_cai_thien}</span></p>}
-          {t.trich_dan && <p className="m-0 flex gap-2 rounded-lg bg-surface2 px-2.5 py-2 italic text-soft"><Quote size={13} className="mt-0.5 shrink-0" />« {t.trich_dan} »</p>}
-        </div>
-      )}
-    </li>
-  );
-}
 
 /* `mau`: dữ liệu dựng sẵn cho /preview.html (không gọi mạng). */
 export default function NhanXetAI({ answerId, rubric, level, feedback, mau, baiLam }) {

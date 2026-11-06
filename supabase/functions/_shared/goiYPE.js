@@ -167,6 +167,39 @@ export function kiemNhanXetLuyen(tho, van) {
   return { ok: true, goiY };
 }
 
+/* Chấm bài viết ở màn LUYỆN TẬP (06/11, bản 2, theo chủ dự án): AI tự chấm ngay sau khi nộp,
+ * CÓ điểm theo thang DELF đúng trình độ của bài, kèm hai phần chỉ luyện tập mới có:
+ *  · tang_diem: tối đa 3 việc cụ thể để lên điểm, mỗi việc gắn MỘT tiêu chí và số điểm có thể
+ *    thêm. Số điểm kẹp trong phần còn trống của tiêu chí đó (đây là ước lượng, không phải điểm
+ *    chấm, nên kẹp được); tiêu chí lạ hoặc đã tối đa thì bỏ.
+ *  · bai_sua: chính bài của học sinh viết lại cho đúng và tốt hơn ở trình độ đó, giữ ý của họ.
+ *    Thay cho « đáp án gợi ý » chung của đề: gợi ý theo BÀI LÀM, không theo một bài mẫu. */
+export function kiemChamLuyen(tho, rubric, van) {
+  const kq = kiemGoiY(tho, rubric, van);
+  if (!kq.ok) return kq;
+  const g = kq.goiY;
+  const theoId = new Map(rubric.criteria.map((c) => [c.id, c]));
+  const daCo = new Set();
+  const tang_diem = (Array.isArray(tho.tang_diem) ? tho.tang_diem : [])
+    .map((x) => {
+      if (!x || typeof x !== "object") return null;
+      const id = String(x.tieu_chi ?? "");
+      const c = theoId.get(id); const t = g.tieu_chi[id];
+      const viec = String(x.viec ?? x.lam_gi ?? "").trim().slice(0, 300);
+      if (!c || !t || !viec || daCo.has(id)) return null;
+      const con = lamTronBuoc(Number(c.max_score) - t.diem, c.step ?? 0.5);
+      if (!(con > 0)) return null;
+      const them = Math.min(con, Math.max(0.5, lamTronBuoc(Number(x.them) || 0.5, c.step ?? 0.5)));
+      daCo.add(id);
+      return { tieu_chi: id, viec, them };
+    })
+    .filter(Boolean)
+    .sort((a, b) => b.them - a.them)
+    .slice(0, 3);
+  const bai_sua = String(tho.bai_sua ?? "").replace(/\r/g, "").trim().slice(0, 3000);
+  return { ...kq, goiY: { loai: "luyen", ...g, tang_diem, bai_sua } };
+}
+
 /* Bóc JSON ra khỏi câu trả lời của mô hình.
  *
  * Kể cả khi đã yêu cầu "chỉ JSON", mô hình vẫn có lúc bọc trong ```json fence

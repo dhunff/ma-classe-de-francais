@@ -408,7 +408,18 @@ const NHAN_XET_MAU = { model: "gpt-6-luna", goiY: {
   ],
 } };
 const BAI_LAM_MAU = "Salut Paul,\nViens chez moi en juillet ! On va à la plage et au musée. Nous visiter la musée d'Orsay, c'est tres beau. Le soir, on mange une glace.\nBisous,\nLéa";
-const NHAN_XET_LUYEN_MAU = { ...NHAN_XET_MAU.goiY, loai: "luyen", diem_manh: ["Đúng thể loại thư mời thân mật.", "Câu ngắn, rõ ý."], loi_leon: "Thư mời của bạn vui lắm! Allez, sửa lại vài động từ là hoàn hảo." };
+/* 06/11 bản 2: bài luyện viết CÓ điểm theo thang A1 không có « fiche » (22 điểm), gợi ý tăng điểm, bài viết lại. */
+const NHAN_XET_LUYEN_MAU = (() => {
+  const { fiche, ...tieu_chi } = NHAN_XET_MAU.goiY.tieu_chi;
+  return { ...NHAN_XET_MAU.goiY, loai: "luyen", tieu_chi, tong: 13.5, tong_toi_da: 22, so_cham_duoc: 5, so_tieu_chi: 5,
+    loi_leon: "Thư mời của bạn vui lắm! Allez, sửa lại vài động từ là hoàn hảo.",
+    tang_diem: [
+      { tieu_chi: "informer", viec: "Thêm ngày giờ cụ thể cho từng hoạt động, ví dụ « samedi matin, on va à la plage ».", them: 1.5 },
+      { tieu_chi: "morpho", viec: "Chia lại « Nous visiter » thành « Nous visitons » và kiểm mọi động từ đi với « nous ».", them: 1 },
+      { tieu_chi: "coherence", viec: "Nối các câu ngắn bằng « et », « puis », « après ».", them: 0.5 },
+    ],
+    bai_sua: "Salut Paul,\nViens chez moi en juillet ! Samedi matin, on va à la plage, puis l'après-midi, nous visitons le musée d'Orsay. C'est très beau ! Le soir, on mange une glace ensemble.\nÀ bientôt,\nLéa" };
+})();
 const PHAN_THI_MAU = {
   code: "CE", label: "Activité 1 — les musées de Paris", minutes: 45, points: 25,
   exercise: {
@@ -1021,7 +1032,7 @@ function Preview() {
               { code: "CE", exercise_id: "xem-thu-2", minutes: 0, points: 0, ord: 1 },
               { code: "PO", exercise_id: "xem-thu", minutes: 15, points: 25, ord: 2 }] }} />} />
           <Route path="/etudiant/phan-thi" element={<><Controls /><PhanThiThu /></>} />
-          <Route path="/etudiant/nhan-xet-ai" element={<><Controls /><div className="mx-auto max-w-2xl py-6"><NhanXetAI level="A1" rubric={grilleToRubric("A1")} mau={NHAN_XET_MAU} baiLam={BAI_LAM_MAU} /><p className="m-0 mt-8 text-sm font-bold text-soft">Câu viết tự do ở màn Luyện tập:</p><NhanXetVietLuyen baiLam={BAI_LAM_MAU} thu={NHAN_XET_LUYEN_MAU} /></div></>} />
+          <Route path="/etudiant/nhan-xet-ai" element={<><Controls /><div className="mx-auto max-w-2xl py-6"><NhanXetAI level="A1" rubric={grilleToRubric("A1")} mau={NHAN_XET_MAU} baiLam={BAI_LAM_MAU} /><p className="m-0 mt-8 text-sm font-bold text-soft">Câu viết tự do ở màn Luyện tập:</p><NhanXetVietLuyen baiLam={BAI_LAM_MAU} level="A1" thu={NHAN_XET_LUYEN_MAU} /></div></>} />
           <Route path="/etudiant/tro-choi" element={<TroChoiMan tieuDe="Thời tiết · Màn 1" the={THE_CHOI} onXong={async (sao) => ({ sao, xp: 15 })} onDong={() => history.back()} t={t} />} />
           <Route path="/etudiant/the-lat" element={<><Controls /><TheLatThu /></>} />
           <Route path="/etudiant/the-bo" element={<><Controls /><TheBoThu /></>} />
