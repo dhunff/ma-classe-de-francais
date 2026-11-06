@@ -200,6 +200,76 @@ export function kiemChamLuyen(tho, rubric, van) {
   return { ...kq, goiY: { loai: "luyen", ...g, tang_diem, bai_sua } };
 }
 
+/* ══ CHẤM HAI LƯỢT (06/11, giai đoạn 2) ══
+ *
+ * Như double correction của DELF: hai giám khảo chấm độc lập, điểm cuối là trung bình. Hai lượt
+ * lệch LỚN (một tiêu chí lệch quá 1 điểm, tức quá một mốc barème, hoặc tổng lệch quá 2,5) thì chấm
+ * lượt thứ ba và lấy TRUNG VỊ từng tiêu chí: lượt lạc loài bị loại thay vì kéo trung bình đi.
+ * Ba lượt mà vẫn không có hai lượt nào gần nhau thì gắn cờ `chua_chac`: điểm vẫn hiện, nhưng nói
+ * thật là máy chấm không chắc, thay vì giả vờ chắc chắn.
+ *
+ * Mỗi lượt là JSON thô của mô hình: { tieu_chi: { id: số | { diem } } }. Điểm ngoài khung hoặc
+ * không phải số thì lượt đó coi như không chấm tiêu chí ấy (cùng nguyên tắc với kiemGoiY). */
+export const LECH_TIEU_CHI = 1;
+export const LECH_TONG = 2.5;
+
+function diemCuaLuot(tho, rubric) {
+  const nguon = tho?.tieu_chi ?? tho?.criteria ?? tho ?? {};
+  const ra = {};
+  for (const c of rubric.criteria) {
+    const o = nguon?.[c.id];
+    const d = Number(o != null && typeof o === "object" ? (o.diem ?? o.score ?? o.note) : o);
+    const max = Number(c.max_score);
+    if (o != null && Number.isFinite(d) && d >= 0 && d <= max) ra[c.id] = lamTronBuoc(d, c.step ?? 0.5);
+  }
+  return ra;
+}
+
+export function gopDiemNhieuLuot(rubric, dsTho) {
+  const luot = (dsTho ?? []).filter(Boolean).map((t) => diemCuaLuot(t, rubric)).filter((l) => Object.keys(l).length > 0);
+  const diem = {};
+  let lech_lon_nhat = 0;
+  let lechTieuChi = false;
+  let khongCapNao = false;
+  for (const c of rubric.criteria) {
+    const ds = luot.map((l) => l[c.id]).filter((x) => x != null).sort((a, b) => a - b);
+    if (!ds.length) continue;
+    const step = c.step ?? 0.5;
+    diem[c.id] = ds.length === 1 ? ds[0]
+      : ds.length === 2 ? lamTronBuoc((ds[0] + ds[1]) / 2, step)
+      : ds[Math.floor(ds.length / 2)];
+    const lech = ds[ds.length - 1] - ds[0];
+    lech_lon_nhat = Math.max(lech_lon_nhat, lech);
+    if (lech > LECH_TIEU_CHI) lechTieuChi = true;
+    if (ds.length >= 3 && !ds.some((x, i) => i > 0 && x - ds[i - 1] <= LECH_TIEU_CHI)) khongCapNao = true;
+  }
+  const tong_cac_luot = luot.map((l) => lamTronBuoc(Object.values(l).reduce((n, x) => n + x, 0), 0.5));
+  const tt = [...tong_cac_luot].sort((a, b) => a - b);
+  const lechTong = tt.length >= 2 && tt[tt.length - 1] - tt[0] > LECH_TONG;
+  const tongKhongCap = tt.length >= 3 && !tt.some((x, i) => i > 0 && x - tt[i - 1] <= LECH_TONG);
+  return {
+    diem,
+    so_luot: luot.length,
+    tong_cac_luot,
+    lech_lon_nhat,
+    can_luot_ba: luot.length === 2 && (lechTieuChi || lechTong),
+    chua_chac: luot.length >= 3 && (khongCapNao || tongKhongCap),
+  };
+}
+
+/* Đặt điểm đã gộp vào JSON của lượt 1 (lượt có nhận xét), để kiemGoiY / kiemChamLuyen kiểm và
+   cộng như mọi khi. Nhận xét của lượt 1 giữ nguyên; tiêu chí lượt 1 bỏ trống mà lượt khác có điểm
+   thì vẫn có điểm, chỉ không có lời nhận xét. */
+export function ganDiemGop(tho, diem) {
+  const nguon = tho?.tieu_chi ?? tho?.criteria ?? {};
+  const tieu_chi = {};
+  for (const [id, d] of Object.entries(diem)) {
+    const o = nguon[id];
+    tieu_chi[id] = { ...(o && typeof o === "object" ? o : {}), diem: d };
+  }
+  return { ...tho, tieu_chi };
+}
+
 /* Bóc JSON ra khỏi câu trả lời của mô hình.
  *
  * Kể cả khi đã yêu cầu "chỉ JSON", mô hình vẫn có lúc bọc trong ```json fence

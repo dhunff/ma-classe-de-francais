@@ -70,7 +70,7 @@ import { ROLE_HOME, TEACHER_NAV, STUDENT_NAV } from "./layout/navItems.js";
 /* Những đường dẫn trang xem thử tự dựng màn hình THẬT (không phải Stub).
    Danh sách này là lý do duy nhất một mục menu được phép không sinh Stub. */
 const PREVIEW_CO_SAN = ["/professeur/dashboard", "/professeur/carnet",
-  "/etudiant/dashboard", "/etudiant/calendrier", "/etudiant/tien-bo"];
+  "/etudiant/dashboard", "/etudiant/calendrier", "/etudiant/tien-bo", "/professeur/khieu-nai-diem"];
 import StudentDashboard from "./screens/dashboard/StudentDashboard.jsx";
 import TeacherDashboard from "./screens/dashboard/TeacherDashboard.jsx";
 import HomeDashboard from "./screens/dashboard/HomeDashboard.jsx";
@@ -164,6 +164,7 @@ import XemDeThu from "./screens/teacher/XemDeThu.jsx";
 const THE_CHOI = [["le vent","gió"],["la pluie","mưa"],["l'arbre","cây"],["la montagne","núi"],["la mer","biển"],["le soleil","mặt trời"],["la neige","tuyết"],["le nuage","mây"]].map(([a,b],k)=>({id:"t"+k,matTruoc:a,matSau:b,loai:"n",chuDe:"thoi-tiet"}));
 import LoiNgheBai from "./screens/practice/LoiNgheBai.jsx";
 import { NhanXetVietLuyen } from "./screens/practice/LoiVietAI.jsx";
+import XemKhieuNai from "./screens/teacher/XemKhieuNai.jsx";
 import TienBoVip from "./screens/student/TienBoVip.jsx";
 /* Dữ liệu giả cho Tiến bộ VIP (06/11): ngày tính lùi từ hôm nay để lịch 12 tuần luôn có nội dung. */
 const tienBoThu = () => {
@@ -219,7 +220,7 @@ const VI = {
     cards: "Thẻ ghi nhớ",
     primary: "Điều hướng chính", collapse: "Thu gọn thanh bên", expand: "Mở rộng thanh bên",
     menu: "Menu", people: "Lớp của bạn", close: "Đóng menu", open_menu: "Mở menu", tips: "Sổ tay lớp",
-    path: "Lộ trình học tập", learn: "Học tập", dict: "Từ điển", duel: "Thách đấu", games: "Trò chơi", faq: "Câu hỏi thường gặp", drafts: "Duyệt nháp", grammarReports: "Báo lỗi ngữ pháp" },
+    path: "Lộ trình học tập", learn: "Học tập", dict: "Từ điển", duel: "Thách đấu", games: "Trò chơi", faq: "Câu hỏi thường gặp", drafts: "Duyệt nháp", grammarReports: "Báo lỗi ngữ pháp", scoreAppeals: "Khiếu nại điểm AI" },
   search: { exercises: "Bài tập", students: "Học sinh", empty: "Không tìm thấy kết quả.", error: "Không tìm được — kiểm tra kết nối rồi thử lại.", need_login: "Đăng nhập để tìm kiếm." },
   tour: { tc1_title: "Tổng quan việc học", tc1_body: "Số bài đã nộp, điểm trung bình và số bài đang chờ — cập nhật mỗi khi bạn nộp bài.", tc2_title: "Chuỗi ngày học", tc2_body: "Mỗi ngày nộp ít nhất một bài thì chuỗi tăng một ngày. Hôm nay chưa học thì chuỗi vẫn giữ tới nửa đêm.", tc3_title: "Theo dõi bạn học", tc3_body: "Nhập @username của bạn học để xem hôm nay họ đã học chưa, và so XP ở tab Xếp hạng.", tc4_title: "Giờ học", tc4_body: "Thời gian thật từ lúc mở bài tới lúc nộp, trong 7 ngày gần nhất.", tc5_title: "Kỹ năng", tc5_body: "Điểm theo từng kỹ năng DELF — nhìn cột thấp nhất để biết nên luyện gì tiếp.", gd1_title: "Nền tối và cài đặt", gd1_body: "Bấm vào ảnh đại diện để bật chế độ nền tối cho dịu mắt khi học buổi tối, vào trang Tài khoản, hoặc xem lại các hướng dẫn này bất cứ lúc nào.", gd2_title: "Sổ tay lớp", gd2_body: "Mẹo và cấu trúc hay quên do giáo viên ghi lại — mở ra tra nhanh ngay trong lúc làm bài.", xp1_title: "Điểm kinh nghiệm (XP)", xp1_body: "Đây là ví XP của bạn. Lần đầu hoàn thành một bài, bạn nhận 10 XP cộng 1 XP cho mỗi điểm đạt được.", xp2_title: "Đổi XP lấy bài trả phí", xp2_body: "Một số bài nâng cao là bài trả phí. Nếu giáo viên cho phép đổi bằng XP, bạn có thể dùng XP của mình để mở khoá chúng thay vì trả tiền.", xp3_title: "Bắt đầu tích XP!", xp3_body: "Chọn một kỹ năng và hoàn thành bài đầu tiên để nhận những XP khởi đầu nhé. Chúc bạn học tốt!", pf1_title: "Hoàn thiện hồ sơ", pf1_body: "Chào mừng bạn đến với FRACILE! Hãy dành 1 phút điền đầy đủ thông tin để có trải nghiệm học tập tốt nhất.", pf2_title: "Tên định danh (username)", pf2_body: "Tạo một @username duy nhất cho riêng bạn. Giáo viên dùng tên này để tìm và nhận ra bạn.", pf3_title: "Lộ trình học tập", pf3_body: "Chọn trình độ hiện tại và mục tiêu DELF/DALF của bạn, để giáo viên nắm được bạn đang ở đâu và muốn đi tới đâu.", pf4_title: "Lưu thông tin", pf4_body: "Điền xong thì bấm lưu lại để bắt đầu hành trình chinh phục tiếng Pháp cùng FRACILE nhé!", fc1_title: "Lọc theo kỹ năng", fc1_body: "Phân loại các bộ thẻ theo từng kỹ năng Nghe, Đọc, Viết, Nói để tập trung ôn luyện hiệu quả hơn.", fc2_title: "Nội dung chuẩn xác", fc2_body: "Toàn bộ flashcard trên FRACILE đều do giáo viên trực tiếp biên soạn. Bấm vào một bộ để bắt đầu ôn tập ngay!", fc3_title: "Nắm rõ khối lượng", fc3_body: "Mỗi bộ hiển thị rõ số lượng thẻ. Ôn một ít mỗi ngày — lịch ôn sẽ đưa lại đúng những thẻ bạn sắp quên.", skip: "Bỏ qua", next: "Tiếp theo", back: "Quay lại", finish: "Hoàn thành", cal1_title: "Tự động đồng bộ hạn nộp", cal1_body: "Mọi bài tập giáo viên giao sẽ tự động xuất hiện tại đây, để bạn không bỏ lỡ hạn nộp nào.", cal2_title: "Chủ động lên lịch học", cal2_body: "Bạn có thể tự thêm các khung giờ tự học, ôn thi DELF hoặc nhắc nhở cá nhân để quản lý thời gian hiệu quả.", cal3_title: "Theo dõi tiến trình", cal3_body: "Dễ dàng chuyển đổi giữa các tuần để xem lại lịch sử học tập hoặc lên kế hoạch cho tương lai." },
   network: { open: "Mạng lưới", title: "Mạng lưới học tập", followers: "Người theo dõi", following: "Đang theo dõi", follow_back: "Theo dõi lại", mutual: "Theo dõi nhau", empty_followers: "Chưa ai theo dõi bạn. Chia sẻ @username của bạn với bạn học nhé.", err: "Không thực hiện được — kiểm tra kết nối rồi thử lại." },
@@ -895,6 +896,7 @@ function Preview() {
     ["/etudiant/phan-nghe", "Phần nghe 2 bài (thi thử)"],
     ["/etudiant/phan-thi", "Một phần thi thử"],
     ["/etudiant/nhan-xet-ai", "Phiếu nhận xét AI"],
+    ["/professeur/khieu-nai-diem", "GV: Khiếu nại điểm AI"],
     ["/etudiant/the-lat", "Thẻ ghi nhớ — lật 3D"],
     ["/etudiant/the-bo", "Thẻ ghi nhớ — danh sách bộ"],
     ["/etudiant/neo", "Neo đáp án vào ngữ liệu"],
@@ -1032,6 +1034,10 @@ function Preview() {
               { code: "CE", exercise_id: "xem-thu-2", minutes: 0, points: 0, ord: 1 },
               { code: "PO", exercise_id: "xem-thu", minutes: 15, points: 25, ord: 2 }] }} />} />
           <Route path="/etudiant/phan-thi" element={<><Controls /><PhanThiThu /></>} />
+          <Route path="/professeur/khieu-nai-diem" element={<><Controls /><XemKhieuNai thu={[
+            { id: 1, trang_thai: "cho", ly_do: "Em đã hẹn ngày rõ ràng ở câu cuối nhưng tiêu chí « Tôn trọng đề » vẫn bị chấm thấp.", tieu_chi: ["consigne"], tao_luc: new Date().toISOString(), ket_qua: { ...NHAN_XET_LUYEN_MAU, cham_doi: { so_luot: 3, tong_cac_luot: [13.5, 17, 10], chua_chac: true } }, raw: BAI_LAM_MAU, consigne: "<p>Vous invitez un ami à passer des vacances chez vous. (40 mots minimum)</p>", prompt: "Écrivez votre message.", level: "A1", tieu_de: "Écriture A1 : une invitation", che_do: "practice", hoc_sinh: "Học sinh A" },
+            { id: 2, trang_thai: "da_cham_lai", ly_do: "Bài em đủ số từ.", tieu_chi: [], tao_luc: new Date(Date.now() - 864e5).toISOString(), diem_gv: { consigne: 2.5, informer: 4, lexique: 3, morpho: 2.5, coherence: 2 }, tong_gv: 14, ghi_chu_gv: "Bài đủ ý, đã cộng thêm ở tiêu chí nội dung.", ket_qua: NHAN_XET_LUYEN_MAU, raw: BAI_LAM_MAU, consigne: "", prompt: "Écrivez votre message.", level: "A1", tieu_de: "Écriture A1 : une invitation", che_do: "exam", hoc_sinh: "Học sinh B" },
+          ]} /></>} />
           <Route path="/etudiant/nhan-xet-ai" element={<><Controls /><div className="mx-auto max-w-2xl py-6"><NhanXetAI level="A1" rubric={grilleToRubric("A1")} mau={NHAN_XET_MAU} baiLam={BAI_LAM_MAU} /><p className="m-0 mt-8 text-sm font-bold text-soft">Câu viết tự do ở màn Luyện tập:</p><NhanXetVietLuyen baiLam={BAI_LAM_MAU} level="A1" thu={NHAN_XET_LUYEN_MAU} /></div></>} />
           <Route path="/etudiant/tro-choi" element={<TroChoiMan tieuDe="Thời tiết · Màn 1" the={THE_CHOI} onXong={async (sao) => ({ sao, xp: 15 })} onDong={() => history.back()} t={t} />} />
           <Route path="/etudiant/the-lat" element={<><Controls /><TheLatThu /></>} />

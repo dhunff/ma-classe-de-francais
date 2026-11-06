@@ -108,7 +108,31 @@ export async function xinNhanXetLuyen(attemptId, questionId, rubric) {
       : (CAU[ma] ?? than?.thong_bao ?? "Chưa chấm được bài lúc này. Thử lại sau ít phút.") };
   }
   if (!data?.ok) return { ok: false, ma: data?.ma ?? "KHONG_RO", thongBao: CAU[data?.ma] ?? "Chưa chấm được bài." };
-  return { ok: true, goiY: data.goi_y, conLai: data.con_lai };
+  return { ok: true, goiY: data.goi_y, goiYId: data.goi_y_id ?? null, conLai: data.con_lai };
+}
+
+/* ── Khiếu nại điểm AI (06/11, giai đoạn 2, migration 196) ──
+   Một phiếu một khiếu nại. Giáo viên xem ở /professeur/khieu-nai-diem. */
+const CAU_KHIEU_NAI = {
+  SAI_DU_LIEU: "Lý do cần từ 5 đến 1000 ký tự.",
+  KHONG_THAY_PHIEU: "Không tìm thấy phiếu chấm này.",
+  HET_LUOT_KHIEU_NAI: "Bạn đã gửi 5 khiếu nại trong 24 giờ qua. Thử lại sau nhé.",
+  CHUA_DANG_NHAP: "Phiên đăng nhập đã hết hạn. Đăng nhập lại rồi thử lại.",
+};
+export async function guiKhieuNai(goiYId, lyDo, tieuChi = []) {
+  const { data, error } = await supabase.rpc("gui_khieu_nai", { p_goi_y: goiYId, p_ly_do: lyDo, p_tieu_chi: tieuChi });
+  if (error) {
+    const ma = Object.keys(CAU_KHIEU_NAI).find((k) => String(error.message ?? "").includes(k));
+    return { ok: false, thongBao: CAU_KHIEU_NAI[ma] ?? "Chưa gửi được khiếu nại. Thử lại sau ít phút." };
+  }
+  return { ok: !!data?.ok, id: data?.id };
+}
+export async function docKhieuNai(goiYId) {
+  if (!goiYId) return null;
+  const { data } = await supabase.from("pe_khieu_nai")
+    .select("id, trang_thai, ly_do, tieu_chi, tong_gv, diem_gv, ghi_chu_gv, tao_luc, xu_ly_luc")
+    .eq("goi_y_id", goiYId).maybeSingle();
+  return data ?? null;
 }
 
 /* Đọc gợi ý đã xin trước đó. Trả `null` khi CHƯA có, và `undefined` khi KHÔNG
@@ -118,7 +142,7 @@ export async function docGoiYAI(answerId) {
   if (!answerId) return null;
   const { data, error } = await supabase.rpc("doc_goi_y_ai", { p_answer: answerId });
   if (error) return undefined;
-  return data?.co ? { goiY: data.ket_qua, model: data.model, luc: data.luc } : null;
+  return data?.co ? { id: data.id ?? null, goiY: data.ket_qua, model: data.model, luc: data.luc } : null;
 }
 
 /* AI chấm CHÍNH THỨC phần viết của bài thi thử (08/10): máy chủ ghi thẳng

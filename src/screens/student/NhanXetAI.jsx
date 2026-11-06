@@ -4,6 +4,7 @@ import { docGoiYAI } from "../../shared/chamPeAI.js";
 import { tr } from "../../shared/i18n.jsx";
 import { LeonNoi } from "../../shared/leon.jsx";
 import { BaiVietCoLoi, KhoiYeuCau, TieuChi } from "../practice/LoiVietAI.jsx";
+import KhieuNaiDiem, { GhiChuChamDoi } from "./KhieuNaiDiem.jsx";
 
 /* Phiếu nhận xét của giám khảo AI (08/10).
  *
@@ -38,6 +39,7 @@ export default function NhanXetAI({ answerId, rubric, level, feedback, mau, baiL
       </header>
 
       <div className="grid gap-4 p-4">
+        <GhiChuChamDoi chamDoi={g.cham_doi} />
         {(g.tong_quat || g.nhan_dinh_trinh_do) && (
           <div className="grid gap-1.5 text-[13px] leading-relaxed text-ink">
             {g.tong_quat && <p className="m-0">{g.tong_quat}</p>}
@@ -88,6 +90,8 @@ export default function NhanXetAI({ answerId, rubric, level, feedback, mau, baiL
             {g.loi_leon}
           </LeonNoi>
         )}
+        {/* Giai đoạn 2 (06/11): khiếu nại theo phiếu; phiếu cũ không có `id` thì không hiện nút. */}
+        <KhieuNaiDiem goiYId={d?.id} criteria={tc} thu={!!mau} />
         <p className="m-0 text-[11px] text-soft">{tr("Điểm do AI chấm có thể sai và không phải điểm DELF chính thức.", "La note de l'IA peut se tromper et n'est pas une note officielle du DELF.", "AI scores can be wrong and are not official DELF scores.")}</p>
       </div>
     </section>

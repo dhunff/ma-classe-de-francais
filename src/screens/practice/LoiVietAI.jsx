@@ -4,6 +4,7 @@ import { tr } from "../../shared/i18n.jsx";
 import { LeonNoi } from "../../shared/leon.jsx";
 import { xinNhanXetLuyen } from "../../shared/chamPeAI.js";
 import { grilleToRubric } from "../../shared/grilleRubric.js";
+import KhieuNaiDiem, { GhiChuChamDoi } from "../student/KhieuNaiDiem.jsx";
 import { chuThuan, chiaDoan, LOAI_LOI } from "../../../supabase/functions/_shared/loiViet.js";
 
 /* Chấm AI chuyên sâu, giai đoạn 1 (06/11): lỗi tô ngay trong bài, đối chiếu yêu cầu của đề,
@@ -251,12 +252,13 @@ export function NhanXetVietLuyen({ attemptId, questionId, baiLam, level, thu }) 
         <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-primary text-on-primary"><Award size={18} /></span>
         <div className="min-w-0 flex-1">
           <p className="m-0 text-sm font-extrabold text-ink">{tr("AI chấm bài", "Correction de l'IA", "AI marking")} · DELF {level}</p>
-          <p className="m-0 text-[11px] text-soft">{tr("Theo thang DELF", "Grille DELF", "DELF grid")} {level}{tr(", điểm để tham khảo", ", note indicative", ", indicative score")}</p>
+          <p className="m-0 text-[11px] text-soft">{tr("Theo thang DELF", "Grille DELF", "DELF grid")} {level}{g.cham_doi?.so_luot >= 2 ? tr(", hai giám khảo AI chấm độc lập", ", double correction IA", ", double AI marking") : ""}{tr(", điểm để tham khảo", ", note indicative", ", indicative score")}</p>
         </div>
         <span className="text-2xl font-extrabold tabular-nums text-ink">{g.tong}<span className="text-sm text-soft">/{g.tong_toi_da}</span></span>
       </header>
 
       <div className="grid gap-4 p-4">
+        <GhiChuChamDoi chamDoi={g.cham_doi} />
         {(g.tong_quat || g.nhan_dinh_trinh_do) && (
           <div className="grid gap-1.5 text-[13px] leading-relaxed text-ink">
             {g.tong_quat && <p className="m-0">{g.tong_quat}</p>}
@@ -302,6 +304,7 @@ export function NhanXetVietLuyen({ attemptId, questionId, baiLam, level, thu }) 
         )}
 
         {g.loi_leon && <LeonNoi size={60} cam={tl >= 0.7 ? "tuyet-voi" : tl >= 0.5 ? "duoc-do" : "co-len"}>{g.loi_leon}</LeonNoi>}
+        <KhieuNaiDiem goiYId={kq.goiYId} criteria={tc} thu={!!thu} />
         <p className="m-0 text-[11px] text-soft">{tr("AI có thể sai. Khi chưa chắc, đối chiếu với quy tắc ngữ pháp hoặc hỏi giáo viên.", "L'IA peut se tromper. En cas de doute, vérifiez la règle ou demandez au professeur.", "The AI can be wrong. When unsure, check the rule or ask your teacher.")}</p>
       </div>
     </section>

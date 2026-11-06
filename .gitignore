@@ -30,3 +30,6 @@ supabase/.temp/
 _*.json
 scripts/i18n/tam/
 dist-ssr
+
+# Bài chuẩn tự thêm cho npm run check:chamai (bài mẫu có bản quyền hoặc bài học sinh): giữ ở máy.
+scripts/chamai/

@@ -11,7 +11,7 @@
  * để trôi khỏi nhau. Đây chính là lý do file đó là JS thuần chứ không nằm lẫn
  * trong index.ts.
  */
-import { kiemGoiY, kiemNhanXetLuyen, kiemChamLuyen, bocJSON, lamTronBuoc, gonLoiLeon } from "../supabase/functions/_shared/goiYPE.js";
+import { kiemGoiY, kiemNhanXetLuyen, kiemChamLuyen, bocJSON, lamTronBuoc, gonLoiLeon, gopDiemNhieuLuot, ganDiemGop } from "../supabase/functions/_shared/goiYPE.js";
 import { chuThuan, demTu, soTuDeBai, kiemTraCoDinh, locLoi, locYeuCau, chiaDoan } from "../supabase/functions/_shared/loiViet.js";
 
 let pass = 0, fail = 0;
@@ -213,6 +213,24 @@ la(bocJSON("") === null && bocJSON(null) === null, "rỗng/null phải ra null")
   la(cl.goiY.tang_diem[1].them === 0.5, "kiemChamLuyen: số điểm thêm làm tròn bước 0,5");
   la(cl.goiY.bai_sua === "Salut Paul,\nViens !", "kiemChamLuyen: bài viết lại được cắt khoảng trắng, bỏ \\r");
   la(!kiemChamLuyen({ tong_quat: "x" }, RUBRIC, van).ok, "kiemChamLuyen: không chấm được tiêu chí nào thì từ chối");
+
+  /* Giai đoạn 2: chấm hai lượt. RUBRIC: consigne /2, lexique /4, morpho /5,5. */
+  const g2 = gopDiemNhieuLuot(RUBRIC, [{ tieu_chi: { consigne: { diem: 1.5 }, lexique: { diem: 3 }, morpho: { diem: 4 } } }, { tieu_chi: { consigne: 1, lexique: 3.5, morpho: 4 } }]);
+  la(g2.so_luot === 2 && g2.diem.consigne === 1.5 && g2.diem.lexique === 3.5 && g2.diem.morpho === 4, `gopDiem: hai lượt lấy trung bình, làm tròn bước 0,5 (ra ${JSON.stringify(g2.diem)})`);
+  la(!g2.can_luot_ba && !g2.chua_chac && g2.lech_lon_nhat === 0.5, "gopDiem: lệch nhỏ thì không cần lượt ba");
+  const g3 = gopDiemNhieuLuot(RUBRIC, [{ tieu_chi: { consigne: 2, lexique: 1, morpho: 4 } }, { tieu_chi: { consigne: 2, lexique: 3.5, morpho: 4 } }]);
+  la(g3.can_luot_ba, "gopDiem: một tiêu chí lệch quá 1 điểm thì cần lượt ba");
+  la(gopDiemNhieuLuot(RUBRIC, [{ consigne: 0, lexique: 1, morpho: 2 }, { consigne: 1, lexique: 2, morpho: 3 }]).can_luot_ba, "gopDiem: tổng lệch quá 2,5 thì cần lượt ba (điểm phẳng ở gốc cũng đọc được)");
+  const g4 = gopDiemNhieuLuot(RUBRIC, [{ tieu_chi: { consigne: 2, lexique: 1, morpho: 4 } }, { tieu_chi: { consigne: 2, lexique: 3.5, morpho: 4 } }, { tieu_chi: { consigne: 2, lexique: 3, morpho: 4.5 } }]);
+  la(g4.so_luot === 3 && g4.diem.lexique === 3 && g4.diem.morpho === 4 && !g4.can_luot_ba && !g4.chua_chac, "gopDiem: ba lượt lấy trung vị, lượt lạc loài bị loại");
+  const g5 = gopDiemNhieuLuot(RUBRIC, [{ tieu_chi: { lexique: 0 } }, { tieu_chi: { lexique: 2 } }, { tieu_chi: { lexique: 4 } }]);
+  la(g5.chua_chac && g5.diem.lexique === 2, "gopDiem: ba lượt không có hai lượt nào gần nhau thì gắn cờ chưa chắc");
+  const g6 = gopDiemNhieuLuot(RUBRIC, [{ tieu_chi: { consigne: 9, lexique: 3 } }, { tieu_chi: { consigne: 1, lexique: "x" } }, null]);
+  la(g6.so_luot === 2 && g6.diem.consigne === 1 && g6.diem.lexique === 3 && g6.diem.morpho === undefined, "gopDiem: điểm ngoài khung hoặc không phải số thì lượt đó bỏ tiêu chí ấy");
+  la(gopDiemNhieuLuot(RUBRIC, [{ tieu_chi: { consigne: 2 } }, { tong_quat: "rỗng" }]).so_luot === 1, "gopDiem: lượt không có điểm nào thì không tính là một lượt");
+  const gd = ganDiemGop({ tong_quat: "Ổn", tieu_chi: { consigne: { diem: 2, nhan_xet: "Đủ ý" }, lexique: 3 } }, { consigne: 1.5, lexique: 3.5, morpho: 4 });
+  la(gd.tieu_chi.consigne.diem === 1.5 && gd.tieu_chi.consigne.nhan_xet === "Đủ ý" && gd.tieu_chi.morpho.diem === 4 && gd.tong_quat === "Ổn", "ganDiemGop: thay điểm, giữ nhận xét lượt 1");
+  la(kiemGoiY(gd, RUBRIC, van).goiY.tong === 9, "ganDiemGop: kiemGoiY cộng đúng điểm đã gộp");
 }
 
 console.log(fail ? `\n${pass} đạt, ${fail} hỏng` : `\n${pass} đạt, 0 hỏng`);
