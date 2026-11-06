@@ -108,12 +108,18 @@ export function locYeuCau(tho) {
 export function chiaDoan(van, loi) {
   const s = String(van ?? "");
   const cho = [];
+  /* Ưu tiên chỗ khớp TRỌN TỪ: đoạn ngắn như « vons » không được tô vào giữa « avons » nếu bài có
+     « vons » đứng riêng ở chỗ khác. Không có chỗ trọn từ thì mới lấy chỗ khớp bất kỳ. */
+  const chu = /[\p{L}\p{N}]/u;
+  const tronTu = (k, het) => !chu.test(s[k - 1] ?? "") && !chu.test(s[het] ?? "");
   (loi ?? []).forEach((l, i) => {
-    let tu = 0, k;
-    while ((k = s.indexOf(l.trich, tu)) >= 0) {
-      const het = k + l.trich.length;
-      if (!cho.some((c) => k < c.het && het > c.tu)) { cho.push({ tu: k, het, i }); return; }
-      tu = k + 1;
+    for (const phaiTron of [true, false]) {
+      let tu = 0, k;
+      while ((k = s.indexOf(l.trich, tu)) >= 0) {
+        const het = k + l.trich.length;
+        if ((!phaiTron || tronTu(k, het)) && !cho.some((c) => k < c.het && het > c.tu)) { cho.push({ tu: k, het, i }); return; }
+        tu = k + 1;
+      }
     }
   });
   cho.sort((a, b) => a.tu - b.tu);

@@ -11,7 +11,7 @@
  * để trôi khỏi nhau. Đây chính là lý do file đó là JS thuần chứ không nằm lẫn
  * trong index.ts.
  */
-import { kiemGoiY, kiemNhanXetLuyen, bocJSON, lamTronBuoc } from "../supabase/functions/_shared/goiYPE.js";
+import { kiemGoiY, kiemNhanXetLuyen, bocJSON, lamTronBuoc, gonLoiLeon } from "../supabase/functions/_shared/goiYPE.js";
 import { chuThuan, demTu, soTuDeBai, kiemTraCoDinh, locLoi, locYeuCau, chiaDoan } from "../supabase/functions/_shared/loiViet.js";
 
 let pass = 0, fail = 0;
@@ -185,6 +185,16 @@ la(bocJSON("") === null && bocJSON(null) === null, "rỗng/null phải ra null")
   const l = kiemNhanXetLuyen({ tong_quat: "Ổn.", diem_manh: ["Rõ ý", ""], loi: [{ trich: "tres bien", sua: "très bien", loai: "orthographe" }], tong: 99 }, van);
   la(l.ok && l.goiY.loai === "luyen" && l.goiY.diem_manh.length === 1 && l.goiY.tong === undefined, "kiemNhanXetLuyen: không có điểm, bỏ mục rỗng");
   la(!kiemNhanXetLuyen({ tong_quat: "", loi: [{ trich: "bịa", sua: "x" }] }, van).ok, "kiemNhanXetLuyen: rỗng sau khi lọc thì từ chối");
+
+  /* Lượt thật đầu tiên (06/11): đề nằm ở consigne HTML của bài, lời Léon có chữ ký « — Leon »,
+     lỗi « vons » ngắn phải tô đúng chữ đứng riêng chứ không vào giữa « avons ». */
+  la(kiemTraCoDinh("un deux trois", "<p>Vous écrivez à un ami.</p><p>Dites ce que vous avez fait. (60 mots minimum)</p><br>Écrivez votre message.").thieu_tu, "kiemTraCoDinh: đọc được « 60 mots minimum » trong consigne HTML");
+  la(gonLoiLeon("Hãy tiếp tục viết nhé! — Leon") === "Hãy tiếp tục viết nhé!", "gonLoiLeon: bỏ chữ ký « — Leon » ở cuối");
+  la(gonLoiLeon("Bạn làm tốt — cố lên - Léon.") === "Bạn làm tốt, cố lên", "gonLoiLeon: đổi « — » giữa câu thành dấu phẩy");
+  const van2 = "Nous avons fini et nous vons mangé.";
+  const d2 = chiaDoan(van2, [{ trich: "vons", sua: "avons" }]).find((d) => d.loi != null);
+  la(d2 && van2.indexOf("vons", 15) === van2.indexOf(d2.chu, 15) && chiaDoan(van2, [{ trich: "vons", sua: "x" }]).map((d) => d.chu).join("").length === van2.length && chiaDoan(van2, [{ trich: "vons", sua: "x" }])[0].chu === "Nous avons fini et nous ", "chiaDoan: ưu tiên chỗ khớp trọn từ");
+  la(chiaDoan("Nous avons", [{ trich: "vons", sua: "x" }]).some((d) => d.loi != null), "chiaDoan: không có chỗ trọn từ thì vẫn tô chỗ khớp");
 }
 
 console.log(fail ? `\n${pass} đạt, ${fail} hỏng` : `\n${pass} đạt, 0 hỏng`);

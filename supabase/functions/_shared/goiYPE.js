@@ -115,7 +115,7 @@ export function kiemGoiY(tho, rubric, van = null) {
       tong_quat: String(tho.tong_quat ?? tho.overall ?? "").trim().slice(0, 1500),
       /* Mở rộng 08/10, đều tuỳ chọn và bị cắt độ dài. */
       /* 09/10: lời động viên của Leon, tuỳ chọn. */
-      loi_leon: String(tho.loi_leon ?? "").trim().slice(0, 400),
+      loi_leon: gonLoiLeon(tho.loi_leon),
       nhan_dinh_trinh_do: String(tho.nhan_dinh_trinh_do ?? "").trim().slice(0, 400),
       uu_tien: (Array.isArray(tho.uu_tien) ? tho.uu_tien : []).map((x) => String(x).trim().slice(0, 300)).filter(Boolean).slice(0, 3),
       cau_mau: (Array.isArray(tho.cau_mau) ? tho.cau_mau : [])
@@ -137,6 +137,15 @@ function phanLoiVaYeuCau(tho, van) {
 /* Nhận xét bài viết ở màn LUYỆN TẬP (06/11): không có thang DELF, không có điểm (bài luyện viết
    tự do vốn không chấm điểm). Phải có ít nhất tổng quát hoặc một lỗi hoặc một yêu cầu, không thì
    coi như mô hình trả rỗng. */
+/* Lời Léon: giao diện đã có ảnh và tên Léon, nên bỏ chữ ký mô hình hay tự thêm ở cuối
+   (« — Leon », « - Léon »). Nội dung học không dùng « — » (quy ước FRACILE): đổi thành dấu phẩy. */
+export function gonLoiLeon(v) {
+  return String(v ?? "").trim()
+    .replace(/\s*[—–-]\s*L[ée]on\s*[.!]?\s*$/i, "")
+    .replace(/\s*—\s*/g, ", ")
+    .trim().slice(0, 400);
+}
+
 export function kiemNhanXetLuyen(tho, van) {
   if (!tho || typeof tho !== "object") return { ok: false, ly_do: "khong-phai-object", goiY: null };
   const chu = (v, n) => String(v ?? "").trim().slice(0, n);
@@ -147,7 +156,7 @@ export function kiemNhanXetLuyen(tho, van) {
     nhan_dinh_trinh_do: chu(tho.nhan_dinh_trinh_do, 400),
     diem_manh: ds(tho.diem_manh, 3, 300),
     uu_tien: ds(tho.uu_tien, 3, 300),
-    loi_leon: chu(tho.loi_leon, 400),
+    loi_leon: gonLoiLeon(tho.loi_leon),
     cau_mau: (Array.isArray(tho.cau_mau) ? tho.cau_mau : [])
       .filter((x) => x && typeof x === "object" && x.goc && x.sua)
       .map((x) => ({ goc: chu(x.goc, 300), sua: chu(x.sua, 300), vi_sao: chu(x.vi_sao, 200) }))

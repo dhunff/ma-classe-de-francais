@@ -161,7 +161,7 @@ Deno.serve(async (req) => {
      RLS, nên không có hàng rào nào khác ở đây ngoài chính câu lệnh này. */
   let truyVan = admin
     .from("answers")
-    .select("id, raw, score, attempt_id, question_id, attempts!inner(user_id, finished_at), questions!inner(type, prompt, exercises(level, meta))")
+    .select("id, raw, score, attempt_id, question_id, attempts!inner(user_id, finished_at), questions!inner(type, prompt, exercises(level, meta, consigne))")
     .eq("attempts.user_id", userId);
   truyVan = luyenTap
     ? truyVan.eq("attempt_id", String(than.attemptId)).eq("question_id", String(than.questionId))
@@ -215,7 +215,12 @@ Deno.serve(async (req) => {
   const copie = (vanPhieu ? vanPhieu + "\n\nBÀI VIẾT:\n" : "") + baiViet.slice(0, TRAN_KY_TU);
   /* Kiểm tra cố định (06/11): máy đếm từ theo luật DELF và đọc số từ đề yêu cầu. Đưa vào lời
      nhắc như một SỰ THẬT đã đo, để mô hình khỏi tự đếm (và đếm sai). */
-  const deBaiTho = String((ans as any).questions?.prompt ?? "");
+  /* Đề = consigne của BÀI + câu hỏi. Câu tự luận ở luyện tập thường chỉ có « Écrivez votre message. »,
+     còn yêu cầu thật (số từ, các ý phải có) nằm ở consigne. Thiếu nó thì AI không biết đề đòi gì
+     và máy không đọc được « 60 mots minimum » (lỗi thấy ở lượt thật đầu tiên, 06/11). */
+  const consigne = String((ans as any).questions?.exercises?.consigne ?? "");
+  const cauHoi = String((ans as any).questions?.prompt ?? "");
+  const deBaiTho = consigne && !chuThuan(cauHoi).includes(chuThuan(consigne)) ? consigne + "<br>" + cauHoi : (cauHoi || consigne);
   const kt = kiemTraCoDinh((ans as any).raw, deBaiTho);
   const dongKiemTra = `NOMBRE DE MOTS (compté par la machine, règle DELF : tout ensemble entre deux espaces) : ${kt.so_tu}`
     + (kt.toi_thieu != null ? ` ; consigne : ${kt.toi_thieu}${kt.toi_da ? ` à ${kt.toi_da}` : " minimum"}${kt.thieu_tu ? " → INSUFFISANT" : kt.thua_tu ? " → TROP LONG" : " → respecté"}` : " ; la consigne ne fixe pas de nombre de mots lisible par la machine")
