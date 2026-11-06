@@ -70,7 +70,7 @@ import { ROLE_HOME, TEACHER_NAV, STUDENT_NAV } from "./layout/navItems.js";
 /* Những đường dẫn trang xem thử tự dựng màn hình THẬT (không phải Stub).
    Danh sách này là lý do duy nhất một mục menu được phép không sinh Stub. */
 const PREVIEW_CO_SAN = ["/professeur/dashboard", "/professeur/carnet",
-  "/etudiant/dashboard", "/etudiant/calendrier"];
+  "/etudiant/dashboard", "/etudiant/calendrier", "/etudiant/tien-bo"];
 import StudentDashboard from "./screens/dashboard/StudentDashboard.jsx";
 import TeacherDashboard from "./screens/dashboard/TeacherDashboard.jsx";
 import HomeDashboard from "./screens/dashboard/HomeDashboard.jsx";
@@ -163,6 +163,33 @@ import Builder from "./screens/teacher/Builder.jsx";
 import XemDeThu from "./screens/teacher/XemDeThu.jsx";
 const THE_CHOI = [["le vent","gió"],["la pluie","mưa"],["l'arbre","cây"],["la montagne","núi"],["la mer","biển"],["le soleil","mặt trời"],["la neige","tuyết"],["le nuage","mây"]].map(([a,b],k)=>({id:"t"+k,matTruoc:a,matSau:b,loai:"n",chuDe:"thoi-tiet"}));
 import LoiNgheBai from "./screens/practice/LoiNgheBai.jsx";
+import TienBoVip from "./screens/student/TienBoVip.jsx";
+/* Dữ liệu giả cho Tiến bộ VIP (06/11): ngày tính lùi từ hôm nay để lịch 12 tuần luôn có nội dung. */
+const tienBoThu = () => {
+  const ngay = (n) => { const d = new Date(); d.setDate(d.getDate() - n); return d.toLocaleDateString("en-CA"); };
+  const lich = {};
+  [0, 1, 2, 4, 5, 6, 9, 10, 12, 13, 16, 17, 18, 19, 20, 24, 26, 27, 31, 34, 38, 39, 44, 45, 48, 53, 55, 59, 62, 66, 67, 73, 76, 80].forEach((n, i) => { lich[ngay(n)] = (i * 7) % 6 + 1; });
+  return {
+    ngay: lich,
+    baoCao: { ok: true, tu: ngay(6), den: ngay(0), so_bai: 14, giay: 15840, ngay_hoc: 5,
+      ky_nang: [
+        { sk: "Écoute", tuan_nay: 78, tuan_truoc: 71, so_bai: 5 },
+        { sk: "Lecture", tuan_nay: 64, tuan_truoc: 70, so_bai: 4 },
+        { sk: "Production écrite", tuan_nay: 72, tuan_truoc: 72, so_bai: 2 },
+        { sk: "Grammaire", tuan_nay: 85, tuan_truoc: null, so_bai: 3 },
+      ],
+      sai_lap: [
+        { prompt: "Pourquoi le trafic est-il interrompu sur la ligne 4 ?", title: "Annonces dans le métro", exercise_id: "x1", so_lan: 3 },
+        { prompt: "Selon l'article, combien de personnes ont participé au festival ?", title: "Un festival de quartier", exercise_id: "x2", so_lan: 2 },
+      ],
+      goi_y: [{ id: "g1", title: "Lire une petite annonce", level: "A2" }, { id: "g2", title: "Un courriel d'invitation", level: "A2" }, { id: "g3", title: "Le programme du musée", level: "B1" }] },
+    cauSai: { ok: true, da_sua: 12, cau: [
+      { question_id: 1, prompt: "Le magasin ouvre à quelle heure le dimanche ?", title: "Horaires d'un magasin", level: "A1", store: "practice", exercise_id: "x3", so_lan_sai: 2, loi_giai: "Văn bản ghi « le dimanche : de 10 h à 13 h », nên giờ mở cửa là 10 h." },
+      { question_id: 2, prompt: "Qu'est-ce que Julie propose à Marc ?", title: "Un message vocal", level: "A2", store: "practice", exercise_id: "x4", so_lan_sai: 1, loi_giai: null },
+    ] },
+    nguPhap: [],
+  };
+};
 const CAU_NGHE_THU = [
   { prompt: "Dialogue 1 : la personne achète…", explanation: "« Un aller simple pour Lyon » : aller simple là vé một chiều, nên chọn « un billet aller simple »." },
   { prompt: "Le billet coûte…", explanation: "« quarante euros » = 40 €. Bẫy: 14 € (quatorze)." },
@@ -985,6 +1012,7 @@ function Preview() {
           <Route path="/etudiant/luyen-cap" element={<><Controls /><LuyenCapThu /></>} />
           <Route path="/professeur/chon-doan" element={<><Controls /><ChonDoanThu /></>} />
           <Route path="/etudiant/ngu-phap" element={<><Controls /><NguPhap /></>} />
+          <Route path="/etudiant/tien-bo" element={<><Controls /><TienBoVip name="Minh Anh" thu={tienBoThu()} /></>} />
           <Route path="/professeur/theo-doi-thu" element={<><Controls /><div className="p-6"><DanhSachHocSinh accounts={HS_GIA} exercises={[]} onMo={() => {}} onDoi={() => {}} /></div></>} />
           <Route path="/etudiant/ngu-phap/:ma" element={<><Controls /><NguPhap /></>} />
           <Route path="/etudiant/xem-lai-dau" element={<><Controls /><XemLaiDau tranId="mau" doi="Minh Anh" duMau={DAU_MAU} onDong={() => {}} /></>} />
