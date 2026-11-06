@@ -91,6 +91,23 @@ export async function xinGoiYAI(answerId, rubric) {
   };
 }
 
+/* Nhận xét câu viết tự do ở màn Luyện tập (06/11): không điểm, có lỗi tô trong bài và đối chiếu
+   yêu cầu của đề. Máy chủ tìm câu trả lời theo lượt làm + câu hỏi, đọc bài từ database. */
+export async function xinNhanXetLuyen(attemptId, questionId) {
+  if (!attemptId || !questionId) return { ok: false, ma: "THIEU_THAM_SO", thongBao: "Bài này chưa được lưu nên chưa nhận xét được." };
+  const { data, error } = await supabase.functions.invoke("cham-pe", { body: { luyenTap: true, attemptId, questionId } });
+  if (error) {
+    let than = null;
+    try { than = await error.context?.json?.(); } catch { /* không đọc được thì thôi */ }
+    const ma = than?.ma ?? "KHONG_RO";
+    if (ma === "HET_LUOT") baoHetLuot({ loai: "pe", hanMuc: than?.han_muc, cuaSoGio: than?.cua_so_gio });
+    return { ok: false, ma, thongBao: ma === "HET_LUOT_VIP" ? loiTranVip() : ma === "HET_LUOT" ? noiHetLuot(than)
+      : (CAU[ma] ?? than?.thong_bao ?? "Không xin được nhận xét. Thử lại sau ít phút.") };
+  }
+  if (!data?.ok) return { ok: false, ma: data?.ma ?? "KHONG_RO", thongBao: CAU[data?.ma] ?? "Không xin được nhận xét." };
+  return { ok: true, goiY: data.goi_y, conLai: data.con_lai };
+}
+
 /* Đọc gợi ý đã xin trước đó. Trả `null` khi CHƯA có, và `undefined` khi KHÔNG
    ĐỌC ĐƯỢC — hai chuyện khác nhau, và gộp chúng lại là nói "chưa xin bao giờ"
    cho một lần mất mạng. Cùng lỗi mà màn « Đăng ký tư vấn » đã dính hai lần. */

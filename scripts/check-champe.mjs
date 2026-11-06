@@ -11,7 +11,8 @@
  * để trôi khỏi nhau. Đây chính là lý do file đó là JS thuần chứ không nằm lẫn
  * trong index.ts.
  */
-import { kiemGoiY, bocJSON, lamTronBuoc } from "../supabase/functions/_shared/goiYPE.js";
+import { kiemGoiY, kiemNhanXetLuyen, bocJSON, lamTronBuoc } from "../supabase/functions/_shared/goiYPE.js";
+import { chuThuan, demTu, soTuDeBai, kiemTraCoDinh, locLoi, locYeuCau, chiaDoan } from "../supabase/functions/_shared/loiViet.js";
 
 let pass = 0, fail = 0;
 const no = (m) => { fail++; console.log("  ✗ " + m); };
@@ -139,6 +140,52 @@ la(bocJSON('```json\n{"a":2}\n```')?.a === 2, "JSON trong fence");
 la(bocJSON('Đây là kết quả: {"a":3} — hết.')?.a === 3, "JSON lẫn trong câu");
 la(bocJSON("không có gì") === null, "chuỗi không chứa JSON phải ra null");
 la(bocJSON("") === null && bocJSON(null) === null, "rỗng/null phải ra null");
+
+/* ── 9. Giai đoạn 1 (06/11): lỗi tô trong bài, yêu cầu đề, đếm từ ── */
+{
+  const BAI = "<p>Bonjour Marie,</p><p>Je suis allé&nbsp;à la fête  avec mes amis. C’était tres bien !</p><p>À bientôt</p>";
+  const van = chuThuan(BAI);
+  la(van === "Bonjour Marie,\nJe suis allé à la fête avec mes amis. C'était tres bien !\nÀ bientôt", "chuThuan: bỏ thẻ, &nbsp;, nháy cong, gộp khoảng trắng, giữ xuống dòng");
+  la(demTu(van) === 16, "demTu: đếm cụm giữa hai khoảng trắng (« C'était » là 1, « ! » không tính), ra " + demTu(van));
+  la(demTu("l'homme , c'est-à-dire : oui") === 3, "demTu: dấu câu đứng riêng không tính");
+
+  la(soTuDeBai("Écrivez un message (60 mots minimum).")?.toi_thieu === 60, "soTuDeBai: 60 mots minimum");
+  const k = soTuDeBai("Rédigez un texte de 160 à 180 mots.");
+  la(k?.toi_thieu === 160 && k?.toi_da === 180, "soTuDeBai: khoảng 160 à 180");
+  la(soTuDeBai("Écrivez au moins 80 mots")?.toi_thieu === 80, "soTuDeBai: au moins 80");
+  la(soTuDeBai("Racontez votre week-end.") === null, "soTuDeBai: đề không ghi số từ thì null, không đoán");
+  const kt = kiemTraCoDinh(BAI, "Écrivez un message de 60 mots minimum.");
+  la(kt.so_tu === 16 && kt.thieu_tu === true && kt.toi_thieu === 60, "kiemTraCoDinh: thiếu từ");
+
+  const { loi, bo } = locLoi([
+    { trich: "tres bien", sua: "très bien", loai: "orthographe", giai_thich: "Thiếu dấu." },
+    { trich: "C’était  tres", sua: "C'était très", loai: "orthographe" },          // nháy cong + 2 khoảng: vẫn khớp, nhưng trùng vùng
+    { trich: "je suis allée au cinéma", sua: "x", loai: "accord" },                // KHÔNG có trong bài → bỏ
+    { trich: "à la fête", sua: "à la fête", loai: "preposition" },                 // sửa = gốc → bỏ
+    { trich: "avec mes amis", sua: "avec des amis", loai: "kieu-la" },             // loại lạ → syntaxe
+    { trich: "tres bien", sua: "très bien", loai: "orthographe" },                 // trùng → bỏ
+    "rác",
+  ], van);
+  la(loi.length === 3 && bo === 4, `locLoi: giữ 3 lỗi có thật, bỏ 4 (ra ${loi.length}/${bo})`);
+  la(loi[1].trich === "C'était tres", "locLoi: chuẩn hoá nháy cong và khoảng trắng của đoạn trích");
+  la(loi[2].loai === "syntaxe", "locLoi: loại lỗi lạ về syntaxe");
+  la(locLoi(Array.from({ length: 30 }, () => ({ trich: "Bonjour", sua: "Salut" })), van).loi.length === 1, "locLoi: trùng đoạn trích chỉ giữ một");
+
+  const doan = chiaDoan(van, loi);
+  la(doan.map((d) => d.chu).join("") === van, "chiaDoan: ghép lại đúng nguyên bài");
+  la(doan.filter((d) => d.loi != null).length === 2, "chiaDoan: lỗi chồng vùng lỗi khác thì không tô lần hai");
+
+  const yc = locYeuCau([{ y: "Chào hỏi", dat: "co" }, { y: "Kể buổi tiệc", dat: true }, { y: "Hẹn gặp", dat: "??" }, { dat: "co" }]);
+  la(yc.length === 3 && yc[1].dat === "co" && yc[2].dat === "mot_phan", "locYeuCau: chuẩn hoá dat, bỏ mục không tên");
+
+  const g = kiemGoiY({ tieu_chi: { consigne: 2, lexique: 3, morpho: 4 }, loi: [{ trich: "tres bien", sua: "très bien", loai: "orthographe" }, { trich: "bịa", sua: "x" }], yeu_cau: [{ y: "A", dat: "khong" }] }, RUBRIC, van);
+  la(g.ok && g.goiY.loi.length === 1 && g.goiY.loi_bo === 1 && g.goiY.yeu_cau.length === 1, "kiemGoiY kèm bài: lọc lỗi + yêu cầu");
+  la(kiemGoiY({ tieu_chi: { consigne: 2 } }, RUBRIC).goiY.loi === undefined, "kiemGoiY không kèm bài: không thêm trường lỗi (phiếu cũ giữ nguyên)");
+
+  const l = kiemNhanXetLuyen({ tong_quat: "Ổn.", diem_manh: ["Rõ ý", ""], loi: [{ trich: "tres bien", sua: "très bien", loai: "orthographe" }], tong: 99 }, van);
+  la(l.ok && l.goiY.loai === "luyen" && l.goiY.diem_manh.length === 1 && l.goiY.tong === undefined, "kiemNhanXetLuyen: không có điểm, bỏ mục rỗng");
+  la(!kiemNhanXetLuyen({ tong_quat: "", loi: [{ trich: "bịa", sua: "x" }] }, van).ok, "kiemNhanXetLuyen: rỗng sau khi lọc thì từ chối");
+}
 
 console.log(fail ? `\n${pass} đạt, ${fail} hỏng` : `\n${pass} đạt, 0 hỏng`);
 process.exit(fail ? 1 : 0);

@@ -121,7 +121,7 @@ function Phan({ s, onTuCham }) {
           )}
 
           {p.score != null && p.answerId && (
-            <NhanXetAI answerId={p.answerId} level={s.level} feedback={p.feedback}
+            <NhanXetAI answerId={p.answerId} level={s.level} feedback={p.feedback} baiLam={p.raw}
               rubric={s.grille ? chuanHoaGrille(s.grille, s.level) : grilleToRubric(s.level)} />
           )}
           {p.answerId && p.loai === "open" && <BaiVietMau answerId={p.answerId} />}

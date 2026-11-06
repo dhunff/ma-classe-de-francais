@@ -41,6 +41,7 @@ import GoiYNguPhap from "./shared/GoiYNguPhap.jsx";
 import { PAYMENT_KEY, isPremium, hasAccess, fmtPrice, loadAccess } from "./shared/access.js";
 import ExerciseCard from "./screens/practice/ExerciseCard.jsx";
 import LoiNgheBai from "./screens/practice/LoiNgheBai.jsx";
+import { NhanXetVietLuyen } from "./screens/practice/LoiVietAI.jsx";
 import { supabase } from "./storageShim.js";
 import { Lock } from "lucide-react";
 import { anhMacDinh } from "./shared/anhMacDinh.js";
@@ -1288,6 +1289,8 @@ export function PracticeWorkspace({ ex, back, onFinish, soTu = false, chamBang =
   const [remaining, setRemaining] = useState(null);
   /* Bài mẫu của câu viết tự do: học sinh không có `q.model` (migration 022), máy chủ chỉ trả sau khi nộp. */
   const [baiMau, setBaiMau] = useState({});
+  /* Lượt làm máy chủ vừa ghi (06/11): AI nhận xét câu viết tự do tìm bài theo lượt này. */
+  const [luotId, setLuotId] = useState(null);
   /* Điểm từng câu nói: { [q.id]: "cho" | số | null }. luotLai: mốc bấm Làm lại, bản ghi cũ hơn không tính. */
   const [diemNoi, setDiemNoi] = useState({});
   const [luotLai, setLuotLai] = useState(0);
@@ -1379,7 +1382,7 @@ export function PracticeWorkspace({ ex, back, onFinish, soTu = false, chamBang =
     /* Đặt kết quả máy chủ CÙNG LÚC với bật `graded` (React gộp hai lần đặt state),
        nên lần vẽ đầu tiên của màn kết quả đã có đúng/sai thật. */
     const kq = res ? gopDiemNoi(res.score, res.max, ex.ghiAm ? Object.values(diemNoi) : []) : null;
-    if (res) { setRemote(res.results); setDiemMayChu(kq); }
+    if (res) { setRemote(res.results); setDiemMayChu(kq); setLuotId(res.attemptId ?? null); }
     setGraded(timedOut ? "timeout" : true);
     if (!res) phat("sai");
     else if (kq.max) {
@@ -1417,7 +1420,7 @@ export function PracticeWorkspace({ ex, back, onFinish, soTu = false, chamBang =
   const retry = () => {
     phat("tiep");
     moLuc.current = Date.now();
-    gradedRef.current = false; setGraded(false); setAnswers({}); setRemote(null); setDiemMayChu(null);
+    gradedRef.current = false; setGraded(false); setAnswers({}); setRemote(null); setDiemMayChu(null); setLuotId(null);
     setDiemNoi({}); setLuotLai(Date.now());
   };
 
@@ -1601,6 +1604,9 @@ export function PracticeWorkspace({ ex, back, onFinish, soTu = false, chamBang =
                 <GhiAmBaiNoi key={luotLai} gon mau={dam} exerciseId={ex.id} cauId={q.id} gioiHanGiay={120} tuLuc={luotLai} khoa={!!graded} onDiem={baoDiem} />
               </div>
             ) : <KhungViet value={a || ""} readOnly={!!graded} onChange={(html) => setAnswers({ ...answers, [q.id]: html })} />}
+            {graded && !laNoi && luotId && stripHtml(a) !== "" && (
+              <NhanXetVietLuyen key={`${luotId}-${q.id}`} attemptId={luotId} questionId={q.id} baiLam={a} />
+            )}
             {graded && (q.model || baiMau[q.id]) && (
               <div style={{ marginTop: 12, background: C.okSoft, border: `1.5px solid ${C.ok}55`, borderRadius: 12, padding: "12px 15px" }}>
                 <strong>{tr("Đáp án gợi ý:", "Réponse suggérée :", "Suggested answer:")}</strong>

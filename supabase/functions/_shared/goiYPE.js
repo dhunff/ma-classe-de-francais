@@ -16,6 +16,7 @@
  * một chỗ để hai bên trôi khỏi nhau — dự án đã nuôi `check:parity` cho đúng
  * một cặp như thế rồi, không thêm cặp thứ hai nếu không bắt buộc.
  */
+import { locLoi, locYeuCau } from "./loiViet.js";
 
 /* Làm tròn về bội của `step` (thang DELF dùng 0,5).
    Nhân lên rồi chia xuống: 0.1+0.2 trong dấu phẩy động ra 0.30000000000000004,
@@ -35,7 +36,7 @@ export function lamTronBuoc(v, step = 0.5) {
  * "AI không chấm mục này" — trung thực, và học sinh tự chấm mục đó như trước.
  * Điền 0 vào chỗ mô hình im lặng là bịa ra một nhận định.
  */
-export function kiemGoiY(tho, rubric) {
+export function kiemGoiY(tho, rubric, van = null) {
   if (!tho || typeof tho !== "object") {
     return { ok: false, ly_do: "khong-phai-object", goiY: null, bo: [] };
   }
@@ -121,8 +122,40 @@ export function kiemGoiY(tho, rubric) {
         .filter((x) => x && typeof x === "object" && x.goc && x.sua)
         .map((x) => ({ goc: String(x.goc).trim().slice(0, 300), sua: String(x.sua).trim().slice(0, 300), vi_sao: String(x.vi_sao ?? "").trim().slice(0, 200) }))
         .slice(0, 3),
+      /* 06/11 (giai đoạn 1): lỗi tô trong bài và đối chiếu yêu cầu của đề. Chỉ có khi máy chủ
+         truyền `van` (chữ thuần của bài); lỗi không nằm nguyên văn trong bài thì bị bỏ. */
+      ...(van != null ? phanLoiVaYeuCau(tho, van) : {}),
     },
   };
+}
+
+function phanLoiVaYeuCau(tho, van) {
+  const { loi, bo } = locLoi(tho.loi, van);
+  return { loi, loi_bo: bo, yeu_cau: locYeuCau(tho.yeu_cau) };
+}
+
+/* Nhận xét bài viết ở màn LUYỆN TẬP (06/11): không có thang DELF, không có điểm (bài luyện viết
+   tự do vốn không chấm điểm). Phải có ít nhất tổng quát hoặc một lỗi hoặc một yêu cầu, không thì
+   coi như mô hình trả rỗng. */
+export function kiemNhanXetLuyen(tho, van) {
+  if (!tho || typeof tho !== "object") return { ok: false, ly_do: "khong-phai-object", goiY: null };
+  const chu = (v, n) => String(v ?? "").trim().slice(0, n);
+  const ds = (v, n, m) => (Array.isArray(v) ? v : []).map((x) => chu(x, m)).filter(Boolean).slice(0, n);
+  const goiY = {
+    loai: "luyen",
+    tong_quat: chu(tho.tong_quat, 1200),
+    nhan_dinh_trinh_do: chu(tho.nhan_dinh_trinh_do, 400),
+    diem_manh: ds(tho.diem_manh, 3, 300),
+    uu_tien: ds(tho.uu_tien, 3, 300),
+    loi_leon: chu(tho.loi_leon, 400),
+    cau_mau: (Array.isArray(tho.cau_mau) ? tho.cau_mau : [])
+      .filter((x) => x && typeof x === "object" && x.goc && x.sua)
+      .map((x) => ({ goc: chu(x.goc, 300), sua: chu(x.sua, 300), vi_sao: chu(x.vi_sao, 200) }))
+      .slice(0, 3),
+    ...phanLoiVaYeuCau(tho, van),
+  };
+  if (!goiY.tong_quat && !goiY.loi.length && !goiY.yeu_cau.length) return { ok: false, ly_do: "rong", goiY: null };
+  return { ok: true, goiY };
 }
 
 /* Bóc JSON ra khỏi câu trả lời của mô hình.

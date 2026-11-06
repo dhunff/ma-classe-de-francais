@@ -7,6 +7,7 @@ import { supabase } from "../../storageShim.js";
 import { grilleToRubric, chuanHoaGrille } from "../../shared/grilleRubric.js";
 import { TEN_NHOM, THU_TU_NHOM } from "../../shared/peBareme.js";
 import { xinGoiYAI, docGoiYAI } from "../../shared/chamPeAI.js";
+import { BaiVietCoLoi } from "../practice/LoiVietAI.jsx";
 import { tr } from "../../shared/i18n.jsx";
 
 /* Tự chấm Production écrite — bố cục chia đôi màn hình.
@@ -421,7 +422,9 @@ export default function PESelfEvaluation({
              không để một khoảng trống cao 60vh bên dưới. */}
           <div className={`max-h-[min(60vh,640px)] overflow-y-auto px-5 py-4 ${THANH_CUON}`}>
             {copie.trim() ? (
-              <pre className="m-0 whitespace-pre-wrap font-sans text-sm leading-7 text-ink">{copie}</pre>
+              /* 06/11: gợi ý AI có danh sách lỗi thì tô ngay trên bài. */
+              Array.isArray(goiY?.loi) ? <BaiVietCoLoi baiLam={copie} loi={goiY.loi} gon />
+                : <pre className="m-0 whitespace-pre-wrap font-sans text-sm leading-7 text-ink">{copie}</pre>
             ) : (
               <p className="m-0 text-sm italic text-soft">{tr("(bạn nộp bài trống)", "(copie vide)", "(blank submission)")}</p>
             )}

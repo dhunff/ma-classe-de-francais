@@ -163,6 +163,7 @@ import Builder from "./screens/teacher/Builder.jsx";
 import XemDeThu from "./screens/teacher/XemDeThu.jsx";
 const THE_CHOI = [["le vent","gió"],["la pluie","mưa"],["l'arbre","cây"],["la montagne","núi"],["la mer","biển"],["le soleil","mặt trời"],["la neige","tuyết"],["le nuage","mây"]].map(([a,b],k)=>({id:"t"+k,matTruoc:a,matSau:b,loai:"n",chuDe:"thoi-tiet"}));
 import LoiNgheBai from "./screens/practice/LoiNgheBai.jsx";
+import { NhanXetVietLuyen } from "./screens/practice/LoiVietAI.jsx";
 import TienBoVip from "./screens/student/TienBoVip.jsx";
 /* Dữ liệu giả cho Tiến bộ VIP (06/11): ngày tính lùi từ hôm nay để lịch 12 tuần luôn có nội dung. */
 const tienBoThu = () => {
@@ -391,7 +392,23 @@ const NHAN_XET_MAU = { model: "gpt-6-luna", goiY: {
   },
   uu_tien: ["Chia đúng động từ nhóm 1 ở ngôi « nous »", "Thêm lời chào và kết thư đúng kiểu thư thân mật", "Dùng « et », « mais » để nối hai câu ngắn"],
   cau_mau: [{ goc: "Nous visiter le musée", sua: "Nous visitons le musée.", vi_sao: "Động từ phải chia theo ngôi « nous »." }],
+  /* 06/11: lỗi tô trong bài, yêu cầu của đề, số từ máy đếm. */
+  kiem_tra: { so_tu: 38, toi_thieu: 40, toi_da: null, thieu_tu: true, thua_tu: false },
+  yeu_cau: [
+    { y: "Mời bạn sang chơi vào kỳ nghỉ", dat: "co", ghi_chu: "« Viens chez moi en juillet ! »" },
+    { y: "Nêu các hoạt động sẽ làm cùng nhau", dat: "co", ghi_chu: "Biển và bảo tàng." },
+    { y: "Hẹn ngày đến cụ thể", dat: "khong", ghi_chu: "Chỉ ghi « en juillet », chưa có ngày." },
+    { y: "Chào và kết thư thân mật", dat: "mot_phan", ghi_chu: "Có lời chào, thiếu câu kết." },
+  ],
+  loi: [
+    { trich: "Nous visiter", sua: "Nous visitons", loai: "conjugaison", giai_thich: "Động từ nhóm 1 với « nous » thêm đuôi -ons." },
+    { trich: "la musée", sua: "le musée", loai: "article", giai_thich: "« musée » là danh từ giống đực." },
+    { trich: "tres", sua: "très", loai: "orthographe", giai_thich: "« très » có dấu huyền." },
+    { trich: "On va à la plage", sua: "On ira à la plage", loai: "temps", giai_thich: "Kế hoạch tương lai nên dùng futur simple hoặc futur proche." },
+  ],
 } };
+const BAI_LAM_MAU = "Salut Paul,\nViens chez moi en juillet ! On va à la plage et au musée. Nous visiter la musée d'Orsay, c'est tres beau. Le soir, on mange une glace.\nBisous,\nLéa";
+const NHAN_XET_LUYEN_MAU = { ...NHAN_XET_MAU.goiY, loai: "luyen", diem_manh: ["Đúng thể loại thư mời thân mật.", "Câu ngắn, rõ ý."], loi_leon: "Thư mời của bạn vui lắm! Allez, sửa lại vài động từ là hoàn hảo." };
 const PHAN_THI_MAU = {
   code: "CE", label: "Activité 1 — les musées de Paris", minutes: 45, points: 25,
   exercise: {
@@ -1004,7 +1021,7 @@ function Preview() {
               { code: "CE", exercise_id: "xem-thu-2", minutes: 0, points: 0, ord: 1 },
               { code: "PO", exercise_id: "xem-thu", minutes: 15, points: 25, ord: 2 }] }} />} />
           <Route path="/etudiant/phan-thi" element={<><Controls /><PhanThiThu /></>} />
-          <Route path="/etudiant/nhan-xet-ai" element={<><Controls /><div className="mx-auto max-w-2xl py-6"><NhanXetAI level="A1" rubric={grilleToRubric("A1")} mau={NHAN_XET_MAU} /></div></>} />
+          <Route path="/etudiant/nhan-xet-ai" element={<><Controls /><div className="mx-auto max-w-2xl py-6"><NhanXetAI level="A1" rubric={grilleToRubric("A1")} mau={NHAN_XET_MAU} baiLam={BAI_LAM_MAU} /><p className="m-0 mt-8 text-sm font-bold text-soft">Câu viết tự do ở màn Luyện tập:</p><NhanXetVietLuyen baiLam={BAI_LAM_MAU} thu={NHAN_XET_LUYEN_MAU} /></div></>} />
           <Route path="/etudiant/tro-choi" element={<TroChoiMan tieuDe="Thời tiết · Màn 1" the={THE_CHOI} onXong={async (sao) => ({ sao, xp: 15 })} onDong={() => history.back()} t={t} />} />
           <Route path="/etudiant/the-lat" element={<><Controls /><TheLatThu /></>} />
           <Route path="/etudiant/the-bo" element={<><Controls /><TheBoThu /></>} />

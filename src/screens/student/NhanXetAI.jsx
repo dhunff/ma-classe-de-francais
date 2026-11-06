@@ -3,6 +3,7 @@ import { Award, CheckCircle2, AlertCircle, Quote, ListChecks, PenLine, ChevronDo
 import { docGoiYAI } from "../../shared/chamPeAI.js";
 import { tr } from "../../shared/i18n.jsx";
 import { LeonNoi } from "../../shared/leon.jsx";
+import { BaiVietCoLoi, KhoiYeuCau } from "../practice/LoiVietAI.jsx";
 
 /* Phiếu nhận xét của giám khảo AI (08/10).
  *
@@ -51,7 +52,7 @@ function TieuChi({ c, t }) {
 }
 
 /* `mau`: dữ liệu dựng sẵn cho /preview.html (không gọi mạng). */
-export default function NhanXetAI({ answerId, rubric, level, feedback, mau }) {
+export default function NhanXetAI({ answerId, rubric, level, feedback, mau, baiLam }) {
   const [d, setD] = useState(mau ?? undefined);   // undefined đang tải · null không có
   useEffect(() => {
     if (mau) return undefined;
@@ -82,6 +83,10 @@ export default function NhanXetAI({ answerId, rubric, level, feedback, mau }) {
             {g.nhan_dinh_trinh_do && <p className="m-0 rounded-lg bg-surface2 px-3 py-2 font-semibold">{g.nhan_dinh_trinh_do}</p>}
           </div>
         )}
+
+        {/* 06/11: yêu cầu của đề, số từ, lỗi tô trong bài. Phiếu chấm trước ngày này không có các trường đó. */}
+        {(g.yeu_cau?.length > 0 || g.kiem_tra) && <KhoiYeuCau yeuCau={g.yeu_cau} kiemTra={g.kiem_tra} />}
+        {Array.isArray(g.loi) && baiLam && <BaiVietCoLoi baiLam={baiLam} loi={g.loi} gon />}
 
         <div>
           <p className="m-0 mb-2 text-[11px] font-bold uppercase tracking-wide text-soft">{tr("Điểm theo tiêu chí · bấm để xem chi tiết", "Note par critère · cliquez pour le détail", "Score per criterion · click for details")}</p>
