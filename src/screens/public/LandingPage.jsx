@@ -2,8 +2,8 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   Wand2, ArrowRight, CheckCircle2, Headphones, BookOpen, PenLine, Mic,
-  Map, Swords, Layers, Timer, MessageCircle, LogIn, BookA, Gamepad2,
-} from "lucide-react";
+  Map, Swords, Layers, Timer, MessageCircle, LogIn, BookA, Gamepad2, Search,
+}from "lucide-react";
 import { Leon } from "../../shared/leon.jsx";
 import { docSoLieu } from "../../shared/soLieuCongKhai.js";
 import TeamSection from "./TeamSection.jsx";
@@ -137,6 +137,24 @@ const BUOC = () => [
     mo: tr("Đề DELF A1 đến DALF C1 đủ bốn kỹ năng: đồng hồ đếm ngược, giới hạn lượt nghe, điểm quy về thang và ngưỡng đạt như kỳ thi thật.", "Du DELF A1 au DALF C1, les quatre épreuves : chronomètre, écoutes limitées, note et seuils comme à l'examen.", "DELF A1 to DALF C1 with all four papers: countdown, limited listening, scored with the official scale and pass marks.") },
 ];
 
+/* Ba màn chụp từ bản đang chạy (06/11): ảnh ở public/images/landing-*.webp. Chữ chỉ nói thứ có thật. */
+const TRUNG_BAY = () => [
+  { anh: "/images/landing-thi-thu.webp", Icon: Timer, mau: "from-rose-500 to-red-600",
+    ten: tr("Thi thử như ngồi trong phòng thi", "Un examen blanc comme le jour J", "Mock exams that feel like the real day"),
+    mo: tr("Đề trình bày như tờ đề DELF thật, chia từng exercice, có đồng hồ đếm ngược cho cả phần thi.", "Le sujet ressemble à celui du DELF, exercice par exercice, avec un chronomètre pour toute l'épreuve.", "The paper looks like a real DELF paper, exercise by exercise, with a countdown for the whole section."),
+    y: [tr("Giới hạn lượt nghe như kỳ thi thật", "Écoutes limitées comme à l'examen", "Limited listening, as in the exam"), tr("Điểm quy về thang 25 và ngưỡng đạt", "Note sur 25 et seuils de réussite", "Scored out of 25 with pass marks"), tr("Có giấy nháp ngay trên màn hình", "Brouillon intégré à l'écran", "Built-in scratch pad")],
+    alt: tr("Màn thi thử DELF A2, phần Nghe hiểu", "Examen blanc DELF A2, compréhension de l'oral", "DELF A2 mock exam, listening section") },
+  { anh: "/images/landing-lo-trinh.webp", Icon: Map, mau: "from-sky-500 to-blue-600",
+    ten: tr("Lộ trình từ vựng theo chủ đề", "Un parcours de vocabulaire par thèmes", "A vocabulary path by topic"),
+    mo: tr("Mỗi chủ đề là một chuỗi màn ngắn: nghe từ, chọn nghĩa, giữ đủ tim để qua màn và mở thử thách cuối chương.", "Chaque thème est une suite de niveaux courts : écouter, choisir le sens, garder ses cœurs pour avancer jusqu'au défi.", "Each topic is a run of short levels: listen, pick the meaning, keep your hearts to reach the chapter challenge."),
+    y: [tr("Ba chương: A1–A2, B1, B2", "Trois chapitres : A1–A2, B1, B2", "Three chapters: A1–A2, B1, B2"), tr("Có phát âm cho từng từ", "Prononciation pour chaque mot", "Audio for every word"), tr("Bấm phím 1 đến 4 để chọn nhanh", "Touches 1 à 4 pour répondre vite", "Keys 1 to 4 to answer fast")],
+    alt: tr("Một câu hỏi trong Lộ trình từ vựng", "Une question du parcours de vocabulaire", "A question from the vocabulary path") },
+  { anh: "/images/landing-tham-tu.webp", Icon: Search, mau: "from-amber-500 to-yellow-700",
+    ten: tr("Thám tử Léon: phá án bằng tiếng Pháp", "Détective Léon : résoudre des enquêtes en français", "Detective Léon: solve cases in French"),
+    mo: tr("Cùng Léon đọc lời khai, soi manh mối và tìm ra thủ phạm. Mỗi mùa là một chuỗi vụ án nối tiếp nhau.", "Avec Léon, lisez les témoignages, examinez les indices et trouvez le coupable. Chaque saison enchaîne les enquêtes.", "With Léon, read statements, examine clues and find the culprit. Each season links the cases together."),
+    y: [tr("Ba mức dễ, vừa, khó", "Trois niveaux : facile, moyen, difficile", "Easy, medium and hard"), tr("Phá vụ trước để mở vụ sau", "Résolvez une enquête pour ouvrir la suivante", "Solve one case to open the next"), tr("Thành tích và hạng cho từng vụ", "Succès et rang pour chaque enquête", "Achievements and a rank for every case")],
+    alt: tr("Bảng vụ án của trò chơi Thám tử Léon", "Le tableau des enquêtes de Détective Léon", "The case board of Detective Léon") },
+];
 
 export default function LandingPage({ imgSrc = "/images/landing-luyen-tap.webp" }) {
   const [so, setSo] = useState(null);
@@ -280,6 +298,23 @@ export default function LandingPage({ imgSrc = "/images/landing-luyen-tap.webp" 
             <Link to="/ngu-phap" className="mt-6 inline-flex items-center gap-2 text-sm font-extrabold text-primary no-underline hover:underline">{tr("Xem các bài ngữ pháp", "Voir la grammaire", "Browse the grammar")} <ArrowRight size={15} /></Link>
           </HienDan>
           <HienDan tre={120}><KhungTrinhDuyet src="/images/landing-ngu-phap.webp" alt={tr("Bài ngữ pháp Être và avoir trên FRACILE", "Leçon Être et avoir sur FRACILE", "The Être and avoir lesson on FRACILE")} /></HienDan>
+        </section>
+
+        {/* ── TRƯNG BÀY: ảnh chụp thật của thi thử, lộ trình, thám tử (06/11, theo chủ dự án) ── */}
+        <section className="mt-24 grid gap-20">
+          {TRUNG_BAY().map((m, i) => (
+            <div key={m.anh} className="grid items-center gap-10 lg:grid-cols-[0.9fr_1.1fr]">
+              <HienDan className={i % 2 ? "" : "lg:order-2"}>
+                <span className={`grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br ${m.mau} text-white shadow-md`}><m.Icon size={22} /></span>
+                <h2 className="m-0 mt-5 text-3xl font-extrabold tracking-tight text-ink sm:text-4xl" style={{ textWrap: "balance" }}>{m.ten}</h2>
+                <p className="m-0 mt-4 max-w-lg text-base leading-relaxed text-soft">{m.mo}</p>
+                <ul className="m-0 mt-5 grid list-none gap-2 p-0 text-sm font-semibold text-ink">
+                  {m.y.map((x) => <li key={x} className="flex items-start gap-2"><CheckCircle2 size={17} className="mt-0.5 shrink-0 text-ok" />{x}</li>)}
+                </ul>
+              </HienDan>
+              <HienDan tre={120} className={i % 2 ? "" : "lg:order-1"}><KhungTrinhDuyet src={m.anh} alt={m.alt} /></HienDan>
+            </div>
+          ))}
         </section>
 
         {/* ── BỐN KỸ NĂNG ── */}
