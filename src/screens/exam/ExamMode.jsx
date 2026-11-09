@@ -136,7 +136,7 @@ function ManCho({ dsDe, chon, paper, onStart, dangTai, lamPhanNoi, setLamPhanNoi
   const sanSangVao = sanSang && !dangTai && !!deDangChon?.sections?.length && phienThuc === true && !khoaVip;
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-8">
+    <div className="mx-auto max-w-3xl px-4 pb-8 pt-0">
       {/* 09/11: màn chờ nằm TRONG vỏ app (có thanh bên), nên bỏ nút « Về trang chủ ». Lúc đang
           làm bài thì phần thi phủ kín màn hình, xem ExamMode. */}
       <div className="flex flex-wrap items-center justify-end gap-3">
@@ -150,7 +150,8 @@ function ManCho({ dsDe, chon, paper, onStart, dangTai, lamPhanNoi, setLamPhanNoi
       </div>
 
       {/* ── Khung đầu trang (09/10) ── */}
-      <header className="mcf-cau-vao relative mt-5 overflow-hidden rounded-3xl bg-gradient-to-br from-blue-700 via-primary to-indigo-600 p-6 text-white shadow-[0_20px_50px_rgba(37,99,235,0.3)]">
+      {/* Màu khối đầu phân biệt hai kỳ thi (09/11, chủ dự án): DELF xanh, TCF Canada đỏ như lá phong. */}
+      <header className={`mcf-cau-vao relative mt-3 overflow-hidden rounded-3xl bg-gradient-to-br p-6 text-white ${tcf ? "from-rose-700 via-red-600 to-orange-500 shadow-[0_20px_50px_rgba(220,38,38,0.3)]" : "from-blue-700 via-primary to-indigo-600 shadow-[0_20px_50px_rgba(37,99,235,0.3)]"}`}>
         <span aria-hidden className="absolute -right-12 -top-12 h-48 w-48 rounded-full bg-white/10" />
         <span aria-hidden className="absolute -bottom-20 left-1/4 h-44 w-44 rounded-full bg-sky-300/20 blur-2xl" />
         <div className="relative flex items-center gap-4">
