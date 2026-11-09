@@ -7,6 +7,7 @@ import RequireRole from './routes/RequireRole.jsx'
 import LoginGate from './screens/LoginGate.jsx'
 import { ROLE_HOME, TEACHER_NAV, STUDENT_NAV } from './layout/navItems.js'
 import ExamMode from './screens/exam/ExamMode.jsx'
+import TcfCanada from './screens/exam/TcfCanada.jsx'
 import BanMoi from './layout/BanMoi.jsx'
 import GuiThongBao from './screens/teacher/GuiThongBao.jsx'
 import { useNhipTim } from './shared/hienDien.js'
@@ -310,16 +311,6 @@ function AppInner() {
               <Route path="/professeur/*" element={<Navigate to="/professeur/dashboard" replace />} />
             </Route>
 
-            {/* THI THỬ — cố ý NẰM NGOÀI `shell`, tức không có thanh bên.
-                Phòng thi không có menu để bấm sang chỗ khác. Thanh bên ở đây
-                vừa mời người ta rời bài giữa chừng, vừa lấy mất chiều ngang
-                của bài đọc dài. Lối ra nằm trong chính màn hình thi.
-
-                Vẫn qua RequireRole: ẩn giao diện cho gọn. Hàng rào thật là RLS
-                và Edge Function `grade`, không phải route. */}
-            <Route path="/etudiant/examen"
-              element={<RequireRole session={session} role="eleve"><ExamMode name={session?.name} /></RequireRole>} />
-
             <Route element={<RequireRole session={session} role="eleve">{shell}</RequireRole>}>
               <Route path="/etudiant/dashboard"
                 element={<StudentDashboard name={session?.name} profile={profile}
@@ -333,6 +324,10 @@ function AppInner() {
                   mặt. `name` dùng để lọc bài nộp của chính em đó. */}
               <Route path="/etudiant/lo-trinh" element={<LoTrinh name={session?.name} />} />
               <Route path="/etudiant/thach-dau" element={<ThachDau />} />
+              {/* Thi thử (09/11): TRONG vỏ app, có thanh bên. Lúc đang làm bài, ExamMode phủ kín màn
+                  hình (portal) để phòng thi không có menu. Hàng rào thật vẫn là RLS + Edge Function. */}
+              <Route path="/etudiant/examen" element={<ExamMode name={session?.name} />} />
+              <Route path="/etudiant/tcf-canada" element={<TcfCanada name={session?.name} />} />
               <Route path="/etudiant/tro-choi" element={<TroChoiNhanh />} />
               <Route path="/etudiant/tro-choi/:ma" element={<TroChoiNhanh />} />
               {/* FAQ trong vỏ app (28/10): cùng nội dung trang công khai /faq, có thanh bên. */}

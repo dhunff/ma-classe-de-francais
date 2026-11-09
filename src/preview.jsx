@@ -70,8 +70,10 @@ import { ROLE_HOME, TEACHER_NAV, STUDENT_NAV } from "./layout/navItems.js";
 /* Những đường dẫn trang xem thử tự dựng màn hình THẬT (không phải Stub).
    Danh sách này là lý do duy nhất một mục menu được phép không sinh Stub. */
 const PREVIEW_CO_SAN = ["/professeur/dashboard", "/professeur/carnet",
-  "/etudiant/dashboard", "/etudiant/calendrier", "/etudiant/tien-bo", "/professeur/khieu-nai-diem"];
+  "/etudiant/dashboard", "/etudiant/calendrier", "/etudiant/tien-bo", "/professeur/khieu-nai-diem", "/etudiant/tcf-canada", "/etudiant/examen"];
 import StudentDashboard from "./screens/dashboard/StudentDashboard.jsx";
+import TcfCanada from "./screens/exam/TcfCanada.jsx";
+import ExamMode from "./screens/exam/ExamMode.jsx";
 import TeacherDashboard from "./screens/dashboard/TeacherDashboard.jsx";
 import HomeDashboard from "./screens/dashboard/HomeDashboard.jsx";
 import CalendarView from "./screens/calendar/CalendarView.jsx";
@@ -220,7 +222,7 @@ const VI = {
      xem thử khi đó nói dối về diện mạo thật. */
   nav: { dashboard: "Trang chủ", exercises: "Thư viện bài tập", students: "Theo dõi học sinh",
     practice: "Luyện tập", speak: "Nghe & Nói", grammar: "Học ngữ pháp", progress: "Tiến bộ VIP", calendar: "Lịch", settings: "Cài đặt",
-    todo: "Cần làm", done: "Đã nộp", assigned: "Bài tập được giao", account: "Tài khoản", stats: "Thống kê", exam: "Thi thử", exams: "Đề thi thử", results: "Kết quả thi", decks: "Flashcard",
+    todo: "Cần làm", done: "Đã nộp", assigned: "Bài tập được giao", account: "Tài khoản", stats: "Thống kê", exam: "Thi thử", delf: "DELF-DALF", tcf: "TCF Canada", exams: "Đề thi thử", results: "Kết quả thi", decks: "Flashcard",
     explanations: "Câu cần lời giải",
     anchors: "Neo ngữ liệu",
     leads: "Câu hỏi liên hệ", notify: "Thông báo",
@@ -1055,6 +1057,8 @@ function Preview() {
           <Route path="/professeur/chon-doan" element={<><Controls /><ChonDoanThu /></>} />
           <Route path="/etudiant/ngu-phap" element={<><Controls /><NguPhap /></>} />
           <Route path="/etudiant/tien-bo" element={<><Controls /><TienBoVip name="Minh Anh" thu={tienBoThu()} /></>} />
+          <Route path="/etudiant/tcf-canada" element={<><Controls /><TcfCanada name="Minh Anh" /></>} />
+          <Route path="/etudiant/examen" element={<><Controls /><ExamMode name="Minh Anh" /></>} />
           <Route path="/professeur/theo-doi-thu" element={<><Controls /><div className="p-6"><DanhSachHocSinh accounts={HS_GIA} exercises={[]} onMo={() => {}} onDoi={() => {}} /></div></>} />
           <Route path="/etudiant/ngu-phap/:ma" element={<><Controls /><NguPhap /></>} />
           <Route path="/etudiant/xem-lai-dau" element={<><Controls /><XemLaiDau tranId="mau" doi="Minh Anh" duMau={DAU_MAU} onDong={() => {}} /></>} />

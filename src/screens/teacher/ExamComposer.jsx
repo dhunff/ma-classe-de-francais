@@ -6,7 +6,7 @@ import Builder from "./Builder.jsx";
 import XemDeThu from "./XemDeThu.jsx";
 import { nhomTheoTrinhDo } from "../../shared/trinhDoDe.js";
 import { loadExams, saveExam, deleteExam, cotGrilleSanSang, luuThuTuDe } from "../../shared/examStore.js";
-import { EXAM_STRUCTURE, khongCham } from "../exam/examPaper.js";
+import { EXAM_STRUCTURE, khongCham, LA_TCF } from "../exam/examPaper.js";
 import GrilleEditor, { grilleLuuDuoc } from "./GrilleEditor.jsx";
 import { tr } from "../../shared/i18n.jsx";
 
@@ -89,7 +89,7 @@ export default function ExamComposer({ t }) {
     exam: { ...d.exam, level,
       /* Thang riêng đi theo đề, nhưng nhãn trình độ bên trong phải khớp — nếu
          không nó tự giới thiệu là thang B1 trên một đề B2. */
-      grille: d.exam.grille ? { ...d.exam.grille, level } : null },
+      grille: d.exam.grille && !LA_TCF(level) ? { ...d.exam.grille, level } : null },
     /* Đổi trình độ thì thời lượng từng phần đổi theo cấu trúc thật (B1 45′ CE,
        B2 60′). Giữ những bài đã chọn NẾU chúng cùng trình độ, bỏ những bài
        không — một đề B2 mà phần CE là bài A1 thì không còn là đề B2.
@@ -176,7 +176,7 @@ export default function ExamComposer({ t }) {
           nhomTheoTrinhDo(dsDe).map((g) => (
           <section key={g.level} className="mt-6">
             <h3 className="m-0 mb-2 flex items-baseline gap-2 text-sm font-extrabold text-ink">
-              DELF {g.level}
+              {LA_TCF(g.level) ? "TCF Canada" : `DELF ${g.level}`}
               <span className="text-xs font-semibold text-soft">{g.de.length} {tr("đề ·", "sujet(s) ·", "exam(s) ·")} {g.de.filter((e) => e.is_published).length} {tr("đã phát hành", "publié(s)", "published")}</span>
             </h3>
             {g.de.length === 0 && <p className="m-0 rounded-2xl bg-surface2 px-4 py-3 text-xs text-soft">{tr("Chưa có đề", "Aucun sujet", "No exam at")} {g.level}.</p>}
@@ -299,7 +299,8 @@ export default function ExamComposer({ t }) {
           lúc khác nhau — nhồi chung một trang thì thang chấm nằm dưới cùng, sau
           ba ô chọn bài, và không ai cuộn xuống tới nó. */}
       <div className="mt-5 flex gap-2 border-b border-line">
-        {[["de", tr("Cấu trúc đề", "Structure", "Structure")], ["grille", tr("Thang chấm PE", "Grille PE", "PE grid")]].map(([k, nhan]) => (
+        {/* TCF Canada (09/11) không dùng thang chấm DELF: ẩn tab thang chấm. */}
+        {[["de", tr("Cấu trúc đề", "Structure", "Structure")], ...(LA_TCF(draft.exam.level) ? [] : [["grille", tr("Thang chấm PE", "Grille PE", "PE grid")]])].map(([k, nhan]) => (
           <button key={k} type="button" onClick={() => setTab(k)}
             className={`-mb-px border-0 border-b-2 bg-transparent px-4 py-2.5 text-sm font-bold ${
               tab === k ? "border-primary text-primary" : "border-transparent text-soft hover:text-ink"}`}>
@@ -313,7 +314,7 @@ export default function ExamComposer({ t }) {
         ))}
       </div>
 
-      {tab === "grille" ? (
+      {tab === "grille" && !LA_TCF(draft.exam.level) ? (
         <div className="mt-6">
           <GrilleEditor
             level={draft.exam.level}
@@ -350,7 +351,7 @@ export default function ExamComposer({ t }) {
               <button key={lv} type="button" onClick={() => doiLevel(lv)}
                 className={`rounded-full border-0 px-5 py-2 text-sm font-bold ${
                   lv === draft.exam.level ? "bg-primary text-white" : "bg-surface2 text-soft"}`}>
-                {lv}
+                {LA_TCF(lv) ? "TCF Canada" : lv}
               </button>
             ))}
           </div>

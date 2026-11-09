@@ -46,7 +46,19 @@ export const EXAM_STRUCTURE = {
     { code: "PE", skill: "Production écrite", label: "Production écrite",        minutes: 60, points: 25 },
     { code: "PO", skill: "Production orale",  label: "Production orale",         minutes: 20, points: 25 },
   ],
+  /* TCF Canada (09/11, theo chủ dự án): đề TCF là đề thi thử thường mang `level = 'TCF'`
+     (cột level không có ràng buộc, mã phần CO/CE/PE/PO giữ nguyên nên không cần migration).
+     Thời lượng là của kỳ thi thật (FEI); `points` là thang điểm của TCF: Nghe, Đọc 0 → 699,
+     Viết, Nói 0 → 20. Điểm Nghe, Đọc trên màn kết quả là ƯỚC LƯỢNG (shared/tcfCanada.js).
+     Trang thi DELF lọc bỏ trình độ này, trang TCF Canada chỉ hiện trình độ này. */
+  TCF: [
+    { code: "CO", skill: "Écoute",            label: "Compréhension orale",      minutes: 35, points: 699 },
+    { code: "CE", skill: "Lecture",           label: "Compréhension écrite",     minutes: 60, points: 699 },
+    { code: "PE", skill: "Production écrite", label: "Expression écrite",        minutes: 60, points: 20 },
+    { code: "PO", skill: "Production orale",  label: "Expression orale",         minutes: 12, points: 20 },
+  ],
 };
+export const LA_TCF = (level) => level === "TCF";
 
 /* Tên đầy đủ của một kỹ năng, tra theo `code`.
  *
@@ -57,7 +69,9 @@ export const EXAM_STRUCTURE = {
  * Gộp cả bốn trình độ vào một bản đồ được, vì nhãn của cùng một `code` giống
  * hệt nhau ở mọi trình độ — chỉ `minutes` khác. */
 export const NHAN_KY_NANG = Object.fromEntries(
-  Object.values(EXAM_STRUCTURE).flat().map((p) => [p.code, p.label]),
+  /* Chỉ lấy nhãn DELF: TCF đặt tên khác cho cùng mã (« Compréhension orale »), lấy cả thì nhãn
+     TCF đè lên nhãn DELF ở mọi màn hình. */
+  Object.entries(EXAM_STRUCTURE).filter(([lv]) => lv !== "TCF").flatMap(([, ds]) => ds).map((p) => [p.code, p.label]),
 );
 
 /* Những phần KHÔNG tính điểm.

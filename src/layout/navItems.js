@@ -2,7 +2,7 @@ import {
   House, GraduationCap, ChartNoAxesCombined, UserRound, Gamepad2,
   LayoutDashboard, BookOpen, Users, BarChart3, Dumbbell, AudioLines, TrendingUp,
   ClipboardList, CheckSquare, CalendarDays, Settings, Lightbulb, Timer, Trophy, Layers, Lightbulb as Bulb, Anchor, Inbox,
-  Map, BookA, Swords, FileCheck2, Megaphone, Flag, LifeBuoy, Scale, Ban } from "lucide-react";
+  Map, BookA, Swords, FileCheck2, Megaphone, Flag, LifeBuoy, Scale, Ban, Leaf } from "lucide-react";
 
 /* Điều hướng của vỏ app.
 
@@ -91,7 +91,10 @@ export const STUDENT_NAV = [
      phải mục menu thường". Sai — kết quả là một màn hình không ai tới được, tức
      là chưa làm xong. Chỗ cảnh báo trước khi tính giờ nằm ở màn chờ của chính
      ExamMode, không phải ở việc giấu lối vào. */
-  { to: "/etudiant/examen", nhom: "hoc", labelKey: "nav.exam", Icon: Timer },
+  /* 09/11 (chủ dự án): nhóm « Thi thử » có hai mục, DELF-DALF và TCF Canada, cả hai trong vỏ app
+     (có thanh bên); lúc đang làm bài thì phần thi phủ kín màn hình (ExamMode). */
+  { to: "/etudiant/examen", nhom: "thi", labelKey: "nav.delf", Icon: Timer },
+  { to: "/etudiant/tcf-canada", nhom: "thi", labelKey: "nav.tcf", Icon: Leaf },
   /* « Kết quả thi » rời menu 08/10: vào bằng nút trong màn Thi thử. */
   /* « Thẻ ghi nhớ » (/etudiant/the-ghi-nho) ĐÃ GỠ — 09/09/2026.
      Đó là thẻ SM-2 sinh từ chính câu học sinh làm sai. Flashcard giờ là bộ do
@@ -119,12 +122,12 @@ export const STUDENT_NAV = [
 /* 13/10: thanh bên chia NHÓM (trường `nhom`). Danh sách giữ nguyên thứ tự
    khai báo cho mọi chỗ khác; chỉ thanh bên sắp lại theo thứ tự nhóm dưới đây.
    31/10 (chủ dự án): Trang chủ tách riêng thành nhóm « chinh », không có tiêu đề. */
-export const THU_TU_NHOM = { prof: ["chinh", "tong", "lop", "noi_dung"], eleve: ["chinh", "hoc", "on", "toi", "tro_giup"] };
+export const THU_TU_NHOM = { prof: ["chinh", "tong", "lop", "noi_dung"], eleve: ["chinh", "hoc", "thi", "on", "toi", "tro_giup"] };
 /* 31/10 (chủ dự án): phần đầu gom Học tập, Bài tập được giao, Thi thử; Ôn luyện = Luyện tập + Trò chơi;
    Của tôi = tiến độ và tài khoản. Thứ tự trong nhóm theo danh sách dưới,
    mục không có tên ở đây giữ thứ tự gốc của mảng, xếp sau. */
 const THU_TU_MUC_HS = [
-  "/etudiant/dashboard", "/etudiant/ngu-phap", "/etudiant/nghe-noi", "/etudiant/devoirs", "/etudiant/examen",
+  "/etudiant/dashboard", "/etudiant/ngu-phap", "/etudiant/nghe-noi", "/etudiant/devoirs", "/etudiant/examen", "/etudiant/tcf-canada",
   "/etudiant/entrainement", "/etudiant/bo-the", "/etudiant/tro-choi", "/etudiant/thach-dau",
   "/etudiant/tien-bo", "/etudiant/calendrier", "/etudiant/compte", "/etudiant/faq",
 ];

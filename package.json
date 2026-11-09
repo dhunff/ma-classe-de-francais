@@ -33,6 +33,7 @@
     "check:chamai": "node scripts/check-chamai.mjs",
     "check:troichay": "node scripts/check-troichay.mjs",
     "check:champo": "node scripts/check-champo.mjs",
+    "check:tcf": "node scripts/check-tcf.mjs",
     "check:dapan": "node scripts/check-dapan.mjs",
     "check:dovui": "node scripts/check-do-vui.mjs",
     "check:phientoa": "node scripts/check-phien-toa.mjs",

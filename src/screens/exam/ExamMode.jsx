@@ -1,13 +1,15 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { Link, useNavigate } from "react-router-dom";
-import { Timer, ShieldCheck, AlertTriangle, Clock, Volume2, VolumeX, ArrowLeft, Trophy, Crown, Headphones, BookOpen, PenLine, Mic } from "lucide-react";
+import { Timer, ShieldCheck, AlertTriangle, Clock, Volume2, VolumeX, Trophy, Crown, Headphones, BookOpen, PenLine, Mic } from "lucide-react";
 import NutTieng from "../../shared/NutTieng.jsx";
 import { BangKetLuan, ThanhPhan, PhaoGiayLon } from "./KetQuaVisual.jsx";
 import { supabase } from "../../storageShim.js";
 import { load } from "../../shared/storage.js";
 import { loadExams, loadExam } from "../../shared/examStore.js";
 import { gradeRemote } from "../../shared/gradeRemote.js";
-import { EXAM_STRUCTURE, sectionScore, verdict, ghiPhan, gomTheoKyNang, NGUONG_PHAN, khongCham }
+import { diemUocLuongTCF, nclcTCF } from "../../shared/tcfCanada.js";
+import { EXAM_STRUCTURE, LA_TCF, sectionScore, verdict, ghiPhan, gomTheoKyNang, NGUONG_PHAN, khongCham }
   from "./examPaper.js";
 import GhiAmBaiNoi from "./GhiAmBaiNoi.jsx";
 import BocThamNoi, { deDaChon, khoaBoc } from "./BocThamNoi.jsx";
@@ -56,7 +58,8 @@ const dongHo = (giay) => `${hai(Math.floor(giay / 60))}:${hai(Math.max(0, giay %
 
 /* ─────────────────────────── Màn chờ ─────────────────────────── */
 
-function ManCho({ dsDe, chon, paper, onStart, dangTai, lamPhanNoi, setLamPhanNoi, phienThuc, name }) {
+function ManCho({ dsDe, chon, paper, onStart, dangTai, lamPhanNoi, setLamPhanNoi, phienThuc, name, loai = "delf", gioiThieu = null }) {
+  const tcf = loai === "tcf";
   const level = paper?.level ?? "B1";
   const cauTruc = EXAM_STRUCTURE[level] ?? [];
   /* Đề có phần nói không — hỏi DỮ LIỆU của đề, không hỏi cấu trúc chuẩn.
@@ -85,7 +88,8 @@ function ManCho({ dsDe, chon, paper, onStart, dangTai, lamPhanNoi, setLamPhanNoi
     setDangMo(false);
     if (loi) setLoiMo(loi);
   };
-  const nhom = useMemo(() => nhomTheoTrinhDo(dsDe), [dsDe]);
+  /* TCF Canada: một nhóm duy nhất, không có tab trình độ. */
+  const nhom = useMemo(() => (tcf ? [{ level: "TCF", de: dsDe }] : nhomTheoTrinhDo(dsDe)), [dsDe, tcf]);
   /* 14/10 (143): tài khoản thường chỉ làm « Đề 1 » mỗi trình độ. Máy chủ chặn thật
      (bat_dau_thi trả CAN_VIP); ở đây chỉ khoá cho rõ và mở đường mua VIP. */
   const coVip = !!(luot?.vip || luot?.khong_gioi_han);
@@ -100,7 +104,7 @@ function ManCho({ dsDe, chon, paper, onStart, dangTai, lamPhanNoi, setLamPhanNoi
   /* Chưa có đề nào thì nói rõ NGUYÊN NHÂN, đừng hiện một màn hình trống.
      Trạng thái này có thật và hay gặp lúc mới dựng lớp: giáo viên đã soạn bài
      nhưng chưa ghép thành đề, hoặc đã ghép mà chưa bấm phát hành. */
-  if (!dangTai && dsDe.length === 0) {
+  if (!dangTai && dsDe.length === 0 && !tcf) {
     return (
       <div className="mx-auto max-w-2xl py-10">
         <h1 className="m-0 text-2xl font-extrabold text-ink">{tr("Thi thử DELF", "Examen blanc DELF", "DELF mock exam")}</h1>
@@ -133,13 +137,9 @@ function ManCho({ dsDe, chon, paper, onStart, dangTai, lamPhanNoi, setLamPhanNoi
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-8">
-      {/* Lối ra. Màn hình thi nằm ngoài vỏ app nên KHÔNG có thanh bên — cố ý,
-          phòng thi không có menu. Nhưng "không có menu" khác "không có lối ra". */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <Link to="/etudiant/dashboard"
-          className="inline-flex items-center gap-1.5 text-sm font-semibold text-soft no-underline hover:text-ink">
-          <ArrowLeft size={15} /> {tr("Về trang chủ", "Accueil", "Home")}
-        </Link>
+      {/* 09/11: màn chờ nằm TRONG vỏ app (có thanh bên), nên bỏ nút « Về trang chủ ». Lúc đang
+          làm bài thì phần thi phủ kín màn hình, xem ExamMode. */}
+      <div className="flex flex-wrap items-center justify-end gap-3">
         <div className="flex items-center gap-2">
           <NutTieng />
           <Link to="/etudiant/resultats"
@@ -157,7 +157,7 @@ function ManCho({ dsDe, chon, paper, onStart, dangTai, lamPhanNoi, setLamPhanNoi
           <Leon cam="co-len" size={116} className="mcf-leon-bay shrink-0 drop-shadow-[0_12px_18px_rgba(0,0,0,0.3)] max-sm:h-20 max-sm:w-20" />
           <div className="min-w-0 flex-1">
             <p className="m-0 flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-[0.2em] text-white/80"><ShieldCheck size={14} /> {tr("Phòng thi mô phỏng", "Salle d'examen simulée", "Simulated exam room")}</p>
-            <h1 className="m-0 mt-1 text-3xl font-extrabold tracking-tight">{tr("Thi thử DELF", "Examen blanc DELF", "DELF mock exam")}</h1>
+            <h1 className="m-0 mt-1 text-3xl font-extrabold tracking-tight">{tcf ? tr("Thi thử TCF Canada", "Examen blanc TCF Canada", "TCF Canada mock exam") : tr("Thi thử DELF", "Examen blanc DELF", "DELF mock exam")}</h1>
             <p className="m-0 mt-1 text-sm text-white/85">
               {tr("Một lần duy nhất, có tính giờ, không xem đáp án giữa chừng.", "Une seule fois, chronométré, sans voir les réponses en cours.", "One sitting, timed, no answers shown along the way.")}
             </p>
@@ -175,8 +175,10 @@ function ManCho({ dsDe, chon, paper, onStart, dangTai, lamPhanNoi, setLamPhanNoi
         </div>
       </header>
 
-      {/* ── Trình độ ── */}
-      <div role="tablist" aria-label={tr("Trình độ", "Niveau", "Level")} className="no-scrollbar -mx-4 mt-6 flex gap-2 overflow-x-auto px-4 pb-1">
+      {gioiThieu}
+
+      {/* ── Trình độ ── (TCF Canada không chia trình độ) */}
+      {!tcf && <div role="tablist" aria-label={tr("Trình độ", "Niveau", "Level")} className="no-scrollbar -mx-4 mt-6 flex gap-2 overflow-x-auto px-4 pb-1">
         {nhom.map((g, k) => {
           const dang = g.level === tab;
           return (
@@ -189,14 +191,16 @@ function ManCho({ dsDe, chon, paper, onStart, dangTai, lamPhanNoi, setLamPhanNoi
             </button>
           );
         })}
-      </div>
+      </div>}
 
       {/* ── Danh sách đề ── */}
       <div className="mt-4 grid gap-3 sm:grid-cols-2">
         {deTab.length === 0 && (
           <div className="flex items-center gap-3 rounded-2xl bg-surface2 px-5 py-4 sm:col-span-2">
             <Leon cam="buon-ngu" size={56} />
-            <p className="m-0 text-sm text-soft">{tr("Chưa có đề", "Aucun sujet", "No exam at level")} {tab} {tr("nào được phát hành.", "publié pour ce niveau.", "published yet.")}</p>
+            <p className="m-0 text-sm text-soft">{tcf
+              ? tr("Đề thi thử TCF Canada đang được soạn. Khi giáo viên phát hành đề, nó sẽ hiện ở đây.", "Les sujets TCF Canada sont en préparation. Ils apparaîtront ici dès leur publication.", "TCF Canada mock exams are being prepared. They will appear here once published.")
+              : <>{tr("Chưa có đề", "Aucun sujet", "No exam at level")} {tab} {tr("nào được phát hành.", "publié pour ce niveau.", "published yet.")}</>}</p>
           </div>
         )}
         {deTab.map((e, k) => {
@@ -224,6 +228,8 @@ function ManCho({ dsDe, chon, paper, onStart, dangTai, lamPhanNoi, setLamPhanNoi
         })}
       </div>
 
+      {/* TCF Canada chưa có đề: dừng ở lời báo trên, không hiện cấu trúc, cảnh báo, nút bắt đầu. */}
+      {(!tcf || dsDe.length > 0) && <>
       {/* ── Cấu trúc đề đang chọn ── */}
       {deDangChon && (
         <div className="mt-6">
@@ -271,7 +277,7 @@ function ManCho({ dsDe, chon, paper, onStart, dangTai, lamPhanNoi, setLamPhanNoi
         <p className="m-0 mt-4 flex items-start gap-2 rounded-xl bg-surface2 p-3 text-xs text-soft">
           <AlertTriangle size={14} className="mt-0.5 shrink-0" />
           <span>
-            {tr("Đề này", "Ce sujet", "This exam")} <strong className="text-ink">{tr("không có phần thi nói (PO)", "n'a pas de production orale (PO)", "has no speaking part (PO)")}</strong>{tr(", vốn chiếm 25/100 điểm kỳ thi thật. Kết quả dưới đây chỉ phản ánh ba phần còn lại.", ", qui vaut 25/100 à l'examen réel. Le résultat ne reflète que les trois autres parties.", ", worth 25/100 in the real exam. The result only reflects the other three parts.")}
+            {tr("Đề này", "Ce sujet", "This exam")} <strong className="text-ink">{tr("không có phần thi nói (PO)", "n'a pas de production orale (PO)", "has no speaking part (PO)")}</strong>{tcf ? tr(". Kết quả chỉ có các bài thi còn lại.", ". Le résultat ne porte que sur les autres épreuves.", ". The result only covers the other tests.") : tr(", vốn chiếm 25/100 điểm kỳ thi thật. Kết quả dưới đây chỉ phản ánh ba phần còn lại.", ", qui vaut 25/100 à l'examen réel. Le résultat ne reflète que les trois autres parties.", ", worth 25/100 in the real exam. The result only reflects the other three parts.")}
           </span>
         </p>
       )}
@@ -382,6 +388,7 @@ function ManCho({ dsDe, chon, paper, onStart, dangTai, lamPhanNoi, setLamPhanNoi
         <HopBatDau tongPhut={tongPhut} luot={luot} dangMo={dangMo} loi={loiMo}
           onHuy={() => setMoHop(false)} onDongY={dongY} />
       )}
+      </>}
     </div>
   );
 }
@@ -889,10 +896,10 @@ export function PhanThi({ section, attemptId, attemptTheoBai = {}, answers, setA
          nên đi qua đi lại không mất gì — kể cả khi bài kia đã rời khỏi DOM. */}
       {dsBai.length > 1 && (
         <div className="mt-8 flex items-center gap-2">
-          <button type="button" disabled={baiIdx === 0} onClick={() => { setBaiIdx(baiIdx - 1); window.scrollTo({ top: 0 }); }}
+          <button type="button" disabled={baiIdx === 0} onClick={() => { setBaiIdx(baiIdx - 1); cuonLenDau(); }}
             className="h-10 cursor-pointer rounded-none border-[1.5px] border-solid border-[#111] bg-white px-4 text-[13px] font-bold uppercase tracking-wide text-[#111] hover:bg-[#f2f2f2] disabled:invisible">◀ Exercice {baiIdx > 0 ? baiIdx : 1}</button>
           <span className="flex-1 text-center text-[13px] italic text-[#444]">Exercice {baiIdx + 1} sur {dsBai.length}</span>
-          <button type="button" disabled={baiIdx === dsBai.length - 1} onClick={() => { setBaiIdx(baiIdx + 1); window.scrollTo({ top: 0 }); }}
+          <button type="button" disabled={baiIdx === dsBai.length - 1} onClick={() => { setBaiIdx(baiIdx + 1); cuonLenDau(); }}
             className="h-10 cursor-pointer rounded-none border-[1.5px] border-solid border-[#111] bg-[#111] px-4 text-[13px] font-bold uppercase tracking-wide text-white hover:bg-[#333] disabled:invisible">Exercice {Math.min(baiIdx + 2, dsBai.length)} ▶</button>
         </div>
       )}
@@ -932,7 +939,7 @@ export function PhanThi({ section, attemptId, attemptTheoBai = {}, answers, setA
             <ul className="m-0 mt-3 grid list-none gap-1.5 p-0">
               {thieuTheoBai.map((ds, j) => ds.length ? (
                 <li key={j}>
-                  <button type="button" onClick={() => { setBaiIdx(j); setHoiNop(false); window.scrollTo({ top: 0 }); }}
+                  <button type="button" onClick={() => { setBaiIdx(j); setHoiNop(false); cuonLenDau(); }}
                     className="flex w-full cursor-pointer items-center gap-2 rounded-xl border-0 bg-surface2 px-3 py-2 text-left font-sans text-sm text-ink hover:bg-primary-soft">
                     <strong>{dsBai.length > 1 ? tr(`Bài ${j + 1}`, `Exercice ${j + 1}`, `Exercise ${j + 1}`) : tr("Câu", "Question", "Question")}</strong>
                     <span className="min-w-0 flex-1 truncate text-soft">{dsBai.length > 1 ? tr("câu ", "questions ", "questions ") : ""}{ds.join(", ")}</span>
@@ -943,7 +950,7 @@ export function PhanThi({ section, attemptId, attemptTheoBai = {}, answers, setA
             </ul>
             <div className="mt-5 flex flex-wrap justify-end gap-2">
               <button type="button" onClick={nopNgay} className="h-10 cursor-pointer rounded-full border border-solid border-line bg-surface px-5 font-sans text-sm font-bold text-soft">{tr("Vẫn nộp", "Rendre quand même", "Submit anyway")}</button>
-              <button type="button" onClick={() => { const k = thieuTheoBai.findIndex((d) => d.length); if (k >= 0) setBaiIdx(k); setHoiNop(false); window.scrollTo({ top: 0 }); }}
+              <button type="button" onClick={() => { const k = thieuTheoBai.findIndex((d) => d.length); if (k >= 0) setBaiIdx(k); setHoiNop(false); cuonLenDau(); }}
                 className="h-10 cursor-pointer rounded-full border-0 bg-primary px-5 font-sans text-sm font-bold text-white">{tr("Quay lại làm tiếp", "Reprendre", "Go back")}</button>
             </div>
           </div>
@@ -1041,9 +1048,86 @@ function KetQua({ sections, blurCount, onLai }) {
   );
 }
 
+/* Kết quả đề TCF Canada (09/11). Nghe, Đọc: điểm ƯỚC LƯỢNG 0 → 699 và mức NCLC theo bảng IRCC
+   (shared/tcfCanada.js). Viết, Nói: hệ thống chưa chấm theo thang TCF, nên nói thẳng là chưa có
+   điểm thay vì đưa một con số (quy tắc 1). Không có « đạt / trượt »: TCF không có ngưỡng đạt,
+   người thi cần đúng mức NCLC mà chương trình định cư của mình đòi. */
+function KetQuaTCF({ sections, blurCount, onLai }) {
+  const mat = sections.some((s) => s.luuDuoc === false);
+  useEffect(() => { phat(mat ? "sai" : "nop"); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  const MAU = { CO: "from-sky-500 to-blue-600", CE: "from-emerald-500 to-teal-600", PE: "from-amber-500 to-orange-600", PO: "from-fuchsia-500 to-purple-600" };
+  const ICON = { CO: Headphones, CE: BookOpen, PE: PenLine, PO: Mic };
+  return (
+    <div className="relative mx-auto max-w-3xl px-4 py-8">
+      <div className="mb-4 flex items-center justify-between gap-3">
+        <h1 className="m-0 text-2xl font-extrabold text-ink">{tr("Kết quả thi thử TCF Canada", "Résultat de l'examen blanc TCF Canada", "TCF Canada mock exam result")}</h1>
+        <NutTieng />
+      </div>
+      <p className="m-0 flex items-start gap-2 rounded-2xl bg-warn-soft p-3 text-xs leading-relaxed text-ink">
+        <AlertTriangle size={14} className="mt-0.5 shrink-0 text-warn" />
+        <span><strong>{tr("Điểm ước lượng, không phải điểm chính thức.", "Score estimé, pas un score officiel.", "Estimated score, not an official score.")}</strong> {tr("FEI không công bố cách tính điểm từng câu. Ở đây câu khó được nhiều điểm hơn câu dễ, cộng tối đa 699, rồi quy ra NCLC theo bảng của IRCC.", "FEI ne publie pas le barème par question. Ici, les questions difficiles valent plus que les faciles (699 au maximum), puis le score est converti en NCLC selon le tableau d'IRCC.", "FEI doesn't publish per-question scoring. Here harder questions are worth more (699 max), then converted to NCLC using IRCC's table.")}</span>
+      </p>
+      {mat && (
+        <p className="m-0 mt-3 rounded-2xl border border-solid border-danger bg-danger-soft p-3 text-xs font-bold text-danger">
+          {tr("⚠️ Kết quả này CHƯA được lưu lên máy chủ (phiên đăng nhập có thể đã hết hạn). Đăng nhập lại rồi thi lại.", "⚠️ Ce résultat N'EST PAS enregistré (session expirée ?). Reconnectez-vous et recommencez.", "⚠️ This result is NOT saved (session expired?). Sign in again and retake it.")}
+        </p>
+      )}
+      <div className="mt-5 grid gap-3 sm:grid-cols-2">
+        {sections.map((s) => {
+          const Icon = ICON[s.code] ?? BookOpen;
+          const coDiem = (s.code === "CO" || s.code === "CE") && s.score != null;
+          const nclc = coDiem ? nclcTCF(s.code, s.score) : null;
+          return (
+            <div key={s.code} className="rounded-3xl bg-surface p-4 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+              <div className="flex items-center gap-3">
+                <span className={`grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-gradient-to-br ${MAU[s.code] ?? MAU.CE} text-white shadow-md`}><Icon size={20} /></span>
+                <div className="min-w-0">
+                  <p className="m-0 truncate text-sm font-extrabold text-ink">{s.label}</p>
+                  <p className="m-0 truncate text-xs text-soft">{s.baiLabel}</p>
+                </div>
+              </div>
+              {coDiem ? (
+                <div className="mt-3 flex items-end justify-between gap-2">
+                  <p className="m-0 text-3xl font-extrabold leading-none tabular-nums text-ink">{s.score}<span className="text-base font-bold text-soft">/699</span></p>
+                  <span className={`rounded-full px-3 py-1 text-xs font-extrabold ${nclc >= 7 ? "bg-ok-soft text-ok" : nclc >= 4 ? "bg-primary-soft text-primary" : "bg-surface2 text-soft"}`}>
+                    {nclc >= 4 ? `NCLC ${nclc}${nclc === 10 ? "+" : ""}` : tr("Dưới NCLC 4", "Sous NCLC 4", "Below NCLC 4")}
+                  </span>
+                </div>
+              ) : (
+                <p className="m-0 mt-3 text-xs text-soft">{tr("Phần này chưa được chấm tự động theo thang TCF (0 đến 20).", "Cette épreuve n'est pas encore notée automatiquement sur l'échelle TCF (0 à 20).", "This part isn't auto-scored on the TCF scale (0 to 20) yet.")}</p>
+              )}
+            </div>
+          );
+        })}
+      </div>
+      {blurCount > 0 && (
+        <p className="m-0 mt-3 text-xs text-soft">
+          {tr("Bạn rời khỏi tab", "Vous avez quitté l'onglet", "You left the tab")} {blurCount} {tr("lần trong lúc thi.", "fois pendant l'examen.", "times during the exam.")}
+        </p>
+      )}
+      <div className="mt-7 flex flex-wrap gap-3">
+        <button type="button" onClick={onLai}
+          className="cursor-pointer rounded-2xl border-0 bg-primary px-6 py-3 font-sans text-sm font-extrabold text-on-primary shadow-lg hover:opacity-90">
+          {tr("Thi đề khác", "Passer un autre sujet", "Take another exam")}
+        </button>
+        <Link to="/etudiant/resultats" className="rounded-2xl border-2 border-solid border-line bg-surface px-6 py-3 text-sm font-bold text-ink no-underline hover:border-primary hover:text-primary">
+          {tr("Kết quả thi của tôi", "Mes résultats", "My results")}
+        </Link>
+      </div>
+    </div>
+  );
+}
+
 /* ─────────────────────────── Vỏ ─────────────────────────── */
 
-export default function ExamMode({ name }) {
+/* Cuộn về đầu bài. Lúc đang thi, bài nằm trong lớp phủ #mcf-phong-thi (cuộn riêng) chứ không
+   phải cửa sổ, nên window.scrollTo không có tác dụng. */
+const cuonLenDau = () => { const p = document.getElementById("mcf-phong-thi"); (p ?? window).scrollTo({ top: 0 }); };
+
+/* `loai`: "delf" (trang Thi thử DELF-DALF) hay "tcf" (trang TCF Canada, 09/11). Hai trang dùng
+   chung màn này, chỉ khác danh sách đề: đề TCF là đề có level = 'TCF'. `gioiThieu`: khối giới
+   thiệu riêng của trang, hiện trong màn chờ. */
+export default function ExamMode({ name, loai = "delf", gioiThieu = null }) {
   const [dsDe, setDsDe] = useState([]);
   const [dangTai, setDangTai] = useState(true);
   const [paper, setPaper] = useState(null);
@@ -1105,7 +1189,10 @@ export default function ExamMode({ name }) {
      vì lọc ở client là thứ xoá được trong DevTools. */
   useEffect(() => {
     loadExams()
-      .then((ds) => { setDsDe(ds); if (ds.length === 1) chonDe(ds[0].id); })
+      .then((tatCa) => {
+        const ds = tatCa.filter((e) => (loai === "tcf") === LA_TCF(e.level));
+        setDsDe(ds); if (ds.length === 1) chonDe(ds[0].id);
+      })
       .catch(() => setDsDe([]))
       .finally(() => setDangTai(false));
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -1237,6 +1324,8 @@ export default function ExamMode({ name }) {
     }
 
     let luuDuoc = true;
+    /* TCF Canada: đúng/sai từng câu THEO THỨ TỰ ĐỀ, để tính điểm ước lượng 0 → 699 (câu sau nặng hơn). */
+    const dungSai = [];
     for (const ex of k.exercises) {
       const r = await gradeRemote(ex.id, answers, {
         mode: "exam", blurCount, attemptId: attemptTheoBai.current[ex.id],
@@ -1244,7 +1333,12 @@ export default function ExamMode({ name }) {
       });
       if (r) { dung += r.score ?? 0; tong += r.max ?? 0; }
       if (!r || !r.attemptId) luuDuoc = false;
+      for (const q of ex.questions ?? []) {
+        const kq = r?.results?.[q.id];
+        dungSai.push(kq && kq.graded !== false && typeof kq.correct === "boolean" ? kq.correct : null);
+      }
     }
+    const tcfUocLuong = LA_TCF(paper?.level) && (k.code === "CO" || k.code === "CE") ? diemUocLuongTCF(dungSai) : null;
 
     const ghi = {
       code: k.code, points: k.points, exerciseId: k.exercises[0]?.id,
@@ -1256,7 +1350,7 @@ export default function ExamMode({ name }) {
       baiLabel: k.exercises.map((e) => e.title).join(" · "),
       /* tong === 0 nghĩa là phần này không có câu nào máy chấm được (Production
          écrite chỉ có bài viết) → để `null`, tức "chờ chấm", chứ không phải 0. */
-      score: tong > 0 ? sectionScore(dung, tong, k.points) : null,
+      score: tcfUocLuong != null ? tcfUocLuong : tong > 0 ? sectionScore(dung, tong, k.points) : null,
       /* Phần này có được lưu lên máy chủ không. Màn kết quả dùng nó để nói
          thẳng khi bài thi chỉ tồn tại trong trình duyệt. */
       luuDuoc,
@@ -1279,7 +1373,7 @@ export default function ExamMode({ name }) {
   };
 
   if (buoc === "cho") {
-    return <ManCho name={name} dsDe={dsDe} chon={chonDe} paper={paper}
+    return <ManCho name={name} dsDe={dsDe} chon={chonDe} paper={paper} loai={loai} gioiThieu={gioiThieu}
       lamPhanNoi={lamPhanNoi} setLamPhanNoi={setLamPhanNoi}
       phienThuc={phienThuc}
       dangTai={dangTai} onStart={batDau} />;
@@ -1288,7 +1382,11 @@ export default function ExamMode({ name }) {
     /* `key` theo code: đổi phần thì PhanThi được dựng lại từ đầu, nên đồng hồ
        và chỉ số bài đều reset. Đổi BÀI trong cùng phần thì không — key không
        đổi, component sống tiếp, đồng hồ chạy tiếp. */
-    return <>
+    /* 09/11: trang Thi thử nằm trong vỏ app (có thanh bên), nhưng lúc ĐANG làm bài thì phần thi
+       phủ kín màn hình như phòng thi (chủ dự án chọn): không menu để bấm sang chỗ khác, bài đọc dài
+       có đủ chiều ngang. Portal ra body vì tổ tiên có backdrop-blur sẽ giam `fixed` (bẫy TimBan).
+       `data-che-do-thi` để nút Hỏi Léon tự ẩn như ở màn làm bài luyện tập. */
+    return createPortal(<div id="mcf-phong-thi" data-che-do-thi className="mcf-scroll fixed inset-0 z-[90] overflow-y-auto bg-bg px-4">
       <PhanThi key={khoi[idx].code} section={khoi[idx]} examId={paper?.id}
       attemptId={attemptId} attemptTheoBai={attemptTheoBai.current}
       answers={answers} setAnswers={setAnswers} onDone={xongPhan}
@@ -1296,8 +1394,10 @@ export default function ExamMode({ name }) {
       onThoat={() => setHopThoat(true)}
       onBlur={() => setBlurCount((n) => n + 1)} />
       {hopThoat && <HopThoat onO={() => setHopThoat(false)} onThoat={thoatThi} />}
-    </>;
+    </div>, document.body);
   }
+  if (LA_TCF(paper?.level)) return <KetQuaTCF sections={ketQua} blurCount={blurCount}
+    onLai={() => { setPaper(null); setBuoc("cho"); }} />;
   return <KetQua sections={ketQua} blurCount={blurCount}
     onLai={() => { setPaper(null); setBuoc("cho"); }} />;
 }
