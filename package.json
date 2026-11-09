@@ -31,6 +31,7 @@
     "check:neo": "node scripts/check-neo.mjs",
     "check:champe": "node scripts/check-champe.mjs",
     "check:chamai": "node scripts/check-chamai.mjs",
+    "check:troichay": "node scripts/check-troichay.mjs",
     "check:dapan": "node scripts/check-dapan.mjs",
     "check:dovui": "node scripts/check-do-vui.mjs",
     "check:phientoa": "node scripts/check-phien-toa.mjs",

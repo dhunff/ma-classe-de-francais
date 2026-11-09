@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Mic, Square, Loader2, AlertTriangle, CheckCircle2 } from "lucide-react";
+import { Mic, Square, Loader2, AlertTriangle, CheckCircle2, Activity } from "lucide-react";
 import { luuBaiNoi, duongNghe, dsBaiNoi, aiNhanXet } from "../../shared/baiNoi.js";
 import { tr } from "../../shared/i18n.jsx";
 import { loiTranVip } from "../../shared/loiTranVip.js";
@@ -277,6 +277,47 @@ const LOI = () => ({
   CHUA_CAU_HINH_KHOA: tr("Máy chủ chưa bật AI nhận xét, đây là việc của người quản trị.", "L'avis IA n'est pas activé sur le serveur (administrateur).", "AI feedback isn't enabled on the server (admin task)."),
   BAN_GHI_QUA_LON: tr("Bản ghi quá dài để AI nhận xét (tối đa 25 MB).", "Enregistrement trop long pour l'IA (25 Mo max).", "Recording too long for AI feedback (25 MB max)."),
 });
+/* Độ trôi chảy (giai đoạn 4, 09/11): máy đo từ dấu thời gian từng từ (_shared/troiChay.js). Theo chủ
+   dự án, học sinh chỉ thấy MỨC, không thấy con số; số đo vẫn lưu trong ket_qua.troi_chay. */
+const MUC_TC = () => ({
+  toc_do: {
+    cham: [tr("Chậm", "Lent", "Slow"), "bg-warn-soft text-warn"],
+    hoi_cham: [tr("Hơi chậm", "Un peu lent", "A bit slow"), "bg-warn-soft text-warn"],
+    tot: [tr("Vừa với trình độ", "Adapté au niveau", "Right for your level"), "bg-ok-soft text-ok"],
+    nhanh: [tr("Hơi nhanh", "Un peu rapide", "A bit fast"), "bg-primary-soft text-primary"],
+  },
+  dem: {
+    it: [tr("Ít", "Peu", "Few"), "bg-ok-soft text-ok"],
+    vua: [tr("Vừa", "Moyen", "Some"), "bg-primary-soft text-primary"],
+    nhieu: [tr("Nhiều", "Beaucoup", "Many"), "bg-warn-soft text-warn"],
+  },
+});
+export function KhoiTroiChay({ tc, nx }) {
+  if (!tc?.du_lieu || !tc.muc) return null;
+  const M = MUC_TC();
+  const dong = [
+    [tr("Tốc độ nói", "Débit", "Speaking pace"), M.toc_do[tc.muc.toc_do]],
+    [tr("Chỗ ngập ngừng", "Hésitations", "Hesitations"), M.dem[tc.muc.ngap_ngung]],
+    [tr("Từ đệm (euh, hum…)", "Mots de remplissage (euh, hum…)", "Fillers (euh, hum…)"), M.dem[tc.muc.tu_dem]],
+    [tr("Lặp từ", "Répétitions", "Repetitions"), M.dem[tc.muc.lap_tu]],
+  ].filter(([, m]) => m);
+  return (
+    <div className="mt-3 rounded-xl bg-surface p-3">
+      <p className="m-0 flex items-center gap-1.5 text-xs font-bold text-ink"><Activity size={14} className="text-primary" aria-hidden />{tr("Độ trôi chảy", "Aisance", "Fluency")}</p>
+      <ul className="m-0 mt-2 grid list-none gap-1.5 p-0 sm:grid-cols-2">
+        {dong.map(([nhan, [chu, mau]]) => (
+          <li key={nhan} className="flex items-center justify-between gap-2 rounded-lg bg-surface2 px-2.5 py-1.5 text-xs">
+            <span className="text-ink">{nhan}</span>
+            <span className={`shrink-0 rounded-full px-2 py-0.5 font-bold ${mau}`}>{chu}</span>
+          </li>
+        ))}
+      </ul>
+      {nx && <p className="m-0 mt-2 text-[13px] leading-relaxed text-ink">{nx}</p>}
+      <p className="m-0 mt-1.5 text-[11px] text-soft">{tr("Máy đo từ thời điểm của từng từ trong bản ghi, so với trình độ của bài; chỉ để tham khảo. Máy chép lời đôi khi bỏ sót từ đệm.", "Mesuré d'après le minutage de chaque mot, selon le niveau de l'exercice ; à titre indicatif. La transcription peut omettre des mots de remplissage.", "Measured from each word's timing, against the exercise level; indicative only. The transcript may miss some fillers.")}</p>
+    </div>
+  );
+}
+
 function KhungNhanXet({ kq }) {
   if (!kq.ok) {
     return (
@@ -309,6 +350,7 @@ function KhungNhanXet({ kq }) {
           </ul>
         </div>
       )}
+      <KhoiTroiChay tc={n.troi_chay} nx={n.troi_chay_nx} />
       {n.phat_am && <p className="m-0 mt-3"><strong className="text-xs">{tr("Phát âm (phỏng đoán từ bản chép lời):", "Prononciation (déduite de la transcription) :", "Pronunciation (inferred from the transcript):")}</strong> {n.phat_am}</p>}
       {n.luyen_tiep && <p className="m-0 mt-2"><strong className="text-xs">{tr("Luyện tiếp:", "Pour progresser :", "Practice next:")}</strong> {n.luyen_tiep}</p>}
       {n.loi_leon && <LeonNoi cam="co-len" size={56} className="mt-3">{n.loi_leon}</LeonNoi>}

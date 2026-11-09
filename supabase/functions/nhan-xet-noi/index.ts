@@ -31,6 +31,8 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.112.4";
 import { CORS, json } from "../_shared/cors.ts";
 import { tranVip } from "../_shared/tranVip.ts";
 import { soCau } from "../_shared/soCau.js";
+// @ts-ignore — JS thuần, dùng chung với scripts/check-troichay.mjs
+import { doTroiChay, dongTroiChay, GOI_Y_CHEP_TU_DEM } from "../_shared/troiChay.js";
 
 const KHO = "bai-noi";
 const HAN_MUC = 6;
@@ -107,8 +109,20 @@ Deno.serve(async (req) => {
   // 1. Chép lời
   const form = new FormData();
   form.append("file", file, tenFile);
-  form.append("model", Deno.env.get(docTheo ? "PA_STT_MODEL" : "PO_STT_MODEL") || MODEL_STT);
+  const modelStt = Deno.env.get(docTheo ? "PA_STT_MODEL" : "PO_STT_MODEL") || MODEL_STT;
+  form.append("model", modelStt);
   if (cau) form.append("language", "fr");
+  /* Độ trôi chảy (giai đoạn 4, 09/11): xin dấu thời gian TỪNG TỪ để máy tự đo tốc độ, chỗ ngập
+     ngừng, từ đệm, lặp từ (_shared/troiChay.js). Chỉ whisper-1 trả `words`; model khác thì bỏ qua
+     phần đo chứ không làm hỏng lời gọi. Câu đọc theo mẫu không đo (đọc theo câu có sẵn, không phải
+     nói tự nhiên) và không gửi gợi ý nào. Gợi ý gửi kèm là câu có từ đệm, KHÔNG phải nội dung đề:
+     nó chỉ dặn whisper chép lại « euh, hum » thay vì làm sạch câu. */
+  const doMoc = !docTheo && modelStt === "whisper-1";
+  if (doMoc) {
+    form.append("response_format", "verbose_json");
+    form.append("timestamp_granularities[]", "word");
+    form.append("prompt", GOI_Y_CHEP_TU_DEM);
+  }
   let r1: Response;
   try {
     r1 = await fetch("https://api.openai.com/v1/audio/transcriptions", {
@@ -119,7 +133,15 @@ Deno.serve(async (req) => {
     return json(502, { ok: false, ma: "AI_TRA_LOI_LOI", buoc: "chep_loi", trang_thai: r1.status,
       chi_tiet: (await r1.text().catch(() => "")).slice(0, 300) });
   }
-  const chepLoi = String((await r1.json().catch(() => null))?.text ?? "").trim();
+  const banChep: any = await r1.json().catch(() => null);
+  const chepLoi = String(banChep?.text ?? "").trim();
+  /* Bản ghi gần như im lặng thì whisper có thể chép lại chính câu gợi ý: coi như không nghe rõ,
+     đừng nhận xét một câu học sinh không hề nói. */
+  const gonChu = (x: string) => x.toLowerCase().replace(/[^\p{L}]/gu, "");
+  if (doMoc && gonChu(chepLoi).includes(gonChu(GOI_Y_CHEP_TU_DEM))) {
+    return json(422, { ok: false, ma: "KHONG_NGHE_RO", thong_bao: "Không nghe được lời nói nào trong bản ghi." });
+  }
+  const troiChay: any = doMoc ? doTroiChay(banChep?.words, ex?.level) : { du_lieu: false };
   if (chepLoi.length < (cau ? 2 : 5)) return json(422, { ok: false, ma: "KHONG_NGHE_RO", thong_bao: "Không nghe được lời nói nào trong bản ghi." });
 
   if (docTheo) {
@@ -151,15 +173,21 @@ Deno.serve(async (req) => {
     "- Về phát âm chỉ nói GIÁN TIẾP: nếu một từ bị chép sai/lạ, có thể do phát âm chưa rõ — nói rõ đó là phỏng đoán.",
     "- Viết bằng TIẾNG VIỆT, xưng « bạn ». Trích nguyên văn đoạn tiếng Pháp khi chỉ lỗi.",
     "- Không bịa lỗi. Chỗ nào tốt thì nói là tốt.",
+    ...(troiChay.du_lieu ? [
+      "- Có mục ĐỘ TRÔI CHẢY do máy đo: viết trường troi_chay, 1-2 câu nhận xét độ trôi chảy dựa trên các MỨC đó và một cách luyện cụ thể.",
+      "  KHÔNG nêu con số nào (không số từ/phút, không số lần, không số giây): học sinh chỉ được xem mức. Đừng tự suy độ trôi chảy từ bản chép lời.",
+    ] : []),
     "",
     "Trả lời CHỈ bằng một object JSON đúng khuôn:",
     `{ ${cau ? '"diem": <số nguyên 0-10>, ' : ""}"tong_quat": "<2-3 câu>", "diem_manh": ["<...>"], `,
     '  "can_sua": [{ "trich": "<tiếng Pháp trong bài>", "goi_y": "<cách nói đúng hơn, kèm giải thích ngắn>" }], ',
     '  "phat_am": "<lưu ý phát âm gián tiếp, hoặc chuỗi rỗng>", "luyen_tiep": "<1 việc nên luyện tiếp>", ',
+    ...(troiChay.du_lieu ? ['  "troi_chay": "<1-2 câu về độ trôi chảy, không con số>", '] : []),
     '  "loi_leon": "<1-2 câu động viên ấm áp, giọng Leon (linh vật chó bulldog Pháp của FRACILE), nêu một điểm mạnh THẬT, có thể chen một câu tiếng Pháp đơn giản như Allez, courage !>" }',
   ].join("\n");
   const mau = cau?.answer_key?.model ? ["", "CÂU MẪU THAM KHẢO:", String(cau.answer_key.model)] : [];
-  const nguoiDung = ["ĐỀ BÀI:", deBai || "(không rõ)", ...mau, "", "BẢN CHÉP LỜI BÀI NÓI:", chepLoi.slice(0, 8000)].join("\n");
+  const dongTC = dongTroiChay(troiChay);
+  const nguoiDung = ["ĐỀ BÀI:", deBai || "(không rõ)", ...mau, "", "BẢN CHÉP LỜI BÀI NÓI:", chepLoi.slice(0, 8000), ...(dongTC ? ["", dongTC] : [])].join("\n");
 
   let r2: Response;
   try {
@@ -196,6 +224,9 @@ Deno.serve(async (req) => {
     luyen_tiep: chuoi(kq.luyen_tiep),
     loi_leon: chuoi(kq.loi_leon).slice(0, 400),
     ...(cau ? { diem: kq.diem } : {}),
+    /* Số đo lưu đủ (cho AI và cho sau này), giao diện chỉ hiện `muc`. Lời AI lỡ nêu con số thì bỏ,
+       vì học sinh chỉ được xem mức (chủ dự án, 09/11). */
+    ...(troiChay.du_lieu ? { troi_chay: troiChay, troi_chay_nx: /\d/.test(chuoi(kq.troi_chay)) ? "" : chuoi(kq.troi_chay) } : {}),
   };
 
   const { error: loiGhi } = await admin.from("po_ai_nhan_xet").insert({
