@@ -1,8 +1,17 @@
+import { createElement } from "react";
 import {
   House, GraduationCap, ChartNoAxesCombined, UserRound, Gamepad2,
   LayoutDashboard, BookOpen, Users, BarChart3, Dumbbell, AudioLines, TrendingUp,
   ClipboardList, CheckSquare, CalendarDays, Settings, Lightbulb, Timer, Trophy, Layers, Lightbulb as Bulb, Anchor, Inbox,
-  Map, BookA, Swords, FileCheck2, Megaphone, Flag, LifeBuoy, Scale, Ban, Leaf } from "lucide-react";
+  Map, BookA, Swords, FileCheck2, Megaphone, Flag, LifeBuoy, Scale, Ban } from "lucide-react";
+
+/* « Icon » bằng CHỮ cho hai mục Thi thử (09/11, chủ dự án: « thay 2 icon này thành DELF và TCF »).
+   Nhận cùng props như icon lucide (size, strokeWidth, className) để thanh bên không phải đổi gì;
+   chữ co theo ô 36px. File .js nên dùng createElement thay vì JSX. */
+const chuIcon = (chu, co) => ({ className = "" }) =>
+  createElement("span", { "aria-hidden": true, className: `font-sans font-black leading-none tracking-tight ${className}`, style: { fontSize: co } }, chu);
+const IconDELF = chuIcon("DELF", 9.5);
+const IconTCF = chuIcon("TCF", 11);
 
 /* Điều hướng của vỏ app.
 
@@ -93,8 +102,8 @@ export const STUDENT_NAV = [
      ExamMode, không phải ở việc giấu lối vào. */
   /* 09/11 (chủ dự án): nhóm « Thi thử » có hai mục, DELF-DALF và TCF Canada, cả hai trong vỏ app
      (có thanh bên); lúc đang làm bài thì phần thi phủ kín màn hình (ExamMode). */
-  { to: "/etudiant/examen", nhom: "thi", labelKey: "nav.delf", Icon: Timer },
-  { to: "/etudiant/tcf-canada", nhom: "thi", labelKey: "nav.tcf", Icon: Leaf },
+  { to: "/etudiant/examen", nhom: "thi", labelKey: "nav.delf", Icon: IconDELF },
+  { to: "/etudiant/tcf-canada", nhom: "thi", labelKey: "nav.tcf", Icon: IconTCF },
   /* « Kết quả thi » rời menu 08/10: vào bằng nút trong màn Thi thử. */
   /* « Thẻ ghi nhớ » (/etudiant/the-ghi-nho) ĐÃ GỠ — 09/09/2026.
      Đó là thẻ SM-2 sinh từ chính câu học sinh làm sai. Flashcard giờ là bộ do
