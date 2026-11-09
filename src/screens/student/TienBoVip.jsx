@@ -1,4 +1,5 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { motion, animate, useReducedMotion, AnimatePresence, MotionConfig } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import {
   Crown, TrendingUp, TrendingDown, Minus, RotateCcw, CalendarDays, Clock, BookOpen, Loader2,
@@ -98,47 +99,117 @@ function MoiVip({ onMua }) {
   );
 }
 
+/* ── Chuyển động (09/11, theo chủ dự án: « chuyên nghiệp hơn, thêm animation ») ──
+ * MỘT nhịp vào trang: số đếm lên, vòng tiến độ vẽ ra, các ngày trong tuần bật lên lần lượt,
+ * lịch 12 tuần hiện theo đường chéo. Sau đó đứng yên, trừ vòng sáng nhẹ ở ô hôm nay.
+ * Rê chuột lên ô lịch thì hiện thẻ ngày (chuyển động do người dùng gây ra).
+ * `MotionConfig reducedMotion="user"` ở gốc trang tắt dịch chuyển cho ai bật giảm chuyển động;
+ * SoChay tự kiểm và hiện thẳng số cuối. */
+const EASE = [0.22, 1, 0.36, 1];
+
+function SoChay({ den, dinhDang = (v) => Math.round(v), tre = 0 }) {
+  const giam = useReducedMotion();
+  const [v, setV] = useState(giam ? den : 0);
+  useEffect(() => {
+    if (giam) { setV(den); return undefined; }
+    const c = animate(0, den, { duration: 1.1, delay: tre, ease: EASE, onUpdate: setV });
+    return () => c.stop();
+  }, [den, giam, tre]);
+  return <>{dinhDang(v)}</>;
+}
+
+/* Tên tháng ngắn cho nhãn cột lịch. */
+const THANG_FR = ["janv.", "févr.", "mars", "avr.", "mai", "juin", "juil.", "août", "sept.", "oct.", "nov.", "déc."];
+const THANG_EN = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const tenThang = (d) => { const m = Number(d.slice(5, 7)); return tr(`Th${m}`, THANG_FR[m - 1], THANG_EN[m - 1]); };
+const THU_DAI = () => [tr("Thứ Hai", "Lundi", "Monday"), tr("Thứ Ba", "Mardi", "Tuesday"), tr("Thứ Tư", "Mercredi", "Wednesday"), tr("Thứ Năm", "Jeudi", "Thursday"), tr("Thứ Sáu", "Vendredi", "Friday"), tr("Thứ Bảy", "Samedi", "Saturday"), tr("Chủ nhật", "Dimanche", "Sunday")];
+
 /* ── Khối đầu trang: tuần này ── */
-function DauTrang({ d, ngay, homNay }) {
+function TuanNay({ ngay, homNay }) {
   const tuan = Array.from({ length: 7 }, (_, i) => congNgay(homNay, i - 6));
+  const co = tuan.map((x) => (ngay[x] ?? 0) > 0);
   const thu = THU();
-  const O = ({ Icon, so, nhan }) => (
-    <div className="rounded-2xl bg-white/10 p-4 backdrop-blur-sm">
-      <Icon size={16} className="text-amber-300" />
-      <p className="m-0 mt-2 text-3xl font-extrabold tabular-nums">{so}</p>
-      <p className="m-0 text-xs text-white/70">{nhan}</p>
-    </div>
+  return (
+    <ol className="m-0 flex list-none items-start p-0" aria-label={tr("Ngày có học trong tuần", "Jours actifs de la semaine", "Active days this week")}>
+      {tuan.map((x, i) => (
+        <React.Fragment key={x}>
+          {i > 0 && (
+            /* Đoạn nối hai ngày liền nhau đều có học: vẽ ra sau khi hai chấm đã bật lên. */
+            <li aria-hidden className="mt-[15px] h-[3px] w-1.5 shrink-0 overflow-hidden rounded-full bg-white/10 sm:mt-[17px] sm:w-3">
+              {co[i - 1] && co[i] && (
+                <motion.span className="block h-full origin-left bg-amber-400" initial={{ scaleX: 0 }} animate={{ scaleX: 1 }}
+                  transition={{ duration: 0.25, delay: 0.25 + i * 0.07, ease: EASE }} />
+              )}
+            </li>
+          )}
+          <li className="grid justify-items-center gap-1.5" title={`${dm(x)}: ${ngay[x] ?? 0}`}>
+            <motion.span initial={{ scale: 0.3, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
+              transition={{ type: "spring", stiffness: 420, damping: 22, delay: 0.1 + i * 0.07 }}
+              className={`grid h-8 w-8 place-items-center rounded-full text-xs font-extrabold sm:h-9 sm:w-9 ${co[i] ? "bg-amber-400 text-amber-950 shadow-[0_6px_16px_rgba(251,191,36,0.35)]" : "bg-white/[0.07] text-white/40"} ${x === homNay ? "ring-2 ring-white/80 ring-offset-2 ring-offset-indigo-950" : ""}`}>
+              {co[i] ? <Check size={15} strokeWidth={3} /> : dm(x).slice(0, 2)}
+            </motion.span>
+            <span className={`text-[10px] font-bold ${x === homNay ? "text-white" : "text-white/55"}`}>{thu[thuCua(x)]}</span>
+          </li>
+        </React.Fragment>
+      ))}
+    </ol>
   );
+}
+
+function VongNgay({ so }) {
+  const R = 19;
+  return (
+    <span className="relative hidden h-14 w-14 shrink-0 place-items-center sm:grid">
+      <svg viewBox="0 0 48 48" className="absolute inset-0 h-full w-full -rotate-90" aria-hidden>
+        <circle cx="24" cy="24" r={R} fill="none" stroke="rgb(255 255 255 / 0.12)" strokeWidth="5" />
+        {so > 0 && (
+          <motion.circle cx="24" cy="24" r={R} fill="none" stroke="#fbbf24" strokeWidth="5" strokeLinecap="round"
+            initial={{ pathLength: 0 }} animate={{ pathLength: Math.min(so, 7) / 7 }} transition={{ duration: 1.1, delay: 0.3, ease: EASE }} />
+        )}
+      </svg>
+      <Flame size={18} className="text-amber-300" />
+    </span>
+  );
+}
+
+/* Ở cấp module: định nghĩa trong DauTrang thì mỗi lần dựng lại (lịch ngày học về sau) là component mới, hoạt ảnh chạy lại. */
+const ODauTrang = ({ Icon, children, nhan, tre }) => (
+  <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: tre, ease: EASE }}
+    className="flex min-w-0 items-center gap-3 px-3 py-4 sm:px-5">
+    {Icon}
+    <div className="min-w-0">
+      <p className="m-0 whitespace-nowrap text-xl font-extrabold leading-none tabular-nums sm:text-[2rem]">{children}</p>
+      <p className="m-0 mt-1.5 truncate text-xs text-white/60">{nhan}</p>
+    </div>
+  </motion.div>
+);
+const ChipIcon = ({ I }) => <span className="hidden h-10 w-10 shrink-0 place-items-center rounded-2xl bg-white/[0.08] text-amber-300 sm:grid"><I size={18} /></span>;
+
+function DauTrang({ d, ngay, homNay }) {
   return (
     <section className="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-slate-900 via-indigo-950 to-blue-900 p-6 text-white shadow-[0_24px_60px_rgba(30,27,75,0.3)] sm:p-8">
       <span aria-hidden className="pointer-events-none absolute -right-20 -top-24 h-72 w-72 rounded-full bg-amber-400/15 blur-3xl" />
       <span aria-hidden className="pointer-events-none absolute -bottom-24 left-10 h-56 w-56 rounded-full bg-blue-500/20 blur-3xl" />
-      <div className="relative flex flex-wrap items-center justify-between gap-3">
-        <div>
+      {/* Lưới chấm mờ: chất liệu « giấy kẻ ô » của sổ theo dõi, chỉ để làm nền. */}
+      <span aria-hidden className="pointer-events-none absolute inset-0 opacity-[0.07] [background-image:radial-gradient(rgb(255_255_255)_1px,transparent_1px)] [background-size:18px_18px]" />
+      <div className="relative flex flex-wrap items-end justify-between gap-x-6 gap-y-5">
+        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, ease: EASE }}>
           <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-400 px-3 py-1 text-xs font-extrabold text-amber-950"><Crown size={13} /> VIP</span>
-          <h1 className="m-0 mt-3 text-2xl font-extrabold sm:text-3xl">{tr("Tiến bộ của bạn", "Vos progrès", "Your progress")}</h1>
-          <p className="m-0 mt-1 text-sm text-white/70">{tr("7 ngày gần nhất", "7 derniers jours", "Last 7 days")}: {dm(d.tu)} → {dm(d.den)}</p>
-        </div>
-        {ngay && (
-          <ol className="m-0 flex list-none gap-1.5 p-0" aria-label={tr("Ngày có học trong tuần", "Jours actifs de la semaine", "Active days this week")}>
-            {tuan.map((x) => {
-              const co = (ngay[x] ?? 0) > 0;
-              return (
-                <li key={x} className="grid justify-items-center gap-1" title={`${dm(x)}: ${ngay[x] ?? 0}`}>
-                  <span className={`grid h-9 w-9 place-items-center rounded-full text-xs font-extrabold ${co ? "bg-amber-400 text-amber-950" : "bg-white/10 text-white/40"} ${x === homNay ? "ring-2 ring-white/70 ring-offset-2 ring-offset-indigo-950" : ""}`}>
-                    {co ? <Check size={15} strokeWidth={3} /> : dm(x).slice(0, 2)}
-                  </span>
-                  <span className="text-[10px] font-bold text-white/60">{thu[thuCua(x)]}</span>
-                </li>
-              );
-            })}
-          </ol>
-        )}
+          <h1 className="m-0 mt-3 text-2xl font-extrabold tracking-tight sm:text-[2rem]">{tr("Tiến bộ của bạn", "Vos progrès", "Your progress")}</h1>
+          <p className="m-0 mt-1.5 text-sm text-white/65">{tr("7 ngày gần nhất", "7 derniers jours", "Last 7 days")}: {dm(d.tu)} → {dm(d.den)}</p>
+        </motion.div>
+        {ngay && <TuanNay ngay={ngay} homNay={homNay} />}
       </div>
-      <div className="relative mt-6 grid grid-cols-3 gap-3">
-        <O Icon={BookOpen} so={d.so_bai} nhan={tr("bài đã nộp", "exercices rendus", "exercises submitted")} />
-        <O Icon={Clock} so={thoiGian(d.giay)} nhan={tr("thời gian làm bài", "temps de travail", "time spent")} />
-        <O Icon={Flame} so={`${d.ngay_hoc}/7`} nhan={tr("ngày có học", "jours actifs", "active days")} />
+      <div className="relative mt-7 grid grid-cols-3 divide-x divide-y-0 divide-solid divide-white/10 rounded-2xl bg-white/[0.06] ring-1 ring-white/10">
+        <ODauTrang tre={0.15} Icon={<VongNgay so={d.ngay_hoc} />} nhan={tr("ngày có học", "jours actifs", "active days")}>
+          <SoChay den={d.ngay_hoc ?? 0} tre={0.15} /><span className="text-sm font-bold text-white/50 sm:text-base">/7</span>
+        </ODauTrang>
+        <ODauTrang tre={0.22} Icon={<ChipIcon I={BookOpen} />} nhan={tr("bài đã nộp", "exercices rendus", "exercises submitted")}>
+          <SoChay den={d.so_bai ?? 0} tre={0.22} />
+        </ODauTrang>
+        <ODauTrang tre={0.29} Icon={<ChipIcon I={Clock} />} nhan={tr("thời gian làm bài", "temps de travail", "time spent")}>
+          <SoChay den={d.giay ?? 0} tre={0.29} dinhDang={thoiGian} />
+        </ODauTrang>
       </div>
     </section>
   );
@@ -149,49 +220,84 @@ const MUC = ["bg-surface2", "bg-primary/25", "bg-primary/45", "bg-primary/70", "
 const mucCua = (n) => (n <= 0 ? 0 : n === 1 ? 1 : n <= 3 ? 2 : n <= 5 ? 3 : 4);
 
 function NhipHoc({ ngay, homNay }) {
-  const { cot, soNgay, dainhat } = useMemo(() => {
+  const { cot, soNgay, dainhat, nhanThang } = useMemo(() => {
     const dau = congNgay(homNay, -thuCua(homNay) - 7 * 11); // thứ Hai của 12 tuần trước
     const cot = Array.from({ length: 12 }, (_, c) => Array.from({ length: 7 }, (_, r) => congNgay(dau, c * 7 + r)));
     let soNgay = 0, chuoi = 0, dainhat = 0;
     cot.flat().filter((x) => x <= homNay).forEach((x) => {
       if ((ngay[x] ?? 0) > 0) { soNgay += 1; chuoi += 1; dainhat = Math.max(dainhat, chuoi); } else chuoi = 0;
     });
-    return { cot, soNgay, dainhat };
+    /* Nhãn tháng đặt ở cột có ngày mùng 1 (hoặc cột đầu), như lịch treo tường. */
+    const nhanThang = cot.map((c) => c.find((x) => x.slice(8) === "01") ?? null);
+    /* Cột đầu mang tên tháng đang dở, trừ khi tháng sau bắt đầu quá gần (hai nhãn sẽ đè nhau). */
+    const sau = nhanThang.findIndex(Boolean);
+    if (!nhanThang[0] && (sau === -1 || sau >= 3)) nhanThang[0] = cot[0][0];
+    return { cot, soNgay, dainhat, nhanThang };
   }, [ngay, homNay]);
   const thu = THU();
+  const thuDai = THU_DAI();
+  const khung = useRef(null);
+  const [tro, setTro] = useState(null); // ô đang rê chuột: { x, y, ngay, n }
+  const vao = (e, x) => {
+    const k = khung.current?.getBoundingClientRect();
+    const o = e.currentTarget.getBoundingClientRect();
+    /* Kẹp tâm thẻ để ô sát mép không đẩy thẻ tràn khỏi khung (gây cuộn ngang trên điện thoại). */
+    if (k) setTro({ x: Math.min(Math.max(o.left - k.left + o.width / 2, 76), k.width - 76), y: o.top - k.top, ngay: x, n: ngay[x] ?? 0 });
+  };
   return (
-    <section className="rounded-3xl border border-solid border-line bg-surface p-5 sm:p-6">
+    <motion.section initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.2, ease: EASE }}
+      className="rounded-3xl border border-solid border-line bg-surface p-5 sm:p-6">
       <TieuDe Icon={CalendarDays} phu={tr("Mỗi ô là một ngày", "Une case = un jour", "One square per day")}>{tr("Nhịp học 12 tuần", "Rythme sur 12 semaines", "12-week rhythm")}</TieuDe>
-      <div className="flex flex-wrap items-center gap-x-8 gap-y-5">
-        {/* Cột nhãn thứ là lưới 7 hàng 1fr, cao bằng khối ô bên cạnh nên tự thẳng hàng. */}
-        <div className="flex w-full max-w-[26rem] gap-2">
-          <div className="grid shrink-0 grid-rows-7 gap-1 text-[10px] font-bold leading-none text-soft">
-            {thu.map((t, i) => <span key={t} className={`flex items-center ${i % 2 ? "invisible" : ""}`}>{t}</span>)}
+      <div className="flex flex-wrap items-stretch gap-x-8 gap-y-6">
+        <div className="w-full max-w-[30rem] flex-1">
+          <div ref={khung} className="relative flex gap-2" onMouseLeave={() => setTro(null)}>
+            {/* Cột nhãn thứ: hàng đầu chừa chỗ cho nhãn tháng, 7 hàng còn lại thẳng hàng với ô. */}
+            <div className="grid shrink-0 grid-rows-[auto_repeat(7,minmax(0,1fr))] gap-1 text-[10px] font-bold leading-none text-soft">
+              <span className="h-4" />
+              {thu.map((t, i) => <span key={t} className={`flex items-center ${i % 2 ? "invisible" : ""}`}>{t}</span>)}
+            </div>
+            <div className="grid min-w-0 flex-1 grid-cols-12 gap-1">
+              {cot.map((c, i) => (
+                <div key={i} className="grid grid-rows-[auto_repeat(7,minmax(0,1fr))] gap-1">
+                  <span className="h-4 overflow-visible whitespace-nowrap text-[10px] font-bold leading-4 text-soft">{nhanThang[i] ? tenThang(nhanThang[i]) : ""}</span>
+                  {c.map((x, r) => x > homNay
+                    ? <span key={x} className="aspect-square" />
+                    : (
+                      <motion.span key={x} aria-label={`${dm(x)}: ${ngay[x] ?? 0}`}
+                        initial={{ opacity: 0, scale: 0.4 }} animate={{ opacity: 1, scale: 1 }}
+                        transition={{ duration: 0.35, delay: 0.3 + (i + r) * 0.022, ease: EASE }}
+                        onMouseEnter={(e) => vao(e, x)}
+                        className={`aspect-square rounded-[5px] transition-shadow hover:ring-2 hover:ring-ink/30 ${MUC[mucCua(ngay[x] ?? 0)]} ${x === homNay ? "ring-2 ring-primary ring-offset-1 ring-offset-surface" : ""}`} />
+                    ))}
+                </div>
+              ))}
+            </div>
+            <AnimatePresence>
+              {tro && (
+                <motion.div key="tro" role="tooltip" initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 4 }}
+                  transition={{ duration: 0.15 }}
+                  className="pointer-events-none absolute z-10 -translate-x-1/2 -translate-y-full whitespace-nowrap rounded-xl bg-ink px-3 py-2 text-xs text-bg shadow-lg"
+                  style={{ left: tro.x, top: tro.y - 8 }}>
+                  <span className="block font-extrabold">{thuDai[thuCua(tro.ngay)]} {dm(tro.ngay)}</span>
+                  <span className="block opacity-80">{tro.n > 0 ? tr(`${tro.n} bài đã nộp`, `${tro.n} exercice(s) rendu(s)`, `${tro.n} exercise(s) submitted`) : tr("Không làm bài", "Pas d'exercice", "No exercise")}</span>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
-          <div className="grid min-w-0 flex-1 grid-cols-12 gap-1">
-            {cot.map((c, i) => (
-              <div key={i} className="grid grid-rows-7 gap-1">
-                {c.map((x) => x > homNay
-                  ? <span key={x} className="aspect-square" />
-                  : <span key={x} title={`${dm(x)}: ${ngay[x] ?? 0} ${tr("bài", "exercice(s)", "exercise(s)")}`}
-                      className={`aspect-square rounded-[5px] ${MUC[mucCua(ngay[x] ?? 0)]} ${x === homNay ? "ring-2 ring-primary ring-offset-1 ring-offset-surface" : ""}`} />)}
-              </div>
-            ))}
-          </div>
+          <span className="mt-3 flex items-center justify-end gap-1 text-[11px] text-soft">{tr("Ít", "Moins", "Less")}{MUC.map((m) => <span key={m} className={`h-2.5 w-2.5 rounded-[3px] ${m}`} />)}{tr("Nhiều", "Plus", "More")}</span>
         </div>
-        <div className="grid min-w-[12rem] flex-1 gap-3">
-          <div className="flex items-center gap-3 rounded-2xl bg-primary-soft p-3">
-            <CalendarDays size={20} className="shrink-0 text-primary" />
-            <div><p className="m-0 text-2xl font-extrabold tabular-nums text-primary">{soNgay}</p><p className="m-0 text-xs font-bold text-ink">{tr("ngày có học", "jours actifs", "active days")}</p></div>
+        <dl className="m-0 grid min-w-[11rem] flex-1 content-center gap-0 sm:max-w-[15rem]">
+          <div className="pb-4">
+            <dt className="flex items-center gap-1.5 text-xs font-bold text-soft"><CalendarDays size={14} className="text-primary" />{tr("ngày có học", "jours actifs", "active days")}</dt>
+            <dd className="m-0 mt-1 text-[2.5rem] font-extrabold leading-none tabular-nums text-primary"><SoChay den={soNgay} tre={0.4} /></dd>
           </div>
-          <div className="flex items-center gap-3 rounded-2xl bg-warn-soft p-3">
-            <Flame size={20} className="shrink-0 text-warn" />
-            <div><p className="m-0 text-2xl font-extrabold tabular-nums text-warn">{dainhat}</p><p className="m-0 text-xs font-bold text-ink">{tr("ngày liền dài nhất", "jours d'affilée au maximum", "longest run of days")}</p></div>
+          <div className="border-0 border-t border-solid border-line pt-4">
+            <dt className="flex items-center gap-1.5 text-xs font-bold text-soft"><Flame size={14} className="text-warn" />{tr("ngày liền dài nhất", "jours d'affilée au maximum", "longest run of days")}</dt>
+            <dd className="m-0 mt-1 text-[2.5rem] font-extrabold leading-none tabular-nums text-warn"><SoChay den={dainhat} tre={0.5} /></dd>
           </div>
-          <span className="flex items-center gap-1 text-xs text-soft">{tr("Ít", "Moins", "Less")}{MUC.map((m) => <span key={m} className={`h-3 w-3 rounded-[3px] ${m}`} />)}{tr("Nhiều", "Plus", "More")}</span>
-        </div>
+        </dl>
       </div>
-    </section>
+    </motion.section>
   );
 }
 
@@ -445,6 +551,7 @@ export default function TienBoVip({ name, thu }) {
   const d = tab === "bao_cao" ? baoCao : cauSai;
 
   return (
+    <MotionConfig reducedMotion="user">
     <div className="mx-auto max-w-4xl space-y-6 px-4 py-6">
       {canVip ? (
         <>
@@ -472,5 +579,6 @@ export default function TienBoVip({ name, thu }) {
       {payFor && <PaymentModal ex={payFor} student={name} config={payCfg}
         onClose={() => setPayFor(null)} onUnlocked={() => setLan((x) => x + 1)} />}
     </div>
+    </MotionConfig>
   );
 }
