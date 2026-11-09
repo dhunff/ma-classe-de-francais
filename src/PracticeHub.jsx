@@ -41,7 +41,7 @@ import GoiYNguPhap from "./shared/GoiYNguPhap.jsx";
 import { PAYMENT_KEY, isPremium, hasAccess, fmtPrice, loadAccess } from "./shared/access.js";
 import ExerciseCard from "./screens/practice/ExerciseCard.jsx";
 import LoiNgheBai from "./screens/practice/LoiNgheBai.jsx";
-import { NhanXetVietLuyen } from "./screens/practice/LoiVietAI.jsx";
+import { NhanXetVietLuyen, GoiYVietLai } from "./screens/practice/LoiVietAI.jsx";
 import { supabase } from "./storageShim.js";
 import { Lock } from "lucide-react";
 import { anhMacDinh } from "./shared/anhMacDinh.js";
@@ -1293,6 +1293,16 @@ export function PracticeWorkspace({ ex, back, onFinish, soTu = false, chamBang =
   const [baiMau, setBaiMau] = useState({});
   /* Lượt làm máy chủ vừa ghi (06/11): AI nhận xét câu viết tự do tìm bài theo lượt này. */
   const [luotId, setLuotId] = useState(null);
+  /* Viết lại sau khi được chấm (09/11): { [q.id]: { goiY, baiLam } } của bản vừa chấm. Giữ nguyên
+     bài làm, mở khoá ô viết; nộp lại thì phiếu mới so với bản này. « Làm lại » xoá sạch như cũ. */
+  const [banTruoc, setBanTruoc] = useState({});
+  const vietLai = (qId, goiY) => {
+    setBanTruoc((x) => ({ ...x, [qId]: { goiY, baiLam: answersRef.current[qId] } }));
+    phat("tiep");
+    moLuc.current = Date.now();
+    gradedRef.current = false; setGraded(false); setRemote(null); setDiemMayChu(null); setLuotId(null);
+    window.scrollTo?.({ top: 0, behavior: "smooth" });
+  };
   /* Điểm từng câu nói: { [q.id]: "cho" | số | null }. luotLai: mốc bấm Làm lại, bản ghi cũ hơn không tính. */
   const [diemNoi, setDiemNoi] = useState({});
   const [luotLai, setLuotLai] = useState(0);
@@ -1423,7 +1433,7 @@ export function PracticeWorkspace({ ex, back, onFinish, soTu = false, chamBang =
     phat("tiep");
     moLuc.current = Date.now();
     gradedRef.current = false; setGraded(false); setAnswers({}); setRemote(null); setDiemMayChu(null); setLuotId(null);
-    setDiemNoi({}); setLuotLai(Date.now());
+    setDiemNoi({}); setLuotLai(Date.now()); setBanTruoc({});
   };
 
   /* Điểm hiển thị phải cộng theo ĐƠN VỊ, không theo số câu: một bảng OUI/NON
@@ -1605,9 +1615,13 @@ export function PracticeWorkspace({ ex, back, onFinish, soTu = false, chamBang =
                 )}
                 <GhiAmBaiNoi key={luotLai} gon mau={dam} exerciseId={ex.id} cauId={q.id} gioiHanGiay={120} tuLuc={luotLai} khoa={!!graded} onDiem={baoDiem} />
               </div>
-            ) : <KhungViet value={a || ""} readOnly={!!graded} onChange={(html) => setAnswers({ ...answers, [q.id]: html })} />}
+            ) : <>
+              {!graded && banTruoc[q.id] && <GoiYVietLai banTruoc={banTruoc[q.id]} />}
+              <KhungViet value={a || ""} readOnly={!!graded} onChange={(html) => setAnswers({ ...answers, [q.id]: html })} />
+            </>}
             {graded && !laNoi && luotId && stripHtml(a) !== "" && (
-              <NhanXetVietLuyen key={`${luotId}-${q.id}`} attemptId={luotId} questionId={q.id} baiLam={a} level={ex.level} />
+              <NhanXetVietLuyen key={`${luotId}-${q.id}`} attemptId={luotId} questionId={q.id} baiLam={a} level={ex.level}
+                banTruoc={banTruoc[q.id]} onVietLai={(g) => vietLai(q.id, g)} />
             )}
             {/* 06/11: câu VIẾT không còn « đáp án gợi ý » chung của đề; AI chấm và viết lại chính bài
                 của học sinh (NhanXetVietLuyen). Câu nói vẫn giữ câu mẫu. */}

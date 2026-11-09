@@ -13,6 +13,7 @@
  */
 import { kiemGoiY, kiemNhanXetLuyen, kiemChamLuyen, bocJSON, lamTronBuoc, gonLoiLeon, gopDiemNhieuLuot, ganDiemGop } from "../supabase/functions/_shared/goiYPE.js";
 import { chuThuan, demTu, soTuDeBai, kiemTraCoDinh, locLoi, locYeuCau, chiaDoan } from "../supabase/functions/_shared/loiViet.js";
+import { gomHoSoLoi, baiChoLoi, capTuHoSo, soSanhBanViet } from "../src/shared/hoSoLoi.js";
 
 let pass = 0, fail = 0;
 const no = (m) => { fail++; console.log("  ✗ " + m); };
@@ -231,6 +232,30 @@ la(bocJSON("") === null && bocJSON(null) === null, "rỗng/null phải ra null")
   const gd = ganDiemGop({ tong_quat: "Ổn", tieu_chi: { consigne: { diem: 2, nhan_xet: "Đủ ý" }, lexique: 3 } }, { consigne: 1.5, lexique: 3.5, morpho: 4 });
   la(gd.tieu_chi.consigne.diem === 1.5 && gd.tieu_chi.consigne.nhan_xet === "Đủ ý" && gd.tieu_chi.morpho.diem === 4 && gd.tong_quat === "Ổn", "ganDiemGop: thay điểm, giữ nhận xét lượt 1");
   la(kiemGoiY(gd, RUBRIC, van).goiY.tong === 9, "ganDiemGop: kiemGoiY cộng đúng điểm đã gộp");
+
+  /* Giai đoạn 3: hồ sơ lỗi, nối bài ngữ pháp, so bản viết lại. */
+  const BAY_GIO = Date.parse("2026-11-09T12:00:00Z");
+  const ngayTruoc = (n) => new Date(BAY_GIO - n * 86400000).toISOString();
+  const hs = gomHoSoLoi([
+    { created_at: ngayTruoc(2), loi: [{ trich: "les nourriture", sua: "la nourriture", loai: "article" }, { trich: "délicieux", sua: "délicieuse", loai: "accord" }] },
+    { created_at: ngayTruoc(10), loi: [{ trich: "une film", sua: "un film", loai: "article" }, { trich: "xx", sua: "yy", loai: "la" }] },
+    { created_at: ngayTruoc(40), loi: [{ trich: "a", sua: "b", loai: "article" }, { trich: "c", sua: "d", loai: "accord" }, { trich: "e", sua: "f", loai: "accord" }, { trich: "g", sua: "h", loai: "temps" }] },
+    { created_at: ngayTruoc(45), loi: [{ trich: "i", sua: "j", loai: "accord" }] },
+    { created_at: ngayTruoc(80), loi: [{ trich: "cũ", sua: "bỏ", loai: "accord" }] },
+  ], BAY_GIO);
+  const theo = Object.fromEntries(hs.loai.map((o) => [o.loai, o]));
+  la(hs.so_bai_30 === 2 && hs.so_bai_truoc === 2, `hoSoLoi: chia đúng hai cửa sổ 30 ngày, bỏ bài cũ hơn 60 ngày (ra ${hs.so_bai_30}/${hs.so_bai_truoc})`);
+  la(hs.loai[0].loai === "article" && theo.article.dem30 === 2 && theo.article.vi_du[0].trich === "les nourriture", "hoSoLoi: xếp loại nhiều nhất trước, ví dụ mới nhất trước");
+  la(theo.article.xu_huong === "tang" && theo.accord.xu_huong === "giam" && theo.temps.xu_huong === "het", "hoSoLoi: xu hướng theo số lỗi MỖI BÀI (tăng, giảm, hết)");
+  la(theo.syntaxe?.dem30 === 1, "hoSoLoi: loại lỗi lạ về syntaxe");
+  la(gomHoSoLoi([{ created_at: ngayTruoc(1), loi: [{ trich: "a", sua: "b", loai: "accord" }] }], BAY_GIO).loai[0].xu_huong === "moi", "hoSoLoi: chưa có bài tháng trước thì là « mới », không bịa xu hướng");
+  la(baiChoLoi("temps", "B1") === "b1-temps-passe" && baiChoLoi("lexique", "A2") === null && baiChoLoi("registre", "A2") === null, "baiChoLoi: nối bài đúng trình độ, không nối bừa");
+  la(capTuHoSo("Débutant") === "A1" && capTuHoSo("B1") === "B1" && capTuHoSo("") === "A2" && capTuHoSo("C2") === "C1", "capTuHoSo: đọc trình độ hồ sơ");
+  const ss = soSanhBanViet(
+    { goiY: { tong: 12, tong_toi_da: 25, loi: [{ trich: "une film", sua: "un film" }, { trich: "les nourriture", sua: "la nourriture" }, { trich: "c’est tres", sua: "c'est très" }] } },
+    "<p>Nous avons vu un film.</p><p>Les nourriture était bonne, c'est   tres bien.</p>", { tong: 15.5, tong_toi_da: 25 });
+  la(ss.da_sua.length === 1 && ss.da_sua[0].trich === "une film" && ss.con_lai.length === 2, "soSanhBanViet: lỗi còn nguyên văn (sau chuẩn hoá nháy, khoảng trắng) là chưa sửa");
+  la(ss.chenh === 3.5 && ss.diem_truoc === 12 && ss.toi_da === 25, "soSanhBanViet: chênh điểm hai bản");
 }
 
 console.log(fail ? `\n${pass} đạt, ${fail} hỏng` : `\n${pass} đạt, 0 hỏng`);

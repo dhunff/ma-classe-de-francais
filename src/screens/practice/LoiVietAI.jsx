@@ -5,6 +5,7 @@ import { LeonNoi } from "../../shared/leon.jsx";
 import { xinNhanXetLuyen } from "../../shared/chamPeAI.js";
 import { grilleToRubric } from "../../shared/grilleRubric.js";
 import KhieuNaiDiem, { GhiChuChamDoi } from "../student/KhieuNaiDiem.jsx";
+import { soSanhBanViet } from "../../shared/hoSoLoi.js";
 import { chuThuan, chiaDoan, LOAI_LOI } from "../../../supabase/functions/_shared/loiViet.js";
 
 /* Chấm AI chuyên sâu, giai đoạn 1 (06/11): lỗi tô ngay trong bài, đối chiếu yêu cầu của đề,
@@ -12,13 +13,13 @@ import { chuThuan, chiaDoan, LOAI_LOI } from "../../../supabase/functions/_share
  * nào còn ở đây thì đoạn trích CÓ nằm trong bài. Dùng ở phiếu nhận xét thi thử (NhanXetAI), màn
  * tự chấm (PESelfEvaluation) và câu viết tự do ở Luyện tập (NhanXetVietLuyen dưới đây). */
 
-const NHOM = {
+export const NHOM = {
   ngu_phap: { mark: "bg-danger-soft decoration-danger", chip: "bg-danger-soft text-danger" },
   tu_vung: { mark: "bg-warn-soft decoration-warn", chip: "bg-warn-soft text-warn" },
   chinh_ta: { mark: "bg-primary-soft decoration-primary", chip: "bg-primary-soft text-primary" },
 };
 const nhomCua = (loai) => NHOM[LOAI_LOI[loai] ?? "ngu_phap"];
-const tenLoai = (loai) => ({
+export const tenLoai = (loai) => ({
   accord: tr("Hợp giống, số", "Accord", "Agreement"),
   conjugaison: tr("Chia động từ", "Conjugaison", "Conjugation"),
   temps: tr("Thì", "Temps", "Tense"),
@@ -201,7 +202,57 @@ function chamMotLan(attemptId, questionId, rubric) {
    theo thang DELF đúng trình độ bài, gợi ý tăng điểm, lỗi tô trong bài, và chính bài của học sinh
    viết lại cho tốt hơn (thay « đáp án gợi ý » chung của đề).
    `thu`: goiY dựng sẵn cho /preview.html (không gọi mạng). */
-export function NhanXetVietLuyen({ attemptId, questionId, baiLam, level, thu }) {
+/* ══ VIẾT LẠI SAU KHI ĐƯỢC CHẤM (giai đoạn 3, 09/11) ══
+   `GoiYVietLai`: hiện trong lúc học sinh sửa bài. Liệt kê lỗi bản trước kèm GIẢI THÍCH nhưng KHÔNG
+   kèm bản sửa: tự tìm cách sửa mới là phần học; ai cần đáp án thì bản viết lại vẫn ở phiếu cũ.
+   `SoVoiBanTruoc`: sau khi nộp lại, lỗi nào đã sửa, lỗi nào còn, điểm thay đổi bao nhiêu. */
+export function GoiYVietLai({ banTruoc }) {
+  const loi = Array.isArray(banTruoc?.goiY?.loi) ? banTruoc.goiY.loi : [];
+  return (
+    <div className="mb-3 grid gap-2 rounded-2xl border border-solid border-primary/30 bg-primary-soft/60 p-3">
+      <p className="m-0 flex items-center gap-1.5 text-xs font-extrabold text-ink"><RotateCcw size={14} className="text-primary" />{tr("Bạn đang viết lại bài. Sửa những chỗ dưới đây rồi nộp lại, AI sẽ chấm và so với bản trước.", "Vous réécrivez votre texte. Corrigez ces points puis renvoyez : l'IA comparera avec la version précédente.", "You're rewriting. Fix these points and submit again: the AI will compare with your previous version.")}</p>
+      {loi.length > 0 && (
+        <ul className="m-0 grid list-none gap-1 p-0">
+          {loi.map((l, i) => (
+            <li key={i} className="rounded-xl bg-surface px-3 py-1.5 text-[13px] leading-relaxed">
+              <span className={`mr-2 rounded-full px-2 py-0.5 text-[10px] font-extrabold ${nhomCua(l.loai).chip}`}>{tenLoai(l.loai)}</span>
+              <span lang="fr" className="font-semibold text-danger">{l.trich}</span>
+              {l.giai_thich && <span className="block text-xs text-soft">{l.giai_thich}</span>}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+function SoVoiBanTruoc({ ss }) {
+  const tong = ss.da_sua.length + ss.con_lai.length;
+  return (
+    <div className="grid gap-2 rounded-2xl border border-solid border-line bg-surface2 p-3">
+      <p className="m-0 flex flex-wrap items-center gap-2 text-xs font-extrabold text-ink">
+        <RotateCcw size={14} className="text-primary" />{tr("So với bản trước", "Par rapport à la version précédente", "Compared with your previous version")}
+        {ss.chenh != null && (
+          <span className={`rounded-full px-2 py-0.5 tabular-nums ${ss.chenh > 0 ? "bg-ok-soft text-ok" : ss.chenh < 0 ? "bg-danger-soft text-danger" : "bg-surface text-soft"}`}>
+            {ss.diem_truoc} → {ss.diem_nay}{ss.chenh !== 0 ? ` (${ss.chenh > 0 ? "+" : ""}${ss.chenh})` : ""}
+          </span>
+        )}
+      </p>
+      {tong > 0 && (
+        <p className="m-0 text-[13px] text-ink">{tr(`Đã sửa ${ss.da_sua.length} trên ${tong} lỗi của bản trước.`, `${ss.da_sua.length} erreur(s) corrigée(s) sur ${tong}.`, `Fixed ${ss.da_sua.length} of ${tong} previous errors.`)}</p>
+      )}
+      {ss.con_lai.length > 0 && (
+        <ul className="m-0 grid list-none gap-1 p-0">
+          {ss.con_lai.map((l, i) => (
+            <li key={i} className="text-[13px] leading-relaxed"><span className="mr-1.5 text-xs font-bold text-warn">{tr("Còn:", "Reste :", "Still:")}</span><span lang="fr" className="text-danger">{l.trich}</span> <ArrowRight size={11} className="inline text-soft" /> <span lang="fr" className="font-bold text-ok">{l.sua}</span></li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+export function NhanXetVietLuyen({ attemptId, questionId, baiLam, level, thu, banTruoc, onVietLai }) {
   const rubric = useMemo(() => thangLuyen(level), [level]);
   const ngan = chuThuan(baiLam).length < 20;
   const [kq, setKq] = useState(thu ? { ok: true, goiY: thu } : null);
@@ -259,6 +310,7 @@ export function NhanXetVietLuyen({ attemptId, questionId, baiLam, level, thu }) 
 
       <div className="grid gap-4 p-4">
         <GhiChuChamDoi chamDoi={g.cham_doi} />
+        {banTruoc?.goiY && <SoVoiBanTruoc ss={soSanhBanViet(banTruoc, baiLam, g)} />}
         {(g.tong_quat || g.nhan_dinh_trinh_do) && (
           <div className="grid gap-1.5 text-[13px] leading-relaxed text-ink">
             {g.tong_quat && <p className="m-0">{g.tong_quat}</p>}
@@ -303,6 +355,12 @@ export function NhanXetVietLuyen({ attemptId, questionId, baiLam, level, thu }) 
           </div>
         )}
 
+        {onVietLai && (
+          <button type="button" onClick={() => onVietLai(g)}
+            className="inline-flex w-fit cursor-pointer items-center gap-2 rounded-full border-0 bg-primary px-5 py-2.5 font-sans text-sm font-extrabold text-on-primary shadow-md hover:opacity-90">
+            <PenLine size={16} /> {tr("Sửa bài theo nhận xét", "Réécrire selon la correction", "Rewrite using the feedback")}
+          </button>
+        )}
         {g.loi_leon && <LeonNoi size={60} cam={tl >= 0.7 ? "tuyet-voi" : tl >= 0.5 ? "duoc-do" : "co-len"}>{g.loi_leon}</LeonNoi>}
         <KhieuNaiDiem goiYId={kq.goiYId} criteria={tc} thu={!!thu} />
         <p className="m-0 text-[11px] text-soft">{tr("AI có thể sai. Khi chưa chắc, đối chiếu với quy tắc ngữ pháp hoặc hỏi giáo viên.", "L'IA peut se tromper. En cas de doute, vérifiez la règle ou demandez au professeur.", "The AI can be wrong. When unsure, check the rule or ask your teacher.")}</p>

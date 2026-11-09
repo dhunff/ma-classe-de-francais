@@ -15,6 +15,7 @@ import { ThucHanh } from "./NguPhap.jsx";
 import { timCau } from "../../content/nguPhap/index.js";
 import { ngayHomNay } from "../../shared/hoatDong.js";
 import { choTrong } from "../../shared/choTrong.jsx";
+import HoSoLoiViet from "./HoSoLoiViet.jsx";
 
 /* Tiến bộ VIP — 14/10 (migration 143), LÀM LẠI 06/11 theo chủ dự án (« sơ sài, không có gì nổi bật »).
  *
@@ -438,6 +439,8 @@ export default function TienBoVip({ name, thu }) {
     ["bao_cao", BarChart3, tr("Báo cáo tuần", "Bilan de la semaine", "Weekly report")],
     ["cau_sai", Target, tr("Ôn câu sai", "Revoir mes erreurs", "Review mistakes")],
     ["ngu_phap", Repeat, tr("Ôn ngữ pháp", "Réviser la grammaire", "Grammar review")],
+    /* Giai đoạn 3 chấm AI (09/11): lỗi viết cộng dồn qua các phiếu AI chấm. */
+    ["loi_viet", PenLine, tr("Lỗi viết", "Erreurs d'écriture", "Writing errors")],
   ];
   const d = tab === "bao_cao" ? baoCao : cauSai;
 
@@ -462,7 +465,7 @@ export default function TienBoVip({ name, thu }) {
             ))}
           </div>
 
-          {tab === "ngu_phap" ? <OnNguPhap thu={thu?.nguPhap} /> : d === undefined ? <DangTai /> : !d?.ok ? <LoiDoc />
+          {tab === "loi_viet" ? <HoSoLoiViet thu={thu?.loiViet} /> : tab === "ngu_phap" ? <OnNguPhap thu={thu?.nguPhap} /> : d === undefined ? <DangTai /> : !d?.ok ? <LoiDoc />
             : tab === "bao_cao" ? <BaoCao d={d} /> : <CauSai d={d} />}
         </>
       )}

@@ -190,6 +190,12 @@ const tienBoThu = () => {
       { question_id: 2, prompt: "Qu'est-ce que Julie propose à Marc ?", title: "Un message vocal", level: "A2", store: "practice", exercise_id: "x4", so_lan_sai: 1, loi_giai: null },
     ] },
     nguPhap: [],
+    /* 09/11: hồ sơ lỗi viết, dữ liệu GIẢ (ngày tính lùi từ hôm nay). */
+    loiViet: { level: "A2", dongs: [
+      { created_at: new Date(Date.now() - 2 * 864e5).toISOString(), loi: [{ trich: "les nourriture", sua: "la nourriture", loai: "article", giai_thich: "« Nourriture » là danh từ giống cái số ít." }, { trich: "délicieux", sua: "délicieuse", loai: "accord", giai_thich: "Tính từ hợp giống cái với « nourriture »." }, { trich: "nous avon", sua: "nous avons", loai: "conjugaison", giai_thich: "« avoir » với « nous » là « avons »." }] },
+      { created_at: new Date(Date.now() - 9 * 864e5).toISOString(), loi: [{ trich: "une film", sua: "un film", loai: "article", giai_thich: "« Film » là danh từ giống đực." }, { trich: "je suis allé à le cinéma", sua: "je suis allé au cinéma", loai: "preposition", giai_thich: "« à + le » viết thành « au »." }] },
+      { created_at: new Date(Date.now() - 38 * 864e5).toISOString(), loi: [{ trich: "a", sua: "b", loai: "accord" }, { trich: "c", sua: "d", loai: "accord" }, { trich: "e", sua: "f", loai: "accord" }, { trich: "g", sua: "h", loai: "temps" }] },
+    ] },
   };
 };
 const CAU_NGHE_THU = [
@@ -1038,7 +1044,7 @@ function Preview() {
             { id: 1, trang_thai: "cho", ly_do: "Em đã hẹn ngày rõ ràng ở câu cuối nhưng tiêu chí « Tôn trọng đề » vẫn bị chấm thấp.", tieu_chi: ["consigne"], tao_luc: new Date().toISOString(), ket_qua: { ...NHAN_XET_LUYEN_MAU, cham_doi: { so_luot: 3, tong_cac_luot: [13.5, 17, 10], chua_chac: true } }, raw: BAI_LAM_MAU, consigne: "<p>Vous invitez un ami à passer des vacances chez vous. (40 mots minimum)</p>", prompt: "Écrivez votre message.", level: "A1", tieu_de: "Écriture A1 : une invitation", che_do: "practice", hoc_sinh: "Học sinh A" },
             { id: 2, trang_thai: "da_cham_lai", ly_do: "Bài em đủ số từ.", tieu_chi: [], tao_luc: new Date(Date.now() - 864e5).toISOString(), diem_gv: { consigne: 2.5, informer: 4, lexique: 3, morpho: 2.5, coherence: 2 }, tong_gv: 14, ghi_chu_gv: "Bài đủ ý, đã cộng thêm ở tiêu chí nội dung.", ket_qua: NHAN_XET_LUYEN_MAU, raw: BAI_LAM_MAU, consigne: "", prompt: "Écrivez votre message.", level: "A1", tieu_de: "Écriture A1 : une invitation", che_do: "exam", hoc_sinh: "Học sinh B" },
           ]} /></>} />
-          <Route path="/etudiant/nhan-xet-ai" element={<><Controls /><div className="mx-auto max-w-2xl py-6"><NhanXetAI level="A1" rubric={grilleToRubric("A1")} mau={NHAN_XET_MAU} baiLam={BAI_LAM_MAU} /><p className="m-0 mt-8 text-sm font-bold text-soft">Câu viết tự do ở màn Luyện tập:</p><NhanXetVietLuyen baiLam={BAI_LAM_MAU} level="A1" thu={NHAN_XET_LUYEN_MAU} /></div></>} />
+          <Route path="/etudiant/nhan-xet-ai" element={<><Controls /><div className="mx-auto max-w-2xl py-6"><NhanXetAI level="A1" rubric={grilleToRubric("A1")} mau={NHAN_XET_MAU} baiLam={BAI_LAM_MAU} /><p className="m-0 mt-8 text-sm font-bold text-soft">Câu viết tự do ở màn Luyện tập:</p><NhanXetVietLuyen baiLam={BAI_LAM_MAU} level="A1" thu={NHAN_XET_LUYEN_MAU} onVietLai={() => {}} banTruoc={{ goiY: { tong: 10, tong_toi_da: 22, loi: [{ trich: "Nous visiter", sua: "Nous visitons" }, { trich: "c'est tres", sua: "c'est très" }, { trich: "on mange la glace", sua: "on mange une glace" }] } }} /></div></>} />
           <Route path="/etudiant/tro-choi" element={<TroChoiMan tieuDe="Thời tiết · Màn 1" the={THE_CHOI} onXong={async (sao) => ({ sao, xp: 15 })} onDong={() => history.back()} t={t} />} />
           <Route path="/etudiant/the-lat" element={<><Controls /><TheLatThu /></>} />
           <Route path="/etudiant/the-bo" element={<><Controls /><TheBoThu /></>} />
