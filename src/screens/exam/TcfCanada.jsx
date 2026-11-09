@@ -57,7 +57,6 @@ function GioiThieuTCF() {
           <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white"><Info size={18} /></span>
           <span className="min-w-0 flex-1">
             <span className="block text-sm font-extrabold text-ink">{tr("Điểm TCF quy ra NCLC thế nào?", "Comment le score TCF devient-il un NCLC ?", "How does a TCF score map to NCLC?")}</span>
-            <span className="block text-xs text-soft">{tr("Bảng quy đổi của IRCC, dùng cho hồ sơ định cư Canada", "Tableau d'équivalence d'IRCC pour l'immigration au Canada", "IRCC's equivalency table for Canadian immigration")}</span>
           </span>
           <ChevronDown size={18} className={`shrink-0 text-soft transition-transform ${moBang ? "rotate-180" : ""}`} />
         </button>
@@ -87,11 +86,6 @@ function GioiThieuTCF() {
                 </tbody>
               </table>
             </div>
-            <p className="m-0 mt-3 text-xs leading-relaxed text-soft">
-              {tr("Nghe và Đọc chấm trên thang 0 đến 699, Viết và Nói trên thang 0 đến 20. Điểm Nghe, Đọc của bài thi thử ở đây là ƯỚC LƯỢNG: câu khó được nhiều điểm hơn câu dễ, vì FEI không công bố cách tính điểm từng câu.",
-                "Écoute et lecture sur 699, écrit et oral sur 20. Les scores d'écoute et de lecture de l'examen blanc sont ESTIMÉS : les questions difficiles valent plus, car FEI ne publie pas son barème.",
-                "Listening and reading are scored out of 699, writing and speaking out of 20. Mock listening and reading scores here are ESTIMATES: harder questions weigh more, since FEI doesn't publish its scoring.")}
-            </p>
           </div>
         )}
       </div>
