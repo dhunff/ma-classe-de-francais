@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Flag, Loader2, Send, CheckCircle2, Clock, UserCheck, AlertTriangle } from "lucide-react";
 import { tr } from "../../shared/i18n.jsx";
-import { guiKhieuNai, docKhieuNai } from "../../shared/chamPeAI.js";
+import { guiKhieuNai, docKhieuNai, guiKhieuNaiPO, docKhieuNaiPO } from "../../shared/chamPeAI.js";
 
 /* Chấm AI chuyên sâu, giai đoạn 2 (06/11, migration 196).
  *
@@ -22,7 +22,10 @@ export function GhiChuChamDoi({ chamDoi }) {
   );
 }
 
-export default function KhieuNaiDiem({ goiYId, criteria = [], thu = false }) {
+/* `goiYId`: phiếu AI chấm bài viết (196). `poAttemptId`: lượt thi có phần nói AI chấm (198). */
+export default function KhieuNaiDiem({ goiYId, poAttemptId, criteria = [], thu = false }) {
+  const khoa = poAttemptId ?? goiYId;
+  const doc = () => (poAttemptId ? docKhieuNaiPO(poAttemptId) : docKhieuNai(goiYId));
   const [kn, setKn] = useState(thu ? false : undefined);   // undefined đang tải · false chưa gửi · object đã gửi
   const [mo, setMo] = useState(false);
   const [chon, setChon] = useState([]);
@@ -31,13 +34,13 @@ export default function KhieuNaiDiem({ goiYId, criteria = [], thu = false }) {
   const [loi, setLoi] = useState("");
 
   useEffect(() => {
-    if (thu || !goiYId) return undefined;
+    if (thu || !khoa) return undefined;
     let con = true;
-    docKhieuNai(goiYId).then((x) => { if (con) setKn(x ?? false); });
+    doc().then((x) => { if (con) setKn(x ?? false); });
     return () => { con = false; };
-  }, [goiYId, thu]);
+  }, [khoa, thu]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  if (!thu && (!goiYId || kn === undefined)) return null;
+  if (!thu && (!khoa || kn === undefined)) return null;
 
   if (kn) {
     const [Icon, mau, chu] = kn.trang_thai === "da_cham_lai"
@@ -65,10 +68,10 @@ export default function KhieuNaiDiem({ goiYId, criteria = [], thu = false }) {
     if (lyDo.trim().length < 5) { setLoi(tr("Viết lý do ít nhất 5 ký tự.", "Au moins 5 caractères.", "At least 5 characters.")); return; }
     if (thu) { setKn({ trang_thai: "cho" }); return; }
     setDang(true); setLoi("");
-    const kq = await guiKhieuNai(goiYId, lyDo.trim(), chon);
+    const kq = poAttemptId ? await guiKhieuNaiPO(poAttemptId, lyDo.trim(), chon) : await guiKhieuNai(goiYId, lyDo.trim(), chon);
     setDang(false);
     if (!kq.ok) { setLoi(kq.thongBao); return; }
-    setKn((await docKhieuNai(goiYId)) ?? { trang_thai: "cho" });
+    setKn((await doc()) ?? { trang_thai: "cho" });
   };
 
   return (
@@ -90,7 +93,9 @@ export default function KhieuNaiDiem({ goiYId, criteria = [], thu = false }) {
       <label className="grid gap-1.5">
         <span className="text-[11px] text-soft">{tr("Vì sao bạn thấy điểm chưa đúng?", "Pourquoi la note vous semble-t-elle injuste ?", "Why does the score look wrong?")}</span>
         <textarea value={lyDo} onChange={(e) => setLyDo(e.target.value.slice(0, 1000))} rows={3}
-          placeholder={tr("Ví dụ: bài đã kể đủ cả thứ bảy và chủ nhật nhưng tiêu chí « Bám sát đề bài » bị chấm thấp.", "Ex. : j'ai bien raconté samedi et dimanche, mais le critère consigne est bas.", "E.g. I covered both days but the task criterion is low.")}
+          placeholder={poAttemptId
+            ? tr("Ví dụ: bài nói đã nêu đủ quan điểm và ví dụ nhưng tiêu chí trình bày quan điểm bị chấm thấp.", "Ex. : j'ai bien donné mon avis avec des exemples, mais ce critère est bas.", "E.g. I gave my opinion with examples but that criterion is low.")
+            : tr("Ví dụ: bài đã kể đủ cả thứ bảy và chủ nhật nhưng tiêu chí « Bám sát đề bài » bị chấm thấp.", "Ex. : j'ai bien raconté samedi et dimanche, mais le critère consigne est bas.", "E.g. I covered both days but the task criterion is low.")}
           className="w-full resize-y rounded-xl border border-solid border-line bg-surface2 p-2.5 font-sans text-[13px] text-ink" />
       </label>
       {loi && <p className="m-0 text-xs text-danger">{loi}</p>}

@@ -12,7 +12,8 @@ import { chuThuan, LOAI_LOI } from "../../supabase/functions/_shared/loiViet.js"
 const NGAY = 86400000;
 export const CUA_SO_NGAY = 30;
 
-/* dongs: [{ created_at, loi: [{ trich, sua, loai, giai_thich }] }], mới hay cũ trước đều được. */
+/* dongs: [{ created_at, loi: [{ trich, sua, loai, giai_thich }], nguon?: "viet" | "noi" }], mới hay cũ
+   trước đều được. Từ giai đoạn 5 (09/11) có cả lỗi nói của phần Nói thi thử (po_cham.ai_goi_y.loi). */
 export function gomHoSoLoi(dongs, bayGio = Date.now()) {
   const moc = bayGio - CUA_SO_NGAY * NGAY;
   const mocTruoc = bayGio - 2 * CUA_SO_NGAY * NGAY;
@@ -31,7 +32,7 @@ export function gomHoSoLoi(dongs, bayGio = Date.now()) {
       const o = (theoLoai[loai] ??= { loai, nhom: LOAI_LOI[loai], dem30: 0, demTruoc: 0, vi_du: [] });
       if (trong30) {
         o.dem30++;
-        if (o.vi_du.length < 2 && l.trich) o.vi_du.push({ trich: l.trich, sua: l.sua, giai_thich: l.giai_thich ?? "" });
+        if (o.vi_du.length < 2 && l.trich) o.vi_du.push({ trich: l.trich, sua: l.sua, giai_thich: l.giai_thich ?? "", nguon: d.nguon ?? "viet" });
       } else o.demTruoc++;
     }
   }

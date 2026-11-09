@@ -440,7 +440,7 @@ export default function TienBoVip({ name, thu }) {
     ["cau_sai", Target, tr("Ôn câu sai", "Revoir mes erreurs", "Review mistakes")],
     ["ngu_phap", Repeat, tr("Ôn ngữ pháp", "Réviser la grammaire", "Grammar review")],
     /* Giai đoạn 3 chấm AI (09/11): lỗi viết cộng dồn qua các phiếu AI chấm. */
-    ["loi_viet", PenLine, tr("Lỗi viết", "Erreurs d'écriture", "Writing errors")],
+    ["loi_viet", PenLine, tr("Lỗi hay mắc", "Erreurs fréquentes", "Frequent errors")],
   ];
   const d = tab === "bao_cao" ? baoCao : cauSai;
 

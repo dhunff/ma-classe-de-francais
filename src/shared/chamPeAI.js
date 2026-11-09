@@ -127,6 +127,22 @@ export async function guiKhieuNai(goiYId, lyDo, tieuChi = []) {
   }
   return { ok: !!data?.ok, id: data?.id };
 }
+/* Phần NÓI thi thử (giai đoạn 5, migration 198): khiếu nại khoá theo lượt thi (po_cham). */
+export async function guiKhieuNaiPO(attemptId, lyDo, tieuChi = []) {
+  const { data, error } = await supabase.rpc("gui_khieu_nai_po", { p_attempt: attemptId, p_ly_do: lyDo, p_tieu_chi: tieuChi });
+  if (error) {
+    const ma = Object.keys(CAU_KHIEU_NAI).find((k) => String(error.message ?? "").includes(k));
+    return { ok: false, thongBao: CAU_KHIEU_NAI[ma] ?? "Chưa gửi được khiếu nại. Thử lại sau ít phút." };
+  }
+  return { ok: !!data?.ok };
+}
+export async function docKhieuNaiPO(attemptId) {
+  if (!attemptId) return null;
+  const { data } = await supabase.from("po_khieu_nai")
+    .select("trang_thai, ly_do, tieu_chi, tong_gv, diem_gv, ghi_chu_gv, tao_luc, xu_ly_luc")
+    .eq("attempt_id", attemptId).maybeSingle();
+  return data ?? null;
+}
 export async function docKhieuNai(goiYId) {
   if (!goiYId) return null;
   const { data } = await supabase.from("pe_khieu_nai")

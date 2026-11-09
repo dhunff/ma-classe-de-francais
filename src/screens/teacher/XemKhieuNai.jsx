@@ -1,10 +1,12 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Scale, Check, RotateCcw, ChevronDown, Save, Loader2 } from "lucide-react";
+import { Scale, Check, RotateCcw, ChevronDown, Save, Loader2, Mic } from "lucide-react";
 import { supabase } from "../../storageShim.js";
 import { tr } from "../../shared/i18n.jsx";
 import { grilleToRubric } from "../../shared/grilleRubric.js";
 import { BaiVietCoLoi, thangLuyen } from "../practice/LoiVietAI.jsx";
 import { chuThuan } from "../../../supabase/functions/_shared/loiViet.js";
+import { GRILLE_PO, mucCuaTieuChi } from "../../../supabase/functions/_shared/grillePO.js";
+import { KhoiTroiChay } from "../exam/GhiAmBaiNoi.jsx";
 
 /* « Khiếu nại điểm AI » (06/11, giai đoạn 2 chấm AI, migration 196).
  *
@@ -155,6 +157,148 @@ function TheKhieuNai({ r, onXong }) {
   );
 }
 
+/* ── Khiếu nại phần NÓI thi thử (giai đoạn 5, migration 198) ──
+   Giáo viên nghe lại bản ghi (policy bai_noi_giao_vien_doc), đọc bản chép lời có lỗi tô sẵn và độ
+   trôi chảy máy đo, rồi chọn lại từng tiêu chí ĐÚNG các mức in trên grille PO. Máy chủ kiểm lại
+   bằng _thang_po; « Lưu điểm chấm lại » thay điểm phần nói của lượt thi. */
+function TheKhieuNaiPO({ r, onXong }) {
+  const g = GRILLE_PO[r.cap];
+  const ai = r.ai_goi_y ?? {};
+  const [mo, setMo] = useState(r.trang_thai === "cho");
+  const [diem, setDiem] = useState(() => Object.fromEntries((g?.criteres ?? []).map((c) => [c.id, r.diem_gv?.[c.id] ?? ai.diem?.[c.id] ?? null])));
+  const [ghiChu, setGhiChu] = useState(r.ghi_chu_gv ?? "");
+  const [url, setUrl] = useState(null);
+  const [dang, setDang] = useState("");
+  const [loi, setLoi] = useState("");
+  const [nhan, mau] = (TRANG_THAI[r.trang_thai] ?? TRANG_THAI.cho)();
+  const tongAi = Object.values(ai.diem ?? {}).reduce((n, x) => n + Number(x || 0), 0);
+  const du = (g?.criteres ?? []).every((c) => diem[c.id] != null);
+  const tongGV = (g?.criteres ?? []).reduce((n, c) => n + (Number(diem[c.id]) || 0), 0);
+
+  useEffect(() => {
+    if (!mo || url !== null) return;
+    if (!ai.tep || !r.exam_id || r.__thu) { setUrl(false); return; }
+    supabase.storage.from("bai-noi").createSignedUrl(`${r.user_id}/${r.exam_id}/${ai.tep}`, 3600)
+      .then(({ data }) => setUrl(data?.signedUrl ?? false), () => setUrl(false));
+  }, [mo]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const luu = async (trangThai) => {
+    setDang(trangThai); setLoi("");
+    const { data, error } = await supabase.rpc("xu_ly_khieu_nai_po", {
+      p_attempt: r.attempt_id, p_trang_thai: trangThai,
+      p_diem: trangThai === "da_cham_lai" ? diem : null, p_ghi_chu: ghiChu.trim(),
+    });
+    setDang("");
+    if (error || !data?.ok) { setLoi(error?.message ?? tr("Không lưu được.", "Enregistrement impossible.", "Could not save.")); return; }
+    onXong();
+  };
+
+  return (
+    <li className={`rounded-2xl border border-solid bg-surface ${r.trang_thai === "cho" ? "border-warn/40" : "border-line"}`}>
+      <button type="button" onClick={() => setMo(!mo)} aria-expanded={mo}
+        className="grid w-full cursor-pointer grid-cols-[1fr_auto] items-start gap-3 border-0 bg-transparent p-4 text-left font-sans">
+        <span className="grid min-w-0 gap-1">
+          <span className="flex flex-wrap items-center gap-2 text-xs text-soft">
+            <span className={`rounded-full px-2 py-0.5 text-[11px] font-extrabold ${mau}`}>{nhan}</span>
+            <span className="font-bold text-ink">{r.hoc_sinh || tr("Học sinh", "Élève", "Student")}</span>
+            <span className="inline-flex items-center gap-1">· <Mic size={12} /> {r.cap} · {tr("Phần nói thi thử", "Oral d'examen blanc", "Mock exam speaking")}</span>
+            <span>· {new Date(r.tao_luc).toLocaleString()}</span>
+          </span>
+          <span className="truncate text-sm font-bold text-ink">{r.tieu_de || tr("Production orale", "Production orale", "Speaking")}</span>
+          <span className="text-[13px] leading-relaxed text-ink">« {r.ly_do} »</span>
+        </span>
+        <span className="flex items-center gap-1.5 text-sm font-extrabold tabular-nums text-ink">
+          {r.trang_thai === "da_cham_lai" ? <>{tongAi} → {Number(r.tong_gv)}</> : tongAi}
+          <span className="text-xs font-semibold text-soft">/25</span>
+          <ChevronDown size={16} className={`text-soft transition-transform ${mo ? "rotate-180" : ""}`} />
+        </span>
+      </button>
+
+      {mo && (
+        <div className="grid gap-4 border-0 border-t border-solid border-line p-4">
+          {ai.cham_doi?.chua_chac && (
+            <p className="m-0 rounded-xl bg-warn-soft px-3 py-2 text-xs text-ink">{tr("Máy chủ đã gắn cờ « điểm chưa chắc »: các lượt AI chấm lệch nhau", "Note signalée incertaine : corrections IA divergentes", "Flagged uncertain: AI markings disagreed")} ({(ai.cham_doi.tong_cac_luot ?? []).join(" / ")}).</p>
+          )}
+          <div>
+            <p className="m-0 mb-1.5 text-xs font-extrabold text-ink">{tr("Bản ghi", "Enregistrement", "Recording")}</p>
+            {url ? <audio controls src={url} className="w-full" />
+              : url === false || !ai.tep ? <p className="m-0 text-xs text-soft">{tr("Không mở được bản ghi.", "Enregistrement indisponible.", "Recording unavailable.")}</p>
+              : <p className="m-0 text-xs text-soft"><Loader2 size={12} className="mcf-spin inline" /> {tr("Đang mở bản ghi…", "Chargement…", "Loading…")}</p>}
+          </div>
+          {Array.isArray(r.de_boc) && r.de_boc.length > 0 && (
+            <div className="grid gap-2">
+              {r.de_boc.map((d, i) => (
+                <div key={i} className="rounded-xl bg-surface2 p-3">
+                  <p className="m-0 text-[11px] font-extrabold text-soft">{d.phan} · {tr("đề đã bốc", "sujet tiré", "drawn task")} {d.ma}</p>
+                  <div lang="fr" className="mt-1 text-[13px] text-ink [&_p]:m-0" dangerouslySetInnerHTML={{ __html: d.html }} />
+                </div>
+              ))}
+            </div>
+          )}
+          {ai.chep_loi && (
+            <div>
+              <p className="m-0 mb-1.5 text-xs font-extrabold text-ink">{tr("Bản chép lời (lỗi AI tô sẵn)", "Transcription (erreurs relevées par l'IA)", "Transcript (AI-flagged errors)")}</p>
+              <BaiVietCoLoi baiLam={ai.chep_loi} loi={Array.isArray(ai.loi) ? ai.loi : []} gon />
+            </div>
+          )}
+          <KhoiTroiChay tc={ai.troi_chay} nx={ai.troi_chay_nx} />
+
+          {g && (
+            <div>
+              <p className="m-0 mb-1.5 text-xs font-extrabold text-ink">{tr("Chấm lại theo grille", "Notation sur la grille", "Re-mark on the grid")} {r.cap}</p>
+              <ul className="m-0 grid list-none gap-2 p-0">
+                {g.criteres.map((c) => {
+                  const biBao = (r.tieu_chi ?? []).includes(c.id);
+                  return (
+                    <li key={c.id} className={`rounded-xl px-3 py-2 ${biBao ? "bg-warn-soft" : "bg-surface2"}`}>
+                      <p className="m-0 text-[13px] font-bold text-ink">{c.vi} <span className="font-normal text-soft">· AI {ai.diem?.[c.id] ?? "?"}</span></p>
+                      {ai.ly_do?.[c.id] && <p className="m-0 text-[11px] text-soft">{ai.ly_do[c.id]}</p>}
+                      <div className="mt-1.5 flex flex-wrap gap-1.5">
+                        {mucCuaTieuChi(r.cap, c).map((m) => (
+                          <button key={m.v} type="button" onClick={() => setDiem((x) => ({ ...x, [c.id]: m.v }))} aria-pressed={diem[c.id] === m.v}
+                            title={m.fr ? `${m.fr} · ${m.vi}` : undefined}
+                            className={`cursor-pointer rounded-lg border border-solid px-2.5 py-1 font-sans text-xs font-bold tabular-nums ${diem[c.id] === m.v ? "border-primary bg-primary text-on-primary" : "border-line bg-surface text-ink"}`}>
+                            {String(m.v).replace(".", ",")}
+                          </button>
+                        ))}
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+              <p className="m-0 mt-2 text-right text-sm font-extrabold tabular-nums text-ink">{tr("Tổng giáo viên", "Total professeur", "Teacher total")}: {String(tongGV).replace(".", ",")}/25</p>
+            </div>
+          )}
+
+          <label className="grid gap-1.5">
+            <span className="text-xs font-extrabold text-ink">{tr("Ghi chú cho học sinh (không bắt buộc)", "Message à l'élève (facultatif)", "Note to the student (optional)")}</span>
+            <textarea value={ghiChu} onChange={(e) => setGhiChu(e.target.value.slice(0, 1000))} rows={2}
+              className="w-full resize-y rounded-xl border border-solid border-line bg-surface2 p-2.5 font-sans text-[13px] text-ink" />
+          </label>
+          <p className="m-0 text-[11px] text-soft">{tr("« Lưu điểm chấm lại » thay điểm phần nói của lượt thi bằng điểm của bạn; học sinh không tự chấm đè lên được nữa.", "Votre note remplace celle de l'oral ; l'élève ne peut plus la modifier.", "Your score replaces the speaking score; the student can no longer overwrite it.")}</p>
+          {loi && <p className="m-0 rounded-xl bg-danger-soft p-2.5 text-xs text-danger">{loi}</p>}
+          <div className="flex flex-wrap gap-2">
+            <button type="button" onClick={() => luu("da_cham_lai")} disabled={!!dang || !du}
+              className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border-0 bg-primary px-4 py-2 font-sans text-xs font-extrabold text-on-primary disabled:opacity-60">
+              {dang === "da_cham_lai" ? <Loader2 size={14} className="mcf-spin" /> : <Save size={14} />} {du ? tr("Lưu điểm chấm lại", "Enregistrer ma note", "Save my score") : tr("Chọn đủ mức mọi tiêu chí", "Notez tous les critères", "Rate every criterion")}
+            </button>
+            <button type="button" onClick={() => luu("giu_nguyen")} disabled={!!dang}
+              className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border-0 bg-surface2 px-4 py-2 font-sans text-xs font-bold text-ink disabled:opacity-60">
+              <Check size={14} /> {tr("Giữ nguyên điểm AI", "Confirmer la note de l'IA", "Keep the AI score")}
+            </button>
+            {r.trang_thai !== "cho" && (
+              <button type="button" onClick={() => luu("cho")} disabled={!!dang}
+                className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-solid border-line bg-surface px-4 py-2 font-sans text-xs font-bold text-ink disabled:opacity-60">
+                <RotateCcw size={14} /> {tr("Mở lại", "Rouvrir", "Reopen")}
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+    </li>
+  );
+}
+
 /* `thu`: danh sách dựng sẵn cho /preview.html (không gọi mạng). */
 export default function XemKhieuNai({ thu }) {
   const [ds, setDs] = useState(thu ?? null);
@@ -163,9 +307,16 @@ export default function XemKhieuNai({ thu }) {
 
   const tai = async () => {
     if (thu) return;
-    const { data, error } = await supabase.rpc("ds_khieu_nai", { p_trang_thai: null });
-    if (error) { setLoi(error.message); setDs([]); return; }
-    setLoi(""); setDs(data ?? []);
+    /* Bài viết (196) và phần nói (198) chung một hàng đợi, mới nhất trước. Phần nói đọc hỏng (chưa áp
+       198) thì vẫn hiện phần viết. */
+    const [viet, noi] = await Promise.all([
+      supabase.rpc("ds_khieu_nai", { p_trang_thai: null }),
+      supabase.rpc("ds_khieu_nai_po"),
+    ]);
+    if (viet.error) { setLoi(viet.error.message); setDs([]); return; }
+    const gop = [...(viet.data ?? []), ...(noi.error ? [] : (noi.data ?? []).map((x) => ({ ...x, __po: true })))]
+      .sort((a, b) => (a.trang_thai === "cho") === (b.trang_thai === "cho") ? new Date(b.tao_luc) - new Date(a.tao_luc) : a.trang_thai === "cho" ? -1 : 1);
+    setLoi(""); setDs(gop);
   };
   useEffect(() => { tai(); }, []);
 
@@ -189,7 +340,9 @@ export default function XemKhieuNai({ thu }) {
         : hien.length === 0 ? <p className="m-0 mt-6 rounded-2xl bg-surface p-6 text-center text-sm text-soft">{tr("Không có khiếu nại nào ở mục này.", "Aucune contestation ici.", "No appeals here.")}</p>
         : (
           <ul className="m-0 mt-5 grid list-none gap-3 p-0">
-            {hien.map((r) => <TheKhieuNai key={`${r.id}-${r.trang_thai}`} r={r} onXong={tai} />)}
+            {hien.map((r) => r.__po
+              ? <TheKhieuNaiPO key={`po-${r.attempt_id}-${r.trang_thai}`} r={r} onXong={tai} />
+              : <TheKhieuNai key={`${r.id}-${r.trang_thai}`} r={r} onXong={tai} />)}
           </ul>
         )}
     </div>

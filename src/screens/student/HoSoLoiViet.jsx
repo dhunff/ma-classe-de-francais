@@ -28,13 +28,17 @@ async function docDuLieu() {
   const uid = u?.user?.id;
   if (!uid) return null;
   const tu = new Date(Date.now() - 2 * CUA_SO_NGAY * 86400000).toISOString();
-  const [phieu, hoSo] = await Promise.all([
+  const [phieu, noi, hoSo] = await Promise.all([
     supabase.from("pe_ai_goi_y").select("created_at, loi:ket_qua->loi").eq("user_id", uid)
       .gte("created_at", tu).order("created_at", { ascending: false }).limit(500),
+    /* Lỗi nói của phần Nói thi thử (giai đoạn 5): lỗi ngữ pháp, dùng từ trong bản chép lời. */
+    supabase.from("po_cham").select("ai_luc, loi:ai_goi_y->loi").eq("user_id", uid)
+      .gte("ai_luc", tu).order("ai_luc", { ascending: false }).limit(200),
     supabase.from("profiles").select("level").eq("id", uid).maybeSingle(),
   ]);
   if (phieu.error) return null;
-  return { dongs: phieu.data ?? [], level: hoSo.data?.level ?? null };
+  const dongNoi = noi.error ? [] : (noi.data ?? []).filter((d) => Array.isArray(d.loi)).map((d) => ({ created_at: d.ai_luc, loi: d.loi, nguon: "noi" }));
+  return { dongs: [...(phieu.data ?? []), ...dongNoi], level: hoSo.data?.level ?? null };
 }
 
 export default function HoSoLoiViet({ thu }) {
@@ -55,7 +59,7 @@ export default function HoSoLoiViet({ thu }) {
     return (
       <div className="grid justify-items-start gap-3 rounded-3xl border border-solid border-line bg-surface p-6">
         <PenLine size={22} className="text-primary" />
-        <p className="m-0 text-sm font-bold text-ink">{tr("Chưa có bài viết nào được AI chấm trong 60 ngày qua.", "Aucune copie corrigée par l'IA ces 60 derniers jours.", "No AI-marked writing in the last 60 days.")}</p>
+        <p className="m-0 text-sm font-bold text-ink">{tr("Chưa có bài viết hay bài nói thi thử nào được AI chấm trong 60 ngày qua.", "Aucune copie ni oral corrigé par l'IA ces 60 derniers jours.", "No AI-marked writing or mock speaking in the last 60 days.")}</p>
         <p className="m-0 text-[13px] text-soft">{tr("Làm một bài Viết ở Luyện tập: nộp xong AI tự chấm, và lỗi của bạn sẽ được gom lại ở đây.", "Faites un exercice d'écriture : l'IA le corrige et vos erreurs sont regroupées ici.", "Do a writing exercise: the AI marks it and your errors are collected here.")}</p>
       </div>
     );
@@ -65,9 +69,9 @@ export default function HoSoLoiViet({ thu }) {
   return (
     <div className="grid gap-4">
       <div className="rounded-3xl border border-solid border-line bg-surface p-5">
-        <p className="m-0 text-base font-extrabold text-ink">{tr("Lỗi bạn hay mắc khi viết", "Vos erreurs fréquentes à l'écrit", "Your frequent writing errors")}</p>
+        <p className="m-0 text-base font-extrabold text-ink">{tr("Lỗi bạn hay mắc khi viết và nói", "Vos erreurs fréquentes à l'écrit et à l'oral", "Your frequent writing and speaking errors")}</p>
         <p className="m-0 mt-1 text-[13px] text-soft">
-          {tr(`${hs.so_bai_30} bài được chấm trong 30 ngày qua, ${hs.so_bai_truoc} bài trong 30 ngày trước đó. Xu hướng so số lỗi trên mỗi bài, nên viết nhiều hơn không làm bạn trông kém đi.`,
+          {tr(`${hs.so_bai_30} bài được chấm trong 30 ngày qua, ${hs.so_bai_truoc} bài trong 30 ngày trước đó. Xu hướng so số lỗi trên mỗi bài, nên làm nhiều bài hơn không làm bạn trông kém đi.`,
             `${hs.so_bai_30} copies ces 30 derniers jours, ${hs.so_bai_truoc} les 30 jours précédents. La tendance compare les erreurs par copie.`,
             `${hs.so_bai_30} texts in the last 30 days, ${hs.so_bai_truoc} in the 30 days before. Trends compare errors per text.`)}
         </p>
@@ -95,6 +99,7 @@ export default function HoSoLoiViet({ thu }) {
                         <span className="text-danger line-through decoration-danger/60">{v.trich}</span>
                         <ArrowRight size={12} className="shrink-0 text-soft" />
                         <span className="font-bold text-ok">{v.sua}</span>
+                        {v.nguon === "noi" && <span lang="vi" className="rounded-full bg-primary-soft px-1.5 py-0.5 text-[10px] font-bold text-primary">{tr("bài nói", "oral", "speaking")}</span>}
                       </p>
                       {v.giai_thich && <p className="m-0 text-xs text-soft">{v.giai_thich}</p>}
                     </li>

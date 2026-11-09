@@ -248,6 +248,7 @@ la(bocJSON("") === null && bocJSON(null) === null, "rỗng/null phải ra null")
   la(hs.loai[0].loai === "article" && theo.article.dem30 === 2 && theo.article.vi_du[0].trich === "les nourriture", "hoSoLoi: xếp loại nhiều nhất trước, ví dụ mới nhất trước");
   la(theo.article.xu_huong === "tang" && theo.accord.xu_huong === "giam" && theo.temps.xu_huong === "het", "hoSoLoi: xu hướng theo số lỗi MỖI BÀI (tăng, giảm, hết)");
   la(theo.syntaxe?.dem30 === 1, "hoSoLoi: loại lỗi lạ về syntaxe");
+  la(gomHoSoLoi([{ created_at: ngayTruoc(1), nguon: "noi", loi: [{ trich: "je suis allé à le", sua: "au", loai: "preposition" }] }], BAY_GIO).loai[0].vi_du[0].nguon === "noi", "hoSoLoi: ví dụ giữ nguồn bài nói (giai đoạn 5)");
   la(gomHoSoLoi([{ created_at: ngayTruoc(1), loi: [{ trich: "a", sua: "b", loai: "accord" }] }], BAY_GIO).loai[0].xu_huong === "moi", "hoSoLoi: chưa có bài tháng trước thì là « mới », không bịa xu hướng");
   la(baiChoLoi("temps", "B1") === "b1-temps-passe" && baiChoLoi("lexique", "A2") === null && baiChoLoi("registre", "A2") === null, "baiChoLoi: nối bài đúng trình độ, không nối bừa");
   la(capTuHoSo("Débutant") === "A1" && capTuHoSo("B1") === "B1" && capTuHoSo("") === "A2" && capTuHoSo("C2") === "C1", "capTuHoSo: đọc trình độ hồ sơ");

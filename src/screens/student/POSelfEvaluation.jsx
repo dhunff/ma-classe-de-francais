@@ -5,6 +5,9 @@ import { dsBaiNoi, duongNghe } from "../../shared/baiNoi.js";
 import { GRILLE_PO, mucCuaTieuChi } from "../../../supabase/functions/_shared/grillePO.js";
 import { loiTranVip } from "../../shared/loiTranVip.js";
 import { tr } from "../../shared/i18n.jsx";
+import { KhoiTroiChay } from "../exam/GhiAmBaiNoi.jsx";
+import { BaiVietCoLoi } from "../practice/LoiVietAI.jsx";
+import KhieuNaiDiem, { GhiChuChamDoi } from "./KhieuNaiDiem.jsx";
 
 /* Tự chấm Production orale (12/10, migration 135).
  *
@@ -92,9 +95,20 @@ export default function POSelfEvaluation({ po, exerciseId, consigne, onXong }) {
           {aiTT && aiTT !== "dang" && <p className="m-0 mt-2 text-sm font-bold text-danger">{LOI_AI[aiTT] ?? tr("AI chưa gợi ý được, thử lại sau.", "Échec de l'IA, réessayez.", "AI failed, try again.")}</p>}
           {ai && (
             <>
+              {/* Giai đoạn 5 (09/11): chấm hai lượt, độ trôi chảy đo từ âm thanh, lỗi tô trong bản chép lời,
+                  khiếu nại. Phiếu cũ không có các trường này thì các khối tự ẩn. */}
+              {ai.cham_doi?.so_luot >= 2 && <p className="m-0 mt-2 text-[11px] text-soft">{tr("Hai giám khảo AI chấm độc lập rồi gộp điểm theo grille.", "Double correction IA, notes ramenées à la grille.", "Two independent AI markers, merged on the grid.")}</p>}
+              <div className="mt-2"><GhiChuChamDoi chamDoi={ai.cham_doi} /></div>
               {ai.tong_quat && <p className="m-0 mt-3 text-sm leading-relaxed text-ink">{ai.tong_quat}</p>}
-              {ai.chep_loi && <details className="mt-3"><summary className="cursor-pointer text-xs font-bold text-soft">{tr("Bản chép lời", "Transcription", "Transcript")}</summary>
+              <KhoiTroiChay tc={ai.troi_chay} nx={ai.troi_chay_nx} />
+              {Array.isArray(ai.loi) && ai.chep_loi ? (
+                <div className="mt-3">
+                  <p className="m-0 mb-2 text-xs font-bold text-ink">{tr("Bản chép lời, lỗi ngữ pháp và dùng từ được tô", "Transcription, erreurs de grammaire et de lexique surlignées", "Transcript with grammar and word errors highlighted")}</p>
+                  <BaiVietCoLoi baiLam={ai.chep_loi} loi={ai.loi} gon />
+                </div>
+              ) : ai.chep_loi && <details className="mt-3"><summary className="cursor-pointer text-xs font-bold text-soft">{tr("Bản chép lời", "Transcription", "Transcript")}</summary>
                 <p lang="fr" className="m-0 mt-2 whitespace-pre-line rounded-xl bg-surface2 p-3 text-sm text-ink">{ai.chep_loi}</p></details>}
+              {ai.diem && <div className="mt-3"><KhieuNaiDiem poAttemptId={po.attemptId} criteria={grille.criteres.map((c) => ({ id: c.id, name: c.vi }))} thu={!!po.thu} /></div>}
             </>
           )}
         </div>
@@ -141,8 +155,11 @@ AI: <strong>{String(goiY).replace(".", ",")}</strong>
           })}
         </div>
 
-        {typeof luu === "string" && luu !== "dang" && <p className="m-0 mt-4 flex items-center gap-2 text-sm font-bold text-danger"><AlertTriangle size={15} /> {tr("Không lưu được", "Échec de l'enregistrement", "Couldn't save")}: {luu}</p>}
-        {luu?.diem != null ? (
+        {typeof luu === "string" && luu !== "dang" && <p className="m-0 mt-4 flex items-center gap-2 text-sm font-bold text-danger"><AlertTriangle size={15} /> {tr("Không lưu được", "Échec de l'enregistrement", "Couldn't save")}: {/DA_CO_DIEM_GIAO_VIEN/.test(luu) ? tr("giáo viên đã chấm lại phần nói này.", "le professeur a déjà revu cet oral.", "your teacher already re-marked this.") : luu}</p>}
+        {/* Giáo viên đã chấm lại sau khiếu nại (198): điểm giáo viên giữ nguyên, không tự chấm đè. */}
+        {po.nguon === "giao_vien" ? (
+          <p className="m-0 mt-4 flex items-center gap-2 rounded-2xl bg-ok-soft p-3 text-sm font-bold text-ok"><CheckCircle2 size={16} /> {tr("Giáo viên đã chấm lại phần nói này sau khiếu nại. Điểm giáo viên được giữ.", "Le professeur a revu cet oral après votre demande ; sa note est retenue.", "Your teacher re-marked this after your appeal; their score stands.")}</p>
+        ) : luu?.diem != null ? (
           <p className="m-0 mt-4 flex items-center gap-2 rounded-2xl bg-ok-soft p-3 text-sm font-bold text-ok"><CheckCircle2 size={16} /> {tr("Đã lưu", "Enregistré", "Saved")}: {String(luu.diem).replace(".", ",")}/25</p>
         ) : (
           <button type="button" onClick={ghi} disabled={!du || luu === "dang"}
