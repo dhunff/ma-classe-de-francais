@@ -25,6 +25,7 @@ import DatNeo from './screens/teacher/DatNeo.jsx'
 import DuyetNhap from './screens/teacher/DuyetNhap.jsx'
 import BaoLoiNguPhap from './screens/teacher/BaoLoiNguPhap.jsx'
 import XemKhieuNai from './screens/teacher/XemKhieuNai.jsx'
+import DanhSachDen from './screens/teacher/DanhSachDen.jsx'
 import SoanBoThe from './screens/teacher/SoanBoThe.jsx'
 import LandingPage from './screens/public/LandingPage.jsx'
 import { TrangFAQ, TrangDieuKhoan, TrangBaoMat } from './screens/public/TrangPhapLy.jsx'
@@ -303,6 +304,7 @@ function AppInner() {
               <Route path="/professeur/duyet-nhap" element={<DuyetNhap />} />
               <Route path="/professeur/bao-loi-ngu-phap" element={<BaoLoiNguPhap />} />
               <Route path="/professeur/khieu-nai-diem" element={<XemKhieuNai />} />
+              <Route path="/professeur/danh-sach-den" element={<DanhSachDen />} />
               <Route path="/professeur/ngu-phap/:ma" element={<NguPhap />} />
 
               <Route path="/professeur/*" element={<Navigate to="/professeur/dashboard" replace />} />

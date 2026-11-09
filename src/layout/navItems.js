@@ -2,7 +2,7 @@ import {
   House, GraduationCap, ChartNoAxesCombined, UserRound, Gamepad2,
   LayoutDashboard, BookOpen, Users, BarChart3, Dumbbell, AudioLines, TrendingUp,
   ClipboardList, CheckSquare, CalendarDays, Settings, Lightbulb, Timer, Trophy, Layers, Lightbulb as Bulb, Anchor, Inbox,
-  Map, BookA, Swords, FileCheck2, Megaphone, Flag, LifeBuoy, Scale } from "lucide-react";
+  Map, BookA, Swords, FileCheck2, Megaphone, Flag, LifeBuoy, Scale, Ban } from "lucide-react";
 
 /* Điều hướng của vỏ app.
 
@@ -27,6 +27,8 @@ export const TEACHER_NAV = [
   { to: "/professeur/thong-bao", nhom: "lop", labelKey: "nav.notify", Icon: Megaphone },
   /* Khiếu nại điểm AI chấm bài viết (06/11, migration 196): xem lại, chấm lại hoặc giữ nguyên. */
   { to: "/professeur/khieu-nai-diem", nhom: "lop", labelKey: "nav.scoreAppeals", Icon: Scale },
+  /* Danh sách đen: chặn email đăng nhập (09/11, migration 197). */
+  { to: "/professeur/danh-sach-den", nhom: "lop", labelKey: "nav.blocklist", Icon: Ban },
   /* 07/10, theo chủ dự án: giáo viên chỉ còn quản lý học sinh, cấp quyền bài,
      gói VIP và giao bài (cùng soạn bài, đề thi, flashcard, neo, duyệt nháp).
      ĐÃ GỠ: « Thư viện luyện tập » riêng (gộp thành tab trong « Bài tập »),

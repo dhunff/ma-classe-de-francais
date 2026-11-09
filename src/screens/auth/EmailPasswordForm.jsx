@@ -142,6 +142,9 @@ export default function EmailPasswordForm({ accounts = [], onLogin, mode = "logi
         const { data, error: err } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
         /* Một thông báo duy nhất cho mọi kiểu sai — nói rõ "email này không
            tồn tại" là cho người lạ biết địa chỉ nào có thật trong hệ thống. */
+        /* Danh sách đen (migration 197): GoTrue từ chối tài khoản bị khoá bằng mã user_banned.
+           Nói rõ « đã bị khoá » thay vì « sai mật khẩu », không thì người đó đặt lại mật khẩu mãi. */
+        if (err && (err.code === "user_banned" || /banned/i.test(err.message || ""))) { setError(t("login.err_banned")); return; }
         if (err || !data?.user) { setError(t("login.err_generic")); return; }
         onLogin(resolveRole(data.user, accounts));
         return;
