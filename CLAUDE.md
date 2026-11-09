@@ -45,7 +45,7 @@ npm run check:hoatdong     # nhật ký theo ngày + chuỗi ngày học (32 ca)
 npm run check:sm2          # SM-2, lời giải, và đường sinh thẻ cũ PHẢI đang tắt (70 ca)
 npm run check:neo          # neo đáp án vào ngữ liệu (59 ca)
 npm run check:champe       # khuôn gợi ý chấm PE do AI trả về (38 ca)
-npm run check:troichay     # đo độ trôi chảy bài nói từ dấu thời gian từng từ (18 ca)
+npm run check:troichay     # đo độ trôi chảy bài nói từ dấu thời gian từng từ (21 ca)
 npm run check:dapan        # đáp án phía học sinh + chốt chặn câu ordre (33 ca)
 npm run check:dovui        # Đố vui: kho câu, địa danh, giả lập 1 500 Tour không kẹt đường
 npm run check:phientoa     # Phiên toà: vụ án, điều luật, luật chấm ba nhát

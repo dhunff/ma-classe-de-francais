@@ -56,8 +56,21 @@ export function doTroiChay(tu, capDo) {
   const tuDem = {};
   ds.forEach((t) => { if (TU_DEM.has(t.w)) tuDem[t.w] = (tuDem[t.w] ?? 0) + 1; });
   const soTuDem = Object.values(tuDem).reduce((n, x) => n + x, 0);
+  /* Lặp: một từ HOẶC một cụm 2–3 từ nói lại ngay sau chính nó (« c'est c'est », « des paroles,
+     des paroles »). Bản đầu chỉ bắt một từ, và lượt ghi thật đầu tiên (09/11) lặp nguyên cụm mà
+     máy báo « ít ». Mỗi lần lặp đếm một, cụm dài được xét trước để không đếm hai lần. */
   let soLap = 0;
-  for (let i = 1; i < that.length; i++) if (that[i].w === that[i - 1].w) soLap++;
+  const w = that.map((t) => t.w);
+  for (let i = 0; i < w.length; i++) {
+    for (const n of [3, 2, 1]) {
+      if (i + 2 * n > w.length) continue;
+      let giong = true;
+      for (let k = 0; k < n; k++) if (w[i + k] !== w[i + n + k]) { giong = false; break; }
+      /* « nous nous levons », « vous vous asseyez »: đại từ phản thân, đúng ngữ pháp, không phải lặp. */
+      if (giong && n === 1 && (w[i] === "nous" || w[i] === "vous")) giong = false;
+      if (giong) { soLap++; i += n - 1; break; }
+    }
+  }
 
   const cap = capChuan(capDo);
   const tocDo = that.length / phut;

@@ -41,6 +41,10 @@ la(dem.so_tu_dem === 3 && dem.tu_dem.euh === 2 && dem.tu_dem.hum === 1, `đếm 
 la(dem.so_tu === 9, `số từ thật không gồm từ đệm (ra ${dem.so_tu})`);
 la(dem.so_lap === 1 && dem.muc.tu_dem === "nhieu", `lặp « c'est c'est » là 1 lần lặp; 3 từ đệm trong vài giây là « nhiều » (ra ${dem.so_lap}, ${dem.muc.tu_dem})`);
 la(doTroiChay(chuoi(["Le", "le", "chat", "dort", "sur", "le", "lit", "ce", "soir"]), "B1").so_lap === 1, "lặp không phân biệt hoa thường");
+/* Lượt ghi thật 09/11: « des paroles, des paroles pour exprimer, pour échanger » có MỘT lần lặp cụm. */
+la(doTroiChay(chuoi(["je", "suis", "passionné", "par", "des", "paroles,", "des", "paroles", "pour", "exprimer,", "pour", "échanger"]), "B1").so_lap === 1, "lặp cụm hai từ đếm một lần, « pour exprimer, pour échanger » không phải lặp");
+la(doTroiChay(chuoi(["il", "y", "a", "il", "y", "a", "un", "parc", "près", "de", "chez", "moi"]), "B1").so_lap === 1, "lặp cụm ba từ đếm một lần, không đếm thêm các từ con");
+la(doTroiChay(chuoi(["nous", "nous", "sommes", "levés", "tôt", "et", "vous", "vous", "êtes", "assis"]), "B1").so_lap === 0, "« nous nous », « vous vous » phản thân không tính là lặp");
 
 // 5. Trình độ lạ về B1; dòng đưa vào lời nhắc.
 la(doTroiChay(chuoi(Array.from({ length: 20 }, (_, i) => `mot${i}`)), "zz").cap === "B1", "trình độ lạ coi như B1");
