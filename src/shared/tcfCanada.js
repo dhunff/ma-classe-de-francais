@@ -10,7 +10,8 @@
  * ══ ĐIỂM ƯỚC LƯỢNG, KHÔNG PHẢI ĐIỂM CHÍNH THỨC ══
  * FEI không công bố cách tính điểm từng câu. Cách chia dưới đây là cách các trang luyện thi
  * hay dùng: 39 câu xếp từ dễ tới khó theo sáu mức A1 → C2, câu khó nhiều điểm hơn, cộng
- * đúng 699. Chủ dự án đồng ý dùng nó (09/11) với điều kiện màn hình ghi rõ là ƯỚC LƯỢNG.
+ * đúng 699. Chủ dự án chọn cách này (09/11), rồi cùng ngày yêu cầu bỏ dòng ghi chú « điểm ước
+ * lượng » khỏi trang TCF và màn kết quả: tính chất ước lượng chỉ còn ghi ở mã nguồn.
  *
  * ══ BẢNG NCLC ══
  * Chép từ trang IRCC (canada.ca, « Francophone Community Immigration Pilot: Get your language

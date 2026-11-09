@@ -1049,7 +1049,8 @@ function KetQua({ sections, blurCount, onLai }) {
   );
 }
 
-/* Kết quả đề TCF Canada (09/11). Nghe, Đọc: điểm ƯỚC LƯỢNG 0 → 699 và mức NCLC theo bảng IRCC
+/* Kết quả đề TCF Canada (09/11). Nghe, Đọc: điểm ước lượng 0 → 699 (chủ dự án bỏ dòng ghi chú
+   « điểm ước lượng » khỏi màn hình, 09/11) và mức NCLC theo bảng IRCC
    (shared/tcfCanada.js). Viết, Nói: hệ thống chưa chấm theo thang TCF, nên nói thẳng là chưa có
    điểm thay vì đưa một con số (quy tắc 1). Không có « đạt / trượt »: TCF không có ngưỡng đạt,
    người thi cần đúng mức NCLC mà chương trình định cư của mình đòi. */
@@ -1064,10 +1065,6 @@ function KetQuaTCF({ sections, blurCount, onLai }) {
         <h1 className="m-0 text-2xl font-extrabold text-ink">{tr("Kết quả thi thử TCF Canada", "Résultat de l'examen blanc TCF Canada", "TCF Canada mock exam result")}</h1>
         <NutTieng />
       </div>
-      <p className="m-0 flex items-start gap-2 rounded-2xl bg-warn-soft p-3 text-xs leading-relaxed text-ink">
-        <AlertTriangle size={14} className="mt-0.5 shrink-0 text-warn" />
-        <span><strong>{tr("Điểm ước lượng, không phải điểm chính thức.", "Score estimé, pas un score officiel.", "Estimated score, not an official score.")}</strong> {tr("FEI không công bố cách tính điểm từng câu. Ở đây câu khó được nhiều điểm hơn câu dễ, cộng tối đa 699, rồi quy ra NCLC theo bảng của IRCC.", "FEI ne publie pas le barème par question. Ici, les questions difficiles valent plus que les faciles (699 au maximum), puis le score est converti en NCLC selon le tableau d'IRCC.", "FEI doesn't publish per-question scoring. Here harder questions are worth more (699 max), then converted to NCLC using IRCC's table.")}</span>
-      </p>
       {mat && (
         <p className="m-0 mt-3 rounded-2xl border border-solid border-danger bg-danger-soft p-3 text-xs font-bold text-danger">
           {tr("⚠️ Kết quả này CHƯA được lưu lên máy chủ (phiên đăng nhập có thể đã hết hạn). Đăng nhập lại rồi thi lại.", "⚠️ Ce résultat N'EST PAS enregistré (session expirée ?). Reconnectez-vous et recommencez.", "⚠️ This result is NOT saved (session expired?). Sign in again and retake it.")}

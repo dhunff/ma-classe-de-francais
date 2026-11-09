@@ -348,13 +348,15 @@ function Student({ name, exercises, submissions, setSubmissions, accounts, setAc
       {/* Nút « Làm mới » gỡ 08/10 theo chủ dự án: dữ liệu tự nạp khi vào trang. */}
 
       {(tab === "todo" || tab === "done") && (
-        <header className="mcf-cau-vao relative mb-5 overflow-hidden rounded-3xl bg-gradient-to-br from-blue-600 via-primary to-indigo-600 p-6 text-white shadow-[0_20px_50px_rgba(37,99,235,0.3)]">
+        /* 09/11 (chủ dự án: « làm lại cho gọn »): khối đầu thấp hơn, Léon nhỏ lại, dải số liệu nằm luôn
+           trong khối này thay cho hàng bốn thẻ lớn bên dưới. */
+        <header className="mcf-cau-vao relative mb-4 overflow-hidden rounded-3xl bg-gradient-to-br from-blue-600 via-primary to-indigo-600 p-5 text-white shadow-[0_16px_40px_rgba(37,99,235,0.25)]">
           <span aria-hidden className="absolute -right-12 -top-12 h-48 w-48 rounded-full bg-white/10" />
           <span aria-hidden className="absolute -bottom-20 left-1/3 h-44 w-44 rounded-full bg-sky-300/20 blur-2xl" />
           <div className="relative flex items-center gap-4">
-            <Leon cam={todo.length ? "lam-viec" : "yeah"} size={108} className="mcf-leon-bay shrink-0 drop-shadow-[0_12px_18px_rgba(0,0,0,0.3)] max-sm:h-20 max-sm:w-20" />
+            <Leon cam={todo.length ? "lam-viec" : "yeah"} size={64} className="shrink-0 drop-shadow-[0_8px_14px_rgba(0,0,0,0.25)]" />
             <div className="min-w-0 flex-1">
-              <h1 className="m-0 text-3xl font-extrabold tracking-tight">{t("nav.assigned")}</h1>
+              <h1 className="m-0 text-2xl font-extrabold tracking-tight">{t("nav.assigned")}</h1>
               <p className="m-0 mt-1 text-sm text-white/85">
                 {todo.length
                   ? tr(`Bạn còn ${todo.length} bài cần làm. Allez, courage !`, `Il te reste ${todo.length} devoir(s). Allez, courage !`, `You have ${todo.length} assignment(s) left. Allez, courage!`)
@@ -363,15 +365,15 @@ function Student({ name, exercises, submissions, setSubmissions, accounts, setAc
             </div>
             <NutTieng className="border-white/30 bg-white/15 text-white hover:border-white hover:text-white" />
           </div>
+          <TongQuanBaiGiao exercises={exercises} submissions={submissions} name={name} t={t} />
         </header>
       )}
-      {(tab === "todo" || tab === "done") && <TongQuanBaiGiao exercises={exercises} submissions={submissions} name={name} t={t} />}
       {/* « Bài tập được giao » (08/10): Cần làm + Đã nộp là hai tab của một mục. */}
       {(tab === "todo" || tab === "done") && (
-        <div role="tablist" className="mb-5 inline-flex gap-1 rounded-2xl bg-surface2 p-1.5">
+        <div role="tablist" className="mb-3 inline-flex gap-1 rounded-2xl bg-surface2 p-1">
           {[["todo", t("nav.todo"), todo.length], ["done", t("nav.done"), doneList.length]].map(([k, nhan, n]) => (
             <button key={k} type="button" role="tab" aria-selected={tab === k} onClick={() => { if (tab !== k) phat("tiep"); setTab(k); }}
-              className={`inline-flex h-10 cursor-pointer items-center gap-2 rounded-xl border-0 px-5 font-sans text-sm font-extrabold transition-all ${tab === k ? "bg-surface text-ink shadow-md" : "bg-transparent text-soft hover:text-ink"}`}>
+              className={`inline-flex h-9 cursor-pointer items-center gap-2 rounded-xl border-0 px-4 font-sans text-sm font-extrabold transition-all ${tab === k ? "bg-surface text-ink shadow-md" : "bg-transparent text-soft hover:text-ink"}`}>
               {nhan} <span className={`grid h-6 min-w-6 place-items-center rounded-full px-1.5 text-xs tabular-nums ${tab === k ? "bg-primary text-white" : "bg-surface text-soft"}`}>{n}</span>
             </button>
           ))}
@@ -379,16 +381,18 @@ function Student({ name, exercises, submissions, setSubmissions, accounts, setAc
       )}
       {tab === "todo" && (
         todo.length === 0
-          ? <div className="flex w-full flex-col items-center justify-center rounded-3xl border border-solid border-line bg-surface px-6 py-16 text-center shadow-sm transition-colors duration-300 dark:shadow-none">
-              <Leon cam="yeah" size={120} className="mcf-nay mb-3" />
-              <p className="m-0 text-lg font-semibold text-ink">{t("todo.empty_title")}</p>
-              <p className="m-0 mt-1 text-sm text-soft">{t("todo.empty_body")}</p>
+          ? <div className="flex w-full items-center gap-4 rounded-3xl border border-solid border-line bg-surface px-5 py-4">
+              <Leon cam="yeah" size={64} className="mcf-nay shrink-0" />
+              <div className="min-w-0">
+                <p className="m-0 text-base font-extrabold text-ink">{t("todo.empty_title")}</p>
+                <p className="m-0 mt-0.5 text-sm text-soft">{t("todo.empty_body")}</p>
+              </div>
             </div>
           : <div className="grid gap-3.5">{todo.map((ex, i) => <Card key={ex.id} ex={ex} i={i} />)}</div>
       )}
       {tab === "done" && (
         doneList.length === 0
-          ? <div className="flex flex-col items-center rounded-3xl border border-solid border-line bg-surface px-6 py-12 text-center text-soft"><Leon cam="buon-ngu" size={110} className="mb-2" />{t("empty.no_submission")}</div>
+          ? <div className="flex items-center gap-4 rounded-3xl border border-solid border-line bg-surface px-5 py-4 text-sm text-soft"><Leon cam="buon-ngu" size={64} className="shrink-0" />{t("empty.no_submission")}</div>
           : <div className="grid gap-3.5">{doneList.map((ex, i) => <Card key={ex.id} ex={ex} i={i} />)}</div>
       )}
 
