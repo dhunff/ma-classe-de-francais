@@ -310,6 +310,216 @@
    },
    "la piqûre": {
     "id": "14871"
+   },
+   "la chemise": {
+    "id": "16596"
+   },
+   "les lunettes": {
+    "id": "16606"
+   },
+   "la montre": {
+    "id": "37749"
+   },
+   "la bague": {
+    "id": "17341"
+   },
+   "le parapluie": {
+    "id": "16597"
+   },
+   "le sac à main": {
+    "id": "37706"
+   },
+   "les chaussures": {
+    "id": "17618"
+   },
+   "la cravate": {
+    "id": "20576"
+   },
+   "l'écharpe": {
+    "id": "16587"
+   },
+   "le maillot de bain": {
+    "id": "122961"
+   },
+   "le médecin": {
+    "id": "14857"
+   },
+   "le cuisinier": {
+    "id": "23288"
+   },
+   "l'ouvrier": {
+    "id": "23340"
+   },
+   "le mécanicien": {
+    "id": "111638"
+   },
+   "le peintre": {
+    "id": "9fS8epYOUvtK"
+   },
+   "le coiffeur": {
+    "id": "qGrhqZVFf9Lv"
+   },
+   "le juge": {
+    "id": "17877"
+   },
+   "l'agriculteur": {
+    "id": "23295"
+   },
+   "le pilote": {
+    "id": "J2HcqQ3sPh4v"
+   },
+   "le facteur": {
+    "id": "kVzqFZ8zS2MB"
+   },
+   "la casserole": {
+    "id": "v5qj37MWkW09"
+   },
+   "le micro-ondes": {
+    "id": "12846"
+   },
+   "la tasse": {
+    "id": "84298"
+   },
+   "la fourchette": {
+    "id": "12856"
+   },
+   "le couteau": {
+    "id": "12902"
+   },
+   "le bol": {
+    "id": "79UtsTJ0BaNF"
+   },
+   "le verre": {
+    "id": "1ftVn8GOXtit"
+   },
+   "la poêle": {
+    "id": "BeDidZchwnxG"
+   },
+   "le minuteur": {
+    "id": "63256"
+   },
+   "la bouteille": {
+    "id": "13322"
+   },
+   "la valise": {
+    "id": "17622"
+   },
+   "le billet": {
+    "id": "13032"
+   },
+   "la carte": {
+    "id": "13781"
+   },
+   "le passeport": {
+    "id": "17608"
+   },
+   "la boussole": {
+    "id": "13730"
+   },
+   "l'aéroport": {
+    "id": "qerRQWBCmFLD"
+   },
+   "la plage": {
+    "id": "17569"
+   },
+   "le panneau": {
+    "id": "13788"
+   },
+   "les jumelles": {
+    "id": "13120"
+   },
+   "le drapeau": {
+    "id": "3muzEmi4dpD5"
+   },
+   "la montagne": {
+    "id": "110283"
+   },
+   "la forêt": {
+    "id": "17593"
+   },
+   "la fleur": {
+    "id": "18050"
+   },
+   "la feuille": {
+    "id": "18066"
+   },
+   "la mer": {
+    "id": "17617"
+   },
+   "l'arbre": {
+    "id": "18047"
+   },
+   "le cactus": {
+    "id": "18043"
+   },
+   "l'île": {
+    "id": "NUROCLcGlkBS"
+   },
+   "l'étoile": {
+    "id": "19295"
+   },
+   "le désert": {
+    "id": "DLRlgKnyxMZE"
+   },
+   "le chariot": {
+    "id": "13014"
+   },
+   "le sac": {
+    "id": "13022"
+   },
+   "la carte bancaire": {
+    "id": "22188"
+   },
+   "le billet de banque": {
+    "id": "13008"
+   },
+   "la pièce": {
+    "id": "13009"
+   },
+   "le ticket de caisse": {
+    "id": "13225"
+   },
+   "l'étiquette": {
+    "id": "12028"
+   },
+   "la tirelire": {
+    "id": "13005"
+   },
+   "le portefeuille": {
+    "id": "13016"
+   },
+   "la cabine d'essayage": {
+    "id": "dXeKGA4gQciN"
+   },
+   "l'ordinateur portable": {
+    "id": "102552"
+   },
+   "le téléphone portable": {
+    "id": "13616"
+   },
+   "la tablette": {
+    "id": "13618"
+   },
+   "l'écran": {
+    "id": "13352"
+   },
+   "le clavier": {
+    "id": "12280"
+   },
+   "la souris": {
+    "id": "13347"
+   },
+   "l'imprimante": {
+    "id": "12785"
+   },
+   "le casque": {
+    "id": "20747"
+   },
+   "la batterie": {
+    "id": "4MWKIlEI1k82"
+   },
+   "le chargeur": {
+    "id": "gZYWoCrsvoFU"
    }
   }
  }

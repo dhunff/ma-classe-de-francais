@@ -8,7 +8,7 @@ import { Leon } from "../../shared/leon.jsx";
 import { phat } from "../../shared/amThanh.js";
 import HocTapTab from "./HocTapTab.jsx";
 import { HinhTu, GhiNguonHinh } from "./hinhTuVung.jsx";
-import { CHU_DE_TU_VUNG, timChuDe, taoBaiTap, maoTu, boMaoTu, giongTu, goDung } from "../../content/tuVung/index.js";
+import { CHU_DE_TU_VUNG, CAP_TU_VUNG, timChuDe, taoBaiTap, maoTu, boMaoTu, giongTu, goDung } from "../../content/tuVung/index.js";
 
 /* « Học từ vựng theo chủ đề » (10/11, theo chủ dự án): tab thứ tư của mục Học tập.
  *
@@ -36,7 +36,20 @@ const MAU = {
   "tv-truong-lop": ["from-violet-500 to-purple-600", "bg-violet-500/10 text-violet-600"],
   "tv-so-thich": ["from-fuchsia-500 to-pink-600", "bg-fuchsia-500/10 text-fuchsia-600"],
   "tv-co-the-suc-khoe": ["from-rose-500 to-red-600", "bg-rose-500/10 text-rose-600"],
+  "tv-quan-ao": ["from-pink-500 to-rose-600", "bg-pink-500/10 text-pink-600"],
+  "tv-nghe-nghiep": ["from-blue-600 to-indigo-700", "bg-blue-500/10 text-blue-600"],
+  "tv-nha-bep": ["from-orange-500 to-amber-600", "bg-orange-500/10 text-orange-600"],
+  "tv-du-lich": ["from-teal-500 to-cyan-600", "bg-teal-500/10 text-teal-600"],
+  "tv-thien-nhien": ["from-green-500 to-emerald-700", "bg-green-500/10 text-green-600"],
+  "tv-mua-sam": ["from-yellow-500 to-orange-500", "bg-yellow-500/10 text-yellow-700"],
+  "tv-cong-nghe": ["from-slate-600 to-blue-700", "bg-slate-500/10 text-slate-600"],
 };
+/* Màu nhãn trình độ, cùng bảng màu với danh sách bài ngữ pháp (NguPhap.jsx › MAU_CAP). */
+const MAU_CAP = { A1: "from-amber-500 to-orange-600", A2: "from-sky-500 to-blue-600", B1: "from-violet-500 to-indigo-600" };
+const MO_TA_CAP = () => ({
+  A1: tr("Đồ vật và cảnh quen thuộc hằng ngày", "Objets et scènes du quotidien", "Everyday objects and scenes"),
+  A2: tr("Quần áo, nghề nghiệp, du lịch, mua sắm, công nghệ", "Vêtements, métiers, voyages, achats, technologie", "Clothes, jobs, travel, shopping, tech"),
+});
 const mauCua = (ma) => MAU[ma] ?? ["from-blue-500 to-indigo-600", "bg-primary-soft text-primary"];
 
 /* ── Nghe ── */
@@ -361,8 +374,15 @@ export default function TuVung({ thu }) {
           </div>
         </header>
 
-        <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {CHU_DE_TU_VUNG.map((cd, k) => {
+        {/* 11/11: chia theo trình độ (A1, A2), như danh sách bài ngữ pháp. */}
+        {CAP_TU_VUNG.map((cap) => (
+        <section key={cap} className="mt-8">
+        <h2 className="m-0 mb-3 flex items-center gap-2 text-lg font-extrabold text-ink">
+          <span className={`rounded-xl bg-gradient-to-br ${MAU_CAP[cap] ?? MAU_CAP.A1} px-3 py-1 text-sm text-white`}>{cap}</span>
+          <span className="text-sm font-semibold text-soft">{MO_TA_CAP()[cap]}</span>
+        </h2>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {CHU_DE_TU_VUNG.filter((cd) => cd.cap === cap).map((cd, k) => {
             const kq = ketQua[cd.ma];
             return (
               <motion.div key={cd.ma} initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.04 * k, ease: EASE }}>
@@ -385,6 +405,8 @@ export default function TuVung({ thu }) {
             );
           })}
         </div>
+        </section>
+        ))}
         <GhiNguonHinh nhan={tr("Hình minh hoạ:", "Illustrations :", "Icons by")} />
       </div>
     </MotionConfig>

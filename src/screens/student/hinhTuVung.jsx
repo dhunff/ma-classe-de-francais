@@ -10,6 +10,7 @@ import {
   Book, Pencil, Ruler, Calculator, Eraser, Notebook, Pen, Scissors, Backpack, Presentation,
   Music, Guitar, Camera, Gamepad2, Dumbbell, Tent, Clapperboard, Palette, Volleyball, Piano,
   Eye, Ear, Hand, Heart, Brain, Bone, Footprints, Pill, Bandage, Syringe, ImageOff,
+  Shirt, Glasses, Watch, Gem, Umbrella, Handbag, Ribbon, Waves, Stethoscope, ChefHat, HardHat, Wrench, Paintbrush, Gavel, Tractor, Mail, CookingPot, Microwave, Utensils, UtensilsCrossed, Flame, Timer, CupSoda, Luggage, Ticket, Map as MapIcon, BaggageClaim, Compass, PlaneTakeoff, Palmtree, Signpost, Binoculars, Flag, Mountain, Trees, Flower, Leaf, TreePine, Sprout, Star, ShoppingCart, ShoppingBag, CreditCard, Banknote, Coins, Receipt, Tag, PiggyBank, Wallet, Laptop, Smartphone, Tablet, Monitor, Keyboard, Mouse, Printer, Headphones, Battery, Plug,
 } from "lucide-react";
 
 /* Hình của từ vựng (10/11). Hai nguồn, theo thứ tự ưu tiên:
@@ -43,6 +44,21 @@ export const HINH_ICONS8 = {
   "le camping": "17576", "le cinéma": "CEik28xST8XJ", "la peinture": "13369", "le volley-ball": "16960", "le piano": "12789",
   "l'œil": "13758", "l'oreille": "14818", "la main": "17678", "le cœur": "16424", "le cerveau": "14748",
   "l'os": "20727", "le pied": "1TZ8k82dTTXe", "le médicament": "14844", "le pansement": "14743", "la piqûre": "14871",
+  /* A2 (11/11) */
+  "la chemise": "16596", "les lunettes": "16606", "la montre": "37749", "la bague": "17341", "le parapluie": "16597",
+  "le sac à main": "37706", "les chaussures": "17618", "la cravate": "20576", "l'écharpe": "16587", "le maillot de bain": "122961",
+  "le médecin": "14857", "le cuisinier": "23288", "l'ouvrier": "23340", "le mécanicien": "111638", "le peintre": "9fS8epYOUvtK",
+  "le coiffeur": "qGrhqZVFf9Lv", "le juge": "17877", "l'agriculteur": "23295", "le pilote": "J2HcqQ3sPh4v", "le facteur": "kVzqFZ8zS2MB",
+  "la casserole": "v5qj37MWkW09", "le micro-ondes": "12846", "la tasse": "84298", "la fourchette": "12856", "le couteau": "12902",
+  "le bol": "79UtsTJ0BaNF", "le verre": "1ftVn8GOXtit", "la poêle": "BeDidZchwnxG", "le minuteur": "63256", "la bouteille": "13322",
+  "la valise": "17622", "le billet": "13032", "la carte": "13781", "le passeport": "17608", "la boussole": "13730",
+  "l'aéroport": "qerRQWBCmFLD", "la plage": "17569", "le panneau": "13788", "les jumelles": "13120", "le drapeau": "3muzEmi4dpD5",
+  "la montagne": "110283", "la forêt": "17593", "la fleur": "18050", "la feuille": "18066", "la mer": "17617",
+  "l'arbre": "18047", "le cactus": "18043", "l'île": "NUROCLcGlkBS", "l'étoile": "19295", "le désert": "DLRlgKnyxMZE",
+  "le chariot": "13014", "le sac": "13022", "la carte bancaire": "22188", "le billet de banque": "13008", "la pièce": "13009",
+  "le ticket de caisse": "13225", "l'étiquette": "12028", "la tirelire": "13005", "le portefeuille": "13016", "la cabine d'essayage": "dXeKGA4gQciN",
+  "l'ordinateur portable": "102552", "le téléphone portable": "13616", "la tablette": "13618", "l'écran": "13352", "le clavier": "12280",
+  "la souris": "13347", "l'imprimante": "12785", "le casque": "20747", "la batterie": "4MWKIlEI1k82", "le chargeur": "gZYWoCrsvoFU",
 };
 
 const ICON = {
@@ -56,6 +72,7 @@ const ICON = {
   Book, Pencil, Ruler, Calculator, Eraser, Notebook, Pen, Scissors, Backpack, Presentation,
   Music, Guitar, Camera, Gamepad2, Dumbbell, Tent, Clapperboard, Palette, Volleyball, Piano,
   Eye, Ear, Hand, Heart, Brain, Bone, Footprints, Pill, Bandage, Syringe,
+  Shirt, Glasses, Watch, Gem, Umbrella, Handbag, Ribbon, Waves, Stethoscope, ChefHat, HardHat, Wrench, Paintbrush, Gavel, Tractor, Mail, CookingPot, Microwave, Utensils, UtensilsCrossed, Flame, Timer, CupSoda, Luggage, Ticket, Map: MapIcon, BaggageClaim, Compass, PlaneTakeoff, Palmtree, Signpost, Binoculars, Flag, Mountain, Trees, Flower, Leaf, TreePine, Sprout, Star, ShoppingCart, ShoppingBag, CreditCard, Banknote, Coins, Receipt, Tag, PiggyBank, Wallet, Laptop, Smartphone, Tablet, Monitor, Keyboard, Mouse, Printer, Headphones, Battery, Plug,
 };
 export const TEN_ICON = Object.keys(ICON);
 
