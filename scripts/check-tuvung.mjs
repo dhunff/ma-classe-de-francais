@@ -17,6 +17,18 @@ const maHinh = readFileSync(new URL("../src/screens/student/hinhTuVung.jsx", imp
 const khoiIcon = maHinh.slice(maHinh.indexOf("const ICON = {"), maHinh.indexOf("};", maHinh.indexOf("const ICON = {")));
 const coTrongBang = new Set(khoiIcon.match(/[A-Z][A-Za-z0-9]+/g) ?? []);
 
+// Hình Icons8 (10/11): bảng HINH_ICONS8 trong hinhTuVung.jsx, khoá bộ ở icons8.json.
+const khoiI8 = maHinh.slice(maHinh.indexOf("export const HINH_ICONS8 = {"), maHinh.indexOf("};", maHinh.indexOf("export const HINH_ICONS8 = {")));
+const i8 = new Map([...khoiI8.matchAll(/"([^"]+)":\s*"([A-Za-z0-9_-]+)"/g)].map((m) => [m[1], m[2]]));
+const lock = JSON.parse(readFileSync(new URL("../icons8.json", import.meta.url), "utf8"));
+ca("icons8.json khoá đúng một bộ hình", lock?.icons?.pack === "color", lock?.icons?.pack);
+ca("mọi id trong mã có trong icons8.json", [...i8].every(([k, v]) => lock.icons.items[k]?.id === v));
+ca("icons8.json không có mục thừa", Object.keys(lock.icons.items).every((k) => i8.has(k)));
+ca("không hai từ dùng chung một hình Icons8", new Set(i8.values()).size === i8.size);
+// Bản miễn phí của Icons8 đòi link nguồn: có hình thì trang phải có dòng ghi nguồn.
+const maTrang = readFileSync(new URL("../src/screens/student/TuVung.jsx", import.meta.url), "utf8");
+ca("có dòng ghi nguồn Icons8 kèm link", /href="https:\/\/icons8\.com"/.test(maHinh) && (maTrang.match(/<GhiNguonHinh/g) ?? []).length >= 2);
+
 const moiTu = new Map();
 for (const cd of CHU_DE_TU_VUNG) {
   // Mã khớp ràng buộc của bai_hoc_ket_qua.ma_bai (migration 148) và mang tiền tố tv-.
@@ -33,6 +45,7 @@ for (const cd of CHU_DE_TU_VUNG) {
     // « l' » không cho biết giống nên phải ghi g; le / la / les thì KHÔNG ghi (tránh ghi lệch).
     ca(`${ten}: g chỉ ghi khi mạo từ là l'`, (maoTu(t.fr) === "l'") === !!t.g);
     ca(`${ten}: có nghĩa và câu ví dụ kèm nghĩa`, !!t.vi && Array.isArray(t.vd) && !!t.vd[0] && !!t.vd[1]);
+    ca(`${ten}: có hình Icons8`, i8.has(t.fr));
     ca(`${ten}: hình có trong lucide-react`, !!lucide[t.icon], t.icon);
     ca(`${ten}: hình có trong bảng tra hinhTuVung.jsx`, coTrongBang.has(t.icon), t.icon);
     ca(`${ten}: không dùng dấu gạch dài`, ![t.fr, t.vi, ...t.vd].some((s) => s.includes("—")));

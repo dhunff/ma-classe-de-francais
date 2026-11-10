@@ -1,0 +1,316 @@
+{
+ "version": 2,
+ "icons": {
+  "pack": "color",
+  "sizes": [
+   52,
+   72,
+   88,
+   96,
+   144
+  ],
+  "color": null,
+  "items": {
+   "le croissant": {
+    "id": "36769"
+   },
+   "le lait": {
+    "id": "12866"
+   },
+   "l'œuf": {
+    "id": "hcrmiShXkMs2"
+   },
+   "le poisson": {
+    "id": "16040"
+   },
+   "la pizza": {
+    "id": "12867"
+   },
+   "le sandwich": {
+    "id": "42626"
+   },
+   "la glace": {
+    "id": "13303"
+   },
+   "le gâteau": {
+    "id": "107438"
+   },
+   "la viande": {
+    "id": "13306"
+   },
+   "la soupe": {
+    "id": "0Gi7r8YcXKVU"
+   },
+   "la pomme": {
+    "id": "13304"
+   },
+   "la banane": {
+    "id": "18957"
+   },
+   "la cerise": {
+    "id": "19527"
+   },
+   "le raisin": {
+    "id": "18051"
+   },
+   "le citron": {
+    "id": "18044"
+   },
+   "la carotte": {
+    "id": "12865"
+   },
+   "la salade": {
+    "id": "zphNWHGZfV0i"
+   },
+   "le café": {
+    "id": "30001"
+   },
+   "l'eau": {
+    "id": "QhMOaO418ONR"
+   },
+   "le vin": {
+    "id": "12885"
+   },
+   "le chat": {
+    "id": "16017"
+   },
+   "le chien": {
+    "id": "16018"
+   },
+   "l'oiseau": {
+    "id": "16023"
+   },
+   "le lapin": {
+    "id": "16082"
+   },
+   "l'écureuil": {
+    "id": "95006"
+   },
+   "la tortue": {
+    "id": "16106"
+   },
+   "l'escargot": {
+    "id": "16117"
+   },
+   "le rat": {
+    "id": "95005"
+   },
+   "l'insecte": {
+    "id": "16044"
+   },
+   "le panda": {
+    "id": "16093"
+   },
+   "le lit": {
+    "id": "12839"
+   },
+   "le canapé": {
+    "id": "12830"
+   },
+   "la lampe": {
+    "id": "12287"
+   },
+   "la porte": {
+    "id": "12061"
+   },
+   "la baignoire": {
+    "id": "12829"
+   },
+   "la douche": {
+    "id": "12851"
+   },
+   "le réfrigérateur": {
+    "id": "12822"
+   },
+   "la télévision": {
+    "id": "12844"
+   },
+   "le fauteuil": {
+    "id": "12840"
+   },
+   "la clé": {
+    "id": "12279"
+   },
+   "la voiture": {
+    "id": "15126"
+   },
+   "le bus": {
+    "id": "15137"
+   },
+   "le train": {
+    "id": "15200"
+   },
+   "l'avion": {
+    "id": "21023"
+   },
+   "le vélo": {
+    "id": "15128"
+   },
+   "le bateau": {
+    "id": "15135"
+   },
+   "le camion": {
+    "id": "15196"
+   },
+   "le tramway": {
+    "id": "15198"
+   },
+   "la moto": {
+    "id": "15130"
+   },
+   "l'ambulance": {
+    "id": "14739"
+   },
+   "le soleil": {
+    "id": "15352"
+   },
+   "le nuage": {
+    "id": "11871"
+   },
+   "la pluie": {
+    "id": "15360"
+   },
+   "la neige": {
+    "id": "15356"
+   },
+   "le vent": {
+    "id": "pLiaaoa41R9n"
+   },
+   "l'orage": {
+    "id": "15346"
+   },
+   "l'arc-en-ciel": {
+    "id": "35175"
+   },
+   "le brouillard": {
+    "id": "15347"
+   },
+   "la lune": {
+    "id": "13477"
+   },
+   "la température": {
+    "id": "15350"
+   },
+   "l'hôpital": {
+    "id": "14865"
+   },
+   "l'école": {
+    "id": "40734"
+   },
+   "le magasin": {
+    "id": "13010"
+   },
+   "l'église": {
+    "id": "17331"
+   },
+   "l'immeuble": {
+    "id": "13246"
+   },
+   "l'hôtel": {
+    "id": "12350"
+   },
+   "le château": {
+    "id": "2dHAlXzCRQRl"
+   },
+   "l'usine": {
+    "id": "12129"
+   },
+   "la station-service": {
+    "id": "11930"
+   },
+   "la bibliothèque": {
+    "id": "fLcGCYSAd69t"
+   },
+   "le livre": {
+    "id": "16369"
+   },
+   "le crayon": {
+    "id": "18709"
+   },
+   "la règle": {
+    "id": "13117"
+   },
+   "la calculatrice": {
+    "id": "12780"
+   },
+   "la gomme": {
+    "id": "12115"
+   },
+   "le cahier": {
+    "id": "66646"
+   },
+   "le stylo": {
+    "id": "VCkCNw5MSACD"
+   },
+   "les ciseaux": {
+    "id": "14890"
+   },
+   "le sac à dos": {
+    "id": "45390"
+   },
+   "le tableau": {
+    "id": "13191"
+   },
+   "la musique": {
+    "id": "12783"
+   },
+   "la guitare": {
+    "id": "12203"
+   },
+   "l'appareil photo": {
+    "id": "13075"
+   },
+   "le jeu vidéo": {
+    "id": "11907"
+   },
+   "le sport": {
+    "id": "SMjRXXIK5MOb"
+   },
+   "le camping": {
+    "id": "17576"
+   },
+   "le cinéma": {
+    "id": "CEik28xST8XJ"
+   },
+   "la peinture": {
+    "id": "13369"
+   },
+   "le volley-ball": {
+    "id": "16960"
+   },
+   "le piano": {
+    "id": "12789"
+   },
+   "l'œil": {
+    "id": "13758"
+   },
+   "l'oreille": {
+    "id": "14818"
+   },
+   "la main": {
+    "id": "17678"
+   },
+   "le cœur": {
+    "id": "16424"
+   },
+   "le cerveau": {
+    "id": "14748"
+   },
+   "l'os": {
+    "id": "20727"
+   },
+   "le pied": {
+    "id": "1TZ8k82dTTXe"
+   },
+   "le médicament": {
+    "id": "14844"
+   },
+   "le pansement": {
+    "id": "14743"
+   },
+   "la piqûre": {
+    "id": "14871"
+   }
+  }
+ }
+}

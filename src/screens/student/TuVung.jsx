@@ -7,7 +7,7 @@ import { tr } from "../../shared/i18n.jsx";
 import { Leon } from "../../shared/leon.jsx";
 import { phat } from "../../shared/amThanh.js";
 import HocTapTab from "./HocTapTab.jsx";
-import { HinhTu } from "./hinhTuVung.jsx";
+import { HinhTu, GhiNguonHinh } from "./hinhTuVung.jsx";
 import { CHU_DE_TU_VUNG, timChuDe, taoBaiTap, maoTu, boMaoTu, giongTu, goDung } from "../../content/tuVung/index.js";
 
 /* « Học từ vựng theo chủ đề » (10/11, theo chủ dự án): tab thứ tư của mục Học tập.
@@ -79,7 +79,7 @@ function TheTu({ tu, ma, tre }) {
   return (
     <motion.li initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: tre, ease: EASE }}
       className="flex gap-3 rounded-2xl border border-solid border-line bg-surface p-3">
-      <OHinh tu={tu} ma={ma} size={44} className="h-[72px] w-[72px] shrink-0" />
+      <OHinh tu={tu} ma={ma} size={52} className="h-[72px] w-[72px] shrink-0" />
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-1.5">
           <span lang="fr" className="text-base font-extrabold text-ink">{tu.fr}</span>
@@ -122,7 +122,7 @@ function GhepCap({ chuDe }) {
           return (
             <button key={t.fr} type="button" disabled={da} onClick={() => setChonHinh(t.fr)} aria-pressed={chonHinh === t.fr} aria-label={t.vi}
               className={`grid aspect-square cursor-pointer place-items-center rounded-2xl border-2 border-solid p-1 font-sans transition-all ${da ? "cursor-default border-ok bg-ok-soft text-ok opacity-70" : chonHinh === t.fr ? `-translate-y-1 border-primary shadow-md ${mauCua(chuDe.ma)[1]}` : `border-transparent ${mauCua(chuDe.ma)[1]} hover:border-primary/40`}`}>
-              <HinhTu tu={t} size={36} />
+              <HinhTu tu={t} size={64} />
             </button>
           );
         })}
@@ -214,7 +214,7 @@ function LuyenTap({ chuDe, onXong }) {
               {c.pa.map((t, k) => (
                 <button key={t.fr} type="button" onClick={() => chonPa(k)} disabled={daTraLoi} aria-label={t.vi}
                   className={`grid cursor-pointer justify-items-center gap-1.5 rounded-2xl border-2 border-solid p-3 font-sans transition-all ${daTraLoi ? "cursor-default" : "hover:-translate-y-1 hover:shadow-md"} ${lopPa(k)}`}>
-                  <OHinh tu={t} ma={ma} size={48} className="w-full max-w-[104px]" />
+                  <OHinh tu={t} ma={ma} size={72} className="w-full max-w-[120px]" />
                   {/* Trả lời xong mới hiện chữ dưới mỗi hình, để ôn luôn ba từ còn lại. */}
                   <span lang="fr" className={`text-xs font-bold ${daTraLoi ? "" : "invisible"}`}>{t.fr}</span>
                 </button>
@@ -225,7 +225,7 @@ function LuyenTap({ chuDe, onXong }) {
 
         {(c.loai === "tu" || c.loai === "mao" || c.loai === "go") && (
           <div className="flex flex-wrap items-start gap-4">
-            <OHinh tu={c.tu} ma={ma} size={72} className="h-32 w-32 shrink-0" />
+            <OHinh tu={c.tu} ma={ma} size={88} className="h-32 w-32 shrink-0" />
             <div className="min-w-0 flex-1 basis-56">
               {c.loai === "tu" && (
                 <>
@@ -319,6 +319,7 @@ function TrangChuDe({ chuDe, onGhi }) {
 
       <TieuMuc Icon={PencilLine}>{tr("Luyện tập", "Entraînement", "Practice")}</TieuMuc>
       <LuyenTap chuDe={chuDe} onXong={onGhi} />
+      <GhiNguonHinh nhan={tr("Hình minh hoạ:", "Illustrations :", "Icons by")} />
     </div>
   );
 }
@@ -368,7 +369,7 @@ export default function TuVung({ thu }) {
                 <Link to={`${GOC}/${cd.ma}`}
                   className="group flex h-full flex-col gap-3 rounded-2xl border border-solid border-line bg-surface p-4 no-underline transition-all hover:-translate-y-0.5 hover:border-primary hover:shadow-md">
                   <span className="grid grid-cols-4 gap-1.5">
-                    {cd.tu.slice(0, 4).map((t) => <OHinh key={t.fr} tu={t} ma={cd.ma} size={26} />)}
+                    {cd.tu.slice(0, 4).map((t) => <OHinh key={t.fr} tu={t} ma={cd.ma} size={38} />)}
                   </span>
                   <span>
                     <span className="block text-base font-extrabold text-ink">{cd.ten}</span>
@@ -384,6 +385,7 @@ export default function TuVung({ thu }) {
             );
           })}
         </div>
+        <GhiNguonHinh nhan={tr("Hình minh hoạ:", "Illustrations :", "Icons by")} />
       </div>
     </MotionConfig>
   );
