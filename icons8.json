@@ -520,6 +520,186 @@
    },
    "le chargeur": {
     "id": "gZYWoCrsvoFU"
+   },
+   "l'ordonnance": {
+    "id": "qYjlZ0Jb0Sgc"
+   },
+   "le fauteuil roulant": {
+    "id": "14893"
+   },
+   "la radiographie": {
+    "id": "14894"
+   },
+   "la pharmacie": {
+    "id": "3rJFC2vi1fHH"
+   },
+   "le thermomètre": {
+    "id": "14843"
+   },
+   "le masque": {
+    "id": "wxCCaLXUOHH6"
+   },
+   "l'infirmière": {
+    "id": "23303"
+   },
+   "les urgences": {
+    "id": "102983"
+   },
+   "la prise de sang": {
+    "id": "zw8PBuNEvo8X"
+   },
+   "le rendez-vous": {
+    "id": "26055"
+   },
+   "le recyclage": {
+    "id": "13099"
+   },
+   "la poubelle": {
+    "id": "13086"
+   },
+   "l'éolienne": {
+    "id": "13091"
+   },
+   "le panneau solaire": {
+    "id": "13085"
+   },
+   "la pollution": {
+    "id": "LFqnoqgcbWml"
+   },
+   "le sac plastique": {
+    "id": "xlh7uAN4nQHC"
+   },
+   "la planète": {
+    "id": "63766"
+   },
+   "le compost": {
+    "id": "18045"
+   },
+   "la voiture électrique": {
+    "id": "8Gj07bctQD9k"
+   },
+   "l'ampoule": {
+    "id": "19209"
+   },
+   "le classeur": {
+    "id": "13433"
+   },
+   "la photocopieuse": {
+    "id": "sI6ewl9liy1D"
+   },
+   "la réunion": {
+    "id": "15657"
+   },
+   "le badge": {
+    "id": "19964"
+   },
+   "le calendrier": {
+    "id": "12776"
+   },
+   "le trombone": {
+    "id": "13333"
+   },
+   "le dossier": {
+    "id": "12987"
+   },
+   "le tampon": {
+    "id": "22964"
+   },
+   "le graphique": {
+    "id": "12818"
+   },
+   "la poignée de main": {
+    "id": "12208"
+   },
+   "le ski": {
+    "id": "16931"
+   },
+   "la natation": {
+    "id": "16954"
+   },
+   "le tennis": {
+    "id": "16953"
+   },
+   "la course à pied": {
+    "id": "16936"
+   },
+   "le cyclisme": {
+    "id": "33516"
+   },
+   "l'escalade": {
+    "id": "12981"
+   },
+   "le judo": {
+    "id": "33487"
+   },
+   "la randonnée": {
+    "id": "16958"
+   },
+   "le football": {
+    "id": "16897"
+   },
+   "le basket": {
+    "id": "12969"
+   },
+   "le musée": {
+    "id": "17605"
+   },
+   "l'exposition": {
+    "id": "6c5aLYi4Ayel"
+   },
+   "le théâtre": {
+    "id": "13483"
+   },
+   "le concert": {
+    "id": "HfymTjyRCG1f"
+   },
+   "l'orchestre": {
+    "id": "EYVAGidG8dFb"
+   },
+   "le festival": {
+    "id": "0Z2th4OTrTEb"
+   },
+   "le spectacle": {
+    "id": "h5VJ2aUGETKL"
+   },
+   "le roman": {
+    "id": "13171"
+   },
+   "le micro": {
+    "id": "12379"
+   },
+   "la sculpture": {
+    "id": "11891"
+   },
+   "le feu rouge": {
+    "id": "15199"
+   },
+   "le passage piéton": {
+    "id": "T8aKX9UIaCk9"
+   },
+   "le rond-point": {
+    "id": "LvopKiYmlJmd"
+   },
+   "l'embouteillage": {
+    "id": "21009"
+   },
+   "le parking": {
+    "id": "15182"
+   },
+   "le permis de conduire": {
+    "id": "24353"
+   },
+   "la station de métro": {
+    "id": "21563"
+   },
+   "l'amende": {
+    "id": "2vljBB1eJArP"
+   },
+   "la station de recharge": {
+    "id": "15154"
+   },
+   "les travaux": {
+    "id": "15194"
    }
   }
  }

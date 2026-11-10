@@ -11,6 +11,7 @@ import {
   Music, Guitar, Camera, Gamepad2, Dumbbell, Tent, Clapperboard, Palette, Volleyball, Piano,
   Eye, Ear, Hand, Heart, Brain, Bone, Footprints, Pill, Bandage, Syringe, ImageOff,
   Shirt, Glasses, Watch, Gem, Umbrella, Handbag, Ribbon, Waves, Stethoscope, ChefHat, HardHat, Wrench, Paintbrush, Gavel, Tractor, Mail, CookingPot, Microwave, Utensils, UtensilsCrossed, Flame, Timer, CupSoda, Luggage, Ticket, Map as MapIcon, BaggageClaim, Compass, PlaneTakeoff, Palmtree, Signpost, Binoculars, Flag, Mountain, Trees, Flower, Leaf, TreePine, Sprout, Star, ShoppingCart, ShoppingBag, CreditCard, Banknote, Coins, Receipt, Tag, PiggyBank, Wallet, Laptop, Smartphone, Tablet, Monitor, Keyboard, Mouse, Printer, Headphones, Battery, Plug,
+  ClipboardList, Accessibility, Scan, Cross, Shield, HeartPulse, Siren, Droplet, CalendarClock, Recycle, Trash2, Fan, SolarPanel, Earth, Zap, Lightbulb, FolderOpen, Users, IdCard, Calendar, Paperclip, Folder, Stamp, ChartColumn, Handshake, MountainSnow, Goal, Swords, Trophy, Target, Landmark, Frame, Drama, Music2, PartyPopper, Theater, BookOpen, MicVocal, Crown, TrafficCone, RotateCw, CarFront, SquareParking, BatteryCharging, Construction,
 } from "lucide-react";
 
 /* Hình của từ vựng (10/11). Hai nguồn, theo thứ tự ưu tiên:
@@ -18,8 +19,9 @@ import {
  * 1. HINH_ICONS8: « từ tiếng Pháp » → id hình Icons8, bộ « color » (khoá ở icons8.json gốc dự án:
  *    MỘT bộ cho cả phần từ vựng, thêm từ thì tìm trong đúng bộ này). Id lấy từ công cụ tìm của
  *    Icons8 (10/11), đã soát bằng mắt trên bảng hình; không tự đặt id. Hình hiện qua
- *    img.icons8.com (CSP cho phép img https). Bản miễn phí của Icons8 đòi ghi link về icons8.com:
- *    dòng ghi nguồn nằm ở TuVung.jsx, `check:tuvung` canh nó còn đó.
+ *    img.icons8.com (CSP cho phép img https). Bản miễn phí của Icons8 đòi ghi link về icons8.com;
+ *    11/11 chủ dự án yêu cầu BỎ dòng chữ ghi nguồn trên trang (vẫn dùng hình), nên điều kiện giấy
+ *    phép là việc của chủ dự án với Icons8 (gói trả phí thì không cần ghi nguồn).
  * 2. ICON: icon lucide-react, thư viện icon sẵn có của app, tra theo `tu.icon`.
  *
  * `check:tuvung` canh mọi `icon` trong content/tuVung đều có trong lucide-react. */
@@ -59,6 +61,19 @@ export const HINH_ICONS8 = {
   "le ticket de caisse": "13225", "l'étiquette": "12028", "la tirelire": "13005", "le portefeuille": "13016", "la cabine d'essayage": "dXeKGA4gQciN",
   "l'ordinateur portable": "102552", "le téléphone portable": "13616", "la tablette": "13618", "l'écran": "13352", "le clavier": "12280",
   "la souris": "13347", "l'imprimante": "12785", "le casque": "20747", "la batterie": "4MWKIlEI1k82", "le chargeur": "gZYWoCrsvoFU",
+  /* B1 (11/11) */
+  "l'ordonnance": "qYjlZ0Jb0Sgc", "le fauteuil roulant": "14893", "la radiographie": "14894", "la pharmacie": "3rJFC2vi1fHH", "le thermomètre": "14843",
+  "le masque": "wxCCaLXUOHH6", "l'infirmière": "23303", "les urgences": "102983", "la prise de sang": "zw8PBuNEvo8X", "le rendez-vous": "26055",
+  "le recyclage": "13099", "la poubelle": "13086", "l'éolienne": "13091", "le panneau solaire": "13085", "la pollution": "LFqnoqgcbWml",
+  "le sac plastique": "xlh7uAN4nQHC", "la planète": "63766", "le compost": "18045", "la voiture électrique": "8Gj07bctQD9k", "l'ampoule": "19209",
+  "le classeur": "13433", "la photocopieuse": "sI6ewl9liy1D", "la réunion": "15657", "le badge": "19964", "le calendrier": "12776",
+  "le trombone": "13333", "le dossier": "12987", "le tampon": "22964", "le graphique": "12818", "la poignée de main": "12208",
+  "le ski": "16931", "la natation": "16954", "le tennis": "16953", "la course à pied": "16936", "le cyclisme": "33516",
+  "l'escalade": "12981", "le judo": "33487", "la randonnée": "16958", "le football": "16897", "le basket": "12969",
+  "le musée": "17605", "l'exposition": "6c5aLYi4Ayel", "le théâtre": "13483", "le concert": "HfymTjyRCG1f", "l'orchestre": "EYVAGidG8dFb",
+  "le festival": "0Z2th4OTrTEb", "le spectacle": "h5VJ2aUGETKL", "le roman": "13171", "le micro": "12379", "la sculpture": "11891",
+  "le feu rouge": "15199", "le passage piéton": "T8aKX9UIaCk9", "le rond-point": "LvopKiYmlJmd", "l'embouteillage": "21009", "le parking": "15182",
+  "le permis de conduire": "24353", "la station de métro": "21563", "l'amende": "2vljBB1eJArP", "la station de recharge": "15154", "les travaux": "15194",
 };
 
 const ICON = {
@@ -73,18 +88,9 @@ const ICON = {
   Music, Guitar, Camera, Gamepad2, Dumbbell, Tent, Clapperboard, Palette, Volleyball, Piano,
   Eye, Ear, Hand, Heart, Brain, Bone, Footprints, Pill, Bandage, Syringe,
   Shirt, Glasses, Watch, Gem, Umbrella, Handbag, Ribbon, Waves, Stethoscope, ChefHat, HardHat, Wrench, Paintbrush, Gavel, Tractor, Mail, CookingPot, Microwave, Utensils, UtensilsCrossed, Flame, Timer, CupSoda, Luggage, Ticket, Map: MapIcon, BaggageClaim, Compass, PlaneTakeoff, Palmtree, Signpost, Binoculars, Flag, Mountain, Trees, Flower, Leaf, TreePine, Sprout, Star, ShoppingCart, ShoppingBag, CreditCard, Banknote, Coins, Receipt, Tag, PiggyBank, Wallet, Laptop, Smartphone, Tablet, Monitor, Keyboard, Mouse, Printer, Headphones, Battery, Plug,
+  ClipboardList, Accessibility, Scan, Cross, Shield, HeartPulse, Siren, Droplet, CalendarClock, Recycle, Trash2, Fan, SolarPanel, Earth, Zap, Lightbulb, FolderOpen, Users, IdCard, Calendar, Paperclip, Folder, Stamp, ChartColumn, Handshake, MountainSnow, Goal, Swords, Trophy, Target, Landmark, Frame, Drama, Music2, PartyPopper, Theater, BookOpen, MicVocal, Crown, TrafficCone, RotateCw, CarFront, SquareParking, BatteryCharging, Construction,
 };
 export const TEN_ICON = Object.keys(ICON);
-
-/* Dòng ghi nguồn hình: bản miễn phí của Icons8 yêu cầu link về icons8.com. Đặt ở cuối mọi trang
-   từ vựng có hình. */
-export function GhiNguonHinh({ nhan }) {
-  return (
-    <p className="m-0 mt-8 text-center text-xs text-soft">
-      {nhan} <a href="https://icons8.com" target="_blank" rel="noopener noreferrer" className="font-bold text-primary no-underline hover:underline">Icons8</a>
-    </p>
-  );
-}
 
 /* Hình của một từ. `alt` là nghĩa tiếng Việt: hình vốn đã nói nghĩa, còn từ tiếng Pháp là thứ
    bài tập đang hỏi nên không được lộ qua alt. */

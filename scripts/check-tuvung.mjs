@@ -25,9 +25,7 @@ ca("icons8.json khoá đúng một bộ hình", lock?.icons?.pack === "color", l
 ca("mọi id trong mã có trong icons8.json", [...i8].every(([k, v]) => lock.icons.items[k]?.id === v));
 ca("icons8.json không có mục thừa", Object.keys(lock.icons.items).every((k) => i8.has(k)));
 ca("không hai từ dùng chung một hình Icons8", new Set(i8.values()).size === i8.size);
-// Bản miễn phí của Icons8 đòi link nguồn: có hình thì trang phải có dòng ghi nguồn.
-const maTrang = readFileSync(new URL("../src/screens/student/TuVung.jsx", import.meta.url), "utf8");
-ca("có dòng ghi nguồn Icons8 kèm link", /href="https:\/\/icons8\.com"/.test(maHinh) && (maTrang.match(/<GhiNguonHinh/g) ?? []).length >= 2);
+// 11/11: chủ dự án bỏ dòng chữ ghi nguồn Icons8 trên trang (vẫn dùng hình); ca kiểm dòng đó đã gỡ.
 
 const moiTu = new Map();
 for (const cd of CHU_DE_TU_VUNG) {

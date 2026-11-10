@@ -7,7 +7,7 @@ import { tr } from "../../shared/i18n.jsx";
 import { Leon } from "../../shared/leon.jsx";
 import { phat } from "../../shared/amThanh.js";
 import HocTapTab from "./HocTapTab.jsx";
-import { HinhTu, GhiNguonHinh } from "./hinhTuVung.jsx";
+import { HinhTu } from "./hinhTuVung.jsx";
 import { CHU_DE_TU_VUNG, CAP_TU_VUNG, timChuDe, taoBaiTap, maoTu, boMaoTu, giongTu, goDung } from "../../content/tuVung/index.js";
 
 /* « Học từ vựng theo chủ đề » (10/11, theo chủ dự án): tab thứ tư của mục Học tập.
@@ -43,12 +43,19 @@ const MAU = {
   "tv-thien-nhien": ["from-green-500 to-emerald-700", "bg-green-500/10 text-green-600"],
   "tv-mua-sam": ["from-yellow-500 to-orange-500", "bg-yellow-500/10 text-yellow-700"],
   "tv-cong-nghe": ["from-slate-600 to-blue-700", "bg-slate-500/10 text-slate-600"],
+  "tv-benh-vien": ["from-red-500 to-rose-600", "bg-red-500/10 text-red-600"],
+  "tv-moi-truong": ["from-emerald-500 to-green-700", "bg-emerald-500/10 text-emerald-600"],
+  "tv-van-phong": ["from-blue-500 to-slate-600", "bg-blue-500/10 text-blue-600"],
+  "tv-the-thao": ["from-orange-500 to-red-500", "bg-orange-500/10 text-orange-600"],
+  "tv-van-hoa": ["from-purple-500 to-fuchsia-600", "bg-purple-500/10 text-purple-600"],
+  "tv-giao-thong-b1": ["from-amber-500 to-yellow-600", "bg-amber-500/10 text-amber-700"],
 };
 /* Màu nhãn trình độ, cùng bảng màu với danh sách bài ngữ pháp (NguPhap.jsx › MAU_CAP). */
 const MAU_CAP = { A1: "from-amber-500 to-orange-600", A2: "from-sky-500 to-blue-600", B1: "from-violet-500 to-indigo-600" };
 const MO_TA_CAP = () => ({
   A1: tr("Đồ vật và cảnh quen thuộc hằng ngày", "Objets et scènes du quotidien", "Everyday objects and scenes"),
   A2: tr("Quần áo, nghề nghiệp, du lịch, mua sắm, công nghệ", "Vêtements, métiers, voyages, achats, technologie", "Clothes, jobs, travel, shopping, tech"),
+  B1: tr("Sức khoẻ, môi trường, công việc, văn hoá, giao thông", "Santé, environnement, travail, culture, circulation", "Health, environment, work, culture, traffic"),
 });
 const mauCua = (ma) => MAU[ma] ?? ["from-blue-500 to-indigo-600", "bg-primary-soft text-primary"];
 
@@ -332,7 +339,6 @@ function TrangChuDe({ chuDe, onGhi }) {
 
       <TieuMuc Icon={PencilLine}>{tr("Luyện tập", "Entraînement", "Practice")}</TieuMuc>
       <LuyenTap chuDe={chuDe} onXong={onGhi} />
-      <GhiNguonHinh nhan={tr("Hình minh hoạ:", "Illustrations :", "Icons by")} />
     </div>
   );
 }
@@ -407,7 +413,6 @@ export default function TuVung({ thu }) {
         </div>
         </section>
         ))}
-        <GhiNguonHinh nhan={tr("Hình minh hoạ:", "Illustrations :", "Icons by")} />
       </div>
     </MotionConfig>
   );
