@@ -90,7 +90,7 @@ export const STUDENT_NAV = [
   /* 23/10 (theo chủ dự án): « Học tập » gộp Lộ trình + Học ngữ pháp thành MỘT
      mục, hai tab ở đầu màn (HocTapTab.jsx). Đường dẫn cũ giữ nguyên; `khop` để mục
      sáng lên ở cả hai. Tab Từ vựng bỏ 23/10 theo chủ dự án. */
-  { to: "/etudiant/ngu-phap", nhom: "hoc", labelKey: "nav.learn", Icon: GraduationCap, khop: ["/etudiant/ngu-phap", "/etudiant/lo-trinh", "/etudiant/nghe-noi"] },
+  { to: "/etudiant/ngu-phap", nhom: "hoc", labelKey: "nav.learn", Icon: GraduationCap, khop: ["/etudiant/ngu-phap", "/etudiant/tu-vung", "/etudiant/lo-trinh", "/etudiant/nghe-noi"] },
   /* Từ điển tra nhanh — nguồn là thẻ flashcard công khai (TuDien.jsx). */
   /* Thách đấu bạn bè — đứng ngay sau Lộ trình vì cùng là phần game. */
   { to: "/etudiant/tro-choi", nhom: "on", labelKey: "nav.games", Icon: Gamepad2, khop: ["/etudiant/tro-choi", "/etudiant/thach-dau", "/etudiant/bo-the"] },

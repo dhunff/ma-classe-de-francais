@@ -8,6 +8,7 @@ import LoginGate from './screens/LoginGate.jsx'
 import { ROLE_HOME, TEACHER_NAV, STUDENT_NAV } from './layout/navItems.js'
 import ExamMode from './screens/exam/ExamMode.jsx'
 import TcfCanada, { TcfPhap } from './screens/exam/TcfCanada.jsx'
+import TuVung from './screens/student/TuVung.jsx'
 import BanMoi from './layout/BanMoi.jsx'
 import GuiThongBao from './screens/teacher/GuiThongBao.jsx'
 import { useNhipTim } from './shared/hienDien.js'
@@ -352,6 +353,9 @@ function AppInner() {
               <Route path="/etudiant/bo-the" element={<BoTheApp name={session?.name} />} />
               <Route path="/etudiant/nghe-noi" element={<NgheNoi />} />
               <Route path="/etudiant/ngu-phap" element={<NguPhap />} />
+              {/* Từ vựng theo chủ đề (10/11): tab của mục Học tập. */}
+              <Route path="/etudiant/tu-vung" element={<TuVung />} />
+              <Route path="/etudiant/tu-vung/:ma" element={<TuVung />} />
               <Route path="/etudiant/bai-luyen" element={<BaiLuyenCuaToi />} />
               <Route path="/etudiant/ngu-phap/:ma" element={<NguPhap />} />
               <Route path="/etudiant/tien-bo" element={<TienBoVip name={session?.name} />} />

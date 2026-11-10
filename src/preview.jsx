@@ -73,6 +73,7 @@ const PREVIEW_CO_SAN = ["/professeur/dashboard", "/professeur/carnet",
   "/etudiant/dashboard", "/etudiant/calendrier", "/etudiant/tien-bo", "/professeur/khieu-nai-diem", "/etudiant/tcf-canada", "/etudiant/examen", "/etudiant/devoirs", "/etudiant/tcf-phap"];
 import StudentDashboard from "./screens/dashboard/StudentDashboard.jsx";
 import TcfCanada, { TcfPhap } from "./screens/exam/TcfCanada.jsx";
+import TuVung from "./screens/student/TuVung.jsx";
 import ExamMode from "./screens/exam/ExamMode.jsx";
 import Student from "./screens/student/Student.jsx";
 import TeacherDashboard from "./screens/dashboard/TeacherDashboard.jsx";
@@ -889,6 +890,7 @@ function Preview() {
   const MAN_PHU = [
     ["", "— màn hình phụ —"],
     ["/etudiant/danh-tinh", "Danh tính (avatar + @username)"],
+    ["/etudiant/tu-vung", "Học từ vựng theo chủ đề"],
     ["/etudiant/thong-bao", "Bảng thông báo"],
     ["/etudiant/auto-evaluation", "Tự chấm Production écrite"],
     ["/etudiant/tu-cham-noi", "Tự chấm Production orale"],
@@ -1060,6 +1062,8 @@ function Preview() {
           <Route path="/etudiant/tien-bo" element={<><Controls /><TienBoVip name="Minh Anh" thu={tienBoThu()} /></>} />
           <Route path="/etudiant/tcf-canada" element={<><Controls /><TcfCanada name="Minh Anh" /></>} />
           <Route path="/etudiant/tcf-phap" element={<><Controls /><TcfPhap name="Minh Anh" /></>} />
+          <Route path="/etudiant/tu-vung" element={<><Controls /><TuVung thu={{ ketQua: { "tv-do-an": { diem: 14, tong: 16 } } }} /></>} />
+          <Route path="/etudiant/tu-vung/:ma" element={<TuVung thu={{ ketQua: {} }} />} />
           <Route path="/etudiant/examen" element={<><Controls /><ExamMode name="Minh Anh" /></>} />
           <Route path="/etudiant/devoirs" element={<><Controls /><Student routeView="todo" name="Linh" exercises={exercises} submissions={submissions} setSubmissions={() => {}} accounts={[]} setAccounts={() => {}} refresh={() => {}} /></>} />
           <Route path="/professeur/theo-doi-thu" element={<><Controls /><div className="p-6"><DanhSachHocSinh accounts={HS_GIA} exercises={[]} onMo={() => {}} onDoi={() => {}} /></div></>} />

@@ -102,6 +102,10 @@ const CO_Y_KHONG_CO_MUC = {
     "Thách đấu PvP (28/10): thẻ trong sảnh Trò chơi, nhóm Từ vựng; `khop` của mục Trò chơi gồm đường này.",
   "/etudiant/nghe-noi":
     "Tab « Nghe & Nói » của mục « Học tập » (27/10): vào bằng HocTapTab.jsx; `khop` của mục Học tập gồm đường này.",
+  "/etudiant/tu-vung":
+    "Tab « Từ vựng » của mục « Học tập » (10/11): vào bằng HocTapTab.jsx; `khop` của mục Học tập gồm đường này.",
+  "/etudiant/tu-vung/:ma":
+    "Trang một chủ đề từ vựng (10/11): mở từ danh sách chủ đề ở /etudiant/tu-vung.",
   "/etudiant/progression":
     "« Ma progression » đã rời menu theo yêu cầu; route giữ lại để không mất màn hình.",
   "/etudiant/resultats":
