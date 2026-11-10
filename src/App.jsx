@@ -7,7 +7,7 @@ import RequireRole from './routes/RequireRole.jsx'
 import LoginGate from './screens/LoginGate.jsx'
 import { ROLE_HOME, TEACHER_NAV, STUDENT_NAV } from './layout/navItems.js'
 import ExamMode from './screens/exam/ExamMode.jsx'
-import TcfCanada from './screens/exam/TcfCanada.jsx'
+import TcfCanada, { TcfPhap } from './screens/exam/TcfCanada.jsx'
 import BanMoi from './layout/BanMoi.jsx'
 import GuiThongBao from './screens/teacher/GuiThongBao.jsx'
 import { useNhipTim } from './shared/hienDien.js'
@@ -328,6 +328,7 @@ function AppInner() {
                   hình (portal) để phòng thi không có menu. Hàng rào thật vẫn là RLS + Edge Function. */}
               <Route path="/etudiant/examen" element={<ExamMode name={session?.name} />} />
               <Route path="/etudiant/tcf-canada" element={<TcfCanada name={session?.name} />} />
+              <Route path="/etudiant/tcf-phap" element={<TcfPhap name={session?.name} />} />
               <Route path="/etudiant/tro-choi" element={<TroChoiNhanh />} />
               <Route path="/etudiant/tro-choi/:ma" element={<TroChoiNhanh />} />
               {/* FAQ trong vỏ app (28/10): cùng nội dung trang công khai /faq, có thanh bên. */}

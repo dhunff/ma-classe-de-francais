@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { Plus, Trash2, Eye, EyeOff, Save, Headphones, BookOpen, PenLine, Mic, ChevronUp, ChevronDown, Pencil, FileText, Crown, Gift } from "lucide-react";
+import { Plus, Trash2, Eye, EyeOff, Save, Headphones, BookOpen, PenLine, Mic, Puzzle, ChevronUp, ChevronDown, Pencil, FileText, Crown, Gift } from "lucide-react";
 import { loadExercises, saveExercise } from "../../shared/exerciseStore.js";
 import { uid } from "../../shared/questions.js";
 import Builder from "./Builder.jsx";
 import XemDeThu from "./XemDeThu.jsx";
 import { nhomTheoTrinhDo } from "../../shared/trinhDoDe.js";
 import { loadExams, saveExam, deleteExam, cotGrilleSanSang, luuThuTuDe } from "../../shared/examStore.js";
-import { EXAM_STRUCTURE, khongCham, LA_TCF } from "../exam/examPaper.js";
+import { EXAM_STRUCTURE, khongCham, LA_TCF, tenKyThi } from "../exam/examPaper.js";
 import GrilleEditor, { grilleLuuDuoc } from "./GrilleEditor.jsx";
 import { tr } from "../../shared/i18n.jsx";
 
@@ -36,7 +36,7 @@ import { tr } from "../../shared/i18n.jsx";
    ném "Element type is invalid" — trắng cả màn soạn đề, không phải thiếu một
    hình. Đúng chuyện đã xảy ra khi PO được thêm vào cấu trúc mà quên dòng này;
    check:exam nay canh chỗ đó. */
-const ICON = { CO: Headphones, CE: BookOpen, PE: PenLine, PO: Mic };
+const ICON = { CO: Headphones, CE: BookOpen, PE: PenLine, PO: Mic, MS: Puzzle };
 
 /* Số phần CHẤM ĐIỂM đã có bài. Phần không chấm không nằm trong phép đếm
    "đề đã đủ chưa" — nó không làm đề thiếu, và cũng không làm đề đủ. */
@@ -176,7 +176,7 @@ export default function ExamComposer({ t }) {
           nhomTheoTrinhDo(dsDe).map((g) => (
           <section key={g.level} className="mt-6">
             <h3 className="m-0 mb-2 flex items-baseline gap-2 text-sm font-extrabold text-ink">
-              {LA_TCF(g.level) ? "TCF Canada" : `DELF ${g.level}`}
+              {tenKyThi(g.level)}
               <span className="text-xs font-semibold text-soft">{g.de.length} {tr("đề ·", "sujet(s) ·", "exam(s) ·")} {g.de.filter((e) => e.is_published).length} {tr("đã phát hành", "publié(s)", "published")}</span>
             </h3>
             {g.de.length === 0 && <p className="m-0 rounded-2xl bg-surface2 px-4 py-3 text-xs text-soft">{tr("Chưa có đề", "Aucun sujet", "No exam at")} {g.level}.</p>}
@@ -346,12 +346,12 @@ export default function ExamComposer({ t }) {
 
         <div>
           <span className="text-xs font-bold uppercase tracking-wide text-soft">{tr("Trình độ", "Niveau", "Level")}</span>
-          <div className="mt-1 flex gap-2">
+          <div className="mt-1 flex flex-wrap gap-2">
             {Object.keys(EXAM_STRUCTURE).map((lv) => (
               <button key={lv} type="button" onClick={() => doiLevel(lv)}
                 className={`rounded-full border-0 px-5 py-2 text-sm font-bold ${
                   lv === draft.exam.level ? "bg-primary text-white" : "bg-surface2 text-soft"}`}>
-                {LA_TCF(lv) ? "TCF Canada" : lv}
+                {LA_TCF(lv) ? tenKyThi(lv) : lv}
               </button>
             ))}
           </div>

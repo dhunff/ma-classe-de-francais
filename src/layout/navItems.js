@@ -8,10 +8,13 @@ import {
 /* « Icon » bằng CHỮ cho hai mục Thi thử (09/11, chủ dự án: « thay 2 icon này thành DELF và TCF »).
    Nhận cùng props như icon lucide (size, strokeWidth, className) để thanh bên không phải đổi gì;
    chữ co theo ô 36px. File .js nên dùng createElement thay vì JSX. */
-const chuIcon = (chu, co) => ({ className = "" }) =>
-  createElement("span", { "aria-hidden": true, className: `font-sans font-black leading-none tracking-tight ${className}`, style: { fontSize: co } }, chu);
+const chuIcon = (chu, co, phu) => ({ className = "" }) =>
+  createElement("span", { "aria-hidden": true, className: `grid justify-items-center font-sans font-black leading-none tracking-tight ${className}`, style: { fontSize: co } },
+    chu, phu ? createElement("span", { style: { fontSize: 7.5, marginTop: 1, opacity: 0.8 } }, phu) : null);
 const IconDELF = chuIcon("DELF", 9.5);
-const IconTCF = chuIcon("TCF", 11);
+/* 10/11: có hai TCF (Canada, Pháp) nên thêm dòng nhỏ CA / FR dưới chữ TCF. */
+const IconTCF = chuIcon("TCF", 10, "CA");
+const IconTCFTP = chuIcon("TCF", 10, "FR");
 
 /* Điều hướng của vỏ app.
 
@@ -104,6 +107,8 @@ export const STUDENT_NAV = [
      (có thanh bên); lúc đang làm bài thì phần thi phủ kín màn hình (ExamMode). */
   { to: "/etudiant/examen", nhom: "thi", labelKey: "nav.delf", Icon: IconDELF },
   { to: "/etudiant/tcf-canada", nhom: "thi", labelKey: "nav.tcf", Icon: IconTCF },
+  /* TCF tout public (« TCF Pháp », 10/11). */
+  { to: "/etudiant/tcf-phap", nhom: "thi", labelKey: "nav.tcf_tp", Icon: IconTCFTP },
   /* « Kết quả thi » rời menu 08/10: vào bằng nút trong màn Thi thử. */
   /* « Thẻ ghi nhớ » (/etudiant/the-ghi-nho) ĐÃ GỠ — 09/09/2026.
      Đó là thẻ SM-2 sinh từ chính câu học sinh làm sai. Flashcard giờ là bộ do
@@ -136,7 +141,7 @@ export const THU_TU_NHOM = { prof: ["chinh", "tong", "lop", "noi_dung"], eleve: 
    Của tôi = tiến độ và tài khoản. Thứ tự trong nhóm theo danh sách dưới,
    mục không có tên ở đây giữ thứ tự gốc của mảng, xếp sau. */
 const THU_TU_MUC_HS = [
-  "/etudiant/dashboard", "/etudiant/ngu-phap", "/etudiant/nghe-noi", "/etudiant/devoirs", "/etudiant/examen", "/etudiant/tcf-canada",
+  "/etudiant/dashboard", "/etudiant/ngu-phap", "/etudiant/nghe-noi", "/etudiant/devoirs", "/etudiant/examen", "/etudiant/tcf-canada", "/etudiant/tcf-phap",
   "/etudiant/entrainement", "/etudiant/bo-the", "/etudiant/tro-choi", "/etudiant/thach-dau",
   "/etudiant/tien-bo", "/etudiant/calendrier", "/etudiant/compte", "/etudiant/faq",
 ];

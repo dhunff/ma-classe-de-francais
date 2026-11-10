@@ -1,7 +1,8 @@
 // npm run check:tcf — điểm ước lượng TCF Canada + quy đổi NCLC (src/shared/tcfCanada.js).
 // Bảng NCLC chép từ IRCC (canada.ca), đọc 09/11/2026: ca kiểm ghim từng biên để một lần
 // sửa tay lệch số là đỏ ngay.
-import { diemUocLuongTCF, nclcTCF, SO_CAU_TCF, DIEM_TOI_DA_TCF, NCLC_TCF, diemCauTCF } from "../src/shared/tcfCanada.js";
+import { diemUocLuongTCF, nclcTCF, SO_CAU_TCF, DIEM_TOI_DA_TCF, NCLC_TCF, diemCauTCF, capTcfTP, CECRL_TCF_TP, BAI_THI_TCF_TP } from "../src/shared/tcfCanada.js";
+import { EXAM_STRUCTURE } from "../src/screens/exam/examPaper.js";
 
 let dat = 0, hong = 0;
 const ca = (ten, ok, chiTiet = "") => { if (ok) dat++; else { hong++; console.log(`  ✗ ${ten}${chiTiet ? ` (${chiTiet})` : ""}`); } };
@@ -43,6 +44,28 @@ ca("điểm rỗng → null", nclcTCF("CO", null) === null);
 for (const [code, bang] of Object.entries(NCLC_TCF)) {
   for (let i = 0; i < bang.length - 1; i++) ca(`${code} NCLC ${bang[i][0]} nối liền ${bang[i + 1][0]}`, bang[i][1] === bang[i + 1][2] + 1);
 }
+
+// ══ TCF tout public (10/11): bảng France Compétences RS 6460 ══
+const BIEN_TP = [
+  ["CO", 699, "C2"], ["CO", 600, "C2"], ["CO", 599, "C1"], ["CO", 500, "C1"], ["CE", 499, "B2"], ["CE", 400, "B2"],
+  ["MS", 399, "B1"], ["MS", 300, "B1"], ["MS", 299, "A2"], ["CO", 200, "A2"], ["CO", 199, "A1"], ["CO", 101, "A1"],
+  ["CO", 100, ""], ["CE", 0, ""],
+  ["PE", 20, "C2"], ["PE", 18, "C2"], ["PE", 17, "C1"], ["PE", 14, "C1"], ["PO", 13, "B2"], ["PO", 10, "B2"],
+  ["PO", 9, "B1"], ["PO", 6, "B1"], ["PE", 5, "A2"], ["PE", 2, "A2"], ["PE", 1, "A1"], ["PE", 0, ""],
+];
+for (const [code, d, mong] of BIEN_TP) ca(`TP ${code} ${d} → ${mong || "chưa đạt A1"}`, capTcfTP(code, d) === mong, capTcfTP(code, d));
+ca("TP mã lạ → null", capTcfTP("XX", 300) === null);
+for (const [k, bang] of Object.entries(CECRL_TCF_TP)) {
+  for (let i = 0; i < bang.length - 1; i++) ca(`TP ${k} ${bang[i][0]} nối liền ${bang[i + 1][0]}`, bang[i][1] === bang[i + 1][2] + 1);
+}
+// Cấu trúc đề TCF_TP khớp bảng giới thiệu: cùng mã, cùng thứ tự, cùng phút, cùng thang.
+const cauTruc = EXAM_STRUCTURE.TCF_TP ?? [];
+ca("TCF_TP: 5 bài CO, MS, CE, PE, PO", cauTruc.map((x) => x.code).join(",") === "CO,MS,CE,PE,PO", cauTruc.map((x) => x.code).join(","));
+for (const b of BAI_THI_TCF_TP) {
+  const p = cauTruc.find((x) => x.code === b.code);
+  ca(`TCF_TP ${b.code}: phút và thang khớp trang giới thiệu`, !!p && p.minutes === b.phut && p.points === b.thang, p ? `${p.minutes}′/${p.points}` : "thiếu");
+}
+ca("TCF_TP: 29 câu nghe đúng hết = 699", diemUocLuongTCF(tatCa(true, 29)) === 699);
 
 console.log(`\n${dat} đạt, ${hong} hỏng`);
 process.exit(hong ? 1 : 0);

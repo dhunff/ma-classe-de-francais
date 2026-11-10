@@ -57,8 +57,25 @@ export const EXAM_STRUCTURE = {
     { code: "PE", skill: "Production écrite", label: "Expression écrite",        minutes: 60, points: 20 },
     { code: "PO", skill: "Production orale",  label: "Expression orale",         minutes: 12, points: 20 },
   ],
+  /* TCF tout public, « TCF của Pháp » (10/11, theo chủ dự án): level = 'TCF_TP'. Khung lấy từ trang
+     chính thức FEI (france-education-international.fr, bản cập nhật cho đợt 01/09/2026): ba bài
+     trắc nghiệm BẮT BUỘC (Nghe 29 câu / 25 phút, Cấu trúc ngôn ngữ 18 câu / 15 phút, Đọc 29 câu /
+     45 phút) và hai bài tự chọn (Viết 3 bài / 60 phút, Nói 3 phần / 12 phút). Bài giữa là mã MS,
+     không có trong DELF lẫn TCF Canada (migration 199 mở ràng buộc exam_sections_code_check). */
+  TCF_TP: [
+    { code: "CO", skill: "Écoute",            label: "Compréhension orale",                   minutes: 25, points: 699 },
+    { code: "MS", skill: "Grammaire",         label: "Maîtrise des structures de la langue",  minutes: 15, points: 699 },
+    { code: "CE", skill: "Lecture",           label: "Compréhension écrite",                  minutes: 45, points: 699 },
+    { code: "PE", skill: "Production écrite", label: "Expression écrite",                     minutes: 60, points: 20 },
+    { code: "PO", skill: "Production orale",  label: "Expression orale",                      minutes: 12, points: 20 },
+  ],
 };
-export const LA_TCF = (level) => level === "TCF";
+/* Mọi loại TCF (Canada và tout public): không thang chấm DELF, kết quả theo thang 699 / 20. */
+export const LA_TCF = (level) => level === "TCF" || level === "TCF_TP";
+/* Trang thi của từng loại đề: "delf" | "tcf" (Canada) | "tcf_tp" (tout public). */
+export const loaiDe = (level) => (level === "TCF" ? "tcf" : level === "TCF_TP" ? "tcf_tp" : "delf");
+/* Tên kỳ thi để hiện (tiêu đề tờ đề, trình soạn đề). */
+export const tenKyThi = (level) => (level === "TCF" ? "TCF Canada" : level === "TCF_TP" ? "TCF tout public" : level === "C1" || level === "C2" ? `DALF ${level}` : `DELF ${level ?? ""}`);
 
 /* Tên đầy đủ của một kỹ năng, tra theo `code`.
  *
@@ -71,7 +88,9 @@ export const LA_TCF = (level) => level === "TCF";
 export const NHAN_KY_NANG = Object.fromEntries(
   /* Chỉ lấy nhãn DELF: TCF đặt tên khác cho cùng mã (« Compréhension orale »), lấy cả thì nhãn
      TCF đè lên nhãn DELF ở mọi màn hình. */
-  Object.entries(EXAM_STRUCTURE).filter(([lv]) => lv !== "TCF").flatMap(([, ds]) => ds).map((p) => [p.code, p.label]),
+  [...Object.entries(EXAM_STRUCTURE).filter(([lv]) => !LA_TCF(lv)).flatMap(([, ds]) => ds).map((p) => [p.code, p.label]),
+    /* MS chỉ có ở TCF tout public. */
+    ["MS", "Maîtrise des structures de la langue"]],
 );
 
 /* Những phần KHÔNG tính điểm.

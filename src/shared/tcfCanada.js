@@ -75,3 +75,32 @@ export const BAI_THI_TCF = [
   { code: "PE", ten: "Expression écrite", so: 3, don: "bai", phut: 60, thang: 20 },
   { code: "PO", ten: "Expression orale", so: 3, don: "phan", phut: 12, thang: 20 },
 ];
+
+/* ══════════════ TCF TOUT PUBLIC (TCF của Pháp, 10/11) ══════════════
+ * Khung: trang chính thức FEI « TCF - tout public » (cập nhật cho đợt 01/09/2026).
+ * Bảng trình độ: « TCF TP, Référentiel de compétences et de certification » đăng trên France
+ * Compétences (fiche RS 6460), đọc ngày 10/11/2026. Điểm từng bài trắc nghiệm vẫn là ƯỚC LƯỢNG
+ * (diemUocLuongTCF trải 29 hay 18 câu lên thang 39 câu). FEI có điểm « chung QCM » là trung bình
+ * CÓ TRỌNG SỐ của ba bài nhưng không công bố trọng số, nên KHÔNG tính con số đó. */
+export const BAI_THI_TCF_TP = [
+  { code: "CO", ten: "Compréhension orale", so: 29, don: "cau", phut: 25, thang: 699, batBuoc: true },
+  { code: "MS", ten: "Maîtrise des structures de la langue", so: 18, don: "cau", phut: 15, thang: 699, batBuoc: true },
+  { code: "CE", ten: "Compréhension écrite", so: 29, don: "cau", phut: 45, thang: 699, batBuoc: true },
+  { code: "PE", ten: "Expression écrite", so: 3, don: "bai", phut: 60, thang: 20, batBuoc: false },
+  { code: "PO", ten: "Expression orale", so: 3, don: "phan", phut: 12, thang: 20, batBuoc: false },
+];
+
+/* [mức CECRL, từ, đến]. « A1 non atteint » = dưới dòng cuối. Trắc nghiệm: A1 từ 101 (0 đến 100 là
+   chưa đạt A1). Viết, Nói: 0/20 chưa đạt A1, 1/20 là A1. */
+export const CECRL_TCF_TP = {
+  QCM: [["C2", 600, 699], ["C1", 500, 599], ["B2", 400, 499], ["B1", 300, 399], ["A2", 200, 299], ["A1", 101, 199]],
+  NOTE: [["C2", 18, 20], ["C1", 14, 17], ["B2", 10, 13], ["B1", 6, 9], ["A2", 2, 5], ["A1", 1, 1]],
+};
+
+/* Mức CECRL của một điểm TCF tout public. Trả "" khi chưa đạt A1, null khi không tính được. */
+export function capTcfTP(code, diem) {
+  const bang = code === "PE" || code === "PO" ? CECRL_TCF_TP.NOTE : code === "CO" || code === "CE" || code === "MS" ? CECRL_TCF_TP.QCM : null;
+  if (!bang || diem == null || !Number.isFinite(Number(diem))) return null;
+  const dong = bang.find(([, tu]) => Number(diem) >= tu);
+  return dong ? dong[0] : "";
+}

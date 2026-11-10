@@ -1,15 +1,15 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Link, useNavigate } from "react-router-dom";
-import { Timer, ShieldCheck, AlertTriangle, Clock, Volume2, VolumeX, Trophy, Crown, Headphones, BookOpen, PenLine, Mic } from "lucide-react";
+import { Timer, ShieldCheck, AlertTriangle, Clock, Volume2, VolumeX, Trophy, Crown, Headphones, BookOpen, PenLine, Mic, Puzzle } from "lucide-react";
 import NutTieng from "../../shared/NutTieng.jsx";
 import { BangKetLuan, ThanhPhan, PhaoGiayLon } from "./KetQuaVisual.jsx";
 import { supabase } from "../../storageShim.js";
 import { load } from "../../shared/storage.js";
 import { loadExams, loadExam } from "../../shared/examStore.js";
 import { gradeRemote } from "../../shared/gradeRemote.js";
-import { diemUocLuongTCF, nclcTCF } from "../../shared/tcfCanada.js";
-import { EXAM_STRUCTURE, LA_TCF, sectionScore, verdict, ghiPhan, gomTheoKyNang, NGUONG_PHAN, khongCham }
+import { diemUocLuongTCF, nclcTCF, capTcfTP } from "../../shared/tcfCanada.js";
+import { EXAM_STRUCTURE, LA_TCF, loaiDe, tenKyThi, sectionScore, verdict, ghiPhan, gomTheoKyNang, NGUONG_PHAN, khongCham }
   from "./examPaper.js";
 import GhiAmBaiNoi from "./GhiAmBaiNoi.jsx";
 import BocThamNoi, { deDaChon, khoaBoc } from "./BocThamNoi.jsx";
@@ -59,7 +59,9 @@ const dongHo = (giay) => `${hai(Math.floor(giay / 60))}:${hai(Math.max(0, giay %
 /* ─────────────────────────── Màn chờ ─────────────────────────── */
 
 function ManCho({ dsDe, chon, paper, onStart, dangTai, lamPhanNoi, setLamPhanNoi, phienThuc, name, loai = "delf", gioiThieu = null }) {
-  const tcf = loai === "tcf";
+  /* TCF Canada ("tcf") và TCF tout public ("tcf_tp", 10/11): không tab trình độ, một nhóm đề. */
+  const tcf = loai !== "delf";
+  const levelTcf = loai === "tcf_tp" ? "TCF_TP" : "TCF";
   const level = paper?.level ?? "B1";
   const cauTruc = EXAM_STRUCTURE[level] ?? [];
   /* Đề có phần nói không — hỏi DỮ LIỆU của đề, không hỏi cấu trúc chuẩn.
@@ -89,7 +91,7 @@ function ManCho({ dsDe, chon, paper, onStart, dangTai, lamPhanNoi, setLamPhanNoi
     if (loi) setLoiMo(loi);
   };
   /* TCF Canada: một nhóm duy nhất, không có tab trình độ. */
-  const nhom = useMemo(() => (tcf ? [{ level: "TCF", de: dsDe }] : nhomTheoTrinhDo(dsDe)), [dsDe, tcf]);
+  const nhom = useMemo(() => (tcf ? [{ level: levelTcf, de: dsDe }] : nhomTheoTrinhDo(dsDe)), [dsDe, tcf, levelTcf]);
   /* 14/10 (143): tài khoản thường chỉ làm « Đề 1 » mỗi trình độ. Máy chủ chặn thật
      (bat_dau_thi trả CAN_VIP); ở đây chỉ khoá cho rõ và mở đường mua VIP. */
   const coVip = !!(luot?.vip || luot?.khong_gioi_han);
@@ -130,8 +132,8 @@ function ManCho({ dsDe, chon, paper, onStart, dangTai, lamPhanNoi, setLamPhanNoi
     if (dau && paper?.id !== dau.id) chon(dau.id);
   };
   const deDangChon = deTab.some((e) => e.id === paper?.id) ? paper : null;
-  const ICON_PHAN = { CO: Headphones, CE: BookOpen, PE: PenLine, PO: Mic };
-  const MAU_PHAN = { CO: "from-sky-500 to-blue-600", CE: "from-emerald-500 to-teal-600", PE: "from-amber-500 to-orange-600", PO: "from-fuchsia-500 to-purple-600" };
+  const ICON_PHAN = { CO: Headphones, CE: BookOpen, PE: PenLine, PO: Mic, MS: Puzzle };
+  const MAU_PHAN = { CO: "from-sky-500 to-blue-600", CE: "from-emerald-500 to-teal-600", PE: "from-amber-500 to-orange-600", PO: "from-fuchsia-500 to-purple-600", MS: "from-indigo-500 to-violet-600" };
   const khoaVip = !!deDangChon?.chi_vip && !coVip;
   const sanSangVao = sanSang && !dangTai && !!deDangChon?.sections?.length && phienThuc === true && !khoaVip;
 
@@ -150,15 +152,16 @@ function ManCho({ dsDe, chon, paper, onStart, dangTai, lamPhanNoi, setLamPhanNoi
       </div>
 
       {/* ── Khung đầu trang (09/10) ── */}
-      {/* Màu khối đầu phân biệt hai kỳ thi (09/11, chủ dự án): DELF xanh, TCF Canada đỏ như lá phong. */}
-      <header className={`mcf-cau-vao relative mt-3 overflow-hidden rounded-3xl bg-gradient-to-br p-6 text-white ${tcf ? "from-rose-700 via-red-600 to-orange-500 shadow-[0_20px_50px_rgba(220,38,38,0.3)]" : "from-blue-700 via-primary to-indigo-600 shadow-[0_20px_50px_rgba(37,99,235,0.3)]"}`}>
+      {/* Màu khối đầu phân biệt các kỳ thi (chủ dự án): DELF xanh, TCF Canada đỏ như lá phong,
+          TCF tout public tím (10/11). */}
+      <header className={`mcf-cau-vao relative mt-3 overflow-hidden rounded-3xl bg-gradient-to-br p-6 text-white ${loai === "tcf" ? "from-rose-700 via-red-600 to-orange-500 shadow-[0_20px_50px_rgba(220,38,38,0.3)]" : loai === "tcf_tp" ? "from-violet-800 via-purple-600 to-fuchsia-500 shadow-[0_20px_50px_rgba(147,51,234,0.3)]" : "from-blue-700 via-primary to-indigo-600 shadow-[0_20px_50px_rgba(37,99,235,0.3)]"}`}>
         <span aria-hidden className="absolute -right-12 -top-12 h-48 w-48 rounded-full bg-white/10" />
         <span aria-hidden className="absolute -bottom-20 left-1/4 h-44 w-44 rounded-full bg-sky-300/20 blur-2xl" />
         <div className="relative flex items-center gap-4">
           <Leon cam="co-len" size={116} className="mcf-leon-bay shrink-0 drop-shadow-[0_12px_18px_rgba(0,0,0,0.3)] max-sm:h-20 max-sm:w-20" />
           <div className="min-w-0 flex-1">
             <p className="m-0 flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-[0.2em] text-white/80"><ShieldCheck size={14} /> {tr("Phòng thi mô phỏng", "Salle d'examen simulée", "Simulated exam room")}</p>
-            <h1 className="m-0 mt-1 text-3xl font-extrabold tracking-tight">{tcf ? tr("Thi thử TCF Canada", "Examen blanc TCF Canada", "TCF Canada mock exam") : tr("Thi thử DELF", "Examen blanc DELF", "DELF mock exam")}</h1>
+            <h1 className="m-0 mt-1 text-3xl font-extrabold tracking-tight">{tcf ? `${tr("Thi thử", "Examen blanc", "Mock exam")} ${tenKyThi(levelTcf)}` : tr("Thi thử DELF", "Examen blanc DELF", "DELF mock exam")}</h1>
             <p className="m-0 mt-1 text-sm text-white/85">
               {tr("Một lần duy nhất, có tính giờ, không xem đáp án giữa chừng.", "Une seule fois, chronométré, sans voir les réponses en cours.", "One sitting, timed, no answers shown along the way.")}
             </p>
@@ -200,7 +203,7 @@ function ManCho({ dsDe, chon, paper, onStart, dangTai, lamPhanNoi, setLamPhanNoi
           <div className="flex items-center gap-3 rounded-2xl bg-surface2 px-5 py-4 sm:col-span-2">
             <Leon cam="buon-ngu" size={56} />
             <p className="m-0 text-sm text-soft">{tcf
-              ? tr("Đề thi thử TCF Canada đang được soạn. Khi giáo viên phát hành đề, nó sẽ hiện ở đây.", "Les sujets TCF Canada sont en préparation. Ils apparaîtront ici dès leur publication.", "TCF Canada mock exams are being prepared. They will appear here once published.")
+              ? tr(`Đề thi thử ${tenKyThi(levelTcf)} đang được soạn. Khi giáo viên phát hành đề, nó sẽ hiện ở đây.`, `Les sujets ${tenKyThi(levelTcf)} sont en préparation. Ils apparaîtront ici dès leur publication.`, `${tenKyThi(levelTcf)} mock exams are being prepared. They will appear here once published.`)
               : <>{tr("Chưa có đề", "Aucun sujet", "No exam at level")} {tab} {tr("nào được phát hành.", "publié pour ce niveau.", "published yet.")}</>}</p>
           </div>
         )}
@@ -657,7 +660,13 @@ export function PhanThi({ section, attemptId, attemptTheoBai = {}, answers, setA
    * Màu cố định trắng/đen như giấy (xem .de-giay trong base.css). */
   const SO_PHAN = { CO: 1, CE: 2, PE: 3, PO: 4 };
   const TEN_PHAN = { CO: "Compréhension de l'oral", CE: "Compréhension des écrits", PE: "Production écrite", PO: "Production orale" };
-  const capDe = ex?.level === "C1" || ex?.level === "C2" ? `DALF ${ex.level}` : `DELF ${ex?.level ?? ""}`;
+  const capDe = tenKyThi(ex?.level);
+  /* TCF (09–10/11): đánh số và gọi tên bài theo cấu trúc của chính đề (TCF tout public có 5 bài,
+     thêm « Maîtrise des structures »), không theo bốn phần DELF. */
+  if (LA_TCF(ex?.level)) {
+    const ct = EXAM_STRUCTURE[ex.level] ?? [];
+    ct.forEach((p, i) => { SO_PHAN[p.code] = i + 1; TEN_PHAN[p.code] = p.label; });
+  }
   const diemPhan = section.points || EXAM_STRUCTURE[ex?.level]?.find((p) => p.code === section.code)?.points || 25;
   const O = ({ chon }) => (
     <span aria-hidden className="de-o inline-grid h-[18px] w-[18px] shrink-0 place-items-center text-[15px] font-bold leading-none">{chon ? "✕" : ""}</span>
@@ -1054,15 +1063,16 @@ function KetQua({ sections, blurCount, onLai }) {
    (shared/tcfCanada.js). Viết, Nói: hệ thống chưa chấm theo thang TCF, nên nói thẳng là chưa có
    điểm thay vì đưa một con số (quy tắc 1). Không có « đạt / trượt »: TCF không có ngưỡng đạt,
    người thi cần đúng mức NCLC mà chương trình định cư của mình đòi. */
-function KetQuaTCF({ sections, blurCount, onLai }) {
+function KetQuaTCF({ sections, blurCount, onLai, level = "TCF" }) {
+  const tp = level === "TCF_TP";
   const mat = sections.some((s) => s.luuDuoc === false);
   useEffect(() => { phat(mat ? "sai" : "nop"); }, []); // eslint-disable-line react-hooks/exhaustive-deps
-  const MAU = { CO: "from-sky-500 to-blue-600", CE: "from-emerald-500 to-teal-600", PE: "from-amber-500 to-orange-600", PO: "from-fuchsia-500 to-purple-600" };
-  const ICON = { CO: Headphones, CE: BookOpen, PE: PenLine, PO: Mic };
+  const MAU = { CO: "from-sky-500 to-blue-600", CE: "from-emerald-500 to-teal-600", PE: "from-amber-500 to-orange-600", PO: "from-fuchsia-500 to-purple-600", MS: "from-indigo-500 to-violet-600" };
+  const ICON = { CO: Headphones, CE: BookOpen, PE: PenLine, PO: Mic, MS: Puzzle };
   return (
     <div className="relative mx-auto max-w-3xl px-4 py-8">
       <div className="mb-4 flex items-center justify-between gap-3">
-        <h1 className="m-0 text-2xl font-extrabold text-ink">{tr("Kết quả thi thử TCF Canada", "Résultat de l'examen blanc TCF Canada", "TCF Canada mock exam result")}</h1>
+        <h1 className="m-0 text-2xl font-extrabold text-ink">{tr(`Kết quả thi thử ${tenKyThi(level)}`, `Résultat de l'examen blanc ${tenKyThi(level)}`, `${tenKyThi(level)} mock exam result`)}</h1>
         <NutTieng />
       </div>
       {mat && (
@@ -1073,8 +1083,10 @@ function KetQuaTCF({ sections, blurCount, onLai }) {
       <div className="mt-5 grid gap-3 sm:grid-cols-2">
         {sections.map((s) => {
           const Icon = ICON[s.code] ?? BookOpen;
-          const coDiem = (s.code === "CO" || s.code === "CE") && s.score != null;
-          const nclc = coDiem ? nclcTCF(s.code, s.score) : null;
+          const coDiem = (s.code === "CO" || s.code === "CE" || s.code === "MS") && s.score != null;
+          const nclc = coDiem && !tp ? nclcTCF(s.code, s.score) : null;
+          /* TCF tout public: mức CECRL theo bảng FEI (France Compétences RS 6460). */
+          const cap = coDiem && tp ? capTcfTP(s.code, s.score) : null;
           return (
             <div key={s.code} className="rounded-3xl bg-surface p-4 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
               <div className="flex items-center gap-3">
@@ -1087,9 +1099,15 @@ function KetQuaTCF({ sections, blurCount, onLai }) {
               {coDiem ? (
                 <div className="mt-3 flex items-end justify-between gap-2">
                   <p className="m-0 text-3xl font-extrabold leading-none tabular-nums text-ink">{s.score}<span className="text-base font-bold text-soft">/699</span></p>
-                  <span className={`rounded-full px-3 py-1 text-xs font-extrabold ${nclc >= 7 ? "bg-ok-soft text-ok" : nclc >= 4 ? "bg-primary-soft text-primary" : "bg-surface2 text-soft"}`}>
-                    {nclc >= 4 ? `NCLC ${nclc}${nclc === 10 ? "+" : ""}` : tr("Dưới NCLC 4", "Sous NCLC 4", "Below NCLC 4")}
-                  </span>
+                  {tp ? (
+                    <span className={`rounded-full px-3 py-1 text-xs font-extrabold ${cap ? "bg-primary-soft text-primary" : "bg-surface2 text-soft"}`}>
+                      {cap ? `${tr("Trình độ", "Niveau", "Level")} ${cap}` : tr("Chưa đạt A1", "A1 non atteint", "A1 not reached")}
+                    </span>
+                  ) : (
+                    <span className={`rounded-full px-3 py-1 text-xs font-extrabold ${nclc >= 7 ? "bg-ok-soft text-ok" : nclc >= 4 ? "bg-primary-soft text-primary" : "bg-surface2 text-soft"}`}>
+                      {nclc >= 4 ? `NCLC ${nclc}${nclc === 10 ? "+" : ""}` : tr("Dưới NCLC 4", "Sous NCLC 4", "Below NCLC 4")}
+                    </span>
+                  )}
                 </div>
               ) : (
                 <p className="m-0 mt-3 text-xs text-soft">{tr("Phần này chưa được chấm tự động theo thang TCF (0 đến 20).", "Cette épreuve n'est pas encore notée automatiquement sur l'échelle TCF (0 à 20).", "This part isn't auto-scored on the TCF scale (0 to 20) yet.")}</p>
@@ -1178,6 +1196,8 @@ export default function ExamMode({ name, loai = "delf", gioiThieu = null }) {
     coPhienMayChu().then((v) => { if (con) setPhienThuc(v); });
     return () => { con = false; };
   }, []);
+  /* Tên bài trên màn kết quả: đề TCF dùng tên của chính kỳ thi (« Expression écrite »…), DELF giữ nhãn cũ. */
+  const nhanKhoi = (k) => (LA_TCF(paper?.level) && EXAM_STRUCTURE[paper.level]?.find((p) => p.code === k.code)?.label) || (k.label ?? k.code);
   const khoi = useMemo(
     () => gomTheoKyNang(paper?.sections).filter((k) => lamPhanNoi || k.code !== "PO"),
     [paper, lamPhanNoi]);
@@ -1188,7 +1208,7 @@ export default function ExamMode({ name, loai = "delf", gioiThieu = null }) {
   useEffect(() => {
     loadExams()
       .then((tatCa) => {
-        const ds = tatCa.filter((e) => (loai === "tcf") === LA_TCF(e.level));
+        const ds = tatCa.filter((e) => loaiDe(e.level) === loai);
         setDsDe(ds); if (ds.length === 1) chonDe(ds[0].id);
       })
       .catch(() => setDsDe([]))
@@ -1299,7 +1319,7 @@ export default function ExamMode({ name, loai = "delf", gioiThieu = null }) {
         if (error || !data?.ok) luuDuocPO = false;
       }
       setKetQua((p) => ghiPhan(p, {
-        code: k.code, points: k.points, label: k.label ?? k.code,
+        code: k.code, points: k.points, label: nhanKhoi(k),
         baiLabel: k.exercises.map((e) => e.title).join(" · "),
         exerciseId: k.exercises[0]?.id, score: null, luuDuoc: luuDuocPO,
       }));
@@ -1310,7 +1330,7 @@ export default function ExamMode({ name, loai = "delf", gioiThieu = null }) {
     if (khongCham(k)) {
       setKetQua((p) => ghiPhan(p, {
         code: k.code, points: 0, khongCham: true,
-        label: k.label ?? k.code,
+        label: nhanKhoi(k),
         baiLabel: k.exercises.map((e) => e.title).join(" · "),
         exerciseId: k.exercises[0]?.id,
         score: null,
@@ -1336,7 +1356,7 @@ export default function ExamMode({ name, loai = "delf", gioiThieu = null }) {
         dungSai.push(kq && kq.graded !== false && typeof kq.correct === "boolean" ? kq.correct : null);
       }
     }
-    const tcfUocLuong = LA_TCF(paper?.level) && (k.code === "CO" || k.code === "CE") ? diemUocLuongTCF(dungSai) : null;
+    const tcfUocLuong = LA_TCF(paper?.level) && ["CO", "CE", "MS"].includes(k.code) ? diemUocLuongTCF(dungSai) : null;
 
     const ghi = {
       code: k.code, points: k.points, exerciseId: k.exercises[0]?.id,
@@ -1344,7 +1364,7 @@ export default function ExamMode({ name, loai = "delf", gioiThieu = null }) {
          (« Compréhension de l'oral »), `baiLabel` là tên các bài đã làm. Màn
          kết quả hiện cả hai, dòng trên dòng dưới. Bản trước đặt tên bài vào
          `label` và làm mất tên kỹ năng khỏi thanh tiêu đề lúc đang thi. */
-      label: k.label ?? k.code,
+      label: nhanKhoi(k),
       baiLabel: k.exercises.map((e) => e.title).join(" · "),
       /* tong === 0 nghĩa là phần này không có câu nào máy chấm được (Production
          écrite chỉ có bài viết) → để `null`, tức "chờ chấm", chứ không phải 0. */
@@ -1394,7 +1414,7 @@ export default function ExamMode({ name, loai = "delf", gioiThieu = null }) {
       {hopThoat && <HopThoat onO={() => setHopThoat(false)} onThoat={thoatThi} />}
     </div>, document.body);
   }
-  if (LA_TCF(paper?.level)) return <KetQuaTCF sections={ketQua} blurCount={blurCount}
+  if (LA_TCF(paper?.level)) return <KetQuaTCF sections={ketQua} blurCount={blurCount} level={paper.level}
     onLai={() => { setPaper(null); setBuoc("cho"); }} />;
   return <KetQua sections={ketQua} blurCount={blurCount}
     onLai={() => { setPaper(null); setBuoc("cho"); }} />;
