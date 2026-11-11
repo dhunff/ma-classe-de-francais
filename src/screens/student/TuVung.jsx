@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { motion, MotionConfig, AnimatePresence } from "framer-motion";
-import { ArrowLeft, ArrowRight, Check, Volume2, X, RotateCcw, Shapes, Images, PencilLine, ChevronLeft, ChevronRight, Hand, Sparkles } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, Volume2, X, RotateCcw, Shapes, Images, PencilLine, ChevronLeft, ChevronRight, Sparkles, Lock } from "lucide-react";
 import { supabase } from "../../storageShim.js";
 import { tr } from "../../shared/i18n.jsx";
 import { Leon } from "../../shared/leon.jsx";
@@ -18,8 +18,8 @@ import { CHU_DE_TU_VUNG, CAP_TU_VUNG, timChuDe, taoBaiTap, maoTu, boMaoTu, giong
  *  · Danh sách: khối đầu có hình từ vựng bay nhẹ quanh Léon; thanh chọn trình độ có vệt sáng trượt
  *    (layoutId); thẻ chủ đề là thẻ MÀU theo chủ đề, ba hình xếp quạt, xoè ra khi rê chuột.
  *  · Trang chủ đề: ba bước Học từ → Ghép hình → Luyện tập (thanh bước có vệt trượt, nội dung trượt
- *    ngang). Học từ = thẻ LẬT 3D (mặt trước hình, mặt sau từ + giống + nghĩa + câu ví dụ), vuốt
- *    hoặc mũi tên để đổi thẻ. Ghép đúng thì ô bật lên, xong lượt bắn pháo giấy. Luyện tập: phương
+ *    ngang). Học từ hiện ĐỦ hình, từ, giống, nghĩa, ví dụ (bỏ thẻ lật 11/11: thẻ lật giấu từ, là
+ *    kiểm tra chứ chưa phải học); xem hết các từ mới mở hai bước sau. Ghép đúng thì ô bật lên, xong lượt bắn pháo giấy. Luyện tập: phương
  *    án hiện so le, kết quả là vòng điểm tự vẽ.
  *  Chuyển động tắt theo cài đặt « giảm chuyển động » của máy (MotionConfig reducedMotion="user").
  *
@@ -57,13 +57,20 @@ const MAU = {
   "tv-the-thao": ["from-orange-500 to-red-500", "bg-orange-500/10 text-orange-600"],
   "tv-van-hoa": ["from-purple-500 to-fuchsia-600", "bg-purple-500/10 text-purple-600"],
   "tv-giao-thong-b1": ["from-amber-500 to-yellow-600", "bg-amber-500/10 text-amber-700"],
+  "tv-khoa-hoc": ["from-indigo-500 to-blue-700", "bg-indigo-500/10 text-indigo-600"],
+  "tv-kinh-te": ["from-emerald-600 to-teal-700", "bg-emerald-500/10 text-emerald-700"],
+  "tv-cong-dan": ["from-blue-700 to-red-500", "bg-blue-500/10 text-blue-700"],
+  "tv-truyen-thong": ["from-fuchsia-500 to-violet-600", "bg-fuchsia-500/10 text-fuchsia-600"],
+  "tv-y-hoc": ["from-cyan-500 to-teal-600", "bg-cyan-500/10 text-cyan-700"],
+  "tv-do-thi": ["from-slate-500 to-indigo-600", "bg-slate-500/10 text-slate-600"],
 };
 /* Màu nhãn trình độ, cùng bảng màu với danh sách bài ngữ pháp (NguPhap.jsx › MAU_CAP). */
-const MAU_CAP = { A1: "from-amber-500 to-orange-600", A2: "from-sky-500 to-blue-600", B1: "from-violet-500 to-indigo-600" };
+const MAU_CAP = { A1: "from-amber-500 to-orange-600", A2: "from-sky-500 to-blue-600", B1: "from-violet-500 to-indigo-600", B2: "from-rose-500 to-pink-600" };
 const MO_TA_CAP = () => ({
   A1: tr("Đồ vật và cảnh quen thuộc", "Objets du quotidien", "Everyday objects"),
   A2: tr("Quần áo, nghề, du lịch, mua sắm", "Vêtements, métiers, voyages", "Clothes, jobs, travel"),
   B1: tr("Sức khoẻ, môi trường, công việc", "Santé, environnement, travail", "Health, environment, work"),
+  B2: tr("Khoa học, kinh tế, truyền thông", "Sciences, économie, médias", "Science, economy, media"),
 });
 const mauCua = (ma) => MAU[ma] ?? ["from-blue-500 to-indigo-600", "bg-primary-soft text-primary"];
 
@@ -169,105 +176,115 @@ function HinhBay() {
   );
 }
 
-/* ── Bước 1: thẻ lật ── */
-function TheLat({ tu, ma }) {
-  const [lat, setLat] = useState(false);
-  useEffect(() => { setLat(false); }, [tu]);
-  const doi = () => { setLat((x) => { if (!x) docTo(tu.fr); return !x; }); };
-  const mat = "absolute inset-0 grid place-items-center rounded-[1.75rem] border border-solid border-line p-6 [backface-visibility:hidden]";
+/* ── Bước 1: HỌC (11/11, theo chủ dự án: « đã học đâu mà cho làm thẻ, học trước rồi mới làm bài »)
+ * Mỗi từ hiện ĐỦ ngay: hình, từ kèm mạo từ, giống, nghĩa, câu ví dụ có dịch. Không giấu gì như thẻ
+ * lật (thẻ lật là kiểm tra trí nhớ, chưa phải học). Xem hết các từ thì mới mở Ghép hình và Luyện tập. */
+const KHOA_DA_HOC = "mcf-tv-da-hoc";
+const docDaHoc = () => { try { return new Set(JSON.parse(localStorage.getItem(KHOA_DA_HOC) || "[]")); } catch { return new Set(); } };
+const ghiDaHoc = (ma) => { try { const d = docDaHoc(); d.add(ma); localStorage.setItem(KHOA_DA_HOC, JSON.stringify([...d])); } catch { /* bỏ qua */ } };
+
+function TheHoc({ tu, ma }) {
   return (
-    <div className="[perspective:1400px]">
-      <motion.div role="button" tabIndex={0} aria-pressed={lat} aria-label={lat ? tu.fr : tr("Lật thẻ để xem từ", "Retourner la carte", "Flip the card")}
-        onClick={doi} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); doi(); } }}
-        animate={{ rotateY: lat ? 180 : 0 }} transition={{ type: "spring", stiffness: 220, damping: 22 }}
-        className="relative h-[330px] w-full cursor-pointer outline-none [transform-style:preserve-3d] focus-visible:ring-4 focus-visible:ring-primary/40 rounded-[1.75rem]">
-        {/* Mặt trước: hình */}
-        <div className={`${mat} bg-surface shadow-[0_24px_60px_-28px_rgba(15,23,42,0.45)]`}>
-          <span aria-hidden className={`absolute inset-3 rounded-[1.4rem] ${mauCua(ma)[1]}`} />
-          <motion.span className="relative" animate={{ y: [0, -8, 0] }} transition={{ duration: 3.2, repeat: Infinity, ease: "easeInOut" }}>
-            <HinhTu tu={tu} size={150} />
-          </motion.span>
-          <span className="absolute bottom-6 inline-flex items-center gap-1.5 rounded-full bg-surface px-3 py-1 text-xs font-bold text-soft shadow-sm">
-            <Hand size={13} /> {tr("Bấm để lật thẻ", "Touchez pour retourner", "Tap to flip")}
-          </span>
+    <div className="grid overflow-hidden rounded-[1.75rem] border border-solid border-line bg-surface shadow-[0_18px_40px_-26px_rgba(15,23,42,0.4)] sm:grid-cols-[minmax(0,15rem)_1fr]">
+      <div className={`relative grid min-h-[220px] place-items-center ${mauCua(ma)[1]}`}>
+        <motion.span animate={{ y: [0, -8, 0] }} transition={{ duration: 3.2, repeat: Infinity, ease: "easeInOut" }}>
+          <HinhTu tu={tu} size={140} />
+        </motion.span>
+      </div>
+      <div className="grid content-center gap-3 p-5 sm:p-6">
+        <div className="flex flex-wrap items-center gap-2.5">
+          <span lang="fr" className="text-[2rem] font-extrabold leading-tight tracking-tight text-ink">{tu.fr}</span>
+          <NutNghe cau={tu.fr} to />
         </div>
-        {/* Mặt sau: từ */}
-        <div className={`${mat} bg-surface shadow-[0_24px_60px_-28px_rgba(15,23,42,0.45)] [transform:rotateY(180deg)]`}>
-          <span aria-hidden className={`absolute inset-x-0 top-0 h-2 rounded-t-[1.75rem] bg-gradient-to-r ${mauCua(ma)[0]}`} />
-          <div className="grid w-full justify-items-center gap-3 text-center">
-            <OHinh tu={tu} ma={ma} size={44} className="h-16 w-16" />
-            <div className="flex flex-wrap items-center justify-center gap-2">
-              <span lang="fr" className="text-3xl font-extrabold tracking-tight text-ink">{tu.fr}</span>
-              <NutNghe cau={tu.fr} />
-            </div>
-            <div className="flex flex-wrap items-center justify-center gap-2">
-              <NhanGiong tu={tu} />
-              <span className="text-base font-bold text-soft">{tu.vi}</span>
-            </div>
-            <p className="m-0 max-w-sm rounded-2xl bg-surface2 px-4 py-3 text-sm leading-relaxed">
-              <span lang="fr" className="block italic text-ink">{tu.vd[0]}</span>
-              <span className="block text-soft">{tu.vd[1]}</span>
-            </p>
-          </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <NhanGiong tu={tu} />
+          <span className="text-lg font-bold text-ink">{tu.vi}</span>
         </div>
-      </motion.div>
+        <div className="rounded-2xl bg-surface2 p-4">
+          <p className="m-0 mb-1 text-[11px] font-extrabold uppercase tracking-[0.12em] text-soft">{tr("Ví dụ", "Exemple", "Example")}</p>
+          <p className="m-0 flex items-start gap-2 text-[15px] leading-relaxed">
+            <span className="min-w-0"><span lang="fr" className="block italic text-ink">{tu.vd[0]}</span><span className="block text-soft">{tu.vd[1]}</span></span>
+            <NutNghe cau={tu.vd[0]} />
+          </p>
+        </div>
+      </div>
     </div>
   );
 }
 
-function HocTu({ chuDe, onTiep }) {
-  const [[i, huong], setI] = useState([0, 1]);
+function HocTu({ chuDe, i, setI, daXem, mo, onLamBai }) {
+  const [huong, setHuong] = useState(1);
   const n = chuDe.tu.length;
-  const den = (j) => setI(([cu]) => [((j % n) + n) % n, j > cu ? 1 : -1]);
+  const den = (j) => { const k = ((j % n) + n) % n; setHuong(k > i ? 1 : -1); setI(k); };
   const tu = chuDe.tu[i];
+  const chuaXem = chuDe.tu.findIndex((_, j) => !daXem.has(j));
+  /* Nút làm bài KHÔNG bị khoá cứng (nút disabled là ngõ cụt): chưa học hết thì đưa tới từ chưa xem. */
+  const lamBai = () => { if (mo) onLamBai(); else if (chuaXem >= 0) den(chuaXem); };
   return (
-    <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_280px]">
-      <div>
-        <div className="relative -mx-10 -mb-10 -mt-4 overflow-hidden px-10 pb-14 pt-4">
-          <AnimatePresence mode="wait" custom={huong} initial={false}>
-            <motion.div key={i} custom={huong}
-              variants={{ vao: (h) => ({ x: h * 90, opacity: 0, rotate: h * 3 }), dung: { x: 0, opacity: 1, rotate: 0 }, ra: (h) => ({ x: -h * 90, opacity: 0, rotate: -h * 3 }) }}
-              initial="vao" animate="dung" exit="ra" transition={{ duration: 0.32, ease: EASE }}
-              drag="x" dragConstraints={{ left: 0, right: 0 }} dragElastic={0.25}
-              onDragEnd={(_, info) => { if (info.offset.x < -70) den(i + 1); else if (info.offset.x > 70) den(i - 1); }}>
-              <TheLat tu={tu} ma={chuDe.ma} />
-            </motion.div>
-          </AnimatePresence>
+    <div className="grid gap-5">
+      <p className="m-0 flex gap-3 rounded-2xl border border-solid border-primary/20 bg-primary-soft p-4 text-sm leading-relaxed text-ink">
+        <Sparkles size={18} className="mt-0.5 shrink-0 text-primary" />
+        <span>{tr("Học từng từ: nhìn hình, đọc to từ KÈM mạo từ, bấm loa để nghe, rồi đọc câu ví dụ. Mạo từ cho biết giống (le: đực, la: cái, les: số nhiều); với l' thì xem nhãn giống. Học qua hết các từ thì bài tập mới mở.",
+          "Pour chaque mot : regardez l'image, dites le mot AVEC son article, écoutez, puis lisez l'exemple. L'article indique le genre (le, la, les) ; avec l', regardez l'étiquette. Les exercices s'ouvrent après tous les mots.",
+          "For each word: look at the picture, say it WITH its article, listen, then read the example. The article shows the gender (le, la, les); with l', check the label. Exercises unlock after all words.")}</span>
+      </p>
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_280px]">
+        <div>
+          <div className="relative -mx-10 -mb-10 -mt-4 overflow-hidden px-10 pb-14 pt-4">
+            <AnimatePresence mode="wait" custom={huong} initial={false}>
+              <motion.div key={i} custom={huong}
+                variants={{ vao: (h) => ({ x: h * 80, opacity: 0 }), dung: { x: 0, opacity: 1 }, ra: (h) => ({ x: -h * 80, opacity: 0 }) }}
+                initial="vao" animate="dung" exit="ra" transition={{ duration: 0.3, ease: EASE }}
+                drag="x" dragConstraints={{ left: 0, right: 0 }} dragElastic={0.2}
+                onDragEnd={(_, info) => { if (info.offset.x < -70) den(i + 1); else if (info.offset.x > 70) den(i - 1); }}>
+                <TheHoc tu={tu} ma={chuDe.ma} />
+              </motion.div>
+            </AnimatePresence>
+          </div>
+          <div className="mt-4 flex items-center justify-center gap-3">
+            <motion.button type="button" whileTap={{ scale: 0.9 }} onClick={() => den(i - 1)} aria-label={tr("Từ trước", "Mot précédent", "Previous word")}
+              className="grid h-11 w-11 cursor-pointer place-items-center rounded-full border border-solid border-line bg-surface text-ink hover:border-primary hover:text-primary">
+              <ChevronLeft size={20} />
+            </motion.button>
+            {/* Chấm vị trí: chấm đã xem thì đậm màu, chấm đang mở thì dài ra. Không hiện số. */}
+            <div className="flex items-center gap-1.5" aria-hidden>
+              {chuDe.tu.map((t, j) => (
+                <motion.span key={t.fr} animate={{ width: j === i ? 22 : 8, opacity: j === i || daXem.has(j) ? 1 : 0.3 }} transition={LO_XO}
+                  className={`block h-2 rounded-full bg-gradient-to-r ${mauCua(chuDe.ma)[0]}`} />
+              ))}
+            </div>
+            <motion.button type="button" whileTap={{ scale: 0.9 }} onClick={() => den(i + 1)} aria-label={tr("Từ sau", "Mot suivant", "Next word")}
+              className="grid h-11 w-11 cursor-pointer place-items-center rounded-full border border-solid border-line bg-surface text-ink hover:border-primary hover:text-primary">
+              <ChevronRight size={20} />
+            </motion.button>
+          </div>
         </div>
-        <div className="mt-4 flex items-center justify-center gap-3">
-          <motion.button type="button" whileTap={{ scale: 0.9 }} onClick={() => den(i - 1)} aria-label={tr("Thẻ trước", "Carte précédente", "Previous card")}
-            className="grid h-11 w-11 cursor-pointer place-items-center rounded-full border border-solid border-line bg-surface text-ink hover:border-primary hover:text-primary">
-            <ChevronLeft size={20} />
-          </motion.button>
-          <div className="flex items-center gap-1.5" aria-hidden>
+
+        {/* Bảng các từ: bấm để mở từ đó, từ đã học có dấu tích. */}
+        <div className="h-fit rounded-3xl border border-solid border-line bg-surface p-4">
+          <p className="m-0 mb-3 text-sm font-extrabold text-ink">{tr("Các từ trong chủ đề", "Les mots du thème", "Words in this topic")}</p>
+          <div className="grid grid-cols-5 gap-2 lg:grid-cols-3">
             {chuDe.tu.map((t, j) => (
-              <motion.span key={t.fr} animate={{ width: j === i ? 22 : 8, opacity: j === i ? 1 : 0.35 }} transition={LO_XO}
-                className={`block h-2 rounded-full bg-gradient-to-r ${mauCua(chuDe.ma)[0]}`} />
+              <motion.button key={t.fr} type="button" onClick={() => den(j)} whileHover={{ y: -3 }} whileTap={{ scale: 0.93 }}
+                aria-label={t.fr} aria-current={j === i}
+                className={`relative grid cursor-pointer place-items-center rounded-2xl border-2 border-solid p-1.5 font-sans ${j === i ? `border-primary ${mauCua(chuDe.ma)[1]}` : `border-transparent ${mauCua(chuDe.ma)[1]}`}`}>
+                <HinhTu tu={t} size={34} />
+                <AnimatePresence>
+                  {daXem.has(j) && j !== i && (
+                    <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }} transition={{ type: "spring", stiffness: 500, damping: 20 }}
+                      className="absolute -right-1 -top-1 grid h-5 w-5 place-items-center rounded-full bg-ok text-white shadow"><Check size={12} strokeWidth={3} /></motion.span>
+                  )}
+                </AnimatePresence>
+              </motion.button>
             ))}
           </div>
-          <motion.button type="button" whileTap={{ scale: 0.9 }} onClick={() => den(i + 1)} aria-label={tr("Thẻ sau", "Carte suivante", "Next card")}
-            className="grid h-11 w-11 cursor-pointer place-items-center rounded-full border border-solid border-line bg-surface text-ink hover:border-primary hover:text-primary">
-            <ChevronRight size={20} />
+          <motion.button type="button" onClick={lamBai} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
+            animate={mo ? { scale: [1, 1.05, 1] } : {}} transition={{ duration: 0.5 }}
+            className={`mt-4 inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-2xl border-0 px-4 py-3 font-sans text-sm font-extrabold shadow-md ${mo ? "bg-primary text-on-primary" : "bg-surface2 text-soft"}`}>
+            {mo ? <>{tr("Học xong, làm bài tập", "J'ai fini, aux exercices", "Done, go to exercises")} <ArrowRight size={16} /></>
+              : <><Lock size={15} /> {tr("Học hết các từ để mở bài tập", "Voyez tous les mots d'abord", "Learn every word first")}</>}
           </motion.button>
         </div>
-      </div>
-
-      {/* Bảng tất cả từ: bấm để nhảy tới thẻ đó. */}
-      <div className="rounded-3xl border border-solid border-line bg-surface p-4">
-        <p className="m-0 mb-3 text-sm font-extrabold text-ink">{tr("Tất cả từ trong chủ đề", "Tous les mots du thème", "All words in this topic")}</p>
-        <div className="grid grid-cols-5 gap-2 lg:grid-cols-3">
-          {chuDe.tu.map((t, j) => (
-            <motion.button key={t.fr} type="button" onClick={() => den(j)} whileHover={{ y: -3 }} whileTap={{ scale: 0.93 }}
-              aria-label={t.fr} aria-current={j === i}
-              className={`grid cursor-pointer place-items-center rounded-2xl border-2 border-solid p-1.5 font-sans ${j === i ? `border-primary ${mauCua(chuDe.ma)[1]}` : `border-transparent ${mauCua(chuDe.ma)[1]}`}`}>
-              <HinhTu tu={t} size={34} />
-            </motion.button>
-          ))}
-        </div>
-        <motion.button type="button" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} onClick={onTiep}
-          className="mt-4 inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-2xl border-0 bg-primary px-4 py-3 font-sans text-sm font-extrabold text-on-primary shadow-md">
-          {tr("Chơi ghép hình", "Jouer à associer", "Play the matching game")} <ArrowRight size={16} />
-        </motion.button>
       </div>
     </div>
   );
@@ -535,11 +552,25 @@ const BUOC = () => [
   ["ghep", Shapes, tr("Ghép hình", "Associer", "Match")],
   ["luyen", PencilLine, tr("Luyện tập", "Entraînement", "Practice")],
 ];
-function TrangChuDe({ chuDe, onGhi }) {
+function TrangChuDe({ chuDe, onGhi, daCoDiem }) {
   const [buoc, setBuoc] = useState("hoc");
   const thuTu = BUOC().map((b) => b[0]);
   const [huong, setHuong] = useState(1);
-  const sang = (b) => { setHuong(thuTu.indexOf(b) >= thuTu.indexOf(buoc) ? 1 : -1); setBuoc(b); };
+  /* Học trước, làm bài sau: Ghép hình và Luyện tập mở khi đã xem hết các từ, hoặc chủ đề đã học
+     ở lần trước (đã có điểm, hay đã đánh dấu học xong trên máy này). */
+  const [iHoc, setIHoc] = useState(0);
+  const [daXem, setDaXem] = useState(() => new Set([0]));
+  const [hocTruoc] = useState(() => daCoDiem || docDaHoc().has(chuDe.ma));
+  const [nhac, setNhac] = useState(false);
+  useEffect(() => { setDaXem((d) => (d.has(iHoc) ? d : new Set([...d, iHoc]))); }, [iHoc]);
+  const xemHet = daXem.size >= chuDe.tu.length;
+  const mo = hocTruoc || xemHet;
+  useEffect(() => { if (xemHet) ghiDaHoc(chuDe.ma); }, [xemHet, chuDe.ma]);
+  const sang = (b) => {
+    if (b !== "hoc" && !mo) { setNhac(true); setHuong(-1); setBuoc("hoc"); return; }
+    setNhac(false);
+    setHuong(thuTu.indexOf(b) >= thuTu.indexOf(buoc) ? 1 : -1); setBuoc(b);
+  };
   const bon = chuDe.tu.slice(0, 4);
   return (
     <div className="mx-auto max-w-5xl px-4 pb-24 pt-6">
@@ -571,20 +602,30 @@ function TrangChuDe({ chuDe, onGhi }) {
       <div role="tablist" aria-label={tr("Các bước", "Étapes", "Steps")} className="mx-auto mt-6 flex w-fit max-w-full gap-1 overflow-x-auto rounded-2xl bg-surface p-1.5 shadow-sm no-scrollbar">
         {BUOC().map(([k, Icon, nhan], j) => (
           <button key={k} type="button" role="tab" aria-selected={buoc === k} onClick={() => sang(k)}
+            title={k !== "hoc" && !mo ? tr("Học hết các từ trước", "Voyez d'abord tous les mots", "Learn every word first") : undefined}
             className={`relative inline-flex shrink-0 cursor-pointer items-center gap-2 rounded-xl border-0 bg-transparent px-4 py-2.5 font-sans text-sm font-extrabold transition-colors ${buoc === k ? "text-white" : "text-soft hover:text-ink"}`}>
             {buoc === k && <motion.span layoutId="tv-buoc" transition={LO_XO} className={`absolute inset-0 rounded-xl bg-gradient-to-r ${mauCua(chuDe.ma)[0]} shadow-md`} />}
-            <span className={`relative grid h-6 w-6 place-items-center rounded-full text-[11px] ${buoc === k ? "bg-white/25" : "bg-surface2"}`}>{j + 1}</span>
+            <span className={`relative grid h-6 w-6 place-items-center rounded-full text-[11px] ${buoc === k ? "bg-white/25" : "bg-surface2"}`}>{k !== "hoc" && !mo ? <Lock size={11} /> : j + 1}</span>
             <Icon size={15} className="relative" /><span className="relative">{nhan}</span>
           </button>
         ))}
       </div>
+
+      <AnimatePresence>
+        {nhac && !mo && (
+          <motion.p initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+            className="mx-auto mt-3 flex w-fit items-center gap-2 rounded-full bg-warn-soft px-4 py-2 text-sm font-bold text-warn">
+            <Lock size={14} /> {tr("Học hết các từ trong chủ đề rồi mới làm bài tập nhé.", "Voyez d'abord tous les mots du thème.", "Learn every word in this topic first.")}
+          </motion.p>
+        )}
+      </AnimatePresence>
 
       <div className="mt-6">
         <AnimatePresence mode="wait" custom={huong} initial={false}>
           <motion.div key={buoc} custom={huong}
             variants={{ vao: (h) => ({ opacity: 0, x: h * 50 }), dung: { opacity: 1, x: 0 }, ra: (h) => ({ opacity: 0, x: -h * 50 }) }}
             initial="vao" animate="dung" exit="ra" transition={{ duration: 0.3, ease: EASE }}>
-            {buoc === "hoc" && <HocTu chuDe={chuDe} onTiep={() => sang("ghep")} />}
+            {buoc === "hoc" && <HocTu chuDe={chuDe} i={iHoc} setI={setIHoc} daXem={daXem} mo={mo} onLamBai={() => sang("ghep")} />}
             {buoc === "ghep" && <GhepCap chuDe={chuDe} onTiep={() => sang("luyen")} />}
             {buoc === "luyen" && <LuyenTap chuDe={chuDe} onXong={onGhi} />}
           </motion.div>
@@ -614,7 +655,7 @@ export default function TuVung({ thu }) {
   };
 
   const chuDe = ma ? timChuDe(ma) : null;
-  if (ma && chuDe) return <MotionConfig reducedMotion="user"><TrangChuDe key={ma} chuDe={chuDe} onGhi={(d, t) => ghi(chuDe.ma, d, t)} /></MotionConfig>;
+  if (ma && chuDe) return <MotionConfig reducedMotion="user"><TrangChuDe key={ma} chuDe={chuDe} daCoDiem={!!ketQua[chuDe.ma]} onGhi={(d, t) => ghi(chuDe.ma, d, t)} /></MotionConfig>;
 
   const dsCap = CHU_DE_TU_VUNG.filter((cd) => cd.cap === cap);
   return (
@@ -633,13 +674,13 @@ export default function TuVung({ thu }) {
             <div className="min-w-0 flex-1">
               <p className="m-0 flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-[0.2em] text-white/80"><Images size={14} /> {tr("Nhìn hình, nhớ từ", "Une image, un mot", "See it, remember it")}</p>
               <h1 className="m-0 mt-1 text-3xl font-extrabold tracking-tight sm:text-[34px]">{tr("Học từ vựng", "Vocabulaire", "Vocabulary")}</h1>
-              <p className="m-0 mt-1 text-sm text-white/85">{tr("Lật thẻ hình để học, chơi ghép hình, rồi luyện chọn và gõ từ.", "Retournez les cartes, associez, puis entraînez-vous.", "Flip picture cards, play matching, then practise.")}</p>
+              <p className="m-0 mt-1 text-sm text-white/85">{tr("Học từng từ có hình và câu ví dụ, rồi mới chơi ghép hình và luyện tập.", "Apprenez chaque mot en images, puis associez et entraînez-vous.", "Learn each word with pictures, then match and practise.")}</p>
             </div>
           </div>
         </motion.header>
 
         {/* Chọn trình độ: vệt sáng trượt theo trình độ đang chọn. */}
-        <div role="tablist" aria-label={tr("Trình độ", "Niveau", "Level")} className="mt-6 grid grid-cols-3 gap-1.5 rounded-3xl bg-surface p-1.5 shadow-sm">
+        <div role="tablist" aria-label={tr("Trình độ", "Niveau", "Level")} className="mt-6 grid grid-cols-4 gap-1.5 rounded-3xl bg-surface p-1.5 shadow-sm">
           {CAP_TU_VUNG.map((c) => (
             <button key={c} type="button" role="tab" aria-selected={cap === c} onClick={() => setCap(c)}
               className={`relative flex cursor-pointer flex-col items-center rounded-2xl border-0 bg-transparent px-2 py-2.5 font-sans transition-colors sm:flex-row sm:justify-center sm:gap-2.5 ${cap === c ? "text-white" : "text-ink hover:bg-surface2"}`}>

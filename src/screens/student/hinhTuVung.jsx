@@ -12,6 +12,7 @@ import {
   Eye, Ear, Hand, Heart, Brain, Bone, Footprints, Pill, Bandage, Syringe, ImageOff,
   Shirt, Glasses, Watch, Gem, Umbrella, Handbag, Ribbon, Waves, Stethoscope, ChefHat, HardHat, Wrench, Paintbrush, Gavel, Tractor, Mail, CookingPot, Microwave, Utensils, UtensilsCrossed, Flame, Timer, CupSoda, Luggage, Ticket, Map as MapIcon, BaggageClaim, Compass, PlaneTakeoff, Palmtree, Signpost, Binoculars, Flag, Mountain, Trees, Flower, Leaf, TreePine, Sprout, Star, ShoppingCart, ShoppingBag, CreditCard, Banknote, Coins, Receipt, Tag, PiggyBank, Wallet, Laptop, Smartphone, Tablet, Monitor, Keyboard, Mouse, Printer, Headphones, Battery, Plug,
   ClipboardList, Accessibility, Scan, Cross, Shield, HeartPulse, Siren, Droplet, CalendarClock, Recycle, Trash2, Fan, SolarPanel, Earth, Zap, Lightbulb, FolderOpen, Users, IdCard, Calendar, Paperclip, Folder, Stamp, ChartColumn, Handshake, MountainSnow, Goal, Swords, Trophy, Target, Landmark, Frame, Drama, Music2, PartyPopper, Theater, BookOpen, MicVocal, Crown, TrafficCone, RotateCw, CarFront, SquareParking, BatteryCharging, Construction,
+  Microscope, Telescope, Rocket, Satellite, Dna, TestTube, Magnet, Atom, Bot, ZoomIn, FileSignature, Percent, TrendingUp, ChartCandlestick, HandCoins, Globe, Warehouse, Signature, Vote, Megaphone, Scale, MessagesSquare, ChartPie, ShieldCheck, ClipboardPen, Newspaper, Radio, Mic, Podcast, PenLine, RadioTower, Share2, Video, BookOpenText, Biohazard, Bean, Skull, Smile, BedSingle, Building2, Milestone, Container, Route, LampCeiling, Droplets, ArrowUpDown,
 } from "lucide-react";
 
 /* Hình của từ vựng (10/11). Hai nguồn, theo thứ tự ưu tiên:
@@ -74,6 +75,19 @@ export const HINH_ICONS8 = {
   "le festival": "0Z2th4OTrTEb", "le spectacle": "h5VJ2aUGETKL", "le roman": "13171", "le micro": "12379", "la sculpture": "11891",
   "le feu rouge": "15199", "le passage piéton": "T8aKX9UIaCk9", "le rond-point": "LvopKiYmlJmd", "l'embouteillage": "21009", "le parking": "15182",
   "le permis de conduire": "24353", "la station de métro": "21563", "l'amende": "2vljBB1eJArP", "la station de recharge": "15154", "les travaux": "15194",
+  /* B2 (11/11) */
+  "le microscope": "13884", "le télescope": "12069", "la fusée": "15175", "le satellite": "13804", "l'ADN": "13213",
+  "l'éprouvette": "13186", "l'aimant": "16444", "l'atome": "13159", "le robot": "9tRPx6QHufDN", "la loupe": "12773",
+  "la banque": "G28e4CrB8mr1", "le contrat": "12018", "l'impôt": "36947", "la croissance": "12814", "la bourse": "11824",
+  "le prêt": "xwhFqtgWcORr", "la mondialisation": "pD6GWDdsLCRg", "le cargo": "15133", "l'entrepôt": "12073", "la signature": "13528",
+  "le candidat": "5YD9ETRtlPCF", "le parlement": "12006", "la manifestation": "13090", "le tribunal": "gzPnHDuFZxQe", "la loi": "12928",
+  "le débat": "pzRJP9M294i2", "le sondage": "13533", "le policier": "23311", "la mairie": "11857", "la pétition": "QanbId3SGVR7",
+  "le journal": "tgRqDvvOOuEF", "la radio": "12793", "l'interview": "EHG6YBCywXLR", "le podcast": "4CvT2ue9OxHQ", "le journaliste": "189mi6ygnFp8",
+  "l'antenne": "13100", "la publicité": "30361", "le réseau social": "G0Qd3Sb6FPqB", "la caméra": "13070", "le magazine": "16374",
+  "le vaccin": "14879", "le chirurgien": "Af8UE7wmUtwX", "le virus": "14891", "l'allergie": "Xbz5aHpJDUyg", "les poumons": "14848",
+  "le rein": "20619", "le squelette": "14876", "la dent": "14868", "le stéthoscope": "14867", "le lit d'hôpital": "109573",
+  "le gratte-ciel": "20193", "le pont": "11887", "la grue": "33909", "le tunnel": "15197", "l'autoroute": "W7zKXRiHdcRK",
+  "la piste cyclable": "n2kMBKFSeacW", "le lampadaire": "33827", "la fontaine": "11922", "le parc": "uKq70aYmEQbP", "l'ascenseur": "17586",
 };
 
 const ICON = {
@@ -89,6 +103,7 @@ const ICON = {
   Eye, Ear, Hand, Heart, Brain, Bone, Footprints, Pill, Bandage, Syringe,
   Shirt, Glasses, Watch, Gem, Umbrella, Handbag, Ribbon, Waves, Stethoscope, ChefHat, HardHat, Wrench, Paintbrush, Gavel, Tractor, Mail, CookingPot, Microwave, Utensils, UtensilsCrossed, Flame, Timer, CupSoda, Luggage, Ticket, Map: MapIcon, BaggageClaim, Compass, PlaneTakeoff, Palmtree, Signpost, Binoculars, Flag, Mountain, Trees, Flower, Leaf, TreePine, Sprout, Star, ShoppingCart, ShoppingBag, CreditCard, Banknote, Coins, Receipt, Tag, PiggyBank, Wallet, Laptop, Smartphone, Tablet, Monitor, Keyboard, Mouse, Printer, Headphones, Battery, Plug,
   ClipboardList, Accessibility, Scan, Cross, Shield, HeartPulse, Siren, Droplet, CalendarClock, Recycle, Trash2, Fan, SolarPanel, Earth, Zap, Lightbulb, FolderOpen, Users, IdCard, Calendar, Paperclip, Folder, Stamp, ChartColumn, Handshake, MountainSnow, Goal, Swords, Trophy, Target, Landmark, Frame, Drama, Music2, PartyPopper, Theater, BookOpen, MicVocal, Crown, TrafficCone, RotateCw, CarFront, SquareParking, BatteryCharging, Construction,
+  Microscope, Telescope, Rocket, Satellite, Dna, TestTube, Magnet, Atom, Bot, ZoomIn, FileSignature, Percent, TrendingUp, ChartCandlestick, HandCoins, Globe, Warehouse, Signature, Vote, Megaphone, Scale, MessagesSquare, ChartPie, ShieldCheck, ClipboardPen, Newspaper, Radio, Mic, Podcast, PenLine, RadioTower, Share2, Video, BookOpenText, Biohazard, Bean, Skull, Smile, BedSingle, Building2, Milestone, Container, Route, LampCeiling, Droplets, ArrowUpDown,
 };
 export const TEN_ICON = Object.keys(ICON);
 
