@@ -14,6 +14,7 @@ import {
   ClipboardList, Accessibility, Scan, Cross, Shield, HeartPulse, Siren, Droplet, CalendarClock, Recycle, Trash2, Fan, SolarPanel, Earth, Zap, Lightbulb, FolderOpen, Users, IdCard, Calendar, Paperclip, Folder, Stamp, ChartColumn, Handshake, MountainSnow, Goal, Swords, Trophy, Target, Landmark, Frame, Drama, Music2, PartyPopper, Theater, BookOpen, MicVocal, Crown, TrafficCone, RotateCw, CarFront, SquareParking, BatteryCharging, Construction,
   Microscope, Telescope, Rocket, Satellite, Dna, TestTube, Magnet, Atom, Bot, ZoomIn, FileSignature, Percent, TrendingUp, ChartCandlestick, HandCoins, Globe, Warehouse, Signature, Vote, Megaphone, Scale, MessagesSquare, ChartPie, ShieldCheck, ClipboardPen, Newspaper, Radio, Mic, Podcast, PenLine, RadioTower, Share2, Video, BookOpenText, Biohazard, Bean, Skull, Smile, BedSingle, Building2, Milestone, Container, Route, LampCeiling, Droplets, ArrowUpDown,
   Lock, Grid3x3, Fingerprint, Vault, Cctv, BellRing, UserSearch, Search, Activity, Tornado, Snowflake, LayoutGrid, Amphora, FileMusic, PenTool, AudioLines, Server, Workflow, Navigation, Cpu, Cable, Anchor, Pickaxe, Gauge, FlaskConical, Shell, Shrimp, Cookie, Wheat, Martini,
+  TowerControl, LifeBuoy, ShipWheel, Radar, Sailboat, Orbit, Sparkles, Circle, Triangle, ScrollText, Ghost, Hourglass, Sword, Bitcoin, NotebookPen, House, Briefcase, TrendingDown, Euro, Shovel, Cylinder, Home, Hexagon, Axe, Cog, Disc, PersonStanding, Pin, Layers, Flower2, SprayCan,
 } from "lucide-react";
 
 /* Hình của từ vựng (10/11). Hai nguồn, theo thứ tự ưu tiên:
@@ -102,6 +103,19 @@ export const HINH_ICONS8 = {
   "l'électricité": "12098", "le compteur électrique": "33588", "le gaz naturel": "12180", "le biocarburant": "13112", "l'hydrogène": "19735",
   "la crevette": "16080", "le homard": "ZHSVh8BQsFW7", "le champignon": "12864", "le fromage": "12888", "le tire-bouchon": "12891",
   "l'huile d'olive": "20872", "le macaron": "12870", "la baguette": "36767", "la crêpe": "19020", "le champagne": "17322",
+  /* C2 (11/11) */
+  "le phare": "13787", "l'ancre": "15117", "le sous-marin": "31233", "la bouée": "13935", "le paquebot": "17634",
+  "le gouvernail": "20863", "le radar": "63315", "le chalutier": "cqu7ugKIi0SJ", "le scaphandre": "Q0C8OXZk5Nss", "le voilier": "15172",
+  "la galaxie": "18519", "la comète": "11894", "l'éclipse": "tBjV9jcq8Td1", "la météorite": "13480", "l'astronaute": "13474",
+  "la constellation": "Bv56s1zY21t2", "le trou noir": "EDlqOuNnwBFU", "l'observatoire": "56915", "la nébuleuse": "a2MFXoTTlsWP", "la navette spatiale": "21447",
+  "la pyramide": "15599", "le parchemin": "74556", "la momie": "17352", "le fossile": "24951", "le château fort": "CoVMteHR0mHr",
+  "l'armure": "19583", "le sablier": "15850", "l'épée": "16672", "le chevalier": "16676", "le bouclier": "16680",
+  "le lingot d'or": "f2Js21exgSu2", "la cryptomonnaie": "63192", "le chéquier": "13024", "le distributeur automatique": "13230", "l'hypothèque": "20037",
+  "l'investisseur": "V4kg4um6dffu", "la faillite": "g8rsmDGZv9Uw", "le taux d'intérêt": "rmRfUcO07v6E", "la devise": "11937", "l'assurance": "103936",
+  "le tracteur": "15168", "la moissonneuse": "15143", "le fumier": "jqMTl2WyzhJl", "la grange": "12826", "le silo": "TmObZfm6qN0O",
+  "l'engrais": "3kCiVExK9Avk", "la serre": "xswrFmJqwKGb", "la ruche": "0Cwa3C6ZTe0T", "la charrue": "16530", "l'irrigation": "UYONkOQfII1u",
+  "la machine à coudre": "85712", "le dé à coudre": "16598", "la bobine": "85730", "le mannequin": "24494", "le défilé": "BuiEBRy99mn9",
+  "l'aiguille": "16604", "le mètre ruban": "16612", "le tissu": "11868", "la broderie": "6HyVhK27ORwL", "le parfum": "18174",
 };
 
 const ICON = {
@@ -119,6 +133,7 @@ const ICON = {
   ClipboardList, Accessibility, Scan, Cross, Shield, HeartPulse, Siren, Droplet, CalendarClock, Recycle, Trash2, Fan, SolarPanel, Earth, Zap, Lightbulb, FolderOpen, Users, IdCard, Calendar, Paperclip, Folder, Stamp, ChartColumn, Handshake, MountainSnow, Goal, Swords, Trophy, Target, Landmark, Frame, Drama, Music2, PartyPopper, Theater, BookOpen, MicVocal, Crown, TrafficCone, RotateCw, CarFront, SquareParking, BatteryCharging, Construction,
   Microscope, Telescope, Rocket, Satellite, Dna, TestTube, Magnet, Atom, Bot, ZoomIn, FileSignature, Percent, TrendingUp, ChartCandlestick, HandCoins, Globe, Warehouse, Signature, Vote, Megaphone, Scale, MessagesSquare, ChartPie, ShieldCheck, ClipboardPen, Newspaper, Radio, Mic, Podcast, PenLine, RadioTower, Share2, Video, BookOpenText, Biohazard, Bean, Skull, Smile, BedSingle, Building2, Milestone, Container, Route, LampCeiling, Droplets, ArrowUpDown,
   Lock, Grid3x3, Fingerprint, Vault, Cctv, BellRing, UserSearch, Search, Activity, Tornado, Snowflake, LayoutGrid, Amphora, FileMusic, PenTool, AudioLines, Server, Workflow, Navigation, Cpu, Cable, Anchor, Pickaxe, Gauge, FlaskConical, Shell, Shrimp, Cookie, Wheat, Martini,
+  TowerControl, LifeBuoy, ShipWheel, Radar, Sailboat, Orbit, Sparkles, Circle, Triangle, ScrollText, Ghost, Hourglass, Sword, Bitcoin, NotebookPen, House, Briefcase, TrendingDown, Euro, Shovel, Cylinder, Home, Hexagon, Axe, Cog, Disc, PersonStanding, Pin, Layers, Flower2, SprayCan,
 };
 export const TEN_ICON = Object.keys(ICON);
 

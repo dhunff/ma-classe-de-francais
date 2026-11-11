@@ -758,7 +758,7 @@ export default function NguPhap({ congKhai = false }) {
   const danhSach = (
     <div className="mx-auto max-w-5xl px-4 pb-24 pt-6">
       {!congKhai && <HocTapTab />}
-      <header className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-blue-600 via-primary to-indigo-600 p-6 text-white shadow-[0_20px_50px_rgba(37,99,235,0.3)]">
+      <header className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-rose-500 via-rose-600 to-pink-600 p-6 text-white shadow-[0_20px_50px_rgba(225,29,72,0.28)]">
         <div className="relative flex items-center gap-4">
           <Leon cam="hoc" size={110} className="mcf-leon-bay shrink-0 max-sm:h-20 max-sm:w-20" />
           <div className="min-w-0 flex-1">

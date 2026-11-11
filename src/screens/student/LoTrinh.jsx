@@ -180,9 +180,9 @@ export default function LoTrinh() {
     <div className="mx-auto max-w-5xl px-4 pb-24 pt-6">
       <HocTapTab />
       {/* Khung đầu trang (09/10): Leon + tổng sao + thanh tiến độ. */}
-      <header className="mcf-cau-vao relative mb-5 overflow-hidden rounded-3xl bg-gradient-to-br from-blue-600 via-primary to-indigo-600 p-6 text-white shadow-[0_20px_50px_rgba(37,99,235,0.3)]">
+      <header className="mcf-cau-vao relative mb-5 overflow-hidden rounded-3xl bg-gradient-to-br from-violet-600 via-purple-600 to-fuchsia-600 p-6 text-white shadow-[0_20px_50px_rgba(147,51,234,0.3)]">
         <span aria-hidden className="absolute -right-12 -top-12 h-48 w-48 rounded-full bg-white/10" />
-        <span aria-hidden className="absolute -bottom-20 left-10 h-44 w-44 rounded-full bg-sky-300/20 blur-2xl" />
+        <span aria-hidden className="absolute -bottom-20 left-10 h-44 w-44 rounded-full bg-pink-300/20 blur-2xl" />
         <button type="button" onClick={doiNhac} aria-pressed={coNhac}
           title={coNhac ? tr("Tắt âm thanh và nhạc nền", "Couper le son et la musique", "Mute sound and music") : tr("Bật âm thanh và nhạc nền", "Activer le son et la musique", "Turn on sound and music")}
           aria-label={coNhac ? tr("Tắt âm thanh và nhạc nền", "Couper le son et la musique", "Mute sound and music") : tr("Bật âm thanh và nhạc nền", "Activer le son et la musique", "Turn on sound and music")}

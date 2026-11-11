@@ -1060,6 +1060,186 @@
    },
    "le champagne": {
     "id": "17322"
+   },
+   "le phare": {
+    "id": "13787"
+   },
+   "l'ancre": {
+    "id": "15117"
+   },
+   "le sous-marin": {
+    "id": "31233"
+   },
+   "la bouée": {
+    "id": "13935"
+   },
+   "le paquebot": {
+    "id": "17634"
+   },
+   "le gouvernail": {
+    "id": "20863"
+   },
+   "le radar": {
+    "id": "63315"
+   },
+   "le chalutier": {
+    "id": "cqu7ugKIi0SJ"
+   },
+   "le scaphandre": {
+    "id": "Q0C8OXZk5Nss"
+   },
+   "le voilier": {
+    "id": "15172"
+   },
+   "la galaxie": {
+    "id": "18519"
+   },
+   "la comète": {
+    "id": "11894"
+   },
+   "l'éclipse": {
+    "id": "tBjV9jcq8Td1"
+   },
+   "la météorite": {
+    "id": "13480"
+   },
+   "l'astronaute": {
+    "id": "13474"
+   },
+   "la constellation": {
+    "id": "Bv56s1zY21t2"
+   },
+   "le trou noir": {
+    "id": "EDlqOuNnwBFU"
+   },
+   "l'observatoire": {
+    "id": "56915"
+   },
+   "la nébuleuse": {
+    "id": "a2MFXoTTlsWP"
+   },
+   "la navette spatiale": {
+    "id": "21447"
+   },
+   "la pyramide": {
+    "id": "15599"
+   },
+   "le parchemin": {
+    "id": "74556"
+   },
+   "la momie": {
+    "id": "17352"
+   },
+   "le fossile": {
+    "id": "24951"
+   },
+   "le château fort": {
+    "id": "CoVMteHR0mHr"
+   },
+   "l'armure": {
+    "id": "19583"
+   },
+   "le sablier": {
+    "id": "15850"
+   },
+   "l'épée": {
+    "id": "16672"
+   },
+   "le chevalier": {
+    "id": "16676"
+   },
+   "le bouclier": {
+    "id": "16680"
+   },
+   "le lingot d'or": {
+    "id": "f2Js21exgSu2"
+   },
+   "la cryptomonnaie": {
+    "id": "63192"
+   },
+   "le chéquier": {
+    "id": "13024"
+   },
+   "le distributeur automatique": {
+    "id": "13230"
+   },
+   "l'hypothèque": {
+    "id": "20037"
+   },
+   "l'investisseur": {
+    "id": "V4kg4um6dffu"
+   },
+   "la faillite": {
+    "id": "g8rsmDGZv9Uw"
+   },
+   "le taux d'intérêt": {
+    "id": "rmRfUcO07v6E"
+   },
+   "la devise": {
+    "id": "11937"
+   },
+   "l'assurance": {
+    "id": "103936"
+   },
+   "le tracteur": {
+    "id": "15168"
+   },
+   "la moissonneuse": {
+    "id": "15143"
+   },
+   "le fumier": {
+    "id": "jqMTl2WyzhJl"
+   },
+   "la grange": {
+    "id": "12826"
+   },
+   "le silo": {
+    "id": "TmObZfm6qN0O"
+   },
+   "l'engrais": {
+    "id": "3kCiVExK9Avk"
+   },
+   "la serre": {
+    "id": "xswrFmJqwKGb"
+   },
+   "la ruche": {
+    "id": "0Cwa3C6ZTe0T"
+   },
+   "la charrue": {
+    "id": "16530"
+   },
+   "l'irrigation": {
+    "id": "UYONkOQfII1u"
+   },
+   "la machine à coudre": {
+    "id": "85712"
+   },
+   "le dé à coudre": {
+    "id": "16598"
+   },
+   "la bobine": {
+    "id": "85730"
+   },
+   "le mannequin": {
+    "id": "24494"
+   },
+   "le défilé": {
+    "id": "BuiEBRy99mn9"
+   },
+   "l'aiguille": {
+    "id": "16604"
+   },
+   "le mètre ruban": {
+    "id": "16612"
+   },
+   "le tissu": {
+    "id": "11868"
+   },
+   "la broderie": {
+    "id": "6HyVhK27ORwL"
+   },
+   "le parfum": {
+    "id": "18174"
    }
   }
  }
