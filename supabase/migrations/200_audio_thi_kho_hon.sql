@@ -3,6 +3,9 @@
 -- (nghỉ dài không đều, vấp lời lặp đầu cụm) và tiếng ồn nền nhỏ. Lời dẫn và khoảng lặng
 -- giữ nguyên. File mới tên « …-kho.mp3 » đã nằm trong kho nghe; file cũ GIỮ NGUYÊN
 -- (lùi lại = đổi ngược cột cu/moi). Máy dựng: scripts/nhap/lo41_audio_thi_kho.py (ffmpeg + numpy).
+-- C1 Đề 2, Đề 3 (4 bài « …-thi-euh.mp3 »): tài liệu đọc lại bằng chính giọng cũ, có từ đệm THẬT
+-- (« euh », « bon », lặp đầu câu), tăng tốc 1,2 đến 1,35, ồn nền: scripts/nhap/lo42_c1_tu_dem.mjs + .py.
+-- C1 Đề 1 là ghi âm người thật (Wikipédia parlée) nên giữ bản « -kho » của lo41.
 -- MỘT câu lệnh; chỉ đổi bài đang trỏ đúng file cũ.
 update public.exercises x
 set audio_url = 'https://cdszvnuaibnnkrvynyck.supabase.co/storage/v1/object/public/nghe/' || v.moi
@@ -28,9 +31,9 @@ from (values
   ('nhapmur3nb8h00n', 'thi-nhapmur3nb8h00n.mp3', 'thi-nhapmur3nb8h00n-kho.mp3'),
   ('nhapmur3nb8j00o', 'thi-nhapmur3nb8j00o.mp3', 'thi-nhapmur3nb8j00o-kho.mp3'),
   ('nhapmur3nb8j00p', 'thi-nhapmur3nb8j00p.mp3', 'thi-nhapmur3nb8j00p-kho.mp3'),
-  ('lo18mv42huue04z', 'c1-de2-co1-thi.mp3', 'c1-de2-co1-thi-kho.mp3'),
-  ('lo18mv42i4da050', 'c1-de2-co2-thi.mp3', 'c1-de2-co2-thi-kho.mp3'),
-  ('lo21mvemn19s01t', 'c1-de3-co1-thi.mp3', 'c1-de3-co1-thi-kho.mp3'),
-  ('lo21mvemnf4g01u', 'c1-de3-co2-thi.mp3', 'c1-de3-co2-thi-kho.mp3')
+  ('lo18mv42huue04z', 'c1-de2-co1-thi.mp3', 'c1-de2-co1-thi-euh.mp3'),
+  ('lo18mv42i4da050', 'c1-de2-co2-thi.mp3', 'c1-de2-co2-thi-euh.mp3'),
+  ('lo21mvemn19s01t', 'c1-de3-co1-thi.mp3', 'c1-de3-co1-thi-euh.mp3'),
+  ('lo21mvemnf4g01u', 'c1-de3-co2-thi.mp3', 'c1-de3-co2-thi-euh.mp3')
 ) as v(id, cu, moi)
 where x.id = v.id and x.audio_url = 'https://cdszvnuaibnnkrvynyck.supabase.co/storage/v1/object/public/nghe/' || v.cu;
