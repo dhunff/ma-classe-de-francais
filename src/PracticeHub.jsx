@@ -25,6 +25,7 @@ import { TuVungBai, GiaiThichBai } from "./screens/practice/TaiLieuBai.jsx";
 import Builder from "./screens/teacher/Builder.jsx";
 import PaymentModal from "./screens/student/PaymentModal.jsx";
 import VipBanner from "./screens/practice/VipBanner.jsx";
+import TabLuyenTap from "./screens/practice/TabLuyenTap.jsx";
 import { VIP, goiVip, vipConHan } from "./shared/vip.js";
 import PremiumLockCard from "./screens/student/PremiumLockCard.jsx";
 import DoiXpModal from "./screens/practice/DoiXpModal.jsx";
@@ -977,19 +978,19 @@ ${r.error?.message ?? ""}`); return; }
         const daLam = exercises.filter((e) => hist[e.id]).length;
         const pct = tong ? Math.round((daLam / tong) * 100) : 0;
         return (
-          <header className="mcf-cau-vao relative mb-6 overflow-hidden rounded-3xl bg-gradient-to-br from-blue-600 via-primary to-violet-600 p-6 text-white shadow-[0_20px_50px_rgba(37,99,235,0.3)]">
-            <span aria-hidden className="absolute -right-12 -top-12 h-48 w-48 rounded-full bg-white/10" />
-            <span aria-hidden className="absolute -bottom-20 left-1/3 h-44 w-44 rounded-full bg-sky-300/20 blur-2xl" />
+          <header className="mcf-cau-vao relative mb-6 overflow-hidden rounded-3xl bg-gradient-to-br from-amber-300 via-amber-400 to-orange-400 p-6 text-amber-950 shadow-[0_20px_50px_rgba(245,158,11,0.35)]">
+            <span aria-hidden className="absolute -right-12 -top-12 h-48 w-48 rounded-full bg-white/25" />
+            <span aria-hidden className="absolute -bottom-20 left-1/3 h-44 w-44 rounded-full bg-yellow-100/40 blur-2xl" />
             <div className="relative flex flex-wrap items-center gap-4">
               <Leon cam="lam-viec" size={104} className="mcf-leon-bay shrink-0 drop-shadow-[0_12px_18px_rgba(0,0,0,0.3)] max-sm:h-20 max-sm:w-20" />
               <div className="min-w-0 flex-1">
                 <h2 className="m-0 text-3xl font-extrabold tracking-tight">{t("practice.library_title")}</h2>
-                <p className="m-0 mt-1 text-sm text-white/85">{teacher ? tr("Chọn kỹ năng, chọn trình độ rồi luyện. Mỗi bài có Từ vựng, Giải thích và đáp án sau khi nộp.", "Choisissez une compétence et un niveau. Chaque exercice a son vocabulaire, ses explications et son corrigé après envoi.", "Pick a skill and a level. Every exercise has vocabulary, explanations and an answer key after you submit.") : tr("Chọn trình độ rồi đi lần lượt từng kỹ năng nhỏ. Xong bước này, bước sau tự mở.", "Choisissez un niveau et avancez compétence par compétence. Chaque étape ouvre la suivante.", "Pick a level and go skill by skill. Each step unlocks the next.")}</p>
+                <p className="m-0 mt-1 text-sm text-amber-900">{teacher ? tr("Chọn kỹ năng, chọn trình độ rồi luyện. Mỗi bài có Từ vựng, Giải thích và đáp án sau khi nộp.", "Choisissez une compétence et un niveau. Chaque exercice a son vocabulaire, ses explications et son corrigé après envoi.", "Pick a skill and a level. Every exercise has vocabulary, explanations and an answer key after you submit.") : tr("Chọn trình độ rồi đi lần lượt từng kỹ năng nhỏ. Xong bước này, bước sau tự mở.", "Choisissez un niveau et avancez compétence par compétence. Chaque étape ouvre la suivante.", "Pick a level and go skill by skill. Each step unlocks the next.")}</p>
                 <div className="mt-3 flex flex-wrap gap-2 text-xs font-extrabold">
-                  <span className="rounded-full bg-white/20 px-3 py-1">{tong} {tr("bài", "exercices", "exercises")}</span>
-                  {!teacher && <span className="rounded-full bg-white/20 px-3 py-1">{daLam} {tr("đã làm", "faits", "done")} · {pct}%</span>}
+                  <span className="rounded-full bg-white/45 px-3 py-1">{tong} {tr("bài", "exercices", "exercises")}</span>
+                  {!teacher && <span className="rounded-full bg-white/45 px-3 py-1">{daLam} {tr("đã làm", "faits", "done")} · {pct}%</span>}
                   {xp !== null && (
-                    <span title={t("xp.balance_hint")} className="inline-flex items-center gap-1 rounded-full bg-amber-400 px-3 py-1 tabular-nums text-amber-950">
+                    <span title={t("xp.balance_hint")} className="inline-flex items-center gap-1 rounded-full bg-amber-950 px-3 py-1 tabular-nums text-amber-300">
                       <Star size={13} className="fill-current" /> {xp.toLocaleString("vi-VN")} XP
                     </span>
                   )}
@@ -997,7 +998,7 @@ ${r.error?.message ?? ""}`); return; }
               </div>
               {teacher && topTab !== "suivi" && (
                 <button type="button" onClick={() => { setDraft(blank()); setView({ page: "builder" }); }}
-                  className="inline-flex cursor-pointer items-center gap-2 rounded-2xl border-0 bg-white px-5 py-3 font-sans text-sm font-extrabold text-primary shadow-lg">
+                  className="inline-flex cursor-pointer items-center gap-2 rounded-2xl border-0 bg-white px-5 py-3 font-sans text-sm font-extrabold text-amber-700 shadow-lg">
                   <Plus size={16} /> {tr("Bài tập mới", "Nouvel exercice", "New exercise")}
                 </button>
               )}
@@ -1037,16 +1038,7 @@ ${r.error?.message ?? ""}`); return; }
           { target: "#tour-xp-start", title: t("tour.xp3_title"), content: t("tour.xp3_body"), finishLabel: t("home.start") },
         ]} />
       )}
-      {!teacher && (
-        <div role="tablist" className="mb-5 flex gap-6 border-0 border-b border-solid border-line">
-          {[[false, tr("Theo trình độ", "Par niveau", "By level")], [true, tr("Thư viện bài", "Bibliothèque", "Library")], ["thanhTuu", tr("Thành tựu", "Réussites", "Achievements")]].map(([k, l]) => (
-            <button key={String(k)} type="button" role="tab" aria-selected={thuVien === k} onClick={() => setThuVien(k)}
-              className={`-mb-px cursor-pointer border-0 border-b-2 border-solid bg-transparent px-1 pb-3 pt-1 font-sans text-sm transition-colors ${thuVien === k ? "border-primary font-semibold text-primary" : "border-transparent text-soft hover:text-ink"}`}>
-              {l}
-            </button>
-          ))}
-        </div>
-      )}
+      {!teacher && <TabLuyenTap tab={thuVien} onDoi={setThuVien} />}
       {!teacher && thuVien === true && (
         <p className="m-0 mb-5 text-sm text-soft">{tr("Bài tập bổ sung theo chủ đề: ngữ pháp, từ vựng, dịch. Làm tự do, không tính vào lộ trình theo trình độ.", "Exercices complémentaires par thème : grammaire, vocabulaire, traduction. Libres, ils ne comptent pas dans le parcours par niveau.", "Extra exercises by topic: grammar, vocabulary, translation. Do them freely, they don't count toward the level path.")}</p>
       )}

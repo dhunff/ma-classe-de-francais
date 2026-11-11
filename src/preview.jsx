@@ -74,6 +74,7 @@ const PREVIEW_CO_SAN = ["/professeur/dashboard", "/professeur/carnet",
 import StudentDashboard from "./screens/dashboard/StudentDashboard.jsx";
 import TcfCanada, { TcfPhap } from "./screens/exam/TcfCanada.jsx";
 import TuVung from "./screens/student/TuVung.jsx";
+import TabLuyenTap from "./screens/practice/TabLuyenTap.jsx";
 import ExamMode from "./screens/exam/ExamMode.jsx";
 import Student from "./screens/student/Student.jsx";
 import TeacherDashboard from "./screens/dashboard/TeacherDashboard.jsx";
@@ -841,10 +842,12 @@ function LuyenCapThu() {
   const [loiNghe, setLoiNghe] = useState(false);
   const a1 = Object.values(KY_NANG.A1).flat().map((k) => ({ id: "tt" + k.ma, level: "A1", kyNang: k.ma, questions: [] }));
   const histTt = Object.fromEntries(a1.map((e, i) => [e.id, /-(PE|PO)-/.test(e.kyNang) ? { best: 0, max: 0, tries: 1, at: Date.now() } : { best: [20, 18, 15, 19, 17][i % 5], max: 20, tries: 1, at: Date.now() }]));
-  if (thanhTuu) return <div className="mx-auto max-w-5xl p-4"><ThanhTuu exercises={a1} hist={histTt} biKhoa={() => false} ten="Linh Nguyễn" /></div>;
+  const tabLt = <TabLuyenTap tab={thanhTuu ? "thanhTuu" : false} onDoi={(k) => setThanhTuu(k === "thanhTuu")} />;
+  if (thanhTuu) return <div className="mx-auto max-w-5xl p-4">{tabLt}<ThanhTuu exercises={a1} hist={histTt} biKhoa={() => false} ten="Linh Nguyễn" /></div>;
   const the = (ex) => <div className="flex h-44 items-end rounded-3xl border border-solid border-line bg-surface p-4 text-sm font-bold text-ink">{ex.title}</div>;
   return (
     <div className="mx-auto max-w-5xl p-4">
+      {tabLt}
       <label className="mb-4 flex items-center gap-2 text-sm font-bold text-ink"><input type="checkbox" checked={vipThu} onChange={(e) => setVipThu(e.target.checked)} /> Xem như VIP</label>
       <label className="mb-4 flex items-center gap-2 text-sm font-bold text-ink"><input type="checkbox" checked={lamBai} onChange={(e) => setLamBai(e.target.checked)} /> Xem màn làm bài</label>
       <label className="mb-4 flex items-center gap-2 text-sm font-bold text-ink"><input type="checkbox" checked={baiDoc} onChange={(e) => setBaiDoc(e.target.checked)} /> Bài đọc</label>
