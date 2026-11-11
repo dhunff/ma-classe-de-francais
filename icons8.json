@@ -885,7 +885,7 @@
     "id": "12206"
    },
    "la détention provisoire": {
-    "id": "12030"
+    "id": "12032"
    },
    "le relevé d'empreintes": {
     "id": "21609"
@@ -893,14 +893,14 @@
    "l'effraction": {
     "id": "11889"
    },
-   "le blanchiment d'argent": {
-    "id": "13018"
+   "le pot-de-vin": {
+    "id": "13530"
    },
    "la vidéosurveillance": {
     "id": "16209"
    },
    "le signalement": {
-    "id": "114436"
+    "id": "AiQl68c2wBxW"
    },
    "la présomption d'innocence": {
     "id": "13182"
@@ -947,8 +947,8 @@
    "la toile de maître": {
     "id": "37191"
    },
-   "l'installation": {
-    "id": "11955"
+   "le commissaire d'exposition": {
+    "id": "GmF4zxYWEFa8"
    },
    "l'art abstrait": {
     "id": "11953"
@@ -965,7 +965,7 @@
    "la chorégraphie": {
     "id": "1lbgvCbYA-e1"
    },
-   "l'enluminure": {
+   "la calligraphie à la plume": {
     "id": "16380"
    },
    "la direction d'orchestre": {
@@ -996,7 +996,7 @@
     "id": "19939"
    },
    "le haut débit": {
-    "id": "13571"
+    "id": "39474"
    },
    "la cyberattaque": {
     "id": "12204"
@@ -1007,29 +1007,29 @@
    "l'énergie hydraulique": {
     "id": "11954"
    },
-   "le baril de brut": {
-    "id": "FDsBBEyrn6q8"
+   "l'extraction pétrolière": {
+    "id": "18407"
    },
    "le forage en mer": {
     "id": "18360"
    },
    "la centrale à charbon": {
-    "id": "19913"
+    "id": "Ext6HcYgPkyd"
    },
    "le réseau électrique": {
-    "id": "12098"
+    "id": "91406"
    },
    "le compteur intelligent": {
     "id": "33588"
    },
-   "le gaz de schiste": {
-    "id": "12180"
+   "le gaz naturel liquéfié": {
+    "id": "2y3NWjteitCE"
    },
    "la biomasse": {
     "id": "13112"
    },
-   "la pile à hydrogène": {
-    "id": "19735"
+   "la mobilité électrique": {
+    "id": "8z7bjc2i03eJ"
    },
    "le plateau de fruits de mer": {
     "id": "16080"
@@ -1040,19 +1040,19 @@
    "le velouté de champignons": {
     "id": "12864"
    },
-   "l'appellation d'origine contrôlée": {
+   "le fromage au lait cru": {
     "id": "12888"
    },
    "le sommelier": {
-    "id": "12891"
+    "id": "WF8h2gYTelI4"
    },
    "l'huile de première pression": {
     "id": "20872"
    },
-   "la ganache": {
+   "la pâtisserie fine": {
     "id": "12870"
    },
-   "le levain": {
+   "le pain au levain": {
     "id": "36767"
    },
    "la crêpe flambée": {
@@ -1113,16 +1113,16 @@
     "id": "EDlqOuNnwBFU"
    },
    "la lunette astronomique": {
-    "id": "56915"
+    "id": "TKg7fukMeAWc"
    },
-   "la poussière interstellaire": {
+   "la nébuleuse planétaire": {
     "id": "a2MFXoTTlsWP"
    },
    "la mise en orbite": {
     "id": "21447"
    },
    "le site archéologique": {
-    "id": "15599"
+    "id": "11872"
    },
    "la paléographie": {
     "id": "74556"
@@ -1133,14 +1133,14 @@
    "la datation au carbone": {
     "id": "24951"
    },
-   "la féodalité": {
-    "id": "CoVMteHR0mHr"
+   "la monarchie absolue": {
+    "id": "23304"
    },
    "la cotte de mailles": {
     "id": "19583"
    },
    "la chronologie": {
-    "id": "15850"
+    "id": "13238"
    },
    "l'adoubement": {
     "id": "16672"
@@ -1160,7 +1160,7 @@
    "le chèque sans provision": {
     "id": "13024"
    },
-   "le découvert bancaire": {
+   "le retrait d'espèces": {
     "id": "13230"
    },
    "le prêt immobilier": {
@@ -1172,14 +1172,14 @@
    "la cessation de paiements": {
     "id": "g8rsmDGZv9Uw"
    },
-   "le taux directeur": {
-    "id": "rmRfUcO07v6E"
+   "la banque centrale": {
+    "id": "77049"
    },
    "le taux de change": {
     "id": "11937"
    },
    "la caution": {
-    "id": "103936"
+    "id": "TPAsV6Sqk7pu"
    },
    "le machinisme agricole": {
     "id": "15168"
@@ -1214,7 +1214,7 @@
    "la confection": {
     "id": "85712"
    },
-   "la petite main": {
+   "la couture à la main": {
     "id": "16598"
    },
    "le fil de soie": {

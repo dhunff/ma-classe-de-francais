@@ -15,6 +15,7 @@ import {
   Microscope, Telescope, Rocket, Satellite, Dna, TestTube, Magnet, Atom, Bot, ZoomIn, FileSignature, Percent, TrendingUp, ChartCandlestick, HandCoins, Globe, Warehouse, Signature, Vote, Megaphone, Scale, MessagesSquare, ChartPie, ShieldCheck, ClipboardPen, Newspaper, Radio, Mic, Podcast, PenLine, RadioTower, Share2, Video, BookOpenText, Biohazard, Bean, Skull, Smile, BedSingle, Building2, Milestone, Container, Route, LampCeiling, Droplets, ArrowUpDown,
   Lock, Grid3x3, Fingerprint, Vault, Cctv, BellRing, UserSearch, Search, Activity, Tornado, Snowflake, LayoutGrid, Amphora, FileMusic, PenTool, AudioLines, Server, Workflow, Navigation, Cpu, Cable, Anchor, Pickaxe, Gauge, FlaskConical, Shell, Shrimp, Cookie, Wheat, Martini,
   TowerControl, LifeBuoy, ShipWheel, Radar, Sailboat, Orbit, Sparkles, Circle, Triangle, ScrollText, Ghost, Hourglass, Sword, Bitcoin, NotebookPen, House, Briefcase, TrendingDown, Euro, Shovel, Cylinder, Home, Hexagon, Axe, Cog, Disc, PersonStanding, Pin, Layers, Flower2, SprayCan,
+  PlugZap,
 } from "lucide-react";
 
 /* Hình của từ vựng (10/11). Hai nguồn, theo thứ tự ưu tiên:
@@ -91,30 +92,30 @@ export const HINH_ICONS8 = {
   "le gratte-ciel": "20193", "le pont": "11887", "la grue": "33909", "le tunnel": "15197", "l'autoroute": "W7zKXRiHdcRK",
   "la piste cyclable": "n2kMBKFSeacW", "le lampadaire": "33827", "la fontaine": "11922", "le parc": "uKq70aYmEQbP", "l'ascenseur": "17586",
   /* C1 (11/11) */
-  "l'interpellation": "12206", "la détention provisoire": "12030", "le relevé d'empreintes": "21609", "l'effraction": "11889", "le blanchiment d'argent": "13018",
-  "la vidéosurveillance": "16209", "le signalement": "114436", "la présomption d'innocence": "13182", "l'enquête préliminaire": "12007", "la pièce à conviction": "lqody2Fh6FMS",
+  "l'interpellation": "12206", "la détention provisoire": "12032", "le relevé d'empreintes": "21609", "l'effraction": "11889", "le pot-de-vin": "13530",
+  "la vidéosurveillance": "16209", "le signalement": "AiQl68c2wBxW", "la présomption d'innocence": "13182", "l'enquête préliminaire": "12007", "la pièce à conviction": "lqody2Fh6FMS",
   "la secousse sismique": "15375", "l'œil du cyclone": "vkVqvWmxmEkA", "la coulée de lave": "74141", "le raz-de-marée": "XUcLHmmCk9ys", "le brasier": "7dHsfhMYiMOE",
   "la coulée de neige": "0zV4yp0d6FiZ", "le stress hydrique": "ixsZslIMn7Xy", "le vent tourbillonnaire": "15367", "la crue": "15373", "la fonte des glaces": "24355",
-  "le coup de pinceau": "13437", "la toile de maître": "37191", "l'installation": "11955", "l'art abstrait": "11953", "la céramique": "85715",
-  "le virtuose": "12788", "le solfège": "Ds93hlNfAoKt", "la chorégraphie": "1lbgvCbYA-e1", "l'enluminure": "16380", "la direction d'orchestre": "12809",
+  "le coup de pinceau": "13437", "la toile de maître": "37191", "le commissaire d'exposition": "GmF4zxYWEFa8", "l'art abstrait": "11953", "la céramique": "85715",
+  "le virtuose": "12788", "le solfège": "Ds93hlNfAoKt", "la chorégraphie": "1lbgvCbYA-e1", "la calligraphie à la plume": "16380", "la direction d'orchestre": "12809",
   "l'hébergement de données": "vvAP3cubhSN3", "le stockage en ligne": "13570", "le pare-feu": "0tpqgxISselU", "l'arborescence": "12157", "la réalité virtuelle": "32587",
-  "le pilotage à distance": "21921", "la fabrication additive": "16373", "le semi-conducteur": "19939", "le haut débit": "13571", "la cyberattaque": "12204",
-  "la fission nucléaire": "13087", "l'énergie hydraulique": "11954", "le baril de brut": "FDsBBEyrn6q8", "le forage en mer": "18360", "la centrale à charbon": "19913",
-  "le réseau électrique": "12098", "le compteur intelligent": "33588", "le gaz de schiste": "12180", "la biomasse": "13112", "la pile à hydrogène": "19735",
-  "le plateau de fruits de mer": "16080", "la bisque de homard": "ZHSVh8BQsFW7", "le velouté de champignons": "12864", "l'appellation d'origine contrôlée": "12888", "le sommelier": "12891",
-  "l'huile de première pression": "20872", "la ganache": "12870", "le levain": "36767", "la crêpe flambée": "19020", "l'accord mets-vins": "17322",
+  "le pilotage à distance": "21921", "la fabrication additive": "16373", "le semi-conducteur": "19939", "le haut débit": "39474", "la cyberattaque": "12204",
+  "la fission nucléaire": "13087", "l'énergie hydraulique": "11954", "l'extraction pétrolière": "18407", "le forage en mer": "18360", "la centrale à charbon": "Ext6HcYgPkyd",
+  "le réseau électrique": "91406", "le compteur intelligent": "33588", "le gaz naturel liquéfié": "2y3NWjteitCE", "la biomasse": "13112", "la mobilité électrique": "8z7bjc2i03eJ",
+  "le plateau de fruits de mer": "16080", "la bisque de homard": "ZHSVh8BQsFW7", "le velouté de champignons": "12864", "le fromage au lait cru": "12888", "le sommelier": "WF8h2gYTelI4",
+  "l'huile de première pression": "20872", "la pâtisserie fine": "12870", "le pain au levain": "36767", "la crêpe flambée": "19020", "l'accord mets-vins": "17322",
   /* C2 (11/11) */
   "le balisage maritime": "13787", "le mouillage": "15117", "le submersible": "31233", "le sauvetage en mer": "13935", "la liaison maritime": "17634",
   "le timonier": "20863", "la détection radar": "63315", "la pêche hauturière": "cqu7ugKIi0SJ", "le scaphandrier": "Q0C8OXZk5Nss", "la régate": "15172",
   "la galaxie spirale": "18519", "la queue de comète": "11894", "l'éclipse totale": "tBjV9jcq8Td1", "la ceinture d'astéroïdes": "13480", "l'apesanteur": "13474",
-  "la carte du ciel": "Bv56s1zY21t2", "l'horizon des événements": "EDlqOuNnwBFU", "la lunette astronomique": "56915", "la poussière interstellaire": "a2MFXoTTlsWP", "la mise en orbite": "21447",
-  "le site archéologique": "15599", "la paléographie": "74556", "l'embaumement": "17352", "la datation au carbone": "24951", "la féodalité": "CoVMteHR0mHr",
-  "la cotte de mailles": "19583", "la chronologie": "15850", "l'adoubement": "16672", "la chevalerie": "16676", "le blason": "16680",
-  "la valeur refuge": "f2Js21exgSu2", "la chaîne de blocs": "63192", "le chèque sans provision": "13024", "le découvert bancaire": "13230", "le prêt immobilier": "20037",
-  "le placement financier": "V4kg4um6dffu", "la cessation de paiements": "g8rsmDGZv9Uw", "le taux directeur": "rmRfUcO07v6E", "le taux de change": "11937", "la caution": "103936",
+  "la carte du ciel": "Bv56s1zY21t2", "l'horizon des événements": "EDlqOuNnwBFU", "la lunette astronomique": "TKg7fukMeAWc", "la nébuleuse planétaire": "a2MFXoTTlsWP", "la mise en orbite": "21447",
+  "le site archéologique": "11872", "la paléographie": "74556", "l'embaumement": "17352", "la datation au carbone": "24951", "la monarchie absolue": "23304",
+  "la cotte de mailles": "19583", "la chronologie": "13238", "l'adoubement": "16672", "la chevalerie": "16676", "le blason": "16680",
+  "la valeur refuge": "f2Js21exgSu2", "la chaîne de blocs": "63192", "le chèque sans provision": "13024", "le retrait d'espèces": "13230", "le prêt immobilier": "20037",
+  "le placement financier": "V4kg4um6dffu", "la cessation de paiements": "g8rsmDGZv9Uw", "la banque centrale": "77049", "le taux de change": "11937", "la caution": "TPAsV6Sqk7pu",
   "le machinisme agricole": "15168", "le rendement à l'hectare": "15143", "l'épandage": "jqMTl2WyzhJl", "l'exploitation agricole": "12826", "l'ensilage": "TmObZfm6qN0O",
   "l'engrais azoté": "3kCiVExK9Avk", "la culture hors-sol": "xswrFmJqwKGb", "l'apiculture": "0Cwa3C6ZTe0T", "le labour": "16530", "l'irrigation goutte-à-goutte": "UYONkOQfII1u",
-  "la confection": "85712", "la petite main": "16598", "le fil de soie": "85730", "le moulage": "24494", "la collection printemps-été": "BuiEBRy99mn9",
+  "la confection": "85712", "la couture à la main": "16598", "le fil de soie": "85730", "le moulage": "24494", "la collection printemps-été": "BuiEBRy99mn9",
   "le point de couture": "16604", "le sur-mesure": "16612", "l'étoffe": "11868", "la broderie d'art": "6HyVhK27ORwL", "la note de tête": "18174",
 };
 
@@ -134,6 +135,7 @@ const ICON = {
   Microscope, Telescope, Rocket, Satellite, Dna, TestTube, Magnet, Atom, Bot, ZoomIn, FileSignature, Percent, TrendingUp, ChartCandlestick, HandCoins, Globe, Warehouse, Signature, Vote, Megaphone, Scale, MessagesSquare, ChartPie, ShieldCheck, ClipboardPen, Newspaper, Radio, Mic, Podcast, PenLine, RadioTower, Share2, Video, BookOpenText, Biohazard, Bean, Skull, Smile, BedSingle, Building2, Milestone, Container, Route, LampCeiling, Droplets, ArrowUpDown,
   Lock, Grid3x3, Fingerprint, Vault, Cctv, BellRing, UserSearch, Search, Activity, Tornado, Snowflake, LayoutGrid, Amphora, FileMusic, PenTool, AudioLines, Server, Workflow, Navigation, Cpu, Cable, Anchor, Pickaxe, Gauge, FlaskConical, Shell, Shrimp, Cookie, Wheat, Martini,
   TowerControl, LifeBuoy, ShipWheel, Radar, Sailboat, Orbit, Sparkles, Circle, Triangle, ScrollText, Ghost, Hourglass, Sword, Bitcoin, NotebookPen, House, Briefcase, TrendingDown, Euro, Shovel, Cylinder, Home, Hexagon, Axe, Cog, Disc, PersonStanding, Pin, Layers, Flower2, SprayCan,
+  PlugZap,
 };
 export const TEN_ICON = Object.keys(ICON);
 
