@@ -881,364 +881,364 @@
    "l'ascenseur": {
     "id": "17586"
    },
-   "les menottes": {
+   "l'interpellation": {
     "id": "12206"
    },
-   "la prison": {
+   "la détention provisoire": {
     "id": "12030"
    },
-   "l'empreinte digitale": {
+   "le relevé d'empreintes": {
     "id": "21609"
    },
-   "le cambriolage": {
+   "l'effraction": {
     "id": "11889"
    },
-   "le coffre-fort": {
+   "le blanchiment d'argent": {
     "id": "13018"
    },
-   "la caméra de surveillance": {
+   "la vidéosurveillance": {
     "id": "16209"
    },
-   "l'alarme": {
+   "le signalement": {
     "id": "114436"
    },
-   "la justice": {
+   "la présomption d'innocence": {
     "id": "13182"
    },
-   "le détective": {
+   "l'enquête préliminaire": {
     "id": "12007"
    },
-   "la preuve": {
+   "la pièce à conviction": {
     "id": "lqody2Fh6FMS"
    },
-   "le séisme": {
+   "la secousse sismique": {
     "id": "15375"
    },
-   "l'ouragan": {
+   "l'œil du cyclone": {
     "id": "vkVqvWmxmEkA"
    },
-   "le volcan": {
+   "la coulée de lave": {
     "id": "74141"
    },
-   "le tsunami": {
+   "le raz-de-marée": {
     "id": "XUcLHmmCk9ys"
    },
-   "l'incendie": {
+   "le brasier": {
     "id": "7dHsfhMYiMOE"
    },
-   "l'avalanche": {
+   "la coulée de neige": {
     "id": "0zV4yp0d6FiZ"
    },
-   "la sécheresse": {
+   "le stress hydrique": {
     "id": "ixsZslIMn7Xy"
    },
-   "la tornade": {
+   "le vent tourbillonnaire": {
     "id": "15367"
    },
-   "l'inondation": {
+   "la crue": {
     "id": "15373"
    },
-   "le glacier": {
+   "la fonte des glaces": {
     "id": "24355"
    },
-   "le pinceau": {
+   "le coup de pinceau": {
     "id": "13437"
    },
-   "le chevalet": {
+   "la toile de maître": {
     "id": "37191"
    },
-   "la statue": {
+   "l'installation": {
     "id": "11955"
    },
-   "la mosaïque": {
+   "l'art abstrait": {
     "id": "11953"
    },
-   "la poterie": {
+   "la céramique": {
     "id": "85715"
    },
-   "le violon": {
+   "le virtuose": {
     "id": "12788"
    },
-   "la partition": {
+   "le solfège": {
     "id": "Ds93hlNfAoKt"
    },
-   "la danse classique": {
+   "la chorégraphie": {
     "id": "1lbgvCbYA-e1"
    },
-   "la calligraphie": {
+   "l'enluminure": {
     "id": "16380"
    },
-   "le chef d'orchestre": {
+   "la direction d'orchestre": {
     "id": "12809"
    },
-   "le centre de données": {
+   "l'hébergement de données": {
     "id": "vvAP3cubhSN3"
    },
-   "le cloud": {
+   "le stockage en ligne": {
     "id": "13570"
    },
-   "la cybersécurité": {
+   "le pare-feu": {
     "id": "0tpqgxISselU"
    },
-   "l'algorithme": {
+   "l'arborescence": {
     "id": "12157"
    },
-   "le casque de réalité virtuelle": {
+   "la réalité virtuelle": {
     "id": "32587"
    },
-   "le drone": {
+   "le pilotage à distance": {
     "id": "21921"
    },
-   "l'imprimante 3D": {
+   "la fabrication additive": {
     "id": "16373"
    },
-   "la puce électronique": {
+   "le semi-conducteur": {
     "id": "19939"
    },
-   "la fibre optique": {
+   "le haut débit": {
     "id": "13571"
    },
-   "le pirate informatique": {
+   "la cyberattaque": {
     "id": "12204"
    },
-   "la centrale nucléaire": {
+   "la fission nucléaire": {
     "id": "13087"
    },
-   "le barrage": {
+   "l'énergie hydraulique": {
     "id": "11954"
    },
-   "le baril de pétrole": {
+   "le baril de brut": {
     "id": "FDsBBEyrn6q8"
    },
-   "la plateforme pétrolière": {
+   "le forage en mer": {
     "id": "18360"
    },
-   "le charbon": {
+   "la centrale à charbon": {
     "id": "19913"
    },
-   "l'électricité": {
+   "le réseau électrique": {
     "id": "12098"
    },
-   "le compteur électrique": {
+   "le compteur intelligent": {
     "id": "33588"
    },
-   "le gaz naturel": {
+   "le gaz de schiste": {
     "id": "12180"
    },
-   "le biocarburant": {
+   "la biomasse": {
     "id": "13112"
    },
-   "l'hydrogène": {
+   "la pile à hydrogène": {
     "id": "19735"
    },
-   "la crevette": {
+   "le plateau de fruits de mer": {
     "id": "16080"
    },
-   "le homard": {
+   "la bisque de homard": {
     "id": "ZHSVh8BQsFW7"
    },
-   "le champignon": {
+   "le velouté de champignons": {
     "id": "12864"
    },
-   "le fromage": {
+   "l'appellation d'origine contrôlée": {
     "id": "12888"
    },
-   "le tire-bouchon": {
+   "le sommelier": {
     "id": "12891"
    },
-   "l'huile d'olive": {
+   "l'huile de première pression": {
     "id": "20872"
    },
-   "le macaron": {
+   "la ganache": {
     "id": "12870"
    },
-   "la baguette": {
+   "le levain": {
     "id": "36767"
    },
-   "la crêpe": {
+   "la crêpe flambée": {
     "id": "19020"
    },
-   "le champagne": {
+   "l'accord mets-vins": {
     "id": "17322"
    },
-   "le phare": {
+   "le balisage maritime": {
     "id": "13787"
    },
-   "l'ancre": {
+   "le mouillage": {
     "id": "15117"
    },
-   "le sous-marin": {
+   "le submersible": {
     "id": "31233"
    },
-   "la bouée": {
+   "le sauvetage en mer": {
     "id": "13935"
    },
-   "le paquebot": {
+   "la liaison maritime": {
     "id": "17634"
    },
-   "le gouvernail": {
+   "le timonier": {
     "id": "20863"
    },
-   "le radar": {
+   "la détection radar": {
     "id": "63315"
    },
-   "le chalutier": {
+   "la pêche hauturière": {
     "id": "cqu7ugKIi0SJ"
    },
-   "le scaphandre": {
+   "le scaphandrier": {
     "id": "Q0C8OXZk5Nss"
    },
-   "le voilier": {
+   "la régate": {
     "id": "15172"
    },
-   "la galaxie": {
+   "la galaxie spirale": {
     "id": "18519"
    },
-   "la comète": {
+   "la queue de comète": {
     "id": "11894"
    },
-   "l'éclipse": {
+   "l'éclipse totale": {
     "id": "tBjV9jcq8Td1"
    },
-   "la météorite": {
+   "la ceinture d'astéroïdes": {
     "id": "13480"
    },
-   "l'astronaute": {
+   "l'apesanteur": {
     "id": "13474"
    },
-   "la constellation": {
+   "la carte du ciel": {
     "id": "Bv56s1zY21t2"
    },
-   "le trou noir": {
+   "l'horizon des événements": {
     "id": "EDlqOuNnwBFU"
    },
-   "l'observatoire": {
+   "la lunette astronomique": {
     "id": "56915"
    },
-   "la nébuleuse": {
+   "la poussière interstellaire": {
     "id": "a2MFXoTTlsWP"
    },
-   "la navette spatiale": {
+   "la mise en orbite": {
     "id": "21447"
    },
-   "la pyramide": {
+   "le site archéologique": {
     "id": "15599"
    },
-   "le parchemin": {
+   "la paléographie": {
     "id": "74556"
    },
-   "la momie": {
+   "l'embaumement": {
     "id": "17352"
    },
-   "le fossile": {
+   "la datation au carbone": {
     "id": "24951"
    },
-   "le château fort": {
+   "la féodalité": {
     "id": "CoVMteHR0mHr"
    },
-   "l'armure": {
+   "la cotte de mailles": {
     "id": "19583"
    },
-   "le sablier": {
+   "la chronologie": {
     "id": "15850"
    },
-   "l'épée": {
+   "l'adoubement": {
     "id": "16672"
    },
-   "le chevalier": {
+   "la chevalerie": {
     "id": "16676"
    },
-   "le bouclier": {
+   "le blason": {
     "id": "16680"
    },
-   "le lingot d'or": {
+   "la valeur refuge": {
     "id": "f2Js21exgSu2"
    },
-   "la cryptomonnaie": {
+   "la chaîne de blocs": {
     "id": "63192"
    },
-   "le chéquier": {
+   "le chèque sans provision": {
     "id": "13024"
    },
-   "le distributeur automatique": {
+   "le découvert bancaire": {
     "id": "13230"
    },
-   "l'hypothèque": {
+   "le prêt immobilier": {
     "id": "20037"
    },
-   "l'investisseur": {
+   "le placement financier": {
     "id": "V4kg4um6dffu"
    },
-   "la faillite": {
+   "la cessation de paiements": {
     "id": "g8rsmDGZv9Uw"
    },
-   "le taux d'intérêt": {
+   "le taux directeur": {
     "id": "rmRfUcO07v6E"
    },
-   "la devise": {
+   "le taux de change": {
     "id": "11937"
    },
-   "l'assurance": {
+   "la caution": {
     "id": "103936"
    },
-   "le tracteur": {
+   "le machinisme agricole": {
     "id": "15168"
    },
-   "la moissonneuse": {
+   "le rendement à l'hectare": {
     "id": "15143"
    },
-   "le fumier": {
+   "l'épandage": {
     "id": "jqMTl2WyzhJl"
    },
-   "la grange": {
+   "l'exploitation agricole": {
     "id": "12826"
    },
-   "le silo": {
+   "l'ensilage": {
     "id": "TmObZfm6qN0O"
    },
-   "l'engrais": {
+   "l'engrais azoté": {
     "id": "3kCiVExK9Avk"
    },
-   "la serre": {
+   "la culture hors-sol": {
     "id": "xswrFmJqwKGb"
    },
-   "la ruche": {
+   "l'apiculture": {
     "id": "0Cwa3C6ZTe0T"
    },
-   "la charrue": {
+   "le labour": {
     "id": "16530"
    },
-   "l'irrigation": {
+   "l'irrigation goutte-à-goutte": {
     "id": "UYONkOQfII1u"
    },
-   "la machine à coudre": {
+   "la confection": {
     "id": "85712"
    },
-   "le dé à coudre": {
+   "la petite main": {
     "id": "16598"
    },
-   "la bobine": {
+   "le fil de soie": {
     "id": "85730"
    },
-   "le mannequin": {
+   "le moulage": {
     "id": "24494"
    },
-   "le défilé": {
+   "la collection printemps-été": {
     "id": "BuiEBRy99mn9"
    },
-   "l'aiguille": {
+   "le point de couture": {
     "id": "16604"
    },
-   "le mètre ruban": {
+   "le sur-mesure": {
     "id": "16612"
    },
-   "le tissu": {
+   "l'étoffe": {
     "id": "11868"
    },
-   "la broderie": {
+   "la broderie d'art": {
     "id": "6HyVhK27ORwL"
    },
-   "le parfum": {
+   "la note de tête": {
     "id": "18174"
    }
   }
