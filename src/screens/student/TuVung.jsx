@@ -63,14 +63,21 @@ const MAU = {
   "tv-truyen-thong": ["from-fuchsia-500 to-violet-600", "bg-fuchsia-500/10 text-fuchsia-600"],
   "tv-y-hoc": ["from-cyan-500 to-teal-600", "bg-cyan-500/10 text-cyan-700"],
   "tv-do-thi": ["from-slate-500 to-indigo-600", "bg-slate-500/10 text-slate-600"],
+  "tv-tu-phap": ["from-slate-600 to-blue-800", "bg-slate-500/10 text-slate-700"],
+  "tv-thien-tai": ["from-orange-600 to-red-700", "bg-orange-500/10 text-orange-700"],
+  "tv-nghe-thuat": ["from-pink-500 to-purple-600", "bg-pink-500/10 text-pink-600"],
+  "tv-cong-nghe-so": ["from-cyan-600 to-indigo-600", "bg-cyan-500/10 text-cyan-700"],
+  "tv-nang-luong": ["from-yellow-500 to-orange-600", "bg-yellow-500/10 text-yellow-700"],
+  "tv-am-thuc": ["from-red-500 to-amber-600", "bg-red-500/10 text-red-600"],
 };
 /* Màu nhãn trình độ, cùng bảng màu với danh sách bài ngữ pháp (NguPhap.jsx › MAU_CAP). */
-const MAU_CAP = { A1: "from-amber-500 to-orange-600", A2: "from-sky-500 to-blue-600", B1: "from-violet-500 to-indigo-600", B2: "from-rose-500 to-pink-600" };
+const MAU_CAP = { A1: "from-amber-500 to-orange-600", A2: "from-sky-500 to-blue-600", B1: "from-violet-500 to-indigo-600", B2: "from-rose-500 to-pink-600", C1: "from-emerald-500 to-teal-700" };
 const MO_TA_CAP = () => ({
   A1: tr("Đồ vật và cảnh quen thuộc", "Objets du quotidien", "Everyday objects"),
   A2: tr("Quần áo, nghề, du lịch, mua sắm", "Vêtements, métiers, voyages", "Clothes, jobs, travel"),
   B1: tr("Sức khoẻ, môi trường, công việc", "Santé, environnement, travail", "Health, environment, work"),
   B2: tr("Khoa học, kinh tế, truyền thông", "Sciences, économie, médias", "Science, economy, media"),
+  C1: tr("Tư pháp, nghệ thuật, năng lượng", "Justice, arts, énergie", "Justice, arts, energy"),
 });
 const mauCua = (ma) => MAU[ma] ?? ["from-blue-500 to-indigo-600", "bg-primary-soft text-primary"];
 
@@ -680,13 +687,13 @@ export default function TuVung({ thu }) {
         </motion.header>
 
         {/* Chọn trình độ: vệt sáng trượt theo trình độ đang chọn. */}
-        <div role="tablist" aria-label={tr("Trình độ", "Niveau", "Level")} className="mt-6 grid grid-cols-4 gap-1.5 rounded-3xl bg-surface p-1.5 shadow-sm">
+        <div role="tablist" aria-label={tr("Trình độ", "Niveau", "Level")} className="mt-6 grid grid-cols-5 gap-1.5 rounded-3xl bg-surface p-1.5 shadow-sm">
           {CAP_TU_VUNG.map((c) => (
             <button key={c} type="button" role="tab" aria-selected={cap === c} onClick={() => setCap(c)}
-              className={`relative flex cursor-pointer flex-col items-center rounded-2xl border-0 bg-transparent px-2 py-2.5 font-sans transition-colors sm:flex-row sm:justify-center sm:gap-2.5 ${cap === c ? "text-white" : "text-ink hover:bg-surface2"}`}>
+              className={`relative flex cursor-pointer flex-col items-center rounded-2xl border-0 bg-transparent px-2 py-2.5 font-sans transition-colors lg:flex-row lg:justify-center lg:gap-2.5 ${cap === c ? "text-white" : "text-ink hover:bg-surface2"}`}>
               {cap === c && <motion.span layoutId="tv-cap" transition={LO_XO} className={`absolute inset-0 rounded-2xl bg-gradient-to-br ${MAU_CAP[c] ?? MAU_CAP.A1} shadow-md`} />}
               <span className="relative text-lg font-extrabold leading-none">{c}</span>
-              <span className={`relative mt-1 hidden text-xs font-semibold sm:mt-0 sm:inline ${cap === c ? "text-white/85" : "text-soft"}`}>{MO_TA_CAP()[c]}</span>
+              <span className={`relative mt-1 hidden text-xs font-semibold lg:mt-0 lg:inline ${cap === c ? "text-white/85" : "text-soft"}`}>{MO_TA_CAP()[c]}</span>
             </button>
           ))}
         </div>

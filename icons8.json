@@ -880,6 +880,186 @@
    },
    "l'ascenseur": {
     "id": "17586"
+   },
+   "les menottes": {
+    "id": "12206"
+   },
+   "la prison": {
+    "id": "12030"
+   },
+   "l'empreinte digitale": {
+    "id": "21609"
+   },
+   "le cambriolage": {
+    "id": "11889"
+   },
+   "le coffre-fort": {
+    "id": "13018"
+   },
+   "la caméra de surveillance": {
+    "id": "16209"
+   },
+   "l'alarme": {
+    "id": "114436"
+   },
+   "la justice": {
+    "id": "13182"
+   },
+   "le détective": {
+    "id": "12007"
+   },
+   "la preuve": {
+    "id": "lqody2Fh6FMS"
+   },
+   "le séisme": {
+    "id": "15375"
+   },
+   "l'ouragan": {
+    "id": "vkVqvWmxmEkA"
+   },
+   "le volcan": {
+    "id": "74141"
+   },
+   "le tsunami": {
+    "id": "XUcLHmmCk9ys"
+   },
+   "l'incendie": {
+    "id": "7dHsfhMYiMOE"
+   },
+   "l'avalanche": {
+    "id": "0zV4yp0d6FiZ"
+   },
+   "la sécheresse": {
+    "id": "ixsZslIMn7Xy"
+   },
+   "la tornade": {
+    "id": "15367"
+   },
+   "l'inondation": {
+    "id": "15373"
+   },
+   "le glacier": {
+    "id": "24355"
+   },
+   "le pinceau": {
+    "id": "13437"
+   },
+   "le chevalet": {
+    "id": "37191"
+   },
+   "la statue": {
+    "id": "11955"
+   },
+   "la mosaïque": {
+    "id": "11953"
+   },
+   "la poterie": {
+    "id": "85715"
+   },
+   "le violon": {
+    "id": "12788"
+   },
+   "la partition": {
+    "id": "Ds93hlNfAoKt"
+   },
+   "la danse classique": {
+    "id": "1lbgvCbYA-e1"
+   },
+   "la calligraphie": {
+    "id": "16380"
+   },
+   "le chef d'orchestre": {
+    "id": "12809"
+   },
+   "le centre de données": {
+    "id": "vvAP3cubhSN3"
+   },
+   "le cloud": {
+    "id": "13570"
+   },
+   "la cybersécurité": {
+    "id": "0tpqgxISselU"
+   },
+   "l'algorithme": {
+    "id": "12157"
+   },
+   "le casque de réalité virtuelle": {
+    "id": "32587"
+   },
+   "le drone": {
+    "id": "21921"
+   },
+   "l'imprimante 3D": {
+    "id": "16373"
+   },
+   "la puce électronique": {
+    "id": "19939"
+   },
+   "la fibre optique": {
+    "id": "13571"
+   },
+   "le pirate informatique": {
+    "id": "12204"
+   },
+   "la centrale nucléaire": {
+    "id": "13087"
+   },
+   "le barrage": {
+    "id": "11954"
+   },
+   "le baril de pétrole": {
+    "id": "FDsBBEyrn6q8"
+   },
+   "la plateforme pétrolière": {
+    "id": "18360"
+   },
+   "le charbon": {
+    "id": "19913"
+   },
+   "l'électricité": {
+    "id": "12098"
+   },
+   "le compteur électrique": {
+    "id": "33588"
+   },
+   "le gaz naturel": {
+    "id": "12180"
+   },
+   "le biocarburant": {
+    "id": "13112"
+   },
+   "l'hydrogène": {
+    "id": "19735"
+   },
+   "la crevette": {
+    "id": "16080"
+   },
+   "le homard": {
+    "id": "ZHSVh8BQsFW7"
+   },
+   "le champignon": {
+    "id": "12864"
+   },
+   "le fromage": {
+    "id": "12888"
+   },
+   "le tire-bouchon": {
+    "id": "12891"
+   },
+   "l'huile d'olive": {
+    "id": "20872"
+   },
+   "le macaron": {
+    "id": "12870"
+   },
+   "la baguette": {
+    "id": "36767"
+   },
+   "la crêpe": {
+    "id": "19020"
+   },
+   "le champagne": {
+    "id": "17322"
    }
   }
  }

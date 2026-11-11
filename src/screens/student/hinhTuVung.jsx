@@ -13,6 +13,7 @@ import {
   Shirt, Glasses, Watch, Gem, Umbrella, Handbag, Ribbon, Waves, Stethoscope, ChefHat, HardHat, Wrench, Paintbrush, Gavel, Tractor, Mail, CookingPot, Microwave, Utensils, UtensilsCrossed, Flame, Timer, CupSoda, Luggage, Ticket, Map as MapIcon, BaggageClaim, Compass, PlaneTakeoff, Palmtree, Signpost, Binoculars, Flag, Mountain, Trees, Flower, Leaf, TreePine, Sprout, Star, ShoppingCart, ShoppingBag, CreditCard, Banknote, Coins, Receipt, Tag, PiggyBank, Wallet, Laptop, Smartphone, Tablet, Monitor, Keyboard, Mouse, Printer, Headphones, Battery, Plug,
   ClipboardList, Accessibility, Scan, Cross, Shield, HeartPulse, Siren, Droplet, CalendarClock, Recycle, Trash2, Fan, SolarPanel, Earth, Zap, Lightbulb, FolderOpen, Users, IdCard, Calendar, Paperclip, Folder, Stamp, ChartColumn, Handshake, MountainSnow, Goal, Swords, Trophy, Target, Landmark, Frame, Drama, Music2, PartyPopper, Theater, BookOpen, MicVocal, Crown, TrafficCone, RotateCw, CarFront, SquareParking, BatteryCharging, Construction,
   Microscope, Telescope, Rocket, Satellite, Dna, TestTube, Magnet, Atom, Bot, ZoomIn, FileSignature, Percent, TrendingUp, ChartCandlestick, HandCoins, Globe, Warehouse, Signature, Vote, Megaphone, Scale, MessagesSquare, ChartPie, ShieldCheck, ClipboardPen, Newspaper, Radio, Mic, Podcast, PenLine, RadioTower, Share2, Video, BookOpenText, Biohazard, Bean, Skull, Smile, BedSingle, Building2, Milestone, Container, Route, LampCeiling, Droplets, ArrowUpDown,
+  Lock, Grid3x3, Fingerprint, Vault, Cctv, BellRing, UserSearch, Search, Activity, Tornado, Snowflake, LayoutGrid, Amphora, FileMusic, PenTool, AudioLines, Server, Workflow, Navigation, Cpu, Cable, Anchor, Pickaxe, Gauge, FlaskConical, Shell, Shrimp, Cookie, Wheat, Martini,
 } from "lucide-react";
 
 /* Hình của từ vựng (10/11). Hai nguồn, theo thứ tự ưu tiên:
@@ -88,6 +89,19 @@ export const HINH_ICONS8 = {
   "le rein": "20619", "le squelette": "14876", "la dent": "14868", "le stéthoscope": "14867", "le lit d'hôpital": "109573",
   "le gratte-ciel": "20193", "le pont": "11887", "la grue": "33909", "le tunnel": "15197", "l'autoroute": "W7zKXRiHdcRK",
   "la piste cyclable": "n2kMBKFSeacW", "le lampadaire": "33827", "la fontaine": "11922", "le parc": "uKq70aYmEQbP", "l'ascenseur": "17586",
+  /* C1 (11/11) */
+  "les menottes": "12206", "la prison": "12030", "l'empreinte digitale": "21609", "le cambriolage": "11889", "le coffre-fort": "13018",
+  "la caméra de surveillance": "16209", "l'alarme": "114436", "la justice": "13182", "le détective": "12007", "la preuve": "lqody2Fh6FMS",
+  "le séisme": "15375", "l'ouragan": "vkVqvWmxmEkA", "le volcan": "74141", "le tsunami": "XUcLHmmCk9ys", "l'incendie": "7dHsfhMYiMOE",
+  "l'avalanche": "0zV4yp0d6FiZ", "la sécheresse": "ixsZslIMn7Xy", "la tornade": "15367", "l'inondation": "15373", "le glacier": "24355",
+  "le pinceau": "13437", "le chevalet": "37191", "la statue": "11955", "la mosaïque": "11953", "la poterie": "85715",
+  "le violon": "12788", "la partition": "Ds93hlNfAoKt", "la danse classique": "1lbgvCbYA-e1", "la calligraphie": "16380", "le chef d'orchestre": "12809",
+  "le centre de données": "vvAP3cubhSN3", "le cloud": "13570", "la cybersécurité": "0tpqgxISselU", "l'algorithme": "12157", "le casque de réalité virtuelle": "32587",
+  "le drone": "21921", "l'imprimante 3D": "16373", "la puce électronique": "19939", "la fibre optique": "13571", "le pirate informatique": "12204",
+  "la centrale nucléaire": "13087", "le barrage": "11954", "le baril de pétrole": "FDsBBEyrn6q8", "la plateforme pétrolière": "18360", "le charbon": "19913",
+  "l'électricité": "12098", "le compteur électrique": "33588", "le gaz naturel": "12180", "le biocarburant": "13112", "l'hydrogène": "19735",
+  "la crevette": "16080", "le homard": "ZHSVh8BQsFW7", "le champignon": "12864", "le fromage": "12888", "le tire-bouchon": "12891",
+  "l'huile d'olive": "20872", "le macaron": "12870", "la baguette": "36767", "la crêpe": "19020", "le champagne": "17322",
 };
 
 const ICON = {
@@ -104,6 +118,7 @@ const ICON = {
   Shirt, Glasses, Watch, Gem, Umbrella, Handbag, Ribbon, Waves, Stethoscope, ChefHat, HardHat, Wrench, Paintbrush, Gavel, Tractor, Mail, CookingPot, Microwave, Utensils, UtensilsCrossed, Flame, Timer, CupSoda, Luggage, Ticket, Map: MapIcon, BaggageClaim, Compass, PlaneTakeoff, Palmtree, Signpost, Binoculars, Flag, Mountain, Trees, Flower, Leaf, TreePine, Sprout, Star, ShoppingCart, ShoppingBag, CreditCard, Banknote, Coins, Receipt, Tag, PiggyBank, Wallet, Laptop, Smartphone, Tablet, Monitor, Keyboard, Mouse, Printer, Headphones, Battery, Plug,
   ClipboardList, Accessibility, Scan, Cross, Shield, HeartPulse, Siren, Droplet, CalendarClock, Recycle, Trash2, Fan, SolarPanel, Earth, Zap, Lightbulb, FolderOpen, Users, IdCard, Calendar, Paperclip, Folder, Stamp, ChartColumn, Handshake, MountainSnow, Goal, Swords, Trophy, Target, Landmark, Frame, Drama, Music2, PartyPopper, Theater, BookOpen, MicVocal, Crown, TrafficCone, RotateCw, CarFront, SquareParking, BatteryCharging, Construction,
   Microscope, Telescope, Rocket, Satellite, Dna, TestTube, Magnet, Atom, Bot, ZoomIn, FileSignature, Percent, TrendingUp, ChartCandlestick, HandCoins, Globe, Warehouse, Signature, Vote, Megaphone, Scale, MessagesSquare, ChartPie, ShieldCheck, ClipboardPen, Newspaper, Radio, Mic, Podcast, PenLine, RadioTower, Share2, Video, BookOpenText, Biohazard, Bean, Skull, Smile, BedSingle, Building2, Milestone, Container, Route, LampCeiling, Droplets, ArrowUpDown,
+  Lock, Grid3x3, Fingerprint, Vault, Cctv, BellRing, UserSearch, Search, Activity, Tornado, Snowflake, LayoutGrid, Amphora, FileMusic, PenTool, AudioLines, Server, Workflow, Navigation, Cpu, Cable, Anchor, Pickaxe, Gauge, FlaskConical, Shell, Shrimp, Cookie, Wheat, Martini,
 };
 export const TEN_ICON = Object.keys(ICON);
 
