@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { motion, MotionConfig, AnimatePresence } from "framer-motion";
-import { ArrowLeft, ArrowRight, Check, Volume2, X, RotateCcw, Shapes, Images, PencilLine, ChevronLeft, ChevronRight, Sparkles, Lock } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, Volume2, X, RotateCcw, Shapes, Images, PencilLine, ChevronLeft, ChevronRight, Sparkles, Lock, Mic } from "lucide-react";
 import { supabase } from "../../storageShim.js";
 import { tr } from "../../shared/i18n.jsx";
 import { Leon } from "../../shared/leon.jsx";
@@ -9,6 +9,7 @@ import { phat } from "../../shared/amThanh.js";
 import HocTapTab from "./HocTapTab.jsx";
 import { HinhTu } from "./hinhTuVung.jsx";
 import { PhaoGiayLon } from "../exam/KetQuaVisual.jsx";
+import { NoiTheo, coNhanGiong, docTatNoi, ghiTatNoi } from "./noiTuVung.jsx";
 import { CHU_DE_TU_VUNG, CAP_TU_VUNG, timChuDe, taoBaiTap, maoTu, boMaoTu, giongTu, goDung } from "../../content/tuVung/index.js";
 
 /* « Học từ vựng theo chủ đề » (10/11, theo chủ dự án): tab của mục Học tập.
@@ -26,6 +27,8 @@ import { CHU_DE_TU_VUNG, CAP_TU_VUNG, timChuDe, taoBaiTap, maoTu, boMaoTu, giong
  * Kết quả lưu ở bai_hoc_ket_qua (mã « tv-… ») qua RPC ghi_bai_hoc, chung với Học ngữ pháp, nên
  * không cần migration. Chưa đăng nhập hay lỗi mạng: vẫn học được, chỉ không lưu.
  * Nghe: giọng đọc của TRÌNH DUYỆT (speechSynthesis, fr-FR); không có giọng Pháp thì nút loa tự ẩn.
+ * Nói theo (11/11): dưới thẻ học, nói TỪ rồi CÂU VÍ DỤ (noiTuVung.jsx); đạt hoặc bỏ qua cả hai thì
+ * từ mới tính là đã học. Không có bộ nhận giọng hay đã bấm « Không tiện nói » thì mở là tính.
  * `thu`: { ketQua } cho /preview.html (không gọi mạng). */
 
 const GOC = "/etudiant/tu-vung";
@@ -226,7 +229,7 @@ function TheHoc({ tu, ma }) {
   );
 }
 
-function HocTu({ chuDe, i, setI, daXem, mo, onLamBai }) {
+function HocTu({ chuDe, i, setI, daXem, mo, onLamBai, coNoi, noi, doiNoi, onTatNoi, onBatNoi }) {
   const [huong, setHuong] = useState(1);
   const n = chuDe.tu.length;
   const den = (j) => { const k = ((j % n) + n) % n; setHuong(k > i ? 1 : -1); setI(k); };
@@ -238,7 +241,11 @@ function HocTu({ chuDe, i, setI, daXem, mo, onLamBai }) {
     <div className="grid gap-5">
       <p className="m-0 flex gap-3 rounded-2xl border border-solid border-primary/20 bg-primary-soft p-4 text-sm leading-relaxed text-ink">
         <Sparkles size={18} className="mt-0.5 shrink-0 text-primary" />
-        <span>{tr("Học từng từ: nhìn hình, đọc to từ KÈM mạo từ, bấm loa để nghe, rồi đọc câu ví dụ. Mạo từ cho biết giống (le: đực, la: cái, les: số nhiều); với l' thì xem nhãn giống. Học qua hết các từ thì bài tập mới mở.",
+        <span>{coNoi
+          ? tr("Học từng từ: nhìn hình, bấm loa để nghe, rồi bấm micro nói theo từ KÈM mạo từ và nói câu ví dụ (không tiện nói thì bấm « Bỏ qua »). Mạo từ cho biết giống (le: đực, la: cái, les: số nhiều); với l' thì xem nhãn giống. Qua hết các từ thì bài tập mới mở.",
+            "Pour chaque mot : regardez l'image, écoutez, puis dites le mot AVEC son article et l'exemple au micro (ou « Passer »). L'article indique le genre (le, la, les) ; avec l', regardez l'étiquette. Les exercices s'ouvrent après tous les mots.",
+            "For each word: look at the picture, listen, then say the word WITH its article and the example into the mic (or skip). The article shows the gender (le, la, les); with l', check the label. Exercises unlock after all words.")
+          : tr("Học từng từ: nhìn hình, đọc to từ KÈM mạo từ, bấm loa để nghe, rồi đọc câu ví dụ. Mạo từ cho biết giống (le: đực, la: cái, les: số nhiều); với l' thì xem nhãn giống. Học qua hết các từ thì bài tập mới mở.",
           "Pour chaque mot : regardez l'image, dites le mot AVEC son article, écoutez, puis lisez l'exemple. L'article indique le genre (le, la, les) ; avec l', regardez l'étiquette. Les exercices s'ouvrent après tous les mots.",
           "For each word: look at the picture, say it WITH its article, listen, then read the example. The article shows the gender (le, la, les); with l', check the label. Exercises unlock after all words.")}</span>
       </p>
@@ -252,6 +259,7 @@ function HocTu({ chuDe, i, setI, daXem, mo, onLamBai }) {
                 drag="x" dragConstraints={{ left: 0, right: 0 }} dragElastic={0.2}
                 onDragEnd={(_, info) => { if (info.offset.x < -70) den(i + 1); else if (info.offset.x > 70) den(i - 1); }}>
                 <TheHoc tu={tu} ma={chuDe.ma} />
+                {coNoi && <div className="mt-3"><NoiTheo tu={tu} ket={noi[i]} onDoi={(k) => doiNoi(i, k)} onTat={onTatNoi} /></div>}
               </motion.div>
             </AnimatePresence>
           </div>
@@ -267,11 +275,21 @@ function HocTu({ chuDe, i, setI, daXem, mo, onLamBai }) {
                   className={`block h-2 rounded-full bg-gradient-to-r ${mauCua(chuDe.ma)[0]}`} />
               ))}
             </div>
+            {/* Nói xong từ đang mở: nút « Từ sau » đổi màu, nhún nhẹ mời sang từ tiếp. */}
             <motion.button type="button" whileTap={{ scale: 0.9 }} onClick={() => den(i + 1)} aria-label={tr("Từ sau", "Mot suivant", "Next word")}
-              className="grid h-11 w-11 cursor-pointer place-items-center rounded-full border border-solid border-line bg-surface text-ink hover:border-primary hover:text-primary">
+              animate={coNoi && daXem.has(i) && !mo ? { scale: [1, 1.12, 1] } : { scale: 1 }} transition={coNoi && daXem.has(i) && !mo ? { duration: 1.4, repeat: Infinity } : { duration: 0.2 }}
+              className={`grid h-11 w-11 cursor-pointer place-items-center rounded-full border border-solid ${coNoi && daXem.has(i) ? "border-primary bg-primary text-on-primary" : "border-line bg-surface text-ink hover:border-primary hover:text-primary"}`}>
               <ChevronRight size={20} />
             </motion.button>
           </div>
+          {onBatNoi && (
+            <p className="m-0 mt-3 text-center">
+              <button type="button" onClick={onBatNoi}
+                className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border-0 bg-transparent p-0 font-sans text-xs font-bold text-primary">
+                <Mic size={13} /> {tr("Bật lại phần nói theo", "Réactiver l'oral", "Turn speaking back on")}
+              </button>
+            </p>
+          )}
         </div>
 
         {/* Bảng các từ: bấm để mở từ đó, từ đã học có dấu tích. */}
@@ -573,10 +591,16 @@ function TrangChuDe({ chuDe, onGhi, daCoDiem }) {
   /* Học trước, làm bài sau: Ghép hình và Luyện tập mở khi đã xem hết các từ, hoặc chủ đề đã học
      ở lần trước (đã có điểm, hay đã đánh dấu học xong trên máy này). */
   const [iHoc, setIHoc] = useState(0);
-  const [daXem, setDaXem] = useState(() => new Set([0]));
+  const [tatNoi, setTatNoi] = useState(() => docTatNoi());
+  const coNoi = coNhanGiong() && !tatNoi;
+  const [noi, setNoi] = useState({});
+  const [daXem, setDaXem] = useState(() => new Set(coNoi ? [] : [0]));
   const [hocTruoc] = useState(() => daCoDiem || docDaHoc().has(chuDe.ma));
   const [nhac, setNhac] = useState(false);
-  useEffect(() => { setDaXem((d) => (d.has(iHoc) ? d : new Set([...d, iHoc]))); }, [iHoc]);
+  const them = (j) => setDaXem((d) => (d.has(j) ? d : new Set([...d, j])));
+  /* Có phần nói: từ tính là đã học khi xong cả hai lượt (đạt hoặc bỏ qua). Không có: mở là tính. */
+  useEffect(() => { if (!coNoi) them(iHoc); }, [iHoc, coNoi]);
+  const doiNoi = (j, ket) => { setNoi((m) => ({ ...m, [j]: ket })); if (ket.tu && ket.cau) them(j); };
   const xemHet = daXem.size >= chuDe.tu.length;
   const mo = hocTruoc || xemHet;
   useEffect(() => { if (xemHet) ghiDaHoc(chuDe.ma); }, [xemHet, chuDe.ma]);
@@ -639,7 +663,10 @@ function TrangChuDe({ chuDe, onGhi, daCoDiem }) {
           <motion.div key={buoc} custom={huong}
             variants={{ vao: (h) => ({ opacity: 0, x: h * 50 }), dung: { opacity: 1, x: 0 }, ra: (h) => ({ opacity: 0, x: -h * 50 }) }}
             initial="vao" animate="dung" exit="ra" transition={{ duration: 0.3, ease: EASE }}>
-            {buoc === "hoc" && <HocTu chuDe={chuDe} i={iHoc} setI={setIHoc} daXem={daXem} mo={mo} onLamBai={() => sang("ghep")} />}
+            {buoc === "hoc" && <HocTu chuDe={chuDe} i={iHoc} setI={setIHoc} daXem={daXem} mo={mo} onLamBai={() => sang("ghep")}
+              coNoi={coNoi} noi={noi} doiNoi={doiNoi}
+              onTatNoi={() => { ghiTatNoi(true); setTatNoi(true); }}
+              onBatNoi={coNhanGiong() && tatNoi ? () => { ghiTatNoi(false); setTatNoi(false); } : null} />}
             {buoc === "ghep" && <GhepCap chuDe={chuDe} onTiep={() => sang("luyen")} />}
             {buoc === "luyen" && <LuyenTap chuDe={chuDe} onXong={onGhi} />}
           </motion.div>
