@@ -93,10 +93,10 @@ export const STUDENT_NAV = [
   { to: "/etudiant/ngu-phap", nhom: "hoc", labelKey: "nav.learn", Icon: GraduationCap, khop: ["/etudiant/ngu-phap", "/etudiant/tu-vung", "/etudiant/lo-trinh", "/etudiant/nghe-noi"] },
   /* Từ điển tra nhanh — nguồn là thẻ flashcard công khai (TuDien.jsx). */
   /* Thách đấu bạn bè — đứng ngay sau Lộ trình vì cùng là phần game. */
-  { to: "/etudiant/tro-choi", nhom: "on", labelKey: "nav.games", Icon: Gamepad2, khop: ["/etudiant/tro-choi", "/etudiant/thach-dau", "/etudiant/bo-the"] },
+  { to: "/etudiant/tro-choi", nhom: "hoc", labelKey: "nav.games", Icon: Gamepad2, khop: ["/etudiant/tro-choi", "/etudiant/thach-dau", "/etudiant/bo-the"] },
   /* « Từ điển » GỠ 08/10 theo chủ dự án: nó chỉ tra lại đúng các thẻ Flashcard
      công khai (~130 mục), trùng với mục Flashcard. Lấy lại TuDien.jsx từ git. */
-  { to: "/etudiant/entrainement", nhom: "on", labelKey: "nav.practice", Icon: Dumbbell, view: "practice" },
+  { to: "/etudiant/entrainement", nhom: "hoc", labelKey: "nav.practice", Icon: Dumbbell, view: "practice" },
   /* « Nghe & Nói » (10/10): chép chính tả + luyện phát âm, route riêng. */
   /* Không có `view`: là route riêng trong App.jsx, giống « Sổ tay » bên giáo viên.
      Ban đầu tôi cố ý KHÔNG đưa vào đây với lý do "vào là bắt đầu tính giờ, không
@@ -137,7 +137,9 @@ export const STUDENT_NAV = [
    khai báo cho mọi chỗ khác; chỉ thanh bên sắp lại theo thứ tự nhóm dưới đây.
    31/10 (chủ dự án): Trang chủ tách riêng thành nhóm « chinh », không có tiêu đề. */
 export const THU_TU_NHOM = { prof: ["chinh", "tong", "lop", "noi_dung"], eleve: ["chinh", "hoc", "thi", "on", "toi", "tro_giup"] };
-/* 31/10 (chủ dự án): phần đầu gom Học tập, Bài tập được giao, Thi thử; Ôn luyện = Luyện tập + Trò chơi;
+/* 12/11 (chủ dự án): nhóm đầu « Học & luyện » gom Học tập, Bài tập được giao, Luyện thi (trước là
+   « Luyện tập ») và Trò chơi; nhóm « Ôn luyện » cũ không còn mục nào nên tự ẩn.
+   31/10: phần đầu gom Học tập, Bài tập được giao, Thi thử;
    Của tôi = tiến độ và tài khoản. Thứ tự trong nhóm theo danh sách dưới,
    mục không có tên ở đây giữ thứ tự gốc của mảng, xếp sau. */
 const THU_TU_MUC_HS = [

@@ -9,7 +9,7 @@ import { themLich } from "./lichHoc.js";
    khoang phải của Lịch đều dùng nó, nên chỉ có MỘT đường ghi (themLich). Mặc định bật « Léon nhắc
    qua mail trước 30 phút ». Hàm MUC_LICH chứ không hằng số: tr() phải chạy lúc dựng. */
 export const MUC_LICH = () => [
-  { id: "luyen-tap", to: "/etudiant/entrainement", Icon: Dumbbell, nhan: tr("Luyện tập", "Entraînement", "Practice") },
+  { id: "luyen-tap", to: "/etudiant/entrainement", Icon: Dumbbell, nhan: tr("Luyện thi", "Préparation aux examens", "Exam practice") },
   { id: "ngu-phap", to: "/etudiant/ngu-phap", Icon: GraduationCap, nhan: tr("Ngữ pháp", "Grammaire", "Grammar") },
   { id: "lo-trinh", to: "/etudiant/lo-trinh", Icon: Map, nhan: tr("Lộ trình", "Parcours", "Path") },
   { id: "flashcard", to: "/etudiant/bo-the", Icon: Layers, nhan: "Flashcard" },
