@@ -834,6 +834,15 @@ export function PhanThi({ section, attemptId, attemptTheoBai = {}, answers, setA
               </>
             )}
 
+            {/* Câu trả lời ngắn (lô 43, C1 Đọc): vài dòng kẻ, AI chấm ở `grade` theo đáp án mẫu.
+                Được dán (trích lại câu trong bài là hợp lệ), khác ô bài viết dài. */}
+            {q.type === "court" && (
+              <textarea lang="fr" rows={3} maxLength={800} value={answers[q.id] ?? ""}
+                onChange={(e) => dat(q.id, e.target.value)}
+                aria-label={tr("Câu trả lời", "Réponse", "Answer")}
+                className="de-dong-ke mt-3 block w-full resize-y text-[15.5px]" />
+            )}
+
             {q.type === "open" && (
               <>
                 <textarea lang="fr" rows={14} value={answers[q.id] ?? ""}

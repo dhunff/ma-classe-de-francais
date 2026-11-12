@@ -455,6 +455,8 @@ PHAN_THI_MAU.exercises = [PHAN_THI_MAU.exercise, {
   questions: [
     { id: "q2", ord: 0, type: "qcm", prompt: "Le musée ouvre à quelle heure ?", options: ["9 h", "10 h", "11 h"] },
     { id: "q3", ord: 1, type: "vf", prompt: "Le musée est gratuit le dimanche." },
+    /* Câu trả lời ngắn (lô 43, C1 Đọc): AI chấm ở grade. */
+    { id: "q4", ord: 2, type: "court", heSo: 4, prompt: "Pourquoi le musée a-t-il décidé d'ouvrir le vendredi soir ?" },
   ],
 }];
 
