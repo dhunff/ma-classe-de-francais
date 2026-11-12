@@ -239,16 +239,6 @@ function HocTu({ chuDe, i, setI, daXem, mo, onLamBai, coNoi, noi, doiNoi, onTatN
   const lamBai = () => { if (mo) onLamBai(); else if (chuaXem >= 0) den(chuaXem); };
   return (
     <div className="grid gap-5">
-      <p className="m-0 flex gap-3 rounded-2xl border border-solid border-primary/20 bg-primary-soft p-4 text-sm leading-relaxed text-ink">
-        <Sparkles size={18} className="mt-0.5 shrink-0 text-primary" />
-        <span>{coNoi
-          ? tr("Học từng từ: nhìn hình, bấm loa để nghe, rồi bấm micro nói theo từ KÈM mạo từ và nói câu ví dụ (không tiện nói thì bấm « Bỏ qua »). Mạo từ cho biết giống (le: đực, la: cái, les: số nhiều); với l' thì xem nhãn giống. Qua hết các từ thì bài tập mới mở.",
-            "Pour chaque mot : regardez l'image, écoutez, puis dites le mot AVEC son article et l'exemple au micro (ou « Passer »). L'article indique le genre (le, la, les) ; avec l', regardez l'étiquette. Les exercices s'ouvrent après tous les mots.",
-            "For each word: look at the picture, listen, then say the word WITH its article and the example into the mic (or skip). The article shows the gender (le, la, les); with l', check the label. Exercises unlock after all words.")
-          : tr("Học từng từ: nhìn hình, đọc to từ KÈM mạo từ, bấm loa để nghe, rồi đọc câu ví dụ. Mạo từ cho biết giống (le: đực, la: cái, les: số nhiều); với l' thì xem nhãn giống. Học qua hết các từ thì bài tập mới mở.",
-          "Pour chaque mot : regardez l'image, dites le mot AVEC son article, écoutez, puis lisez l'exemple. L'article indique le genre (le, la, les) ; avec l', regardez l'étiquette. Les exercices s'ouvrent après tous les mots.",
-          "For each word: look at the picture, say it WITH its article, listen, then read the example. The article shows the gender (le, la, les); with l', check the label. Exercises unlock after all words.")}</span>
-      </p>
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_280px]">
         <div>
           <div className="relative -mx-10 -mb-10 -mt-4 overflow-hidden px-10 pb-14 pt-4">
