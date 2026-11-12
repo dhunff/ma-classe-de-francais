@@ -44,7 +44,7 @@ function TrainButton({ onStart, onPickMaterial }) {
         className="group inline-flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-2xl border-0 border-b-4 border-solid border-blue-800 bg-gradient-to-r from-primary to-indigo-600 px-4 py-2.5 font-[inherit] text-sm font-extrabold text-white shadow-[0_8px_18px_rgba(37,99,235,0.28)] transition-transform hover:-translate-y-0.5 active:translate-y-0.5 active:border-b-0"
       >
         <span className="grid h-6 w-6 place-items-center rounded-full bg-white/20 transition-transform group-hover:scale-110"><Play size={13} fill="currentColor" /></span>
-        {tr("Luyện thi", "S'entraîner", "Practise")}
+        {tr("Luyện thi", "Préparation aux examens", "Practise")}
       </button>
       <button
         type="button"

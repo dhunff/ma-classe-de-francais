@@ -1210,7 +1210,7 @@ function SplitTrain({ onStart, onPick, open, setOpen, teacher = false }) {
   return (
     <div ref={ref} style={{ position: "relative", display: "inline-flex" }}>
       <button onClick={onStart}
-        style={{ ...S.btn(true), borderRadius: "999px 0 0 999px", paddingRight: 14 }}>{tr("Luyện thi", "S'entraîner", "Practise")}</button>
+        style={{ ...S.btn(true), borderRadius: "999px 0 0 999px", paddingRight: 14 }}>{tr("Luyện thi", "Préparation aux examens", "Practise")}</button>
       <button onClick={() => setOpen(!open)} title={tr("Tài liệu của bài", "Ressources de l'exercice", "Exercise resources")} aria-haspopup="menu" aria-expanded={open}
         style={{ ...S.btn(true), borderRadius: "0 999px 999px 0", padding: "11px 12px", marginLeft: 1,
           display: "inline-flex", alignItems: "center" }}>
