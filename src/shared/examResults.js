@@ -39,7 +39,7 @@ export async function loadMyExamResults() {
   const examIds = [...new Set(rows.map((r) => r.exam_id).filter(Boolean))];
   const attemptIds = rows.map((r) => r.id);
 
-  const [deRes, secRes, ansRes, poRes] = await Promise.all([
+  const [deRes, secRes, ansRes, poRes, nganRes] = await Promise.all([
     examIds.length
       /* Đọc `grille` bằng đường lùi được: migration 035 chạy tay ở SQL Editor,
          nên có quãng mà mã đã deploy còn cột thì chưa. PostgREST trả 42703 và
@@ -71,7 +71,17 @@ export async function loadMyExamResults() {
        trường cũ: lỗi thì coi như chưa ai tự chấm, đừng làm hỏng cả trang. */
     supabase.from("po_cham").select("attempt_id, cap, tu_cham, diem, ai_goi_y, de_boc, nguon").in("attempt_id", attemptIds)
       .then((r) => (r.error ? { data: [] } : r)),
+    /* 12/11 (lô 43): câu trả lời ngắn AI chấm (loại `court`, phần Đọc C1). Điểm của chúng ĐÃ nằm
+       trong attempts.score; kéo về chỉ để HIỆN nhận xét, không cộng thêm. Lỗi thì bỏ qua. */
+    supabase.from("answers")
+      .select("id, attempt_id, raw, score, max_score, feedback, questions!inner (id, type, prompt, ord)")
+      .in("attempt_id", attemptIds)
+      .eq("questions.type", "court")
+      .then((r) => (r.error ? { data: [] } : r)),
   ]);
+  const nganTheoAttempt = {};
+  for (const a of nganRes.data ?? []) (nganTheoAttempt[a.attempt_id] ??= []).push(a);
+  const docNhanXet = (f) => { try { const o = JSON.parse(f || ""); return o && typeof o === "object" ? o : {}; } catch { return { nhan_xet: f || "" }; } };
   const poTheoAttempt = Object.fromEntries((poRes.data ?? []).map((p) => [p.attempt_id, p]));
 
   const de = Object.fromEntries((deRes.data ?? []).map((e) => [e.id, e]));
@@ -187,6 +197,18 @@ export async function loadMyExamResults() {
           score: a.score == null ? null : Number(a.score), max: Number(a.max_score) || points,
           feedback: a.feedback, gradedAt: a.graded_at, prompt: a.questions?.prompt,
         })),
+        /* Câu trả lời ngắn AI chấm (lô 43): câu hỏi, bài làm, điểm, nhận xét, đáp án mẫu. */
+        cauNgan: rs.flatMap((r) => nganTheoAttempt[r.id] ?? [])
+          .sort((a, b) => (a.questions?.ord ?? 0) - (b.questions?.ord ?? 0))
+          .map((a) => {
+            const f = docNhanXet(a.feedback);
+            return {
+              answerId: a.id, prompt: a.questions?.prompt ?? "", ord: a.questions?.ord ?? null,
+              raw: typeof a.raw === "string" ? a.raw : "",
+              score: a.score == null ? null : Number(a.score), max: a.max_score == null ? null : Number(a.max_score),
+              nhanXet: f.nhan_xet ?? "", mau: f.mau ?? "",
+            };
+          }),
         /* Bài viết đã nộp nhưng CHƯA chấm — phân biệt với "phần này không có
            bài viết nào". Hai thứ trông giống nhau khi score = null. */
         choCham: tong === 0 && !peList.length && !poDong,

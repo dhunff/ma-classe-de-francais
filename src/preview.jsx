@@ -218,6 +218,7 @@ import ThanhTuu from "./screens/practice/ThanhTuu.jsx";
 import { KY_NANG } from "./content/luyenTap/kyNang.js";
 import { Lightbulb, PenLine } from "lucide-react";
 import { Avatar, DS_AVATAR } from "./shared/avatars.jsx";
+import NhanXetCauNgan from "./screens/student/NhanXetCauNgan.jsx";
 
 const VI = {
   /* Phải khớp đủ các khoá mà navItems.js dùng. Thiếu khoá nào thì t() trả về
@@ -912,6 +913,7 @@ function Preview() {
     ["/etudiant/tai-khoan-moi", "Trang Tài khoản"],
     ["/etudiant/phan-nghe", "Phần nghe 2 bài (thi thử)"],
     ["/etudiant/phan-thi", "Một phần thi thử"],
+    ["/etudiant/nhan-xet-ngan", "Nhận xét AI câu trả lời ngắn"],
     ["/etudiant/nhan-xet-ai", "Phiếu nhận xét AI"],
     ["/professeur/khieu-nai-diem", "GV: Khiếu nại điểm AI"],
     ["/etudiant/the-lat", "Thẻ ghi nhớ — lật 3D"],
@@ -1051,6 +1053,12 @@ function Preview() {
               { code: "CE", exercise_id: "xem-thu-2", minutes: 0, points: 0, ord: 1 },
               { code: "PO", exercise_id: "xem-thu", minutes: 15, points: 25, ord: 2 }] }} />} />
           <Route path="/etudiant/phan-thi" element={<><Controls /><PhanThiThu /></>} />
+          {/* 12/11: nhận xét AI câu trả lời ngắn ở trang Kết quả thi (lô 43). */}
+          <Route path="/etudiant/nhan-xet-ngan" element={<><Controls /><div className="mx-auto max-w-2xl py-6"><NhanXetCauNgan ds={[
+            { answerId: "a1", ord: 5, prompt: "Pourquoi l'ennui est-il, pour les entreprises du numérique, « un concurrent à éliminer » ?", raw: "Parce qu'elles gagnent de l'argent avec la publicité : plus on reste, plus elles gagnent.", score: 1, max: 1.5, nhanXet: "Đúng ý doanh thu quảng cáo, nhưng thiếu ý người buồn chán không dùng ứng dụng nên không mang lại tiền.", mau: "Parce que leur modèle d'affaires repose sur notre attention : plus nous restons sur leurs applications, plus elles vendent d'espaces publicitaires. Quelqu'un qui s'ennuie sans écran ne leur rapporte rien." },
+            { answerId: "a2", ord: 9, prompt: "Que gagne un enfant qui s'ennuie, si personne ne vient le distraire avec un écran ?", raw: "Il invente un jeu et devient autonome.", score: 2, max: 2, nhanXet: "Đủ hai ý: tự sáng tạo trò chơi và học tính tự chủ.", mau: "…" },
+            { answerId: "a3", ord: 13, prompt: "Que reproche la philosophe aux cures de « détox numérique » ?", raw: "", score: 0, max: 2, nhanXet: "", mau: "Ce sont des produits de consommation dont l'effet ne dure pas." },
+          ]} /></div></>} />
           <Route path="/professeur/khieu-nai-diem" element={<><Controls /><XemKhieuNai thu={[
             { id: 1, trang_thai: "cho", ly_do: "Em đã hẹn ngày rõ ràng ở câu cuối nhưng tiêu chí « Tôn trọng đề » vẫn bị chấm thấp.", tieu_chi: ["consigne"], tao_luc: new Date().toISOString(), ket_qua: { ...NHAN_XET_LUYEN_MAU, cham_doi: { so_luot: 3, tong_cac_luot: [13.5, 17, 10], chua_chac: true } }, raw: BAI_LAM_MAU, consigne: "<p>Vous invitez un ami à passer des vacances chez vous. (40 mots minimum)</p>", prompt: "Écrivez votre message.", level: "A1", tieu_de: "Écriture A1 : une invitation", che_do: "practice", hoc_sinh: "Học sinh A" },
             { id: 2, trang_thai: "da_cham_lai", ly_do: "Bài em đủ số từ.", tieu_chi: [], tao_luc: new Date(Date.now() - 864e5).toISOString(), diem_gv: { consigne: 2.5, informer: 4, lexique: 3, morpho: 2.5, coherence: 2 }, tong_gv: 14, ghi_chu_gv: "Bài đủ ý, đã cộng thêm ở tiêu chí nội dung.", ket_qua: NHAN_XET_LUYEN_MAU, raw: BAI_LAM_MAU, consigne: "", prompt: "Écrivez votre message.", level: "A1", tieu_de: "Écriture A1 : une invitation", che_do: "exam", hoc_sinh: "Học sinh B" },

@@ -8,6 +8,7 @@ import { NGUONG_PHAN, NGUONG_TONG } from "../exam/examPaper.js";
 import { chamChinhThuc } from "../../shared/chamPeAI.js";
 import NhanXetAI from "./NhanXetAI.jsx";
 import BaiVietMau from "./BaiVietMau.jsx";
+import NhanXetCauNgan from "./NhanXetCauNgan.jsx";
 import { grilleToRubric, chuanHoaGrille } from "../../shared/grilleRubric.js";
 import { tr } from "../../shared/i18n.jsx";
 import { supabase } from "../../storageShim.js";
@@ -73,6 +74,8 @@ function Phan({ s, onTuCham }) {
           <span className="ml-auto font-normal text-soft">{s.po.cap} · 25 {tr("điểm", "points", "points")}</span>
         </button>
       )}
+      {/* 12/11: nhận xét AI cho câu trả lời ngắn của phần Đọc (C1, loại court). */}
+      <NhanXetCauNgan ds={s.cauNgan} />
       {s.pe.map((p, i) => (
         <div key={i} className="mt-2 space-y-2">
           {/* Bản tự chấm — hiện RIÊNG, không cộng vào điểm phần thi.

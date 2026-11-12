@@ -402,6 +402,20 @@ Deno.serve(async (req) => {
           .upsert(rows, { onConflict: "attempt_id,question_id" });
         if (ansErr) console.error("[grade] không ghi được answers:", ansErr.message);
       }
+      /* Câu trả lời ngắn: lưu điểm + nhận xét AI để trang Kết quả thi hiện lại (12/11).
+         UPDATE RIÊNG từng câu, KHÔNG nhét vào upsert trên: upsert mảng có khoá lệch nhau sẽ
+         ghi null vào score/feedback của câu khác, mà câu bài viết (open) có thể đã được
+         cham-pe chấm. `score`/`max_score` theo ĐIỂM (nửa điểm / 2); trang kết quả chỉ cộng
+         answers.score của câu `open`, nên không đếm hai lần. */
+      for (const q of cauNgan) {
+        const kq: any = ketQua[q.id];
+        if (!kq?.graded) continue;
+        const { error: e } = await admin.from("answers").update({
+          score: kq.diem / 2, max_score: kq.heSo / 2, graded_at: new Date().toISOString(),
+          feedback: JSON.stringify({ loai: "court", nhan_xet: kq.nhanXet || "", mau: String(q.model || ""), giai_thich: q.explanationGoc || "" }),
+        }).eq("attempt_id", att.id).eq("question_id", q.id);
+        if (e) console.error("[grade] không ghi được nhận xét câu ngắn:", e.message);
+      }
     }
   }
 
