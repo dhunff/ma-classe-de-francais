@@ -8,7 +8,7 @@ import { supabase } from "../../storageShim.js";
 import { load } from "../../shared/storage.js";
 import { loadExams, loadExam } from "../../shared/examStore.js";
 import { gradeRemote } from "../../shared/gradeRemote.js";
-import { diemUocLuongTCF, nclcTCF, capTcfTP } from "../../shared/tcfCanada.js";
+import { diemUocLuongTCF, nclcTCF, capTcfTP, diemCauTCF, SO_CAU_TCF } from "../../shared/tcfCanada.js";
 import { EXAM_STRUCTURE, LA_TCF, loaiDe, tenKyThi, sectionScore, verdict, ghiPhan, gomTheoKyNang, NGUONG_PHAN, khongCham }
   from "./examPaper.js";
 import GhiAmBaiNoi from "./GhiAmBaiNoi.jsx";
@@ -424,7 +424,7 @@ const chuDiem = (d) => `${String(d).replace(".", ",")} ${d > 1 ? "points" : "poi
 const khoaNghe = { dang: null, nghe: new Set() };
 const datKhoaNghe = (k) => { khoaNghe.dang = k; khoaNghe.nghe.forEach((fn) => fn(k)); };
 
-function AudioGioiHan({ src, attemptId, questionId, luot = 2, xemThu = false }) {
+function AudioGioiHan({ src, attemptId, questionId, luot = 2, xemThu = false, gon = false }) {
   const [baiDangPhat, setBaiDangPhat] = useState(khoaNghe.dang);
   useEffect(() => {
     khoaNghe.nghe.add(setBaiDangPhat);
@@ -502,7 +502,7 @@ function AudioGioiHan({ src, attemptId, questionId, luot = 2, xemThu = false }) 
     : het ? tr("Đã nghe xong", "Écoute terminée", "Listening finished") : tr("Bấm để nghe", "Lancer l'écoute", "Start listening");
 
   return (
-    <div className="de-o mb-6 p-4">
+    <div className={`de-o ${gon ? "p-3" : "mb-6 p-4"}`}>
       {/* KHÔNG dùng `controls` mặc định: nó cho tua lại và phát lại tuỳ ý, tức
           là bỏ qua bộ đếm hoàn toàn. Chỉ một nút, mỗi lần bấm là một lượt. */}
       <audio ref={ref} src={src} preload="metadata"
@@ -534,7 +534,7 @@ function AudioGioiHan({ src, attemptId, questionId, luot = 2, xemThu = false }) 
           </p>
         </div>
       </div>
-      {luot === 1 && (
+      {luot === 1 && !gon && (
         <p className="de-nhat m-0 mt-3 border-0 border-t border-solid border-[#ccc] pt-2 text-xs leading-relaxed">
           {tr("Như phòng thi thật: file gồm thời gian đọc câu hỏi, lượt nghe 1, khoảng nghỉ, lượt nghe 2 và thời gian hoàn thành câu trả lời. Bấm phát một lần rồi để chạy hết, không tạm dừng được.", "Comme à l'examen : l'enregistrement contient le temps de lecture des questions, la 1re écoute, une pause, la 2e écoute et le temps pour compléter. Lancez-le une fois et laissez-le jusqu'au bout, sans pause.", "Like the real exam: the recording includes question-reading time, 1st listening, a pause, 2nd listening and time to finish. Play it once and let it run, no pausing.")}
         </p>
@@ -661,6 +661,8 @@ export function PhanThi({ section, attemptId, attemptTheoBai = {}, answers, setA
   const SO_PHAN = { CO: 1, CE: 2, PE: 3, PO: 4 };
   const TEN_PHAN = { CO: "Compréhension de l'oral", CE: "Compréhension des écrits", PE: "Production écrite", PO: "Production orale" };
   const capDe = tenKyThi(ex?.level);
+  /* TCF: nhãn điểm từng câu theo thang 3/9/15/21/26/33 (đề ít câu hơn 39 thì trải theo tỉ lệ, như diemUocLuongTCF). */
+  const laTcfDe = LA_TCF(ex?.level);
   /* TCF (09–10/11): đánh số và gọi tên bài theo cấu trúc của chính đề (TCF tout public có 5 bài,
      thêm « Maîtrise des structures »), không theo bốn phần DELF. */
   if (LA_TCF(ex?.level)) {
@@ -789,9 +791,27 @@ export function PhanThi({ section, attemptId, attemptTheoBai = {}, answers, setA
           <li className="flex gap-3">
             <span className="de-tron mt-0.5 grid h-[22px] w-[22px] shrink-0 place-items-center rounded-full text-[12px] font-bold">{i + 1}</span>
             <div className="min-w-0 flex-1">
+            {/* TCF (14/11, lô 44): MỖI câu có ngữ liệu riêng như đề trên máy. `q.audio` = đoạn nghe của
+                câu, phát MỘT lần (exam_play_audio nhận ra câu có audio); `q.anh` = hình của câu nghe tả
+                tranh; `q.doc` = tài liệu đọc ngắn của câu (HTML do máy dựng soạn, cùng mức tin cậy với
+                readingText). */}
+            {q.audio && (
+              <div className="mb-3">
+                <AudioGioiHan src={q.audio} attemptId={attemptTheoBai[ex.id] ?? attemptId} questionId={q.id} luot={1} xemThu={xemThu} gon />
+              </div>
+            )}
+            {q.anh && (
+              <figure className="m-0 mb-3">
+                <img src={q.anh} alt={tr("Hình của câu hỏi", "Image de la question", "Question picture")} loading="lazy"
+                  className="block max-h-64 max-w-full border border-solid border-[#111] bg-white object-contain p-2" />
+              </figure>
+            )}
+            {q.doc && (
+              <div className="de-van mb-3 p-4 text-[15px] leading-[1.45] [&_p]:m-0 [&_p+p]:mt-2" dangerouslySetInnerHTML={{ __html: q.doc }} />
+            )}
             <div className="flex gap-3">
               <div className="m-0 min-w-0 flex-1 whitespace-pre-line">{choTrong(q.type === "vf" ? q.prompt.replace(/\s*Cochez la bonne réponse.*$/s, "") : q.prompt)}</div>
-              {q.type !== "open" && <span className="shrink-0 pt-0.5 text-[11.5px] italic">{chuDiem(diemCauHien(q))}</span>}
+              {q.type !== "open" && <span className="shrink-0 pt-0.5 text-[11.5px] italic">{laTcfDe ? `${diemCauTCF(Math.floor((i * SO_CAU_TCF) / (ex.questions.length || 1)))} pt` : chuDiem(diemCauHien(q))}</span>}
             </div>
 
             {/* KHÔNG có tô màu đúng/sai ở đây — cố ý. Xem chú thích đầu file. */}

@@ -458,6 +458,9 @@ PHAN_THI_MAU.exercises = [PHAN_THI_MAU.exercise, {
     { id: "q3", ord: 1, type: "vf", prompt: "Le musée est gratuit le dimanche." },
     /* Câu trả lời ngắn (lô 43, C1 Đọc): AI chấm ở grade. */
     { id: "q4", ord: 2, type: "court", heSo: 4, prompt: "Pourquoi le musée a-t-il décidé d'ouvrir le vendredi soir ?" },
+    /* TCF (lô 44): câu có tài liệu riêng (q.doc) và câu tả tranh (q.anh, lựa chọn chỉ nghe). */
+    { id: "q5", ord: 3, type: "qcm", doc: "<p><strong>PISCINE MUNICIPALE</strong></p><p>Fermée le lundi.</p><p>Du mardi au dimanche : de 7 h à 20 h.</p>", prompt: "Quand la piscine est-elle fermée ?", options: ["Le lundi.", "Le dimanche.", "Le matin.", "Le soir."] },
+    { id: "q6", ord: 4, type: "qcm", anh: "https://ouch-prod-var-cdn.icons8.com/rh/illustrations/previews/faWP68YLZ2-CC9Ih.webp", prompt: "Écoutez les quatre propositions. Choisissez celle qui correspond à l'image.", options: ["", "", "", ""] },
   ],
 }];
 
