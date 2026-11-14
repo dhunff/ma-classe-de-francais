@@ -23,6 +23,8 @@ const MUC_TIEU = {
   "DELF A1": { cap: 0, kn: KN_THI, thi: true }, "DELF A2": { cap: 1, kn: KN_THI, thi: true },
   "DELF B1": { cap: 2, kn: KN_THI, thi: true }, "DELF B2": { cap: 3, kn: KN_THI, thi: true },
   "DALF C1": { cap: 4, kn: KN_THI, thi: true }, "DALF C2": { cap: 4, kn: KN_THI, thi: true },
+  /* 14/11: TCF không chia trình độ trước khi thi; lấy B2 (mốc NCLC 7, mức thường được yêu cầu). */
+  "TCF Canada": { cap: 3, kn: KN_THI, thi: true }, "TCF tout public": { cap: 3, kn: KN_THI, thi: true },
   "Étudier en France": { cap: 3, kn: ["Lecture", "Production écrite", "Écoute"] },
   "Travailler en français": { cap: 2, kn: ["Production écrite", "Communication", "Écoute"] },
   "Communication quotidienne": { cap: 1, kn: ["Écoute", "Communication", "Vocabulaire"] },

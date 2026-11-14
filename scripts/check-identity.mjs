@@ -134,7 +134,13 @@ const t = (ten, got, want) => {
     return m ? m[1].split(",").map((x) => x.trim().replace(/^'|'$/g, "")) : null;
   };
   t("049: danh sách trình độ khớp LEVELS_PROFILE", trongNgoac("level"), LEVELS_PROFILE);
-  t("049: danh sách mục tiêu khớp GOALS_PROFILE", trongNgoac("goal"), GOALS_PROFILE);
+  /* Mục tiêu: ràng buộc được NỚI ở migration sau (206 thêm TCF), nên so với bản MỚI NHẤT: file có
+     số lớn nhất định nghĩa profiles_goal_dang. */
+  const dsFile = readdirSync(new URL("../supabase/migrations/", import.meta.url)).filter((f) => f.endsWith(".sql")).sort();
+  const banGoal = dsFile.map((f) => boChuThich(readFileSync(new URL(`../supabase/migrations/${f}`, import.meta.url), "utf8")))
+    .filter((x) => /add\s+constraint\s+profiles_goal_dang/.test(x)).pop() ?? "";
+  const mGoal = banGoal.match(/goal is null or goal in \(([^)]+)\)/);
+  t("ràng buộc goal mới nhất khớp GOALS_PROFILE", mGoal ? mGoal[1].split(",").map((x) => x.trim().replace(/^'|'$/g, "")) : null, GOALS_PROFILE);
 
   /* Regex điện thoại phải nhận đúng những gì `validateProfile` nhận. Hai bên
      viết khác nhau (`\d` vs `0-9`, thứ tự trong lớp ký tự) nên so từng ký tự

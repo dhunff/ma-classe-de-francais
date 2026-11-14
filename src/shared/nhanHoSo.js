@@ -5,6 +5,7 @@ import { tr } from "./i18n.jsx";
    hồ sơ đã lưu và deXuat.js (gợi ý bài theo mục tiêu) đọc đúng các chuỗi này. */
 export const nhanHoSo = (v) => ({
   "Débutant": tr("Mới bắt đầu", "Débutant", "Beginner"),
+  "TCF tout public": tr("TCF Pháp (tout public)", "TCF tout public", "TCF (general public)"),
   "Étudier en France": tr("Du học Pháp", "Étudier en France", "Study in France"),
   "Travailler en français": tr("Làm việc bằng tiếng Pháp", "Travailler en français", "Work in French"),
   "Communication quotidienne": tr("Giao tiếp hằng ngày", "Communication quotidienne", "Everyday communication"),

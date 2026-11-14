@@ -8,7 +8,7 @@
    sự có nhiều thứ để điền hơn. */
 const PROFILE_FIELDS = ["genre", "prenom", "nom", "adresse", "phone", "dob", "level", "goal", "school"];
 const LEVELS_PROFILE = ["Débutant", "A1", "A2", "B1", "B2", "C1", "C2"];
-const GOALS_PROFILE = ["DELF A1", "DELF A2", "DELF B1", "DELF B2", "DALF C1", "DALF C2",
+const GOALS_PROFILE = ["DELF A1", "DELF A2", "DELF B1", "DELF B2", "DALF C1", "DALF C2", "TCF Canada", "TCF tout public",
   "Étudier en France", "Travailler en français", "Communication quotidienne", "Voyage", "Plaisir personnel"];
 
 const emptyProfile = () => ({
