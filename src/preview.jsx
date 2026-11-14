@@ -220,6 +220,7 @@ import { Lightbulb, PenLine } from "lucide-react";
 import { Avatar, DS_AVATAR } from "./shared/avatars.jsx";
 import NhanXetCauNgan from "./screens/student/NhanXetCauNgan.jsx";
 import NhanXetTCF from "./screens/exam/NhanXetTCF.jsx";
+import XemLaiBaiThi from "./screens/exam/XemLaiBaiThi.jsx";
 
 const VI = {
   /* Phải khớp đủ các khoá mà navItems.js dùng. Thiếu khoá nào thì t() trả về
@@ -938,6 +939,7 @@ function Preview() {
     ["/etudiant/phan-thi", "Một phần thi thử"],
     ["/etudiant/phan-thi-tcf", "Một phần thi TCF"],
     ["/etudiant/cham-tcf", "Phiếu AI chấm TCF"],
+    ["/etudiant/xem-lai-thi", "Xem lại bài thi"],
     ["/etudiant/nhan-xet-ngan", "Nhận xét AI câu trả lời ngắn"],
     ["/etudiant/nhan-xet-ai", "Phiếu nhận xét AI"],
     ["/professeur/khieu-nai-diem", "GV: Khiếu nại điểm AI"],
@@ -1079,6 +1081,20 @@ function Preview() {
               { code: "PO", exercise_id: "xem-thu", minutes: 15, points: 25, ord: 2 }] }} />} />
           <Route path="/etudiant/phan-thi" element={<><Controls /><PhanThiThu /></>} />
           <Route path="/etudiant/phan-thi-tcf" element={<><Controls /><PhanThiTcfThu /></>} />
+          {/* 14/11: xem lại bài thi (dữ liệu giả). */}
+          <Route path="/etudiant/xem-lai-thi" element={<><Controls /><XemLaiBaiThi tieuDe="DELF B1 · Đề 1" onDong={() => {}} duLieu={[
+            { attempt_id: "a1", code: "CE", title: "Lecture : un musée ouvert la nuit", reading_text: "<p>Depuis mai, le musée reste ouvert jusqu'à 22 heures le vendredi.</p>", questions: [
+              { id: "q1", type: "qcm", prompt: "Le musée ferme à quelle heure le vendredi ?", payload: { options: ["18 h", "20 h", "22 h"] }, answer_key: { answer: 2 }, raw: 0, correct: false, explanation: "« jusqu'à 22 heures le vendredi »." },
+              { id: "q2", type: "qcm", prompt: "Depuis quand ?", payload: { options: ["mars", "mai", "juin"] }, answer_key: { answer: 1 }, raw: 1, correct: true, explanation: "« Depuis mai »." ,
+                feedback: JSON.stringify({ loai: "giai_thich", vi_sao_dung: "Bài viết « Depuis mai » nên đáp án là tháng năm.", vi_sao_sai: "", phuong_an: [{ chu: "A", ly_do: "Tháng ba không được nhắc." }, { chu: "C", ly_do: "Tháng sáu không có trong bài." }], meo: "Tìm mốc thời gian sau « depuis »." }) },
+              { id: "q3", type: "vf", prompt: "Le musée est gratuit le vendredi soir.", payload: {}, answer_key: { answer: 1, justification: "« L'entrée coûte 8 euros. »" }, raw: { choice: 0, just: "gratuit" }, correct: false },
+              { id: "q4", type: "fill", prompt: "Le musée ouvre le ______.", payload: {}, answer_key: { accepted: "vendredi" }, raw: "", correct: false },
+              { id: "q5", type: "court", prompt: "Pourquoi le musée ouvre-t-il le soir ?", payload: {}, answer_key: { model: "Pour attirer les actifs qui travaillent la journée." }, raw: "Pour les touristes.", score: 0.5, max_score: 2, feedback: JSON.stringify({ loai: "court", nhan_xet: "Chưa nêu đối tượng là người đi làm." }) },
+            ] },
+            { attempt_id: "a2", code: "CO", title: "TCF Canada : Compréhension orale", questions: [
+              { id: "t1", type: "qcm", prompt: "Écoutez les quatre propositions. Choisissez celle qui correspond à l'image.", payload: { audio: "x.mp3", anh: "https://ouch-prod-var-cdn.icons8.com/rh/illustrations/previews/faWP68YLZ2-CC9Ih.webp", options: ["", "", "", ""] }, answer_key: { answer: 1, model: "A. Une femme dort sous un arbre. B. Une jeune femme lit, allongée sur une couverture. C. Une femme court. D. Une femme écrit." }, raw: 3, correct: false, explanation: "La jeune femme est allongée sur une couverture et lit un livre." },
+            ] },
+          ]} /></>} />
           {/* 14/11: phiếu AI chấm Viết TCF (dữ liệu giả, không gọi máy chủ). */}
           <Route path="/etudiant/cham-tcf" element={<><Controls /><div className="mx-auto max-w-2xl rounded-3xl bg-surface p-5"><NhanXetTCF ban={{ diem: 11, cap: "B2", nclc: 7, level: "TCF", ketQua: {
             tong_quat: "Bạn hoàn thành đủ ba tâche, bài 3 có lập luận rõ nhưng phần tóm tắt hai tài liệu còn chép lại câu gốc.",

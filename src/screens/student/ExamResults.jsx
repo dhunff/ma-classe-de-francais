@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { ShieldCheck, Trophy, Clock, MessageSquare, ClipboardCheck, PenLine, ArrowLeft } from "lucide-react";
+import { ShieldCheck, Trophy, Clock, MessageSquare, ClipboardCheck, PenLine, ArrowLeft, SearchCheck } from "lucide-react";
 import PESelfEvaluation from "./PESelfEvaluation.jsx";
 import POSelfEvaluation from "./POSelfEvaluation.jsx";
 import { Mic } from "lucide-react";
@@ -9,7 +9,8 @@ import { chamChinhThuc } from "../../shared/chamPeAI.js";
 import NhanXetAI from "./NhanXetAI.jsx";
 import BaiVietMau from "./BaiVietMau.jsx";
 import NhanXetCauNgan from "./NhanXetCauNgan.jsx";
-import NhanXetTCF from "../exam/NhanXetTCF.jsx";
+import NhanXetTCF from "../exam/NhanXetTCF.jsx";
+import XemLaiBaiThi from "../exam/XemLaiBaiThi.jsx";
 import { grilleToRubric, chuanHoaGrille } from "../../shared/grilleRubric.js";
 import { tr } from "../../shared/i18n.jsx";
 import { supabase } from "../../storageShim.js";
@@ -162,6 +163,8 @@ function Phan({ s, onTuCham }) {
 }
 
 function Luot({ s, onTuCham, i = 0 }) {
+  /* 14/11: « Xem lại bài thi »: từng câu đúng/sai, đáp án, lời giải, AI giải thích (XemLaiBaiThi). */
+  const [xemLai, setXemLai] = useState(false);
   return (
     <li className="mcf-cau-vao rounded-3xl border border-solid border-line bg-surface p-4 shadow-[0_8px_30px_rgba(0,0,0,0.04)]" style={{ animationDelay: `${i * 80}ms` }}>
       <BangKetLuan diem={s.total} toiDa={s.maxScored} passed={s.passed}
@@ -179,6 +182,13 @@ function Luot({ s, onTuCham, i = 0 }) {
         {s.sections.map((x) => <Phan key={x.code + x.exerciseId} s={x} onTuCham={onTuCham} />)}
       </ul>
       <GoiYThi attemptIds={s.attemptIds} level={s.level} />
+      {s.attemptIds?.length > 0 && (
+        <button type="button" onClick={() => setXemLai(true)}
+          className="mt-3 flex w-full cursor-pointer items-center justify-center gap-2 rounded-2xl border-2 border-solid border-primary bg-surface px-4 py-2.5 font-sans text-sm font-extrabold text-primary transition-colors hover:bg-primary-soft">
+          <SearchCheck size={16} /> {tr("Xem lại bài thi: đúng sai ở đâu, vì sao", "Revoir ma copie : erreurs et explications", "Review my paper: mistakes and why")}
+        </button>
+      )}
+      {xemLai && <XemLaiBaiThi attemptIds={s.attemptIds} tieuDe={[s.title, s.level].filter(Boolean).join(" · ")} onDong={() => setXemLai(false)} />}
     </li>
   );
 }

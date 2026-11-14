@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Link, useNavigate } from "react-router-dom";
-import { Timer, ShieldCheck, AlertTriangle, Clock, Volume2, VolumeX, Trophy, Crown, Headphones, BookOpen, PenLine, Mic, Puzzle } from "lucide-react";
+import { Timer, ShieldCheck, AlertTriangle, Clock, Volume2, VolumeX, Trophy, Crown, Headphones, BookOpen, PenLine, Mic, Puzzle, SearchCheck } from "lucide-react";
 import NutTieng from "../../shared/NutTieng.jsx";
 import { BangKetLuan, ThanhPhan, PhaoGiayLon } from "./KetQuaVisual.jsx";
 import { supabase } from "../../storageShim.js";
@@ -18,6 +18,7 @@ import VanBanToSang from "./VanBanToSang.jsx";
 import { chanDan } from "../../shared/chanDan.js";
 import { GhepCap, DienPhieu, AnhLuaChon } from "../student/dangMoi.jsx";
 import NhanXetTCF from "./NhanXetTCF.jsx";
+import XemLaiBaiThi from "./XemLaiBaiThi.jsx";
 import { nhomTheoTrinhDo } from "../../shared/trinhDoDe.js";
 import { HopBatDau, HopThoat, useGiuPhongThi } from "./LuotThi.jsx";
 import { isQuestionAnswered } from "../../shared/questions.js";
@@ -1100,6 +1101,8 @@ export function PhanThi({ section, attemptId, attemptTheoBai = {}, answers, setA
 /* ─────────────────────────── Kết quả ─────────────────────────── */
 
 function KetQua({ sections, blurCount, onLai }) {
+  const [xemLai, setXemLai] = useState(false);
+  const idsXemLai = sections.flatMap((s) => s.attemptIds ?? []);
   /* Có phần nào KHÔNG lưu được lên máy chủ không.
    *
    * Không gộp vào `verdict`: điểm và "có lưu được không" là hai câu hỏi khác
@@ -1172,6 +1175,13 @@ function KetQua({ sections, blurCount, onLai }) {
           className="inline-flex items-center gap-2 rounded-2xl border-0 border-b-4 border-solid border-blue-800 bg-gradient-to-r from-primary to-indigo-600 px-6 py-3 text-sm font-extrabold text-white no-underline shadow-lg transition-transform hover:-translate-y-0.5">
           <Trophy size={15} /> {tr("Xem chi tiết & nhận xét AI", "Détail et évaluation IA", "Details & AI feedback")}
         </Link>
+        {idsXemLai.length > 0 && (
+          <button type="button" onClick={() => setXemLai(true)}
+            className="inline-flex cursor-pointer items-center gap-2 rounded-2xl border-2 border-solid border-primary bg-surface px-6 py-3 font-sans text-sm font-extrabold text-primary transition-colors hover:bg-primary-soft">
+            <SearchCheck size={15} /> {tr("Xem lại bài thi", "Revoir ma copie", "Review my paper")}
+          </button>
+        )}
+        {xemLai && <XemLaiBaiThi attemptIds={idsXemLai} onDong={() => setXemLai(false)} />}
         <button type="button" onClick={onLai}
           className="cursor-pointer rounded-2xl border-2 border-solid border-line bg-surface px-6 py-3 font-sans text-sm font-bold text-ink transition-colors hover:border-primary hover:text-primary">
           {tr("Thi đề khác", "Passer un autre sujet", "Take another exam")}
@@ -1191,6 +1201,8 @@ function KetQua({ sections, blurCount, onLai }) {
    điểm thay vì đưa một con số (quy tắc 1). Không có « đạt / trượt »: TCF không có ngưỡng đạt,
    người thi cần đúng mức NCLC mà chương trình định cư của mình đòi. */
 function KetQuaTCF({ sections, blurCount, onLai, level = "TCF" }) {
+  const [xemLai, setXemLai] = useState(false);
+  const idsXemLai = sections.flatMap((s) => s.attemptIds ?? []);
   const tp = level === "TCF_TP";
   const mat = sections.some((s) => s.luuDuoc === false);
   useEffect(() => { phat(mat ? "sai" : "nop"); }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -1252,6 +1264,13 @@ function KetQuaTCF({ sections, blurCount, onLai, level = "TCF" }) {
         </p>
       )}
       <div className="mt-7 flex flex-wrap gap-3">
+        {idsXemLai.length > 0 && (
+          <button type="button" onClick={() => setXemLai(true)}
+            className="inline-flex cursor-pointer items-center gap-2 rounded-2xl border-2 border-solid border-primary bg-surface px-6 py-3 font-sans text-sm font-extrabold text-primary hover:bg-primary-soft">
+            <SearchCheck size={15} /> {tr("Xem lại bài thi", "Revoir ma copie", "Review my paper")}
+          </button>
+        )}
+        {xemLai && <XemLaiBaiThi attemptIds={idsXemLai} tieuDe={tenKyThi(level)} onDong={() => setXemLai(false)} />}
         <button type="button" onClick={onLai}
           className="cursor-pointer rounded-2xl border-0 bg-primary px-6 py-3 font-sans text-sm font-extrabold text-on-primary shadow-lg hover:opacity-90">
           {tr("Thi đề khác", "Passer un autre sujet", "Take another exam")}
@@ -1477,6 +1496,7 @@ export default function ExamMode({ name, loai = "delf", gioiThieu = null }) {
     /* TCF Canada: đúng/sai từng câu THEO THỨ TỰ ĐỀ, để tính điểm ước lượng 0 → 699 (câu sau nặng hơn). */
     const dungSai = [];
     let attemptDau = null;
+    const attemptPhan = [];
     for (const ex of k.exercises) {
       const r = await gradeRemote(ex.id, answers, {
         mode: "exam", blurCount, attemptId: attemptTheoBai.current[ex.id],
@@ -1485,6 +1505,7 @@ export default function ExamMode({ name, loai = "delf", gioiThieu = null }) {
       if (r) { dung += r.score ?? 0; tong += r.max ?? 0; }
       if (!r || !r.attemptId) luuDuoc = false;
       attemptDau = attemptDau ?? r?.attemptId ?? null;
+      if (r?.attemptId) attemptPhan.push(r.attemptId);
       for (const q of ex.questions ?? []) {
         const kq = r?.results?.[q.id];
         dungSai.push(kq && kq.graded !== false && typeof kq.correct === "boolean" ? kq.correct : null);
@@ -1494,6 +1515,8 @@ export default function ExamMode({ name, loai = "delf", gioiThieu = null }) {
 
     const ghi = {
       code: k.code, points: k.points, exerciseId: k.exercises[0]?.id, attemptId: attemptDau,
+      /* 14/11: mọi lượt làm của phần này, cho « Xem lại bài thi ». */
+      attemptIds: attemptPhan,
       /* Hai nhãn khác nhau, đừng gộp làm một: `label` là tên kỹ năng
          (« Compréhension de l'oral »), `baiLabel` là tên các bài đã làm. Màn
          kết quả hiện cả hai, dòng trên dòng dưới. Bản trước đặt tên bài vào
