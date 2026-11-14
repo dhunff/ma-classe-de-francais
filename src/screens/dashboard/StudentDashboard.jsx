@@ -194,7 +194,7 @@ export default function StudentDashboard({
         <div className="flex flex-col gap-4">
 
           <Rise id="tour-tc-chuoi" delay={80}>
-            <StreakWidget t={t} fixture={chuoi} />
+            <StreakWidget t={t} fixture={chuoi} ten={name} />
           </Rise>
 
           {/* 14/11 (chủ dự án): BỎ ô « Giờ học » khỏi trang chủ, đưa « Đang theo dõi » lên ngay dưới

@@ -3,7 +3,8 @@ import { Flame, Snowflake } from "lucide-react";
 import { docChuoiTuan } from "../../shared/hoatDong.js";
 import { tr } from "../../shared/i18n.jsx";
 import { LeonNoi } from "../../shared/leon.jsx";
-import MungChuoi, { mocCanMung, ghiDaMung } from "./MungChuoi.jsx";
+import MungChuoi, { mocCanMung, ghiDaMung, NutChiaSeChuoi } from "./MungChuoi.jsx";
+import { mocGanNhat, mocKeTiep } from "../../shared/anhChuoi.js";
 
 /* Widget chuỗi ngày học — trang chủ học sinh (25/09).
  *
@@ -19,9 +20,8 @@ import MungChuoi, { mocCanMung, ghiDaMung } from "./MungChuoi.jsx";
  * Ba trạng thái như ô chuỗi cũ: đang tải / không hỏi được / số thật (kể cả 0).
  * `fixture` chỉ để preview.jsx bơm dữ liệu vào. */
 
-const MOC = [7, 30, 100];
 
-export default function StreakWidget({ t, fixture }) {
+export default function StreakWidget({ t, fixture, ten = "" }) {
   const [d, setD] = useState(undefined);
   /* 14/11: mừng mốc chuỗi 3, 10, 30, 100, 200… (MungChuoi.jsx). Chỉ với số THẬT từ máy chủ,
      không với dữ liệu giả của preview (preview có màn riêng để xem hiệu ứng). */
@@ -43,16 +43,17 @@ export default function StreakWidget({ t, fixture }) {
   let tre = 0;
   const giu = (i) => !!(d?.tuan?.[i] || d?.bang?.[i]);
 
-  /* 30/10: thanh tiến độ tới mốc thưởng chuỗi thật (7/30/100 ngày, migration 117). */
+  /* 14/11 (chủ dự án): thanh tiến độ chạy theo MỐC MỪNG 3, 10, 30, 100 rồi mỗi 100 ngày (cùng mốc với
+     hiệu ứng MungChuoi). Thưởng XP mốc chuỗi 7/30/100 (migration 117) vẫn cộng ở máy chủ như cũ. */
   const chuoi = d?.chuoi ?? 0;
-  const mocToi = MOC.find((m) => m > chuoi);
-  const mocTruoc = [...MOC].reverse().find((m) => m <= chuoi) ?? 0;
+  const mocToi = mocKeTiep(chuoi);
+  const mocTruoc = mocGanNhat(chuoi);
   const phanTram = mocToi ? ((chuoi - mocTruoc) / (mocToi - mocTruoc)) * 100 : 100;
   const conLaiBang = d?.conLaiBang ?? 0;
 
   return (
     <>
-    {mung > 0 && <MungChuoi moc={mung} onDong={() => { ghiDaMung(mung); setMung(0); }} />}
+    {mung > 0 && <MungChuoi moc={mung} ten={ten} onDong={() => { ghiDaMung(mung); setMung(0); }} />}
     <section className="w-full overflow-hidden rounded-3xl bg-surface/80 font-sans shadow-[0_8px_30px_rgb(0,0,0,0.04)] backdrop-blur-md transition-colors duration-300">
       {/* Mảng đầu: màu cam-đỏ khi chuỗi đang cháy, xám khi chưa có chuỗi. Không có token cam (xem trên). */}
       <div className={`relative overflow-hidden p-5 ${chuoi ? "bg-gradient-to-br from-orange-600 to-rose-600 text-white" : "bg-surface2 text-ink"}`}>
@@ -69,6 +70,11 @@ export default function StreakWidget({ t, fixture }) {
               <span className="text-6xl font-extrabold leading-none tabular-nums">{d.chuoi}</span>
               <span className="text-sm font-bold uppercase tracking-wide">{t("dash.streak_days")}</span>
             </p>
+            {d.chuoi > 0 && (
+              <div className="relative mt-3 [&_button]:border-white/40 [&_button]:bg-white/15 [&_button]:text-white">
+                <NutChiaSeChuoi so={d.chuoi} ten={ten} toi gon trai />
+              </div>
+            )}
             {mocToi && (
               <div className="relative mt-4 max-w-[78%]">
                 <div className={`h-2 overflow-hidden rounded-full ${chuoi ? "bg-white/25" : "bg-line"}`}>
