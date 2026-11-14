@@ -1,0 +1,141 @@
+/* Lô 45 (14/11/2026): 35 bài NGHE B2 cho cây Luyện tập theo trình độ. Khuôn lo35_nghe_b1.mjs.
+ * Nội dung: lo45_nghe_b2_a.mjs (CO-1, CO-2) + lo45_nghe_b2_b.mjs (CO-3, CO-4, CO-5), mọi câu QCM A/B/C
+ * theo khung đề DELF B2 (quy định 04/11). Sinh kèm loi_nghe (lời + phân tích) cho từng bài.
+ *
+ * Bài gắn cây bằng meta.kyNang + meta.thuTu + meta.vong; thuTu tính tiếp sau bài đã có trong `kn.bai`.
+ * Bài trong `mienPhi` miễn phí, còn lại VIP 19.000 đ. Audio tạo bằng tao-audio, file đã có trong
+ * kho thì dùng lại, lỗi mạng thì thử lại 3 lần.
+ * Tự kiểm trước khi gọi TTS: đủ số bài, số câu đúng kế hoạch, không gạch dài, đoạn trích « » trong
+ * lời giải có trong lời nghe, câu điền từ khớp nguyên văn quanh chỗ trống, câu xếp lại có nguyên văn,
+ * và không bài nào có mọi đáp án QCM cùng một vị trí (03/11: ba bài cũ dính lỗi này, migration 187).
+ *
+ * Chạy: TTS_TOKEN_FILE=… node scripts/nhap/lo45_nghe_b2.mjs > lo45.sql   (KHO=1: chạy khô) */
+import { readFileSync } from "node:fs";
+import { toRows } from "../../src/shared/exerciseMap.js";
+import { KY_NANG } from "../../src/content/luyenTap/kyNang.js";
+import { phanA } from "./lo45_nghe_b2_a.mjs";
+import { phanB } from "./lo45_nghe_b2_b.mjs";
+
+const env = Object.fromEntries(readFileSync(".env", "utf8").split(/\r?\n/).filter((l) => l.includes("=")).map((l) => [l.slice(0, l.indexOf("=")), l.slice(l.indexOf("=") + 1).replace(/^["']|["']$/g, "")]));
+const tho = process.env.TTS_ADMIN_TOKEN || (process.env.TTS_TOKEN_FILE ? readFileSync(process.env.TTS_TOKEN_FILE, "utf8").trim() : "");
+/* Giá trị TTS_ADMIN_TOKEN trên máy chủ có kèm dấu < > (02/11). */
+const TOKEN = !tho || tho.startsWith("<") ? tho : `<${tho}>`;
+const KHO = process.env.KHO === "1";
+if (!TOKEN && !KHO) { console.error("Thiếu TTS_ADMIN_TOKEN"); process.exit(1); }
+
+let dem = 0;
+const id = (t) => `${t}${Date.now().toString(36)}${(dem++).toString(36).padStart(3, "0")}`;
+let hat = 20261114;
+const nn = () => ((hat = (hat * 1103515245 + 12345) % 2147483648) / 2147483648);
+const tron = (q) => {
+  const dung = q.options[q.answer];
+  for (let i = q.options.length - 1; i > 0; i--) { const k = Math.floor(nn() * (i + 1)); [q.options[i], q.options[k]] = [q.options[k], q.options[i]]; }
+  q.answer = q.options.indexOf(dung);
+  return q;
+};
+const qcm = (prompt, dung, sai, explanation) => tron({ id: id("q"), type: "qcm", prompt, options: [dung, ...sai], answer: 0, explanation });
+const ghep = (prompt, items, choix, dap, explanation) => {
+  const I = items.map((texte) => ({ id: id("i"), texte }));
+  const C = choix.map((texte) => ({ id: id("c"), texte }));
+  return { id: id("q"), type: "apparier", prompt, items: I, choix: C, answers: Object.fromEntries(I.map((x, k) => [x.id, C[dap[k]].id])), explanation };
+};
+const NGHE = "Complétez avec ce que vous entendez : ";
+const nghe = (cau, accepted, explanation) => ({ id: id("q"), type: "fill", prompt: NGHE + cau, accepted, explanation });
+const ghi = (prompt, accepted, explanation) => ({ id: id("q"), type: "fill", prompt, accepted, explanation, ghiChu: true });
+const xep = (thuTu, explanation) => ({ id: id("q"), type: "ordre", prompt: "Remettez les morceaux dans l'ordre pour retrouver la phrase entendue.", elements: thuTu.map((texte) => ({ id: id("e"), texte })), explanation });
+
+const BAI = [...phanA({ qcm }), ...phanB({ qcm })];
+
+/* Mọi đáp án QCM của một bài cùng vị trí thì trộn lại (hạt cố định nên kết quả vẫn lặp lại được). */
+for (const b of BAI) {
+  const ds = b.cau.filter((c) => c.type === "qcm");
+  for (let lan = 0; ds.length >= 3 && new Set(ds.map((c) => c.answer)).size === 1 && lan < 20; lan++) ds.forEach(tron);
+}
+
+const SO_CAU = { "B2-CO-1": Array(9).fill(7), "B2-CO-2": Array(6).fill(6), "B2-CO-3": [5, 5, 5, 5, 5, 5, 5, 6], "B2-CO-4": [6, 6, 6, 6, 6, 6, 7], "B2-CO-5": [8, 8, 8, 6, 8] };
+const chuan = (s) => s.toLowerCase().replace(/[’]/g, "'").replace(/\s+/g, " ").trim();
+const loi = [];
+const ten = new Set();
+const demKn = {};
+for (const b of BAI) {
+  if (ten.has(b.tieuDe) || ten.has(b.tep)) loi.push("Trùng: " + b.tieuDe);
+  ten.add(b.tieuDe); ten.add(b.tep);
+  const n = (demKn[b.ma] = (demKn[b.ma] || 0) + 1);
+  if (b.cau.length !== SO_CAU[b.ma][n - 1]) loi.push(`${b.tieuDe}: ${b.cau.length} câu, kế hoạch ${SO_CAU[b.ma][n - 1]}`);
+  if (JSON.stringify(b).includes("—")) loi.push("Dấu gạch dài: " + b.tieuDe);
+  const van = chuan(b.doan.map(([, c]) => c).join(" "));
+  const co = (s) => van.includes(chuan(s));
+  for (const c of b.cau) {
+    for (const t of (c.explanation || "").match(/« [^»]+ »/g) || []) {
+      for (const manh of t.slice(2, -2).split("…").map((x) => x.trim().replace(/^[.,]|[.,]$/g, "")).filter(Boolean)) if (!co(manh)) loi.push(`${b.tieuDe}: « ${manh} » không có trong lời nghe`);
+    }
+    if (c.type === "fill" && !c.ghiChu) {
+      const [truoc, sau] = c.prompt.slice(NGHE.length).split("______");
+      const quanh = [truoc.trim().split(" ").slice(-3).join(" "), c.accepted.split("|")[0], sau.trim().replace(/[.!?]$/, "").split(" ").slice(0, 3).join(" ")].filter(Boolean).join(" ");
+      if (!co(quanh)) loi.push(`${b.tieuDe}: câu điền « ${quanh} » không khớp lời nghe`);
+    }
+    if (c.ghiChu && !c.accepted.split("|").some(co)) loi.push(`${b.tieuDe}: ô ghi « ${c.prompt} » không có đáp án nào trong lời nghe`);
+    if (c.type === "ordre" && !co(c.elements.map((e) => e.texte).join(" "))) loi.push(`${b.tieuDe}: câu xếp lại không có nguyên văn`);
+  }
+  const dap = b.cau.filter((c) => c.type === "qcm").map((c) => c.answer);
+  if (dap.length >= 3 && new Set(dap).size === 1) loi.push(`${b.tieuDe}: mọi đáp án QCM đều ở vị trí ${dap[0]}`);
+}
+for (const kn of KY_NANG.B2.CO) if ((demKn[kn.ma] || 0) + kn.bai.length !== kn.duKien) loi.push(`${kn.ma}: có ${(demKn[kn.ma] || 0) + kn.bai.length} bài, kế hoạch ${kn.duKien}`);
+if (loi.length) { console.error(loi.join("\n")); process.exit(1); }
+for (const b of BAI) for (const c of b.cau) delete c.ghiChu;
+for (const b of BAI) if (!b.pt?.y?.length) { console.error("Thiếu phân tích: " + b.tieuDe); process.exit(1); }
+
+const CHAM = "Parle en français de France, à un débit naturel et assez rapide, comme à la radio ou dans une conversation réelle, pour des apprenants de niveau B2. Respecte le ton : ironie, hésitation ou fermeté selon le texte.";
+const DE = "<p>Lisez d'abord les questions, puis écoutez le document (deux écoutes maximum) et choisissez la bonne réponse.</p>";
+const URL_FN = `${env.VITE_SUPABASE_URL}/functions/v1/tao-audio`;
+const moc = Date.UTC(2026, 10, 14, 17);
+const q = (x) => (x == null ? "null" : "'" + String(x).replace(/'/g, "''").replace(/\n/g, "' || chr(10) || '") + "'");
+const j = (x) => (x == null ? "null" : q(JSON.stringify(x)) + "::jsonb");
+const ra = [];
+const loiNghe = [];
+const daGap = {};
+let mien = 0;
+for (const [i, b] of BAI.entries()) {
+  const kn = KY_NANG.B2.CO.find((k) => k.ma === b.ma);
+  daGap[b.ma] = (daGap[b.ma] || 0) + 1;
+  const thuTu = kn.bai.length + daGap[b.ma];
+  const mienPhi = thuTu <= kn.mienPhi;
+  if (mienPhi) mien++;
+  let url = `https://kho.invalid/${b.tep}.mp3`;
+  const daCo = `${env.VITE_SUPABASE_URL}/storage/v1/object/public/nghe/${b.tep}.mp3`;
+  if (!KHO && (await fetch(daCo, { method: "HEAD" }).catch(() => null))?.ok) {
+    url = daCo;
+    console.error(`= ${b.tep}: đã có trong kho, dùng lại`);
+  } else if (!KHO) {
+    let kq = null;
+    for (let lan = 1; lan <= 3 && !kq; lan++) {
+      try {
+        const r = await fetch(URL_FN, { method: "POST", headers: { apikey: env.VITE_SUPABASE_ANON_KEY, Authorization: `Bearer ${env.VITE_SUPABASE_ANON_KEY}`, "x-admin-token": TOKEN, "Content-Type": "application/json" },
+          body: JSON.stringify({ ten: b.tep, doan: b.doan.map(([giong, chu]) => ({ giong, cach: CHAM, chu })) }) });
+        kq = await r.json();
+      } catch (e) { console.error(`  ${b.tep}: lỗi mạng lần ${lan} (${e.cause?.code ?? e.message})`); }
+    }
+    if (!kq?.ok) { console.error(b.tep, JSON.stringify(kq).slice(0, 200)); process.exit(1); }
+    url = kq.url;
+    console.error(`✔ ${b.tep}: ${Math.round(kq.so_byte / 1024)} KB`);
+  }
+  console.error(`· ${b.ma} #${thuTu} ${b.tieuDe}: ${b.cau.length} câu (${b.cau.map((c) => c.type).join(", ")}), ${mienPhi ? "miễn phí" : "VIP"}`);
+  const ex = {
+    title: b.tieuDe, level: "B2", skills: ["Écoute"], id: `b2co${String(i + 1).padStart(2, "0")}${id("x").slice(-6)}`, audioUrl: url, questions: b.cau,
+    consigne: b.de || DE,
+    imageUrl: "", usageType: "practice", targeted: false, assignedTo: [], assignedClasses: [], assignedExtra: [], createdAt: moc + i * 1000,
+    vocabulaire: b.tu.map((x) => "• " + x).join("\n"), explications: b.meo.map((x) => "• " + x).join("\n"),
+    kyNang: b.ma, vong: b.vong, thuTu,
+    ...(mienPhi ? {} : { isPremium: true, price: 19000 }),
+  };
+  const { exRow, qRows } = toRows(ex, "practice");
+  const pt = b.pt ? { loai: b.pt.loai, chu_de: b.pt.chu_de, y_chinh: b.pt.y } : null;
+  loiNghe.push(`insert into public.loi_nghe (exercise_id, loi, phan_tich) values (${q(ex.id)}, ${j(b.doan.map(([giong, chu]) => ({ giong, chu })))}, ${j(pt)}) on conflict (exercise_id) do update set loi = excluded.loi, phan_tich = excluded.phan_tich, cap_nhat = now();`);
+  exRow.store = "practice";
+  const cot = Object.keys(exRow);
+  const gt = cot.map((k) => (k === "meta" ? j(exRow[k]) : Array.isArray(exRow[k]) ? `array[${exRow[k].map(q).join(",")}]::text[]` : typeof exRow[k] === "number" ? exRow[k] : q(exRow[k])));
+  const dong = qRows.map((x) => `(${q(x.id)}, ${q(x.exercise_id)}, ${x.ord}, ${q(x.type)}, ${q(x.prompt)}, ${j(x.payload)}, ${j(x.answer_key)}, ${q(x.explanation)})`).join(", ");
+  ra.push(`with e as (insert into public.exercises (${cot.join(", ")}) values (${gt.join(", ")}) returning id) insert into public.questions (id, exercise_id, ord, type, prompt, payload, answer_key, explanation) select v.* from e, (values ${dong}) as v(id, exercise_id, ord, type, prompt, payload, answer_key, explanation);`);
+}
+console.error(`${BAI.length} bài, ${BAI.reduce((n, b) => n + b.cau.length, 0)} câu, ${mien} miễn phí, ${BAI.length - mien} VIP`);
+console.log([...ra, ...loiNghe].join("\n"));
