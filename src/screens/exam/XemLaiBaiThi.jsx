@@ -2,11 +2,11 @@ import React, { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { X, Check, Minus, Sparkles, Loader2, BookOpen, Headphones, ChevronDown, Lightbulb } from "lucide-react";
 import { tr } from "../../shared/i18n.jsx";
-import { docBaiThi, xinGiaiThich } from "../../shared/xemLaiThi.js";
+import { docBaiThi } from "../../shared/xemLaiThi.js";
 
 /* « Xem lại bài thi » (14/11, chủ dự án): sau khi thi (DELF, DALF, TCF) xem lại từng câu: mình chọn gì,
- * đúng hay sai, đáp án đúng, VÌ SAO (lời giải có sẵn của đề), và nút AI giải thích vì sao đáp án đúng,
- * vì sao lựa chọn của mình sai (Edge Function giai-thich-cau, lưu lại nên mở lần sau không tốn lượt).
+ * đúng hay sai, đáp án đúng, VÌ SAO (lời giải CỐ ĐỊNH của đề). 14/11 (chủ dự án): trắc nghiệm, điền từ KHÔNG
+ * dùng AI; AI chỉ cho phần phải tự viết/nói (câu court có nhận xét AI từ grade).
  * Dữ liệu: rpc xem_lai_bai_thi (migration 207), chỉ lượt đã nộp của chính mình. Viết/Nói có phiếu
  * chấm riêng nên không có ở đây. KHÔNG hiện số câu đúng/sai (quy tắc: không tự thêm số đếm). */
 
@@ -125,39 +125,22 @@ function NoiDungCau({ q }) {
   return null;
 }
 
-function GiaiThichAI({ attemptId, q }) {
-  const cu = docJSON(q.feedback);
-  const [gt, setGt] = useState(cu?.loai === "giai_thich" ? cu : null);
-  const [dang, setDang] = useState(false);
-  const [loi, setLoi] = useState("");
-  if (q.type !== "qcm" && q.type !== "vf") return null;
-  const xin = async () => { setDang(true); setLoi(""); const r = await xinGiaiThich(attemptId, q.id); setDang(false); if (r.ok) setGt(r.giaiThich); else setLoi(r.thongBao); };
-  if (!gt) {
-    return (
-      <div className="mt-2">
-        <button type="button" onClick={xin} disabled={dang}
-          className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border-0 bg-primary-soft px-3 py-1.5 font-sans text-xs font-bold text-primary hover:opacity-90 disabled:cursor-wait">
-          {dang ? <Loader2 size={13} className="animate-spin" /> : <Sparkles size={13} />}
-          {trangThai(q) === "sai" ? tr("AI giải thích: vì sao đúng, vì sao mình sai", "IA : pourquoi c'est juste, pourquoi je me suis trompé", "AI: why it's right, why I was wrong") : tr("AI giải thích chi tiết từng phương án", "IA : expliquer chaque proposition", "AI: explain each option")}
-        </button>
-        {loi && <p className="m-0 mt-1 text-xs font-semibold text-danger">{loi}</p>}
-      </div>
-    );
+/* Một câu nói rõ chỗ sai của câu chọn đáp án: « Bạn chọn A, đáp án đúng là C. » */
+function dongSai(q, tt) {
+  const k = q.answer_key ?? {};
+  if (q.type === "qcm" && Number.isInteger(k.answer)) {
+    if (tt === "sai" && Number.isInteger(q.raw)) return tr(`Bạn chọn ${CHU[q.raw]}, đáp án đúng là ${CHU[k.answer]}.`, `Vous avez choisi ${CHU[q.raw]}, la bonne réponse est ${CHU[k.answer]}.`, `You chose ${CHU[q.raw]}; the answer is ${CHU[k.answer]}.`);
+    if (tt === "trong") return tr(`Bạn bỏ trống, đáp án đúng là ${CHU[k.answer]}.`, `Sans réponse ; la bonne réponse est ${CHU[k.answer]}.`, `Left blank; the answer is ${CHU[k.answer]}.`);
   }
-  return (
-    <div className="mt-2 grid gap-1.5 rounded-xl border border-solid border-primary/30 bg-surface p-3 text-xs leading-relaxed text-ink">
-      <p className="m-0 flex items-center gap-1.5 font-extrabold text-primary"><Sparkles size={13} /> {tr("AI giải thích", "Explication IA", "AI explanation")}</p>
-      <p className="m-0"><strong className="text-ok">{tr("Vì sao đúng:", "Pourquoi c'est juste :", "Why it's right:")}</strong> {gt.vi_sao_dung}</p>
-      {gt.vi_sao_sai && <p className="m-0"><strong className="text-danger">{tr("Vì sao bạn sai:", "Pourquoi votre choix est faux :", "Why you were wrong:")}</strong> {gt.vi_sao_sai}</p>}
-      {(gt.phuong_an ?? []).length > 0 && (
-        <ul className="m-0 grid list-none gap-0.5 p-0">{gt.phuong_an.map((x) => <li key={x.chu}><strong>{x.chu}.</strong> {x.ly_do}</li>)}</ul>
-      )}
-      {gt.meo && <p className="m-0 flex items-start gap-1.5 text-soft"><Lightbulb size={13} className="mt-0.5 shrink-0 text-warn" /> {gt.meo}</p>}
-    </div>
-  );
+  if (q.type === "vf" && Number.isInteger(k.answer)) {
+    const ten = ["Vrai", "Faux"][k.answer];
+    if (tt === "sai") return tr(`Bạn chọn ${["Vrai", "Faux"][q.raw?.choice] ?? "?"}, đáp án đúng là ${ten}.`, `Vous avez choisi ${["Vrai", "Faux"][q.raw?.choice] ?? "?"}, la bonne réponse est ${ten}.`, `You chose ${["Vrai", "Faux"][q.raw?.choice] ?? "?"}; the answer is ${ten}.`);
+    if (tt === "trong") return tr(`Bạn bỏ trống, đáp án đúng là ${ten}.`, `Sans réponse ; la bonne réponse est ${ten}.`, `Left blank; the answer is ${ten}.`);
+  }
+  return "";
 }
 
-function TheCau({ q, i, attemptId }) {
+function TheCau({ q, i }) {
   const p = q.payload ?? {}, k = q.answer_key ?? {};
   const tt = trangThai(q);
   const loiGiai = q.type === "vf" ? "" : q.explanation;
@@ -173,11 +156,18 @@ function TheCau({ q, i, attemptId }) {
         <Nhan tt={tt} />
       </div>
       <NoiDungCau q={q} />
-      {loiGiai && (
-        <p className="m-0 mt-3 flex items-start gap-2 rounded-xl bg-surface2 px-3 py-2 text-xs leading-relaxed text-ink">
+      {/* Lời giải CỐ ĐỊNH của đề (14/11, chủ dự án: trắc nghiệm, điền từ không dùng AI; AI chỉ cho phần
+          phải tự viết / nói, đã có nhận xét riêng). Làm sai thì nói rõ chọn gì, đúng là gì, rồi vì sao. */}
+      {(loiGiai || tt === "sai" || tt === "trong") && q.type !== "court" && (
+        <div className="m-0 mt-3 flex items-start gap-2 rounded-xl bg-surface2 px-3 py-2 text-xs leading-relaxed text-ink">
           <Lightbulb size={14} className="mt-0.5 shrink-0 text-warn" />
-          <span><strong>{tr("Vì sao:", "Pourquoi :", "Why:")}</strong> <span lang="fr">{loiGiai}</span></span>
-        </p>
+          <div className="grid gap-1">
+            {dongSai(q, tt) && <span>{dongSai(q, tt)}</span>}
+            {loiGiai
+              ? <span><strong>{tr("Vì sao:", "Pourquoi :", "Why:")}</strong> <span lang="fr">{loiGiai}</span></span>
+              : q.type !== "vf" && <span className="text-soft">{tr("Câu này chưa có lời giải chi tiết.", "Pas encore d'explication détaillée.", "No detailed explanation yet.")}</span>}
+          </div>
+        </div>
       )}
       {p.audio && k.model && (
         <details className="mt-2 text-xs text-soft">
@@ -185,7 +175,6 @@ function TheCau({ q, i, attemptId }) {
           <p lang="fr" className="m-0 mt-1 whitespace-pre-line leading-relaxed">{k.model}</p>
         </details>
       )}
-      <GiaiThichAI attemptId={attemptId} q={q} />
     </li>
   );
 }
@@ -215,7 +204,7 @@ function KhoiBai({ b, chiSai }) {
         </div>
       )}
       {ds.length ? (
-        <ol className="m-0 grid list-none gap-3 p-0">{ds.map(({ q, i }) => <TheCau key={q.id} q={q} i={i} attemptId={b.attempt_id} />)}</ol>
+        <ol className="m-0 grid list-none gap-3 p-0">{ds.map(({ q, i }) => <TheCau key={q.id} q={q} i={i} />)}</ol>
       ) : (
         <p className="m-0 rounded-xl bg-ok-soft px-3 py-2 text-xs font-bold text-ok">{tr("Bài này không có câu sai.", "Aucune erreur dans cet exercice.", "No mistakes in this exercise.")}</p>
       )}
