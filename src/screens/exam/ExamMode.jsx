@@ -424,7 +424,7 @@ const chuDiem = (d) => `${String(d).replace(".", ",")} ${d > 1 ? "points" : "poi
 const khoaNghe = { dang: null, nghe: new Set() };
 const datKhoaNghe = (k) => { khoaNghe.dang = k; khoaNghe.nghe.forEach((fn) => fn(k)); };
 
-function AudioGioiHan({ src, attemptId, questionId, luot = 2, xemThu = false, gon = false }) {
+function AudioGioiHan({ src, attemptId, questionId, luot = 2, xemThu = false, gon = false, nho = false }) {
   const [baiDangPhat, setBaiDangPhat] = useState(khoaNghe.dang);
   useEffect(() => {
     khoaNghe.nghe.add(setBaiDangPhat);
@@ -500,6 +500,29 @@ function AudioGioiHan({ src, attemptId, questionId, luot = 2, xemThu = false, go
     : dangXin ? "…" : dangPhat ? tr("Đang phát", "Lecture en cours", "Playing")
     : biKhoa ? tr("Chờ bài đang phát kết thúc", "Attendez la fin de l'écoute en cours", "Wait for the current audio to finish")
     : het ? tr("Đã nghe xong", "Écoute terminée", "Listening finished") : tr("Bấm để nghe", "Lancer l'écoute", "Start listening");
+
+  /* Kiểu NHỎ (tờ đề TCF, 14/11): nút tròn cạnh « Question N », kèm giây đã nghe / tổng. Cùng bộ đếm. */
+  if (nho) {
+    return (
+      <span className="inline-flex items-center gap-2 align-middle">
+        <audio ref={ref} src={src} preload="metadata"
+          onLoadedMetadata={(e) => setTong(e.currentTarget.duration || 0)}
+          onTimeUpdate={(e) => setGiay(e.currentTarget.currentTime)}
+          onPlay={() => { setDangPhat(true); datKhoaNghe(questionId); }}
+          onEnded={() => { setDangPhat(false); if (khoaNghe.dang === questionId) datKhoaNghe(null); }}
+          onPause={() => setDangPhat(false)} />
+        <button type="button" onClick={phat} disabled={het || dangXin || chuaSanSang || dangPhat || biKhoa}
+          aria-label={nhan} title={nhan}
+          className="de-tron grid h-7 w-7 shrink-0 cursor-pointer place-items-center rounded-full border-0 p-0 transition enabled:hover:opacity-85 disabled:cursor-not-allowed disabled:opacity-40">
+          {dangPhat ? <Volume2 size={14} /> : <span aria-hidden className="ml-0.5 text-[11px] leading-none">▶</span>}
+        </button>
+        <span className="text-[11.5px] italic tabular-nums text-[#555]">
+          {dangPhat ? `${mmss(giay)} / ${mmss(tong)}` : het ? tr("đã nghe", "écouté", "played") : biKhoa ? tr("chờ bài đang phát", "attendez", "wait") : tr("1 lần nghe", "1 écoute", "1 play")}
+        </span>
+        {loi && <span className="text-[11.5px] font-semibold text-[#b91c1c]">{loi}</span>}
+      </span>
+    );
+  }
 
   return (
     <div className={`de-o ${gon ? "p-3" : "mb-6 p-4"}`}>
@@ -674,6 +697,61 @@ export function PhanThi({ section, attemptId, attemptTheoBai = {}, answers, setA
     <span aria-hidden className="de-o inline-grid h-[18px] w-[18px] shrink-0 place-items-center text-[15px] font-bold leading-none">{chon ? "✕" : ""}</span>
   );
 
+  /* 14/11 (chủ dự án): tờ đề TCF trình bày như bản PDF luyện thi TCF, KHÁC tờ đề DELF. Mỗi câu là một
+     hàng kẻ khung: ô trái « Question N : (Xpt) » + tài liệu (chữ, hình) + nút nghe NHỎ của câu; ô phải
+     câu hỏi + bốn lựa chọn xếp dọc. Câu mà lựa chọn chỉ nghe (tả tranh, lời đáp) là một hàng duy nhất,
+     A B C D xếp ngang. Gọi như HÀM, không dựng thành component: component định nghĩa trong render là
+     component mới mỗi lần dựng lại, bộ phát audio bên trong sẽ bị gỡ và mất trạng thái đang phát. */
+  const cauTCF = (q, i) => {
+    const diem = diemCauTCF(Math.floor((i * SO_CAU_TCF) / (ex.questions.length || 1)));
+    const chiNghe = (q.options ?? []).every((o) => !String(o).trim());
+    const nutNghe = q.audio && (
+      <AudioGioiHan src={q.audio} attemptId={attemptTheoBai[ex.id] ?? attemptId} questionId={q.id} luot={1} xemThu={xemThu} nho />
+    );
+    const dau = (
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+        <span className="font-bold">Question {i + 1} :</span><span>({diem}pt)</span>
+        {nutNghe}
+      </div>
+    );
+    const luaChon = (ngang) => (
+      <div className={ngang ? "mt-3 grid grid-cols-2 gap-1 sm:grid-cols-4" : "mt-2 grid gap-0.5"}>
+        {(q.options ?? []).map((o, j) => (
+          <button key={j} type="button" onClick={() => dat(q.id, j)} aria-pressed={answers[q.id] === j}
+            aria-label={ngang ? `${String.fromCharCode(65 + j)}` : undefined}
+            className={`flex cursor-pointer items-start gap-2 rounded border-0 px-1.5 py-1 text-left text-[14.5px] text-[#111] ${answers[q.id] === j ? "bg-[#eef3ff]" : "bg-transparent hover:bg-[#f4f4f4]"}`}>
+            <O chon={answers[q.id] === j} /><strong className="shrink-0">{String.fromCharCode(65 + j)}.</strong>{!ngang && <span>{o}</span>}
+          </button>
+        ))}
+      </div>
+    );
+    if (chiNghe) {
+      return (
+        <li className="border-0 border-b border-solid border-[#111] px-3 py-3">
+          {dau}
+          {q.anh && <img src={q.anh} alt={tr("Hình của câu hỏi", "Image de la question", "Question picture")} loading="lazy" className="mt-2 block max-h-56 max-w-full object-contain" />}
+          <p className="m-0 mt-2 whitespace-pre-line">{q.prompt}</p>
+          {luaChon(true)}
+        </li>
+      );
+    }
+    return (
+      <li className="grid border-0 border-b border-solid border-[#111] sm:grid-cols-2">
+        <div className="min-w-0 border-0 border-solid border-[#111] px-3 py-3 sm:border-r">
+          {dau}
+          {q.anh && <img src={q.anh} alt={tr("Hình của câu hỏi", "Image de la question", "Question picture")} loading="lazy" className="mt-2 block max-h-56 max-w-full object-contain" />}
+          {q.doc
+            ? <div className="mt-2 [&_p]:m-0 [&_p+p]:mt-1.5" dangerouslySetInnerHTML={{ __html: q.doc }} />
+            : <p className="m-0 mt-2 whitespace-pre-line">{q.prompt}</p>}
+        </div>
+        <div className="min-w-0 px-3 py-3">
+          {q.doc && <p className="m-0 whitespace-pre-line font-semibold">{q.prompt}</p>}
+          {luaChon(false)}
+        </div>
+      </li>
+    );
+  };
+
   return (
     <div className="de-ban -mx-4 min-h-screen px-2 pb-12 sm:px-6">
       <div className="sticky top-0 z-10 -mx-2 mb-5 flex items-center justify-between gap-4 border-0 border-b border-solid border-[#bbb] bg-white/95 px-4 py-2.5 backdrop-blur sm:-mx-6 sm:px-6" style={{ fontFamily: '"Roboto Condensed", sans-serif' }}>
@@ -714,16 +792,25 @@ export function PhanThi({ section, attemptId, attemptTheoBai = {}, answers, setA
       {/* Giấy nháp (14/10): Nghe, Đọc, Viết. Phần nói có nháp riêng lúc chuẩn bị. */}
       {section.code !== "PO" && <GiayNhap khoa={`${examId}:${section.code}`} />}
       <article className="de-giay mx-auto max-w-[840px]">
+        {/* TCF (14/11): đầu trang như bản PDF luyện thi « TCF CANADA – COMPRÉHENSION ÉCRITE », không ô số
+            phần, không « EXERCICE », không tổng điểm DELF. */}
+        {laTcfDe ? (
+          <div className="px-5 pt-6 sm:px-10">
+            <div className="border-0 border-b border-solid border-[#111] pb-2 text-center text-[15px] font-bold uppercase tracking-wide">{capDe} – {TEN_PHAN[section.code] ?? section.label}</div>
+            <div className="mt-2 text-right text-[13px] font-bold uppercase">{TEN_PHAN[section.code] ?? section.label} · {(ex.questions ?? []).length} questions</div>
+          </div>
+        ) : (
         <div className="de-dau-trang px-6 pb-3 pt-6 text-center text-[13px] uppercase sm:pt-8">DOCUMENT RÉSERVÉ AU CANDIDAT – ÉPREUVES COLLECTIVES</div>
-        <div className="px-5 pb-8 pt-6 sm:px-14">
-          {baiIdx === 0 && (
+        )}
+        <div className={laTcfDe ? "px-3 pb-8 pt-4 sm:px-10" : "px-5 pb-8 pt-6 sm:px-14"}>
+          {baiIdx === 0 && !laTcfDe && (
             <div className="mb-7 flex items-center gap-4">
               <span className="de-so-phan grid h-14 w-14 shrink-0 place-items-center text-[34px] font-bold">{SO_PHAN[section.code]}</span>
               <h1 className="m-0 flex-1 text-[30px] font-extrabold leading-tight text-[#111] sm:text-[38px]">{TEN_PHAN[section.code] ?? section.label}</h1>
               {section.code !== "PO" && <span className="shrink-0 text-sm font-bold italic">{diemPhan} points</span>}
             </div>
           )}
-          {(dsBai.length > 1 || section.code === "CO" || section.code === "CE") && (
+          {!laTcfDe && (dsBai.length > 1 || section.code === "CO" || section.code === "CE") && (
             <div className="mb-1 flex items-start gap-3">
               <span aria-hidden className="mt-1 text-[22px] leading-none">▶</span>
               <h2 className="m-0 flex-1 text-[24px] font-extrabold uppercase leading-none text-[#111]">Exercice {baiIdx + 1}</h2>
@@ -781,13 +868,14 @@ export function PhanThi({ section, attemptId, attemptTheoBai = {}, answers, setA
           )}
         </BocThamNoi>
       ) : (
-      <ol className="m-0 list-none space-y-7 p-0 text-[15.5px] leading-snug text-[#111]">
+      <ol className={`m-0 list-none p-0 leading-snug text-[#111] ${laTcfDe ? "border border-b-0 border-solid border-[#111] font-sans text-[14.5px]" : "space-y-7 text-[15.5px]"}`}>
         {ex.questions.map((q, i) => (
           <React.Fragment key={q.id}>
           {/* 15/10: tiêu đề nhóm câu (« DOCUMENT 1 »…) như tờ đề DELF B2, đọc từ q.nhom. */}
           {q.nhom && q.nhom !== ex.questions[i - 1]?.nhom && (
             <li aria-hidden={false} className={`text-[22px] font-extrabold uppercase leading-none tracking-wide text-[#111] ${i ? "pt-3" : ""}`}>{q.nhom}</li>
           )}
+          {laTcfDe && q.type === "qcm" ? cauTCF(q, i) : (
           <li className="flex gap-3">
             <span className="de-tron mt-0.5 grid h-[22px] w-[22px] shrink-0 place-items-center rounded-full text-[12px] font-bold">{i + 1}</span>
             <div className="min-w-0 flex-1">
@@ -921,7 +1009,7 @@ export function PhanThi({ section, attemptId, attemptTheoBai = {}, answers, setA
               </div>
             )}
             </div>
-          </li>
+          </li>)}
           </React.Fragment>
         ))}
       </ol>

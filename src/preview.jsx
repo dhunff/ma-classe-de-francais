@@ -434,6 +434,16 @@ const NHAN_XET_LUYEN_MAU = (() => {
     ],
     bai_sua: "Salut Paul,\nViens chez moi en juillet ! Samedi matin, on va à la plage, puis l'après-midi, nous visitons le musée d'Orsay. C'est très beau ! Le soir, on mange une glace ensemble.\nÀ bientôt,\nLéa" };
 })();
+/* Tờ đề TCF (14/11): hàng kẻ khung như bản PDF luyện thi, nút nghe nhỏ cạnh từng câu. */
+const AU = "https://cdszvnuaibnnkrvynyck.supabase.co/storage/v1/object/public/nghe/tcf-ca-de1-co-";
+const PHAN_THI_TCF = { code: "CO", label: "Compréhension orale", minutes: 35, points: 699, exercises: [{
+  id: "xem-tcf", title: "TCF Canada : Compréhension orale", level: "TCF", consigne: "<p>Chaque document est diffusé <strong>une seule fois</strong>.</p>", readingText: "", audioUrl: "",
+  questions: [
+    { id: "t1", ord: 1, type: "qcm", audio: AU + "01.mp3", anh: "https://ouch-prod-var-cdn.icons8.com/rh/illustrations/previews/faWP68YLZ2-CC9Ih.webp", prompt: "Écoutez les quatre propositions. Choisissez celle qui correspond à l'image.", options: ["", "", "", ""] },
+    { id: "t2", ord: 2, type: "qcm", audio: AU + "03.mp3", prompt: "Écoutez l'extrait sonore et les quatre propositions. Choisissez la bonne réponse.", options: ["", "", "", ""] },
+    { id: "t3", ord: 3, type: "qcm", audio: AU + "09.mp3", prompt: "Écoutez le document sonore et la question. Choisissez la bonne réponse.", options: ["D'apporter un document.", "D'acheter des médicaments.", "D'appeler leur mère.", "D'aller chez le médecin."] },
+    { id: "t4", ord: 4, type: "qcm", doc: "<p>Léa,</p><p>Je suis au supermarché. Il n'y a plus de lait à la maison.</p><p>Je rentre à 18 h.</p><p>Papa</p>", prompt: "Où est le père de Léa ?", options: ["Au magasin.", "Au travail.", "À la maison.", "À l'école."] },
+  ] }] };
 const PHAN_THI_MAU = {
   code: "CE", label: "Activité 1 — les musées de Paris", minutes: 45, points: 25,
   exercise: {
@@ -626,6 +636,15 @@ function TheLatThu() {
         sau="Đáp án đúng DIỄN ĐẠT LẠI ý của văn bản; đáp án kia lặp nguyên từ nhưng đổi chủ thể."
         viDu="L'étude montre que la baisse concerne surtout les moins de 25 ans."
         daLat={lat} onLat={() => setLat((v) => !v)} conLai={4} />
+    </div>
+  );
+}
+
+function PhanThiTcfThu() {
+  const [ans, setAns] = useState({});
+  return (
+    <div className="mx-auto max-w-4xl py-6">
+      <PhanThi section={PHAN_THI_TCF} attemptId="xem-thu" answers={ans} setAnswers={setAns} xemThu onDone={() => {}} onBlur={() => {}} />
     </div>
   );
 }
@@ -916,6 +935,7 @@ function Preview() {
     ["/etudiant/tai-khoan-moi", "Trang Tài khoản"],
     ["/etudiant/phan-nghe", "Phần nghe 2 bài (thi thử)"],
     ["/etudiant/phan-thi", "Một phần thi thử"],
+    ["/etudiant/phan-thi-tcf", "Một phần thi TCF"],
     ["/etudiant/nhan-xet-ngan", "Nhận xét AI câu trả lời ngắn"],
     ["/etudiant/nhan-xet-ai", "Phiếu nhận xét AI"],
     ["/professeur/khieu-nai-diem", "GV: Khiếu nại điểm AI"],
@@ -1056,6 +1076,7 @@ function Preview() {
               { code: "CE", exercise_id: "xem-thu-2", minutes: 0, points: 0, ord: 1 },
               { code: "PO", exercise_id: "xem-thu", minutes: 15, points: 25, ord: 2 }] }} />} />
           <Route path="/etudiant/phan-thi" element={<><Controls /><PhanThiThu /></>} />
+          <Route path="/etudiant/phan-thi-tcf" element={<><Controls /><PhanThiTcfThu /></>} />
           {/* 12/11: nhận xét AI câu trả lời ngắn ở trang Kết quả thi (lô 43). */}
           <Route path="/etudiant/nhan-xet-ngan" element={<><Controls /><div className="mx-auto max-w-2xl py-6"><NhanXetCauNgan ds={[
             { answerId: "a1", ord: 5, prompt: "Pourquoi l'ennui est-il, pour les entreprises du numérique, « un concurrent à éliminer » ?", raw: "Parce qu'elles gagnent de l'argent avec la publicité : plus on reste, plus elles gagnent.", score: 1, max: 1.5, nhanXet: "Đúng ý doanh thu quảng cáo, nhưng thiếu ý người buồn chán không dùng ứng dụng nên không mang lại tiền.", mau: "Parce que leur modèle d'affaires repose sur notre attention : plus nous restons sur leurs applications, plus elles vendent d'espaces publicitaires. Quelqu'un qui s'ennuie sans écran ne leur rapporte rien." },
