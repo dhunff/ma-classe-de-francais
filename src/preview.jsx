@@ -221,6 +221,7 @@ import { Avatar, DS_AVATAR } from "./shared/avatars.jsx";
 import NhanXetCauNgan from "./screens/student/NhanXetCauNgan.jsx";
 import NhanXetTCF from "./screens/exam/NhanXetTCF.jsx";
 import XemLaiBaiThi from "./screens/exam/XemLaiBaiThi.jsx";
+import MungChuoi from "./screens/dashboard/MungChuoi.jsx";
 
 const VI = {
   /* Phải khớp đủ các khoá mà navItems.js dùng. Thiếu khoá nào thì t() trả về
@@ -642,6 +643,19 @@ function TheLatThu() {
   );
 }
 
+function MungChuoiThu() {
+  const [moc, setMoc] = useState(0);
+  return (
+    <div className="mx-auto flex max-w-xl flex-wrap gap-2 py-6">
+      {[3, 10, 30, 100, 200, 300, 400].map((m) => (
+        <button key={m} type="button" onClick={() => setMoc(m)}
+          className="cursor-pointer rounded-full border-0 bg-primary px-4 py-2 font-sans text-sm font-bold text-on-primary">{m} ngày</button>
+      ))}
+      {moc > 0 && <MungChuoi moc={moc} onDong={() => setMoc(0)} />}
+    </div>
+  );
+}
+
 function PhanThiTcfThu() {
   const [ans, setAns] = useState({});
   return (
@@ -940,6 +954,7 @@ function Preview() {
     ["/etudiant/phan-thi-tcf", "Một phần thi TCF"],
     ["/etudiant/cham-tcf", "Phiếu AI chấm TCF"],
     ["/etudiant/xem-lai-thi", "Xem lại bài thi"],
+    ["/etudiant/mung-chuoi", "Mừng mốc chuỗi"],
     ["/etudiant/nhan-xet-ngan", "Nhận xét AI câu trả lời ngắn"],
     ["/etudiant/nhan-xet-ai", "Phiếu nhận xét AI"],
     ["/professeur/khieu-nai-diem", "GV: Khiếu nại điểm AI"],
@@ -1081,6 +1096,8 @@ function Preview() {
               { code: "PO", exercise_id: "xem-thu", minutes: 15, points: 25, ord: 2 }] }} />} />
           <Route path="/etudiant/phan-thi" element={<><Controls /><PhanThiThu /></>} />
           <Route path="/etudiant/phan-thi-tcf" element={<><Controls /><PhanThiTcfThu /></>} />
+          {/* 14/11: mừng mốc chuỗi, bấm các nút để xem từng mốc. */}
+          <Route path="/etudiant/mung-chuoi" element={<><Controls /><MungChuoiThu /></>} />
           {/* 14/11: xem lại bài thi (dữ liệu giả). */}
           <Route path="/etudiant/xem-lai-thi" element={<><Controls /><XemLaiBaiThi tieuDe="DELF B1 · Đề 1" onDong={() => {}} duLieu={[
             { attempt_id: "a1", code: "CE", title: "Lecture : un musée ouvert la nuit", reading_text: "<p>Depuis mai, le musée reste ouvert jusqu'à 22 heures le vendredi.</p>", questions: [

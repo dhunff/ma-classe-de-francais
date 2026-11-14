@@ -3,6 +3,7 @@ import { Flame, Snowflake } from "lucide-react";
 import { docChuoiTuan } from "../../shared/hoatDong.js";
 import { tr } from "../../shared/i18n.jsx";
 import { LeonNoi } from "../../shared/leon.jsx";
+import MungChuoi, { mocCanMung, ghiDaMung } from "./MungChuoi.jsx";
 
 /* Widget chuỗi ngày học — trang chủ học sinh (25/09).
  *
@@ -22,6 +23,14 @@ const MOC = [7, 30, 100];
 
 export default function StreakWidget({ t, fixture }) {
   const [d, setD] = useState(undefined);
+  /* 14/11: mừng mốc chuỗi 3, 10, 30, 100, 200… (MungChuoi.jsx). Chỉ với số THẬT từ máy chủ,
+     không với dữ liệu giả của preview (preview có màn riêng để xem hiệu ứng). */
+  const [mung, setMung] = useState(0);
+  useEffect(() => {
+    if (fixture !== undefined || !d?.chuoi) return;
+    const moc = mocCanMung(d.chuoi);
+    if (moc) setMung(moc);
+  }, [d, fixture]);
 
   useEffect(() => {
     if (fixture !== undefined) { setD(fixture); return; }
@@ -42,6 +51,8 @@ export default function StreakWidget({ t, fixture }) {
   const conLaiBang = d?.conLaiBang ?? 0;
 
   return (
+    <>
+    {mung > 0 && <MungChuoi moc={mung} onDong={() => { ghiDaMung(mung); setMung(0); }} />}
     <section className="w-full overflow-hidden rounded-3xl bg-surface/80 font-sans shadow-[0_8px_30px_rgb(0,0,0,0.04)] backdrop-blur-md transition-colors duration-300">
       {/* Mảng đầu: màu cam-đỏ khi chuỗi đang cháy, xám khi chưa có chuỗi. Không có token cam (xem trên). */}
       <div className={`relative overflow-hidden p-5 ${chuoi ? "bg-gradient-to-br from-orange-600 to-rose-600 text-white" : "bg-surface2 text-ink"}`}>
@@ -141,5 +152,6 @@ export default function StreakWidget({ t, fixture }) {
         )}
       </div>
     </section>
+    </>
   );
 }
