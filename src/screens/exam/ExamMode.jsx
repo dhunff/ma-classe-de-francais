@@ -1059,27 +1059,36 @@ export function PhanThi({ section, attemptId, attemptTheoBai = {}, answers, setA
         </div>
       </article>
 
+      {/* 14/11 (chủ dự án): hộp « chưa làm xong » cùng kiểu TỜ ĐỀ: giấy trắng chữ đen cố định (như
+          .de-giay, không đảo theo nền tối), góc vuông, chữ Roboto Condensed, nút đen in hoa như
+          « Nộp phần này ». */}
       {hoiNop && (
-        <div role="dialog" aria-modal="true" className="fixed inset-0 z-[300] grid place-items-center bg-black/55 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-3xl bg-surface p-6 shadow-2xl">
-            <h2 className="m-0 flex items-center gap-2 text-lg font-extrabold text-ink"><AlertTriangle size={20} className="text-warn" /> {tr("Bạn chưa làm xong phần này", "Vous n'avez pas terminé cette partie", "You haven't finished this part")}</h2>
-            <p className="m-0 mt-2 text-sm text-ink">{tr("Còn", "Encore", "There are")} <strong>{tongThieu} {tr("câu", "question(s)", "question(s)")}</strong> {tr("chưa trả lời. Nộp rồi thì không quay lại phần này được.", "sans réponse. Une fois rendue, vous ne pourrez plus revenir.", "unanswered. Once submitted you can't come back.")}</p>
-            <ul className="m-0 mt-3 grid list-none gap-1.5 p-0">
-              {thieuTheoBai.map((ds, j) => ds.length ? (
-                <li key={j}>
-                  <button type="button" onClick={() => { setBaiIdx(j); setHoiNop(false); cuonLenDau(); }}
-                    className="flex w-full cursor-pointer items-center gap-2 rounded-xl border-0 bg-surface2 px-3 py-2 text-left font-sans text-sm text-ink hover:bg-primary-soft">
-                    <strong>{dsBai.length > 1 ? tr(`Bài ${j + 1}`, `Exercice ${j + 1}`, `Exercise ${j + 1}`) : tr("Câu", "Question", "Question")}</strong>
-                    <span className="min-w-0 flex-1 truncate text-soft">{dsBai.length > 1 ? tr("câu ", "questions ", "questions ") : ""}{ds.join(", ")}</span>
-                    <span className="text-xs font-bold text-primary">{tr("Đến làm →", "Y aller →", "Go →")}</span>
-                  </button>
-                </li>
-              ) : null)}
-            </ul>
-            <div className="mt-5 flex flex-wrap justify-end gap-2">
-              <button type="button" onClick={nopNgay} className="h-10 cursor-pointer rounded-full border border-solid border-line bg-surface px-5 font-sans text-sm font-bold text-soft">{tr("Vẫn nộp", "Rendre quand même", "Submit anyway")}</button>
-              <button type="button" onClick={() => { const k = thieuTheoBai.findIndex((d) => d.length); if (k >= 0) setBaiIdx(k); setHoiNop(false); cuonLenDau(); }}
-                className="h-10 cursor-pointer rounded-full border-0 bg-primary px-5 font-sans text-sm font-bold text-white">{tr("Quay lại làm tiếp", "Reprendre", "Go back")}</button>
+        <div role="dialog" aria-modal="true" aria-labelledby="mcf-hoi-nop" className="fixed inset-0 z-[300] grid place-items-center bg-black/55 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-md border-2 border-solid border-[#111] bg-white text-[#111] shadow-2xl" style={{ fontFamily: '"Roboto Condensed", sans-serif' }}>
+            <div className="flex items-center gap-2 bg-[#111] px-5 py-2.5 text-white">
+              <AlertTriangle size={18} aria-hidden="true" />
+              <h2 id="mcf-hoi-nop" className="m-0 text-[15px] font-bold uppercase tracking-wide">{tr("Bạn chưa làm xong phần này", "Vous n'avez pas terminé cette partie", "You haven't finished this part")}</h2>
+            </div>
+            <div className="px-5 pb-5 pt-4">
+              <p className="m-0 text-[15px] leading-snug">{tr("Còn", "Encore", "There are")} <strong>{tongThieu} {tr("câu", "question(s)", "question(s)")}</strong> {tr("chưa trả lời. Nộp rồi thì không quay lại phần này được.", "sans réponse. Une fois rendue, vous ne pourrez plus revenir.", "unanswered. Once submitted you can't come back.")}</p>
+              <ul className="m-0 mt-3 list-none border border-b-0 border-solid border-[#111] p-0">
+                {thieuTheoBai.map((ds, j) => ds.length ? (
+                  <li key={j} className="border-0 border-b border-solid border-[#111]">
+                    <button type="button" onClick={() => { setBaiIdx(j); setHoiNop(false); cuonLenDau(); }}
+                      className="flex w-full cursor-pointer items-center gap-3 rounded-none border-0 bg-white px-3 py-2 text-left text-[14.5px] text-[#111] hover:bg-[#f2f2f2]" style={{ fontFamily: "inherit" }}>
+                      <strong className="shrink-0 uppercase">{dsBai.length > 1 ? tr(`Bài ${j + 1}`, `Exercice ${j + 1}`, `Exercise ${j + 1}`) : tr("Câu", "Questions", "Questions")}</strong>
+                      <span className="min-w-0 flex-1 truncate text-[#444]">{dsBai.length > 1 ? tr("câu ", "questions ", "questions ") : ""}{ds.join(", ")}</span>
+                      <span className="shrink-0 text-[13px] font-bold underline underline-offset-2">{tr("Đến làm", "Y aller", "Go")} ▸</span>
+                    </button>
+                  </li>
+                ) : null)}
+              </ul>
+              <div className="mt-5 flex flex-wrap justify-end gap-2">
+                <button type="button" onClick={nopNgay}
+                  className="cursor-pointer rounded-none border-2 border-solid border-[#111] bg-white px-5 py-2.5 text-[13px] font-bold uppercase tracking-wide text-[#111] hover:bg-[#f2f2f2]" style={{ fontFamily: "inherit" }}>{tr("Vẫn nộp", "Rendre quand même", "Submit anyway")}</button>
+                <button type="button" onClick={() => { const k = thieuTheoBai.findIndex((d) => d.length); if (k >= 0) setBaiIdx(k); setHoiNop(false); cuonLenDau(); }}
+                  className="cursor-pointer rounded-none border-2 border-solid border-[#111] bg-[#111] px-5 py-2.5 text-[13px] font-bold uppercase tracking-wide text-white hover:opacity-90" style={{ fontFamily: "inherit" }}>{tr("Quay lại làm tiếp", "Reprendre", "Go back")}</button>
+              </div>
             </div>
           </div>
         </div>
