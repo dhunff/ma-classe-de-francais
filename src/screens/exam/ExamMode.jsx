@@ -17,6 +17,7 @@ import GiayNhap from "./GiayNhap.jsx";
 import VanBanToSang from "./VanBanToSang.jsx";
 import { chanDan } from "../../shared/chanDan.js";
 import { GhepCap, DienPhieu, AnhLuaChon } from "../student/dangMoi.jsx";
+import NhanXetTCF from "./NhanXetTCF.jsx";
 import { nhomTheoTrinhDo } from "../../shared/trinhDoDe.js";
 import { HopBatDau, HopThoat, useGiuPhongThi } from "./LuotThi.jsx";
 import { isQuestionAnswered } from "../../shared/questions.js";
@@ -1227,7 +1228,10 @@ function KetQuaTCF({ sections, blurCount, onLai, level = "TCF" }) {
                   )}
                 </div>
               ) : (
-                <p className="m-0 mt-3 text-xs text-soft">{tr("Phần này chưa được chấm tự động theo thang TCF (0 đến 20).", "Cette épreuve n'est pas encore notée automatiquement sur l'échelle TCF (0 à 20).", "This part isn't auto-scored on the TCF scale (0 to 20) yet.")}</p>
+                /* 14/11: Viết, Nói chấm bằng AI theo thang 0..20 của FEI (cham-tcf). */
+                s.code === "PE" || s.code === "PO"
+                  ? <NhanXetTCF attemptId={s.attemptId} />
+                  : <p className="m-0 mt-3 text-xs text-soft">{tr("Phần này chưa có điểm.", "Pas encore de note.", "No score yet.")}</p>
               )}
             </div>
           );
@@ -1439,6 +1443,8 @@ export default function ExamMode({ name, loai = "delf", gioiThieu = null }) {
         code: k.code, points: k.points, label: nhanKhoi(k),
         baiLabel: k.exercises.map((e) => e.title).join(" · "),
         exerciseId: k.exercises[0]?.id, score: null, luuDuoc: luuDuocPO,
+        /* TCF (14/11): màn kết quả gọi cham-tcf theo lượt làm này. */
+        attemptId: attemptTheoBai.current[k.exercises[0]?.id] ?? null,
       }));
       if (conNua) { setIdx(idx + 1); setBaiHienTai(null); }
       else setBuoc("xong");
@@ -1461,6 +1467,7 @@ export default function ExamMode({ name, loai = "delf", gioiThieu = null }) {
     let luuDuoc = true;
     /* TCF Canada: đúng/sai từng câu THEO THỨ TỰ ĐỀ, để tính điểm ước lượng 0 → 699 (câu sau nặng hơn). */
     const dungSai = [];
+    let attemptDau = null;
     for (const ex of k.exercises) {
       const r = await gradeRemote(ex.id, answers, {
         mode: "exam", blurCount, attemptId: attemptTheoBai.current[ex.id],
@@ -1468,6 +1475,7 @@ export default function ExamMode({ name, loai = "delf", gioiThieu = null }) {
       });
       if (r) { dung += r.score ?? 0; tong += r.max ?? 0; }
       if (!r || !r.attemptId) luuDuoc = false;
+      attemptDau = attemptDau ?? r?.attemptId ?? null;
       for (const q of ex.questions ?? []) {
         const kq = r?.results?.[q.id];
         dungSai.push(kq && kq.graded !== false && typeof kq.correct === "boolean" ? kq.correct : null);
@@ -1476,7 +1484,7 @@ export default function ExamMode({ name, loai = "delf", gioiThieu = null }) {
     const tcfUocLuong = LA_TCF(paper?.level) && ["CO", "CE", "MS"].includes(k.code) ? diemUocLuongTCF(dungSai) : null;
 
     const ghi = {
-      code: k.code, points: k.points, exerciseId: k.exercises[0]?.id,
+      code: k.code, points: k.points, exerciseId: k.exercises[0]?.id, attemptId: attemptDau,
       /* Hai nhãn khác nhau, đừng gộp làm một: `label` là tên kỹ năng
          (« Compréhension de l'oral »), `baiLabel` là tên các bài đã làm. Màn
          kết quả hiện cả hai, dòng trên dòng dưới. Bản trước đặt tên bài vào

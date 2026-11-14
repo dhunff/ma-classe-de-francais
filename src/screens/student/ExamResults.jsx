@@ -9,6 +9,7 @@ import { chamChinhThuc } from "../../shared/chamPeAI.js";
 import NhanXetAI from "./NhanXetAI.jsx";
 import BaiVietMau from "./BaiVietMau.jsx";
 import NhanXetCauNgan from "./NhanXetCauNgan.jsx";
+import NhanXetTCF from "../exam/NhanXetTCF.jsx";
 import { grilleToRubric, chuanHoaGrille } from "../../shared/grilleRubric.js";
 import { tr } from "../../shared/i18n.jsx";
 import { supabase } from "../../storageShim.js";
@@ -64,7 +65,12 @@ function Phan({ s, onTuCham }) {
           con số một mình không dạy được gì, "Cohérence 1/3" mới chỉ đúng chỗ
           cần sửa. */}
       {/* Phần nói (12/10): tự chấm theo grille PO chính thức, AI gợi ý. */}
-      {s.po && (
+      {/* TCF (14/11): Viết, Nói chấm bằng AI theo thang /20 của FEI; chưa có phiếu thì tự chấm khi mở. */}
+      {s.laTcf && (s.code === "PE" || s.code === "PO") && s.attemptDau && (
+        <NhanXetTCF attemptId={s.attemptDau}
+          ban={s.tcfCham ? { ketQua: s.tcfCham.ket_qua, diem: s.tcfCham.diem, cap: s.tcfCham.cap, nclc: s.tcfCham.nclc, level: s.tcfCham.level } : null} />
+      )}
+      {!s.laTcf && s.po && (
         <button type="button" onClick={() => onTuCham({ loai: "po", po: s.po, exerciseId: s.exerciseId, consigne: s.consigne })}
           className="mt-2 flex w-full cursor-pointer items-center gap-2 rounded-lg border-0 bg-surface px-3 py-2.5 text-left font-sans text-xs font-bold text-ink transition hover:bg-primary-soft">
           <Mic size={13} className="shrink-0 text-primary" aria-hidden="true" />
@@ -76,7 +82,7 @@ function Phan({ s, onTuCham }) {
       )}
       {/* 12/11: nhận xét AI cho câu trả lời ngắn của phần Đọc (C1, loại court). */}
       <NhanXetCauNgan ds={s.cauNgan} />
-      {s.pe.map((p, i) => (
+      {!s.laTcf && s.pe.map((p, i) => (
         <div key={i} className="mt-2 space-y-2">
           {/* Bản tự chấm — hiện RIÊNG, không cộng vào điểm phần thi.
               Tự chấm không phải điểm: gộp chung thì một em rộng tay với chính
@@ -201,6 +207,8 @@ export default function ExamResults() {
         .then(({ data }) => ({ ok: !!data?.ok, daGhi: data?.diem != null, ma: data?.ma })).catch(() => ({ ok: false })));
     }
     for (const st of sittings) for (const sec of st.sections) for (const p of sec.pe) {
+      /* Đề TCF: Viết chấm bằng cham-tcf (thang /20), KHÔNG qua cham-pe thang DELF. */
+      if (sec.laTcf) continue;
       if (p.score != null || !p.answerId || p.loai !== "open" || daGoi.current.has(p.answerId)) continue;
       daGoi.current.add(p.answerId);
       const rubric = sec.grille ? chuanHoaGrille(sec.grille, sec.level) : grilleToRubric(sec.level);

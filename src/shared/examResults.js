@@ -39,7 +39,7 @@ export async function loadMyExamResults() {
   const examIds = [...new Set(rows.map((r) => r.exam_id).filter(Boolean))];
   const attemptIds = rows.map((r) => r.id);
 
-  const [deRes, secRes, ansRes, poRes, nganRes] = await Promise.all([
+  const [deRes, secRes, ansRes, poRes, nganRes, tcfRes] = await Promise.all([
     examIds.length
       /* Đọc `grille` bằng đường lùi được: migration 035 chạy tay ở SQL Editor,
          nên có quãng mà mã đã deploy còn cột thì chưa. PostgREST trả 42703 và
@@ -78,7 +78,11 @@ export async function loadMyExamResults() {
       .in("attempt_id", attemptIds)
       .eq("questions.type", "court")
       .then((r) => (r.error ? { data: [] } : r)),
+    /* 14/11: phiếu AI chấm Viết/Nói của đề TCF (migration 205). Bảng chưa có thì bỏ qua. */
+    supabase.from("tcf_cham").select("attempt_id, code, level, ket_qua, diem, cap, nclc").in("attempt_id", attemptIds)
+      .then((r) => (r.error ? { data: [] } : r)),
   ]);
+  const tcfTheoAttempt = Object.fromEntries((tcfRes.data ?? []).map((x) => [x.attempt_id, x]));
   const nganTheoAttempt = {};
   for (const a of nganRes.data ?? []) (nganTheoAttempt[a.attempt_id] ??= []).push(a);
   const docNhanXet = (f) => { try { const o = JSON.parse(f || ""); return o && typeof o === "object" ? o : {}; } catch { return { nhan_xet: f || "" }; } };
@@ -184,7 +188,9 @@ export async function loadMyExamResults() {
         code,
         ord: sec?.ord ?? 99,
         points,
-        score,
+        /* TCF: điểm Viết/Nói là điểm AI /20 trong tcf_cham. */
+        score: (code === "PE" || code === "PO") && rs.some((r) => tcfTheoAttempt[r.id]?.diem != null)
+          ? rs.map((r) => tcfTheoAttempt[r.id]?.diem).find((x) => x != null) : score,
         /* Bài ĐẦU của kỹ năng — màn tự chấm mở theo id này. Nhiều bài thì
            `peList` bên dưới vẫn gộp đủ, nên không mất bài viết nào. */
         exerciseId: rs[0]?.exercise_id,
@@ -197,6 +203,10 @@ export async function loadMyExamResults() {
           score: a.score == null ? null : Number(a.score), max: Number(a.max_score) || points,
           feedback: a.feedback, gradedAt: a.graded_at, prompt: a.questions?.prompt,
         })),
+        /* TCF (14/11): Viết, Nói chấm bằng cham-tcf; `tcfCham` = phiếu đã lưu (null = chưa chấm). */
+        laTcf: thongTinDe?.level === "TCF" || thongTinDe?.level === "TCF_TP",
+        attemptDau: rs[0]?.id ?? null,
+        tcfCham: rs.map((r) => tcfTheoAttempt[r.id]).find((x) => x?.ket_qua) ?? null,
         /* Câu trả lời ngắn AI chấm (lô 43): câu hỏi, bài làm, điểm, nhận xét, đáp án mẫu. */
         cauNgan: rs.flatMap((r) => nganTheoAttempt[r.id] ?? [])
           .sort((a, b) => (a.questions?.ord ?? 0) - (b.questions?.ord ?? 0))

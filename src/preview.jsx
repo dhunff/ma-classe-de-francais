@@ -219,6 +219,7 @@ import { KY_NANG } from "./content/luyenTap/kyNang.js";
 import { Lightbulb, PenLine } from "lucide-react";
 import { Avatar, DS_AVATAR } from "./shared/avatars.jsx";
 import NhanXetCauNgan from "./screens/student/NhanXetCauNgan.jsx";
+import NhanXetTCF from "./screens/exam/NhanXetTCF.jsx";
 
 const VI = {
   /* Phải khớp đủ các khoá mà navItems.js dùng. Thiếu khoá nào thì t() trả về
@@ -936,6 +937,7 @@ function Preview() {
     ["/etudiant/phan-nghe", "Phần nghe 2 bài (thi thử)"],
     ["/etudiant/phan-thi", "Một phần thi thử"],
     ["/etudiant/phan-thi-tcf", "Một phần thi TCF"],
+    ["/etudiant/cham-tcf", "Phiếu AI chấm TCF"],
     ["/etudiant/nhan-xet-ngan", "Nhận xét AI câu trả lời ngắn"],
     ["/etudiant/nhan-xet-ai", "Phiếu nhận xét AI"],
     ["/professeur/khieu-nai-diem", "GV: Khiếu nại điểm AI"],
@@ -1077,6 +1079,17 @@ function Preview() {
               { code: "PO", exercise_id: "xem-thu", minutes: 15, points: 25, ord: 2 }] }} />} />
           <Route path="/etudiant/phan-thi" element={<><Controls /><PhanThiThu /></>} />
           <Route path="/etudiant/phan-thi-tcf" element={<><Controls /><PhanThiTcfThu /></>} />
+          {/* 14/11: phiếu AI chấm Viết TCF (dữ liệu giả, không gọi máy chủ). */}
+          <Route path="/etudiant/cham-tcf" element={<><Controls /><div className="mx-auto max-w-2xl rounded-3xl bg-surface p-5"><NhanXetTCF ban={{ diem: 11, cap: "B2", nclc: 7, level: "TCF", ketQua: {
+            tong_quat: "Bạn hoàn thành đủ ba tâche, bài 3 có lập luận rõ nhưng phần tóm tắt hai tài liệu còn chép lại câu gốc.",
+            so_tu: [94, 138, 171], cham_doi: { so_luot: 2, chua_chac: false },
+            taches: [
+              { so: 1, niveau: "B1", linguistique: "Từ vựng đủ cho tin nhắn, vài lỗi hoà hợp giống.", pragmatique: "Đủ thông tin ngày, giờ, giá.", sociolinguistique: "Giọng thân mật hợp với bạn bè." },
+              { so: 2, niveau: "B2", linguistique: "Câu phức đa dạng, dùng thì quá khứ đúng.", pragmatique: "Kể theo trình tự, có nêu cảm nghĩ.", sociolinguistique: "Phù hợp một bài blog." },
+              { so: 3, niveau: "B2", linguistique: "Từ nối phong phú.", pragmatique: "Tóm tắt còn chép câu tài liệu.", sociolinguistique: "Văn phong trang trọng phù hợp." },
+            ],
+            loi: [{ trich: "les gens est contents", sua: "les gens sont contents", giai_thich: "Chủ ngữ số nhiều thì động từ chia số nhiều." }],
+            conseils: ["Tóm tắt tài liệu bằng lời của bạn, đừng chép nguyên câu.", "Giữ bài 1 trong khoảng 60 đến 120 từ."] } }} /></div></>} />
           {/* 12/11: nhận xét AI câu trả lời ngắn ở trang Kết quả thi (lô 43). */}
           <Route path="/etudiant/nhan-xet-ngan" element={<><Controls /><div className="mx-auto max-w-2xl py-6"><NhanXetCauNgan ds={[
             { answerId: "a1", ord: 5, prompt: "Pourquoi l'ennui est-il, pour les entreprises du numérique, « un concurrent à éliminer » ?", raw: "Parce qu'elles gagnent de l'argent avec la publicité : plus on reste, plus elles gagnent.", score: 1, max: 1.5, nhanXet: "Đúng ý doanh thu quảng cáo, nhưng thiếu ý người buồn chán không dùng ứng dụng nên không mang lại tiền.", mau: "Parce que leur modèle d'affaires repose sur notre attention : plus nous restons sur leurs applications, plus elles vendent d'espaces publicitaires. Quelqu'un qui s'ennuie sans écran ne leur rapporte rien." },
