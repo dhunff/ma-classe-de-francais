@@ -4,7 +4,7 @@ import { motion, useReducedMotion, animate } from "framer-motion";
 import { Download, Share2, Loader2 } from "lucide-react";
 import { tr } from "../../shared/i18n.jsx";
 import { phat } from "../../shared/amThanh.js";
-import { LUA_NGOAI, LUA_GIUA, LUA_LOI, BANG_DUOI_TRAI, BANG_DUOI_PHAI, BANG_THAN, mocGanNhat, mauCua, loiMung, taoAnhChuoi, luuAnh, chiaSeAnh } from "../../shared/anhChuoi.js";
+import { LUA_NGOAI_DANG, LUA_GIUA_DANG, LUA_LOI_DANG, BANG_DUOI_TRAI, BANG_DUOI_PHAI, BANG_THAN, mocGanNhat, mauCua, loiMung, taoAnhChuoi, luuAnh, chiaSeAnh } from "../../shared/anhChuoi.js";
 
 /* Ăn mừng mốc chuỗi ngày học (14/11, chủ dự án): 3, 10, 30, 100 rồi mỗi 100 ngày (200, 300…).
  * Lớp phủ tối kín màn hình: tia sáng xoay chậm, quầng sáng thở, ngọn lửa BA LỚP (ngoài, giữa, lõi) mỗi
@@ -35,29 +35,33 @@ export function ghiDaMung(moc) {
   try { localStorage.setItem(KHOA, JSON.stringify({ moc, ngay: homNay() })); } catch { /* bỏ qua */ }
 }
 
-/* Ngọn lửa ba lớp. Mỗi lớp một nhịp lay riêng (độ dài lẻ nhau) nên không bao giờ trùng pha: trông
-   như lửa cháy chứ không như một hình nhún đều. Gốc biến đổi ở chân lửa. */
+/* Ngọn lửa ba lớp, BIẾN HÌNH mềm (14/11 lần 3): mỗi lớp uốn qua lại giữa ba dáng (đứng → nghiêng phải →
+   đứng → nghiêng trái) bằng cách nội suy đường vẽ `d`, nhịp mỗi lớp lẻ nhau (3,2 / 2,4 / 1,7 giây) nên
+   không bao giờ trùng pha. Thêm nhịp « thở » rất nhẹ theo chiều cao ở cả khối. Giảm chuyển động: đứng yên. */
 export function NgonLua({ mau, id, dong = true }) {
-  const lay = (dai, sy, sk) => (dong ? { animate: { scaleY: [1, sy, 0.97, 1], skewX: [0, sk, -sk * 0.6, 0] }, transition: { duration: dai, repeat: Infinity, ease: "easeInOut" } } : {});
+  const uon = (dang, dai, tre = 0) => (dong
+    ? { initial: { d: dang[0] }, animate: { d: [dang[0], dang[1], dang[0], dang[2], dang[0]] }, transition: { duration: dai, delay: tre, repeat: Infinity, ease: "easeInOut" } }
+    : { d: dang[0] });
   return (
     <svg viewBox="-20 -20 240 280" className="h-full w-full overflow-visible" aria-hidden="true">
       <defs>
-        <linearGradient id={`${id}-n`} x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor={mau[0]} /><stop offset="1" stopColor={mau[1]} /></linearGradient>
-        <linearGradient id={`${id}-g`} x1="0" y1="0.2" x2="0" y2="1"><stop offset="0" stopColor={mau[2]} stopOpacity="0.95" /><stop offset="1" stopColor={mau[3]} stopOpacity="0.9" /></linearGradient>
-        <radialGradient id={`${id}-l`} cx="0.5" cy="0.72" r="0.42"><stop offset="0" stopColor="#ffffff" /><stop offset="1" stopColor={mau[2]} stopOpacity="0.15" /></radialGradient>
+        <linearGradient id={`${id}-n`} x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor={mau[0]} /><stop offset="0.55" stopColor={mau[1]} /><stop offset="1" stopColor={mau[4]} /></linearGradient>
+        <linearGradient id={`${id}-g`} x1="0" y1="0.15" x2="0" y2="1"><stop offset="0" stopColor={mau[2]} stopOpacity="0.95" /><stop offset="1" stopColor={mau[3]} stopOpacity="0.85" /></linearGradient>
+        <radialGradient id={`${id}-l`} cx="0.5" cy="0.74" r="0.45"><stop offset="0" stopColor="#ffffff" /><stop offset="0.6" stopColor={mau[2]} stopOpacity="0.85" /><stop offset="1" stopColor={mau[2]} stopOpacity="0.1" /></radialGradient>
+        {/* Mép lửa hơi nhoè + quầng sáng: mềm hơn viền cắt sắc. */}
         <filter id={`${id}-sang`} x="-40%" y="-40%" width="180%" height="180%">
-          <feGaussianBlur stdDeviation="9" result="mo" />
-          <feMerge><feMergeNode in="mo" /><feMergeNode in="SourceGraphic" /></feMerge>
+          <feGaussianBlur in="SourceGraphic" stdDeviation="10" result="quang" />
+          <feGaussianBlur in="SourceGraphic" stdDeviation="1.2" result="mem" />
+          <feMerge><feMergeNode in="quang" /><feMergeNode in="mem" /></feMerge>
         </filter>
+        <filter id={`${id}-mem`} x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="1.4" /></filter>
       </defs>
-      <motion.g style={{ transformOrigin: "100px 234px" }} {...lay(1.7, 1.05, 2.5)} filter={`url(#${id}-sang)`}>
-        <path d={LUA_NGOAI} fill={`url(#${id}-n)`} />
-      </motion.g>
-      <motion.g style={{ transformOrigin: "100px 224px" }} {...lay(1.15, 1.08, -3.5)}>
-        <path d={LUA_GIUA} fill={`url(#${id}-g)`} />
-      </motion.g>
-      <motion.g style={{ transformOrigin: "100px 222px" }} {...lay(0.8, 1.1, 4)}>
-        <path d={LUA_LOI} fill={`url(#${id}-l)`} />
+      <motion.g style={{ transformOrigin: "100px 236px" }}
+        animate={dong ? { scaleY: [1, 1.035, 1], scaleX: [1, 0.985, 1] } : undefined}
+        transition={{ duration: 2.6, repeat: Infinity, ease: "easeInOut" }}>
+        <g filter={`url(#${id}-sang)`}><motion.path fill={`url(#${id}-n)`} {...uon(LUA_NGOAI_DANG, 3.2)} /></g>
+        <g filter={`url(#${id}-mem)`}><motion.path fill={`url(#${id}-g)`} {...uon(LUA_GIUA_DANG, 2.4, 0.3)} /></g>
+        <g filter={`url(#${id}-mem)`}><motion.path fill={`url(#${id}-l)`} {...uon(LUA_LOI_DANG, 1.7, 0.15)} /></g>
       </motion.g>
     </svg>
   );
