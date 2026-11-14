@@ -12,7 +12,6 @@ import {
 import { calculateProfileCompletion } from "../../shared/profile.js";
 import StreakWidget from "./StreakWidget.jsx";
 import FollowingStreakWidget from "./FollowingStreakWidget.jsx";
-import GioHocWidget from "./GioHocWidget.jsx";
 import KeHoachThi from "./KeHoachThi.jsx";
 import LichSapToi from "./LichSapToi.jsx";
 import TourGioiThieu from "../../shared/TourGioiThieu.jsx";
@@ -91,7 +90,6 @@ export default function StudentDashboard({
       <TourGioiThieu khoa="hasSeenTrangChuTour" choXong="hasSeenGiaoDienTour" steps={[
         { target: "#tour-tc-chuoi", title: t("tour.tc2_title"), content: t("tour.tc2_body"), placement: "left" },
         { target: "#tour-tc-theo-doi", title: t("tour.tc3_title"), content: t("tour.tc3_body"), placement: "left" },
-        { target: "#tour-tc-gio-hoc", title: t("tour.tc4_title"), content: t("tour.tc4_body"), placement: "left" },
         { target: "#tour-tc-ky-nang", title: t("tour.tc5_title"), content: t("tour.tc5_body"), placement: "top" },
       ]} />
       <div className="mx-auto grid max-w-6xl gap-4 xl:grid-cols-[1fr_340px]">
@@ -199,21 +197,17 @@ export default function StudentDashboard({
             <StreakWidget t={t} fixture={chuoi} />
           </Rise>
 
-          <Rise id="tour-tc-gio-hoc" delay={110}>
-            <Card title={t("home.hours_title")}>
-              <GioHocWidget t={t} fixture={gioHocFixture} />
-            </Card>
+          {/* 14/11 (chủ dự án): BỎ ô « Giờ học » khỏi trang chủ, đưa « Đang theo dõi » lên ngay dưới
+              chuỗi ngày học. GioHocWidget + RPC get_gio_hoc vẫn còn, dựng lại chỉ cần một khối. */}
+          <Rise id="tour-tc-theo-doi" delay={100}>
+            <FollowingStreakWidget t={t} fixture={theoDoiFixture} bxhFixture={bxhFixture} />
           </Rise>
 
-          {/* 23/10 (theo chủ dự án): ô nhỏ ở cột phải, cạnh Giờ học. */}
+          {/* 23/10 (theo chủ dự án): ô nhỏ ở cột phải. */}
           <Rise id="tour-tc-ky-nang" delay={130}>
             <DongDeuKyNang gon skills={skills}
               ghiChu={skills.sources?.assigned && skills.sources?.practice ? t("dash.skills_note_both")
                 : skills.sources?.practice ? t("dash.skills_note_practice") : t("dash.skills_note")} />
-          </Rise>
-
-          <Rise id="tour-tc-theo-doi" delay={100}>
-            <FollowingStreakWidget t={t} fixture={theoDoiFixture} bxhFixture={bxhFixture} />
           </Rise>
 
         </div>
