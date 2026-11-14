@@ -235,8 +235,8 @@ function ManCho({ dsDe, chon, paper, onStart, dangTai, lamPhanNoi, setLamPhanNoi
 
       {/* TCF Canada chưa có đề: dừng ở lời báo trên, không hiện cấu trúc, cảnh báo, nút bắt đầu. */}
       {(!tcf || dsDe.length > 0) && <>
-      {/* ── Cấu trúc đề đang chọn ── */}
-      {deDangChon && (
+      {/* ── Cấu trúc đề đang chọn ── (14/11, chủ dự án: trang TCF bỏ khối này, chỉ DELF còn) */}
+      {deDangChon && !tcf && (
         <div className="mt-6">
           <p className="m-0 mb-3 text-xs font-bold uppercase tracking-[0.14em] text-soft">{tr("Cấu trúc đề", "Structure du sujet", "Exam structure")} · {deDangChon.title}</p>
           <div className="grid gap-3 sm:grid-cols-2">
