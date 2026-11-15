@@ -98,6 +98,8 @@ export default function ThachDau({ nhung = false }) {
     <div className={nhung ? "pb-10" : "mx-auto max-w-3xl px-4 pb-24 pt-6"}>
       {!nhung && <Link to="/etudiant/tro-choi" className="mb-3 inline-flex items-center gap-1 text-sm font-bold text-soft no-underline hover:text-ink"><ArrowLeft size={16} /> {tr("Trò chơi", "Jeux", "Games")}</Link>}
       {/* ── Đấu trường ── */}
+      {/* 15/11 (chủ dự án): trong tab Thách đấu của Flashcard thì bỏ khối đầu trang này. */}
+      {!nhung && (
       <header className="mcf-cau-vao relative mb-6 overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-600 via-violet-600 to-fuchsia-600 p-6 text-white shadow-[0_20px_50px_rgba(99,102,241,0.35)]">
         <span aria-hidden className="absolute -right-10 -top-10 h-44 w-44 rounded-full bg-white/10" />
         <span aria-hidden className="absolute -bottom-16 left-1/3 h-40 w-40 rounded-full bg-fuchsia-300/20 blur-2xl" />
@@ -119,6 +121,7 @@ export default function ThachDau({ nhung = false }) {
           ))}
         </div>
       </header>
+      )}
 
       {/* ── Tạo thách đấu mới ── */}
       <section className="mcf-cau-vao mb-6 rounded-3xl border border-solid border-line bg-surface p-5 shadow-[0_8px_30px_rgba(0,0,0,0.04)]" style={{ animationDelay: "120ms" }}>
