@@ -123,6 +123,20 @@ export default function ThachDau({ nhung = false }) {
       </header>
       )}
 
+      {/* 15/11 (chủ dự án): bản gọn của dải thành tích khi nằm trong tab Thách đấu. */}
+      {nhung && (
+        <div className="mb-4 grid grid-cols-4 gap-2">
+          {[["thang", tr("Thắng", "Victoires", "Wins"), Trophy, "text-ok"], ["thua", tr("Thua", "Défaites", "Losses"), XCircle, "text-danger"], ["hoa", tr("Hoà", "Nuls", "Draws"), Handshake, "text-soft"], ["cho", tr("Đến lượt", "À jouer", "Your turn"), Zap, "text-warn"]].map(([k, nhan, Bieu, mau]) => (
+            <div key={k} className="flex min-w-0 items-center gap-2 rounded-2xl border border-solid border-line bg-surface px-3 py-2">
+              <Bieu size={16} strokeWidth={2.5} className={`shrink-0 ${mau}`} />
+              <div className="min-w-0">
+                <p className="m-0 text-base font-extrabold leading-tight tabular-nums text-ink">{ds ? thanhTich[k] : "–"}</p>
+                <p className="m-0 truncate text-[11px] font-bold text-soft">{nhan}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
       {/* ── Tạo thách đấu mới ── */}
       <section className="mcf-cau-vao mb-6 rounded-3xl border border-solid border-line bg-surface p-5 shadow-[0_8px_30px_rgba(0,0,0,0.04)]" style={{ animationDelay: "120ms" }}>
         <h2 className="m-0 mb-4 flex items-center gap-2 text-base font-extrabold text-ink">
