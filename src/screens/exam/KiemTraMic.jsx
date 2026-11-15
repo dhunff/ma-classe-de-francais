@@ -94,52 +94,35 @@ export default function KiemTraMic({ onKetQua }) {
     quaTo: { mau: "bg-warn", chu: "text-warn", nhan: tr("Hơi to", "Un peu fort", "A bit loud") },
   };
 
+  /* Gọn một dòng (15/11, chủ dự án): nút « Thử mic » → lúc đo: thanh nhỏ + giây → xong: chữ báo mức. */
   return (
-    <div className="mt-3 rounded-2xl border border-solid border-line bg-surface p-4">
-      <div className="flex flex-wrap items-center gap-3">
-        <span className={`grid h-10 w-10 shrink-0 place-items-center rounded-full ${dat ? "bg-ok text-white" : dangDo ? "bg-danger text-white" : "bg-primary-soft text-primary"}`}>
-          {dat ? <CheckCircle2 size={20} aria-hidden /> : <Mic size={19} aria-hidden />}
-        </span>
-        <p className="m-0 min-w-0 flex-1 text-sm font-bold text-ink">
-          {tr("Thử mic", "Test du micro", "Mic test")}
-          {dangDo && <span className="ml-2 font-normal tabular-nums text-soft">{conLai}s</span>}
-        </p>
-        {dangDo ? (
-          <button type="button" onClick={ketThuc}
-            className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border-0 bg-danger px-4 py-2 font-sans text-xs font-extrabold text-white">
-            <Square size={13} className="fill-current" aria-hidden /> {tr("Xong", "Terminer", "Done")}
-          </button>
-        ) : (
-          <button type="button" onClick={thu}
-            className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border-0 bg-primary px-4 py-2 font-sans text-xs font-extrabold text-white">
-            {tt === "cho" ? <Mic size={13} aria-hidden /> : <RotateCcw size={13} aria-hidden />} {tt === "cho" ? tr("Thử", "Tester", "Test") : tr("Thử lại", "Recommencer", "Retry")}
-          </button>
-        )}
-      </div>
-
-      {(dangDo || m) && (
-        <div className="mt-3">
-          {/* Vạch mốc: dưới vạch thứ nhất là quá nhỏ, giữa hai vạch là hơi nhỏ. */}
-          <div className="relative h-3 overflow-hidden rounded-full bg-surface2" role="meter" aria-label={tr("Độ lớn tiếng", "Niveau sonore", "Input level")}
-            aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(Math.min(1, (dangDo ? muc : kq) / 0.3) * 100)}>
-            <div className={`h-full rounded-full ${dangDo ? "transition-[width] duration-75" : ""} ${dangDo ? (muc >= HOI_NHO ? "bg-ok" : muc >= QUA_NHO ? "bg-warn" : "bg-danger") : KQ[m].mau}`}
-              style={{ width: rong(dangDo ? muc : kq) }} />
-            <span aria-hidden className="absolute inset-y-0 w-0.5 bg-line" style={{ left: rong(QUA_NHO) }} />
-            <span aria-hidden className="absolute inset-y-0 w-0.5 bg-line" style={{ left: rong(HOI_NHO) }} />
-          </div>
-          {m && (
-            <p className="m-0 mt-2 flex items-start gap-2 text-xs text-ink">
-              {m === "quaNho" && <AlertTriangle size={14} className="mt-px shrink-0 text-danger" aria-hidden />}
-              <strong className={KQ[m].chu}>{KQ[m].nhan}</strong>
-            </p>
-          )}
-        </div>
+    <div className="inline-flex max-w-full flex-wrap items-center gap-2 text-xs">
+      {dangDo ? (
+        <button type="button" onClick={ketThuc}
+          className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border-0 bg-danger px-3 py-1.5 font-sans text-xs font-bold text-white">
+          <Square size={11} className="fill-current" aria-hidden /> {conLai}s
+        </button>
+      ) : (
+        <button type="button" onClick={thu}
+          className={`inline-flex cursor-pointer items-center gap-1.5 rounded-full border-0 px-3 py-1.5 font-sans text-xs font-bold ${dat ? "bg-surface2 text-ink" : "bg-primary text-white"}`}>
+          {tt === "cho" ? <Mic size={12} aria-hidden /> : <RotateCcw size={12} aria-hidden />} {tt === "cho" ? tr("Thử mic", "Tester le micro", "Test mic") : tr("Thử lại", "Recommencer", "Retry")}
+        </button>
       )}
-
+      {dangDo && (
+        <span className="relative h-2 w-24 overflow-hidden rounded-full bg-surface2" role="meter" aria-label={tr("Độ lớn tiếng", "Niveau sonore", "Input level")}
+          aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(Math.min(1, muc / 0.3) * 100)}>
+          <span className={`block h-full rounded-full transition-[width] duration-75 ${muc >= HOI_NHO ? "bg-ok" : muc >= QUA_NHO ? "bg-warn" : "bg-danger"}`} style={{ width: rong(muc) }} />
+        </span>
+      )}
+      {m && !dangDo && (
+        <span className={`inline-flex items-center gap-1 font-bold ${KQ[m].chu}`}>
+          {dat ? <CheckCircle2 size={14} aria-hidden /> : <AlertTriangle size={14} aria-hidden />} {KQ[m].nhan}
+        </span>
+      )}
       {tt === "loi" && (
-        <p className="m-0 mt-3 flex items-start gap-2 rounded-xl bg-danger-soft p-3 text-xs font-bold text-danger">
+        <span className="inline-flex items-start gap-1 font-bold text-danger">
           <AlertTriangle size={14} className="mt-px shrink-0" aria-hidden /> {loi}
-        </p>
+        </span>
       )}
     </div>
   );

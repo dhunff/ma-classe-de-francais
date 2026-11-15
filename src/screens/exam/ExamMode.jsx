@@ -281,14 +281,7 @@ function ManCho({ dsDe, chon, paper, onStart, dangTai, lamPhanNoi, setLamPhanNoi
           đề nào có PO — nhưng nó thành lời nói dối ngay khi có đề đầu tiên
           kèm phần nói, và màn hình khẳng định điều ngược hẳn với bảng ngay
           phía trên nó. */}
-      {!coPhanNoi && (
-        <p className="m-0 mt-4 flex items-start gap-2 rounded-xl bg-surface2 p-3 text-xs text-soft">
-          <AlertTriangle size={14} className="mt-0.5 shrink-0" />
-          <span>
-            {tr("Đề này", "Ce sujet", "This exam")} <strong className="text-ink">{tr("không có phần thi nói (PO)", "n'a pas de production orale (PO)", "has no speaking part (PO)")}</strong>{tcf ? tr(". Kết quả chỉ có các bài thi còn lại.", ". Le résultat ne porte que sur les autres épreuves.", ". The result only covers the other tests.") : tr(", vốn chiếm 25/100 điểm kỳ thi thật. Kết quả dưới đây chỉ phản ánh ba phần còn lại.", ", qui vaut 25/100 à l'examen réel. Le résultat ne reflète que les trois autres parties.", ", worth 25/100 in the real exam. The result only reflects the other three parts.")}
-          </span>
-        </p>
-      )}
+      {/* 15/11 (chủ dự án): bỏ cảnh báo « đề này không có phần thi nói ». */}
 
       {paper?.missing?.length > 0 && (
         <p className="m-0 mt-3 flex items-start gap-2 rounded-xl bg-danger-soft p-3 text-xs text-ink">
@@ -310,16 +303,17 @@ function ManCho({ dsDe, chon, paper, onStart, dangTai, lamPhanNoi, setLamPhanNoi
 
           Mặc định BẬT: đề có phần nói thì mặc định làm đủ. Người muốn bỏ tự
           bấm, và khi đó họ biết chính xác mình đang bỏ gì. */}
+      {/* 15/11 (chủ dự án): một dòng gọn: ô tích « Làm phần NÓI », tích thì hiện nút thử mic ngay cạnh.
+          Thử mic chưa đạt thì khoá nút vào thi (KiemTraMic). */}
       {coPhanNoi && (
-        /* 15/11 (chủ dự án): chỉ ghi « Làm phần NÓI », không giải thích thêm. */
-        <label className="mt-6 flex cursor-pointer items-center gap-3 rounded-2xl bg-surface2 p-4 text-sm text-ink">
-          <input type="checkbox" checked={lamPhanNoi}
-            onChange={(e) => setLamPhanNoi(e.target.checked)} />
-          <strong>{tr("Làm phần NÓI", "Faire l'ORAL", "Do the SPEAKING part")}</strong>
-        </label>
+        <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2">
+          <label className="inline-flex cursor-pointer items-center gap-2 text-sm font-bold text-ink">
+            <input type="checkbox" checked={lamPhanNoi} onChange={(e) => setLamPhanNoi(e.target.checked)} className="h-4 w-4" />
+            {tr("Làm phần NÓI", "Faire l'ORAL", "Do the SPEAKING part")}
+          </label>
+          {lamPhanNoi && <KiemTraMic onKetQua={setMicOk} />}
+        </div>
       )}
-      {/* 15/11: tích phần nói thì phải thử micro trước (KiemTraMic), không thì khoá nút vào thi. */}
-      {coPhanNoi && lamPhanNoi && <KiemTraMic onKetQua={setMicOk} />}
 
       {/* ── KHÔNG CÓ PHIÊN MÁY CHỦ THÌ KHÔNG CHO VÀO ──
           Xem phienMayChu.js. Ngắn gọn: app có đường đăng nhập cũ chỉ lưu tên
