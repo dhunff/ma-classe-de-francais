@@ -88,7 +88,15 @@ function ManCho({ dsDe, chon, paper, onStart, dangTai, lamPhanNoi, setLamPhanNoi
   /* Tổng phút phải theo LỰA CHỌN, không theo cấu trúc: bỏ phần nói mà vẫn hứa
      "tôi có 130 phút liên tục" là bắt người ta cam kết một điều sai. */
   const phutChuanBiNoi = Number((paper?.sections ?? []).find((x) => x.code === "PO")?.exercise?.bocTham?.chuanBi) || 0;
-  const tongPhut = cauTruc.reduce(
+  /* 16/11: tổng lấy theo CHÍNH các phần của đề (exam_sections, mỗi kỹ năng một đồng hồ, như
+     gomTheoKyNang), cấu trúc chuẩn chỉ để dự phòng. Trước đó chỉ cộng EXAM_STRUCTURE, mà bảng này
+     không có C1 nên đề DALF C1 hiện « 0 phút liên tục ». Dòng phụ của một khối mang 0 phút: lấy số lớn nhất. */
+  const phutTheoDe = new Map();
+  for (const s of paper?.sections ?? []) phutTheoDe.set(s.code, Math.max(phutTheoDe.get(s.code) ?? 0, Number(s.minutes) || 0));
+  const nguonPhut = [...phutTheoDe.values()].some((m) => m > 0)
+    ? [...phutTheoDe].map(([code, minutes]) => ({ code, minutes: minutes || cauTruc.find((p) => p.code === code)?.minutes || 0 }))
+    : cauTruc;
+  const tongPhut = nguonPhut.reduce(
     (n, p) => n + (p.code === "PO" && (!coPhanNoi || !lamPhanNoi) ? 0 : p.minutes + (p.code === "PO" ? phutChuanBiNoi : 0)), 0);
   const [sanSang, setSanSang] = useState(false);
   /* Lượt thi hôm nay (120) + hộp cảnh báo trước khi vào thi. */
