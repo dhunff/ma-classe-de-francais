@@ -1,10 +1,12 @@
-import React, { useState } from "react";
-import { Headphones, BookOpen, PenLine, Mic, Puzzle, ChevronDown, LayoutList, Clock } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
+import { Headphones, BookOpen, PenLine, Mic, Puzzle, LayoutList, Clock, X } from "lucide-react";
 import { tr } from "../../shared/i18n.jsx";
 
 /* Khối « Format đề » trên màn chọn đề thi thử (15/11, chủ dự án): gom danh sách kỹ năng (trước là
  * thẻ « Cấu trúc đề » của DELF và lưới thẻ bài thi của TCF) vào MỘT mục thu gọn, nói chi tiết từng
- * phần. Đặt dưới danh sách đề để đề 1, 2, 3 nằm trên cùng.
+ * phần. Đặt dưới danh sách đề để đề 1, 2, 3 nằm trên cùng. Gọn thành một nút nhỏ, bấm mở cửa sổ
+ * (15/11, chủ dự án); Esc hoặc bấm nền để đóng.
  *
  * Nguồn: DELF A1 đến B2 theo docs/format-de-thi-DELF-A1-B2.xlsx (manuel du candidat FEI 12/2021,
  * sujet d'exemple A1 2022; A2 là nguồn thứ cấp), lấy theo « format 2 » mà FRACILE soạn. DALF C1 theo
@@ -144,19 +146,35 @@ const t3 = (x) => tr(x[0], x[1], x[2]);
 
 export default function FormatDe({ ma }) {
   const [mo, setMo] = useState(false);
+  useEffect(() => {
+    if (!mo) return;
+    const dong = (e) => { if (e.key === "Escape") setMo(false); };
+    window.addEventListener("keydown", dong);
+    const cu = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => { window.removeEventListener("keydown", dong); document.body.style.overflow = cu; };
+  }, [mo]);
   const ds = FORMAT[ma];
   if (!ds) return null;
   const tcf = ma === "TCF" || ma === "TCF_TP";
+  const ten = `${tr("Format đề", "Format de l'épreuve", "Exam format")} ${tenKy(ma)}`;
   return (
-    <section className="mt-6 rounded-3xl bg-surface p-4 shadow-[0_8px_30px_rgb(0,0,0,0.04)] sm:p-5">
-      <button type="button" onClick={() => setMo((x) => !x)} aria-expanded={mo}
-        className="flex w-full cursor-pointer items-center gap-3 border-0 bg-transparent p-0 text-left font-sans">
-        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white"><LayoutList size={18} /></span>
-        <span className="min-w-0 flex-1 text-sm font-extrabold text-ink">{tr("Format đề", "Format de l'épreuve", "Exam format")} {tenKy(ma)}</span>
-        <ChevronDown size={18} className={`shrink-0 text-soft transition-transform ${mo ? "rotate-180" : ""}`} />
+    <>
+      <button type="button" onClick={() => setMo(true)}
+        className="mt-4 inline-flex cursor-pointer items-center gap-2 rounded-full border border-solid border-line bg-surface px-4 py-2 font-sans text-sm font-bold text-ink transition-colors hover:border-primary hover:text-primary">
+        <LayoutList size={15} /> {ten}
       </button>
-      {mo && (
-        <div className="mt-4 grid gap-3">
+      {mo && createPortal(
+        <div role="dialog" aria-modal="true" aria-label={ten} onClick={() => setMo(false)}
+          className="fixed inset-0 z-[300] grid place-items-center bg-black/55 p-4 backdrop-blur-sm">
+          <div onClick={(e) => e.stopPropagation()} className="flex max-h-[88vh] w-full max-w-2xl flex-col overflow-hidden rounded-3xl bg-surface shadow-2xl">
+            <div className="flex items-center gap-3 border-0 border-b border-solid border-line px-5 py-4">
+              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white"><LayoutList size={17} /></span>
+              <h2 className="m-0 min-w-0 flex-1 text-base font-extrabold text-ink">{ten}</h2>
+              <button type="button" onClick={() => setMo(false)} aria-label={tr("Đóng", "Fermer", "Close")} autoFocus
+                className="grid h-9 w-9 shrink-0 cursor-pointer place-items-center rounded-full border-0 bg-surface2 text-ink hover:bg-primary-soft hover:text-primary"><X size={17} /></button>
+            </div>
+            <div className="grid gap-3 overflow-y-auto p-5">
           {ds.map((p) => {
             const Icon = ICON[p.code];
             return (
@@ -191,8 +209,11 @@ export default function FormatDe({ ma }) {
               {tr("Tổng 100 điểm. Đậu khi đạt từ 50/100 và không kỹ năng nào dưới 5/25.", "Total sur 100. Réussite à partir de 50/100, avec au moins 5/25 dans chaque épreuve.", "Total out of 100. Pass with 50/100 and at least 5/25 in each part.")}
             </p>
           )}
-        </div>
+            </div>
+          </div>
+        </div>,
+        document.body,
       )}
-    </section>
+    </>
   );
 }
