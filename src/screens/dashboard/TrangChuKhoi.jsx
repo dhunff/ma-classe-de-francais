@@ -201,7 +201,7 @@ export function TroChoi() {
   const o = [
     { to: "/etudiant/lo-trinh", Icon: Map, nen: "from-emerald-500 to-teal-600",
       ten: tr("Lộ trình học tập", "Parcours", "Learning path"), mo: tr("Vượt màn theo chủ đề, nhận sao và XP", "Franchissez les étapes, gagnez étoiles et XP", "Clear levels by topic, earn stars and XP") },
-    { to: "/etudiant/thach-dau", Icon: Swords, nen: "from-rose-500 to-orange-500",
+    { to: "/etudiant/bo-the?tab=dau", Icon: Swords, nen: "from-rose-500 to-orange-500",
       ten: tr("Thách đấu", "Défis", "Duels"), mo: tr("Đấu từ vựng với bạn học", "Affrontez vos camarades", "Vocabulary duels with classmates") },
     { to: "/etudiant/tro-choi", Icon: Gamepad2, nen: "from-amber-500 to-pink-500",
       ten: tr("Trò chơi nhanh", "Jeux rapides", "Quick games"), mo: tr("11 trò chơi học tiếng Pháp", "11 jeux pour apprendre", "11 games to learn French") },

@@ -57,7 +57,8 @@ const NGUON_SO_TU = { doc: docTheSoTu, cham: onTheSoTu };
 
 const NHIP = "transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none";
 
-export default function BoTheApp({ name }) {
+/* 15/11: `trang` "choi" = trò Flashcard (Luyện thẻ + Thách đấu), "cua-toi" = mục « Flashcard của tôi ». */
+export default function BoTheApp({ name, trang = "choi" }) {
   const [man, setMan] = useState("LIBRARY");   // 'LIBRARY' | 'GAME'
   const [bo, setBo] = useState(null);
   const [ds, setDs] = useState(undefined);
@@ -128,9 +129,9 @@ export default function BoTheApp({ name }) {
           ? "pointer-events-none -translate-x-full opacity-0"
           : "translate-x-0 opacity-100"}`}
       >
-        <Link to="/etudiant/tro-choi" className="mx-4 mt-4 inline-flex items-center gap-1 text-sm font-bold text-soft no-underline hover:text-ink"><ArrowLeft size={16} /> {tr("Trò chơi", "Jeux", "Games")}</Link>
+        {trang === "choi" && <Link to="/etudiant/tro-choi" className="mx-4 mt-4 inline-flex items-center gap-1 text-sm font-bold text-soft no-underline hover:text-ink"><ArrowLeft size={16} /> {tr("Trò chơi", "Jeux", "Games")}</Link>}
         {/* 26/10: « Thẻ của tôi » và « Bộ thẻ có sẵn » là hai tab ngang trong ThuVienBoThe. */}
-        <ThuVienBoThe ds={ds} onMo={moBo} soTu={soTu} onOnSoTu={moSoTu}
+        <ThuVienBoThe trang={trang} ds={ds} onMo={moBo} soTu={soTu} onOnSoTu={moSoTu}
           onTaoThe={() => setTaoThe({ tu: "", nghia: "", viDu: "" })} onXoaThe={xoaThe} />
       </div>
 

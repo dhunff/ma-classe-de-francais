@@ -160,8 +160,8 @@ export default function SoTuMoi({ ex, children }) {
       </div>
 
       <div className="grid gap-2 border-0 border-t border-solid border-line px-5 py-3">
-        {/* 23/10: từ trong sổ có lịch ôn SM-2, ôn ở màn Flashcard (?so-tu mở thẳng). */}
-        <a href="/etudiant/bo-the?so-tu=1" className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-3 py-2 font-sans text-sm font-bold text-on-primary no-underline hover:opacity-90">
+        {/* 23/10: từ trong sổ có lịch ôn SM-2, ôn ở màn « Flashcard của tôi » (?so-tu mở thẳng). */}
+        <a href="/etudiant/the-cua-toi?so-tu=1" className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-3 py-2 font-sans text-sm font-bold text-on-primary no-underline hover:opacity-90">
           <BookMarked size={15} /> {tr("Ôn sổ từ bằng thẻ lật", "Réviser en flashcards", "Review as flashcards")}
         </a>
         <button type="button"

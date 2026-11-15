@@ -16,7 +16,7 @@ export const MUC_LICH = () => [
   { id: "thi-thu", to: "/etudiant/examen", Icon: Timer, nhan: tr("Thi thử", "Examen blanc", "Mock exam") },
   { id: "nghe-noi", to: "/etudiant/nghe-noi", Icon: AudioLines, nhan: tr("Nghe & Nói", "Écoute & Oral", "Listen & Speak") },
   { id: "tro-choi", to: "/etudiant/tro-choi", Icon: Gamepad2, nhan: tr("Trò chơi", "Jeux", "Games") },
-  { id: "thach-dau", to: "/etudiant/thach-dau", Icon: Swords, nhan: tr("Thách đấu", "Défi", "Duel") },
+  { id: "thach-dau", to: "/etudiant/bo-the?tab=dau", Icon: Swords, nhan: tr("Thách đấu", "Défi", "Duel") },
 ];
 export const mucLich = (id) => MUC_LICH().find((x) => x.id === id);
 

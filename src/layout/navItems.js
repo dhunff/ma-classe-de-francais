@@ -94,6 +94,8 @@ export const STUDENT_NAV = [
   /* Từ điển tra nhanh — nguồn là thẻ flashcard công khai (TuDien.jsx). */
   /* Thách đấu bạn bè — đứng ngay sau Lộ trình vì cùng là phần game. */
   { to: "/etudiant/tro-choi", nhom: "hoc", labelKey: "nav.games", Icon: Gamepad2, khop: ["/etudiant/tro-choi", "/etudiant/thach-dau", "/etudiant/bo-the"] },
+  /* 15/11 (chủ dự án): « Flashcard của tôi » (tự tạo thẻ + Sổ từ, ôn SM-2) tách khỏi trò Flashcard thành mục riêng. */
+  { to: "/etudiant/the-cua-toi", nhom: "hoc", labelKey: "nav.myCards", Icon: Layers },
   /* « Từ điển » GỠ 08/10 theo chủ dự án: nó chỉ tra lại đúng các thẻ Flashcard
      công khai (~130 mục), trùng với mục Flashcard. Lấy lại TuDien.jsx từ git. */
   { to: "/etudiant/entrainement", nhom: "hoc", labelKey: "nav.practice", Icon: Dumbbell, view: "practice" },
@@ -144,7 +146,7 @@ export const THU_TU_NHOM = { prof: ["chinh", "tong", "lop", "noi_dung"], eleve: 
    mục không có tên ở đây giữ thứ tự gốc của mảng, xếp sau. */
 const THU_TU_MUC_HS = [
   "/etudiant/dashboard", "/etudiant/ngu-phap", "/etudiant/nghe-noi", "/etudiant/devoirs", "/etudiant/examen", "/etudiant/tcf-canada", "/etudiant/tcf-phap",
-  "/etudiant/entrainement", "/etudiant/bo-the", "/etudiant/tro-choi", "/etudiant/thach-dau",
+  "/etudiant/entrainement", "/etudiant/bo-the", "/etudiant/tro-choi", "/etudiant/thach-dau", "/etudiant/the-cua-toi",
   "/etudiant/tien-bo", "/etudiant/calendrier", "/etudiant/compte", "/etudiant/faq",
 ];
 const viTriMuc = (to) => { const i = THU_TU_MUC_HS.indexOf(to); return i < 0 ? 999 : i; };

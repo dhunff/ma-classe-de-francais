@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Swords, X, Timer, Trophy, Hourglass, Play, Volume2, VolumeX, Send, Layers, Users, Check, XCircle, Handshake, Zap, ListChecks, Search, ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
+import { createPortal } from "react-dom";
 import XemLaiDau from "./XemLaiDau.jsx";
 import { phat, amThanhBat, datAmThanh } from "../../shared/amThanh.js";
 import { Avatar } from "../../shared/avatars.jsx";
@@ -45,7 +46,10 @@ function NutTieng() {
   );
 }
 
-export default function ThachDau() {
+/* 15/11 (chủ dự án): gộp vào màn Flashcard thành tab « Thách đấu »; `nhung` = đang nằm trong tab đó
+   (không nút quay lại, không lề riêng). Màn đấu và xem lại đi qua portal: vỏ trượt của BoTheApp có
+   transform nên `fixed` bên trong sẽ bị neo theo vỏ thay vì cửa sổ. */
+export default function ThachDau({ nhung = false }) {
   const t = useT();
   const [ds, setDs] = useState(undefined);      // undefined = đang tải, null = lỗi
   const [ban, setBan] = useState(undefined);
@@ -91,8 +95,8 @@ export default function ThachDau() {
   const choi = (d) => { setBaoLoi(""); phat("bam"); setTran({ id: d.id, doi: d.doi_phuong?.name, avatar: d.doi_phuong?.avatar, bo: d.chu_de_ten ? tr(d.chu_de_ten.vi, d.chu_de_ten.fr, d.chu_de_ten.en) : d.bo }); };
 
   return (
-    <div className="mx-auto max-w-3xl px-4 pb-24 pt-6">
-      <Link to="/etudiant/tro-choi" className="mb-3 inline-flex items-center gap-1 text-sm font-bold text-soft no-underline hover:text-ink"><ArrowLeft size={16} /> {tr("Trò chơi", "Jeux", "Games")}</Link>
+    <div className={nhung ? "pb-10" : "mx-auto max-w-3xl px-4 pb-24 pt-6"}>
+      {!nhung && <Link to="/etudiant/tro-choi" className="mb-3 inline-flex items-center gap-1 text-sm font-bold text-soft no-underline hover:text-ink"><ArrowLeft size={16} /> {tr("Trò chơi", "Jeux", "Games")}</Link>}
       {/* ── Đấu trường ── */}
       <header className="mcf-cau-vao relative mb-6 overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-600 via-violet-600 to-fuchsia-600 p-6 text-white shadow-[0_20px_50px_rgba(99,102,241,0.35)]">
         <span aria-hidden className="absolute -right-10 -top-10 h-44 w-44 rounded-full bg-white/10" />
@@ -218,12 +222,13 @@ export default function ThachDau() {
         </ul>
       )}
 
-      {tran && (
+      {tran && createPortal(
         <ManDau tran={tran} t={t} loiChu={loiChu}
           onDong={() => { setTran(null); tai(); }}
-          onXemLai={() => { setXemLai({ id: tran.id, doi: tran.doi }); setTran(null); tai(); }} />
+          onXemLai={() => { setXemLai({ id: tran.id, doi: tran.doi }); setTran(null); tai(); }} />,
+        document.body,
       )}
-      {xemLai && <XemLaiDau tranId={xemLai.id} doi={xemLai.doi} onDong={() => setXemLai(null)} />}
+      {xemLai && createPortal(<XemLaiDau tranId={xemLai.id} doi={xemLai.doi} onDong={() => setXemLai(null)} />, document.body)}
     </div>
   );
 }

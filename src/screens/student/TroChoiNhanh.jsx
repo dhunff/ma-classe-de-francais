@@ -80,7 +80,7 @@ function Sanh({ ds, dauMau }) {
             <span className="relative mt-4 text-xl font-extrabold">{ten}</span>
             <span className={`relative mt-1 text-sm leading-snug text-white/90 ${leon?.chu ?? ""}`}>{MO_NGAN[ma] ? tr(...MO_NGAN[ma]) : mo}</span>
             <span className="relative mt-auto flex items-center justify-between pt-4 text-sm font-bold">
-              {den ? <span className="inline-flex items-center gap-1.5 rounded-full bg-white/20 px-3 py-1"><Icon size={14} /> {ma === "thach_dau" ? "1 vs 1" : tr("Ôn", "Révision", "Review")}</span>
+              {den ? <span className="inline-flex items-center gap-1.5 rounded-full bg-white/20 px-3 py-1"><Icon size={14} /> {tr("Ôn", "Révision", "Review")}</span>
                 : <span className="inline-flex items-center gap-1 rounded-full bg-white/20 px-2.5 py-1 text-xs" title={tr("Kỷ lục Dễ · Vừa · Khó", "Records Facile · Moyen · Difficile", "Best Easy · Medium · Hard")}>
                     <Trophy size={13} />{["de", "vua", "kho"].map((m, j) => <span key={m} className="tabular-nums">{j > 0 && <span className="opacity-50"> · </span>}<span className="opacity-70">{["D", "V", "K"][j]}</span> {kl[`${ma}:${m}`] ?? "—"}</span>)}
                   </span>}

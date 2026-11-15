@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from "react";
-import { ChevronsRight, AlertTriangle, Layers, Lock, Unlock, Plus, Trash2 } from "lucide-react";
+import { ChevronsRight, AlertTriangle, Layers, Lock, Unlock, Plus, Trash2, Swords } from "lucide-react";
+import ThachDau from "./ThachDau.jsx";
 import TourGioiThieu from "../../shared/TourGioiThieu.jsx";
 import { useT, tr } from "../../shared/i18n.jsx";
 import { KY_NANG } from "../../shared/kyNang.js";
@@ -158,10 +159,15 @@ function TheCuaToi({ soTu, onOn, onTao, onXoa }) {
   );
 }
 
-export default function ThuVienBoThe({ ds, onMo, soTu, onOnSoTu, onTaoThe, onXoaThe }) {
+/* 15/11 (chủ dự án): `trang` = "choi" (trò Flashcard ở sảnh: tab « Luyện thẻ » + « Thách đấu », gộp
+   trò Đấu Flashcard cũ vào) hoặc "cua-toi" (mục riêng « Flashcard của tôi » ở thanh bên: tạo và ôn thẻ). */
+export default function ThuVienBoThe({ ds, onMo, soTu, onOnSoTu, onTaoThe, onXoaThe, trang = "choi" }) {
   const [kyNang, setKyNang] = useState("CO");
-  /* Tab đang xem: nhớ trong trình duyệt (tiện ích cá nhân, mất cũng không sao). */
-  const [tab, setTab] = useState(() => { try { return localStorage.getItem("mcf-fc-tab") || "co-san"; } catch { return "co-san"; } });
+  /* Tab đang xem: ?tab=dau (liên kết cũ /etudiant/thach-dau) thắng; không thì nhớ trong trình duyệt. */
+  const [tab, setTab] = useState(() => {
+    if (new URLSearchParams(window.location.search).get("tab") === "dau") return "dau";
+    try { return localStorage.getItem("mcf-fc-tab") === "dau" ? "dau" : "co-san"; } catch { return "co-san"; }
+  });
   const doiTab = (x) => { setTab(x); phat("tiep"); try { localStorage.setItem("mcf-fc-tab", x); } catch { /* bỏ qua */ } };
   const t = useT();
 
@@ -170,43 +176,50 @@ export default function ThuVienBoThe({ ds, onMo, soTu, onOnSoTu, onTaoThe, onXoa
     [ds, kyNang],
   );
   const TAB = [
-    ["cua-toi", tr("Thẻ của tôi", "Mes cartes", "My cards"), Array.isArray(soTu) ? soTu.length : null],
-    ["co-san", tr("Bộ thẻ có sẵn", "Paquets du site", "Ready-made decks"), Array.isArray(ds) ? ds.length : null],
+    ["co-san", tr("Luyện thẻ", "S'entraîner", "Practise"), Layers],
+    ["dau", tr("Thách đấu", "Duel", "Duel"), Swords],
   ];
+  const cuaToi = trang === "cua-toi";
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-6">
-      <TourGioiThieu khoa="hasSeenFlashcardTour" choXong="hasSeenGiaoDienTour" sanSang={tab === "co-san" && Array.isArray(hien) && hien.length > 0} steps={[
+      <TourGioiThieu khoa="hasSeenFlashcardTour" choXong="hasSeenGiaoDienTour" sanSang={!cuaToi && tab === "co-san" &&Array.isArray(hien) && hien.length > 0} steps={[
         { target: "#tour-fc-tabs", title: t("tour.fc1_title"), content: t("tour.fc1_body"), placement: "bottom" },
         { target: "#tour-fc-deck", title: t("tour.fc2_title"), content: t("tour.fc2_body") },
         { target: "#tour-fc-count", title: t("tour.fc3_title"), content: t("tour.fc3_body") },
       ]} />
-      <header className="mcf-cau-vao relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-500 via-violet-500 to-purple-600 px-5 py-4 text-white shadow-[0_14px_34px_rgba(99,102,241,0.28)]">
+      <header className={`mcf-cau-vao relative overflow-hidden rounded-3xl bg-gradient-to-br px-5 py-4 text-white ${cuaToi ? "from-emerald-500 via-teal-500 to-cyan-600 shadow-[0_14px_34px_rgba(20,184,166,0.28)]" : "from-indigo-500 via-violet-500 to-purple-600 shadow-[0_14px_34px_rgba(99,102,241,0.28)]"}`}>
         <span aria-hidden className="absolute -right-10 -top-12 h-40 w-40 rounded-full bg-white/10" />
         <div className="relative flex items-center gap-3">
           <Leon cam="hoc" size={64} className="shrink-0 drop-shadow-[0_8px_12px_rgba(0,0,0,0.25)]" />
           <div className="min-w-0 flex-1">
-            <h1 className="m-0 text-2xl font-extrabold tracking-tight">Flashcard</h1>
-            <p className="m-0 text-sm text-white/85">{tr("Ôn thẻ của riêng bạn hoặc các bộ thẻ có sẵn.", "Vos cartes ou les paquets du site.", "Your own cards or ready-made decks.")}</p>
+            <h1 className="m-0 text-2xl font-extrabold tracking-tight">{cuaToi ? tr("Flashcard của tôi", "Mes flashcards", "My flashcards") : "Flashcard"}</h1>
+            <p className="m-0 text-sm text-white/85">{cuaToi
+              ? tr("Tự tạo thẻ và ôn theo lịch nhắc đúng lúc sắp quên.", "Créez vos cartes, révisez au bon moment.", "Make your own cards, review at the right time.")
+              : tr("Luyện các bộ thẻ có sẵn hoặc thách đấu bạn bè.", "Révisez les paquets ou défiez vos amis.", "Practise ready-made decks or duel your friends.")}</p>
           </div>
           <NutTieng className="border-white/30 bg-white/15 text-white hover:border-white hover:text-white" />
         </div>
       </header>
 
       {/* Hai mục nằm ngang (26/10, theo chủ dự án). */}
-      <div role="tablist" className="mt-4 grid grid-cols-2 gap-1.5 rounded-2xl bg-surface2 p-1.5">
-        {TAB.map(([ma, ten, so]) => (
-          <button key={ma} type="button" role="tab" aria-selected={tab === ma} onClick={() => doiTab(ma)}
-            className={"inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl border-0 px-3 py-2.5 font-sans text-sm font-extrabold transition-colors duration-200 "
-              + (tab === ma ? "bg-surface text-ink shadow-sm" : "bg-transparent text-soft hover:text-ink")}>
-            {ten}{so != null && <span className={"rounded-full px-2 py-0.5 text-[11px] " + (tab === ma ? "bg-primary-soft text-primary" : "bg-surface text-soft")}>{so}</span>}
-          </button>
-        ))}
-      </div>
+      {!cuaToi && (
+        <div role="tablist" className="mt-4 grid grid-cols-2 gap-1.5 rounded-2xl bg-surface2 p-1.5">
+          {TAB.map(([ma, ten, Icon]) => (
+            <button key={ma} type="button" role="tab" aria-selected={tab === ma} onClick={() => doiTab(ma)}
+              className={"inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl border-0 px-3 py-2.5 font-sans text-sm font-extrabold transition-colors duration-200 "
+                + (tab === ma ? "bg-surface text-ink shadow-sm" : "bg-transparent text-soft hover:text-ink")}>
+              <Icon size={16} className={tab === ma ? (ma === "dau" ? "text-fuchsia-600" : "text-primary") : ""} />{ten}
+            </button>
+          ))}
+        </div>
+      )}
 
       <div className="mt-4">
-        {tab === "cua-toi" ? (
+        {cuaToi ? (
           <TheCuaToi soTu={soTu} onOn={onOnSoTu} onTao={onTaoThe} onXoa={onXoaThe} />
+        ) : tab === "dau" ? (
+          <ThachDau nhung />
         ) : (
           <>
             <div id="tour-fc-tabs" className="mb-3 flex flex-wrap gap-2">

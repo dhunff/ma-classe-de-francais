@@ -21,7 +21,6 @@ import TienBoVip from './screens/student/TienBoVip.jsx'
 import NguPhap from './screens/student/NguPhap.jsx'
 import BaiLuyenCuaToi from "./screens/student/BaiLuyenCuaToi.jsx";
 import LoTrinh from './screens/student/LoTrinh.jsx'
-import ThachDau from './screens/student/ThachDau.jsx'
 import TroChoiNhanh from './screens/student/TroChoiNhanh.jsx'
 import DatNeo from './screens/teacher/DatNeo.jsx'
 import DuyetNhap from './screens/teacher/DuyetNhap.jsx'
@@ -324,7 +323,8 @@ function AppInner() {
                   đây là màn để nhìn quanh rồi đi tiếp, nên thanh bên phải có
                   mặt. `name` dùng để lọc bài nộp của chính em đó. */}
               <Route path="/etudiant/lo-trinh" element={<LoTrinh name={session?.name} />} />
-              <Route path="/etudiant/thach-dau" element={<ThachDau />} />
+              {/* 15/11: Thách đấu gộp vào trò Flashcard (tab « Thách đấu »); đường cũ chuyển hướng. */}
+              <Route path="/etudiant/thach-dau" element={<Navigate to="/etudiant/bo-the?tab=dau" replace />} />
               {/* Thi thử (09/11): TRONG vỏ app, có thanh bên. Lúc đang làm bài, ExamMode phủ kín màn
                   hình (portal) để phòng thi không có menu. Hàng rào thật vẫn là RLS + Edge Function. */}
               <Route path="/etudiant/examen" element={<ExamMode name={session?.name} />} />
@@ -351,6 +351,8 @@ function AppInner() {
                   một route: đổi route thì React Router tháo màn cũ ngay khi
                   màn mới gắn vào, không còn gì để trượt. Xem BoTheApp.jsx. */}
               <Route path="/etudiant/bo-the" element={<BoTheApp name={session?.name} />} />
+              {/* 15/11 (chủ dự án): tạo và ôn thẻ tự tạo thành mục riêng ở thanh bên. */}
+              <Route path="/etudiant/the-cua-toi" element={<BoTheApp key="cua-toi" trang="cua-toi" name={session?.name} />} />
               <Route path="/etudiant/nghe-noi" element={<NgheNoi />} />
               <Route path="/etudiant/ngu-phap" element={<NguPhap />} />
               {/* Từ vựng theo chủ đề (10/11): tab của mục Học tập. */}
