@@ -62,11 +62,11 @@ const dongHo = (giay) => `${hai(Math.floor(giay / 60))}:${hai(Math.max(0, giay %
 
 /* ─────────────────────────── Màn chờ ─────────────────────────── */
 
-/* Công tắc bật/tắt (15/11): một kiểu cho mọi lựa chọn trên màn chọn đề. */
+/* Công tắc bật/tắt (15/11): cùng kiểu với công tắc của web (AccessPanel): 48×28, màu chủ đạo khi bật. */
 function CongTac({ bat, onDoi, nhan }) {
   return (
     <button type="button" role="switch" aria-checked={bat} aria-label={nhan} onClick={() => onDoi(!bat)}
-      className={`relative h-7 w-12 shrink-0 cursor-pointer rounded-full border-0 p-0 transition-colors duration-200 ${bat ? "bg-ok" : "bg-line"}`}>
+      className={`relative h-7 w-12 shrink-0 cursor-pointer rounded-full border-0 p-0 transition-colors duration-200 ${bat ? "bg-primary" : "bg-line-strong"}`}>
       <span className={`absolute left-1 top-1 h-5 w-5 rounded-full bg-white shadow transition-transform duration-200 ${bat ? "translate-x-5" : ""}`} />
     </button>
   );
@@ -194,7 +194,7 @@ function ManCho({ dsDe, chon, paper, onStart, dangTai, lamPhanNoi, setLamPhanNoi
 
       {/* ── Trình độ ── (TCF Canada không chia trình độ) */}
       {/* 15/11 (chủ dự án): ô « Format đề » (và « Quy đổi điểm » của TCF) nằm cùng hàng với tab trình độ. */}
-      <div className="mt-6 flex flex-wrap items-stretch gap-2">
+      <div className="mt-6 flex flex-wrap items-center gap-2">
       {!tcf && <div role="tablist" aria-label={tr("Trình độ", "Niveau", "Level")} className="no-scrollbar flex min-w-0 gap-2 overflow-x-auto pb-1">
         {nhom.map((g, k) => {
           const dang = g.level === tab;
@@ -209,7 +209,7 @@ function ManCho({ dsDe, chon, paper, onStart, dangTai, lamPhanNoi, setLamPhanNoi
           );
         })}
       </div>}
-        <div className={`flex gap-2 pb-1 ${tcf ? "" : "sm:ml-auto"}`}>
+        <div className={`flex flex-wrap gap-2 ${tcf ? "" : "sm:ml-auto"}`}>
           <FormatDe ma={tcf ? levelTcf : tab} />
           {gioiThieu}
         </div>
@@ -327,17 +327,17 @@ function ManCho({ dsDe, chon, paper, onStart, dangTai, lamPhanNoi, setLamPhanNoi
 
       {/* 15/11 (chủ dự án): các lựa chọn trước khi thi gom vào MỘT thẻ, mỗi dòng cùng khuôn: ô biểu
           tượng màu, chữ, công tắc bên phải. Ghi chú nộp sớm là chân thẻ. */}
-      <div className="mt-6 overflow-hidden rounded-3xl border-2 border-solid border-line bg-surface">
+      <div className="mt-6 overflow-hidden rounded-3xl border border-solid border-line bg-surface">
         {coPhanNoi && (
           <div className="flex flex-wrap items-center gap-3 border-0 border-b border-solid border-line p-4">
-            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-fuchsia-500 to-purple-600 text-white"><Mic size={18} /></span>
-            <span className="min-w-0 flex-1 text-sm font-extrabold text-ink">{tr("Làm phần NÓI", "Faire l'ORAL", "Do the SPEAKING part")}</span>
+            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-primary-soft text-primary"><Mic size={18} /></span>
+            <span className="min-w-0 flex-1 text-sm font-bold text-ink">{tr("Làm phần NÓI", "Faire l'ORAL", "Do the SPEAKING part")}</span>
             {lamPhanNoi && <KiemTraMic onKetQua={setMicOk} />}
             <CongTac bat={lamPhanNoi} onDoi={setLamPhanNoi} nhan={tr("Làm phần NÓI", "Faire l'ORAL", "Do the SPEAKING part")} />
           </div>
         )}
-        <div className={`flex items-center gap-3 p-4 transition-colors ${sanSang ? "bg-ok-soft" : ""}`}>
-          <span className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl text-white ${sanSang ? "bg-ok" : "bg-gradient-to-br from-blue-500 to-indigo-600"}`}><Timer size={18} /></span>
+        <div className="flex items-center gap-3 p-4">
+          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-primary-soft text-primary"><Timer size={18} /></span>
           <span className="min-w-0 flex-1 text-sm text-ink">
             {tr("Tôi có", "J'ai", "I have")} <strong>{tongPhut} {tr("phút liên tục", "minutes sans interruption", "uninterrupted minutes")}</strong> {tr("và sẽ không rời khỏi bài thi. Đồng hồ chạy liên tục kể cả khi đóng tab.", "et je ne quitterai pas l'examen. Le chronomètre continue même si l'onglet est fermé.", "and will not leave the exam. The timer keeps running even if the tab is closed.")}
           </span>

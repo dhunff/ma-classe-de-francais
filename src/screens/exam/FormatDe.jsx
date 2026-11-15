@@ -145,7 +145,7 @@ const tenKy = (ma) => (ma === "TCF" ? "TCF Canada" : ma === "TCF_TP" ? "TCF tout
 const t3 = (x) => tr(x[0], x[1], x[2]);
 
 /* Ô công cụ cạnh tab trình độ (15/11, chủ dự án): cùng khuôn với tab (khung bo 2xl, viền 2px, cao
- * bằng nhau), bấm mở cửa sổ. Dùng cho « Format đề » và « Quy đổi điểm » của trang TCF. */
+ * bằng nhau), bấm mở cửa sổ. Kiểu nút phụ chung của web (viên thuốc viền xám, như « Kết quả thi của tôi »). Dùng cho « Format đề » và « Quy đổi điểm » của trang TCF. */
 export function NutCuaSo({ icon: Icon, nhan, phu, tieuDe, rong = "max-w-2xl", children }) {
   const [mo, setMo] = useState(false);
   useEffect(() => {
@@ -159,19 +159,15 @@ export function NutCuaSo({ icon: Icon, nhan, phu, tieuDe, rong = "max-w-2xl", ch
   return (
     <>
       <button type="button" onClick={() => setMo(true)} aria-haspopup="dialog"
-        className="group flex shrink-0 cursor-pointer items-center gap-2.5 rounded-2xl border-2 border-dashed border-primary/40 bg-primary-soft/60 px-4 py-2.5 text-left font-sans text-ink transition-all duration-200 hover:-translate-y-0.5 hover:border-solid hover:border-primary">
-        <span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-primary text-white"><Icon size={16} /></span>
-        <span className="flex flex-col">
-          <span className="text-sm font-extrabold leading-tight">{nhan}</span>
-          {phu && <span className="mt-0.5 text-[11px] font-bold leading-none text-soft group-hover:text-primary">{phu}</span>}
-        </span>
+        className="inline-flex shrink-0 cursor-pointer items-center gap-2 rounded-full border border-solid border-line bg-surface px-4 py-2 font-sans text-sm font-bold text-ink transition-all hover:-translate-y-0.5 hover:border-primary hover:text-primary">
+        <Icon size={15} /> {nhan}{phu && <span className="font-semibold text-soft">· {phu}</span>}
       </button>
       {mo && createPortal(
         <div role="dialog" aria-modal="true" aria-label={tieuDe} onClick={() => setMo(false)}
           className="fixed inset-0 z-[300] grid place-items-center bg-black/55 p-4 backdrop-blur-sm">
           <div onClick={(e) => e.stopPropagation()} className={`flex max-h-[88vh] w-full ${rong} flex-col overflow-hidden rounded-3xl bg-surface shadow-2xl`}>
             <div className="flex items-center gap-3 border-0 border-b border-solid border-line px-5 py-4">
-              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-primary text-white"><Icon size={17} /></span>
+              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-2xl bg-primary-soft text-primary"><Icon size={17} /></span>
               <h2 className="m-0 min-w-0 flex-1 text-base font-extrabold text-ink">{tieuDe}</h2>
               <button type="button" onClick={() => setMo(false)} aria-label={tr("Đóng", "Fermer", "Close")} autoFocus
                 className="grid h-9 w-9 shrink-0 cursor-pointer place-items-center rounded-full border-0 bg-surface2 text-ink hover:bg-primary-soft hover:text-primary"><X size={17} /></button>

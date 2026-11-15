@@ -99,12 +99,12 @@ export default function KiemTraMic({ onKetQua }) {
     <div className="inline-flex max-w-full flex-wrap items-center gap-2 text-xs">
       {dangDo ? (
         <button type="button" onClick={ketThuc}
-          className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border-0 bg-danger px-3 py-1.5 font-sans text-xs font-bold text-white">
+          className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border-0 bg-danger px-4 py-2 font-sans text-xs font-extrabold text-white">
           <Square size={11} className="fill-current" aria-hidden /> {conLai}s
         </button>
       ) : (
         <button type="button" onClick={thu}
-          className={`inline-flex cursor-pointer items-center gap-1.5 rounded-full border-0 px-3 py-1.5 font-sans text-xs font-bold ${dat ? "bg-surface2 text-ink" : "bg-primary text-white"}`}>
+          className={`inline-flex cursor-pointer items-center gap-1.5 rounded-full px-4 py-2 font-sans text-xs font-extrabold ${dat ? "border border-solid border-line bg-surface text-ink hover:border-primary" : "border-0 bg-primary text-on-primary hover:opacity-90"}`}>
           {tt === "cho" ? <Mic size={12} aria-hidden /> : <RotateCcw size={12} aria-hidden />} {tt === "cho" ? tr("Thử mic", "Tester le micro", "Test mic") : tr("Thử lại", "Recommencer", "Retry")}
         </button>
       )}
