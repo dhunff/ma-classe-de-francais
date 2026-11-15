@@ -327,18 +327,18 @@ function ManCho({ dsDe, chon, paper, onStart, dangTai, lamPhanNoi, setLamPhanNoi
 
       {/* 15/11 (chủ dự án): các lựa chọn trước khi thi gom vào MỘT thẻ, mỗi dòng cùng khuôn: ô biểu
           tượng màu, chữ, công tắc bên phải. Ghi chú nộp sớm là chân thẻ. */}
-      {/* 15/11 (chủ dự án): thẻ lựa chọn gọn: mỗi dòng một biểu tượng nhỏ, chữ ngắn, công tắc bên phải. */}
-      <div className="mt-4 overflow-hidden rounded-3xl border border-solid border-line bg-surface text-sm text-ink">
+      {/* 15/11 (chủ dự án): thẻ lựa chọn gọn: mỗi dòng một ô biểu tượng nhỏ nền đậm, chữ ngắn, công tắc bên phải. */}
+      <div className="mt-4 max-w-md overflow-hidden rounded-3xl border border-solid border-line bg-surface text-sm text-ink">
         {coPhanNoi && (
           <div className="flex flex-wrap items-center gap-x-3 gap-y-2 border-0 border-b border-solid border-line px-4 py-2.5">
-            <Mic size={16} className="shrink-0 text-primary" />
+            <span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-primary to-indigo-600 text-white shadow-[0_4px_10px_rgba(37,99,235,0.3)]"><Mic size={15} /></span>
             <span className="min-w-0 flex-1 font-bold">{tr("Làm phần NÓI", "Faire l'ORAL", "Do the SPEAKING part")}</span>
             {lamPhanNoi && <KiemTraMic onKetQua={setMicOk} />}
             <CongTac bat={lamPhanNoi} onDoi={setLamPhanNoi} nhan={tr("Làm phần NÓI", "Faire l'ORAL", "Do the SPEAKING part")} />
           </div>
         )}
         <div className="flex items-center gap-3 px-4 py-2.5">
-          <Timer size={16} className="shrink-0 text-primary" />
+          <span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-primary to-indigo-600 text-white shadow-[0_4px_10px_rgba(37,99,235,0.3)]"><Timer size={15} /></span>
           <span className="min-w-0 flex-1">
             {tr("Tôi có", "J'ai", "I have")} <strong>{tongPhut} {tr("phút liên tục", "minutes d'affilée", "minutes in a row")}</strong>{tr(", không rời bài thi", ", sans quitter l'examen", ", without leaving the exam")}
           </span>

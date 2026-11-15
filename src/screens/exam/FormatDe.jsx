@@ -167,7 +167,7 @@ export function NutCuaSo({ icon: Icon, nhan, phu, tieuDe, rong = "max-w-2xl", ch
           className="fixed inset-0 z-[300] grid place-items-center bg-black/55 p-4 backdrop-blur-sm">
           <div onClick={(e) => e.stopPropagation()} className={`flex max-h-[88vh] w-full ${rong} flex-col overflow-hidden rounded-3xl bg-surface shadow-2xl`}>
             <div className="flex items-center gap-3 border-0 border-b border-solid border-line px-5 py-4">
-              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-2xl bg-primary-soft text-primary"><Icon size={17} /></span>
+              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-primary to-indigo-600 text-white shadow-[0_4px_10px_rgba(37,99,235,0.3)]"><Icon size={17} /></span>
               <h2 className="m-0 min-w-0 flex-1 text-base font-extrabold text-ink">{tieuDe}</h2>
               <button type="button" onClick={() => setMo(false)} aria-label={tr("Đóng", "Fermer", "Close")} autoFocus
                 className="grid h-9 w-9 shrink-0 cursor-pointer place-items-center rounded-full border-0 bg-surface2 text-ink hover:bg-primary-soft hover:text-primary"><X size={17} /></button>
