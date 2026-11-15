@@ -327,33 +327,34 @@ function ManCho({ dsDe, chon, paper, onStart, dangTai, lamPhanNoi, setLamPhanNoi
 
       {/* 15/11 (chủ dự án): các lựa chọn trước khi thi gom vào MỘT thẻ, mỗi dòng cùng khuôn: ô biểu
           tượng màu, chữ, công tắc bên phải. Ghi chú nộp sớm là chân thẻ. */}
-      <div className="mt-6 overflow-hidden rounded-3xl border border-solid border-line bg-surface">
+      {/* 15/11 (chủ dự án): thẻ lựa chọn gọn: mỗi dòng một biểu tượng nhỏ, chữ ngắn, công tắc bên phải. */}
+      <div className="mt-4 overflow-hidden rounded-3xl border border-solid border-line bg-surface text-sm text-ink">
         {coPhanNoi && (
-          <div className="flex flex-wrap items-center gap-3 border-0 border-b border-solid border-line p-4">
-            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-primary-soft text-primary"><Mic size={18} /></span>
-            <span className="min-w-0 flex-1 text-sm font-bold text-ink">{tr("Làm phần NÓI", "Faire l'ORAL", "Do the SPEAKING part")}</span>
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-2 border-0 border-b border-solid border-line px-4 py-2.5">
+            <Mic size={16} className="shrink-0 text-primary" />
+            <span className="min-w-0 flex-1 font-bold">{tr("Làm phần NÓI", "Faire l'ORAL", "Do the SPEAKING part")}</span>
             {lamPhanNoi && <KiemTraMic onKetQua={setMicOk} />}
             <CongTac bat={lamPhanNoi} onDoi={setLamPhanNoi} nhan={tr("Làm phần NÓI", "Faire l'ORAL", "Do the SPEAKING part")} />
           </div>
         )}
-        <div className="flex items-center gap-3 p-4">
-          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-primary-soft text-primary"><Timer size={18} /></span>
-          <span className="min-w-0 flex-1 text-sm text-ink">
-            {tr("Tôi có", "J'ai", "I have")} <strong>{tongPhut} {tr("phút liên tục", "minutes sans interruption", "uninterrupted minutes")}</strong> {tr("và sẽ không rời khỏi bài thi. Đồng hồ chạy liên tục kể cả khi đóng tab.", "et je ne quitterai pas l'examen. Le chronomètre continue même si l'onglet est fermé.", "and will not leave the exam. The timer keeps running even if the tab is closed.")}
+        <div className="flex items-center gap-3 px-4 py-2.5">
+          <Timer size={16} className="shrink-0 text-primary" />
+          <span className="min-w-0 flex-1">
+            {tr("Tôi có", "J'ai", "I have")} <strong>{tongPhut} {tr("phút liên tục", "minutes d'affilée", "minutes in a row")}</strong>{tr(", không rời bài thi", ", sans quitter l'examen", ", without leaving the exam")}
           </span>
           <CongTac bat={sanSang} onDoi={(v) => { phat(v ? "dung" : "bam"); setSanSang(v); }} nhan={tr("Tôi sẵn sàng", "Je suis prêt(e)", "I'm ready")} />
         </div>
         {/* 14/10 (chủ dự án): báo trước rằng nộp sớm được; phút dư KHÔNG cộng sang phần sau. */}
-        <p className="m-0 flex items-start gap-2 border-0 border-t border-solid border-line bg-surface2 px-4 py-3 text-xs text-soft">
-          <Clock size={14} className="mt-0.5 shrink-0" />
-          <span>{tr("Bạn có thể hoàn thành bài trước tổng thời gian: làm xong phần nào thì bấm « Nộp phần này » để sang phần sau. Thời gian dư không được cộng sang phần tiếp theo.", "Vous pouvez terminer avant la durée totale : dès qu'une partie est finie, cliquez sur « Terminer cette partie » pour passer à la suivante. Le temps restant n'est pas reporté.", "You can finish before the total time: when a part is done, click « Finish this part » to move on. Leftover time is not carried over.")}</span>
+        <p className="m-0 flex items-center gap-2 border-0 border-t border-solid border-line bg-surface2 px-4 py-2 text-[11.5px] text-soft">
+          <Clock size={13} className="shrink-0" />
+          {tr("Nộp sớm được, phút dư không cộng sang phần sau.", "Vous pouvez rendre plus tôt ; le temps restant n'est pas reporté.", "You can finish early; leftover time isn't carried over.")}
         </p>
       </div>
 
       <button type="button"
         disabled={!sanSangVao}
         onClick={() => { phat("bam"); setLoiMo(""); setMoHop(true); }}
-        className={`mt-5 inline-flex w-full items-center justify-center gap-2 rounded-2xl border-0 border-b-4 border-solid border-blue-800 bg-gradient-to-r from-primary to-indigo-600 px-6 py-4 font-sans text-base font-extrabold uppercase tracking-wide text-white shadow-[0_14px_30px_rgba(37,99,235,0.35)] transition-all enabled:hover:-translate-y-0.5 enabled:active:translate-y-0.5 enabled:active:border-b-0 disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto sm:px-10 ${sanSangVao ? "mcf-nay" : ""}`}>
+        className={`mt-4 inline-flex w-full items-center justify-center gap-2 rounded-2xl border-0 border-b-4 border-solid border-blue-800 bg-gradient-to-r from-primary to-indigo-600 px-6 py-4 font-sans text-base font-extrabold uppercase tracking-wide text-white shadow-[0_14px_30px_rgba(37,99,235,0.35)] transition-all enabled:hover:-translate-y-0.5 enabled:active:translate-y-0.5 enabled:active:border-b-0 disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto sm:px-10 ${sanSangVao ? "mcf-nay" : ""}`}>
         {/* Nút mờ đi mà không nói vì sao là một cánh cửa khoá không biển
             báo. Ba lý do khoá, ba câu khác nhau. */}
         <Timer size={16} /> {dangTai ? tr("Đang tải đề…", "Chargement du sujet…", "Loading exam…")
