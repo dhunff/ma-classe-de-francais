@@ -21,6 +21,12 @@
  * thẳng điều đó để AI không bịa.
  *
  * Hạn mức 6 lượt / 24 giờ (VIP không giới hạn). Đã có gợi ý → trả lại, không tốn lượt.
+ *
+ * ══ PHẦN TRANH LUẬN (15/11) ══ Chủ đề bốc thăm có `hoiLai` (migration 213) thì màn thi hỏi lần lượt
+ * từng câu của giám khảo (chữ) và học sinh ghi âm từng câu trả lời: tệp `<exercise>__ctl<n>-<mốc>`.
+ * Hàm chép lời các câu trả lời đó (không đo độ trôi chảy, chỉ đo trên phần độc thoại), ghép thành
+ * lượt hỏi đáp, và dặn AI chấm tiêu chí tương tác (B2 `interaction`, C1 `entretien`) trên phần này.
+ * Câu hỏi lấy từ ĐỀ trên máy chủ (exercises.meta.bocTham), không lấy từ trình duyệt gửi lên.
  */
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.112.4";
 import { CORS, json } from "../_shared/cors.ts";
@@ -84,7 +90,7 @@ Deno.serve(async (req) => {
   const { data: att } = await admin.from("attempts").select("exam_id, exercise_id").eq("id", attemptId).maybeSingle();
   if (!att?.exam_id) return json(404, { ok: false, ma: "KHONG_THAY_BAI_NOI" });
   const thuMuc = `${userId}/${att.exam_id}`;
-  const { data: ds } = await admin.storage.from(KHO).list(thuMuc, { limit: 100 });
+  const { data: ds } = await admin.storage.from(KHO).list(thuMuc, { limit: 1000 });
   const tep = (ds ?? []).filter((f: any) => f.name.startsWith(`${att.exercise_id}-`)).sort((a: any, b: any) => (a.name < b.name ? 1 : -1))[0];
   if (!tep) return json(404, { ok: false, ma: "CHUA_CO_BAN_GHI", thong_bao: "Chưa có bản ghi âm nào cho phần nói này." });
   if (!DUOI_NHAN.test(tep.name)) return json(400, { ok: false, ma: "DINH_DANG_KHONG_HO_TRO" });
@@ -116,7 +122,33 @@ Deno.serve(async (req) => {
   if (doMoc && gonChu(chepLoi).includes(gonChu(GOI_Y_CHEP_TU_DEM))) return json(422, { ok: false, ma: "KHONG_NGHE_RO" });
   const troiChay: any = doMoc ? doTroiChay(banChep?.words, pc.cap) : { du_lieu: false };
 
-  const { data: ex } = await admin.from("exercises").select("consigne").eq("id", att.exercise_id).maybeSingle();
+  const { data: ex } = await admin.from("exercises").select("consigne, meta").eq("id", att.exercise_id).maybeSingle();
+
+  /* ── 1b. Phần tranh luận: câu hỏi của chủ đề đã chọn + bản ghi mới nhất cho từng câu. */
+  const hoiLai: string[] = (Array.isArray(pc.de_boc) ? pc.de_boc : []).flatMap((d: any) => {
+    const ph = (ex?.meta?.bocTham?.phan ?? []).find((x: any) => x?.ten === d?.phan) ?? ex?.meta?.bocTham?.phan?.[0];
+    const sj = (ph?.sujets ?? []).find((x: any) => String(x?.ma) === String(d?.ma));
+    return Array.isArray(sj?.hoiLai) ? sj.hoiLai.filter((h: any) => typeof h === "string" && h.trim()).slice(0, 10) : [];
+  });
+  const chepMot = async (ten: string) => {
+    if (!DUOI_NHAN.test(ten)) return "";
+    const { data: f } = await admin.storage.from(KHO).download(`${thuMuc}/${ten}`);
+    if (!f || f.size > TRAN_BYTE) return "";
+    const fd = new FormData();
+    fd.append("file", f, ten); fd.append("model", modelStt); fd.append("language", "fr");
+    const r = await fetch("https://api.openai.com/v1/audio/transcriptions", { method: "POST", headers: { authorization: `Bearer ${KHOA}` }, body: fd }).catch(() => null);
+    if (!r?.ok) return "";
+    const t = String((await r.json().catch(() => null))?.text ?? "").trim();
+    return t.length < 3 ? "" : t;
+  };
+  const tranhLuan: any[] = hoiLai.length ? await Promise.all(hoiLai.map(async (hoi, i) => {
+    const tepTL = (ds ?? []).filter((f: any) => f.name.startsWith(`${att.exercise_id}__ctl${i + 1}-`)).sort((a: any, b: any) => (a.name < b.name ? 1 : -1))[0];
+    return { hoi, tra_loi: tepTL ? (await chepMot(tepTL.name)).slice(0, 3000) : "", tep: tepTL?.name ?? null };
+  })) : [];
+  const coTL = tranhLuan.length > 0;
+  const idTL = pc.cap === "C1" ? "entretien" : "interaction";
+  const idDT = pc.cap === "C1" ? "expose" : "monologue";
+  const vanTL = tranhLuan.map((x, i) => `Câu ${i + 1}. Giám khảo : ${x.hoi}\nHọc viên : ${x.tra_loi || "(không trả lời)"}`).join("\n\n");
   /* Đề học sinh đã BỐC và CHỌN (137) quan trọng hơn consigne chung. */
   const deBoc = Array.isArray(pc.de_boc) ? pc.de_boc.map((d: any) => `${d.phan} : ${d.html}`).join("\n") : "";
   const deBai = `${ex?.consigne ?? ""}\n${deBoc}`.replace(/<[^>]+>/g, " ").slice(0, 3500);
@@ -126,11 +158,18 @@ Deno.serve(async (req) => {
   /* ── 2. Lời nhắc: lượt 1 (đủ phiếu) và lượt 2 (giám khảo thứ hai, chỉ điểm). Cùng grille, cùng
      sự thật về độ trôi chảy, không thấy điểm của nhau. */
   const chung = [
-    "Bạn chỉ có BẢN CHÉP LỜI do máy tạo từ bản ghi tự luyện ở nhà: không nghe được giọng, không có giám khảo đối thoại.",
-    "- Phần phát âm chỉ suy đoán gián tiếp; phần tương tác chỉ đánh giá theo những gì học viên tự nói.",
+    ...(coTL ? [
+      "Bạn chỉ có BẢN CHÉP LỜI do máy tạo từ bản ghi tự luyện ở nhà, không nghe được giọng. Bài gồm hai phần: PHẦN ĐỘC THOẠI, rồi PHẦN TRANH LUẬN trong đó giám khảo hỏi bằng các câu viết sẵn và học viên ghi âm câu trả lời cho từng câu.",
+      `- Tiêu chí ${idDT} chấm trên phần độc thoại. Tiêu chí ${idTL} chấm trên phần tranh luận: trả lời đúng trọng tâm câu hỏi, giữ vững hoặc nhấn sắc thái quan điểm, phản bác có lý lẽ, đưa ví dụ.`,
+      "- Câu hỏi là câu viết sẵn, không phải hội thoại sống: đừng trừ điểm vì học viên không hỏi lại giám khảo hay không tự dẫn dắt cuộc trao đổi. Câu nào không có câu trả lời thì coi như học viên không làm câu đó.",
+      "- Các tiêu chí ngôn ngữ (từ vựng, ngữ pháp, phát âm) chấm trên cả hai phần. Phần phát âm chỉ suy đoán gián tiếp.",
+    ] : [
+      "Bạn chỉ có BẢN CHÉP LỜI do máy tạo từ bản ghi tự luyện ở nhà: không nghe được giọng, không có giám khảo đối thoại.",
+      "- Phần phát âm chỉ suy đoán gián tiếp; phần tương tác chỉ đánh giá theo những gì học viên tự nói.",
+    ]),
     "- Phần nào học viên KHÔNG làm trong bản ghi thì cho mức thấp nhất.",
     "- Mỗi tiêu chí chỉ được chọn MỘT giá trị trong danh sách cho phép.",
-    ...(dongTC ? ["- Mục ĐỘ TRÔI CHẢY là số đo của máy: dùng nó cho phần hoàn thành nhiệm vụ và phát âm (độ dễ nghe, nhịp nói), đừng tự suy độ trôi chảy từ bản chép lời."] : []),
+    ...(dongTC ? [`- Mục ĐỘ TRÔI CHẢY là số đo của máy${coTL ? " trên phần độc thoại" : ""}: dùng nó cho phần hoàn thành nhiệm vụ và phát âm (độ dễ nghe, nhịp nói), đừng tự suy độ trôi chảy từ bản chép lời.`] : []),
     "Các tiêu chí:", moTa,
   ];
   const heThong = [
@@ -146,7 +185,9 @@ Deno.serve(async (req) => {
     ...chung, "",
     "Trả lời CHỈ bằng JSON, một giá trị cho mỗi tiêu chí: { \"diem\": { \"<id>\": <số> } }",
   ].join("\n");
-  const nguoiDung = `ĐỀ BÀI:\n${deBai}\n\nBẢN CHÉP LỜI:\n${chepLoi.slice(0, 8000)}${dongTC ? `\n\n${dongTC}` : ""}`;
+  const nguoiDung = coTL
+    ? `ĐỀ BÀI:\n${deBai}\n\nPHẦN ĐỘC THOẠI (bản chép lời):\n${chepLoi.slice(0, 8000)}\n\nPHẦN TRANH LUẬN:\n${vanTL}${dongTC ? `\n\n${dongTC}` : ""}`
+    : `ĐỀ BÀI:\n${deBai}\n\nBẢN CHÉP LỜI:\n${chepLoi.slice(0, 8000)}${dongTC ? `\n\n${dongTC}` : ""}`;
 
   /* ── 3. Chấm hai lượt song song, lượt 3 khi lệch lớn. Lượt 2, 3 hỏng thì lùi về số lượt còn lại. */
   const model = Deno.env.get("PE_AI_MODEL") || "gpt-6-luna";
@@ -167,13 +208,15 @@ Deno.serve(async (req) => {
   for (const c of grille.criteres) if (typeof kq.ly_do?.[c.id] === "string") lyDo[c.id] = kq.ly_do[c.id].slice(0, 400);
   /* Lỗi nói: cùng bộ lọc với phần viết, đối chiếu với BẢN CHÉP LỜI. Lỗi chính tả, dấu câu bị loại
      vì bản chép do máy tạo (lời nhắc đã dặn; lọc thêm ở đây cho chắc). */
-  const loi = locLoi(kq.loi, chepLoi).loi.filter((l: any) => l.loai !== "orthographe" && l.loai !== "ponctuation").slice(0, 10);
+  const loi = locLoi(kq.loi, coTL ? `${chepLoi}\n${tranhLuan.map((x) => x.tra_loi).join("\n")}` : chepLoi).loi.filter((l: any) => l.loai !== "orthographe" && l.loai !== "ponctuation").slice(0, 10);
   const nxTC = typeof kq.troi_chay === "string" ? kq.troi_chay.trim().slice(0, 600) : "";
   const goiY = {
     diem: gop.diem, ly_do: lyDo, tong_quat: String(kq.tong_quat ?? "").slice(0, 1200),
-    chep_loi: chepLoi.slice(0, 8000), tep: tep.name, model,
+    /* Có tranh luận thì bản chép lời hiển thị gồm cả lượt hỏi đáp, để lỗi trong câu trả lời cũng được tô. */
+    chep_loi: (coTL ? `${chepLoi}\n\n${tranhLuan.filter((x) => x.tra_loi).map((x) => `Examinateur : ${x.hoi}\nVous : ${x.tra_loi}`).join("\n\n")}` : chepLoi).slice(0, 12000), tep: tep.name, model,
     cham_doi: { so_luot: gop.so_luot, tong_cac_luot: gop.tong_cac_luot, lech_lon_nhat: gop.lech_lon_nhat, chua_chac: gop.chua_chac },
     loi,
+    ...(coTL ? { tranh_luan: tranhLuan } : {}),
     ...(troiChay.du_lieu ? { troi_chay: troiChay, troi_chay_nx: /\d/.test(nxTC) ? "" : nxTC } : {}),
   };
   await admin.from("po_cham").update({ ai_goi_y: goiY, ai_luc: new Date().toISOString() }).eq("attempt_id", attemptId);

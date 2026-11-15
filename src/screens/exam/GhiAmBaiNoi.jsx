@@ -55,7 +55,9 @@ let mayDangChay = null;
 /* `cauId`: ghi riêng cho một câu. `gon`: bản nằm trong thẻ câu hỏi, bỏ khung và tiêu đề. */
 /* Luyện tập: `tuLuc` chỉ tính bản ghi từ lượt làm lại này, `khoa` cấm ghi thêm sau khi đã nộp,
    `onDiem(cauId, "cho" | số | null)` báo điểm cho màn làm bài. */
-export default function GhiAmBaiNoi({ examId, exerciseId, cauId, gon = false, mau = "var(--mcf-primary)", gioiHanGiay = 900, moTa = null, tuLuc = 0, khoa = false, onDiem = null }) {
+/* `nhanXet={false}` (thi thử, phần tranh luận 15/11): không gọi AI nhận xét từng câu, vì cả bài được
+   cham-po chấm chung sau khi nộp. */
+export default function GhiAmBaiNoi({ examId, exerciseId, cauId, gon = false, mau = "var(--mcf-primary)", gioiHanGiay = 900, moTa = null, tuLuc = 0, khoa = false, onDiem = null, nhanXet = true }) {
   const [trangThai, setTrangThai] = useState("cho");   // cho · dangGhi · dangLuu · xong · loi
   const [loi, setLoi] = useState("");
   const [giay, setGiay] = useState(0);
@@ -89,7 +91,7 @@ export default function GhiAmBaiNoi({ examId, exerciseId, cauId, gon = false, ma
     dsBaiNoi({ examId, exerciseId, cauId }).then((ds) => {
       const con = gon ? ds.filter((b) => (b.luc ?? 0) >= tuLuc) : ds;
       setDsCu(con); setDaTai(true);
-      if (gon && con[0]) xinNhanXet(con[0].duongDan);   // đã chấm rồi thì máy chủ trả lại, không tốn lượt
+      if (gon && nhanXet && con[0]) xinNhanXet(con[0].duongDan);   // đã chấm rồi thì máy chủ trả lại, không tốn lượt
     });
   }, [examId, exerciseId, cauId]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -126,7 +128,7 @@ export default function GhiAmBaiNoi({ examId, exerciseId, cauId, gon = false, ma
         }
         setTrangThai("xong");
         setDsCu(await dsBaiNoi({ examId, exerciseId, cauId }));
-        if (gon) { setGhiLai(false); xinNhanXet(kq.duongDan); }
+        if (gon) { setGhiLai(false); if (nhanXet) xinNhanXet(kq.duongDan); }
       };
       try { mayDangChay?.stop(); } catch { /* đã dừng */ }
       mayDangChay = may;
@@ -170,36 +172,66 @@ export default function GhiAmBaiNoi({ examId, exerciseId, cauId, gon = false, ma
       </p>}
 
       {gon ? daTai && (!dsCu.length || ghiLai) && !khoa && <NutGhiGon trangThai={trangThai} giay={giay} toiDa={gioiHanGiay} mau={mau} onBam={trangThai === "dangGhi" ? dung : batDau} /> : (
-<div className="mt-4 flex flex-wrap items-center gap-3">
-        {trangThai !== "dangGhi" ? (
-          <button type="button" onClick={batDau} disabled={trangThai === "dangLuu"}
-            className="flex cursor-pointer items-center gap-2 rounded-full border-0 bg-primary px-5 py-2.5
-                       text-sm font-bold text-on-primary transition hover:opacity-90
-                       disabled:cursor-not-allowed disabled:opacity-60">
-            {trangThai === "dangLuu"
-              ? <><Loader2 size={15} className="mcf-spin" aria-hidden /> {tr("Đang lưu…", "Enregistrement…", "Saving…")}</>
-              : <><Mic size={15} aria-hidden /> {dsCu.length ? tr("Ghi lại", "Réenregistrer", "Record again") : tr("Bắt đầu ghi", "Commencer l'enregistrement", "Start recording")}</>}
-          </button>
-        ) : (
-          <button type="button" onClick={dung}
-            className="flex cursor-pointer items-center gap-2 rounded-full border-0 bg-danger px-5 py-2.5
-                       text-sm font-bold text-white transition hover:opacity-90">
-            <Square size={15} aria-hidden /> {tr("Dừng", "Arrêter", "Stop")}
-          </button>
-        )}
-
-        {trangThai === "dangGhi" && (
-          <span className="flex items-center gap-2 text-sm font-bold tabular-nums text-danger">
-            <span aria-hidden className="h-2.5 w-2.5 animate-pulse rounded-full bg-danger" />
-            {dongHo(giay)} / {dongHo(gioiHanGiay)}
-          </span>
-        )}
-
-        {trangThai === "xong" && (
-          <span className="flex items-center gap-1.5 text-sm font-bold text-ok">
-            <CheckCircle2 size={15} aria-hidden /> {tr("Đã lưu", "Enregistré", "Saved")}
-          </span>
-        )}
+<div className="mt-4 flex flex-wrap items-center gap-3">
+
+        {trangThai !== "dangGhi" ? (
+
+          <button type="button" onClick={batDau} disabled={trangThai === "dangLuu"}
+
+            className="flex cursor-pointer items-center gap-2 rounded-full border-0 bg-primary px-5 py-2.5
+
+                       text-sm font-bold text-on-primary transition hover:opacity-90
+
+                       disabled:cursor-not-allowed disabled:opacity-60">
+
+            {trangThai === "dangLuu"
+
+              ? <><Loader2 size={15} className="mcf-spin" aria-hidden /> {tr("Đang lưu…", "Enregistrement…", "Saving…")}</>
+
+              : <><Mic size={15} aria-hidden /> {dsCu.length ? tr("Ghi lại", "Réenregistrer", "Record again") : tr("Bắt đầu ghi", "Commencer l'enregistrement", "Start recording")}</>}
+
+          </button>
+
+        ) : (
+
+          <button type="button" onClick={dung}
+
+            className="flex cursor-pointer items-center gap-2 rounded-full border-0 bg-danger px-5 py-2.5
+
+                       text-sm font-bold text-white transition hover:opacity-90">
+
+            <Square size={15} aria-hidden /> {tr("Dừng", "Arrêter", "Stop")}
+
+          </button>
+
+        )}
+
+
+
+        {trangThai === "dangGhi" && (
+
+          <span className="flex items-center gap-2 text-sm font-bold tabular-nums text-danger">
+
+            <span aria-hidden className="h-2.5 w-2.5 animate-pulse rounded-full bg-danger" />
+
+            {dongHo(giay)} / {dongHo(gioiHanGiay)}
+
+          </span>
+
+        )}
+
+
+
+        {trangThai === "xong" && (
+
+          <span className="flex items-center gap-1.5 text-sm font-bold text-ok">
+
+            <CheckCircle2 size={15} aria-hidden /> {tr("Đã lưu", "Enregistré", "Saved")}
+
+          </span>
+
+        )}
+
       </div>
       )}
 
@@ -230,7 +262,7 @@ export default function GhiAmBaiNoi({ examId, exerciseId, cauId, gon = false, ma
                     {tr("Ghi lại", "Réenregistrer", "Record again")}
                   </button>
                 )}
-                {gon ? <DiemCau nx={nx[b.duongDan]} onLai={() => xinNhanXet(b.duongDan)} /> : (
+                {gon ? nhanXet && <DiemCau nx={nx[b.duongDan]} onLai={() => xinNhanXet(b.duongDan)} /> : (
                 <button type="button" onClick={() => xinNhanXet(b.duongDan)} disabled={nx[b.duongDan]?.dang}
                   className="flex cursor-pointer items-center gap-1.5 rounded-lg border-0 bg-primary-soft px-3 py-1.5 font-sans text-xs
                              font-semibold text-primary transition-colors hover:bg-primary hover:text-white disabled:cursor-wait disabled:opacity-60">

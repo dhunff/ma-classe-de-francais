@@ -859,7 +859,8 @@ export function PhanThi({ section, attemptId, attemptTheoBai = {}, answers, setA
           Nhận biết theo MÃ phần, không theo "bài này có câu hỏi hay không". */}
       {section.code === "PO" ? (
         /* 13/10: bốc thăm + chuẩn bị trước khi ghi âm (BocThamNoi). */
-        <BocThamNoi ex={ex} khoa={`${examId}:${ex.id}`}>
+        <BocThamNoi ex={ex} khoa={`${examId}:${ex.id}`}
+          ghiCau={(cauId, giay) => (xemThu ? null : <GhiAmBaiNoi gon nhanXet={false} examId={examId} exerciseId={ex.id} cauId={cauId} gioiHanGiay={giay} />)}>
           {xemThu ? (
             <p className="m-0 rounded-xl border border-dashed border-line p-4 text-sm text-soft">
               {tr("Chế độ xem thử: đây là chỗ học sinh ghi âm bài nói. Ghi âm được tắt để không lưu bản ghi nào.", "Mode aperçu : l'élève s'enregistre ici. L'enregistrement est désactivé.", "Preview mode: students record here. Recording is disabled.")}

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Shuffle, Hourglass, Mic } from "lucide-react";
+import { Shuffle, Hourglass, Mic, MessagesSquare, ArrowRight } from "lucide-react";
 import { tr } from "../../shared/i18n.jsx";
 import { phat } from "../../shared/amThanh.js";
 
@@ -11,7 +11,12 @@ import { phat } from "../../shared/amThanh.js";
  * Trạng thái giữ trong sessionStorage theo attempt: F5 không cho bốc lại để
  * « chọn đề dễ », và không đặt lại đồng hồ chuẩn bị (đồng hồ neo vào MỐC THẬT,
  * cùng lý do với đồng hồ phần thi). ExamMode đọc lại khoá này lúc nộp để gửi
- * đề đã chọn lên máy chủ (ket_thuc_po). */
+ * đề đã chọn lên máy chủ (ket_thuc_po).
+ *
+ * 15/11: bước 4 TRANH LUẬN (B2 exercice en interaction, C1 entretien). Chủ đề có `hoiLai` (lô 49,
+ * migration 213) thì sau phần độc thoại, câu hỏi của giám khảo hiện lần lượt bằng chữ, mỗi câu một
+ * bộ ghi riêng do ExamMode dựng qua `ghiCau(cauId, giay)` (tệp `<exercise>__ctl<n>-…`). cham-po
+ * chấm tiêu chí tương tác trên các câu trả lời này. `st.tl` = chỉ số câu đang hỏi, null = chưa vào. */
 export const khoaBoc = (id) => `po-boc:${id}`;
 const doc = (k) => { try { return JSON.parse(sessionStorage.getItem(k) || "null"); } catch { return null; } };
 const ghi = (k, v) => { try { sessionStorage.setItem(k, JSON.stringify(v)); } catch { /* bộ nhớ bị chặn: vẫn chạy */ } };
@@ -30,7 +35,7 @@ const mmss = (s) => `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s %
 
 const BOC_GIAY = 30;
 
-export default function BocThamNoi({ ex, khoa, children }) {
+export default function BocThamNoi({ ex, khoa, children, ghiCau = null }) {
   const bt = ex?.bocTham;
   const k = khoaBoc(khoa);
   const [st, setSt] = useState(() => doc(k) ?? { rut: {}, chon: {}, batDau: null, noi: false });
@@ -85,6 +90,9 @@ export default function BocThamNoi({ ex, khoa, children }) {
   };
   const xongBoc = bt.phan.every((_, i) => st.chon?.[i]);
   const daChon = bt.phan.map((ph, i) => ({ ph, s: ph.sujets.find((x) => x.ma === st.chon?.[i]) }));
+  const hoi = daChon.flatMap(({ s }) => (Array.isArray(s?.hoiLai) ? s.hoiLai.filter(Boolean) : []));
+  const tenTL = ex.level === "C1" ? "Entretien avec le jury" : "Exercice en interaction";
+  const giayTL = ex.level === "C1" ? 240 : 180;
 
   const TheDe = ({ ph, s }) => (
     <div className="border-[1.5px] border-solid border-[#111] bg-white p-4">
@@ -93,12 +101,57 @@ export default function BocThamNoi({ ex, khoa, children }) {
     </div>
   );
 
-  /* ── 3. NÓI ── */
+  /* ── 3. NÓI, rồi 4. TRANH LUẬN ── */
   if (st.noi) {
+    const tl = st.tl ?? null;
     return (
       <div className="grid gap-5">
         <div className="grid gap-3">{daChon.map(({ ph, s }, i) => s && <TheDe key={i} ph={ph} s={s} />)}</div>
+        {hoi.length > 0 && <p className="m-0 text-[13px] font-bold uppercase tracking-wide text-[#555]">{ex.level === "C1" ? "Exposé" : "Monologue suivi"}</p>}
         {children}
+        {hoi.length > 0 && tl == null && (
+          <div className="flex flex-wrap items-center gap-4 border-[1.5px] border-solid border-[#111] bg-[#f4f4f4] p-4">
+            <MessagesSquare size={22} />
+            <p className="m-0 min-w-0 flex-1 text-[13.5px] text-[#333]">
+              {tr("Ghi âm xong phần độc thoại thì sang phần tranh luận: giám khảo hỏi lần lượt, câu hỏi hiện bằng chữ, bạn ghi âm câu trả lời cho từng câu.",
+                "Après votre monologue, passez à l'échange : l'examinateur pose ses questions une par une, à l'écrit, et vous enregistrez chaque réponse.",
+                "After your monologue, move on to the discussion: the examiner asks questions one by one in writing, and you record each answer.")}
+            </p>
+            <button type="button" onClick={() => { phat("batDau"); capNhat({ ...st, tl: 0 }); }}
+              className="inline-flex cursor-pointer items-center gap-2 rounded-none border-0 bg-[#111] px-5 py-3 text-sm font-bold uppercase tracking-wide text-white">
+              <MessagesSquare size={15} /> {tr("Sang phần tranh luận", "Passer à l'échange", "Start the discussion")}
+            </button>
+          </div>
+        )}
+        {hoi.length > 0 && tl != null && (
+          <section className="grid gap-4 border-0 border-t-[1.5px] border-solid border-[#111] pt-5">
+            <div>
+              <p className="m-0 text-[16px] font-bold">{tenTL}</p>
+              <p className="m-0 text-[13.5px] italic text-[#444]">
+                {tr("Trả lời từng câu như đang nói với giám khảo: nêu rõ ý mình, phản bác hoặc nhấn sắc thái, đưa ví dụ.",
+                  "Répondez comme face à l'examinateur : prenez position, nuancez ou réfutez, donnez des exemples.",
+                  "Answer as if facing the examiner: take a stand, nuance or refute, give examples.")}
+              </p>
+            </div>
+            {hoi.slice(0, tl + 1).map((h, i) => (
+              <div key={i} className="grid gap-3 border-[1.5px] border-solid border-[#111] bg-white p-4">
+                <p className="m-0 text-[12px] font-bold uppercase tracking-wide text-[#555]">{tr("Giám khảo", "L'examinateur", "Examiner")}</p>
+                <p lang="fr" className="m-0 text-[16px] font-semibold leading-snug text-[#111]">{h}</p>
+                {ghiCau?.(`tl${i + 1}`, giayTL)}
+              </div>
+            ))}
+            {tl < hoi.length - 1 ? (
+              <button type="button" onClick={() => capNhat({ ...st, tl: tl + 1 })}
+                className="inline-flex w-fit cursor-pointer items-center gap-2 rounded-none border-0 bg-[#111] px-5 py-3 text-sm font-bold uppercase tracking-wide text-white">
+                {tr("Câu hỏi tiếp theo", "Question suivante", "Next question")} <ArrowRight size={15} />
+              </button>
+            ) : (
+              <p className="m-0 text-[13.5px] font-bold text-[#111]">
+                {tr("Giám khảo đã hỏi hết. Nghe lại các bản ghi nếu cần rồi nộp bài.", "L'examinateur a terminé. Réécoutez vos réponses si besoin, puis rendez votre copie.", "The examiner has finished. Listen back if needed, then submit.")}
+              </p>
+            )}
+          </section>
+        )}
       </div>
     );
   }
@@ -111,7 +164,8 @@ export default function BocThamNoi({ ex, khoa, children }) {
           <Hourglass size={22} />
           <div className="min-w-0 flex-1">
             <p className="m-0 text-[13px] font-bold uppercase tracking-wide">Préparation</p>
-            <p className="m-0 text-[13px] text-[#444]">{tr("Đọc đề, ghi dàn ý. Hết giờ chuẩn bị sẽ tự chuyển sang phần nói.", "Lisez le sujet et notez votre plan. À la fin, l'épreuve commence.", "Read the task and plan. Speaking starts when time is up.")}</p>
+            <p className="m-0 text-[13px] text-[#444]">{tr("Đọc đề, ghi dàn ý. Hết giờ chuẩn bị sẽ tự chuyển sang phần nói.", "Lisez le sujet et notez votre plan. À la fin, l'épreuve commence.", "Read the task and plan. Speaking starts when time is up.")}
+              {hoi.length > 0 && " " + tr("Sau phần độc thoại, giám khảo sẽ hỏi lại để tranh luận.", "Après votre monologue, l'examinateur vous posera des questions.", "After your monologue, the examiner will ask you questions.")}</p>
           </div>
           <span className="text-[34px] font-bold tabular-nums">{mmss(conLai ?? bt.chuanBi * 60)}</span>
         </div>

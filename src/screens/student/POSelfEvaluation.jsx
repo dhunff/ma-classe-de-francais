@@ -91,7 +91,7 @@ export default function POSelfEvaluation({ po, exerciseId, consigne, onXong }) {
               className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border-0 bg-primary px-3 py-2 font-sans text-xs font-extrabold text-white disabled:opacity-50">
               {aiTT === "dang" ? <Loader2 size={13} className="animate-spin" /> : null} {tr("Nhờ AI gợi ý", "Demander à l'IA", "Ask the AI")}</button>}
           </div>
-          <p className="m-0 mt-2 flex items-start gap-1.5 text-xs text-soft"><Info size={13} className="mt-0.5 shrink-0" /> {tr("AI chỉ đọc bản chép lời: không nghe được ngữ điệu và không có giám khảo đối thoại, nên đây chỉ là gợi ý. Điểm tính là điểm BẠN chọn.", "L'IA ne lit que la transcription : simple suggestion. La note retenue est la vôtre.", "The AI only reads the transcript: it's just a suggestion. Your choice is what counts.")}</p>
+          <p className="m-0 mt-2 flex items-start gap-1.5 text-xs text-soft"><Info size={13} className="mt-0.5 shrink-0" /> {tr("AI chỉ đọc bản chép lời: không nghe được ngữ điệu, nên đây chỉ là gợi ý. Điểm tính là điểm BẠN chọn.", "L'IA ne lit que la transcription : simple suggestion. La note retenue est la vôtre.", "The AI only reads the transcript: it's just a suggestion. Your choice is what counts.")}</p>
           {aiTT && aiTT !== "dang" && <p className="m-0 mt-2 text-sm font-bold text-danger">{LOI_AI[aiTT] ?? tr("AI chưa gợi ý được, thử lại sau.", "Échec de l'IA, réessayez.", "AI failed, try again.")}</p>}
           {ai && (
             <>

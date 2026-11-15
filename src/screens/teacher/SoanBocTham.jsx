@@ -4,7 +4,8 @@ import { tr } from "../../shared/i18n.jsx";
 
 /* Soạn CHỦ ĐỀ BỐC THĂM cho bài Nói (19/10). Dữ liệu `bocTham` (migration 137) mà
  * màn thi đọc ở BocThamNoi.jsx:
- *   { chuanBi: phút, phan: [{ ten, cachLam, soRut, sujets: [{ ma, html }] }] }
+ *   { chuanBi: phút, phan: [{ ten, cachLam, soRut, sujets: [{ ma, html, hoiLai? }] }] }
+ * `hoiLai` (15/11, B2 và C1): câu hỏi giám khảo cho phần tranh luận, xem BocThamNoi.
  * Mỗi chủ đề lưu HTML (<p>…</p>). Ở đây giáo viên gõ chữ thường: mỗi đoạn cách
  * nhau một dòng trống thành một <p>; giữ được <strong>, <em> nếu gõ tay. */
 const CHUAN_BI = { A1: 10, A2: 10, B1: 10, B2: 30, C1: 60 };
@@ -73,8 +74,17 @@ export default function SoanBocTham({ bocTham, level, onChange }) {
             {ph.sujets.map((sj, k) => (
               <div key={k} className="flex gap-2">
                 <input className="w-12 shrink-0 rounded-lg border border-solid border-line bg-surface px-2 py-1 text-center font-sans text-sm font-bold text-ink" value={sj.ma ?? ""} onChange={(e) => doiSujet(i, k, { ma: e.target.value })} title={tr("Mã thẻ", "Code", "Code")} />
+                <div className="grid min-w-0 flex-1 gap-1.5">
                 <textarea className={`${O} min-h-[72px] resize-y`} value={htmlThanhChu(sj.html)} onChange={(e) => doiSujet(i, k, { html: chuThanhHtml(e.target.value) })}
                   placeholder={tr("Nội dung thẻ. Cách một dòng trống để xuống đoạn. Có thể dùng <strong>…</strong>.", "Texte de la carte. Ligne vide = nouveau paragraphe.", "Card text. Blank line = new paragraph.")} />
+                {/* 15/11: câu hỏi giám khảo cho phần tranh luận (B2) / entretien (C1), mỗi dòng một câu.
+                    Giữ nguyên dòng trống lúc gõ; màn thi và cham-po tự bỏ dòng trống. */}
+                {(level === "B2" || level === "C1") && (
+                  <textarea className={`${O} min-h-[60px] resize-y text-[13px]`} value={(sj.hoiLai ?? []).join("\n")}
+                    onChange={(e) => doiSujet(i, k, { hoiLai: e.target.value ? e.target.value.split("\n") : undefined })}
+                    placeholder={tr("Câu hỏi của giám khảo cho phần tranh luận, mỗi dòng một câu (hiện lần lượt sau phần độc thoại).", "Questions de l'examinateur pour l'échange, une par ligne.", "Examiner questions for the discussion, one per line.")} />
+                )}
+                </div>
                 <button type="button" onClick={() => doiPhan(i, { sujets: ph.sujets.filter((_, j) => j !== k) })} title={tr("Xoá chủ đề", "Supprimer", "Delete")}
                   className="shrink-0 cursor-pointer self-start rounded-full border-0 bg-transparent p-1.5 text-soft hover:text-danger"><Trash2 size={14} /></button>
               </div>
