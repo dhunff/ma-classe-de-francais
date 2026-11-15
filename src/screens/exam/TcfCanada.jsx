@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import { Headphones, BookOpen, PenLine, Mic, Puzzle, Info, ChevronDown } from "lucide-react";
+import { Info, ChevronDown } from "lucide-react";
 import { tr } from "../../shared/i18n.jsx";
-import { BAI_THI_TCF, NCLC_TCF, BAI_THI_TCF_TP, CECRL_TCF_TP } from "../../shared/tcfCanada.js";
+import { NCLC_TCF, CECRL_TCF_TP } from "../../shared/tcfCanada.js";
 import ExamMode from "./ExamMode.jsx";
 
 /* Thi thử TCF (09/11 Canada, 10/11 tout public, theo chủ dự án). Hai mục « TCF Canada » và
@@ -12,8 +12,6 @@ import ExamMode from "./ExamMode.jsx";
  * bảng quy đổi (NCLC của IRCC cho Canada, trình độ CECRL của FEI cho tout public). Chưa có đề nào
  * thì màn chờ tự nói là đề đang được soạn. */
 
-const ICON = { CO: Headphones, CE: BookOpen, PE: PenLine, PO: Mic, MS: Puzzle };
-const MAU = { CO: "from-sky-500 to-blue-600", CE: "from-emerald-500 to-teal-600", PE: "from-amber-500 to-orange-600", PO: "from-fuchsia-500 to-purple-600", MS: "from-indigo-500 to-violet-600" };
 const tenViet = (code) => ({
   CO: tr("Nghe hiểu", "Écoute", "Listening"),
   CE: tr("Đọc hiểu", "Lecture", "Reading"),
@@ -21,38 +19,7 @@ const tenViet = (code) => ({
   PO: tr("Nói", "Oral", "Speaking"),
   MS: tr("Cấu trúc ngôn ngữ", "Structures", "Language structures"),
 }[code]);
-const donVi = (d, n) => ({
-  cau: tr(`${n} câu trắc nghiệm`, `${n} questions (QCM)`, `${n} multiple-choice questions`),
-  bai: tr(`${n} bài viết`, `${n} tâches`, `${n} tasks`),
-  phan: tr(`${n} phần`, `${n} tâches`, `${n} tasks`),
-}[d]);
 const khoang = (tu, den) => (tu === den ? tu : `${tu} – ${den}`);
-
-function TheBaiThi({ b }) {
-  const Icon = ICON[b.code];
-  return (
-    <div className="relative overflow-hidden rounded-3xl bg-surface p-4 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
-      <span aria-hidden className={`pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full bg-gradient-to-br ${MAU[b.code]} opacity-15`} />
-      <div className="relative flex items-center gap-3">
-        <span className={`grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-gradient-to-br ${MAU[b.code]} text-white shadow-[0_8px_16px_rgba(15,23,42,0.15)]`}><Icon size={20} /></span>
-        <div className="min-w-0">
-          <p lang="fr" className="m-0 text-sm font-extrabold leading-snug text-ink">{b.ten}</p>
-          <p className="m-0 text-xs text-soft">{tenViet(b.code)}</p>
-        </div>
-      </div>
-      <div className="relative mt-3 flex flex-wrap gap-1.5 text-[11px] font-bold">
-        {b.batBuoc !== undefined && (
-          <span className={`rounded-full px-2.5 py-1 ${b.batBuoc ? "bg-ok-soft text-ok" : "bg-warn-soft text-warn"}`}>
-            {b.batBuoc ? tr("Bắt buộc", "Obligatoire", "Required") : tr("Tự chọn", "Facultative", "Optional")}
-          </span>
-        )}
-        <span className="rounded-full bg-surface2 px-2.5 py-1 text-ink">{donVi(b.don, b.so)}</span>
-        <span className="rounded-full bg-surface2 px-2.5 py-1 text-ink">{b.phut} {tr("phút", "min", "min")}</span>
-        <span className="rounded-full bg-primary-soft px-2.5 py-1 text-primary">{tr("Điểm", "Score", "Score")} 0 – {b.thang}</span>
-      </div>
-    </div>
-  );
-}
 
 /* Khối thu gọn chứa bảng quy đổi. */
 function BangGap({ tieuDe, children }) {
@@ -72,8 +39,7 @@ function BangGap({ tieuDe, children }) {
 
 function GioiThieuCanada() {
   return (
-    <section className="mt-6 grid gap-4">
-      <div className="grid gap-3 sm:grid-cols-2">{BAI_THI_TCF.map((b) => <TheBaiThi key={b.code} b={b} />)}</div>
+    <section className="mt-4 grid gap-4">
       <BangGap tieuDe={tr("Điểm TCF quy ra NCLC thế nào?", "Comment le score TCF devient-il un NCLC ?", "How does a TCF score map to NCLC?")}>
         <table className="w-full min-w-[30rem] border-collapse text-left text-xs tabular-nums">
           <thead>
@@ -101,8 +67,7 @@ function GioiThieuCanada() {
 
 function GioiThieuPhap() {
   return (
-    <section className="mt-6 grid gap-4">
-      <div className="grid gap-3 sm:grid-cols-2">{BAI_THI_TCF_TP.map((b) => <TheBaiThi key={b.code} b={b} />)}</div>
+    <section className="mt-4 grid gap-4">
       <BangGap tieuDe={tr("Điểm TCF quy ra trình độ thế nào?", "Comment le score TCF devient-il un niveau ?", "How does a TCF score map to a level?")}>
         <table className="w-full min-w-[22rem] border-collapse text-left text-xs tabular-nums">
           <thead>

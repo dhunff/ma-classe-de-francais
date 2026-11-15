@@ -13,6 +13,7 @@ import { EXAM_STRUCTURE, LA_TCF, loaiDe, tenKyThi, sectionScore, verdict, ghiPha
   from "./examPaper.js";
 import GhiAmBaiNoi from "./GhiAmBaiNoi.jsx";
 import KiemTraMic from "./KiemTraMic.jsx";
+import FormatDe from "./FormatDe.jsx";
 import BocThamNoi, { deDaChon, khoaBoc } from "./BocThamNoi.jsx";
 import GiayNhap from "./GiayNhap.jsx";
 import VanBanToSang from "./VanBanToSang.jsx";
@@ -135,8 +136,6 @@ function ManCho({ dsDe, chon, paper, onStart, dangTai, lamPhanNoi, setLamPhanNoi
     if (dau && paper?.id !== dau.id) chon(dau.id);
   };
   const deDangChon = deTab.some((e) => e.id === paper?.id) ? paper : null;
-  const ICON_PHAN = { CO: Headphones, CE: BookOpen, PE: PenLine, PO: Mic, MS: Puzzle };
-  const MAU_PHAN = { CO: "from-sky-500 to-blue-600", CE: "from-emerald-500 to-teal-600", PE: "from-amber-500 to-orange-600", PO: "from-fuchsia-500 to-purple-600", MS: "from-indigo-500 to-violet-600" };
   const khoaVip = !!deDangChon?.chi_vip && !coVip;
   const canThuMic = coPhanNoi && lamPhanNoi && !micOk;
   const sanSangVao = sanSang && !dangTai && !!deDangChon?.sections?.length && phienThuc === true && !khoaVip && !canThuMic;
@@ -182,8 +181,6 @@ function ManCho({ dsDe, chon, paper, onStart, dangTai, lamPhanNoi, setLamPhanNoi
           </div>
         </div>
       </header>
-
-      {gioiThieu}
 
       {/* ── Trình độ ── (TCF Canada không chia trình độ) */}
       {!tcf && <div role="tablist" aria-label={tr("Trình độ", "Niveau", "Level")} className="no-scrollbar -mx-4 mt-6 flex gap-2 overflow-x-auto px-4 pb-1">
@@ -236,43 +233,13 @@ function ManCho({ dsDe, chon, paper, onStart, dangTai, lamPhanNoi, setLamPhanNoi
         })}
       </div>
 
+      {/* 15/11 (chủ dự án): danh sách đề lên đầu; danh sách kỹ năng gom vào mục « Format đề » (thu gọn,
+          chi tiết từng phần) ngay dưới, rồi tới khối riêng của trang TCF (bảng quy đổi điểm). */}
+      <FormatDe ma={tcf ? levelTcf : tab} />
+      {gioiThieu}
+
       {/* TCF Canada chưa có đề: dừng ở lời báo trên, không hiện cấu trúc, cảnh báo, nút bắt đầu. */}
       {(!tcf || dsDe.length > 0) && <>
-      {/* ── Cấu trúc đề đang chọn ── (14/11, chủ dự án: trang TCF bỏ khối này, chỉ DELF còn) */}
-      {deDangChon && !tcf && (
-        <div className="mt-6">
-          <p className="m-0 mb-3 text-xs font-bold uppercase tracking-[0.14em] text-soft">{tr("Cấu trúc đề", "Structure du sujet", "Exam structure")} · {deDangChon.title}</p>
-          <div className="grid gap-3 sm:grid-cols-2">
-            {cauTruc.map((p, k) => {
-              const co = (deDangChon.sections ?? []).filter((x) => x.code === p.code);
-              const Icon = ICON_PHAN[p.code] ?? BookOpen;
-              const bo = p.code === "PO" && (!co.length || !lamPhanNoi);
-              return (
-                <div key={p.code} className={`mcf-cau-vao flex items-start gap-3 rounded-2xl border border-solid border-line bg-surface p-4 ${bo ? "opacity-60" : ""}`}
-                  style={{ animationDelay: `${160 + k * 70}ms` }}>
-                  <span className={`grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-gradient-to-br ${MAU_PHAN[p.code] ?? "from-slate-500 to-slate-600"} text-white shadow-md`}>
-                    <Icon size={22} />
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <p className="m-0 flex items-baseline gap-2"><span className="text-base font-extrabold text-ink">{p.code}</span><span className="truncate text-xs text-soft">{p.label}</span></p>
-                    <p className="m-0 mt-1 flex flex-wrap gap-x-3 text-xs font-bold text-ink">
-                      <span className="inline-flex items-center gap-1"><Clock size={12} className="text-soft" />{p.minutes}′{p.code === "PO" && phutChuanBiNoi ? ` + ${phutChuanBiNoi}′ ${tr("chuẩn bị", "prépa", "prep")}` : ""}</span>
-                      <span>{p.points ? `/${p.points}` : tr("không chấm", "non noté", "not scored")}</span>
-                    </p>
-                    <p className="m-0 mt-1 truncate text-xs text-soft">
-                      {/* 13/10: không hiện tên bài (chủ dự án), chỉ số bài. */}
-                      {co.length === 0 ? <span className="font-bold text-danger">{tr("chưa có bài", "pas d'exercice", "no exercise")}</span>
-                        : co.some((x) => !x.exercise) ? <span className="font-bold text-danger">{tr("có bài không mở được", "exercice inaccessible", "an exercise is unavailable")}</span>
-                        : <>{co.length} {tr("bài", co.length > 1 ? "exercices" : "exercice", co.length > 1 ? "exercises" : "exercise")}</>}
-                    </p>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
       {/* Đề KHÔNG có phần nói, và phải nói ra: nó là 25/100 của kỳ thi thật,
           im lặng ở đây là để học sinh tưởng điểm thi thử dự đoán được điểm
           thật.
