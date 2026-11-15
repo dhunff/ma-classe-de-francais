@@ -12,6 +12,7 @@ import { diemUocLuongTCF, nclcTCF, capTcfTP, diemCauTCF, SO_CAU_TCF } from "../.
 import { EXAM_STRUCTURE, LA_TCF, loaiDe, tenKyThi, sectionScore, verdict, ghiPhan, gomTheoKyNang, NGUONG_PHAN, khongCham }
   from "./examPaper.js";
 import GhiAmBaiNoi from "./GhiAmBaiNoi.jsx";
+import KiemTraMic from "./KiemTraMic.jsx";
 import BocThamNoi, { deDaChon, khoaBoc } from "./BocThamNoi.jsx";
 import GiayNhap from "./GiayNhap.jsx";
 import VanBanToSang from "./VanBanToSang.jsx";
@@ -83,6 +84,7 @@ function ManCho({ dsDe, chon, paper, onStart, dangTai, lamPhanNoi, setLamPhanNoi
   const [moHop, setMoHop] = useState(false);
   const [dangMo, setDangMo] = useState(false);
   const [loiMo, setLoiMo] = useState("");
+  const [micOk, setMicOk] = useState(false);
   useEffect(() => {
     supabase.rpc("luot_thi_hom_nay").then(({ data }) => { if (data) setLuot(data); });
   }, [moHop, luotMoi]);
@@ -137,7 +139,8 @@ function ManCho({ dsDe, chon, paper, onStart, dangTai, lamPhanNoi, setLamPhanNoi
   const ICON_PHAN = { CO: Headphones, CE: BookOpen, PE: PenLine, PO: Mic, MS: Puzzle };
   const MAU_PHAN = { CO: "from-sky-500 to-blue-600", CE: "from-emerald-500 to-teal-600", PE: "from-amber-500 to-orange-600", PO: "from-fuchsia-500 to-purple-600", MS: "from-indigo-500 to-violet-600" };
   const khoaVip = !!deDangChon?.chi_vip && !coVip;
-  const sanSangVao = sanSang && !dangTai && !!deDangChon?.sections?.length && phienThuc === true && !khoaVip;
+  const canThuMic = coPhanNoi && lamPhanNoi && !micOk;
+  const sanSangVao = sanSang && !dangTai && !!deDangChon?.sections?.length && phienThuc === true && !khoaVip && !canThuMic;
 
   return (
     <div className="mx-auto max-w-3xl px-4 pb-8 pt-0">
@@ -322,6 +325,8 @@ function ManCho({ dsDe, chon, paper, onStart, dangTai, lamPhanNoi, setLamPhanNoi
           </span>
         </label>
       )}
+      {/* 15/11: tích phần nói thì phải thử micro trước (KiemTraMic), không thì khoá nút vào thi. */}
+      {coPhanNoi && lamPhanNoi && <KiemTraMic onKetQua={setMicOk} />}
 
       {/* ── KHÔNG CÓ PHIÊN MÁY CHỦ THÌ KHÔNG CHO VÀO ──
           Xem phienMayChu.js. Ngắn gọn: app có đường đăng nhập cũ chỉ lưu tên
@@ -388,6 +393,7 @@ function ManCho({ dsDe, chon, paper, onStart, dangTai, lamPhanNoi, setLamPhanNoi
           : phienThuc === null ? tr("Đang kiểm phiên đăng nhập…", "Vérification de la session…", "Checking your session…")
           : phienThuc === false ? tr("Cần đăng nhập lại", "Reconnexion nécessaire", "Sign-in required")
           : khoaVip ? tr("Cần VIP", "VIP requis", "VIP only")
+          : canThuMic ? tr("Thử micro trước", "Testez d'abord le micro", "Test the microphone first")
           : tr("Bắt đầu thi", "Commencer l'examen", "Start the exam")}
       </button>
       {moHop && (
