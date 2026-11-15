@@ -71,7 +71,6 @@ function ManCho({ dsDe, chon, paper, onStart, dangTai, lamPhanNoi, setLamPhanNoi
      EXAM_STRUCTURE khai PO cho mọi trình độ, nhưng đề cụ thể chỉ có nó khi
      giáo viên đã ghép một bài nói vào. */
   const coPhanNoi = (paper?.sections ?? []).some((x) => x.code === "PO");
-  const phutPhanNoi = cauTruc.find((x) => x.code === "PO")?.minutes ?? 0;
   /* Tổng phút phải theo LỰA CHỌN, không theo cấu trúc: bỏ phần nói mà vẫn hứa
      "tôi có 130 phút liên tục" là bắt người ta cam kết một điều sai. */
   const phutChuanBiNoi = Number((paper?.sections ?? []).find((x) => x.code === "PO")?.exercise?.bocTham?.chuanBi) || 0;
@@ -312,17 +311,11 @@ function ManCho({ dsDe, chon, paper, onStart, dangTai, lamPhanNoi, setLamPhanNoi
           Mặc định BẬT: đề có phần nói thì mặc định làm đủ. Người muốn bỏ tự
           bấm, và khi đó họ biết chính xác mình đang bỏ gì. */}
       {coPhanNoi && (
-        <label className="mt-6 flex cursor-pointer items-start gap-3 rounded-2xl bg-surface2 p-4 text-sm text-ink">
+        /* 15/11 (chủ dự án): chỉ ghi « Làm phần NÓI », không giải thích thêm. */
+        <label className="mt-6 flex cursor-pointer items-center gap-3 rounded-2xl bg-surface2 p-4 text-sm text-ink">
           <input type="checkbox" checked={lamPhanNoi}
-            onChange={(e) => setLamPhanNoi(e.target.checked)} className="mt-1" />
-          <span>
-            <strong>{tr("Làm cả phần thi nói (PO)", "Faire aussi la production orale (PO)", "Also do the speaking part (PO)")}</strong> : +{phutPhanNoi + phutChuanBiNoi} {tr("phút", "min", "min")}{phutChuanBiNoi ? ` (${phutChuanBiNoi}′ ${tr("chuẩn bị", "de préparation", "prep")})` : ""}
-            <span className="mt-1 block text-xs text-soft">
-              {paper?.sections?.some((x) => x.code === "PO" && Number(x.points) > 0)
-                ? tr("Có phần nói: tổng /100. Bỏ: tổng /75.", "Avec l'oral : /100. Sans : /75.", "With speaking: /100. Without: /75.")
-                : tr("Không chấm điểm, chỉ ghi âm để nghe lại.", "Non noté, enregistrement pour vous réécouter.", "Not scored, recording only.")}
-            </span>
-          </span>
+            onChange={(e) => setLamPhanNoi(e.target.checked)} />
+          <strong>{tr("Làm phần NÓI", "Faire l'ORAL", "Do the SPEAKING part")}</strong>
         </label>
       )}
       {/* 15/11: tích phần nói thì phải thử micro trước (KiemTraMic), không thì khoá nút vào thi. */}
