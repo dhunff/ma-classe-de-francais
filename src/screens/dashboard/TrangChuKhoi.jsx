@@ -338,78 +338,99 @@ const muc = (v) => (v >= 80 ? ["ok", () => tr("Vững", "Solide", "Strong")]
       : ["danger", () => tr("Yếu", "Fragile", "Weak")]);
 const MAU = { ok: ["bg-ok", "text-ok", "bg-ok-soft"], primary: ["bg-primary", "text-primary", "bg-primary-soft"], warn: ["bg-warn", "text-warn", "bg-warn-soft"], danger: ["bg-danger", "text-danger", "bg-danger-soft"] };
 
+/* 15/11 (chủ dự án: « đơn điệu, muốn màu như phần đề thi thử »): mỗi kỹ năng mang MÀU RIÊNG như
+   màn chọn đề và cửa sổ Format đề (Nghe xanh trời, Đọc xanh ngọc, Viết cam, Nói tím hồng, Ngữ pháp
+   chàm, Từ vựng hồng): thẻ nền nhạt, ô biểu tượng gradient, thanh gradient, số to cùng màu. Mức
+   (Vững, Khá, Cần luyện, Yếu) giữ màu ngữ nghĩa trên một nhãn nhỏ. */
+const THI = {
+  "Écoute": { g: "from-sky-500 to-blue-600", the: "border-sky-500/25 bg-sky-500/[0.06]", so: "text-sky-600", ray: "bg-sky-500/15" },
+  "Lecture": { g: "from-emerald-500 to-teal-600", the: "border-emerald-500/25 bg-emerald-500/[0.06]", so: "text-emerald-600", ray: "bg-emerald-500/15" },
+  "Production écrite": { g: "from-amber-500 to-orange-600", the: "border-amber-500/25 bg-amber-500/[0.07]", so: "text-amber-600", ray: "bg-amber-500/15" },
+  "Production orale": { g: "from-fuchsia-500 to-purple-600", the: "border-fuchsia-500/25 bg-fuchsia-500/[0.06]", so: "text-fuchsia-600", ray: "bg-fuchsia-500/15" },
+  "Grammaire": { g: "from-indigo-500 to-violet-600", the: "border-indigo-500/25 bg-indigo-500/[0.06]", so: "text-indigo-600", ray: "bg-indigo-500/15" },
+  "Vocabulaire": { g: "from-rose-500 to-pink-600", the: "border-rose-500/25 bg-rose-500/[0.06]", so: "text-rose-600", ray: "bg-rose-500/15" },
+};
+THI.Communication = THI["Production orale"];
+const thiKN = (k) => THI[k] ?? { g: "from-cyan-500 to-sky-600", the: "border-cyan-500/25 bg-cyan-500/[0.06]", so: "text-cyan-600", ray: "bg-cyan-500/15" };
+
 export function DongDeuKyNang({ skills, ghiChu, gon = false }) {
   const ds = [...(skills ?? [])].sort((a, b) => b.value - a.value);
   const tb = ds.length ? Math.round(ds.reduce((n, s) => n + s.value, 0) / ds.length) : null;
   const chenh = ds.length > 1 ? ds[0].value - ds[ds.length - 1].value : 0;
   const yeu = ds[ds.length - 1];
   return (
-    <section className="rounded-3xl bg-surface p-5 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <p className="m-0 flex items-center gap-1.5 text-xs font-bold uppercase tracking-[0.14em] text-soft"><TrendingUp size={14} /> {tr("Hồ sơ kỹ năng", "Profil de compétences", "Skill profile")}</p>
-          <h2 className={"m-0 mt-1 font-extrabold text-ink " + (gon ? "hidden" : "text-lg")}>{tr("Mức độ đồng đều theo kỹ năng", "Équilibre entre les compétences", "Balance across skills")}</h2>
+    <section className="relative overflow-clip rounded-3xl border border-solid border-line bg-surface p-5 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+      <span aria-hidden className="pointer-events-none absolute -right-14 -top-14 h-40 w-40 rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 opacity-[0.08]" />
+      <div className="relative flex items-center gap-3">
+        <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-600 text-white shadow-[0_8px_18px_rgba(37,99,235,0.3)]"><TrendingUp size={20} /></span>
+        <div className="min-w-0">
+          <h2 className="m-0 text-base font-extrabold text-ink">{tr("Hồ sơ kỹ năng", "Profil de compétences", "Skill profile")}</h2>
+          <p className={"m-0 text-xs text-soft " + (gon ? "hidden" : "")}>{tr("Mức độ đồng đều theo kỹ năng", "Équilibre entre les compétences", "Balance across skills")}</p>
         </div>
       </div>
       {tb != null && (
-        <div className="mt-3 grid grid-cols-2 gap-2">
-          <div className="rounded-2xl bg-primary-soft px-3 py-2">
-            <p className="m-0 text-2xl font-extrabold leading-tight tabular-nums text-ink">{tb}%</p>
-            <p className="m-0 text-[11px] font-bold text-soft">{tr("Trung bình", "Moyenne", "Average")}</p>
+        <div className="relative mt-4 grid grid-cols-2 gap-2">
+          <div className="relative overflow-clip rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-600 px-3.5 py-2.5 text-white shadow-[0_10px_22px_rgba(37,99,235,0.25)]">
+            <span aria-hidden className="absolute -bottom-6 -right-6 h-16 w-16 rounded-full bg-white/15" />
+            <p className="relative m-0 text-[26px] font-extrabold leading-tight tabular-nums">{tb}%</p>
+            <p className="relative m-0 text-[11px] font-bold text-white/85">{tr("Trung bình", "Moyenne", "Average")}</p>
           </div>
-          <div className={`rounded-2xl px-3 py-2 ${chenh > 30 ? "bg-warn-soft" : "bg-ok-soft"}`}>
-            <p className={`m-0 text-2xl font-extrabold leading-tight tabular-nums ${chenh > 30 ? "text-warn" : "text-ok"}`}>{chenh}</p>
-            <p className="m-0 text-[11px] font-bold text-soft">{tr("Độ chênh", "Écart", "Gap")}</p>
+          <div className={`relative overflow-clip rounded-2xl bg-gradient-to-br px-3.5 py-2.5 text-white ${chenh > 30 ? "from-amber-500 to-orange-600 shadow-[0_10px_22px_rgba(234,88,12,0.25)]" : "from-emerald-500 to-teal-600 shadow-[0_10px_22px_rgba(16,185,129,0.25)]"}`}>
+            <span aria-hidden className="absolute -bottom-6 -right-6 h-16 w-16 rounded-full bg-white/15" />
+            <p className="relative m-0 text-[26px] font-extrabold leading-tight tabular-nums">{chenh}</p>
+            <p className="relative m-0 text-[11px] font-bold text-white/85">{tr("Độ chênh", "Écart", "Gap")}</p>
           </div>
         </div>
       )}
       {!ds.length ? (
-        <p className="m-0 mt-4 rounded-2xl bg-surface2 p-4 text-sm text-soft">
+        <p className="relative m-0 mt-4 rounded-2xl bg-surface2 p-4 text-sm text-soft">
           {tr("Làm vài bài ở các kỹ năng khác nhau để thấy hồ sơ của bạn.", "Faites quelques exercices dans différentes compétences pour voir votre profil.", "Do a few exercises across skills to see your profile.")}
         </p>
       ) : (
         <>
-          <ul className="m-0 mt-4 grid list-none gap-2.5 p-0">
+          <ul className="relative m-0 mt-4 grid list-none gap-2 p-0">
             {ds.map(({ skill, value }) => {
               const [m, nhan] = muc(value);
               const Icon = IconKN(skill);
+              const c = thiKN(skill);
               return (
-                <li key={skill} className="grid grid-cols-[auto_1fr] items-center gap-3">
-                  <span className={`grid h-9 w-9 place-items-center rounded-xl ${MAU[m][2]} ${MAU[m][1]}`}><Icon size={17} /></span>
-                  <div className="min-w-0">
-                    <div className="flex items-baseline gap-2">
-                      <span className="truncate text-sm font-bold text-ink">{tenKN(skill)}</span>
-                      <span className={`text-[11px] font-bold ${MAU[m][1]}`}>{nhan()}</span>
-                      <span className="ml-auto text-sm font-extrabold tabular-nums text-ink">{value}%</span>
+                <li key={skill} className={`flex items-center gap-3 rounded-2xl border border-solid px-3 py-2.5 ${c.the}`}>
+                  <span className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-gradient-to-br ${c.g} text-white shadow-[0_6px_14px_rgba(15,23,42,0.15)]`}><Icon size={18} /></span>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="truncate text-sm font-extrabold text-ink">{tenKN(skill)}</span>
+                      <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-extrabold ${MAU[m][2]} ${MAU[m][1]}`}>{nhan()}</span>
+                      <span className={`ml-auto text-lg font-extrabold leading-none tabular-nums ${c.so}`}>{value}%</span>
                     </div>
-                    <div className="mt-1 h-2 overflow-hidden rounded-full bg-surface2">
-                      <div className={`h-full w-full rounded-full ${MAU[m][0]} transition-transform duration-[550ms] ease-out`} style={{ transform: `translateX(${Math.max(value, 3) - 100}%)` }} />
+                    <div className={`mt-1.5 h-2 overflow-hidden rounded-full ${c.ray}`}>
+                      <div className={`h-full w-full rounded-full bg-gradient-to-r ${c.g} transition-transform duration-[550ms] ease-out`} style={{ transform: `translateX(${Math.max(value, 3) - 100}%)` }} />
                     </div>
                   </div>
                 </li>
               );
             })}
           </ul>
-          {/* 04/11: lời nhắc thành một khung có biểu tượng của kỹ năng yếu nhất, nền theo màu mức của nó. */}
+          {/* Kỹ năng yếu nhất: dải gradient theo màu của chính kỹ năng đó. */}
           {ds.length > 1 && yeu && (() => {
-            const [m] = muc(yeu.value);
+            const c = thiKN(yeu.skill);
             const IconYeu = IconKN(yeu.skill);
             return (
-              <div className={`flex items-center gap-3 rounded-2xl ${MAU[m][2]} ` + (gon ? "mt-3 p-3" : "mt-4 p-3.5")}>
-                <span className={`relative grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-surface ${MAU[m][1]} shadow-sm`}>
-                  <IconYeu size={18} />
-                  <Target size={14} className={`absolute -right-1.5 -top-1.5 rounded-full bg-surface p-0.5 ${MAU[m][1]}`} />
+              <div className={`relative flex items-center gap-3 overflow-clip rounded-2xl bg-gradient-to-br ${c.g} text-white shadow-[0_10px_24px_rgba(15,23,42,0.18)] ` + (gon ? "mt-3 p-3" : "mt-4 p-3.5")}>
+                <span aria-hidden className="absolute -right-8 -top-8 h-24 w-24 rounded-full bg-white/15" />
+                <span className="relative grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-white/25">
+                  <IconYeu size={20} />
+                  <Target size={15} className={`absolute -right-1.5 -top-1.5 rounded-full bg-white p-0.5 ${c.so}`} />
                 </span>
-                <div className="min-w-0">
-                  <p className="m-0 text-[11px] font-bold text-soft">{tr("Nên ưu tiên luyện", "À travailler en priorité", "Focus next on")}</p>
-                  <p className={`m-0 text-base font-extrabold leading-tight ${MAU[m][1]}`}>{tenKN(yeu.skill)}</p>
-                  <p className="m-0 mt-0.5 text-xs leading-snug text-ink">{tr("Bài đề xuất cho bạn đã ưu tiên kỹ năng này.", "Les exercices recommandés le privilégient déjà.", "Your recommended exercises already focus on it.")}</p>
+                <div className="relative min-w-0">
+                  <p className="m-0 text-[11px] font-bold text-white/85">{tr("Nên ưu tiên luyện", "À travailler en priorité", "Focus next on")}</p>
+                  <p className="m-0 text-base font-extrabold leading-tight">{tenKN(yeu.skill)}</p>
+                  <p className="m-0 mt-0.5 text-xs leading-snug text-white/90">{tr("Bài đề xuất cho bạn đã ưu tiên kỹ năng này.", "Les exercices recommandés le privilégient déjà.", "Your recommended exercises already focus on it.")}</p>
                 </div>
               </div>
             );
           })()}
           {ghiChu && (
-            <p className="m-0 mt-3 flex items-start gap-1.5 border-0 border-t border-solid border-line pt-3 text-[11px] leading-relaxed text-soft">
+            <p className="relative m-0 mt-3 flex items-start gap-1.5 border-0 border-t border-solid border-line pt-3 text-[11px] leading-relaxed text-soft">
               <Info size={13} className="mt-px shrink-0" /><span>{ghiChu}</span>
             </p>
           )}
