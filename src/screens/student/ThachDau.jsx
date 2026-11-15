@@ -125,13 +125,13 @@ export default function ThachDau({ nhung = false }) {
 
       {/* 15/11 (chủ dự án): bản gọn của dải thành tích khi nằm trong tab Thách đấu. */}
       {nhung && (
-        <div className="mb-4 grid grid-cols-4 gap-2">
+        <div className="mb-4 grid grid-cols-4 gap-1.5 sm:gap-2">
           {[["thang", tr("Thắng", "Victoires", "Wins"), Trophy, "text-ok"], ["thua", tr("Thua", "Défaites", "Losses"), XCircle, "text-danger"], ["hoa", tr("Hoà", "Nuls", "Draws"), Handshake, "text-soft"], ["cho", tr("Đến lượt", "À jouer", "Your turn"), Zap, "text-warn"]].map(([k, nhan, Bieu, mau]) => (
-            <div key={k} className="flex min-w-0 items-center gap-2 rounded-2xl border border-solid border-line bg-surface px-3 py-2">
+            <div key={k} className="flex min-w-0 flex-col items-center gap-0.5 rounded-2xl border border-solid border-line bg-surface px-1 py-2 text-center sm:flex-row sm:gap-2 sm:px-3 sm:text-left">
               <Bieu size={16} strokeWidth={2.5} className={`shrink-0 ${mau}`} />
               <div className="min-w-0">
                 <p className="m-0 text-base font-extrabold leading-tight tabular-nums text-ink">{ds ? thanhTich[k] : "–"}</p>
-                <p className="m-0 truncate text-[11px] font-bold text-soft">{nhan}</p>
+                <p className="m-0 whitespace-nowrap text-[11px] font-bold text-soft">{nhan}</p>
               </div>
             </div>
           ))}
