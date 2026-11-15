@@ -10,6 +10,7 @@ import { AnhKyNiem } from "./KyUc.jsx";
 import { CacKetCuc, HINH_KET, thanhTichMoi } from "./HoSoNam.jsx";
 import { hopGiong, ketCuc, nguoiThan, dongKet, hoSoGop } from "./luat.js";
 
+import { ngauNhien } from "../../../shared/ngauNhien.js";
 /* Màn kết năm (31/10, giai đoạn 5). Thứ tự: trời tối và tháp Eiffel → pháo hoa, tên kết cục → lá thư,
    ảnh, hồ sơ năm. Bấm vào đâu cũng tua tới cuối; máy bật giảm chuyển động thì hiện ngay. */
 const KHOA_KET = "mcf-mot-nam-ket-v1";
@@ -32,8 +33,8 @@ function PhaoHoa({ a, b, lan }) {
     const mau = [a, b, "#ffffff", "#fde68a"];
     let ds = [], da = 0, f, t0 = performance.now();
     const no = () => {
-      const px = W * (0.15 + Math.random() * 0.7), py = H * (0.1 + Math.random() * 0.35), m = mau[Math.floor(Math.random() * mau.length)], so = 46 + Math.floor(Math.random() * 28);
-      for (let k = 0; k < so; k++) { const goc = (k / so) * 6.283, toc = 1.6 + Math.random() * 3.1; ds.push({ x: px, y: py, vx: Math.cos(goc) * toc, vy: Math.sin(goc) * toc, song: 1, m }); }
+      const px = W * (0.15 + ngauNhien() * 0.7), py = H * (0.1 + ngauNhien() * 0.35), m = mau[Math.floor(ngauNhien() * mau.length)], so = 46 + Math.floor(ngauNhien() * 28);
+      for (let k = 0; k < so; k++) { const goc = (k / so) * 6.283, toc = 1.6 + ngauNhien() * 3.1; ds.push({ x: px, y: py, vx: Math.cos(goc) * toc, vy: Math.sin(goc) * toc, song: 1, m }); }
     };
     const ve = (t) => {
       const tuoi = (t - t0) / 1000;

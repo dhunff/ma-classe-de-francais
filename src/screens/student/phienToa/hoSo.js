@@ -2,6 +2,7 @@
 import { LUAT, VU_TOA } from "../../../content/troChoi/phienToa.js";
 import { luatTheoMuc, tron } from "./luat.js";
 
+import { ngauNhien } from "../../../shared/ngauNhien.js";
 export const KHANG_CAO = "khang-cao";
 const THU_MUC = ["de", "vua", "kho"];
 export const HO_TRONG = { vu: {}, tk: {} };
@@ -43,7 +44,7 @@ export const ghiTk = (tk, ma, ok) => { const [d, s] = tk[ma] ?? [0, 0]; return {
 export const luatYeu = (tk) => Object.entries(tk ?? {}).filter(([ma, t]) => LUAT[ma] && t.sai > t.dung).sort((a, b) => (b[1].sai - b[1].dung) - (a[1].sai - a[1].dung)).map(([ma]) => ma);
 
 /* Hồ sơ kháng cáo: phiên ngắn dựng từ chính những điều người chơi hay sai, trong tầm trình độ của mức. */
-export function taoKhangCao(tk, muc, rng = Math.random) {
+export function taoKhangCao(tk, muc, rng = ngauNhien) {
   const yeu = luatYeu(tk).filter((ma) => luatTheoMuc(muc).includes(ma));
   const nguon = VU_TOA.filter((v) => THU_MUC.indexOf(v.muc) <= THU_MUC.indexOf(muc));
   const moi = nguon.flatMap(dongCua).map((d) => ({ van: d.van, dich: d.dich, loi: d.loi }));

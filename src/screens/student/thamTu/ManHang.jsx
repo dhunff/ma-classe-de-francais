@@ -6,6 +6,7 @@ import { phat } from "../../../shared/amThanh.js";
 import { Leon, leonVai } from "../../../shared/leon.jsx";
 import { UY_TIN_DAU } from "./luat.js";
 
+import { ngauNhien } from "../../../shared/ngauNhien.js";
 /* Màn công bố hạng khi đóng hồ sơ (31/10). Thứ tự: hồ sơ vào → số chạy → dấu đập xuống → pháo giấy →
    thành tích và nút. Bấm vào đâu cũng tua tới cuối; máy bật giảm chuyển động thì hiện ngay kết quả. */
 const KIEU = {
@@ -28,8 +29,8 @@ function PhaoGiay({ so, mau, lan }) {
     const dpr = Math.min(2, window.devicePixelRatio || 1), W = window.innerWidth, H = window.innerHeight;
     c.width = W * dpr; c.height = H * dpr; x.scale(dpr, dpr);
     const tao = (n, y0) => Array.from({ length: n }, () => {
-      const goc = Math.random() * Math.PI * 2, toc = 4 + Math.random() * 11;
-      return { x: W / 2, y: y0, vx: Math.cos(goc) * toc, vy: Math.sin(goc) * toc - 5, r: Math.random() * 6.3, vr: -0.2 + Math.random() * 0.4, w: 5 + Math.random() * 7, h: 8 + Math.random() * 9, mau: mau[Math.floor(Math.random() * mau.length)], long: Math.random() < 0.18 };
+      const goc = ngauNhien() * Math.PI * 2, toc = 4 + ngauNhien() * 11;
+      return { x: W / 2, y: y0, vx: Math.cos(goc) * toc, vy: Math.sin(goc) * toc - 5, r: ngauNhien() * 6.3, vr: -0.2 + ngauNhien() * 0.4, w: 5 + ngauNhien() * 7, h: 8 + ngauNhien() * 9, mau: mau[Math.floor(ngauNhien() * mau.length)], long: ngauNhien() < 0.18 };
     });
     let ds = tao(so, H * 0.34), f, t0 = performance.now(), doi = lan > 1;
     const ve = (t) => {

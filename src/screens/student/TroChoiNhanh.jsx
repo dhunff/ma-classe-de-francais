@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Heart, Play, RotateCcw, Trophy, Volume2, Loader2, Check, X, Scale } from "lucide-react";
+import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { ArrowLeft, Heart, Play, RotateCcw, Trophy, Volume2, Loader2, Check, X, Scale, Swords } from "lucide-react";
 import { PhatAm } from "./NgheNoi.jsx";
 import { soCau } from "../../../supabase/functions/_shared/soCau.js";
 import ThamTu from "./thamTu/ThamTu.jsx";
@@ -18,36 +18,53 @@ import { Leon, LeonNoi, leonVai } from "../../shared/leon.jsx";
 import { TRO_CHOI, MO_NGAN } from "./danhMucTroChoi.js";
 import { MUC_CHOI, khopCap, docDanhTuGioi, docMuaChu, phuongAnNghia, docCauNghe, phuongAnCau, ghiTroChoi, docKyLuc, docXepCau, docSanLoi, docDungSai, tron } from "../../shared/troChoiNhanh.js";
 
+import { ngauNhien, datHat, boHat, hatMoi } from "../../shared/ngauNhien.js";
+import { dsDauTroChoi, taoDauTroChoi, nopDauTroChoi, loiDau } from "../../shared/troChoiDau.js";
+import { ChonCheDo, TheLoiThach, KetQuaDau, DauTruong } from "./DauTroChoi.jsx";
 /* Ba trò chơi nhanh (27/10, migration 168). /etudiant/tro-choi là sảnh, /etudiant/tro-choi/:ma
  * là một trò. Câu hỏi dựng từ kho có sẵn (xem shared/troChoiNhanh.js); điểm, kỷ lục và XP
  * ghi qua RPC ghi_tro_choi, mỗi lượt cũng tính một ngày học cho chuỗi. */
 
-export default function TroChoiNhanh() {
+/* `dauMau`: danh sách trận giả, CHỈ /preview.html truyền vào. */
+export default function TroChoiNhanh({ dauMau }) {
   const { ma } = useParams();
   const ds = TRO_CHOI();
   const tc = ds.find((x) => x.ma === ma && !x.den);
   if (tc) return <ManChoi tc={tc} />;
-  return <Sanh ds={ds} />;
+  return <Sanh ds={ds} dauMau={dauMau} />;
 }
 
 /* ─────────── Sảnh ─────────── */
-function Sanh({ ds }) {
+/* 15/11 (chủ dự án: « làm lại phần các trò chơi, các trò đều có PvP hết »): khối đầu, Đấu trường
+   (lời thách đến lượt mình, đang chờ, kết quả gần đây), rồi các nhóm trò; mọi thẻ mang nhãn PvP. */
+function Sanh({ ds, dauMau }) {
   const [kl, setKl] = useState({});
-  useEffect(() => { docKyLuc().then(setKl, () => {}); }, []);
+  const [dau, setDau] = useState(dauMau);
+  useEffect(() => { docKyLuc().then(setKl, () => {}); if (!dauMau) dsDauTroChoi().then(setDau); }, [dauMau]);
   return (
     <div className="mx-auto max-w-5xl px-4 pb-16 pt-4">
-      <div className="flex items-center gap-3">
-        <Leon cam="yeah" size={64} />
-        <div>
-          <h1 className="m-0 text-2xl font-extrabold text-ink">{tr("Trò chơi nhanh", "Jeux rapides", "Quick games")}</h1>
-          <p className="m-0 text-sm text-soft">{tr("Mỗi ván 1–2 phút. Có XP và tính vào chuỗi ngày học.", "1 à 2 minutes par partie. XP et série inclus.", "1–2 minutes per round. Earns XP and counts for your streak.")}</p>
+      <header className="mcf-cau-vao relative overflow-hidden rounded-3xl bg-gradient-to-br from-violet-600 via-indigo-600 to-sky-500 p-6 text-white shadow-[0_20px_50px_rgba(79,70,229,0.3)]">
+        <span aria-hidden className="absolute -right-12 -top-12 h-48 w-48 rounded-full bg-white/10" />
+        <Swords aria-hidden size={150} strokeWidth={1.1} className="absolute -bottom-10 right-6 text-white/10" />
+        <div className="relative flex items-center gap-4">
+          <Leon cam="yeah" size={96} className="mcf-leon-bay shrink-0 drop-shadow-[0_10px_16px_rgba(0,0,0,0.25)] max-sm:h-16 max-sm:w-16" />
+          <div className="min-w-0">
+            <h1 className="m-0 text-3xl font-extrabold tracking-tight max-sm:text-2xl">{tr("Trò chơi", "Jeux", "Games")}</h1>
+            <p className="m-0 mt-1 max-w-xl text-sm text-white/90">{tr("Mỗi ván 1–2 phút, có XP và tính vào chuỗi ngày học. Trò nào cũng thách được bạn bè: bạn chơi trước, bạn bè chơi đúng ván đó.", "1 à 2 minutes par partie, XP et série inclus. Chaque jeu se joue aussi en duel.", "1–2 minutes per round, earns XP and counts for your streak. Every game can be a duel.")}</p>
+          </div>
         </div>
-      </div>
+      </header>
+
+      <section className="mt-7">
+        <h2 className="m-0 flex items-center gap-2 text-lg font-extrabold text-ink"><span className="grid h-8 w-8 place-items-center rounded-xl bg-primary-soft text-primary"><Swords size={17} /></span>{tr("Đấu trường", "L'arène", "The arena")}</h2>
+        <DauTruong ds={dau} troChoi={ds} />
+      </section>
+
       {[["on", tr("Ôn luyện", "Révision", "Review")], ["tu", tr("Từ vựng", "Vocabulaire", "Vocabulary")], ["ng", tr("Nghe và nói", "Écoute et oral", "Listening and speaking")], ["np", tr("Ngữ pháp", "Grammaire", "Grammar")], ["dv", tr("Đọc hiểu và văn hoá", "Lecture et culture", "Reading and culture")]].map(([nhom, tenNhom]) => (
-      <section key={nhom} className="mt-6">
+      <section key={nhom} className="mt-8">
       <h2 className="m-0 mb-3 text-lg font-extrabold text-ink">{tenNhom}</h2>
       <div className="grid gap-4 md:grid-cols-3">
-        {ds.filter((x) => x.nhom === nhom).map(({ ma, den, Icon, nen, ten, mo, leon }) => (
+        {ds.filter((x) => x.nhom === nhom).map(({ ma, den, Icon, nen, ten, mo, leon, pvp }) => (
           <Link key={ma} to={den ?? `/etudiant/tro-choi/${ma}`}
             className={`group relative flex min-h-[258px] flex-col overflow-hidden rounded-3xl bg-gradient-to-br ${nen} p-5 text-white no-underline shadow-[0_14px_30px_rgba(0,0,0,0.12)] transition-transform duration-200 ease-out hover:-translate-y-1 active:scale-[0.985]`}>
             {leon
@@ -56,11 +73,14 @@ function Sanh({ ds }) {
                   <span aria-hidden className="absolute -right-10 -top-10 h-36 w-36 rounded-full bg-white/15" />
                   <Icon aria-hidden size={110} strokeWidth={1.2} className="absolute -bottom-6 -right-4 text-white/15" />
                 </>}
-            <span className="relative grid h-12 w-12 place-items-center rounded-2xl bg-white/25"><Icon size={24} /></span>
+            <span className="relative flex items-center gap-2">
+              <span className="grid h-12 w-12 place-items-center rounded-2xl bg-white/25"><Icon size={24} /></span>
+              {pvp !== false && <span className="inline-flex items-center gap-1 rounded-full bg-black/25 px-2.5 py-1 text-[11px] font-extrabold" title={tr("Thách đấu được bạn bè", "Jouable en duel", "Playable as a duel")}><Swords size={12} /> PvP</span>}
+            </span>
             <span className="relative mt-4 text-xl font-extrabold">{ten}</span>
             <span className={`relative mt-1 text-sm leading-snug text-white/90 ${leon?.chu ?? ""}`}>{MO_NGAN[ma] ? tr(...MO_NGAN[ma]) : mo}</span>
             <span className="relative mt-auto flex items-center justify-between pt-4 text-sm font-bold">
-              {den ? <span className="inline-flex items-center gap-1.5 rounded-full bg-white/20 px-3 py-1"><Icon size={14} /> {ma === "thach_dau" ? "PvP" : tr("Ôn", "Révision", "Review")}</span>
+              {den ? <span className="inline-flex items-center gap-1.5 rounded-full bg-white/20 px-3 py-1"><Icon size={14} /> {ma === "thach_dau" ? "1 vs 1" : tr("Ôn", "Révision", "Review")}</span>
                 : <span className="inline-flex items-center gap-1 rounded-full bg-white/20 px-2.5 py-1 text-xs" title={tr("Kỷ lục Dễ · Vừa · Khó", "Records Facile · Moyen · Difficile", "Best Easy · Medium · Hard")}>
                     <Trophy size={13} />{["de", "vua", "kho"].map((m, j) => <span key={m} className="tabular-nums">{j > 0 && <span className="opacity-50"> · </span>}<span className="opacity-70">{["D", "V", "K"][j]}</span> {kl[`${ma}:${m}`] ?? "—"}</span>)}
                   </span>}
@@ -103,26 +123,69 @@ function LeonBinhLuan() {
   );
 }
 
+/* PvP (15/11, migration 214): « Thách bạn bè » → chơi với hạt giống mới, nộp thì tạo trận và báo bạn.
+   ?dau=<id> → nhận lời: khoá mức + cách chơi theo trận, chơi đúng hạt giống, nộp một lần, so điểm. */
 function ManChoi({ tc }) {
   const nav = useNavigate();
+  const [tham] = useSearchParams();
+  const maDau = tham.get("dau");
   const [muc, setMuc] = useState("vua");          // de | vua | kho (MUC_CHOI)
   const [kieu, setKieu] = useState(tc.kieu?.[0]?.ma ?? null);
   const [buoc, setBuoc] = useState("chon");       // chon | choi | xong
   const [kq, setKq] = useState(null);             // { diem, dung, tong }
   const [ghi, setGhi] = useState(null);           // kết quả RPC
   const [van, setVan] = useState(0);
+  const [cheDo, setCheDo] = useState("mot");      // mot | dau
+  const [ban, setBan] = useState(null);           // bạn được thách
+  const [nhan, setNhan] = useState(maDau ? undefined : null);   // trận đang nhận lời (undefined = đang tải)
+  const [dauKq, setDauKq] = useState(null);       // { dang: gui|nop, kq }
+  const [baoLoi, setBaoLoi] = useState("");
+  const hat = useRef(null);
+
+  useEffect(() => {
+    if (!maDau) { setNhan(null); return; }
+    dsDauTroChoi().then((ds) => {
+      const d = (ds || []).find((x) => x.id === maDau && !x.toi_moi && !x.xong && x.tro_choi === tc.ma);
+      setNhan(d ?? false);
+      if (d) { setMuc(d.muc); if (d.kieu) setKieu(d.kieu); }
+    });
+  }, [maDau, tc.ma]);
+  useEffect(() => () => boHat(), []);
+
+  const laDau = !!nhan || cheDo === "dau";
+  const batDau = () => {
+    if (cheDo === "dau" && !nhan && !ban) { phat("sai"); setBaoLoi(tr("Chọn một người bạn để thách.", "Choisissez un ami à défier.", "Pick a friend to challenge.")); return; }
+    setBaoLoi(""); setDauKq(null);
+    if (nhan) { hat.current = nhan.hat; datHat(nhan.hat); }
+    else if (cheDo === "dau") { hat.current = hatMoi(); datHat(hat.current); }
+    else { hat.current = null; boHat(); }
+    phat("batDau"); setVan((v) => v + 1); setBuoc("choi");
+  };
 
   const xong = useCallback(async (r) => {
+    boHat();
     setKq(r); setBuoc("xong"); setGhi(null);
     phat(r.dung >= r.tong * 0.6 ? "thang" : "hetGio");
-    setGhi(await ghiTroChoi(tc.ma, r.diem, r.dung, Math.max(1, r.tong), tc.ma === "phieu_luu" ? "vua" : muc));
-  }, [tc.ma, muc]);
+    const mucGhi = tc.ma === "phieu_luu" ? "vua" : muc;
+    const tong = Math.max(1, r.tong);
+    if (nhan) {
+      setDauKq({ dang: "nop", kq: null });
+      const k = await nopDauTroChoi(nhan.id, { diem: r.diem, dung: r.dung, tong });
+      setDauKq({ dang: "nop", kq: k.loi ? { loi: k.loi, chu: tr(...(loiDau(k.loi) ?? [k.loi, k.loi, k.loi])) } : k });
+    } else if (cheDo === "dau" && ban && hat.current) {
+      setDauKq({ dang: "gui", kq: null });
+      /* r.kieu: id vụ án mà Thám tử / Phiên toà vừa chơi. */
+      const k = await taoDauTroChoi({ doi: ban.id, troChoi: tc.ma, muc: mucGhi, kieu, vu: r.kieu ?? null, hat: hat.current, diem: r.diem, dung: r.dung, tong });
+      setDauKq({ dang: "gui", kq: k.loi ? { loi: k.loi, chu: tr(...(loiDau(k.loi) ?? [k.loi, k.loi, k.loi])) } : k });
+    }
+    setGhi(await ghiTroChoi(tc.ma, r.diem, r.dung, tong, mucGhi));
+  }, [tc.ma, muc, nhan, cheDo, ban, kieu]);
 
   const Game = tc.ma === "dung_sai" && kieu === "phien" ? PhienToa : { gioi_tinh: GioiTinh, nghe_chon: NgheChon, mua_chu: MuaChu, xep_cau: XepCau, san_loi: SanLoi, dung_sai: DungSai,
     chep_nhanh: ChepNhanh, noi_mo_khoa: NoiMoKhoa, tham_tu: ThamTu, do_vui: DoVui, phieu_luu: MotNam }[tc.ma];
   return (
     <div className={`mx-auto ${buoc === "choi" ? "max-w-5xl" : "max-w-3xl"} px-4 pb-16 pt-4`}>
-      <button type="button" onClick={() => (buoc === "choi" ? setBuoc("chon") : nav("/etudiant/tro-choi"))}
+      <button type="button" onClick={() => { if (buoc === "choi") { boHat(); setBuoc("chon"); } else nav("/etudiant/tro-choi"); }}
         className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border-0 bg-surface px-4 py-2 font-sans text-sm font-bold text-ink shadow-sm">
         <ArrowLeft size={16} /> {buoc === "choi" ? tr("Dừng", "Arrêter", "Stop") : tr("Trò chơi", "Jeux", "Games")}
       </button>
@@ -136,13 +199,18 @@ function ManChoi({ tc }) {
       </div>
 
       {buoc === "chon" && (
-        <div className="relative mt-6 overflow-hidden rounded-3xl bg-surface p-6 text-center shadow-[0_8px_30px_rgb(0,0,0,0.06)]">
+        <div className="relative mt-6 overflow-clip rounded-3xl bg-surface p-6 text-center shadow-[0_8px_30px_rgb(0,0,0,0.06)]">
+          {/* 15/11: overflow-clip chứ không overflow-hidden: quầng màu tràn 64px, và overflow-hidden vẫn để trình duyệt cuộn ngang thẻ khi bấm nút bên trong (nội dung lệch sang trái). */}
           {/* 31/10: nền mang màu của chính trò đó, bong bóng Leon có đuôi, thẻ mức tô màu đầy đủ. */}
           <div aria-hidden className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${tc.nen} opacity-[0.14]`} />
           <div aria-hidden className={`pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-gradient-to-br ${tc.nen} opacity-30 blur-2xl`} />
           <div className="relative">
           <LeonNoi cam="nhay-mat" size={64} className="mb-6 text-left">{tr("Luật chơi đây: ", "Voici la règle : ", "Here are the rules: ")}{tc.mo}</LeonNoi>
-          {tc.kieu && <>
+          {nhan === undefined && <p className="m-0 mb-6 flex items-center justify-center gap-2 text-sm text-soft"><Loader2 size={14} className="mcf-spin" /> {tr("Đang mở lời thách…", "Ouverture du défi…", "Opening the challenge…")}</p>}
+          {nhan === false && <p className="m-0 mb-6 rounded-2xl bg-warn-soft px-4 py-3 text-sm font-bold text-warn">{tr("Lời thách này không còn (đã chơi hoặc không dành cho bạn). Bạn vẫn chơi được như thường.", "Ce défi n'est plus disponible. Vous pouvez jouer normalement.", "This challenge is no longer available. You can still play normally.")}</p>}
+          {nhan && <TheLoiThach d={nhan} nen={tc.nen} tenKieu={tc.kieu?.find((k) => k.ma === nhan.kieu)?.ten} />}
+          {!nhan && nhan !== undefined && <ChonCheDo cheDo={cheDo} setCheDo={(m) => { setCheDo(m); setBaoLoi(""); }} ban={ban} setBan={(b) => { setBan(b); setBaoLoi(""); }} nen={tc.nen} />}
+          {!nhan && tc.kieu && <>
             <p className="m-0 text-sm font-extrabold text-ink">{tr("Cách chơi", "Mode", "Mode")}</p>
             <div className="mb-6 mt-3 grid gap-2 sm:grid-cols-3">
               {tc.kieu.map((k) => (
@@ -154,7 +222,7 @@ function ManChoi({ tc }) {
               ))}
             </div>
           </>}
-          {tc.ma !== "phieu_luu" && <>
+          {tc.ma !== "phieu_luu" && !nhan && <>
           <p className="m-0 text-sm font-extrabold text-ink">{tr("Mức độ", "Difficulté", "Difficulty")}</p>
           {/* Chọn mức: ba thẻ màu, vạch cường độ 1–3, thẻ đang chọn nổi lên có viền và dấu tích. */}
           <div className="mx-auto mt-3 grid max-w-2xl gap-3 sm:grid-cols-3">
@@ -180,16 +248,18 @@ function ManChoi({ tc }) {
             })}
           </div>
           </>}
-          <button type="button" onClick={() => { phat("batDau"); setVan((v) => v + 1); setBuoc("choi"); }}
+          {tc.ma === "phieu_luu" && laDau && <p className="m-0 mx-auto max-w-md text-xs text-soft">{tr("Ván đấu Một năm ở Paris là MỘT tháng chơi từ đầu, không đụng tới năm bạn đang chơi dở.", "Le duel dure UN mois, sans toucher à votre année en cours.", "The duel is ONE month from scratch; your saved year is untouched.")}</p>}
+          {baoLoi && <p className="m-0 mt-4 text-sm font-bold text-danger">{baoLoi}</p>}
+          <button type="button" disabled={nhan === undefined} onClick={batDau}
             className={`mt-7 inline-flex cursor-pointer items-center gap-2 rounded-full border-0 bg-gradient-to-br ${tc.nen} px-9 py-3.5 font-sans text-base font-extrabold text-white shadow-[0_12px_26px_rgba(0,0,0,0.22)] transition-transform hover:-translate-y-0.5 active:scale-[0.97]`}>
-            <Play size={18} /> {tr("Bắt đầu", "Commencer", "Start")}
+            {laDau ? <Swords size={18} /> : <Play size={18} />} {nhan ? tr("Nhận lời thách", "Relever le défi", "Accept the challenge") : laDau ? tr("Chơi và gửi lời thách", "Jouer et défier", "Play and challenge") : tr("Bắt đầu", "Commencer", "Start")}
           </button>
           </div>
         </div>
       )}
 
       {buoc === "choi" && !CO_LEON_RIENG.has(tc.ma) && <LeonBinhLuan key={"l" + van} />}
-      {buoc === "choi" && <Game key={van} cap={MUC_CHOI[muc].cap} he={MUC_CHOI[muc]} muc={muc} kieu={kieu} onXong={xong} kho={tc.ma === "tham_tu" ? khoThamTu : tc.ma === "phieu_luu" ? khoMotNam : tc.ma === "do_vui" ? khoDoVui : tc.ma === "dung_sai" ? khoPhienToa : undefined} />}
+      {buoc === "choi" && <Game key={van} cap={MUC_CHOI[muc].cap} he={MUC_CHOI[muc]} muc={muc} kieu={kieu} onXong={xong} dau={nhan ? { vu: nhan.vu } : laDau ? {} : null} kho={tc.ma === "tham_tu" ? khoThamTu : tc.ma === "phieu_luu" ? khoMotNam : tc.ma === "do_vui" ? khoDoVui : tc.ma === "dung_sai" ? khoPhienToa : undefined} />}
 
       {buoc === "xong" && kq && (
         <div className="mt-6 rounded-3xl bg-surface p-6 text-center shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
@@ -206,11 +276,18 @@ function ManChoi({ tc }) {
                   <span className="rounded-full bg-primary-soft px-3 py-1 text-primary">+{ghi.xp} XP</span>
                 </>}
           </div>
+          {dauKq && <KetQuaDau dang={dauKq.dang} kq={dauKq.kq} ban={ban} diemToi={kq.diem} dungToi={kq.dung} d={nhan} />}
           <div className="mt-6 flex flex-wrap justify-center gap-3">
-            <button type="button" onClick={() => { phat("batDau"); setVan((v) => v + 1); setBuoc("choi"); }}
+            {nhan ? (
+              <button type="button" onClick={() => { const b = { id: nhan.doi_phuong?.id, name: nhan.doi_phuong?.name, avatar: nhan.doi_phuong?.avatar }; nav(`/etudiant/tro-choi/${tc.ma}`, { replace: true }); setNhan(null); setCheDo("dau"); setBan(b.id ? b : null); setDauKq(null); setBuoc("chon"); }}
+                className="inline-flex cursor-pointer items-center gap-2 rounded-full border-0 bg-primary px-6 py-2.5 font-sans text-sm font-extrabold text-on-primary active:scale-[0.97]">
+                <Swords size={16} /> {tr("Thách lại", "Revanche", "Rematch")}
+              </button>
+            ) : (
+            <button type="button" onClick={batDau}
               className="inline-flex cursor-pointer items-center gap-2 rounded-full border-0 bg-primary px-6 py-2.5 font-sans text-sm font-extrabold text-on-primary active:scale-[0.97]">
-              <RotateCcw size={16} /> {tr("Chơi lại", "Rejouer", "Play again")}
-            </button>
+              <RotateCcw size={16} /> {cheDo === "dau" ? tr("Thách thêm ván nữa", "Nouveau défi", "Another challenge") : tr("Chơi lại", "Rejouer", "Play again")}
+            </button>)}
             <Link to="/etudiant/tro-choi" className="inline-flex items-center rounded-full border border-solid border-line bg-surface px-6 py-2.5 text-sm font-bold text-ink no-underline">
               {tr("Trò khác", "Autre jeu", "Other game")}
             </Link>
@@ -519,7 +596,7 @@ function MuaChu({ cap, he, kieu = "nghia", onXong }) {
       if (!d) { st.khoaPa = null; setPa([]); }
     } else if (kieu === "bat" && !st.roi.some((w) => w.id === st.dich)) {
       const ung = st.roi.filter((w) => w.y > 4);
-      st.dich = ung.length ? ung[Math.floor(Math.random() * ung.length)].id : null;
+      st.dich = ung.length ? ung[Math.floor(ngauNhien() * ung.length)].id : null;
       setDich(st.dich);
     }
   };
@@ -536,7 +613,7 @@ function MuaChu({ cap, he, kieu = "nghia", onXong }) {
         // Kiểu bat: không cho hai giọt cùng nghĩa rơi một lúc, kẻo bắt « đúng » mà bị chấm sai.
         let tu = du.kho[st.k++ % du.kho.length];
         for (let n = 0; n < 5 && st.roi.some((w) => w.tu.vi === tu.vi); n++) tu = du.kho[st.k++ % du.kho.length];
-        st.roi.push({ id: st.k, tu, x: 14 + Math.random() * 72, y: -6 });
+        st.roi.push({ id: st.k, tu, x: 14 + ngauNhien() * 72, y: -6 });
         st.sinh = Math.max(800, (kieu === "bat" ? 1900 : 2600) - st.dung * 60) / toc;
       }
       const tocDo = (kieu === "go" ? 0.032 : 0.045) * toc + st.dung * 0.0015;
@@ -683,7 +760,7 @@ function XepCau({ cap, he, muc = "vua", onXong }) {
     const ra = cau.tu.map((w, k) => ({ w, k }));
     if (muc !== "de" && ds.length > 1) {
       const khac = ds[(i + 7) % ds.length].tu.filter((w) => !cau.tu.includes(w) && w.length > 2);
-      if (khac.length) ra.push({ w: khac[Math.floor(Math.random() * khac.length)], k: -1 });
+      if (khac.length) ra.push({ w: khac[Math.floor(ngauNhien() * khac.length)], k: -1 });
     }
     return tron(ra);
   }, [cau]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -785,7 +862,7 @@ function SanLoi({ cap, onXong }) {
   const pa = React.useMemo(() => {
     if (!cau) return [];
     const khac = [...new Set(ds.filter((c) => c !== cau).map((c) => c.sua).filter((w) => w && w !== cau.sua && w !== cau.tu[cau.vt]))]
-      .sort((a, b) => Math.abs(a.length - cau.sua.length) - Math.abs(b.length - cau.sua.length) + (Math.random() - 0.5) * 4);
+      .sort((a, b) => Math.abs(a.length - cau.sua.length) - Math.abs(b.length - cau.sua.length) + (ngauNhien() - 0.5) * 4);
     return tron([cau.sua, ...khac.slice(0, 2)]);
   }, [cau]); // eslint-disable-line react-hooks/exhaustive-deps
   if (!ds) return <Dang chu={tr("Đang chuẩn bị câu…", "Préparation…", "Preparing…")} />;

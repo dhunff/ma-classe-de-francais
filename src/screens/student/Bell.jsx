@@ -135,7 +135,7 @@ function Bell({ name, exercises, submissions }) {
     const list = [];
     annonces.forEach((n) => {
       list.push({
-        id: "ann-" + n.id, loai: n.loai === "follow" ? "follow" : "annonce", text: n.message, ts: n.createdAt,
+        id: "ann-" + n.id, loai: n.loai === "follow" ? "follow" : n.loai === "tro_choi_dau" ? "dau" : "annonce", text: n.message, ts: n.createdAt,
         actor: n.actorId ? nguoiGui[n.actorId] || null : null,
         /* Hai nguồn "đã đọc", và phải xét CẢ HAI:
            · `n.daDoc` — cột `is_read` trên server, theo TÀI KHOẢN
@@ -198,6 +198,7 @@ function Bell({ name, exercises, submissions }) {
   const chon = (n) => {
     setOpen(false);
     if (n.loai === "follow") navigate("/etudiant/dashboard", { state: { moMang: true } });
+    else if (n.loai === "dau") navigate("/etudiant/tro-choi");
     else if (n.loai === "due" || n.loai === "redo") navigate("/etudiant/devoirs", { state: { moBai: n.exId } });
     else if (n.loai === "graded") navigate("/etudiant/rendus");
   };

@@ -16,6 +16,7 @@ import { tron } from "../../../shared/troChoiNhanh.js";
 import CauTracNghiem from "../CauTracNghiem.jsx";
 import { HIEU_UNG, batDau, chuanHoa, chonCanh, sauCau, sauNhanh, sauPhu, viecThang, hopGiong, THAN_MAX, cong, hetThang, hetNam, quaTuan, dungOm, tinhThang, sangThang, danhXung, noiSangDen, cauHay, anhDaCo, hocNgu, hoSoGop } from "./luat.js";
 
+import { ngauNhien } from "../../../shared/ngauNhien.js";
 /* « Một năm ở Paris » (31/10, giai đoạn 1). Lịch 12 tháng thay cho chín chương rời. Cảnh đối thoại lấy
    nguyên từ phieuLuu.js theo thứ tự truyện. Ván chơi giữ ở trình duyệt, điểm thật ghi qua ghi_tro_choi
    mỗi khi người chơi lưu. Từ giai đoạn 2 cảnh đi theo hoạt động đã chọn, xen cảnh rẽ nhánh ở parisNhanh.js. */
@@ -122,8 +123,11 @@ function DauMan({ s, onHd }) {
   );
 }
 
-export default function MotNam({ onXong, kho }) {
-  const [s, setS] = useState(() => (kho ? null : docVan()));
+/* `dau` (15/11, PvP): ván đấu chơi MỘT tháng từ đầu, không đọc cũng không ghi ván đã lưu, hết
+   tháng thì nộp điểm. Hai người cùng hạt giống nên gặp cùng chuỗi sự kiện ngẫu nhiên. */
+export default function MotNam({ onXong, kho: khoGoc, dau = false }) {
+  const kho = dau ? undefined : khoGoc;
+  const [s, setS] = useState(() => (kho || dau ? null : docVan()));
   const [san, setSan] = useState(false);        // đã đọc xong ván từ máy chủ
   const [may, setMay] = useState(null);         // ok | loi
   const [ho, setHo] = useState({});             // kết cục đã lưu trên máy chủ
@@ -164,6 +168,7 @@ export default function MotNam({ onXong, kho }) {
     setSan(true);
   };
   useEffect(() => {
+    if (dau) { khoiPhuc(null); return undefined; }
     if (!kho) { khoiPhuc(docVan()); return undefined; }
     let con = true;
     kho.doc().then((r) => {
@@ -182,9 +187,9 @@ export default function MotNam({ onXong, kho }) {
   /* Ghi máy ngay, ghi máy chủ sau một nhịp để mỗi cú bấm không thành một lượt gọi mạng. */
   const guiMay = (v) => { choGui.current = undefined; kho?.luu(v).then((r) => setMay(r?.loi ? "loi" : "ok")); };
   const dongGoi = (x) => (x ? { ...x, luc: Date.now(), chu: uid.current ?? x.chu } : null);
-  const luuNgay = (x) => { clearTimeout(henGui.current); daGui.current = JSON.stringify(x ? { ...x, luc: 0 } : null); const v = dongGoi(x); ghiVan(v); guiMay(v); };
+  const luuNgay = (x) => { clearTimeout(henGui.current); daGui.current = JSON.stringify(x ? { ...x, luc: 0 } : null); if (dau) return; const v = dongGoi(x); ghiVan(v); guiMay(v); };
   useEffect(() => {
-    if (!san) return undefined;
+    if (!san || dau) return undefined;
     const khoa = JSON.stringify(s ? { ...s, luc: 0 } : null);
     if (khoa === daGui.current) return undefined;
     daGui.current = khoa;
@@ -213,7 +218,7 @@ export default function MotNam({ onXong, kho }) {
         <p className="m-0 mt-5 text-sm font-bold text-soft">{tr("Bạn là ai?", "Qui êtes-vous ?", "Who are you?")}</p>
         <div className="mt-2 grid gap-3 sm:grid-cols-2">
           {[["nu", tr("Một bạn nữ", "Une étudiante", "A female student"), "from-pink-500 to-rose-600"], ["nam", tr("Một bạn nam", "Un étudiant", "A male student"), "from-sky-500 to-blue-600"]].map(([g, ten, nen]) => (
-            <button key={g} type="button" onClick={() => { phat("batDau"); setS({ ...batDau(g, thuong), nam: `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}` }); setBuoc("lich"); }} className={`mcf-tt-la flex cursor-pointer items-center gap-3 rounded-2xl border-0 bg-gradient-to-br ${nen} p-4 text-left font-sans text-white`}>
+            <button key={g} type="button" onClick={() => { phat("batDau"); setS({ ...batDau(g, thuong), nam: `${Date.now().toString(36)}${ngauNhien().toString(36).slice(2, 6)}` }); setBuoc("lich"); }} className={`mcf-tt-la flex cursor-pointer items-center gap-3 rounded-2xl border-0 bg-gradient-to-br ${nen} p-4 text-left font-sans text-white`}>
               <span className="grid h-11 w-11 place-items-center rounded-full bg-white/25"><UserRound size={24} /></span><span className="text-base font-extrabold">{ten}</span>
             </button>
           ))}
@@ -354,8 +359,9 @@ export default function MotNam({ onXong, kho }) {
       </div>
       <LoiLeon cam={t.vay ? "hum" : "duoc-do"}>{t.vay ? tr("Thiếu tiền nhà rồi! Lần này ta cho vay, nhưng tuần đầu tháng sau bạn phải đi làm nhé.", "Il manque de quoi payer le loyer ! Je te prête, mais au travail la première semaine.", "You're short on rent! I'll lend you this time, but you work first week next month.") : tr("Một tháng nữa trôi qua êm đẹp. Paris bắt đầu quen với bạn rồi.", "Encore un mois de passé. Paris s'habitue à toi.", "Another month gone. Paris is getting used to you.")}</LoiLeon>
       <div className="mt-4 flex flex-wrap justify-end gap-2">
-        {s.tong > 0 && !cuoi && <Nut phu onClick={() => { const x = sangThang(s); setBuoc("lich"); luuDiem(x); }}><Save size={14} className="mr-1 inline align-[-2px]" />{tr("Lưu điểm và nghỉ", "Enregistrer et s'arrêter", "Save and stop")}</Nut>}
-        <Nut onClick={tiepThang}>{cuoi ? tr("Kết thúc năm", "Fin de l'année", "End the year") : sau} <ArrowRight size={15} className="inline align-[-3px]" /></Nut>
+        {dau && <Nut onClick={() => { phat("tiep"); onXong({ diem: s.diem, dung: s.dung, tong: Math.max(1, s.tong) }); }}>{tr("Nộp điểm ván đấu", "Envoyer le score du duel", "Submit duel score")} <ArrowRight size={15} className="inline align-[-3px]" /></Nut>}
+        {!dau && s.tong > 0 && !cuoi && <Nut phu onClick={() => { const x = sangThang(s); setBuoc("lich"); luuDiem(x); }}><Save size={14} className="mr-1 inline align-[-2px]" />{tr("Lưu điểm và nghỉ", "Enregistrer et s'arrêter", "Save and stop")}</Nut>}
+        {!dau && <Nut onClick={tiepThang}>{cuoi ? tr("Kết thúc năm", "Fin de l'année", "End the year") : sau} <ArrowRight size={15} className="inline align-[-3px]" /></Nut>}
       </div>
     </>);
   }

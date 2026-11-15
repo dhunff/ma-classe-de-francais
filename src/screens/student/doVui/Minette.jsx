@@ -1,5 +1,6 @@
 import React, { useMemo } from "react";
 
+import { ngauNhien } from "../../../shared/ngauNhien.js";
 /* Bà Minette, mèo vô địch ba mùa liền, vẽ bằng SVG để đổi nét mặt và nhúc nhích được.
    cam: tu-tin (đeo kính râm) | vui | buon | ngac-nhien. */
 export function Minette({ cam = "tu-tin", size = 56, className = "" }) {
@@ -42,8 +43,8 @@ export function PhaoGiay({ nhieu = false }) {
   const mau = ["#fbbf24", "#f472b6", "#60a5fa", "#34d399", "#a78bfa", "#fff"];
   const n = nhieu ? 44 : 16;
   const manh = useMemo(() => Array.from({ length: n }, (_, k) => {
-    const goc = (k / n) * Math.PI * 2 + Math.random() * 0.4, xa = (nhieu ? 110 : 50) + Math.random() * (nhieu ? 130 : 60);
-    return { k, c: mau[k % mau.length], dx: `${Math.cos(goc) * xa}px`, dy: `${Math.sin(goc) * xa - 20}px`, r: `${Math.random() * 540 - 270}deg`, tron: k % 3 === 0 };
+    const goc = (k / n) * Math.PI * 2 + ngauNhien() * 0.4, xa = (nhieu ? 110 : 50) + ngauNhien() * (nhieu ? 130 : 60);
+    return { k, c: mau[k % mau.length], dx: `${Math.cos(goc) * xa}px`, dy: `${Math.sin(goc) * xa - 20}px`, r: `${ngauNhien() * 540 - 270}deg`, tron: k % 3 === 0 };
   }), [n, nhieu]); // eslint-disable-line react-hooks/exhaustive-deps
   return (
     <span aria-hidden className="pointer-events-none absolute left-1/2 top-1/2 z-10">

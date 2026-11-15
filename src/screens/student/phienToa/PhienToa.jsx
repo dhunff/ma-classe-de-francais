@@ -12,6 +12,7 @@ import { NhanChung, Corbeau, BoiThamMat } from "./NhanVat.jsx";
 import { HO_TRONG, KHANG_CAO, capBac, capKe, soThang, vuMo, luatDaMo, gopHoSo, ghiTk, taoKhangCao, vanHopLe, vuCuaVan } from "./hoSo.js";
 import { UY_TIN_DAU, SO_BOI_THAM, PHIEU_THANG, DIEM_NHAT, DIEM_UY_TIN, THUONG_THANG, SO_HOI, DIEM_MAU, gioConLai, taoBoiTham, apSuKien, demPhieu, laThuan, laLoiHop, dapCorbeau, giayCorbeau, dongHien, trinhDung, chuongCo, tachDong, viTriLoi, dongDaSua, chamDung, chonTuDe, chonLuat, chonSua, khopSua, giayDoc, thangToa, diemCuoi } from "./luat.js";
 
+import { ngauNhien } from "../../../shared/ngauNhien.js";
 /* Phiên toà (31/10): tranh tụng theo nhịp. Nhân chứng khai từng dòng, người chơi hô OBJECTION rồi đi ba nhát:
    chỉ từ sai, viện điều luật, sửa lại. Hỏi thêm làm lộ dòng khai ẩn, trình tang vật phá mâu thuẫn; cả hai không bắt buộc nhưng thêm phiếu.
    Sau mỗi nhân chứng Maître Corbeau phản đối ngược, cuối phiên là bài biện hộ rồi bảy bồi thẩm bỏ phiếu.
@@ -47,7 +48,9 @@ const BoiTham = ({ bt }) => {
   );
 };
 
-export default function PhienToa({ muc = "vua", he, onXong, kho }) {
+/* `dau` (15/11, PvP): { vu } = vụ của người thách, đối thủ vào thẳng vụ đó; {} = người thách tự chọn
+   (không có vụ kháng cáo: vụ đó dựng từ lỗi riêng nên đối thủ không chơi lại được). Không đọc/ghi phiên dở. */
+export default function PhienToa({ muc = "vua", he, onXong, kho, dau = null }) {
   const dsVu = useMemo(() => VU_TOA.filter((v) => v.muc === muc), [muc]);
   const [vu, setVu] = useState(dsVu[0]);
   const [buoc, setBuoc] = useState("chonVu");       // chonVu | mo | khai | phan | tang | boLuat | luat | sua | sauLoi | corbeau | chuyen | bienHo | bauPhieu | ket
@@ -89,12 +92,16 @@ export default function PhienToa({ muc = "vua", he, onXong, kho }) {
   const phieu = demPhieu(bt);
   const nhanThang = vu.nhanThang ?? "Non coupable", nhanThua = vu.nhanThua ?? "Coupable";
   const su = (...ds) => setBt((b) => ds.reduce(apSuKien, b));
-  const cauC = N.doiDap?.[cI], dsBH = useMemo(() => vu.bienHo.map((b) => [...b.pa].sort(() => Math.random() - 0.5)), [vu]);
+  const cauC = N.doiDap?.[cI], dsBH = useMemo(() => vu.bienHo.map((b) => [...b.pa].sort(() => ngauNhien() - 0.5)), [vu]);
   const gioC = giayCorbeau(he?.gio ?? 1);
 
   const sangLuotMoi = () => { if (nc + 1 < vu.nhanChung.length) setBuoc("chuyen"); else if (vu.bienHo.length) { setBI(0); setBChon(null); setBuoc("bienHo"); } else { phat("nop"); setBuoc("bauPhieu"); } };
   const ghiLuat = (ma, ok) => { tk.current = ghiTk(tk.current, ma, ok); };
   const moVu = (v) => { phat("lat"); setVu(v); setTang(v.tangVat); setBt(taoBoiTham(v)); setBuoc("mo"); };
+  useEffect(() => {
+    const v = dau?.vu && VU_TOA.find((x) => x.id === dau.vu);
+    if (v) moVu(v);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const choiTiep = (x) => {
     const v = vuCuaVan(x);
     setVu(v); setNc(x.nc); setD(x.d); setDaPha(x.daPha); setDaHoi(x.daHoi); setLuotHoi(x.luotHoi); setTang(x.tang); setUy(x.uy); setBt(x.bt);
@@ -106,16 +113,16 @@ export default function PhienToa({ muc = "vua", he, onXong, kho }) {
   /* Mở trò: lấy phiên mới nhất giữa máy và máy chủ, đẩy các phiên còn nợ lên. Dữ liệu của tài khoản khác trên trình duyệt thì bỏ qua. */
   useEffect(() => {
     const m = docHo();
-    if (!kho) { setHo(m); setVanDo(docVan()); return undefined; }
+    if (!kho) { setHo(m); setVanDo(dau ? null : docVan()); return undefined; }
     let song = true;
     kho.doc().then((r) => {
       if (!song) return;
-      if (!r || r.loi) { setMay("loi"); setHo(m); setVanDo(docVan()); return; }
+      if (!r || r.loi) { setMay("loi"); setHo(m); setVanDo(dau ? null : docVan()); return; }
       uid.current = r.uid; setMay("ok");
       const cho = m.chu && m.chu !== r.uid ? [] : m.cho, hoMoi = gopHoSo({ vu: r.vu, tk: r.tk }, cho);
       setHo(hoMoi); ghiHo({ ...hoMoi, cho, chu: r.uid });
       const v = docVan(), vMay = v?.nguoi && v.nguoi !== r.uid ? null : v, sv = vanHopLe(r.van) ? r.van : null;
-      setVanDo(!sv ? vMay : !vMay || (sv.luc ?? 0) >= (vMay.luc ?? 0) ? sv : vMay);
+      setVanDo(dau ? null : !sv ? vMay : !vMay || (sv.luc ?? 0) >= (vMay.luc ?? 0) ? sv : vMay);
       if (cho.length) kho.luuKet(cho).then((k) => {
         if (k?.loi) { setMay("loi"); return; }
         const sau = { vu: k.vu, tk: k.tk }; setHo(sau); ghiHo({ ...sau, cho: [], chu: r.uid });
@@ -128,7 +135,7 @@ export default function PhienToa({ muc = "vua", he, onXong, kho }) {
      còn đã qua nhát đầu thì giữ nguyên bước để không được chấm lại. */
   const guiVan = (v) => { choGui.current = undefined; kho?.luu(v).then((r) => setMay(r?.loi ? "loi" : "ok")); };
   useEffect(() => {
-    if (buoc === "chonVu" || buoc === "mo") return;
+    if (buoc === "chonVu" || buoc === "mo" || dau) return;
     const b = buoc === "phan" || buoc === "tang" || buoc === "boLuat" ? "khai" : buoc;
     const v = { ban: 1, muc, luc: Date.now(), nguoi: uid.current, vuId: vu.id, vuKc: vu.id === KHANG_CAO ? vu : undefined, buoc: b, nc, d, daPha, daHoi, luotHoi, tang, uy, bt, cI, cKq, bI, bChon: bChon?.van ?? null, baiNoi, dsLuat, dsSua, ketQua, kq: kq.current, tk: tk.current };
     ghiVan(v);
@@ -138,7 +145,7 @@ export default function PhienToa({ muc = "vua", he, onXong, kho }) {
 
   const xongPhien = (thang_, diem_) => {
     clearTimeout(henGui.current); choGui.current = undefined; ghiVan(null); kho?.luu(null);
-    const e = { ma: `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`, vu: vu.id, thang: thang_, phieu, diem: diem_, tk: tk.current };
+    const e = { ma: `${Date.now().toString(36)}${ngauNhien().toString(36).slice(2, 8)}`, vu: vu.id, thang: thang_, phieu, diem: diem_, tk: tk.current };
     const m = docHo(), cho = [...m.cho, e].slice(-30), sau = gopHoSo(ho, [e]);
     ghiHo({ ...sau, cho, chu: uid.current ?? m.chu });
     kho?.luuKet([e]).then((k) => { if (k?.loi) return; const c = docHo(); ghiHo({ vu: k.vu, tk: k.tk, cho: c.cho.filter((x) => x.ma !== e.ma), chu: c.chu }); });
@@ -308,7 +315,7 @@ export default function PhienToa({ muc = "vua", he, onXong, kho }) {
   );
 
   if (buoc === "chonVu") {
-    const cap = capBac(ho), ke = capKe(ho), kc = taoKhangCao(ho.tk, muc);
+    const cap = capBac(ho), ke = capKe(ho), kc = dau ? null : taoKhangCao(ho.tk, muc);
     return (
       <div className={nen}>
         <div className="flex flex-wrap items-center justify-between gap-3">
@@ -565,7 +572,7 @@ export default function PhienToa({ muc = "vua", he, onXong, kho }) {
         {thang && <><dt className="text-white/70">{tr("Thưởng thắng kiện", "Affaire gagnée", "Case won")}</dt><dd className="m-0 text-right font-bold tabular-nums">+{THUONG_THANG}</dd></>}
         <dt className="font-extrabold text-amber-300">{tr("Tổng", "Total", "Total")}</dt><dd className="m-0 text-right font-extrabold tabular-nums text-amber-300">{tongDiem}</dd>
       </dl>
-      <div className="mt-5 text-right"><button type="button" onClick={() => { xongPhien(thang, tongDiem); onXong({ diem: tongDiem, dung: kq.current.dung, tong: Math.max(1, kq.current.tong) }); }} className={nutChinh}><Check size={15} className="mr-1.5 inline" />{tr("Lưu điểm", "Enregistrer", "Save score")}</button></div>
+      <div className="mt-5 text-right"><button type="button" onClick={() => { xongPhien(thang, tongDiem); onXong({ diem: tongDiem, dung: kq.current.dung, tong: Math.max(1, kq.current.tong), kieu: vu.id }); }} className={nutChinh}><Check size={15} className="mr-1.5 inline" />{tr("Lưu điểm", "Enregistrer", "Save score")}</button></div>
     </div>
   );
 }

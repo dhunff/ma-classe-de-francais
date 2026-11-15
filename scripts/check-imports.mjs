@@ -17,7 +17,7 @@ const files = [];
 // Tên viết hoa có sẵn trong môi trường hoặc là hằng cục bộ hợp lệ.
 const GLOBALS = new Set([
   "React", "Object", "Array", "String", "Number", "Boolean", "Date", "Math", "JSON",
-  "Promise", "Map", "Set", "Error", "RegExp", "Intl", "URL", "Blob", "FileReader",
+  "Promise", "Float32Array", "Map", "Set", "Error", "RegExp", "Intl", "URL", "Blob", "FileReader",
   "Image", "Audio", "Event", "KeyboardEvent", "CustomEvent", "DOMParser", "Infinity", "NaN",
   "HTMLInputElement", "HTMLSelectElement", "HTMLElement", "MutationObserver",
   /* Ghi âm phần nói — API sẵn có của trình duyệt, không import từ đâu cả. */

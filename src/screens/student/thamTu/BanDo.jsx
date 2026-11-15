@@ -5,6 +5,7 @@ import { phat } from "../../../shared/amThanh.js";
 import { Leon, leonVai } from "../../../shared/leon.jsx";
 import CauTracNghiem from "../CauTracNghiem.jsx";
 
+import { ngauNhien } from "../../../shared/ngauNhien.js";
 /* Vòng chơi theo sơ đồ (31/10, giai đoạn 4): BanDo → ThamVan → BangGhim → ChonBangChung.
    Mỗi màn tự giữ trạng thái của nó, ThamTu chỉ giữ thứ sống qua cả vụ. */
 const ICON = { thu: Mail, quay: ConciergeBell, kho: Warehouse, so: BookOpenText, xuong: Palette, hoi: MessagesSquare, goi: Phone, ghep: Puzzle };
@@ -147,7 +148,7 @@ export function ThamVan({ c, onXong }) {
 /* Ghép thư bị xé: xếp các mảnh thành câu đúng. Hết lượt thì lộ câu đúng nhưng mất manh mối. */
 const xaoManh = (ds) => {
   const k = ds.map((_, i) => i);
-  for (let i = k.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [k[i], k[j]] = [k[j], k[i]]; }
+  for (let i = k.length - 1; i > 0; i--) { const j = Math.floor(ngauNhien() * (i + 1)); [k[i], k[j]] = [k[j], k[i]]; }
   return k.every((x, i) => x === i) ? [...k.slice(1), k[0]] : k;
 };
 export function GhepThu({ c, onXong }) {

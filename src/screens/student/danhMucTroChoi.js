@@ -11,13 +11,14 @@ export const MO_NGAN = {
 };
 export const TRO_CHOI = () => [
   /* 28/10 (chủ dự án): Flashcard vào sảnh, nhóm Ôn luyện. */
-  { ma: "flashcard", den: "/etudiant/bo-the", nhom: "on", Icon: Layers, nen: "from-teal-500 to-emerald-600",
+  /* 15/11: Flashcard không mang nhãn PvP; bản đấu của nó là « Đấu Flashcard » ngay cạnh (cùng nhóm). */
+  { ma: "flashcard", den: "/etudiant/bo-the", nhom: "on", Icon: Layers, nen: "from-teal-500 to-emerald-600", pvp: false,
     ten: "Flashcard",
     mo: tr("Lật thẻ ôn từ theo bộ giáo viên soạn, lịch ôn giãn cách nhắc đúng lúc sắp quên.", "Cartes à retourner, révision espacée au bon moment.", "Flip cards with spaced repetition at the right time.") },
   /* 28/10 (chủ dự án): Thách đấu PvP vào sảnh, nhóm Từ vựng; `den` = màn riêng, không qua ManChoi. */
-  { ma: "thach_dau", den: "/etudiant/thach-dau", nhom: "tu", Icon: Swords, nen: "from-violet-600 to-rose-500",
-    ten: tr("Thách đấu PvP", "Duel PvP", "PvP duel"),
-    mo: tr("Đấu từ vựng 1 chọi 1 với bạn bè, ai nhanh và đúng hơn thì thắng.", "Duel de vocabulaire en 1 contre 1 avec vos amis.", "1-on-1 vocabulary duel against friends.") },
+  { ma: "thach_dau", den: "/etudiant/thach-dau", nhom: "on", Icon: Swords, nen: "from-violet-600 to-rose-500",
+    ten: tr("Đấu Flashcard", "Duel Flashcard", "Flashcard duel"),
+    mo: tr("Đấu 1 chọi 1 bằng thẻ flashcard theo chủ đề: cùng 10 câu, ai đúng nhiều và nhanh hơn thì thắng.", "Duel en 1 contre 1 sur les cartes d'un thème : mêmes 10 questions.", "1-on-1 duel on a topic's flashcards: same 10 questions.") },
   { ma: "gioi_tinh", nhom: "tu", Icon: VenusAndMars, nen: "from-sky-500 to-pink-500",
     ten: tr("Le hay La?", "Le ou La ?", "Le or La?"),
     mo: tr("Phân loại thư cho trưởng bưu cục Léon: vuốt mỗi danh từ vào bao LE hoặc LA trước giờ đóng cửa. Thư hoả tốc ×2, đúng liên tiếp để nhân điểm.", "Triez le courrier : glissez chaque nom dans le sac LE ou LA. Lettre express ×2.", "Sort the mail: swipe each noun into the LE or LA bag. Express letters ×2.") },

@@ -4,13 +4,14 @@
 import { supabase } from "../storageShim.js";
 import { docLoTrinh } from "./loTrinhStore.js";
 
+import { ngauNhien } from "./ngauNhien.js";
 export const CAP_CHOI = ["A1", "A2", "B1", "B2"];
 /* 28/10 (chủ dự án): người chơi chọn MỨC Dễ / Vừa / Khó thay vì trình độ. Mỗi mức là
    một nhóm trình độ (gối nhau để mức nào cũng đủ dữ liệu) + hệ số thời gian/tốc độ. */
 export const MUC_CHOI = { de: { cap: ["A1", "A2"], gio: 1.3, toc: 0.75 }, vua: { cap: ["A2", "B1"], gio: 1, toc: 1 }, kho: { cap: ["B1", "B2"], gio: 0.75, toc: 1.35 } };
 /* `cap` nhận null (mọi trình độ), một mã, hoặc một mảng mã. */
 export const khopCap = (cap, c) => !cap || (Array.isArray(cap) ? cap.includes(c) : c === cap);
-export const tron = (a) => { const b = [...a]; for (let i = b.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [b[i], b[j]] = [b[j], b[i]]; } return b; };
+export const tron = (a) => { const b = [...a]; for (let i = b.length - 1; i > 0; i--) { const j = Math.floor(ngauNhien() * (i + 1)); [b[i], b[j]] = [b[j], b[i]]; } return b; };
 
 /* Từ vựng Lộ trình kèm trình độ của màn chứa nó. Nhớ một lần cho cả phiên. */
 let tuVungHua = null;
@@ -18,7 +19,10 @@ export function docTuVung() {
   if (!tuVungHua) {
     tuVungHua = docLoTrinh().then((lt) => {
       if (!lt) { tuVungHua = null; return null; }
-      return lt.chuDe.flatMap((cd) => cd.man.flatMap((m) => m.tu.map((t) => ({ fr: t.matTruoc, vi: t.matSau, loai: t.loai, cap: m.cap, chuDe: cd.id }))));
+      /* Sắp theo chữ (15/11): PvP cần hai máy có CÙNG thứ tự trước khi xáo bằng hạt giống, mà thứ tự
+         máy chủ trả giữa các dòng cùng `ord` thì không cố định. */
+      return lt.chuDe.flatMap((cd) => cd.man.flatMap((m) => m.tu.map((t) => ({ fr: t.matTruoc, vi: t.matSau, loai: t.loai, cap: m.cap, chuDe: cd.id }))))
+        .sort((x, y) => (x.fr + "|" + x.vi + "|" + x.chuDe < y.fr + "|" + y.vi + "|" + y.chuDe ? -1 : 1));
     }, () => { tuVungHua = null; return null; });
   }
   return tuVungHua;
@@ -59,7 +63,7 @@ export function phuongAnNghia(tu, tatCa) {
 /* Nghe và chọn: câu có audio. Nhiễu là câu cùng trình độ, độ dài gần nhất. */
 export async function docCauNghe(cap, loai = ["chinh_ta", "phat_am"]) {
   let q = supabase.from("cau_luyen").select("id, loai, cap, cau, nghia, meo, audio_url").eq("cong_khai", true)
-    .in("loai", loai).not("audio_url", "is", null);
+    .in("loai", loai).not("audio_url", "is", null).order("id");
   if (cap) q = Array.isArray(cap) ? q.in("cap", cap) : q.eq("cap", cap);
   const { data, error } = await q.limit(1000);
   if (error) return null;
@@ -67,7 +71,7 @@ export async function docCauNghe(cap, loai = ["chinh_ta", "phat_am"]) {
 }
 export function phuongAnCau(cau, kho) {
   const khac = kho.filter((c) => c.id !== cau.id && c.cau !== cau.cau)
-    .map((c) => ({ c, d: Math.abs(c.cau.length - cau.cau.length) + Math.random() * 6 }))
+    .map((c) => ({ c, d: Math.abs(c.cau.length - cau.cau.length) + ngauNhien() * 6 }))
     .sort((a, b) => a.d - b.d).map((x) => x.c.cau);
   return tron([cau.cau, ...[...new Set(khac)].slice(0, 3)]);
 }
@@ -115,7 +119,7 @@ export async function docDungSai(cap) {
     if (!khopCap(cap, c.cap)) continue;
     if (c.loai === "vf") ra.push({ cau: c.de, dung: !!c.dung, giai: c.giai, kieu: "vf" });
     else if (c.loai === "sua" && c.dap?.[0]) {
-      const laDung = Math.random() < 0.5;
+      const laDung = ngauNhien() < 0.5;
       ra.push({ cau: laDung ? c.dap[0] : c.de, dung: laDung, giai: laDung ? "" : `${c.dap[0]}. ${c.giai ?? ""}`, kieu: "sua" });
     }
   }

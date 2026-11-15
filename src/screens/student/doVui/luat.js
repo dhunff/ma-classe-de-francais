@@ -3,8 +3,9 @@
 import { DIA_DANH } from "../../../content/troChoi/doVuiDiaDanh.js";
 import { CAU } from "../../../content/troChoi/doVui.js";
 
+import { ngauNhien } from "../../../shared/ngauNhien.js";
 /* Bản riêng của tron: shared/troChoiNhanh.js kéo theo Supabase, còn file này phải chạy được trong check:dovui. */
-export const tron = (a) => { const b = [...a]; for (let i = b.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [b[i], b[j]] = [b[j], b[i]]; } return b; };
+export const tron = (a) => { const b = [...a]; for (let i = b.length - 1; i > 0; i--) { const j = Math.floor(ngauNhien() * (i + 1)); [b[i], b[j]] = [b[j], b[i]]; } return b; };
 
 export const SO_DUNG = 5;       // điểm dừng trước chung kết
 export const CAU_MOI_DUNG = 2;  // nơi có ít câu hơn thì hỏi hết chỗ có
@@ -75,7 +76,7 @@ export const chiemDuoc = (dung, tong, cuaMinette) => (cuaMinette ? tong > 0 && d
 export const thangTour = (coBan, coMinette) => coBan >= coMinette;   // bằng cờ thì chủ nhà thắng
 
 /* Lượt của Minette: tới một trong các nơi gần bà chưa ai đặt chân, không chắc lần nào cũng chiếm được. */
-export function minetteDi(tu, daDung, muc, rng = Math.random) {
+export function minetteDi(tu, daDung, muc, rng = ngauNhien) {
   const goc = diaDanh(tu);
   const con = moO(muc).filter((d) => !daDung.includes(d.id)).sort((a, b) => xa(goc, a) - xa(goc, b)).slice(0, 4);
   if (!con.length) return null;
@@ -89,8 +90,8 @@ export const traThuong = (d, daDung) => (loaiThuong(d) === "tro_giup" && daDung.
 
 /* Trợ giúp: k là chỉ số trong pa, pa[0] luôn đúng. Khán giả và Léon có thể sai, nhất là ở mức khó. */
 const conLai = (an) => [0, 1, 2, 3].filter((k) => !an.includes(k));
-export const boHai = (rng = Math.random) => [1, 2, 3].sort(() => rng() - 0.5).slice(0, 2);
-export function binhChon(muc, an = [], rng = Math.random) {
+export const boHai = (rng = ngauNhien) => [1, 2, 3].sort(() => rng() - 0.5).slice(0, 2);
+export function binhChon(muc, an = [], rng = ngauNhien) {
   const ks = conLai(an), sai = ks.filter((k) => k !== 0);
   const dung = TIN_KHAN_GIA[muc] + (rng() - 0.5) * 0.2 + (sai.length === 1 ? 0.12 : 0);
   const nang = sai.map(() => 0.25 + rng()), tong = nang.reduce((a, b) => a + b, 0);
@@ -99,7 +100,7 @@ export function binhChon(muc, an = [], rng = Math.random) {
   pt[sai[0]] += 100 - ks.reduce((n, k) => n + pt[k], 0);
   return pt;
 }
-export function leonDoan(muc, an = [], rng = Math.random) {
+export function leonDoan(muc, an = [], rng = ngauNhien) {
   if (rng() < TIN_LEON[muc]) return 0;
   const sai = conLai(an).filter((k) => k !== 0);
   return sai[Math.floor(rng() * sai.length)];

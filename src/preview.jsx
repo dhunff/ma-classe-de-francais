@@ -34,6 +34,14 @@ import MotNam from "./screens/student/paris/MotNam.jsx";
 import DoVui from "./screens/student/doVui/DoVui.jsx";
 import PhienToa from "./screens/student/phienToa/PhienToa.jsx";
 import TroChoiNhanh from "./screens/student/TroChoiNhanh.jsx";
+/* Trận PvP giả cho Đấu trường ở sảnh trò chơi (migration 214). */
+const DAU_TC_MAU = [
+  { id: "d1", tro_choi: "mua_chu", muc: "vua", toi_moi: false, xong: false, diem_moi: 1240, dung_moi: 18, tong_moi: 22, doi_phuong: { name: "Nguyễn Minh Anh", avatar: "" } },
+  { id: "d2", tro_choi: "tham_tu", muc: "kho", toi_moi: false, xong: false, diem_moi: 860, dung_moi: 7, tong_moi: 9, doi_phuong: { name: "Trần Quốc Bảo", avatar: "" } },
+  { id: "d3", tro_choi: "xep_cau", muc: "de", toi_moi: true, xong: false, diem_moi: 540, dung_moi: 9, tong_moi: 10, doi_phuong: { name: "Lê Thu Hà", avatar: "" } },
+  { id: "d4", tro_choi: "gioi_tinh", muc: "vua", toi_moi: true, xong: true, diem_moi: 720, dung_moi: 30, tong_moi: 34, diem_doi: 655, dung_doi: 28, tong_doi: 33, doi_phuong: { name: "Phạm Gia Huy", avatar: "" } },
+  { id: "d5", tro_choi: "do_vui", muc: "vua", toi_moi: false, xong: true, diem_moi: 1500, dung_moi: 20, tong_moi: 25, diem_doi: 1320, dung_doi: 19, tong_doi: 25, doi_phuong: { name: "Đỗ Khánh Linh", avatar: "" } },
+];
 /* Giả máy chủ cho Thám tử (chỉ trang xem thử): ghi trong bộ nhớ, bảng hạng cố định. */
 const SV_TT = { vu: {}, chon: {} };
 /* Giả lập máy chủ của Một năm ở Paris: window.__motNam để đọc, đặt .hong = true để thử nhánh lỗi. */
@@ -1161,7 +1169,7 @@ function Preview() {
           <Route path="/etudiant/hoan-ho-so" element={<><Controls /><HoanThienHoSo fixture={{ prenom: "Linh" }} /></>} />
           <Route path="/etudiant/tham-tu-de" element={<><Controls /><ThamTu muc="de" onXong={() => {}} /></>} />
           <Route path="/etudiant/tham-tu-mau" element={<><Controls /><ThamTu muc="vua" onXong={() => {}} /></>} />
-          <Route path="/etudiant/sanh-tro-choi" element={<><Controls /><TroChoiNhanh /></>} />
+          <Route path="/etudiant/sanh-tro-choi" element={<><Controls /><TroChoiNhanh dauMau={DAU_TC_MAU} /></>} />
           <Route path="/etudiant/tro-choi/:ma" element={<><Controls /><TroChoiNhanh /></>} />
           <Route path="/etudiant/phien-toa" element={<><Controls /><div className="mx-auto max-w-5xl"><PhienToa muc={new URLSearchParams(window.location.search).get("muc") ?? "vua"} he={{ gio: 1 }} onXong={(r) => { window.__phienToa = r; }} /></div></>} />
           <Route path="/etudiant/do-vui" element={<><Controls /><div className="mx-auto max-w-5xl"><DoVui muc={new URLSearchParams(window.location.search).get("muc") ?? "de"} he={{ gio: 1 }} onXong={(r) => { window.__doVui = r; }} /></div></>} />

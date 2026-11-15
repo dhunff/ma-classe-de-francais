@@ -16,6 +16,7 @@ import { Leon, leonVai } from "../../../shared/leon.jsx";
 import CauTracNghiem from "../CauTracNghiem.jsx";
 import { UY_TIN_DAU, soMonMangTheo, lyDoKhongDung, batDauVu, sauCanh, sauBuocToiOan, lyDoThua, giuManhKhiSai, laMucDe, hangVu, suKienHopLe, tungSuKien, sauSuKien, doiNghi, ketBuocToi, hangBuocToi, GIAY_KHAN } from "./luat.js";
 
+import { ngauNhien } from "../../../shared/ngauNhien.js";
 /* ─────────── 9. Thám tử đọc: « Những vụ án của Thanh tra Léon » ───────────
    Chọn mức xong thì vào BẢNG VỤ ÁN của mức đó; mỗi vụ: mở hồ sơ → các cảnh (đọc tài
    liệu, trả lời) → phá án. Tiến độ giữ ở trình duyệt và đồng bộ lên máy chủ qua `kho` (migration 173),
@@ -30,13 +31,13 @@ const KHOA_HD = "mcf-tham-tu-da-xem-hd";
 const daXemHd = () => { try { return localStorage.getItem(KHOA_HD) === "1"; } catch { return true; } };
 const KHOA_KHAN = "mcf-tham-tu-khan";
 const docKhan = () => { try { return localStorage.getItem(KHOA_KHAN) !== "0"; } catch { return true; } };
-const nhat = (ds) => ds[Math.floor(Math.random() * ds.length)];
+const nhat = (ds) => ds[Math.floor(ngauNhien() * ds.length)];
 /* Nội dung một cản trở, rút một lần lúc nó xảy ra để câu hỏi không đổi giữa chừng. */
 const duSuKien = (ma, vu) => {
   if (ma === "bruno") return nhat(BRUNO[vu.muc]);
   if (ma === "tin_gia") return nhat(TIN_GIA[vu.muc]);
   if (ma !== "nhan_chung") return null;
-  const that = Math.random() < 0.5, [fr, vi] = KHAI[vu.id][that ? "that" : "gia"];
+  const that = ngauNhien() < 0.5, [fr, vi] = KHAI[vu.id][that ? "that" : "gia"];
   return { fr, vi, that };
 };
 const KHOA_CT = "mcf-tham-tu-ct";                 // id vụ → { hang, ket[] }
@@ -51,7 +52,9 @@ const luuTienDo = (id, diem, hang, ket) => {
 };
 const hoSo = (t, ct) => Object.fromEntries(Object.entries(t).map(([id, diem]) => [id, { diem, ...ct[id] }]));
 
-export default function ThamTu({ muc = "vua", onXong, kho }) {
+/* `dau` (15/11, PvP): { vu } = vụ của người thách (đối thủ vào thẳng vụ đó, không về bảng vụ án);
+   {} = người thách tự chọn vụ. onXong trả kèm `kieu: id vụ` để đối thủ chơi đúng vụ ấy. */
+export default function ThamTu({ muc = "vua", onXong, kho, dau = null }) {
   const [td, setTd] = useState(docTienDo);
   const [ct, setCt] = useState(docCt);
   const [chonTruoc, setChonTruoc] = useState(docChon);
@@ -126,6 +129,11 @@ export default function ThamTu({ muc = "vua", onXong, kho }) {
     setTui([]); setChonTui([]); setVatChung(0); setDungCanh(SACH); setMoi(null); setSk(null); setTrinh(null); daCo.current = []; chuoiDung.current = 0;
     kq.current = { diem: 0, dung: 0, sai: 0 };
   };
+  /* Ván đấu: đối thủ vào thẳng vụ của người thách, kể cả vụ mùa 2 họ chưa mở. */
+  useEffect(() => {
+    const v = dau?.vu && VU_AN.find((x) => x.id === dau.vu);
+    if (v) moVu(v);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   /* Dùng món ở ô k. Giá trừ ngay, món mất luôn, hiệu ứng chạy 1,3 giây. */
   const dungMon = (k, cau) => {
@@ -137,11 +145,11 @@ export default function ThamTu({ muc = "vua", onXong, kho }) {
     if (ma === "tu") setDungCanh((d) => ({ ...d, tu: true }));
     if (ma === "leon") { setHud((h) => ({ ...h, uy: h.uy - 1 })); setDungCanh((d) => ({ ...d, goiY: true })); }
     if (ma === "cafe") setHud((h) => ({ ...h, gio: h.gio - 2, uy: h.uy + 1 }));
-    if (ma === "theo") setTrinh(tungSuKien(vu, nguCanh(), Math.random, true));
+    if (ma === "theo") setTrinh(tungSuKien(vu, nguCanh(), ngauNhien, true));
     if (ma === "ines") {
       setVatChung((n) => n - 1);
       const sai = cau.pa.map((_, j) => j).filter((j) => j !== 0 && !dungCanh.an.includes(j));
-      const bo = sai[Math.floor(Math.random() * sai.length)];
+      const bo = sai[Math.floor(ngauNhien() * sai.length)];
       setTimeout(() => setDungCanh((d) => ({ ...d, an: [...d.an, bo] })), 700);
     }
   };
@@ -421,7 +429,7 @@ export default function ThamTu({ muc = "vua", onXong, kho }) {
           }} className="cursor-pointer rounded-full border-0 bg-amber-400 px-6 py-2.5 font-sans text-sm font-extrabold text-[#2b2118]">{tr("Đóng hồ sơ", "Classer le dossier", "Close the case")} →</button>
           {congBo && <ManHang vu={vu} hang={congBo.hang} diem={congBo.diem} sai={kq.current.sai} uy={hud.uy} soNoi={daDen.length} moi={congBo.moi} kyLuc={congBo.kyLuc} onTiep={async () => {
             await dangLuu.current;
-            onXong({ diem: kq.current.diem, dung: kq.current.dung, tong: (vu.ban ? vu.canh.filter((c, k) => c.q && daDen.includes(k)).length : vu.canh.length) + 1 });
+            onXong({ diem: kq.current.diem, dung: kq.current.dung, tong: (vu.ban ? vu.canh.filter((c, k) => c.q && daDen.includes(k)).length : vu.canh.length) + 1, kieu: vu.id });
           }} />}
         </div>}
       </>}
@@ -439,10 +447,12 @@ export default function ThamTu({ muc = "vua", onXong, kho }) {
           : lyDo === "thieu" ? tr("Bằng chứng quá yếu, tòa thả người. Hung thủ thoát ngay trước mắt ta.", "Preuves trop faibles : le coupable ressort libre.", "Evidence too weak: the culprit walks free.")
             : tr("Thủ phạm thật đã thoát vì ta buộc tội sai người.", "Mauvais suspect : le vrai coupable s'échappe.", "Wrong suspect: the real culprit escapes.")}
     </LoiLeon>
-    <div className="mt-5 flex flex-wrap justify-end gap-2">
+    {dau?.vu ? <div className="mt-5 flex justify-end">
+      <button type="button" onClick={() => onXong({ diem: 0, dung: kq.current.dung, tong: Math.max(1, vu.canh.length + 1), kieu: vu.id })} className="cursor-pointer rounded-full border-0 bg-amber-400 px-6 py-2.5 font-sans text-sm font-extrabold text-[#2b2118]">{tr("Kết thúc ván đấu (0 điểm)", "Terminer le duel (0 point)", "End the duel (0 points)")} →</button>
+    </div> : <div className="mt-5 flex flex-wrap justify-end gap-2">
       <button type="button" onClick={() => setVu(null)} className="cursor-pointer rounded-full border-0 bg-white/15 px-5 py-2.5 font-sans text-sm font-bold text-white">{tr("Về bảng vụ án", "Retour aux dossiers", "Back to cases")}</button>
       <button type="button" onClick={() => moVu(vu, true)} className="cursor-pointer rounded-full border-0 bg-amber-400 px-6 py-2.5 font-sans text-sm font-extrabold text-[#2b2118]">{tr("Điều tra lại", "Recommencer", "Try again")} →</button>
-    </div>
+    </div>}
   </>);
   return null;
 }

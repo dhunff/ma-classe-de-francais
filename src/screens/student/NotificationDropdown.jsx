@@ -1,5 +1,5 @@
 import React from "react";
-import { BellOff, Megaphone, AlarmClock, CheckCircle2, RotateCcw, UserPlus } from "lucide-react";
+import { BellOff, Megaphone, AlarmClock, CheckCircle2, RotateCcw, UserPlus, Swords } from "lucide-react";
 import { Avatar } from "../../shared/avatars.jsx";
 import { useT, tr } from "../../shared/i18n.jsx";
 import { thoiGianTuongDoi } from "../../shared/display.js";
@@ -40,6 +40,7 @@ const LOAI = () => ({
   graded:  { Icon: CheckCircle2, nen: "bg-ok-soft",     chu: "text-ok",      ten: tr("Bài đã được chấm", "Copie corrigée", "Work graded") },
   redo:    { Icon: RotateCcw,   nen: "bg-danger-soft",  chu: "text-danger",  ten: tr("Cần làm lại", "À refaire", "Redo requested") },
   follow:  { Icon: UserPlus,    nen: "bg-primary-soft", chu: "text-primary", ten: tr("Người theo dõi mới", "Nouvel abonné", "New follower") },
+  dau:     { Icon: Swords,      nen: "bg-primary-soft", chu: "text-primary", ten: tr("Lời thách trò chơi", "Défi de jeu", "Game challenge") },
 });
 
 function MotThongBao({ n, onClick }) {

@@ -1,3 +1,4 @@
+import { ngauNhien } from "../../../shared/ngauNhien.js";
 /* Luật Thám tử Léon (30/10, giai đoạn 1). Hàm thuần, không đụng giao diện.
  * Đồng hồ tính theo LƯỢT trong truyện: mỗi cảnh tốn 1 giờ, sai tốn thêm 1 giờ và 1 uy tín.
  * Mức dễ không bao giờ thua: sai chỉ tụt hạng, manh mối vẫn vào sổ. */
@@ -80,12 +81,12 @@ export const suKienHopLe = (vu, x) => {
 };
 
 /* Vụ nào cũng gặp ít nhất một cản trở: chưa có thì ép ở lượt cuối còn được chọn đủ loại. */
-export const tungSuKien = (vu, x, ngauNhien = Math.random, ep = false) => {
+export const tungSuKien = (vu, x, rng = ngauNhien, ep = false) => {
   const ds = suKienHopLe(vu, x);
   if (!ds.length) return null;
   const chac = ep || (x.daCo.length === 0 && x.conLai <= 1);
-  if (!chac && ngauNhien() >= 0.25 + 0.15 * x.nghi) return null;
-  return ds[Math.floor(ngauNhien() * ds.length)];
+  if (!chac && rng() >= 0.25 + 0.15 * x.nghi) return null;
+  return ds[Math.floor(rng() * ds.length)];
 };
 
 /* Cản trở lấy hết phần đệm chứ không tự làm thua: giờ không tụt dưới số cảnh còn phải đi,

@@ -12,6 +12,7 @@ import { tr } from "../../../shared/i18n.jsx";
 import { phat } from "../../../shared/amThanh.js";
 import { Leon, leonVai } from "../../../shared/leon.jsx";
 
+import { ngauNhien } from "../../../shared/ngauNhien.js";
 /* « Le Grand Quiz de France »: Tour de France (31/10). Xuất phát ở Paris, người chơi tự chọn từng điểm
    dừng trên bản đồ, trả lời câu của nơi đó, rồi về Paris chung kết. Thắng thua là cuộc đua cờ với bà
    Minette: chiếm nơi nào được số cờ bằng số sao nơi đó (xem luat.js). Tem và ván dở ghi ở máy trước, rồi đẩy
@@ -59,7 +60,7 @@ const SK = {
   cho_phien: { Icon: Store, ten: () => tr("Chợ phiên", "Jour de marché", "Market day"), mo: () => tr("Tàu dừng cạnh một phiên chợ. Hiểu người bán thì có món hời.", "Le train s'arrête près d'un marché. Comprenez le marchand.", "The train stops by a market. Understand the seller.") },
 };
 const GIAY_TAU = 1100;
-const ngauNhien = (ds) => ds[Math.floor(Math.random() * ds.length)];
+const boc1 = (ds) => ds[Math.floor(ngauNhien() * ds.length)];
 const nen = "mt-6 rounded-[2rem] bg-[#140b33] bg-[radial-gradient(ellipse_at_top,#3b1d8f_0,transparent_60%)] p-4 text-white sm:p-5";
 const Sao = ({ n }) => <span className="inline-flex gap-0.5" aria-label={`${n}/3`}>{[1, 2, 3].map((k) => <Star key={k} size={13} className={k <= n ? "fill-amber-400 text-amber-400" : "text-white/25"} />)}</span>;
 const LoiMinette = ({ cam, children }) => (
@@ -84,7 +85,8 @@ const LoiLeon = ({ cam, children }) => (
   </div>
 );
 
-export default function DoVui({ muc = "vua", he, onXong, kho }) {
+/* `dau` (15/11, PvP): Tour mới, không đọc/ghi ván dở (tem vẫn ghi như thường). */
+export default function DoVui({ muc = "vua", he, onXong, kho, dau = false }) {
   const GIAY = Math.round(20 * (he?.gio ?? 1));
   const [buoc, setBuoc] = useState("mo");         // mo | suKien | chon | tau | hoi | xongDung | ket
   const [tem, setTem] = useState(() => { doiDauCu(); return docTem(); });
@@ -169,7 +171,7 @@ export default function DoVui({ muc = "vua", he, onXong, kho }) {
       if (moi >= 3) phat("combo");
     } else { setChuoi(0); setVe((v) => v - cuoc); }
     if (chungKet) {
-      const mn = Math.random() < P_MINETTE[muc];
+      const mn = ngauNhien() < P_MINETTE[muc];
       setMnDung(mn);
       setCoKet((c) => ({ ban: c.ban + (ok ? CO_CHUNG_KET : 0), mn: c.mn + (mn ? CO_CHUNG_KET : 0) }));
     }
@@ -201,14 +203,14 @@ export default function DoVui({ muc = "vua", he, onXong, kho }) {
 
   /* Mở trò: lấy ván mới nhất giữa máy và máy chủ, gộp tem hai bên. Tem trên trình duyệt của tài khoản khác thì bỏ qua. */
   useEffect(() => {
-    if (!kho) { setVanDo(docVan()); return undefined; }
+    if (!kho) { setVanDo(dau ? null : docVan()); return undefined; }
     let song = true;
     kho.doc().then((r) => {
       if (!song) return;
-      if (!r || r.loi) { setMay("loi"); setVanDo(docVan()); return; }
+      if (!r || r.loi) { setMay("loi"); setVanDo(dau ? null : docVan()); return; }
       uid.current = r.uid; setMay("ok");
       const m = docVan(), vMay = m?.nguoi && m.nguoi !== r.uid ? null : m, sv = vanHopLe(r.van) ? r.van : null;
-      setVanDo(!sv ? vMay : !vMay || (sv.luc ?? 0) >= (vMay.luc ?? 0) ? sv : vMay);
+      setVanDo(dau ? null : !sv ? vMay : !vMay || (sv.luc ?? 0) >= (vMay.luc ?? 0) ? sv : vMay);
       const chuTem = docChu(), temMay = !chuTem || chuTem === r.uid ? docTem() : {}, gop = gopTem(r.tem, temMay);
       ghiTem(gop); ghiChu_(r.uid); setTem(gop);
       const thieu = thieuTem(temMay, r.tem);
@@ -221,7 +223,7 @@ export default function DoVui({ muc = "vua", he, onXong, kho }) {
      từ lúc bắt đầu Tour; chuyến tàu lưu thành màn hỏi vì câu đã rút sẵn. */
   const guiVan = (v) => { choGui.current = undefined; kho?.luu(v).then((r) => setMay(r?.loi ? "loi" : "ok")); };
   useEffect(() => {
-    if (buoc === "mo") return;
+    if (buoc === "mo" || dau) return;
     const v = { ban: 1, muc, luc: Date.now(), nguoi: uid.current, buoc: buoc === "tau" ? "hoi" : buoc, lo, toi, ds, i, chon, ve, cuoc, chuoi, daDung, an, binh, leonChon, mnLo, chu, coKet, mnDung, bienCo, soGoiY, sk, skChon, skDoi, boSan, kq: kq.current, dung: dung.current, daHoi: daHoi.current, lich: lichSk.current, daLoai: daLoaiSk.current, daDang: daDang.current };
     ghiVan(v);
     if (kho) { choGui.current = v; clearTimeout(henGui.current); henGui.current = setTimeout(() => guiVan(v), 1500); }
@@ -253,7 +255,7 @@ export default function DoVui({ muc = "vua", he, onXong, kho }) {
     if (mv) setMnLo([...mnLo, mv.id]);
     setChu(chuMoi);
     const loai = cuaMinette && duoc ? "mat" : mv?.chiem ? "chiem" : "hut";
-    setBienCo({ duoc, cuaM: cuaMinette, thuong, loai, loi: ngauNhien(LOI_MINETTE[loai]).replace("{noi}", loai === "mat" ? noi.ten : mv ? diaDanh(mv.id).ten : noi.ten) });
+    setBienCo({ duoc, cuaM: cuaMinette, thuong, loai, loi: boc1(LOI_MINETTE[loai]).replace("{noi}", loai === "mat" ? noi.ten : mv ? diaDanh(mv.id).ten : noi.ten) });
     setBuoc("xongDung");
   };
   const roiDung = () => {
