@@ -62,6 +62,16 @@ const dongHo = (giay) => `${hai(Math.floor(giay / 60))}:${hai(Math.max(0, giay %
 
 /* ─────────────────────────── Màn chờ ─────────────────────────── */
 
+/* Công tắc bật/tắt (15/11): một kiểu cho mọi lựa chọn trên màn chọn đề. */
+function CongTac({ bat, onDoi, nhan }) {
+  return (
+    <button type="button" role="switch" aria-checked={bat} aria-label={nhan} onClick={() => onDoi(!bat)}
+      className={`relative h-7 w-12 shrink-0 cursor-pointer rounded-full border-0 p-0 transition-colors duration-200 ${bat ? "bg-ok" : "bg-line"}`}>
+      <span className={`absolute left-1 top-1 h-5 w-5 rounded-full bg-white shadow transition-transform duration-200 ${bat ? "translate-x-5" : ""}`} />
+    </button>
+  );
+}
+
 function ManCho({ dsDe, chon, paper, onStart, dangTai, lamPhanNoi, setLamPhanNoi, phienThuc, name, loai = "delf", gioiThieu = null }) {
   /* TCF Canada ("tcf") và TCF tout public ("tcf_tp", 10/11): không tab trình độ, một nhóm đề. */
   const tcf = loai !== "delf";
@@ -183,7 +193,9 @@ function ManCho({ dsDe, chon, paper, onStart, dangTai, lamPhanNoi, setLamPhanNoi
       </header>
 
       {/* ── Trình độ ── (TCF Canada không chia trình độ) */}
-      {!tcf && <div role="tablist" aria-label={tr("Trình độ", "Niveau", "Level")} className="no-scrollbar -mx-4 mt-6 flex gap-2 overflow-x-auto px-4 pb-1">
+      {/* 15/11 (chủ dự án): ô « Format đề » (và « Quy đổi điểm » của TCF) nằm cùng hàng với tab trình độ. */}
+      <div className="mt-6 flex flex-wrap items-stretch gap-2">
+      {!tcf && <div role="tablist" aria-label={tr("Trình độ", "Niveau", "Level")} className="no-scrollbar flex min-w-0 gap-2 overflow-x-auto pb-1">
         {nhom.map((g, k) => {
           const dang = g.level === tab;
           return (
@@ -197,6 +209,11 @@ function ManCho({ dsDe, chon, paper, onStart, dangTai, lamPhanNoi, setLamPhanNoi
           );
         })}
       </div>}
+        <div className={`flex gap-2 pb-1 ${tcf ? "" : "sm:ml-auto"}`}>
+          <FormatDe ma={tcf ? levelTcf : tab} />
+          {gioiThieu}
+        </div>
+      </div>
 
       {/* ── Danh sách đề ── */}
       <div className="mt-4 grid gap-3 sm:grid-cols-2">
@@ -233,10 +250,6 @@ function ManCho({ dsDe, chon, paper, onStart, dangTai, lamPhanNoi, setLamPhanNoi
         })}
       </div>
 
-      {/* 15/11 (chủ dự án): danh sách đề lên đầu; danh sách kỹ năng gom vào mục « Format đề » (thu gọn,
-          chi tiết từng phần) ngay dưới, rồi tới khối riêng của trang TCF (bảng quy đổi điểm). */}
-      <FormatDe ma={tcf ? levelTcf : tab} />
-      {gioiThieu}
 
       {/* TCF Canada chưa có đề: dừng ở lời báo trên, không hiện cấu trúc, cảnh báo, nút bắt đầu. */}
       {(!tcf || dsDe.length > 0) && <>
@@ -272,15 +285,6 @@ function ManCho({ dsDe, chon, paper, onStart, dangTai, lamPhanNoi, setLamPhanNoi
           bấm, và khi đó họ biết chính xác mình đang bỏ gì. */}
       {/* 15/11 (chủ dự án): một dòng gọn: ô tích « Làm phần NÓI », tích thì hiện nút thử mic ngay cạnh.
           Thử mic chưa đạt thì khoá nút vào thi (KiemTraMic). */}
-      {coPhanNoi && (
-        <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2">
-          <label className="inline-flex cursor-pointer items-center gap-2 text-sm font-bold text-ink">
-            <input type="checkbox" checked={lamPhanNoi} onChange={(e) => setLamPhanNoi(e.target.checked)} className="h-4 w-4" />
-            {tr("Làm phần NÓI", "Faire l'ORAL", "Do the SPEAKING part")}
-          </label>
-          {lamPhanNoi && <KiemTraMic onKetQua={setMicOk} />}
-        </div>
-      )}
 
       {/* ── KHÔNG CÓ PHIÊN MÁY CHỦ THÌ KHÔNG CHO VÀO ──
           Xem phienMayChu.js. Ngắn gọn: app có đường đăng nhập cũ chỉ lưu tên
@@ -321,21 +325,30 @@ function ManCho({ dsDe, chon, paper, onStart, dangTai, lamPhanNoi, setLamPhanNoi
       {payFor && <PaymentModal ex={payFor} student={name} config={payCfg}
         onClose={() => setPayFor(null)} onUnlocked={() => setLuotMoi((x) => x + 1)} />}
 
-      <label className={`mt-6 flex cursor-pointer items-start gap-3 rounded-2xl border-2 border-solid p-4 text-sm text-ink transition-all ${sanSang ? "border-ok bg-ok-soft" : "border-line bg-surface hover:border-primary/40"}`}>
-        <input type="checkbox" checked={sanSang} onChange={(e) => { phat(e.target.checked ? "dung" : "bam"); setSanSang(e.target.checked); }}
-          className="mt-1 h-4 w-4 accent-[rgb(var(--mcf-primary-rgb))]" />
-        <span>
-          {tr("Tôi có", "J'ai", "I have")} <strong>{tongPhut} {tr("phút liên tục", "minutes sans interruption", "uninterrupted minutes")}</strong> {tr("và sẽ không rời khỏi bài thi. Đồng hồ chạy liên tục kể cả khi đóng tab.", "et je ne quitterai pas l'examen. Le chronomètre continue même si l'onglet est fermé.", "and will not leave the exam. The timer keeps running even if the tab is closed.")}
-        </span>
-      </label>
-
-      {/* 14/10 (chủ dự án): báo trước rằng nộp sớm được. Mỗi phần có đồng hồ
-          riêng, nộp sớm thì sang phần sau ngay; phút dư KHÔNG cộng sang phần sau
-          (đúng với PhanThi: đồng hồ mỗi phần tính lại từ đầu). */}
-      <p className="m-0 mt-3 flex items-start gap-2 rounded-2xl bg-primary-soft p-3 text-xs text-ink">
-        <Clock size={14} className="mt-0.5 shrink-0 text-primary" />
-        <span>{tr("Bạn có thể hoàn thành bài trước tổng thời gian: làm xong phần nào thì bấm « Nộp phần này » để sang phần sau. Thời gian dư không được cộng sang phần tiếp theo.", "Vous pouvez terminer avant la durée totale : dès qu'une partie est finie, cliquez sur « Terminer cette partie » pour passer à la suivante. Le temps restant n'est pas reporté.", "You can finish before the total time: when a part is done, click « Finish this part » to move on. Leftover time is not carried over.")}</span>
-      </p>
+      {/* 15/11 (chủ dự án): các lựa chọn trước khi thi gom vào MỘT thẻ, mỗi dòng cùng khuôn: ô biểu
+          tượng màu, chữ, công tắc bên phải. Ghi chú nộp sớm là chân thẻ. */}
+      <div className="mt-6 overflow-hidden rounded-3xl border-2 border-solid border-line bg-surface">
+        {coPhanNoi && (
+          <div className="flex flex-wrap items-center gap-3 border-0 border-b border-solid border-line p-4">
+            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-fuchsia-500 to-purple-600 text-white"><Mic size={18} /></span>
+            <span className="min-w-0 flex-1 text-sm font-extrabold text-ink">{tr("Làm phần NÓI", "Faire l'ORAL", "Do the SPEAKING part")}</span>
+            {lamPhanNoi && <KiemTraMic onKetQua={setMicOk} />}
+            <CongTac bat={lamPhanNoi} onDoi={setLamPhanNoi} nhan={tr("Làm phần NÓI", "Faire l'ORAL", "Do the SPEAKING part")} />
+          </div>
+        )}
+        <div className={`flex items-center gap-3 p-4 transition-colors ${sanSang ? "bg-ok-soft" : ""}`}>
+          <span className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl text-white ${sanSang ? "bg-ok" : "bg-gradient-to-br from-blue-500 to-indigo-600"}`}><Timer size={18} /></span>
+          <span className="min-w-0 flex-1 text-sm text-ink">
+            {tr("Tôi có", "J'ai", "I have")} <strong>{tongPhut} {tr("phút liên tục", "minutes sans interruption", "uninterrupted minutes")}</strong> {tr("và sẽ không rời khỏi bài thi. Đồng hồ chạy liên tục kể cả khi đóng tab.", "et je ne quitterai pas l'examen. Le chronomètre continue même si l'onglet est fermé.", "and will not leave the exam. The timer keeps running even if the tab is closed.")}
+          </span>
+          <CongTac bat={sanSang} onDoi={(v) => { phat(v ? "dung" : "bam"); setSanSang(v); }} nhan={tr("Tôi sẵn sàng", "Je suis prêt(e)", "I'm ready")} />
+        </div>
+        {/* 14/10 (chủ dự án): báo trước rằng nộp sớm được; phút dư KHÔNG cộng sang phần sau. */}
+        <p className="m-0 flex items-start gap-2 border-0 border-t border-solid border-line bg-surface2 px-4 py-3 text-xs text-soft">
+          <Clock size={14} className="mt-0.5 shrink-0" />
+          <span>{tr("Bạn có thể hoàn thành bài trước tổng thời gian: làm xong phần nào thì bấm « Nộp phần này » để sang phần sau. Thời gian dư không được cộng sang phần tiếp theo.", "Vous pouvez terminer avant la durée totale : dès qu'une partie est finie, cliquez sur « Terminer cette partie » pour passer à la suivante. Le temps restant n'est pas reporté.", "You can finish before the total time: when a part is done, click « Finish this part » to move on. Leftover time is not carried over.")}</span>
+        </p>
+      </div>
 
       <button type="button"
         disabled={!sanSangVao}

@@ -1,8 +1,9 @@
-import React, { useState } from "react";
-import { Info, ChevronDown } from "lucide-react";
+import React from "react";
+import { Calculator } from "lucide-react";
 import { tr } from "../../shared/i18n.jsx";
 import { NCLC_TCF, CECRL_TCF_TP } from "../../shared/tcfCanada.js";
 import ExamMode from "./ExamMode.jsx";
+import { NutCuaSo } from "./FormatDe.jsx";
 
 /* Thi thử TCF (09/11 Canada, 10/11 tout public, theo chủ dự án). Hai mục « TCF Canada » và
  * « TCF Pháp » trong nhóm « Thi thử » ở thanh bên.
@@ -21,26 +22,11 @@ const tenViet = (code) => ({
 }[code]);
 const khoang = (tu, den) => (tu === den ? tu : `${tu} – ${den}`);
 
-/* Khối thu gọn chứa bảng quy đổi. */
-function BangGap({ tieuDe, children }) {
-  const [mo, setMo] = useState(false);
-  return (
-    <div className="rounded-3xl bg-surface p-4 shadow-[0_8px_30px_rgb(0,0,0,0.04)] sm:p-5">
-      <button type="button" onClick={() => setMo((x) => !x)} aria-expanded={mo}
-        className="flex w-full cursor-pointer items-center gap-3 border-0 bg-transparent p-0 text-left font-sans">
-        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white"><Info size={18} /></span>
-        <span className="min-w-0 flex-1 text-sm font-extrabold text-ink">{tieuDe}</span>
-        <ChevronDown size={18} className={`shrink-0 text-soft transition-transform ${mo ? "rotate-180" : ""}`} />
-      </button>
-      {mo && <div className="mt-4 overflow-x-auto">{children}</div>}
-    </div>
-  );
-}
-
 function GioiThieuCanada() {
   return (
-    <section className="mt-4 grid gap-4">
-      <BangGap tieuDe={tr("Điểm TCF quy ra NCLC thế nào?", "Comment le score TCF devient-il un NCLC ?", "How does a TCF score map to NCLC?")}>
+    <NutCuaSo icon={Calculator} nhan={tr("Quy đổi điểm", "Conversion", "Score table")} phu="NCLC" rong="max-w-xl"
+      tieuDe={tr("Điểm TCF quy ra NCLC thế nào?", "Comment le score TCF devient-il un NCLC ?", "How does a TCF score map to NCLC?")}>
+      <div className="overflow-x-auto">
         <table className="w-full min-w-[30rem] border-collapse text-left text-xs tabular-nums">
           <thead>
             <tr className="text-soft">
@@ -60,15 +46,16 @@ function GioiThieuCanada() {
             ))}
           </tbody>
         </table>
-      </BangGap>
-    </section>
+      </div>
+    </NutCuaSo>
   );
 }
 
 function GioiThieuPhap() {
   return (
-    <section className="mt-4 grid gap-4">
-      <BangGap tieuDe={tr("Điểm TCF quy ra trình độ thế nào?", "Comment le score TCF devient-il un niveau ?", "How does a TCF score map to a level?")}>
+    <NutCuaSo icon={Calculator} nhan={tr("Quy đổi điểm", "Conversion", "Score table")} phu="CECRL" rong="max-w-xl"
+      tieuDe={tr("Điểm TCF quy ra trình độ thế nào?", "Comment le score TCF devient-il un niveau ?", "How does a TCF score map to a level?")}>
+      <div className="overflow-x-auto">
         <table className="w-full min-w-[22rem] border-collapse text-left text-xs tabular-nums">
           <thead>
             <tr className="text-soft">
@@ -90,8 +77,8 @@ function GioiThieuPhap() {
             })}
           </tbody>
         </table>
-      </BangGap>
-    </section>
+      </div>
+    </NutCuaSo>
   );
 }
 
