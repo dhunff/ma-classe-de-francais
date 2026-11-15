@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Link, useNavigate } from "react-router-dom";
-import { Timer, ShieldCheck, AlertTriangle, Clock, Volume2, VolumeX, Trophy, Crown, Headphones, BookOpen, PenLine, Mic, Puzzle, SearchCheck } from "lucide-react";
+import { Timer, ShieldCheck, CheckCircle2, AlertTriangle, Clock, Volume2, VolumeX, Trophy, Crown, Headphones, BookOpen, PenLine, Mic, Puzzle, SearchCheck } from "lucide-react";
 import NutTieng from "../../shared/NutTieng.jsx";
 import { BangKetLuan, ThanhPhan, PhaoGiayLon } from "./KetQuaVisual.jsx";
 import { supabase } from "../../storageShim.js";
@@ -61,6 +61,9 @@ const hai = (n) => String(n).padStart(2, "0");
 const dongHo = (giay) => `${hai(Math.floor(giay / 60))}:${hai(Math.max(0, giay % 60))}`;
 
 /* ─────────────────────────── Màn chờ ─────────────────────────── */
+
+const ICON_KN = { CO: Headphones, CE: BookOpen, PE: PenLine, PO: Mic, MS: Puzzle };
+const MAU_KN = { CO: "from-sky-500 to-blue-600", CE: "from-emerald-500 to-teal-600", PE: "from-amber-500 to-orange-600", PO: "from-fuchsia-500 to-purple-600", MS: "from-indigo-500 to-violet-600" };
 
 /* Công tắc bật/tắt (15/11): cùng kiểu với công tắc của web (AccessPanel): 48×28, màu chủ đạo khi bật. */
 function CongTac({ bat, onDoi, nhan }) {
@@ -147,6 +150,7 @@ function ManCho({ dsDe, chon, paper, onStart, dangTai, lamPhanNoi, setLamPhanNoi
   };
   const deDangChon = deTab.some((e) => e.id === paper?.id) ? paper : null;
   const khoaVip = !!deDangChon?.chi_vip && !coVip;
+  const MAU_KY = loai === "tcf" ? "from-rose-600 to-orange-500" : loai === "tcf_tp" ? "from-violet-700 to-fuchsia-500" : "from-blue-600 to-indigo-600";
   const canThuMic = coPhanNoi && lamPhanNoi && !micOk;
   const sanSangVao = sanSang && !dangTai && !!deDangChon?.sections?.length && phienThuc === true && !khoaVip && !canThuMic;
 
@@ -225,25 +229,43 @@ function ManCho({ dsDe, chon, paper, onStart, dangTai, lamPhanNoi, setLamPhanNoi
               : <>{tr("Chưa có đề", "Aucun sujet", "No exam at level")} {tab} {tr("nào được phát hành.", "publié pour ce niveau.", "published yet.")}</>}</p>
           </div>
         )}
+        {/* 15/11 (chủ dự án: thẻ đề đơn điệu): ô số đề lớn màu theo kỳ thi, dòng biểu tượng các kỹ năng có
+            trong đề (màu như Format đề), thời lượng bên phải. Đang chọn: viền + nền màu chủ đạo và dấu tích. */}
         {deTab.map((e, k) => {
           const dang = paper?.id === e.id;
+          const so = (e.title.match(/Đề\s*(\d+)/) || [])[1] ?? String(k + 1);
+          const phu = e.title.replace(/\s*·?\s*Đề\s*\d+\s*:?\s*/, " ").replace(/\s+/g, " ").trim();
+          const ma = [...new Set(e.sections.map((x) => x.code))];
           return (
             <button key={e.id} type="button" onClick={() => { phat("bam"); chon(e.id); }} aria-pressed={dang}
-              className={`mcf-cau-vao relative cursor-pointer rounded-2xl border-2 border-solid p-4 text-left font-sans transition-all duration-200 ${
-                dang ? "-translate-y-0.5 border-primary bg-primary-soft shadow-[0_12px_28px_rgba(37,99,235,0.18)]" : "border-line bg-surface hover:-translate-y-0.5 hover:border-primary/50 hover:shadow-md"}`}
+              className={`mcf-cau-vao group relative flex cursor-pointer items-center gap-4 overflow-hidden rounded-3xl border-2 border-solid p-3.5 pr-4 text-left font-sans transition-all duration-200 ${
+                dang ? "-translate-y-0.5 border-primary bg-primary-soft shadow-[0_14px_30px_rgba(37,99,235,0.2)]" : "border-line bg-surface hover:-translate-y-0.5 hover:border-primary/50 hover:shadow-[0_10px_24px_rgba(15,23,42,0.08)]"}`}
               style={{ animationDelay: `${120 + k * 60}ms` }}>
-              {dang && <span className="mcf-nay absolute right-3 top-3 grid h-6 w-6 place-items-center rounded-full bg-primary text-white"><ShieldCheck size={14} /></span>}
-              <span className="block pr-8 text-base font-extrabold text-ink">{e.title}</span>
-              {e.chi_vip && (
-                <span className="mt-1 inline-flex items-center gap-1 rounded-full bg-amber-400 px-2 py-0.5 text-[11px] font-extrabold text-amber-950">
-                  <Crown size={11} /> {coVip ? "VIP" : tr("Cần VIP", "VIP requis", "VIP only")}
+              <span aria-hidden className={`pointer-events-none absolute -right-10 -top-10 h-28 w-28 rounded-full bg-gradient-to-br ${MAU_KY} opacity-[0.08] transition-opacity group-hover:opacity-15`} />
+              <span className={`relative grid h-16 w-16 shrink-0 place-items-center rounded-2xl bg-gradient-to-br ${MAU_KY} text-white shadow-[0_8px_18px_rgba(15,23,42,0.2)]`}>
+                <span className="text-center leading-none">
+                  <span className="block text-[10px] font-extrabold uppercase tracking-[0.15em] text-white/80">{tr("Đề", "Sujet", "Exam")}</span>
+                  <span className="mt-0.5 block text-[28px] font-extrabold tabular-nums">{so}</span>
                 </span>
-              )}
-              <span className="mt-2 flex flex-wrap gap-1.5 text-[11px] font-bold">
-                {/* Đếm KỸ NĂNG, không đếm dòng — một đề 6 bài vẫn là 3 phần. */}
-                <span className="rounded-full bg-surface2 px-2 py-0.5 text-soft">{new Set(e.sections.map((x) => x.code)).size} {tr("phần", "parties", "parts")}</span>
-                <span className="rounded-full bg-surface2 px-2 py-0.5 text-soft">{e.sections.length} {tr("bài", "exercices", "exercises")}</span>
-                <span className="inline-flex items-center gap-1 rounded-full bg-surface2 px-2 py-0.5 text-soft"><Clock size={11} />{e.duration_min ?? 0}′</span>
+              </span>
+              <span className="relative min-w-0 flex-1">
+                <span className="flex items-center gap-2">
+                  <span className="truncate text-[15px] font-extrabold text-ink">{phu || tenKyThi(e.level)}</span>
+                  {e.chi_vip && (
+                    <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-amber-400 px-2 py-0.5 text-[10px] font-extrabold text-amber-950">
+                      <Crown size={10} /> {coVip ? "VIP" : tr("Cần VIP", "VIP requis", "VIP only")}
+                    </span>
+                  )}
+                </span>
+                <span className="mt-2 flex items-center gap-1">
+                  {ma.map((c) => { const I = ICON_KN[c] ?? BookOpen; return <span key={c} title={c} className={`grid h-6 w-6 place-items-center rounded-lg bg-gradient-to-br ${MAU_KN[c] ?? "from-slate-500 to-slate-600"} text-white`}><I size={12} /></span>; })}
+                </span>
+              </span>
+              <span className="relative flex shrink-0 flex-col items-end gap-1">
+                {dang
+                  ? <span className="mcf-nay grid h-7 w-7 place-items-center rounded-full bg-primary text-white"><CheckCircle2 size={16} /></span>
+                  : <span className="h-7 w-7 rounded-full border-2 border-solid border-line-strong" />}
+                <span className="inline-flex items-center gap-1 text-xs font-bold tabular-nums text-soft"><Clock size={12} />{e.duration_min ?? 0}′</span>
               </span>
             </button>
           );

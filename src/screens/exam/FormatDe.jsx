@@ -181,49 +181,96 @@ export function NutCuaSo({ icon: Icon, nhan, phu, tieuDe, rong = "max-w-2xl", ch
   );
 }
 
+/* Màu nhạt theo kỹ năng cho thẻ và nhãn « Bài 1 » (15/11): chuỗi viết đủ để Tailwind quét được. */
+const NHAT = {
+  CO: { the: "border-sky-500/25 bg-sky-500/[0.05]", nhan: "bg-sky-500/15 text-sky-600", so: "text-sky-600" },
+  CE: { the: "border-emerald-500/25 bg-emerald-500/[0.05]", nhan: "bg-emerald-500/15 text-emerald-600", so: "text-emerald-600" },
+  PE: { the: "border-amber-500/25 bg-amber-500/[0.06]", nhan: "bg-amber-500/15 text-amber-600", so: "text-amber-600" },
+  PO: { the: "border-fuchsia-500/25 bg-fuchsia-500/[0.05]", nhan: "bg-fuchsia-500/15 text-fuchsia-600", so: "text-fuchsia-600" },
+  MS: { the: "border-indigo-500/25 bg-indigo-500/[0.05]", nhan: "bg-indigo-500/15 text-indigo-600", so: "text-indigo-600" },
+};
+/* « Bài 1 và 2: … » → nhãn « Bài 1 và 2 » + nội dung; dòng không có nhãn (ghi chú) giữ nguyên. */
+const tachNhan = (t) => { const m = t.match(/^([^:]{1,30}\d[^:]{0,12}?)\s?:\s*(.+)$/); return m ? [m[1], m[2]] : [null, t]; };
+const soPhut = (x) => Number(String(x).match(/\d+/)?.[0]) || 0;
+const dongHo = (ph) => (ph >= 60 && typeof ph === "number" ? `${Math.floor(ph / 60)}h${ph % 60 ? String(ph % 60).padStart(2, "0") : ""}` : `${ph}′`);
+
 export default function FormatDe({ ma }) {
   const ds = FORMAT[ma];
   if (!ds) return null;
   const tcf = ma === "TCF" || ma === "TCF_TP";
+  const tong = ds.reduce((n, p) => n + soPhut(p.phut), 0);
   return (
-    <NutCuaSo icon={LayoutList} nhan={tr("Format đề", "Format", "Format")} phu={tenKy(ma)}
+    <NutCuaSo icon={LayoutList} nhan={tr("Format đề", "Format", "Format")} phu={tenKy(ma)} rong="max-w-3xl"
       tieuDe={`${tr("Format đề", "Format de l'épreuve", "Exam format")} ${tenKy(ma)}`}>
-      <div className="grid gap-3">
-          {ds.map((p) => {
-            const Icon = ICON[p.code];
-            return (
-              <div key={p.code} className="grid gap-2 rounded-2xl border border-solid border-line p-4">
-                <div className="flex items-center gap-3">
-                  <span className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-gradient-to-br ${MAU[p.code]} text-white`}><Icon size={18} /></span>
-                  <div className="min-w-0 flex-1">
-                    <p lang="fr" className="m-0 text-sm font-extrabold leading-snug text-ink">{p.ten ?? VI[p.code][1]}</p>
-                    <p className="m-0 text-xs text-soft">{t3(VI[p.code])}</p>
-                  </div>
+      {/* Thanh thời gian: mỗi kỹ năng một đoạn, dài theo số phút thi (không tính giờ chuẩn bị). */}
+      <div className="rounded-2xl bg-surface2 p-4">
+        <div className="flex items-baseline justify-between gap-3">
+          <span className="text-xs font-bold text-soft">{tr("Thời gian làm bài", "Durée des épreuves", "Exam time")}</span>
+          <span className="text-lg font-extrabold tabular-nums text-ink">≈ {dongHo(tong)}</span>
+        </div>
+        <div className="mt-2 flex h-3 gap-1 overflow-hidden rounded-full">
+          {ds.map((p) => <span key={p.code} title={`${t3(VI[p.code])} · ${p.phut}′`} className={`h-full bg-gradient-to-r ${MAU[p.code]}`} style={{ flexGrow: soPhut(p.phut) }} />)}
+        </div>
+        <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[11px] font-bold text-soft">
+          {ds.map((p) => (
+            <span key={p.code} className="inline-flex items-center gap-1.5">
+              <span className={`h-2 w-2 rounded-full bg-gradient-to-r ${MAU[p.code]}`} />{t3(VI[p.code])} <span className="tabular-nums text-ink">{p.phut}′</span>
+            </span>
+          ))}
+        </div>
+      </div>
+
+      <div className="mt-4 grid gap-3 sm:grid-cols-2">
+        {ds.map((p) => {
+          const Icon = ICON[p.code];
+          const nh = NHAT[p.code];
+          return (
+            <article key={p.code} className={`flex flex-col gap-3 rounded-2xl border border-solid p-4 ${nh.the}`}>
+              <header className="flex items-start gap-3">
+                <span className={`grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-gradient-to-br ${MAU[p.code]} text-white shadow-[0_6px_14px_rgba(15,23,42,0.15)]`}><Icon size={20} /></span>
+                <div className="min-w-0 flex-1">
+                  <p className="m-0 text-[15px] font-extrabold leading-tight text-ink">{t3(VI[p.code])}</p>
+                  <p lang="fr" className="m-0 mt-0.5 text-xs italic text-soft">{p.ten ?? VI[p.code][1]}</p>
                 </div>
+                <div className="shrink-0 text-right">
+                  <p className={`m-0 text-xl font-extrabold leading-none tabular-nums ${nh.so}`}>{dongHo(p.phut)}</p>
+                  <p className="m-0 mt-1 text-[11px] font-bold text-soft">{tcf ? p.diem : `${tr("điểm", "points", "points")} ${p.diem}`}</p>
+                </div>
+              </header>
+              {(p.batBuoc !== undefined || p.nhan || p.chuanBi) && (
                 <div className="flex flex-wrap gap-1.5 text-[11px] font-bold">
                   {p.batBuoc !== undefined && (
                     <span className={`rounded-full px-2.5 py-1 ${p.batBuoc ? "bg-ok-soft text-ok" : "bg-warn-soft text-warn"}`}>
                       {p.batBuoc ? tr("Bắt buộc", "Obligatoire", "Required") : tr("Tự chọn", "Facultative", "Optional")}
                     </span>
                   )}
-                  {p.nhan && <span className="rounded-full bg-surface2 px-2.5 py-1 text-ink">{t3(p.nhan)}</span>}
-                  <span className="inline-flex items-center gap-1 rounded-full bg-surface2 px-2.5 py-1 text-ink">
-                    <Clock size={11} /> {p.phut} {tr("phút", "min", "min")}{p.chuanBi ? ` + ${p.chuanBi} ${tr("phút chuẩn bị", "min de préparation", "min prep")}` : ""}
-                  </span>
-                  <span className="rounded-full bg-primary-soft px-2.5 py-1 text-primary">{tcf ? `${tr("Điểm", "Score", "Score")} ${p.diem}` : p.diem}</span>
+                  {p.nhan && <span className="rounded-full bg-surface px-2.5 py-1 text-ink">{t3(p.nhan)}</span>}
+                  {p.chuanBi && <span className="inline-flex items-center gap-1 rounded-full bg-surface px-2.5 py-1 text-ink"><Clock size={11} /> + {p.chuanBi}′ {tr("chuẩn bị", "de préparation", "prep")}</span>}
                 </div>
-                <ul className="m-0 grid gap-1 pl-5 text-[13px] leading-snug text-ink">
-                  {p.ct.map((c, i) => <li key={i}>{t3(c)}</li>)}
-                </ul>
-              </div>
-            );
-          })}
-          {!tcf && (
-            <p className="m-0 text-xs text-soft">
-              {tr("Tổng 100 điểm. Đậu khi đạt từ 50/100 và không kỹ năng nào dưới 5/25.", "Total sur 100. Réussite à partir de 50/100, avec au moins 5/25 dans chaque épreuve.", "Total out of 100. Pass with 50/100 and at least 5/25 in each part.")}
-            </p>
-          )}
+              )}
+              <ul className="m-0 grid list-none gap-2 p-0 text-[13px] leading-snug text-ink">
+                {p.ct.map((c, k) => {
+                  const [nhan, noi] = tachNhan(t3(c));
+                  return (
+                    <li key={k} className="flex items-start gap-2">
+                      {nhan
+                        ? <span className={`mt-px shrink-0 whitespace-nowrap rounded-md px-1.5 py-0.5 text-[11px] font-extrabold ${nh.nhan}`}>{nhan}</span>
+                        : <span aria-hidden className={`mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-gradient-to-r ${MAU[p.code]}`} />}
+                      <span className="min-w-0">{noi}</span>
+                    </li>
+                  );
+                })}
+              </ul>
+            </article>
+          );
+        })}
       </div>
+      {!tcf && (
+        <div className="mt-4 flex flex-wrap items-center gap-2 rounded-2xl bg-primary-soft px-4 py-3 text-[13px] text-ink">
+          <span className="rounded-full bg-primary px-2.5 py-0.5 text-xs font-extrabold text-white">/100</span>
+          {tr("Đậu khi đạt từ", "Réussite à partir de", "Pass from")} <strong>50/100</strong> {tr("và không kỹ năng nào dưới", "et au moins", "and no part below")} <strong>5/25</strong>{tr(".", " par épreuve.", ".")}
+        </div>
+      )}
     </NutCuaSo>
   );
 }
