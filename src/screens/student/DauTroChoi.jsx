@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Swords, User, Users, Check, Loader2, Trophy, Handshake, Hourglass, Send, ChevronRight } from "lucide-react";
+import { Swords, User, Users, Search, Check, Loader2, Trophy, Handshake, Hourglass, Send, ChevronRight } from "lucide-react";
 import { tr } from "../../shared/i18n.jsx";
 import { phat } from "../../shared/amThanh.js";
 import { Avatar } from "../../shared/avatars.jsx";
@@ -12,6 +12,44 @@ import { ketCucDau } from "../../shared/troChoiDau.js";
 
 export const tenMuc = (m) => ({ de: tr("Dễ", "Facile", "Easy"), vua: tr("Vừa", "Moyen", "Medium"), kho: tr("Khó", "Difficile", "Hard") }[m] ?? m);
 const tenNguoi = (d) => d?.doi_phuong?.name || tr("Một bạn học", "Un camarade", "A classmate");
+
+/* Lưới chọn bạn để thách (16/11, chủ dự án: dải cuộn ngang cũ giấu thanh cuộn nên trên máy tính
+   bạn bè phía sau bị che, không kéo tới được). Nay là LƯỚI xuống dòng, thấy hết tên; nhiều bạn thì
+   có ô tìm theo tên (không phân biệt dấu) và khung cuộn DỌC có thanh cuộn thật. */
+const boDau = (x) => String(x ?? "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/gi, "d").toLowerCase();
+function LuoiBan({ ds, ban, setBan }) {
+  const [tim, setTim] = useState("");
+  const loc = tim.trim() ? ds.filter((b) => boDau(b.name).includes(boDau(tim.trim())) || boDau(b.username).includes(boDau(tim.trim()))) : ds;
+  return (
+    <div>
+      {ds.length > 8 && (
+        <label className="mb-2 flex items-center gap-2 rounded-xl border border-solid border-line bg-surface2 px-3 py-2 focus-within:border-primary">
+          <Search size={15} className="shrink-0 text-soft" />
+          <input type="search" value={tim} onChange={(e) => setTim(e.target.value)} placeholder={tr("Tìm theo tên", "Chercher un nom", "Search by name")}
+            aria-label={tr("Tìm bạn theo tên", "Chercher un ami par son nom", "Search a friend by name")}
+            className="min-w-0 flex-1 border-0 bg-transparent font-sans text-sm text-ink outline-none placeholder:text-soft" />
+        </label>
+      )}
+      {!loc.length ? <p className="m-0 px-1 py-2 text-sm text-soft">{tr("Không có bạn nào khớp tên này.", "Aucun ami ne correspond.", "No friend matches this name.")}</p> : (
+        <div className="grid max-h-[13.5rem] grid-cols-2 gap-2 overflow-y-auto p-1 sm:grid-cols-3">
+          {loc.map((b) => {
+            const dang = ban?.id === b.id;
+            return (
+              <button key={b.id} type="button" onClick={() => { phat("bam"); setBan(b); }} aria-pressed={dang} title={b.name}
+                className={`relative flex min-w-0 cursor-pointer items-center gap-2.5 rounded-2xl border-2 border-solid px-2.5 py-2 text-left font-sans transition-colors duration-200 ${dang ? "border-primary bg-primary-soft" : "border-line bg-surface hover:border-primary/40"}`}>
+                <span className="relative shrink-0">
+                  <Avatar khoa={b.avatar || ""} ten={b.name} size={36} dungYen />
+                  {dang && <span className="mcf-nay absolute -bottom-1 -right-1 grid h-[18px] w-[18px] place-items-center rounded-full bg-primary text-white ring-2 ring-surface"><Check size={11} strokeWidth={3} /></span>}
+                </span>
+                <span className="min-w-0 flex-1 truncate text-sm font-bold text-ink">{b.name}</span>
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
 
 /* Chọn chế độ: một mình | thách bạn. Khi thách bạn thì hiện dải bạn bè (người mình theo dõi). */
 export function ChonCheDo({ cheDo, setCheDo, ban, setBan, nen }) {
@@ -47,19 +85,7 @@ export function ChonCheDo({ cheDo, setCheDo, ban, setBan, nen }) {
                 <p className="m-0 text-sm text-soft">{tr("Bạn chưa theo dõi ai. Tìm bạn ở ", "Vous ne suivez personne. Trouvez des amis sur ", "You don't follow anyone yet. Find friends on ")}<Link to="/etudiant/dashboard" className="font-bold text-primary">{tr("trang chủ", "l'accueil", "the home page")}</Link>.</p>
               </div>
             ) : (
-              <div className="no-scrollbar flex min-w-0 gap-2 overflow-x-auto px-1 pb-1 pt-1.5">
-                {ds.map((b) => {
-                  const dang = ban?.id === b.id;
-                  return (
-                    <button key={b.id} type="button" onClick={() => { phat("bam"); setBan(b); }} aria-pressed={dang} title={b.name}
-                      className={`relative flex w-20 shrink-0 cursor-pointer flex-col items-center gap-1 rounded-2xl border-2 border-solid px-1.5 py-2.5 font-sans transition-all duration-200 ${dang ? "-translate-y-0.5 border-primary bg-primary-soft" : "border-line bg-surface hover:border-primary/40"}`}>
-                      {dang && <span className="mcf-nay absolute right-1 top-1 grid h-5 w-5 place-items-center rounded-full bg-primary text-white"><Check size={12} strokeWidth={3} /></span>}
-                      <Avatar khoa={b.avatar || ""} ten={b.name} size={40} dungYen />
-                      <span className="w-full truncate text-center text-xs font-bold text-ink">{b.name}</span>
-                    </button>
-                  );
-                })}
-              </div>
+              <LuoiBan ds={ds} ban={ban} setBan={setBan} />
             )}
         </div>
       )}
