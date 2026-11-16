@@ -485,8 +485,11 @@ t("đầu vào null không làm nổ", gomTheoKyNang(null).length, 0);
   t("phân biệt chưa-biết với không-có", /phienThuc === false/.test(ma), true);
 
   /* Câu "đề này không có phần nói" phải có ĐIỀU KIỆN. Hiện vô điều kiện thì nó
-     khẳng định điều ngược hẳn với bảng ngay phía trên nó. */
-  t("cảnh báo thiếu PO chỉ hiện khi đề thật sự thiếu", /\{!coPhanNoi && \(/.test(ma), true);
+     khẳng định điều ngược hẳn với bảng ngay phía trên nó.
+     15/11 chủ dự án bỏ hẳn câu này (commit 886ecf9): không còn câu thì đạt;
+     nếu ai đưa nó trở lại thì nó phải nằm sau `!coPhanNoi`. */
+  const coCanhBaoPO = /không có phần thi nói/.test(ma);
+  t("cảnh báo thiếu PO (nếu có) chỉ hiện khi đề thật sự thiếu", !coCanhBaoPO || /\{!coPhanNoi && \(/.test(ma), true);
 }
 console.log(fail ? `\n${pass} đạt, ${fail} hỏng` : `\n${pass} đạt, 0 hỏng`);
 process.exit(fail ? 1 : 0);
