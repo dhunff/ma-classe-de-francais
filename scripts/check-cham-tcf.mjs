@@ -56,5 +56,12 @@ for (const code of ["PE", "PO"]) {
   t(`lời nhắc lượt 2 ${code} chỉ xin điểm`, loiNhacTcf({ code, level: "TCF_TP", laLuotHai: true }).includes('"taches"'), false);
 }
 
+/* Bài luyện chỉ có một phần các tâche (16/11, lô 52): lời nhắc giới hạn đúng tâche đó, cả hai lượt;
+   đề thi đủ ba tâche thì không có câu giới hạn này (không được làm mềm cách chấm đề thi). */
+t("luyện tâche 2: lời nhắc chỉ chấm tâche 2", loiNhacTcf({ code: "PE", level: "TCF", chiTache: [2] }).includes("ne contient que la tâche 2"), true);
+t("luyện tâche 2: lượt 2 cũng giới hạn", loiNhacTcf({ code: "PE", level: "TCF", laLuotHai: true, chiTache: [2] }).includes("ne contient que la tâche 2"), true);
+t("luyện đủ ba tâche: không giới hạn", loiNhacTcf({ code: "PE", level: "TCF", chiTache: [1, 2, 3] }).includes("ENTRAÎNEMENT"), false);
+t("đề thi: không giới hạn", loiNhacTcf({ code: "PE", level: "TCF" }).includes("ENTRAÎNEMENT"), false);
+
 console.log(`check:chamtcf: ${ok} đạt, ${hong} hỏng`);
 process.exit(hong ? 1 : 0);

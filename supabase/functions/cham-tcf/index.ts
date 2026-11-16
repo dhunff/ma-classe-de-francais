@@ -2,7 +2,8 @@
  * (PO) của đề thi thử TCF Canada / TCF tout public theo thang 0..20 của France Éducation international.
  * Luật, nguồn và lời nhắc ở _shared/chamTcf.js (dùng chung với scripts/check-cham-tcf.mjs).
  *
- * body: { attemptId } (lượt làm phần PE hoặc PO của một đề TCF, của CHÍNH người gọi).
+ * body: { attemptId } (lượt làm phần PE hoặc PO của một đề TCF, của CHÍNH người gọi),
+ *    hoặc { attemptId, luyenTap: true } (16/11): lượt làm bài luyện Viết TCF, chỉ chấm các tâche bài có.
  *  1. Kiểm quyền: attempt của người gọi, đề có level TCF/TCF_TP, phần là PE hoặc PO.
  *  2. Đã chấm (tcf_cham.ket_qua có) → trả lại, không tốn lượt.
  *  3. PE: đọc ba câu trả lời `open` từ database (KHÔNG nhận chữ từ client), đếm từ từng tâche.
@@ -29,6 +30,8 @@ const HAN_MUC = 6;
 const TRAN_BYTE = 25 * 1024 * 1024;
 const DUOI_NHAN = /\.(webm|mp3|mp4|m4a|wav|mpeg|mpga)$/i;
 const MODEL_MAC_DINH = "gpt-6-luna";
+/* Số từ xếp theo SỐ tâche (vị trí 0 = tâche 1), để bài luyện chỉ có tâche 2 vẫn hiện đúng ô. */
+const theoSo = (ds: any[]) => { const a: (number | null)[] = [null, null, null]; for (const t of ds) a[t.so - 1] = t.soTu; return a; };
 const html2txt = (h: string) => String(h || "").replace(/<br\s*\/?>/gi, "\n").replace(/<\/p>/gi, "\n").replace(/<[^>]+>/g, " ").replace(/&nbsp;/gi, " ").replace(/[ \t]+/g, " ").trim();
 
 Deno.serve(async (req) => {
@@ -51,16 +54,26 @@ Deno.serve(async (req) => {
   const attemptId = String(than?.attemptId ?? "");
   if (!/^[0-9a-f-]{36}$/.test(attemptId)) return json(400, { ok: false, ma: "THIEU_THAM_SO" });
 
-  /* ── 1. Quyền + loại phần thi ── */
+  /* ── 1. Quyền + loại phần thi ──
+   * `luyenTap` (16/11, Luyện thi TCF): lượt làm một bài LUYỆN TẬP Viết TCF (không thuộc đề thi). Bài có
+   * level TCF và meta.kyNang « TCF-PE-… »; mỗi câu open mang payload.tache (1, 2, 3) để biết giới hạn từ. */
+  const luyenTap = than?.luyenTap === true;
   const { data: att } = await admin.from("attempts").select("id, user_id, exam_id, exercise_id, finished_at").eq("id", attemptId).maybeSingle();
-  if (!att || att.user_id !== userId || !att.exam_id) return json(404, { ok: false, ma: "KHONG_THAY_BAI" });
-  const [{ data: de }, { data: phan }] = await Promise.all([
-    admin.from("exams").select("level").eq("id", att.exam_id).maybeSingle(),
-    admin.from("exam_sections").select("code").eq("exam_id", att.exam_id).eq("exercise_id", att.exercise_id).maybeSingle(),
-  ]);
-  const level = de?.level;
-  const code = phan?.code;
-  if (!["TCF", "TCF_TP"].includes(level) || !["PE", "PO"].includes(code)) return json(400, { ok: false, ma: "KHONG_PHAI_TCF" });
+  if (!att || att.user_id !== userId || (luyenTap ? (att.exam_id || !att.finished_at) : !att.exam_id)) return json(404, { ok: false, ma: "KHONG_THAY_BAI" });
+  let level: string | undefined, code: string | undefined;
+  if (luyenTap) {
+    const { data: bt } = await admin.from("exercises").select("level, meta").eq("id", att.exercise_id).maybeSingle();
+    level = bt?.level;
+    code = String(bt?.meta?.kyNang ?? "").startsWith("TCF-PE") ? "PE" : undefined;
+  } else {
+    const [{ data: de }, { data: phan }] = await Promise.all([
+      admin.from("exams").select("level").eq("id", att.exam_id).maybeSingle(),
+      admin.from("exam_sections").select("code").eq("exam_id", att.exam_id).eq("exercise_id", att.exercise_id).maybeSingle(),
+    ]);
+    level = de?.level;
+    code = phan?.code;
+  }
+  if (!["TCF", "TCF_TP"].includes(level!) || !["PE", "PO"].includes(code!)) return json(400, { ok: false, ma: "KHONG_PHAI_TCF" });
 
   /* ── 2. Đã chấm thì trả lại ── */
   const { data: cu } = await admin.from("tcf_cham").select("*").eq("attempt_id", attemptId).maybeSingle();
@@ -79,28 +92,36 @@ Deno.serve(async (req) => {
   let nguoiDung = "";
   let vanDeLocLoi = "";
   let phuLuc: any = {};
+  let chiTache: number[] | null = null;
 
   if (code === "PE") {
     /* ── 3a. Viết: ba câu open theo thứ tự đề, chữ đọc từ answers ── */
-    const { data: qs } = await admin.from("questions").select("id, ord, prompt").eq("exercise_id", att.exercise_id).eq("type", "open").order("ord");
+    const { data: qs } = await admin.from("questions").select("id, ord, prompt, payload").eq("exercise_id", att.exercise_id).eq("type", "open").order("ord").order("id");
     const { data: ans } = await admin.from("answers").select("question_id, raw").eq("attempt_id", attemptId);
     const theoCau = new Map((ans ?? []).map((a: any) => [a.question_id, typeof a.raw === "string" ? a.raw : ""]));
     const tache = (qs ?? []).slice(0, 3).map((q: any, i: number) => {
       const bai = chuThuan(String(theoCau.get(q.id) ?? "")).slice(0, 4000);
-      const [tu, den] = GIOI_HAN_TU[i] ?? [0, 0];
-      return { so: i + 1, de: html2txt(q.prompt).slice(0, 2500), bai, soTu: demTu(bai), tu, den };
+      /* Bài luyện: số tâche lấy từ payload.tache (bài PE-2 chỉ có tâche 2); đề thi: theo thứ tự. */
+      const so = luyenTap && [1, 2, 3].includes(Number(q.payload?.tache)) ? Number(q.payload.tache) : i + 1;
+      const [tu, den] = GIOI_HAN_TU[so - 1] ?? [0, 0];
+      /* Bài luyện: đề đầy đủ (kèm hai tài liệu của tâche 3) ở payload.taiLieu (không hiện) hoặc payload.doc
+         (hiện dưới câu hỏi, bài ba tâche). */
+      const nguon = q.payload?.taiLieu ?? q.payload?.doc;
+      const taiLieu = nguon ? `\nSUJET ET DOCUMENTS :\n${html2txt(nguon).slice(0, 3000)}` : "";
+      return { so, de: (html2txt(q.prompt) + taiLieu).slice(0, 5000), bai, soTu: demTu(bai), tu, den };
     });
+    chiTache = luyenTap ? tache.map((t: any) => t.so) : null;
     if (!tache.length) return json(400, { ok: false, ma: "KHONG_THAY_DE" });
     if (tache.every((t: any) => t.soTu < 5)) {
       /* Bỏ trống cả ba: 0/20, không gọi AI. */
       const kq = { taches: tache.map((t: any) => ({ so: t.so, niveau: "non_realisee", linguistique: "", pragmatique: "", sociolinguistique: "" })),
-        tong_quat: "Bạn chưa viết bài nào nên chưa có gì để chấm.", conseils: [], loi: [], so_tu: tache.map((t: any) => t.soTu), model: "", cham_doi: { so_luot: 0 } };
+        tong_quat: "Bạn chưa viết bài nào nên chưa có gì để chấm.", conseils: [], loi: [], so_tu: theoSo(tache), model: "", cham_doi: { so_luot: 0 } };
       await admin.from("tcf_cham").upsert({ attempt_id: attemptId, user_id: userId, code, level, ket_qua: kq, diem: 0, cap: "", nclc: level === "TCF" ? 0 : null, ai_luc: new Date().toISOString() });
       return json(200, { ok: true, ket_qua: kq, diem: 0, cap: "", nclc: level === "TCF" ? 0 : null, code, level });
     }
     nguoiDung = tache.map((t: any) => `### TÂCHE ${t.so} (attendu : ${t.tu} à ${t.den} mots ; écrit : ${t.soTu} mots, compté par la machine)\nCONSIGNE :\n${t.de}\n\nTEXTE DU CANDIDAT :\n${t.bai || "(vide)"}`).join("\n\n");
     vanDeLocLoi = tache.map((t: any) => t.bai).join("\n");
-    phuLuc = { so_tu: tache.map((t: any) => t.soTu) };
+    phuLuc = { so_tu: theoSo(tache) };
   } else {
     /* ── 3b. Nói: bản ghi mới nhất của phần này ── */
     if (!KHOA_STT) return json(503, { ok: false, ma: "CHUA_CAU_HINH_KHOA" });
@@ -137,11 +158,12 @@ Deno.serve(async (req) => {
   /* ── 4. Hai giám khảo song song, lượt 3 khi lệch lớn ── */
   const effort = Deno.env.get("PE_AI_EFFORT") || "low";
   const goi = (h: string, maxTok: number) => goiMoHinh({ model, khoa: KHOA, heThong: h, nguoiDung, maxTok, effort });
-  const hePhieu = loiNhacTcf({ code, level });
-  const heDiem = loiNhacTcf({ code, level, laLuotHai: true });
+  const hePhieu = loiNhacTcf({ code, level, chiTache });
+  const heDiem = loiNhacTcf({ code, level, laLuotHai: true, chiTache });
   const [l1, l2]: any[] = await Promise.all([goi(hePhieu, 3500), goi(heDiem, 300)]);
   if (!l1.ok) return json(502, { ok: false, ma: l1.ma === "AI_TRA_VE_KHONG_PHAI_JSON" ? "AI_TRA_VE_SAI_KHUON" : "AI_TRA_LOI_LOI", buoc: "cham" });
   const phieu = kiemPhieuTcf(l1.tho);
+  if (chiTache) phieu.taches = phieu.taches.filter((t: any) => chiTache!.includes(t.so));
   const cacDiem = [phieu.note, ...(l2.ok ? [diemKhopMuc(l2.tho)] : [])];
   let gop = gopDiemTcf(cacDiem);
   if (gop.can_luot_ba) {

@@ -852,6 +852,9 @@ const BAI_TCF_THU = {
     /* Câu Đọc TCF (lô 51): tài liệu riêng của câu ở `doc`. */
     { id: "t3", type: "qcm", prompt: "Qu'est-ce qui est interdit dans le parc ?", options: ["Venir avec un chien.", "Rouler à vélo sur l'herbe.", "Entrer le matin.", "Se promener le soir."],
       doc: "<p><strong>PARC DES CYGNES</strong></p><p>Chiens acceptés en laisse.</p><p>Vélos interdits sur les pelouses.</p><p>Ouvert de 8 h à 19 h.</p>" },
+    /* Câu Viết TCF kiểu bài ba tâche (lô 52): đề của tâche ở `doc`. */
+    { id: "t4", type: "open", prompt: "Tâche 1 : écrivez votre texte (60 à 120 mots).", tache: 1,
+      doc: "<p><strong>Sujet</strong> : Un(e) ami(e) francophone va passer un week-end dans votre ville. Vous lui écrivez un message pour lui proposer un programme : lieux à visiter, restaurant, activité. (60 mots minimum, 120 mots maximum)</p>" },
   ],
 };
 const BAI_DOC_THU = {

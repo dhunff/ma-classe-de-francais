@@ -8,12 +8,13 @@
  *   1. Kiểm: đủ 4 lựa chọn, đáp án hợp lệ, không bài nào dồn mọi đáp án một vị trí, không dấu gạch dài,
  *      đoạn trích « » trong lời giải có nguyên văn trong lời nghe, không trùng tên file.
  *   2. Audio: gọi tao-audio cho từng câu → `nghe/<tep>-NN.mp3`; file đã có thì dùng lại.
- *   3. Ghi supabase/migrations/216_luyen_nghe_tcf.sql: bài kho `practice`, level « TCF », gắn cây bằng
+ *   3. Ghi supabase/migrations/<số kế tiếp>_luyen_nghe_tcf.sql (số lớn nhất trong thư mục + 1, tính lúc chạy,
+ *      để file luôn đứng SAU mọi migration đã đẩy; đã có file luyen_nghe_tcf thì ghi đè đúng file đó): bài kho `practice`, level « TCF », gắn cây bằng
  *      meta.kyNang + thuTu + vong. Bài trong `mienPhi` miễn phí, còn lại VIP 19.000 đ. Chạy lại an toàn.
  *
  * `doan` (kịch bản audio) KHÔNG vào payload (học sinh đọc được payload); lời chép nằm ở `model` (answer_key).
  * Chạy: TTS_ADMIN_TOKEN=… node scripts/nhap/lo50_nghe_tcf.mjs   (--kho: chỉ kiểm, không gọi TTS, không ghi) */
-import { readFileSync, writeFileSync, existsSync } from "node:fs";
+import { readFileSync, writeFileSync, existsSync, readdirSync } from "node:fs";
 import { toRows } from "../../src/shared/exerciseMap.js";
 import { KY_NANG_TCF } from "../../src/content/luyenTap/kyNangTCF.js";
 import { GIAM_KHAO, DOI_THOAI as DT, RADIO as RA, ANNONCE as AN, QC } from "./lo44_tcf_chung.mjs";
@@ -135,6 +136,11 @@ for (const [i, b] of BAI.entries()) {
   const dong = qRows.map((x) => `  (${q(x.id)}, ${q(x.exercise_id)}, ${x.ord}, ${q(x.type)}, ${q(x.prompt)}, ${j(x.payload)}, ${j(x.answer_key)}, ${q(x.explanation)})`).join(",\n");
   ra.push(`-- ${b.ma} #${thuTu} ${b.tieuDe} (${mienPhi ? "miễn phí" : "VIP"})\nwith e as (insert into public.exercises (${cot.join(", ")}) values (${gt.join(", ")}) on conflict (id) do nothing returning id)\ninsert into public.questions (id, exercise_id, ord, type, prompt, payload, answer_key, explanation)\nselect v.* from e, (values\n${dong}\n) as v(id, exercise_id, ord, type, prompt, payload, answer_key, explanation);`);
 }
-const dau = `-- 216 (16/11/2026, lô 50): ${BAI.length} bài Nghe TCF cho cây Luyện thi TCF, ${soCau} câu, ${mien} miễn phí, ${BAI.length - mien} VIP.\n-- Sinh bởi scripts/nhap/lo50_nghe_tcf.mjs. Mỗi câu một audio riêng (payload.audio). Chạy lại an toàn.\n`;
-writeFileSync("supabase/migrations/216_luyen_nghe_tcf.sql", dau + ra.join("\n\n") + "\n");
-console.error(`Đã ghi supabase/migrations/216_luyen_nghe_tcf.sql: ${BAI.length} bài, ${soCau} câu, ${mien} miễn phí.`);
+/* Số migration: dùng lại file cũ nếu đã ghi, không thì lấy số kế tiếp. */
+const dsMig = readdirSync("supabase/migrations");
+const cu = dsMig.find((f) => /^\d+_luyen_nghe_tcf\.sql$/.test(f));
+const soMig = cu ? cu.split("_")[0] : String(Math.max(...dsMig.map((f) => parseInt(f, 10)).filter((n) => n > 0)) + 1);
+const tepMig = `supabase/migrations/${soMig}_luyen_nghe_tcf.sql`;
+const dau = `-- ${soMig} (16/11/2026, lô 50): ${BAI.length} bài Nghe TCF cho cây Luyện thi TCF, ${soCau} câu, ${mien} miễn phí, ${BAI.length - mien} VIP.\n-- Sinh bởi scripts/nhap/lo50_nghe_tcf.mjs. Mỗi câu một audio riêng (payload.audio). Chạy lại an toàn.\n`;
+writeFileSync(tepMig, dau + ra.join("\n\n") + "\n");
+console.error(`Đã ghi ${tepMig}: ${BAI.length} bài, ${soCau} câu, ${mien} miễn phí.`);

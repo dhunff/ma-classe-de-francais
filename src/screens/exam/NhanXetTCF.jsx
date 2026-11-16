@@ -14,7 +14,8 @@ const NHOM = () => [
   ["sociolinguistique", tr("Phù hợp tình huống", "Sociolinguistique", "Appropriateness")],
 ];
 
-export default function NhanXetTCF({ attemptId, ban = null, tuDong = true }) {
+/* `luyenTap` (16/11): lượt làm bài luyện Viết TCF ở màn Luyện tập, chỉ chấm các tâche bài có. */
+export default function NhanXetTCF({ attemptId, ban = null, tuDong = true, luyenTap = false }) {
   const [kq, setKq] = useState(ban);
   const [dang, setDang] = useState(false);
   const [loi, setLoi] = useState("");
@@ -24,7 +25,7 @@ export default function NhanXetTCF({ attemptId, ban = null, tuDong = true }) {
     if (kq || !tuDong || !attemptId) return;
     let huy = false;
     setDang(true);
-    chamTcf(attemptId).then((r) => {
+    chamTcf(attemptId, { luyenTap }).then((r) => {
       if (huy) return;
       setDang(false);
       if (r.ok) setKq(r); else setLoi(r.thongBao);

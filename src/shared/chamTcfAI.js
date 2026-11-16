@@ -19,9 +19,9 @@ const cau = (ma, than) => ({
 }[ma]);
 
 /** Chấm (hoặc lấy lại phiếu đã chấm) cho một lượt làm phần PE/PO của đề TCF. */
-export async function chamTcf(attemptId) {
+export async function chamTcf(attemptId, { luyenTap = false } = {}) {
   if (!attemptId) return { ok: false, ma: "THIEU_THAM_SO", thongBao: tr("Phần này chưa được lưu nên chưa chấm được.", "Cette épreuve n'est pas enregistrée.", "This part isn't saved.") };
-  const { data, error } = await supabase.functions.invoke("cham-tcf", { body: { attemptId } });
+  const { data, error } = await supabase.functions.invoke("cham-tcf", { body: luyenTap ? { attemptId, luyenTap: true } : { attemptId } });
   if (error) {
     let than = null;
     try { than = await error.context?.json?.(); } catch { /* không đọc được thì thôi */ }

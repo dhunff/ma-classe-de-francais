@@ -43,6 +43,7 @@ import { PAYMENT_KEY, isPremium, hasAccess, fmtPrice, loadAccess } from "./share
 import ExerciseCard from "./screens/practice/ExerciseCard.jsx";
 import LoiNgheBai from "./screens/practice/LoiNgheBai.jsx";
 import { NhanXetVietLuyen, GoiYVietLai } from "./screens/practice/LoiVietAI.jsx";
+import NhanXetTCF from "./screens/exam/NhanXetTCF.jsx";
 import { supabase } from "./storageShim.js";
 import { Lock } from "lucide-react";
 import { anhMacDinh } from "./shared/anhMacDinh.js";
@@ -82,6 +83,8 @@ const CATS = [
   { skill: "__autres__", key: "others", Icon: Shapes, color: "#626A85", pastel: "#EFF0F3", tuoi: "linear-gradient(135deg,#22D3EE,#0891B2)", dai: "linear-gradient(135deg,#0E7490,#155E75)", dam: "#0E7490" },
 ];
 /* Bài nói không nằm trong sáu danh mục của Thư viện nên có màu riêng ở màn làm bài. */
+/* Bài luyện Viết TCF (16/11, lô 52): chấm bằng cham-tcf (tiêu chí TCF), không bằng thang DELF. */
+const LA_VIET_TCF = (ex) => !!ex && ["TCF", "TCF_TP"].includes(ex.level) && String(ex.kyNang ?? "").startsWith("TCF-PE");
 const MAU_NOI = { dai: "linear-gradient(135deg,#7C3AED,#5B21B6)", dam: "#6D28D9", Icon: Mic };
 const MAIN_SKILLS = CATS.filter((c) => !c.skill.startsWith("__")).map((c) => c.skill);
 const inCat = (ex, sk) => sk === "__autres__"
@@ -1314,7 +1317,7 @@ export function PracticeWorkspace({ ex, back, onFinish, soTu = false, chamBang =
   useEffect(() => { if (soDaLam > soTruoc.current && !gradedRef.current) phat("bam"); soTruoc.current = soDaLam; }, [soDaLam]);
   useEffect(() => { if (remaining === 60) phat("sapHet"); }, [remaining]);
   useEffect(() => {
-    const can = graded && ex && ex.ghiAm ? ex.questions.filter((q) => q.type === "open" && !q.model) : [];
+    const can = graded && ex && (ex.ghiAm || LA_VIET_TCF(ex)) ? ex.questions.filter((q) => q.type === "open" && !q.model) : [];
     if (!can.length) return undefined;
     let con = true;
     Promise.all(can.map((q) => supabase.rpc("get_model_answer", { p_question: q.id }).then(({ data }) => [q.id, data], () => [q.id, null])))
@@ -1620,7 +1623,21 @@ export function PracticeWorkspace({ ex, back, onFinish, soTu = false, chamBang =
               {!graded && banTruoc[q.id] && <GoiYVietLai banTruoc={banTruoc[q.id]} />}
               <KhungViet value={a || ""} readOnly={!!graded} onChange={(html) => setAnswers({ ...answers, [q.id]: html })} />
             </>}
-            {graded && !laNoi && luotId && stripHtml(a) !== "" && (
+            {/* 16/11 (Luyện thi TCF): bài Viết TCF chấm theo tiêu chí TCF (cham-tcf), MỘT phiếu cho cả bài,
+                đặt dưới câu viết cuối; mỗi câu kèm bài mẫu (thang DELF của NhanXetVietLuyen không áp được). */}
+            {graded && !laNoi && LA_VIET_TCF(ex) && baiMau[q.id] && (
+              <details className="mt-3 rounded-2xl bg-ok-soft px-4 py-3">
+                <summary className="cursor-pointer text-sm font-extrabold text-ink">{tr("Bài mẫu tham khảo", "Copie modèle", "Model answer")}</summary>
+                <div lang="fr" className="mt-2 whitespace-pre-line text-[14.5px] leading-relaxed text-ink">{baiMau[q.id]}</div>
+              </details>
+            )}
+            {graded && !laNoi && LA_VIET_TCF(ex) && luotId && q.id === ex.questions.filter((x) => x.type === "open").at(-1)?.id && (
+              <div className="mt-3 rounded-2xl border border-solid border-line px-4 py-3">
+                <p className="m-0 text-sm font-extrabold text-ink">{tr("AI chấm theo tiêu chí TCF", "Correction IA selon les critères du TCF", "AI marking with TCF criteria")}</p>
+                <NhanXetTCF key={luotId} attemptId={luotId} luyenTap />
+              </div>
+            )}
+            {graded && !laNoi && !LA_VIET_TCF(ex) && luotId && stripHtml(a) !== "" && (
               <NhanXetVietLuyen key={`${luotId}-${q.id}`} attemptId={luotId} questionId={q.id} baiLam={a} level={ex.level}
                 banTruoc={banTruoc[q.id]} onVietLai={(g) => vietLai(q.id, g)} />
             )}
