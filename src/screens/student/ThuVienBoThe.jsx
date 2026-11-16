@@ -8,23 +8,7 @@ import { Leon } from "../../shared/leon.jsx";
 import { phat } from "../../shared/amThanh.js";
 import NutTieng from "../../shared/NutTieng.jsx";
 
-/* Thư viện bộ thẻ — cột tab dọc bên trái, lưới thẻ bên phải.
- *
- * ══ TAB DỌC HOẠT ĐỘNG THẾ NÀO ══
- *
- * `[writing-mode:vertical-lr]` xoay DÒNG CHỮ, không xoay hộp: chữ chạy từ trên
- * xuống nhưng mỗi ký tự vẫn đứng thẳng. Đọc được, nhưng ngược chiều quen thuộc
- * của mắt — nên thêm `rotate-180` để dòng chạy từ dưới lên, đúng kiểu gáy sách.
- *
- * Hai lớp phải đi CÙNG NHAU. Chỉ `writing-mode` thì chữ đọc từ trên xuống và
- * nhãn cuối cùng nằm sát đáy; chỉ `rotate-180` thì cả khối chữ lộn ngược.
- *
- * `rotate-180` xoay quanh TÂM phần tử, nên nút phải có bề rộng cố định
- * (`w-11`) — để chiều rộng tự co theo chữ thì mỗi tab rộng một kiểu và sau khi
- * xoay chúng lệch nhau vài pixel theo trục ngang.
- *
- * `check:css` canh hai lớp này thật sự sinh ra CSS: Tailwind BỎ QUA lớp không
- * tồn tại mà không báo gì, và một tab dọc hỏng trông y hệt một tab thường.
+/* Thư viện bộ thẻ: tab ngang ở trên (Luyện thẻ, Thách đấu), nội dung bên dưới.
  *
  * ══ VÌ SAO KHÔNG PHẢI `bg-gray-800/80` ══
  *
