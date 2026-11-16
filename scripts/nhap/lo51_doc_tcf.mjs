@@ -7,7 +7,7 @@
  *   1. Kiểm: đủ 4 lựa chọn khác nhau, đáp án hợp lệ, không bài nào dồn đáp án một vị trí, không dấu gạch
  *      dài, đoạn trích « » trong lời giải có nguyên văn trong tài liệu, mã kỹ năng có trong cây, có từ vựng
  *      và mẹo, đáp án đúng không thường là phương án dài nhất.
- *   2. Ghi supabase/migrations/215_luyen_doc_tcf.sql: bài kho `practice`, level « TCF », gắn cây bằng
+ *   2. Ghi supabase/migrations/215_luyen_doc_tcf.sql (9 bài đợt 1, đã chạy) và 218_luyen_doc_tcf_2.sql (đợt 2): bài kho `practice`, level « TCF », gắn cây bằng
  *      meta.kyNang + thuTu + vong. Bài trong `mienPhi` miễn phí, còn lại VIP 19.000 đ. Chạy lại an toàn.
  *
  * Chạy: node scripts/nhap/lo51_doc_tcf.mjs   (--kho: chỉ kiểm, không ghi) */
@@ -17,6 +17,8 @@ import { KY_NANG_TCF } from "../../src/content/luyenTap/kyNangTCF.js";
 import { phanA } from "./lo51_doc_tcf_a.mjs";
 import { phanB } from "./lo51_doc_tcf_b.mjs";
 import { phanC } from "./lo51_doc_tcf_c.mjs";
+import { phanD } from "./lo51_doc_tcf_d.mjs";
+import { phanE } from "./lo51_doc_tcf_e.mjs";
 
 const CHI_KIEM = process.argv.includes("--kho");
 let hat = Number(process.env.HAT || 20261120);
@@ -31,7 +33,11 @@ const doc = (taiLieu, cauHoi, dung, sai, giai) => {
     options: o.map((y) => y.x), answer: o.findIndex((y) => y.dung), explanation: giai };
 };
 
-const BAI = [...phanA({ doc }), ...phanB({ doc }), ...phanC({ doc })];
+/* Đợt 2 (phần D, E, cho đủ kế hoạch) nối vào CUỐI: 9 bài đợt 1 đã lên database (215), id và cách trộn giữ nguyên. */
+const dot1 = [...phanA({ doc }), ...phanB({ doc }), ...phanC({ doc })];
+hat = Number(process.env.HAT2 || 20261123); // hạt riêng cho đợt 2, để đổi được mà không đụng 215
+const BAI = [...dot1, ...phanD({ doc }), ...phanE({ doc })];
+const DOT1 = 9;
 
 /* ── 1. Kiểm ── */
 const chuan = (s) => s.replace(/<[^>]+>/g, " ").toLowerCase().replace(/[’]/g, "'").replace(/\s+/g, " ").trim();
@@ -100,8 +106,14 @@ for (const [i, b] of BAI.entries()) {
   const cot = Object.keys(exRow);
   const gt = cot.map((k) => (k === "meta" ? j(exRow[k]) : Array.isArray(exRow[k]) ? `array[${exRow[k].map(q).join(",")}]::text[]` : typeof exRow[k] === "number" ? exRow[k] : q(exRow[k])));
   const dong = qRows.map((x) => `  (${q(x.id)}, ${q(x.exercise_id)}, ${x.ord}, ${q(x.type)}, ${q(x.prompt)}, ${j(x.payload)}, ${j(x.answer_key)}, ${q(x.explanation)})`).join(",\n");
-  ra.push(`-- ${b.ma} #${thuTu} ${b.tieuDe} (${mienPhi ? "miễn phí" : "VIP"})\nwith e as (insert into public.exercises (${cot.join(", ")}) values (${gt.join(", ")}) on conflict (id) do nothing returning id)\ninsert into public.questions (id, exercise_id, ord, type, prompt, payload, answer_key, explanation)\nselect v.* from e, (values\n${dong}\n) as v(id, exercise_id, ord, type, prompt, payload, answer_key, explanation);`);
+  ra.push({ dot1: i < DOT1, mienPhi, soCau: b.cau.length, sql: `-- ${b.ma} #${thuTu} ${b.tieuDe} (${mienPhi ? "miễn phí" : "VIP"})\nwith e as (insert into public.exercises (${cot.join(", ")}) values (${gt.join(", ")}) on conflict (id) do nothing returning id)\ninsert into public.questions (id, exercise_id, ord, type, prompt, payload, answer_key, explanation)\nselect v.* from e, (values\n${dong}\n) as v(id, exercise_id, ord, type, prompt, payload, answer_key, explanation);` });
 }
-const dau = `-- 215 (16/11/2026, lô 51): ${BAI.length} bài Đọc TCF cho cây Luyện thi TCF, ${soCau} câu, ${mien} miễn phí, ${BAI.length - mien} VIP.\n-- Sinh bởi scripts/nhap/lo51_doc_tcf.mjs. Mỗi câu một tài liệu riêng (payload.doc). Chạy lại an toàn.\n`;
-writeFileSync("supabase/migrations/215_luyen_doc_tcf.sql", dau + ra.join("\n\n") + "\n");
-console.error(`Đã ghi supabase/migrations/215_luyen_doc_tcf.sql: ${BAI.length} bài, ${soCau} câu, ${mien} miễn phí.`);
+/* 215 (đã chạy trên database) sinh lại Y HỆT cho 9 bài đợt 1; bài đợt 2 vào 218. */
+const ghi = (tep, so, ds, mo) => {
+  const mp = ds.filter((x) => x.mienPhi).length, sc = ds.reduce((n, x) => n + x.soCau, 0);
+  const dau = `-- ${so} (16/11/2026, lô 51${mo}): ${ds.length} bài Đọc TCF cho cây Luyện thi TCF, ${sc} câu, ${mp} miễn phí, ${ds.length - mp} VIP.\n-- Sinh bởi scripts/nhap/lo51_doc_tcf.mjs. Mỗi câu một tài liệu riêng (payload.doc). Chạy lại an toàn.\n`;
+  writeFileSync(tep, dau + ds.map((x) => x.sql).join("\n\n") + "\n");
+  console.error(`Đã ghi ${tep}: ${ds.length} bài, ${sc} câu, ${mp} miễn phí.`);
+};
+ghi("supabase/migrations/215_luyen_doc_tcf.sql", 215, ra.filter((x) => x.dot1), "");
+ghi("supabase/migrations/218_luyen_doc_tcf_2.sql", 218, ra.filter((x) => !x.dot1), ", đợt 2");
