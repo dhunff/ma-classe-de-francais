@@ -1,5 +1,7 @@
 /* Lô 50 (16/11/2026): MÁY DỰNG bài Nghe TCF cho cây Luyện thi TCF (src/content/luyenTap/kyNangTCF.js).
  * Nội dung: lo50_nghe_tcf_a.mjs (TCF-CO-1, CO-2), _b.mjs (CO-3, CO-4), _c.mjs (CO-5, bài nhịp thi 12 câu).
+ * Đợt 2 (16/11, cho đủ kế hoạch 6/6/6/5/3 bài): _d.mjs (CO-1, CO-2 bài 3 đến 6), _e.mjs (CO-3 bài 3 đến 6,
+ * CO-4 bài 3 đến 5, CO-5 mini-test 2 và 3). Tổng 26 bài, 169 câu, 8 miễn phí, 18 VIP.
  *
  * Khuôn câu như đề TCF trên web (lô 44): mỗi câu một file audio riêng (`q.audio`), màn luyện phát MỘT lần
  * trước khi nộp (NgheMotLan.jsx), nộp xong nghe lại được. Câu « chỉ nghe » có ô A, B, C, D không in chữ:
@@ -21,6 +23,8 @@ import { GIAM_KHAO, DOI_THOAI as DT, RADIO as RA, ANNONCE as AN, QC } from "./lo
 import { phanA } from "./lo50_nghe_tcf_a.mjs";
 import { phanB } from "./lo50_nghe_tcf_b.mjs";
 import { phanC } from "./lo50_nghe_tcf_c.mjs";
+import { phanD } from "./lo50_nghe_tcf_d.mjs";
+import { phanE } from "./lo50_nghe_tcf_e.mjs";
 
 const CHI_KIEM = process.argv.includes("--kho");
 let hat = 20261117;
@@ -44,7 +48,8 @@ const hoi = (taiLieu, cauHoi, dung, sai, giai) => {
 };
 
 const H = { d, dap, hoi, DT, AN, RA, QC };
-const BAI = [...phanA(H), ...phanB(H), ...phanC(H)];
+/* Đợt 2 (phần D, E, cho đủ kế hoạch) nối vào CUỐI: id lo50tcfcoNN và file audio của 9 bài đợt 1 giữ nguyên. */
+const BAI = [...phanA(H), ...phanB(H), ...phanC(H), ...phanD(H), ...phanE(H)];
 
 /* ── 1. Kiểm ── */
 const chuan = (s) => s.toLowerCase().replace(/[’]/g, "'").replace(/\s+/g, " ").trim();
@@ -69,7 +74,12 @@ for (const b of BAI) {
   if (new Set(dapAn).size === 1) loi.push(`${b.tieuDe}: mọi đáp án ở vị trí ${CHU[dapAn[0]]}`);
   if (Math.max(...[0, 1, 2, 3].map((k) => dapAn.filter((x) => x === k).length)) > Math.ceil(dapAn.length / 2)) loi.push(`${b.tieuDe}: đáp án dồn một vị trí (${dapAn.map((x) => CHU[x]).join("")})`);
 }
+/* Đáp án đúng là phương án dài nhất: chỉ tính câu có chữ in sẵn (câu chỉ nghe chỉ có A, B, C, D). */
+const coChu = BAI.flatMap((b) => b.cau).filter((c) => c.options.some((o) => o.length > 1));
+const tiLeDai = coChu.filter((c) => c.options[c.answer].length === Math.max(...c.options.map((o) => o.length))).length / coChu.length;
+if (tiLeDai > 0.4) loi.push(`Đáp án đúng là phương án dài nhất ở ${Math.round(tiLeDai * 100)} % câu có chữ (ngưỡng 40 %)`);
 if (loi.length) { console.error("LỖI:\n" + loi.join("\n")); process.exit(1); }
+console.error(`Đáp án đúng là phương án dài nhất ở ${Math.round(tiLeDai * 100)} % câu có chữ.`);
 const soCau = BAI.reduce((n, b) => n + b.cau.length, 0);
 const soKyTu = BAI.reduce((n, b) => n + b.cau.reduce((m, c) => m + c.doan.reduce((k, x) => k + x.chu.length, 0), 0), 0);
 for (const b of BAI) console.error(`· ${b.ma} ${b.tieuDe}: ${b.cau.length} câu, đáp án ${b.cau.map((c) => CHU[c.answer]).join("")}`);
