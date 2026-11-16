@@ -198,7 +198,9 @@ export default function FormatDe({ ma }) {
   const ds = FORMAT[ma];
   if (!ds) return null;
   const tcf = ma === "TCF" || ma === "TCF_TP";
-  const tong = ds.reduce((n, p) => n + soPhut(p.phut), 0);
+  /* 16/11 (chủ dự án): tổng làm tròn tới 5 phút. Phần nói ghi khoảng (« 6 – 8 ») nên tổng cộng theo cận
+     dưới ra số lẻ (A2 ≈ 1h46); con số này vốn là ước lượng (≈), làm tròn đọc dễ hơn. */
+  const tong = Math.round(ds.reduce((n, p) => n + soPhut(p.phut), 0) / 5) * 5;
   return (
     <NutCuaSo icon={LayoutList} nhan={tr("Format đề", "Format", "Format")} phu={tenKy(ma)} rong="max-w-3xl"
       tieuDe={`${tr("Format đề", "Format de l'épreuve", "Exam format")} ${tenKy(ma)}`}>

@@ -22,7 +22,7 @@ import { GhepCap, DienPhieu, AnhLuaChon } from "../student/dangMoi.jsx";
 import NhanXetTCF from "./NhanXetTCF.jsx";
 import XemLaiBaiThi from "./XemLaiBaiThi.jsx";
 import { nhomTheoTrinhDo } from "../../shared/trinhDoDe.js";
-import { HopBatDau, HopThoat, useGiuPhongThi } from "./LuotThi.jsx";
+import { HopBatDau, HopThoat, useGiuPhongThi, gioPhut } from "./LuotThi.jsx";
 import { isQuestionAnswered } from "../../shared/questions.js";
 
 /* Màn thi KHÔNG có ô căn cứ cho câu vf, nên chọn Đúng/Sai/? là đã làm.
@@ -370,7 +370,7 @@ function ManCho({ dsDe, chon, paper, onStart, dangTai, lamPhanNoi, setLamPhanNoi
         <div className="flex items-center gap-3 px-4 py-2.5">
           <span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-primary to-indigo-600 text-white shadow-[0_4px_10px_rgba(37,99,235,0.3)]"><Timer size={15} /></span>
           <span className="min-w-0 flex-1">
-            {tr("Tôi có", "J'ai", "I have")} <strong>{tongPhut} {tr("phút liên tục", "minutes d'affilée", "minutes in a row")}</strong>{tr(", không rời bài thi", ", sans quitter l'examen", ", without leaving the exam")}
+            {tr("Tôi có", "J'ai", "I have")} <strong>{gioPhut(tongPhut)} {tr("liên tục", "d'affilée", "in a row")}</strong>{tr(", không rời bài thi", ", sans quitter l'examen", ", without leaving the exam")}
           </span>
           <CongTac bat={sanSang} onDoi={(v) => { phat(v ? "dung" : "bam"); setSanSang(v); }} nhan={tr("Tôi sẵn sàng", "Je suis prêt(e)", "I'm ready")} />
         </div>
