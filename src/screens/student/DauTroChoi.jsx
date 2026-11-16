@@ -47,7 +47,7 @@ function LuoiBan({ ds, ban, setBan, nen }) {
                 whileHover={{ y: -2 }} whileTap={{ scale: 0.96 }}
                 className={`relative flex min-w-0 cursor-pointer items-center gap-2.5 overflow-hidden rounded-2xl border border-solid px-2.5 py-2 text-left font-sans transition-colors duration-200 ${dang ? "border-transparent text-white shadow-md" : "border-line bg-surface text-ink hover:border-primary/40"}`}>
                 {dang && <motion.span layoutId="ban-chon" transition={LO_XO} aria-hidden className={`absolute inset-0 bg-gradient-to-br ${nen}`} />}
-                <span className={`relative shrink-0 rounded-full ${dang ? "ring-2 ring-white" : ""}`}>
+                <span className={`relative flex shrink-0 rounded-full ${dang ? "ring-2 ring-white" : ""}`}>
                   <Avatar khoa={b.avatar || ""} ten={b.name} size={38} dungYen />
                   {dang && <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} transition={NAY} className="absolute -bottom-1 -right-1 grid h-[18px] w-[18px] place-items-center rounded-full bg-white text-[#111]"><Check size={11} strokeWidth={3.5} /></motion.span>}
                 </span>
@@ -80,7 +80,9 @@ function DaiDoiDau({ ban, nen }) {
         className="relative grid h-10 w-10 place-items-center rounded-full bg-white text-[#111] shadow-lg"><Swords size={18} /></motion.span>
       {ban ? (
         <motion.span key={`ban-${ban.id}`} initial={{ opacity: 0, x: 24 }} animate={{ opacity: 1, x: 0 }} transition={LO_XO} className="relative flex min-w-0 items-center gap-2.5">
-          <span className="shrink-0 rounded-full ring-2 ring-white"><Avatar khoa={ban.avatar || ""} ten={ban.name} size={44} dungYen /></span>
+          {/* `flex`, không để span nội dòng: Avatar là inline-grid nên span nội dòng cao hơn ảnh vài px
+              (chỗ cho chân chữ), vòng viền thành hình bầu lệch xuống (lỗi 17/11). */}
+          <span className="flex shrink-0 rounded-full ring-2 ring-white"><Avatar khoa={ban.avatar || ""} ten={ban.name} size={44} dungYen /></span>
           <span className="truncate text-sm font-extrabold">{ban.name}</span>
         </motion.span>
       ) : (

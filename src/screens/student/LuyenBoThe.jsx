@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { ArrowLeft, AlertTriangle, RotateCcw, Frown, ThumbsUp, Zap, Repeat, Layers } from "lucide-react";
+import { ArrowLeft, AlertTriangle, RotateCcw, Frown, ThumbsUp, Zap, Repeat, Layers, CalendarClock, Loader2, PartyPopper } from "lucide-react";
 import NutTieng from "../../shared/NutTieng.jsx";
 import { hocBo } from "../../shared/boThe.js";
 import { chamThe } from "../../shared/theGhiNho.js";
-import { MUC, xepLichOn, ngayCong } from "../../shared/sm2.js";
+import { MUC, xepLichOn, ngayCong, onLai } from "../../shared/sm2.js";
 /* Dùng lại thẻ lật 3D đã có thay vì dựng bản lật tại chỗ thứ hai. Nó là thành
    phần trình bày thuần — nhận mọi thứ qua props, không chạm storageShim — và
    đã được check:css canh đủ bốn lớp 3D, check:sm2 canh chồng thẻ.
@@ -75,6 +75,31 @@ const NUT_3D = {
   de: "border-green-700 bg-gradient-to-b from-emerald-400 to-green-600",
 };
 const CAM_SAU = { lai: "buon", kho: "hum", tot: "duoc-do", de: "tuyet-voi" };
+/* 17/11: nút chấm là thẻ nền nhạt theo màu ngữ nghĩa (token), rê chuột thì tô đậm. Dưới nhãn là
+   LẦN ÔN TỚI nếu bấm nút đó, tính bằng chính onLai của SM-2 trên lịch của thẻ này: người học thấy
+   lựa chọn của mình dẫn tới đâu. Luyện thêm không ghi lịch nên không hiện. */
+const NUT_MOI = {
+  lai: ["bg-danger-soft text-danger hover:bg-danger hover:text-white", "bg-danger"],
+  kho: ["bg-warn-soft text-warn hover:bg-warn hover:text-white", "bg-warn"],
+  tot: ["bg-primary-soft text-primary hover:bg-primary hover:text-on-primary", "bg-primary"],
+  de: ["bg-ok-soft text-ok hover:bg-ok hover:text-white", "bg-ok"],
+};
+const lanToiNeu = (the, k) => {
+  try {
+    const n = onLai(the, MUC[k].q)?.interval_days;
+    if (!(n >= 1)) return "";
+    return k === "lai" ? tr("Gặp lại ngay", "Revient tout de suite", "Comes back now")
+      : n === 1 ? tr("Ôn lại mai", "Demain", "Tomorrow") : tr(`Ôn lại sau ${n} ngày`, `Dans ${n} jours`, `In ${n} days`);
+  } catch { return ""; }
+};
+const docTo = (chu) => {
+  try {
+    const sp = window.speechSynthesis; if (!sp) return;
+    sp.cancel();
+    const u = new window.SpeechSynthesisUtterance(chu); u.lang = "fr-FR"; u.rate = 0.9;
+    sp.speak(u);
+  } catch { /* máy không có giọng đọc thì thôi */ }
+};
 const KIEU_NUT = {
   lai: "bg-danger-soft text-danger",
   kho: "bg-warn-soft text-warn",
@@ -209,38 +234,33 @@ export default function LuyenBoThe({ bo, onThoat, theMau, nguon }) {
     : null;
 
   return (
-    <div className="mx-auto max-w-2xl py-6">
-      <button
-        type="button"
-        onClick={onThoat}
-        className="inline-flex items-center gap-1.5 rounded-full border-0 bg-surface2 px-3 py-1.5 text-left font-sans text-xs font-bold text-ink"
-      >
-        <ArrowLeft size={13} /> Flashcard
-      </button>
-
-      <div className="mcf-cau-vao relative mt-4 overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-500 via-violet-500 to-purple-600 p-5 text-white shadow-[0_16px_40px_rgba(99,102,241,0.3)]">
-        <span aria-hidden className="absolute -right-10 -top-10 h-36 w-36 rounded-full bg-white/10" />
-        <div className="relative flex items-center gap-4">
-          <div className="min-w-0 flex-1">
-            <p className="m-0 text-xs font-extrabold uppercase tracking-[0.18em] text-white/75">Flashcard</p>
-            <h1 className="m-0 mt-1 truncate text-2xl font-extrabold tracking-tight">{bo?.ten}</h1>
-            {tongPhien > 0 && (
-              <div className="mt-3">
-                <div className="h-2.5 overflow-hidden rounded-full bg-white/20">
-                  <div className="relative h-full overflow-hidden rounded-full bg-white transition-[width] duration-500 ease-out" style={{ width: `${Math.round((xong / tongPhien) * 100)}%` }}>
-                    <span aria-hidden className="mcf-anh-sang absolute inset-y-0 left-0 w-1/3 bg-gradient-to-r from-transparent via-violet-300/70 to-transparent" />
-                  </div>
-                </div>
-                <p className="m-0 mt-1 text-xs font-bold tabular-nums text-white/85">{xong}/{tongPhien} {cheDo === "luyen" ? tr("thẻ luyện thêm (không đổi lịch ôn)", "cartes en entraînement libre (planning inchangé)", "practice cards (schedule unchanged)") : tr("thẻ đến hạn hôm nay", "cartes à réviser aujourd'hui", "cards due today")}</p>
-              </div>
-            )}
-          </div>
-          <NutTieng className="border-white/30 bg-white/15 text-white hover:border-white hover:text-white" />
+    <div className="mx-auto max-w-2xl px-4 py-6">
+      {/* 17/11: đầu màn gọn một hàng (lối ra, tên bộ, tiếng), tiến độ là một thanh mảnh ngay dưới:
+          nhường chỗ cho tấm thẻ, thứ duy nhất cần nhìn ở màn này. */}
+      <div className="mcf-cau-vao flex items-center gap-3">
+        <button type="button" onClick={onThoat} aria-label={tr("Về Flashcard", "Retour aux flashcards", "Back to flashcards")}
+          className="group grid h-10 w-10 shrink-0 cursor-pointer place-items-center rounded-full border border-solid border-line bg-surface text-ink shadow-sm transition-colors hover:border-primary hover:text-primary">
+          <ArrowLeft size={17} className="transition-transform group-hover:-translate-x-0.5" />
+        </button>
+        <div className="min-w-0 flex-1">
+          <h1 className="m-0 truncate text-lg font-extrabold leading-tight text-ink">{bo?.ten}</h1>
+          <p className="m-0 text-xs font-bold text-soft">{cheDo === "luyen" ? tr("Luyện thêm, không đổi lịch ôn", "Entraînement libre, planning inchangé", "Extra practice, schedule unchanged") : tr("Ôn theo lịch nhắc", "Révision programmée", "Scheduled review")}</p>
         </div>
+        <NutTieng />
       </div>
+      {tongPhien > 0 && (
+        <div className="mt-4 flex items-center gap-3">
+          <div className="h-2.5 min-w-0 flex-1 overflow-hidden rounded-full bg-surface2">
+            <div className="relative h-full overflow-hidden rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 transition-[width] duration-500 ease-out motion-reduce:transition-none" style={{ width: `${Math.round((xong / tongPhien) * 100)}%` }}>
+              <span aria-hidden className="mcf-anh-sang absolute inset-y-0 left-0 w-1/3 bg-gradient-to-r from-transparent via-white/60 to-transparent" />
+            </div>
+          </div>
+          <span className="shrink-0 rounded-full bg-surface px-3 py-1 text-xs font-extrabold tabular-nums text-ink shadow-sm">{xong}/{tongPhien}</span>
+        </div>
+      )}
 
       {tatCa === undefined ? (
-        <p className="m-0 py-16 text-center text-sm text-soft">{tr("Đang tải thẻ…", "Chargement des cartes…", "Loading cards…")}</p>
+        <p className="m-0 flex items-center justify-center gap-2 py-16 text-sm text-soft"><Loader2 size={16} className="animate-spin" /> {tr("Đang tải thẻ…", "Chargement des cartes…", "Loading cards…")}</p>
       ) : tatCa === null ? (
         <div className="mt-8 rounded-2xl bg-danger-soft p-6 text-center">
           <AlertTriangle size={20} className="mx-auto text-danger" />
@@ -248,14 +268,15 @@ export default function LuyenBoThe({ bo, onThoat, theMau, nguon }) {
           <p className="m-0 mt-1 text-sm text-ink">{tr("Kiểm tra kết nối rồi thử lại.", "Vérifiez la connexion et réessayez.", "Check your connection and try again.")}</p>
         </div>
       ) : tatCa.length === 0 ? (
-        <div className="mt-8 rounded-2xl border border-line bg-surface p-8 text-center">
+        <div className="mt-8 rounded-3xl border border-solid border-line bg-surface p-8 text-center shadow-sm">
           <p className="m-0 font-bold text-ink">{tr("Bộ này chưa có thẻ nào", "Ce paquet est vide", "This deck has no cards yet")}</p>
           <p className="m-0 mt-1 text-sm text-soft">{tr("Giáo viên chưa thêm thẻ vào đây.", "L'enseignant n'a pas encore ajouté de cartes.", "The teacher hasn't added cards yet.")}</p>
         </div>
       ) : !the ? (
         /* Hết thẻ đến hạn. Nói NGÀY quay lại — "xong" mà không nói bao giờ
            quay lại thì người ta hoặc mở lại liên tục, hoặc quên luôn bộ này. */
-        <div className="mt-8 rounded-3xl border border-line bg-surface p-6 text-center sm:p-8">
+        <div className="mcf-cau-vao relative mt-8 overflow-hidden rounded-[2rem] border border-solid border-line bg-surface p-6 text-center shadow-sm sm:p-8">
+          <span aria-hidden className="absolute inset-x-0 top-0 h-2 bg-gradient-to-r from-indigo-500 via-violet-500 to-purple-600" />
           <Leon cam={tongPhien > 0 ? (dsSai.length ? "hum" : "yeah") : "buon-ngu"} size={110} className="mcf-nay mx-auto block" />
           <p className="m-0 mt-3 text-lg font-extrabold text-ink">
             {tongPhien === 0 ? tr("Hôm nay không có thẻ nào đến hạn", "Aucune carte à réviser aujourd'hui", "No cards due today")
@@ -264,13 +285,17 @@ export default function LuyenBoThe({ bo, onThoat, theMau, nguon }) {
           </p>
           <p className="m-0 mt-1 text-sm text-soft">
             {tongPhien > 0 && cheDo === "on" && tr(`Bạn đã ôn ${xong} thẻ. `, `Vous avez révisé ${xong} carte(s). `, `You reviewed ${xong} card(s). `)}
-            {cheDo === "on" && lanToi && tr(`Lần ôn tới: ${ngayNgan(lanToi)}.`, `Prochaine révision : ${ngayNgan(lanToi)}.`, `Next review: ${ngayNgan(lanToi)}.`)}
           </p>
+          {cheDo === "on" && lanToi && (
+            <p className="m-0 mx-auto mt-3 inline-flex items-center gap-2 rounded-full bg-primary-soft px-4 py-1.5 text-sm font-extrabold text-primary">
+              <CalendarClock size={15} /> {tr(`Lần ôn tới: ${ngayNgan(lanToi)}`, `Prochaine révision : ${ngayNgan(lanToi)}`, `Next review: ${ngayNgan(lanToi)}`)}
+            </p>
+          )}
 
           {dsKetQua.length > 0 && (
             <div className="mt-4 grid grid-cols-4 gap-2">
               {THU_TU.map((k) => (
-                <div key={k} className={`rounded-xl px-2 py-2 ${KIEU_NUT[k]}`}>
+                <div key={k} className={`rounded-2xl px-2 py-2.5 ${KIEU_NUT[k]}`}>
                   <p className="m-0 text-xl font-extrabold tabular-nums">{demMuc(k)}</p>
                   <p className="m-0 text-[11px] font-bold">{NHAN_NUT()[k]}</p>
                 </div>
@@ -295,19 +320,19 @@ export default function LuyenBoThe({ bo, onThoat, theMau, nguon }) {
               </ul>
             </div>
           ) : dsKetQua.length > 0 && (
-            <p className="m-0 mt-4 rounded-2xl bg-ok-soft p-3 text-sm font-bold text-ok">{tr("Không thẻ nào bị quên. Tuyệt vời!", "Aucune carte oubliée. Bravo !", "No forgotten cards. Great job!")}</p>
+            <p className="m-0 mt-4 flex items-center justify-center gap-2 rounded-2xl bg-ok-soft p-3 text-sm font-bold text-ok"><PartyPopper size={16} />{tr("Không thẻ nào bị quên. Tuyệt vời!", "Aucune carte oubliée. Bravo !", "No forgotten cards. Great job!")}</p>
           )}
 
           <div className="mt-5 flex flex-wrap justify-center gap-2">
             {dsSai.length > 0 && (
               <button type="button" onClick={() => batDauLuyen(dsSai.map((x) => x.the))}
-                className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border-0 bg-primary px-5 py-2.5 font-sans text-sm font-extrabold text-on-primary hover:opacity-90">
+                className="inline-flex cursor-pointer items-center gap-1.5 rounded-2xl border-0 bg-primary px-5 py-3 font-sans text-sm font-extrabold text-on-primary shadow-md transition-transform hover:-translate-y-0.5 active:scale-[0.97]">
                 <Repeat size={15} /> {tr(`Làm lại ${dsSai.length} thẻ sai`, `Refaire les ${dsSai.length} cartes ratées`, `Redo ${dsSai.length} missed cards`)}
               </button>
             )}
             {Array.isArray(tatCa) && tatCa.length > 0 && (
               <button type="button" onClick={() => batDauLuyen(tatCa)}
-                className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-solid border-line bg-surface px-5 py-2.5 font-sans text-sm font-bold text-ink hover:border-primary hover:text-primary">
+                className="inline-flex cursor-pointer items-center gap-1.5 rounded-2xl border border-solid border-line bg-surface px-5 py-3 font-sans text-sm font-bold text-ink transition-colors hover:border-primary hover:text-primary">
                 <Layers size={15} /> {tr(`Luyện lại cả bộ (${tatCa.length} thẻ)`, `Revoir tout le paquet (${tatCa.length})`, `Practice the whole deck (${tatCa.length})`)}
               </button>
             )}
@@ -319,8 +344,8 @@ export default function LuyenBoThe({ bo, onThoat, theMau, nguon }) {
           {/* `conLai` vẽ chồng thẻ phía sau theo SỐ THẺ CÒN LẠI thật, không vẽ
               cứng hai cái — vẽ cứng là nói dối bằng hình ảnh khi chỉ còn một thẻ. */}
           <div className="mt-6 flex items-end justify-center gap-2">
-            <Leon key={camLeon + xong} cam={lat ? (camLeon === "suy-nghi" ? "nhay-mat" : camLeon) : "suy-nghi"} size={84} className="mcf-nay shrink-0 max-sm:hidden" />
-            <span className="mb-3 rounded-2xl rounded-bl-md bg-primary-soft px-3 py-2 text-xs font-bold text-ink">
+            <Leon key={camLeon + xong} cam={lat ? (camLeon === "suy-nghi" ? "nhay-mat" : camLeon) : "suy-nghi"} size={72} className="mcf-nay shrink-0" />
+            <span key={lat ? "sau" : "truoc"} className="mcf-cau-vao mb-3 rounded-2xl rounded-bl-md border border-solid border-line bg-surface px-3.5 py-2 text-sm font-bold text-ink shadow-sm">
               {lat ? tr("Bạn nhớ tới đâu? Chấm thật lòng nhé!", "Tu t'en souvenais ? Sois honnête !", "Did you remember? Be honest!") : tr("Đoán nghĩa trước rồi lật thẻ nhé!", "Devine d'abord, puis retourne la carte !", "Guess first, then flip the card!")}
             </span>
           </div>
@@ -331,33 +356,40 @@ export default function LuyenBoThe({ bo, onThoat, theMau, nguon }) {
             viDu={the.viDu}
             daLat={lat}
             onLat={() => { phat("lat"); setLat((v) => !v); }}
+            onNghe={() => docTo(the.matTruoc)}
             conLai={hang.length - 1}
           />
           </div>
 
           {loi && (
-            <p className="m-0 mt-4 rounded-xl bg-danger-soft px-4 py-3 text-sm font-semibold text-danger">{loi}</p>
+            <p className="mcf-rung m-0 mt-4 rounded-2xl bg-danger-soft px-4 py-3 text-sm font-semibold text-danger">{loi}</p>
           )}
 
           {!lat && (
-            <p className="m-0 mt-5 hidden text-center text-xs text-soft sm:block">{tr("Phím cách để lật thẻ · 1–4 để chấm", "Espace pour retourner · 1 à 4 pour noter", "Space to flip · 1–4 to rate")}</p>
+            <p className="m-0 mt-6 hidden items-center justify-center gap-2 text-xs font-semibold text-soft sm:flex">
+              <kbd className="rounded-lg border border-solid border-line bg-surface px-2 py-1 font-sans text-[11px] font-extrabold text-ink shadow-sm">{tr("Phím cách", "Espace", "Space")}</kbd> {tr("để lật thẻ", "pour retourner", "to flip")}
+              <span aria-hidden className="mx-1 h-1 w-1 rounded-full bg-line-strong" />
+              <kbd className="rounded-lg border border-solid border-line bg-surface px-2 py-1 font-sans text-[11px] font-extrabold text-ink shadow-sm">1</kbd>
+              <span>{tr("đến", "à", "to")}</span>
+              <kbd className="rounded-lg border border-solid border-line bg-surface px-2 py-1 font-sans text-[11px] font-extrabold text-ink shadow-sm">4</kbd> {tr("để chấm", "pour noter", "to rate")}
+            </p>
           )}
           {lat && (
-            <div className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-4">
-              {THU_TU.map((k) => (
-                <button
-                  key={k}
-                  type="button"
-                  onClick={() => cham(k)}
-                  disabled={dangGhi}
-                  className={`mcf-cau-vao flex cursor-pointer flex-col items-center gap-1 rounded-2xl border-0 border-b-4 border-solid px-3 py-3 text-center font-sans text-sm font-extrabold text-white shadow-md transition-transform hover:-translate-y-0.5 active:translate-y-0.5 active:border-b-0 disabled:opacity-60 ${NUT_3D[k]}`}
-                  style={{ animationDelay: `${THU_TU.indexOf(k) * 60}ms` }}
-                >
-                  {React.createElement(ICON_NUT[k], { size: 20 })}
-                  <span>{NHAN_NUT()[k]}</span>
-                  <span className="rounded bg-white/25 px-1.5 text-[10px] font-bold">{THU_TU.indexOf(k) + 1}</span>
-                </button>
-              ))}
+            <div className="mt-6 grid grid-cols-2 gap-2.5 sm:grid-cols-4">
+              {THU_TU.map((k, j) => {
+                const du = cheDo === "on" ? lanToiNeu(the, k) : "";
+                return (
+                  <button key={k} type="button" onClick={() => cham(k)} disabled={dangGhi}
+                    className={`mcf-cau-vao group relative flex cursor-pointer flex-col items-center gap-1.5 overflow-hidden rounded-3xl border-0 px-3 pb-3.5 pt-4 text-center font-sans shadow-sm transition-[transform,box-shadow,background-color,color] duration-200 ease-out hover:-translate-y-1 hover:shadow-lg active:translate-y-0 active:scale-[0.97] disabled:opacity-60 motion-reduce:transition-none motion-reduce:hover:translate-y-0 ${NUT_MOI[k][0]}`}
+                    style={{ animationDelay: `${j * 60}ms` }}>
+                    <span aria-hidden className={`absolute inset-x-0 top-0 h-1.5 ${NUT_MOI[k][1]}`} />
+                    <span className="grid h-10 w-10 place-items-center rounded-2xl bg-surface/70 transition-transform duration-200 group-hover:scale-110 group-hover:bg-white/25">{React.createElement(ICON_NUT[k], { size: 20 })}</span>
+                    <span className="text-[15px] font-extrabold leading-tight">{NHAN_NUT()[k]}</span>
+                    {du && <span className="text-[11px] font-bold opacity-85">{du}</span>}
+                    <kbd className="absolute right-2.5 top-3.5 hidden rounded-md bg-surface/70 px-1.5 font-sans text-[10px] font-extrabold group-hover:bg-white/25 sm:block">{j + 1}</kbd>
+                  </button>
+                );
+              })}
             </div>
           )}
         </>
