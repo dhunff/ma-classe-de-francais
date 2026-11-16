@@ -16,7 +16,10 @@ import { writeFileSync } from "node:fs";
 import { toRows } from "../../src/shared/exerciseMap.js";
 import { KY_NANG_TCF } from "../../src/content/luyenTap/kyNangTCF.js";
 import { demTu, GIOI_HAN_TU } from "../../supabase/functions/_shared/chamTcf.js";
-import { BAI } from "./lo52_viet_tcf_noi_dung.mjs";
+import { BAI as BAI1 } from "./lo52_viet_tcf_noi_dung.mjs";
+import { BAI2 } from "./lo52_viet_tcf_noi_dung_2.mjs";
+/* Đợt 2 (cho đủ kế hoạch 6/6/6/3) nối vào CUỐI: id lo52tcfpeNN và cách trộn của 7 bài đợt 1 giữ nguyên. */
+const BAI = [...BAI1, ...BAI2];
 
 const CHI_KIEM = process.argv.includes("--kho");
 let hat = Number(process.env.HAT || 20261119);
@@ -32,6 +35,7 @@ const khoang = (t) => `(${GIOI_HAN_TU[t - 1][0]} à ${GIOI_HAN_TU[t - 1][1]} mot
 
 /* ── Dựng câu hỏi ── */
 for (const b of BAI) {
+  if (b === BAI2[0]) hat = Number(process.env.HAT2 || 20261122); // hạt riêng cho đợt 2, không đụng cách trộn đợt 1
   if (b.taches) {
     b.cau = b.taches.map((t) => ({ type: "open", prompt: `Tâche ${t.tache} : écrivez votre texte ${khoang(t.tache)}.`, doc: deHtml(t.sujet, t.docs), tache: t.tache, model: t.model }));
     b.docLon = "";
