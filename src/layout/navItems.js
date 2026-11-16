@@ -90,12 +90,13 @@ export const STUDENT_NAV = [
   /* 23/10 (theo chủ dự án): « Học tập » gộp Lộ trình + Học ngữ pháp thành MỘT
      mục, hai tab ở đầu màn (HocTapTab.jsx). Đường dẫn cũ giữ nguyên; `khop` để mục
      sáng lên ở cả hai. Tab Từ vựng bỏ 23/10 theo chủ dự án. */
-  { to: "/etudiant/ngu-phap", nhom: "hoc", labelKey: "nav.learn", Icon: GraduationCap, khop: ["/etudiant/ngu-phap", "/etudiant/tu-vung", "/etudiant/lo-trinh", "/etudiant/nghe-noi"] },
+  { to: "/etudiant/ngu-phap", nhom: "hoc", labelKey: "nav.learn", Icon: GraduationCap, khop: ["/etudiant/ngu-phap", "/etudiant/tu-vung", "/etudiant/lo-trinh", "/etudiant/nghe-noi", "/etudiant/the-cua-toi"] },
   /* Từ điển tra nhanh — nguồn là thẻ flashcard công khai (TuDien.jsx). */
   /* Thách đấu bạn bè — đứng ngay sau Lộ trình vì cùng là phần game. */
   { to: "/etudiant/tro-choi", nhom: "hoc", labelKey: "nav.games", Icon: Gamepad2, khop: ["/etudiant/tro-choi", "/etudiant/thach-dau", "/etudiant/bo-the"] },
   /* 15/11 (chủ dự án): « Flashcard của tôi » (tự tạo thẻ + Sổ từ, ôn SM-2) tách khỏi trò Flashcard thành mục riêng. */
-  { to: "/etudiant/the-cua-toi", nhom: "hoc", labelKey: "nav.myCards", Icon: Layers },
+  /* 16/11 (chủ dự án): mục này rút gọn thành « Flashcard » và vào làm một TAB của « Học tập »
+     (HocTapTab.jsx), rời thanh bên. Route /etudiant/the-cua-toi giữ nguyên. */
   /* « Từ điển » GỠ 08/10 theo chủ dự án: nó chỉ tra lại đúng các thẻ Flashcard
      công khai (~130 mục), trùng với mục Flashcard. Lấy lại TuDien.jsx từ git. */
   { to: "/etudiant/entrainement", nhom: "hoc", labelKey: "nav.practice", Icon: Dumbbell, view: "practice" },

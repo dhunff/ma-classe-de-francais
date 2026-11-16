@@ -15,7 +15,8 @@ import MotNam from "./paris/MotNam.jsx";
 import { tr } from "../../shared/i18n.jsx";
 import { phat } from "../../shared/amThanh.js";
 import { Leon, LeonNoi, leonVai } from "../../shared/leon.jsx";
-import { TRO_CHOI, MO_NGAN } from "./danhMucTroChoi.js";
+import { TRO_CHOI, MO_NGAN, MO_THE_TROI } from "./danhMucTroChoi.js";
+import { motion, MotionConfig } from "framer-motion";
 import { MUC_CHOI, khopCap, docDanhTuGioi, docMuaChu, phuongAnNghia, docCauNghe, phuongAnCau, ghiTroChoi, docKyLuc, docXepCau, docSanLoi, docDungSai, tron } from "../../shared/troChoiNhanh.js";
 
 import { ngauNhien, datHat, boHat, hatMoi } from "../../shared/ngauNhien.js";
@@ -60,38 +61,122 @@ function Sanh({ ds, dauMau }) {
         <DauTruong ds={dau} troChoi={ds} />
       </section>
 
-      {[["on", tr("Ôn luyện", "Révision", "Review")], ["tu", tr("Từ vựng", "Vocabulaire", "Vocabulary")], ["ng", tr("Nghe và nói", "Écoute et oral", "Listening and speaking")], ["np", tr("Ngữ pháp", "Grammaire", "Grammar")], ["dv", tr("Đọc hiểu và văn hoá", "Lecture et culture", "Reading and culture")]].map(([nhom, tenNhom]) => (
-      <section key={nhom} className="mt-8">
-      <h2 className="m-0 mb-3 text-lg font-extrabold text-ink">{tenNhom}</h2>
-      <div className="grid gap-4 md:grid-cols-3">
-        {ds.filter((x) => x.nhom === nhom).map(({ ma, den, Icon, nen, ten, mo, leon, pvp }) => (
-          <Link key={ma} to={den ?? `/etudiant/tro-choi/${ma}`}
-            className={`group relative flex min-h-[258px] flex-col overflow-hidden rounded-3xl bg-gradient-to-br ${nen} p-5 text-white no-underline shadow-[0_14px_30px_rgba(0,0,0,0.12)] transition-transform duration-200 ease-out hover:-translate-y-1 active:scale-[0.985]`}>
-            {leon
-              ? <img src={leon.src} alt="" aria-hidden loading="lazy" draggable={false} style={leon.kieu} className={`mcf-leon-nen pointer-events-none absolute w-auto select-none object-contain object-right-bottom transition-transform duration-500 ease-out group-hover:scale-105 ${leon.lop}`} />
-              : <>
-                  <span aria-hidden className="absolute -right-10 -top-10 h-36 w-36 rounded-full bg-white/15" />
-                  <Icon aria-hidden size={110} strokeWidth={1.2} className="absolute -bottom-6 -right-4 text-white/15" />
-                </>}
-            <span className="relative flex items-center gap-2">
-              <span className="grid h-12 w-12 place-items-center rounded-2xl bg-white/25"><Icon size={24} /></span>
-              {pvp !== false && <span className="inline-flex items-center gap-1 rounded-full bg-black/25 px-2.5 py-1 text-[11px] font-extrabold" title={tr("Thách đấu được bạn bè", "Jouable en duel", "Playable as a duel")}><Swords size={12} /> PvP</span>}
-            </span>
-            <span className="relative mt-4 text-xl font-extrabold">{ten}</span>
-            <span className={`relative mt-1 text-sm leading-snug text-white/90 ${leon?.chu ?? ""}`}>{MO_NGAN[ma] ? tr(...MO_NGAN[ma]) : mo}</span>
-            <span className="relative mt-auto flex items-center justify-between pt-4 text-sm font-bold">
-              {den ? <span className="inline-flex items-center gap-1.5 rounded-full bg-white/20 px-3 py-1"><Icon size={14} /> {tr("Ôn", "Révision", "Review")}</span>
-                : <span className="inline-flex items-center gap-1 rounded-full bg-white/20 px-2.5 py-1 text-xs" title={tr("Kỷ lục Dễ · Vừa · Khó", "Records Facile · Moyen · Difficile", "Best Easy · Medium · Hard")}>
-                    <Trophy size={13} />{["de", "vua", "kho"].map((m, j) => <span key={m} className="tabular-nums">{j > 0 && <span className="opacity-50"> · </span>}<span className="opacity-70">{["D", "V", "K"][j]}</span> {kl[`${ma}:${m}`] ?? "—"}</span>)}
-                  </span>}
-              <span className="inline-flex items-center gap-1 rounded-full bg-white px-4 py-1.5 text-[#111] transition-transform group-hover:translate-x-0.5"><Play size={14} /> {tr("Chơi", "Jouer", "Play")}</span>
-            </span>
-          </Link>
-        ))}
-      </div>
-      </section>
-      ))}
+      <SanhTro ds={ds} kl={kl} />
     </div>
+  );
+}
+
+/* 16/11 (chủ dự án: « nhìn như kia giống liệt kê game quá »): thôi xếp 12 thẻ màu cùng cỡ theo năm
+   nhóm. Ba trò có cốt truyện (có ảnh Léon) lên khối lớn kiểu áp phích, một to hai nhỏ; các trò
+   1–2 phút thành thẻ nền trắng gọn (ô biểu tượng màu, một dòng mô tả), lọc theo kỹ năng bằng dải
+   nút có vệt trượt. Đổi bộ lọc thì lưới dựng lại (key) với mcf-cau-vao, KHÔNG dùng hiệu ứng thoát. */
+const NHOM_TRO = () => [
+  ["tat", tr("Tất cả", "Tout", "All")],
+  ["tu", tr("Từ vựng", "Vocabulaire", "Vocabulary")],
+  ["ng", tr("Nghe và nói", "Écoute et oral", "Listening and speaking")],
+  ["np", tr("Ngữ pháp", "Grammaire", "Grammar")],
+  ["on", tr("Ôn luyện", "Révision", "Review")],
+];
+
+function KyLuc({ ma, kl, sang }) {
+  /* Chưa chơi mức nào thì không hiện: ba dấu gạch trên mọi thẻ chỉ làm rối. */
+  if (!["de", "vua", "kho"].some((m) => kl[`${ma}:${m}`] != null)) return null;
+  return (
+    <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-bold ${sang ? "bg-white/20" : "bg-surface2 text-soft"}`} title={tr("Kỷ lục Dễ · Vừa · Khó", "Records Facile · Moyen · Difficile", "Best Easy · Medium · Hard")}>
+      <Trophy size={13} />{["de", "vua", "kho"].map((m, j) => <span key={m} className="tabular-nums">{j > 0 && <span className="opacity-50"> · </span>}<span className="opacity-70">{["D", "V", "K"][j]}</span> {kl[`${ma}:${m}`] ?? "—"}</span>)}
+    </span>
+  );
+}
+const NhanPvp = ({ sang }) => (
+  <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-extrabold ${sang ? "bg-black/25" : "bg-primary-soft text-primary"}`} title={tr("Thách đấu được bạn bè", "Jouable en duel", "Playable as a duel")}><Swords size={12} /> PvP</span>
+);
+
+/* Áp phích trò có cốt truyện. `lon`: ô to bên trái. */
+function ApPhich({ x, kl, lon, i }) {
+  const { ma, Icon, nen, ten, mo, leon, pvp } = x;
+  return (
+    <Link to={`/etudiant/tro-choi/${ma}`} style={{ animationDelay: `${i * 70}ms` }}
+      className={`mcf-cau-vao group relative flex flex-col overflow-hidden rounded-[2rem] bg-gradient-to-br ${nen} p-6 text-white no-underline shadow-[0_16px_36px_rgba(0,0,0,0.14)] transition-[transform,box-shadow] duration-300 ease-out hover:-translate-y-1 hover:shadow-[0_24px_48px_rgba(0,0,0,0.2)] active:scale-[0.99] motion-reduce:transition-none motion-reduce:hover:translate-y-0 ${lon ? "min-h-[300px] md:col-span-2 md:row-span-2 md:p-8" : "min-h-[214px]"}`}>
+      {leon && <img src={leon.src} alt="" aria-hidden loading="lazy" draggable={false} style={leon.kieu} className={`mcf-leon-nen pointer-events-none absolute w-auto select-none object-contain object-right-bottom transition-transform duration-500 ease-out group-hover:scale-105 ${leon.lop}`} />}
+      <span className="relative flex items-center gap-2">
+        <span className={`grid place-items-center rounded-2xl bg-white/25 ${lon ? "h-14 w-14" : "h-11 w-11"}`}><Icon size={lon ? 28 : 22} /></span>
+        {pvp !== false && <NhanPvp sang />}
+      </span>
+      <span className={`relative mt-auto block pt-6 font-extrabold leading-tight tracking-tight ${leon?.chu ?? ""} ${lon ? "text-3xl md:text-4xl" : "text-xl"}`}>{ten}</span>
+      <span className={`relative mt-1.5 block leading-snug text-white/90 ${leon?.chu ?? ""} ${lon ? "text-[15px]" : "text-sm"}`}>{lon ? (MO_NGAN[ma] ? tr(...MO_NGAN[ma]) : mo) : tr(...MO_THE_TROI[ma])}</span>
+      <span className="relative mt-4 flex flex-wrap items-center gap-2 text-sm font-bold">
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-white px-4 py-1.5 text-[#111] transition-transform duration-300 group-hover:translate-x-0.5"><Play size={14} className="fill-current" /> {tr("Chơi", "Jouer", "Play")}</span>
+        {lon && <KyLuc ma={ma} kl={kl} sang />}
+      </span>
+    </Link>
+  );
+}
+
+/* Thẻ gọn của trò 1–2 phút: nền trắng, màu chỉ nằm ở ô biểu tượng và vạch trên khi rê chuột. */
+function TheTro({ x, kl, tenNhom, i }) {
+  const { ma, den, Icon, nen, ten, pvp } = x;
+  return (
+    <Link to={den ?? `/etudiant/tro-choi/${ma}`} style={{ animationDelay: `${i * 45}ms` }}
+      className="mcf-cau-vao group relative flex flex-col overflow-hidden rounded-3xl border border-solid border-line bg-surface p-4 no-underline shadow-sm transition-[transform,box-shadow,border-color] duration-300 ease-out hover:-translate-y-1 hover:border-transparent hover:shadow-[0_18px_40px_rgba(0,0,0,0.1)] active:scale-[0.99] motion-reduce:transition-none motion-reduce:hover:translate-y-0">
+      <span aria-hidden className={`absolute inset-x-0 top-0 h-1.5 origin-left scale-x-0 bg-gradient-to-r ${nen} transition-transform duration-300 ease-out group-hover:scale-x-100 motion-reduce:transition-none`} />
+      <span className="flex items-start gap-3">
+        <span className={`grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-gradient-to-br ${nen} text-white shadow-md transition-transform duration-300 ease-out group-hover:-rotate-6 group-hover:scale-110 motion-reduce:transition-none motion-reduce:group-hover:transform-none`}><Icon size={26} /></span>
+        <span className="min-w-0 flex-1">
+          <span className="block text-[11px] font-extrabold uppercase tracking-wide text-soft">{tenNhom}</span>
+          <span className="mt-0.5 block text-base font-extrabold leading-snug text-ink">{ten}</span>
+        </span>
+      </span>
+      <span className="mt-3 block text-sm leading-snug text-soft">{tr(...MO_THE_TROI[ma])}</span>
+      <span className="mt-auto flex items-center gap-2 pt-4">
+        {pvp !== false && <NhanPvp />}
+        {!den && <KyLuc ma={ma} kl={kl} />}
+        <span className="ml-auto grid h-9 w-9 shrink-0 place-items-center rounded-full bg-surface2 text-ink transition-colors duration-300 group-hover:bg-primary group-hover:text-on-primary" aria-label={tr("Chơi", "Jouer", "Play")}><Play size={15} className="ml-0.5 fill-current" /></span>
+      </span>
+    </Link>
+  );
+}
+
+function SanhTro({ ds, kl }) {
+  const [loc, setLoc] = useState("tat");
+  const nhom = NHOM_TRO();
+  const tenNhom = Object.fromEntries(nhom);
+  const truyen = ds.filter((x) => x.leon);
+  const nhanh = ds.filter((x) => !x.leon);
+  const hien = nhanh.filter((x) => loc === "tat" || x.nhom === loc);
+  return (
+    <MotionConfig reducedMotion="user">
+      <section className="mt-9">
+        <h2 className="m-0 text-lg font-extrabold text-ink">{tr("Phiêu lưu cùng Léon", "Les aventures de Léon", "Adventures with Léon")}</h2>
+        <p className="m-0 mt-0.5 text-sm text-soft">{tr("Trò dài có cốt truyện: đọc hiểu và văn hoá Pháp, chơi nhiều buổi.", "Des jeux à histoire : lecture et culture française, sur plusieurs séances.", "Story games: reading and French culture, played over several sessions.")}</p>
+        <div className="mt-4 grid gap-4 md:grid-cols-3 md:grid-rows-2">
+          {truyen.map((x, i) => <ApPhich key={x.ma} x={x} kl={kl} lon={i === 0} i={i} />)}
+        </div>
+      </section>
+
+      <section className="mt-10">
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <h2 className="m-0 text-lg font-extrabold text-ink">{tr("Chơi nhanh", "Parties rapides", "Quick rounds")}</h2>
+            <p className="m-0 mt-0.5 text-sm text-soft">{tr("Mỗi ván 1–2 phút. Chọn kỹ năng bạn muốn luyện.", "1 à 2 minutes par partie. Choisissez la compétence à travailler.", "1–2 minutes a round. Pick the skill you want to train.")}</p>
+          </div>
+          <div role="tablist" aria-label={tr("Kỹ năng", "Compétence", "Skill")} className="no-scrollbar flex max-w-full gap-1 overflow-x-auto rounded-2xl bg-surface p-1 shadow-sm">
+            {nhom.map(([k, ten]) => {
+              const chon = loc === k;
+              return (
+                <button key={k} type="button" role="tab" aria-selected={chon} onClick={() => { if (!chon) phat("bam"); setLoc(k); }}
+                  className={`relative shrink-0 cursor-pointer rounded-xl border-0 bg-transparent px-3.5 py-2 font-sans text-sm font-bold transition-colors ${chon ? "text-on-primary" : "text-soft hover:text-ink"}`}>
+                  {chon && <motion.span layoutId="sanh-tro-loc" aria-hidden transition={{ type: "spring", stiffness: 420, damping: 34 }} className="absolute inset-0 rounded-xl bg-primary shadow-sm" />}
+                  <span className="relative">{ten}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+        <div key={loc} className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {hien.map((x, i) => <TheTro key={x.ma} x={x} kl={kl} tenNhom={tenNhom[x.nhom]} i={i} />)}
+        </div>
+      </section>
+    </MotionConfig>
   );
 }
 

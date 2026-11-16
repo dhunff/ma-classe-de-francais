@@ -1,6 +1,6 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
-import { Map, BookA, AudioLines, Images } from "lucide-react";
+import { Map, BookA, AudioLines, Images, Layers } from "lucide-react";
 import { tr } from "../../shared/i18n.jsx";
 
 /* Thanh tab của mục « Học tập » (23/10): Lộ trình · Ngữ pháp là hai màn
@@ -10,6 +10,8 @@ const TAB = () => [
   { to: "/etudiant/ngu-phap", Icon: BookA, nhan: tr("Ngữ pháp", "Grammaire", "Grammar") },
   /* 10/11 (theo chủ dự án): Từ vựng theo chủ đề, học có hình (TuVung.jsx). */
   { to: "/etudiant/tu-vung", Icon: Images, nhan: tr("Từ vựng", "Vocabulaire", "Vocabulary") },
+  /* 16/11 (theo chủ dự án): « Flashcard của tôi » rút gọn thành « Flashcard », vào mục Học tập. */
+  { to: "/etudiant/the-cua-toi", Icon: Layers, nhan: "Flashcard" },
   { to: "/etudiant/lo-trinh", Icon: Map, nhan: tr("Lộ trình", "Parcours", "Path") },
   /* 27/10 (theo chủ dự án): Nghe & Nói vào mục Học tập, rời thanh bên. */
   { to: "/etudiant/nghe-noi", Icon: AudioLines, nhan: tr("Nghe & Nói", "Écouter & parler", "Listen & speak") },

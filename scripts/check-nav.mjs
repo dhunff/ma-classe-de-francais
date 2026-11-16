@@ -88,6 +88,8 @@ for (const m of muc) {
  * "route không có lối vào" luôn là một quyết định ai đó viết ra, chứ không
  * phải một thứ bị quên. */
 const CO_Y_KHONG_CO_MUC = {
+  "/etudiant/the-cua-toi":
+    "Tab « Flashcard » của mục « Học tập » (16/11): vào bằng HocTapTab.jsx; `khop` của mục Học tập gồm đường này.",
   "/etudiant/tro-choi/:ma":
     "Một trò trong sảnh Trò chơi (27/10): vào từ thẻ ở /etudiant/tro-choi.",
   "/professeur/ngu-phap/:ma":

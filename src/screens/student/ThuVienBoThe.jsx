@@ -177,7 +177,7 @@ export default function ThuVienBoThe({ ds, onMo, soTu, onOnSoTu, onTaoThe, onXoa
         <div className="relative flex items-center gap-3">
           <Leon cam="hoc" size={64} className="shrink-0 drop-shadow-[0_8px_12px_rgba(0,0,0,0.25)]" />
           <div className="min-w-0 flex-1">
-            <h1 className="m-0 text-2xl font-extrabold tracking-tight">{cuaToi ? tr("Flashcard của tôi", "Mes flashcards", "My flashcards") : "Flashcard"}</h1>
+            <h1 className="m-0 text-2xl font-extrabold tracking-tight">{"Flashcard"}</h1>
             <p className="m-0 text-sm text-white/85">{cuaToi
               ? tr("Tự tạo thẻ và ôn theo lịch nhắc đúng lúc sắp quên.", "Créez vos cartes, révisez au bon moment.", "Make your own cards, review at the right time.")
               : tr("Luyện các bộ thẻ có sẵn hoặc thách đấu bạn bè.", "Révisez les paquets ou défiez vos amis.", "Practise ready-made decks or duel your friends.")}</p>

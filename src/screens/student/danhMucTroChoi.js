@@ -61,7 +61,8 @@ export const TRO_CHOI = () => [
 ];
 
 /* Mô tả một dòng cho thẻ trôi ở trang chủ: thẻ nhỏ, không chứa nổi `mo`. */
-const MO_THE_TROI = {
+export const MO_THE_TROI = {
+  flashcard: ["Luyện bộ thẻ có sẵn, hoặc đấu 1 chọi 1.", "Révisez les paquets, ou défiez un ami.", "Practise decks, or duel a friend."],
   gioi_tinh: ["Phân loại danh từ vào LE hay LA.", "Triez les noms : LE ou LA.", "Sort nouns into LE or LA."],
   nghe_chon: ["Nghe rồi ghép băng đúng thứ tự.", "Écoutez, remettez dans l'ordre.", "Listen, then put clips in order."],
   mua_chu: ["Bắt từ trước khi chạm đất.", "Attrapez les mots qui tombent.", "Catch words before they land."],

@@ -13,6 +13,7 @@ import { docTheSoTu, onTheSoTu, themTu, xoaTu } from "../../shared/soTu.js";
 import { xepLichOn, ngayCong } from "../../shared/sm2.js";
 import { BookMarked, ChevronRight, Plus, ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
+import HocTapTab from "./HocTapTab.jsx";
 
 const NGUON_SO_TU = { doc: docTheSoTu, cham: onTheSoTu };
 
@@ -130,6 +131,8 @@ export default function BoTheApp({ name, trang = "choi" }) {
           : "translate-x-0 opacity-100"}`}
       >
         {trang === "choi" && <Link to="/etudiant/tro-choi" className="mx-4 mt-4 inline-flex items-center gap-1 text-sm font-bold text-soft no-underline hover:text-ink"><ArrowLeft size={16} /> {tr("Trò chơi", "Jeux", "Games")}</Link>}
+        {/* 16/11: mục này là tab « Flashcard » của Học tập. */}
+        {trang === "cua-toi" && <div className="px-4 pt-4"><HocTapTab /></div>}
         {/* 26/10: « Thẻ của tôi » và « Bộ thẻ có sẵn » là hai tab ngang trong ThuVienBoThe. */}
         <ThuVienBoThe trang={trang} ds={ds} onMo={moBo} soTu={soTu} onOnSoTu={moSoTu}
           onTaoThe={() => setTaoThe({ tu: "", nghia: "", viDu: "" })} onXoaThe={xoaThe} />
