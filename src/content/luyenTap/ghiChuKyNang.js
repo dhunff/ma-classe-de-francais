@@ -1,7 +1,10 @@
 /* Ghi chú « Trước khi làm » của từng kỹ năng nhỏ (01/11/2026), lấy từ kế hoạch
  * docs/ke-hoach-ky-nang-DELF-DALF.xlsx. Tiếng Việt như phần giải thích trong bài.
  * Lỗi hay mắc và mẹo là nhận định sư phạm, chưa đo trên bài làm thật. */
+import { GHI_CHU_TCF } from "./kyNangTCF.js";
+
 export const GHI_CHU = {
+  ...GHI_CHU_TCF,
   "A1-CO-1": {"can": "Số 0–100, giờ, thứ, tháng, giá tiền euro", "luu": "Thường chỉ một chi tiết số quyết định cả câu", "loi": "Nhầm quinze/cinquante, treize/trente, deux heures/douze heures", "meo": "Ghi số ra nháp ngay khi nghe, đừng dịch sang tiếng Việt rồi mới viết"},
   "A1-CO-2": {"can": "Câu chào trên máy nhắn, tên người, động từ hẹn: venir, téléphoner, attendre", "luu": "Tin nhắn thường có giờ hẹn thay đổi ở cuối", "loi": "Nghe được từ đầu rồi bỏ qua câu chốt ở cuối", "meo": "Trước khi nghe gạch dưới từ hỏi trong câu: qui, quand, où"},
   "A1-CO-3": {"can": "Từ nơi công cộng: quai, train, sortie, caisse, magasin", "luu": "Thông báo có âm nền và tiếng vang", "loi": "Cố nghe hết mọi từ nên hoảng khi có tiếng ồn", "meo": "Chỉ tìm ba thứ: giờ, nơi, việc phải làm"},

@@ -1,11 +1,12 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Headphones, BookOpen, PenLine, Mic, Check, Lock, LockOpen, Play, Clock, ArrowRight, ChevronLeft, Sparkles, RotateCcw, Crown, Flag, ListChecks, AlertTriangle, XCircle, Lightbulb, Award } from "lucide-react";
+import { Link } from "react-router-dom";
 import { tr } from "../../shared/i18n.jsx";
 import { Leon } from "../../shared/leon.jsx";
 import { phat } from "../../shared/amThanh.js";
 import { FloatingLayer } from "../../shared/ui.jsx";
 import { GHI_CHU } from "../../content/luyenTap/ghiChuKyNang.js";
-import { CAP_DO, KY_LON, tongCap, duongKyLon, dsBaiKyNho, timKyNho, NGUONG_DAT, NGUONG_F } from "../../shared/tienTrinhLuyenTap.js";
+import { CAP_DO, CAP_TCF, KY_LON, tongCap, duongKyLon, dsBaiKyNho, timKyNho, NGUONG_DAT, NGUONG_F } from "../../shared/tienTrinhLuyenTap.js";
 import { hangBai, hangKyNho, hangSau, tinhKyLon } from "../../shared/hangLuyenTap.js";
 import HuyHieuHang from "./HuyHieuHang.jsx";
 
@@ -21,7 +22,8 @@ export const KY = () => ({
   PO: { ten: tr("Nói", "Production orale", "Speaking"), Icon: Mic, nen: "linear-gradient(135deg,#A78BFA,#7C3AED)", dam: "#6D28D9" },
 });
 const tenKn = (kn) => tr(kn.vi, kn.fr, kn.en);
-const BANG = (cap) => (cap.startsWith("C") ? "DALF" : "DELF");
+/* « DELF B1 », « DALF C1 », còn TCF chỉ là « TCF » (không có trình độ). */
+const BANG = (cap) => (cap === CAP_TCF ? "TCF" : `${cap.startsWith("C") ? "DALF" : "DELF"} ${cap}`);
 
 const Vong = ({ pct, children, nen = "rgba(255,255,255,0.28)", mau = "rgba(255,255,255,0.95)" }) => (
   <span className="grid h-12 w-12 shrink-0 place-items-center rounded-full" style={{ background: `conic-gradient(${mau} ${pct * 3.6}deg, ${nen} 0)` }}>
@@ -150,7 +152,15 @@ export function ManKhoaThuTu({ khoa, onDi, onBack, laVip, onMuaVip, giaVip }) {
 
 /* Trang một trình độ: chọn trình độ, bước tiếp theo, bốn kỹ năng lớn. */
 export function LuyenTheoCap({ cap, capHoSo, onDoiCap, exercises, hist, biKhoa, onMoKyNho, canhBao, laVip, onMuaVip, giaVip, onThanhTuu }) {
-  const moiCap = useMemo(() => Object.fromEntries(CAP_DO.map((c) => [c, tongCap(c, exercises, hist, biKhoa, laVip)])), [exercises, hist, biKhoa, laVip]);
+  const moiCap = useMemo(() => Object.fromEntries([...CAP_DO, CAP_TCF].map((c) => [c, tongCap(c, exercises, hist, biKhoa, laVip)])), [exercises, hist, biKhoa, laVip]);
+  const laTcf = cap === CAP_TCF;
+  /* Về lại DELF thì mở đúng trình độ DELF vừa xem, không nhảy về A1. */
+  useEffect(() => { if (!laTcf) { try { localStorage.setItem("mcf-luyen-cap-delf", cap); } catch { /* bỏ qua */ } } }, [cap, laTcf]);
+  const veDelf = () => {
+    let c = null;
+    try { c = localStorage.getItem("mcf-luyen-cap-delf"); } catch { /* bỏ qua */ }
+    onDoiCap(CAP_DO.includes(c) ? c : CAP_DO.includes(capHoSo) ? capHoSo : CAP_DO[0]);
+  };
   const tong = moiCap[cap];
   const KYN = KY();
   const tiep = tong.tiepTheo;
@@ -163,6 +173,26 @@ export function LuyenTheoCap({ cap, capHoSo, onDoiCap, exercises, hist, biKhoa, 
   const kyTiep = tiep ? KYN[tiep.kn.ma.split("-")[1]] : null;
   return (
     <div>
+      {/* 16/11 (chủ dự án): Luyện thi chia hai kỳ thi. Mỗi bên một cây kỹ năng theo đúng format đề thi thử. */}
+      <div role="tablist" aria-label={tr("Kỳ thi", "Examen", "Exam")} className="mb-4 grid grid-cols-2 gap-1 rounded-2xl bg-surface2 p-1 sm:inline-grid sm:min-w-[22rem]">
+        {[[false, "DELF · DALF", tr("Theo trình độ A1 đến C2", "Par niveau, de A1 à C2", "By level, A1 to C2")], [true, "TCF", tr("Một bài thi, khó dần A1 đến C2", "Un seul test, de A1 à C2", "One test, A1 to C2")]].map(([tcf, ten, phu]) => {
+          const dang = laTcf === tcf;
+          return (
+            <button key={ten} type="button" role="tab" aria-selected={dang} onClick={() => { if (dang) return; phat("bam"); if (tcf) onDoiCap(CAP_TCF); else veDelf(); }}
+              className={`flex cursor-pointer flex-col items-center rounded-xl border-0 px-3 py-2 font-sans transition-all ${dang ? "bg-surface text-ink shadow-sm" : "bg-transparent text-soft hover:text-ink"}`}>
+              <span className="text-sm font-extrabold">{ten}</span>
+              <span className="text-[11px] font-semibold">{phu}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      {laTcf ? (
+        <p className="m-0 mb-5 text-sm text-soft">
+          {tr("Bốn kỹ năng theo đúng đề TCF: Nghe và Đọc 39 câu trắc nghiệm khó dần, Viết 3 bài, Nói 3 phần. Luyện xong từng phần rồi vào thi thử TCF.", "Les quatre épreuves du TCF : compréhension orale et écrite en 39 QCM de difficulté croissante, 3 tâches écrites, 3 tâches orales. Entraînez-vous partie par partie, puis passez un TCF blanc.", "The four TCF tests: listening and reading in 39 multiple-choice questions of rising difficulty, 3 writing tasks, 3 speaking tasks. Practise each part, then take a mock TCF.")}
+          {" "}<Link to="/etudiant/tcf-canada" className="font-bold text-primary no-underline hover:underline">{tr("Vào thi thử TCF", "Passer un TCF blanc", "Take a mock TCF")}</Link>
+        </p>
+      ) : (
       <div ref={dai} role="tablist" aria-label={tr("Trình độ", "Niveau", "Level")} className="no-scrollbar mb-5 flex gap-2 overflow-x-auto pb-1">
         {CAP_DO.map((c) => {
           const dang = c === cap;
@@ -178,6 +208,7 @@ export function LuyenTheoCap({ cap, capHoSo, onDoiCap, exercises, hist, biKhoa, 
           );
         })}
       </div>
+      )}
 
       {!laVip && (
         <p className="m-0 mb-4 flex items-start gap-2 text-xs font-semibold text-soft">
@@ -195,7 +226,7 @@ export function LuyenTheoCap({ cap, capHoSo, onDoiCap, exercises, hist, biKhoa, 
           <span className="min-w-[12rem] flex-1">
             <span className="block text-xs font-bold uppercase tracking-wide text-primary">{tr("Bước tiếp theo của bạn", "Votre prochaine étape", "Your next step")}</span>
             <span className="mt-0.5 block text-lg font-extrabold leading-snug text-ink">{tenKn(tiep.kn)}</span>
-            <span className="block text-sm text-soft">{BANG(cap)} {cap} · {kyTiep.ten}</span>
+            <span className="block text-sm text-soft">{BANG(cap)} · {kyTiep.ten}</span>
           </span>
           <span className="inline-flex items-center gap-1.5 rounded-2xl bg-primary px-5 py-3 text-sm font-extrabold text-on-primary">
             {tiep.xong.length ? tr("Học tiếp", "Continuer", "Continue") : tr("Bắt đầu", "Commencer", "Start")} <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
@@ -372,7 +403,7 @@ export function ChiTietKyNho({ ma, exercises, hist, biKhoa, onBack, onMoKyNho, c
   return (
     <div className="mx-auto max-w-6xl">
       <button type="button" onClick={onBack} className="mb-3 inline-flex cursor-pointer items-center gap-1 rounded-lg border-0 bg-transparent p-1 font-sans text-sm font-bold text-soft hover:text-primary">
-        <ChevronLeft size={16} /> {BANG(f.cap)} {f.cap}: {m.ten}
+        <ChevronLeft size={16} /> {BANG(f.cap)}: {m.ten}
       </button>
 
       <header className="mcf-cau-vao mb-6 rounded-3xl px-6 py-5 text-white" style={{ background: m.nen }}>

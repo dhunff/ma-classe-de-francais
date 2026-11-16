@@ -2,7 +2,8 @@
 /* Kiểm cây Luyện tập theo trình độ: dữ liệu cây và luật tiến trình.
  * Lỗi đáng sợ nhất là NGÕ CỤT: một bước không làm được chặn mọi bước sau. */
 import { KY_NANG } from "../src/content/luyenTap/kyNang.js";
-import { CAP_DO, KY_LON, tinhKyNho, duongKyLon, dsBaiKyNho, tongCap, capMacDinh, baiCuaKyNang, timKyNho, khoaThuTu, gopDiemNoi, baiTiepTheo, NGUONG_DAT } from "../src/shared/tienTrinhLuyenTap.js";
+import { KY_NANG_TCF, GHI_CHU_TCF } from "../src/content/luyenTap/kyNangTCF.js";
+import { CAP_TCF, CAP_DO, KY_LON, tinhKyNho, duongKyLon, dsBaiKyNho, tongCap, capMacDinh, baiCuaKyNang, timKyNho, khoaThuTu, gopDiemNoi, baiTiepTheo, NGUONG_DAT } from "../src/shared/tienTrinhLuyenTap.js";
 import { chonDeXuat } from "../src/shared/deXuat.js";
 import { hangTuTiLe, hangBai, hangKyNho, hangSau, tinhKyLon, tinhCap, THANG_HANG } from "../src/shared/hangLuyenTap.js";
 
@@ -19,7 +20,18 @@ ca("không có dấu gạch dài", moi.every((k) => ![k.vi, k.fr, k.en].join().i
 ca("mã khớp vị trí trong cây", moi.every((k) => timKyNho(k.ma)?.kn === k));
 ca("số bài kế hoạch hợp lệ", moi.every((k) => k.duKien > 0 && k.bai.length <= k.duKien));
 ca("mỗi kỹ năng có bài miễn phí trong kế hoạch", moi.every((k) => k.mienPhi > 0 && k.mienPhi <= k.duKien));
-const ids = moi.flatMap((k) => k.bai);
+/* Cây TCF (16/11): một « trình độ » TCF, đủ bốn kỹ năng, tra được bằng cùng hàm với DELF. */
+const tcf = Object.values(KY_NANG_TCF.TCF).flat();
+ca("TCF đủ 4 kỹ năng lớn", KY_LON.every((k) => KY_NANG_TCF.TCF[k]?.length > 0));
+ca("TCF mã khớp vị trí", tcf.every((k) => timKyNho(k.ma)?.kn === k && k.ma.startsWith("TCF-")));
+ca("TCF tên đủ ba thứ tiếng, không gạch dài", tcf.every((k) => k.vi && k.fr && k.en && ![k.vi, k.fr, k.en].join().includes("—")));
+ca("TCF mỗi kỹ năng nhỏ có mẹo", tcf.every((k) => GHI_CHU_TCF[k.ma]));
+ca("TCF không lẫn vào dải trình độ DELF", !CAP_DO.includes(CAP_TCF));
+ca("TCF chọn được làm trình độ", capMacDinh(CAP_TCF, "B1", [], {}) === CAP_TCF);
+ca("TCF chưa có bài thì không có ngõ cụt", tongCap(CAP_TCF, [], {}, () => false).tiepTheo === null);
+const baiTcf = [{ id: "t1", kyNang: "TCF-PE-1", questions: [] }];
+ca("bài gắn meta.kyNang TCF hiện trên đường", duongKyLon(CAP_TCF, "PE", baiTcf, {}, () => false)[0].buoc === "hienTai");
+const ids = moi.flatMap((k) => k.bai).concat(tcf.flatMap((k) => k.bai));
 ca("một bài không nằm ở hai kỹ năng", new Set(ids).size === ids.length);
 
 /* Dựng một cây giả từ kỹ năng A1 Nghe: mỗi kỹ năng một bài. */

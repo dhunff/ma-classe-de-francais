@@ -16,8 +16,13 @@
  * ══ THỨ TỰ NGOÀI CÂY ══ Thư viện bài và mọi đường mở thẳng (ô tìm kiếm, gợi ý) cũng theo
  * cùng luật, qua `khoaThuTu`. Bài không nằm trong cây thì không bị chặn. */
 import { KY_NANG } from "../content/luyenTap/kyNang.js";
+import { KY_NANG_TCF } from "../content/luyenTap/kyNangTCF.js";
 
+/* 16/11: Luyện thi chia hai kỳ thi. CAP_DO chỉ là các trình độ DELF/DALF (dải chọn trình độ, xếp hạng);
+   TCF là một « trình độ » riêng tên « TCF » (content/luyenTap/kyNangTCF.js). Mọi phép tra cây dùng CAY. */
 export const CAP_DO = Object.keys(KY_NANG);
+export const CAP_TCF = "TCF";
+const CAY = { ...KY_NANG, ...KY_NANG_TCF };
 export const KY_LON = ["CO", "CE", "PE", "PO"];
 export const NGUONG_DAT = 0.7;
 /* Dưới mức này là hạng F (03/11): bài điểm F chặn bài sau và chặn đạt kỹ năng, kể cả khi
@@ -62,7 +67,7 @@ export function tinhKyNho(kn, exercises, hist, biKhoa = () => false) {
    Chỉ MỘT bước hienTai: bước đầu tiên có bài mà chưa đạt. */
 export function duongKyLon(cap, ky, exercises, hist, biKhoa, laVip = false) {
   let daGapHienTai = false;
-  return KY_NANG[cap][ky].map((kn) => {
+  return CAY[cap][ky].map((kn) => {
     const o = tinhKyNho(kn, exercises, hist, biKhoa);
     let buoc;
     if (o.muc === "trong") buoc = o.bai.length ? "vip" : "sapCo";
@@ -108,7 +113,7 @@ export function tongCap(cap, exercises, hist, biKhoa, laVip = false) {
 
 /* Trình độ mặc định: chọn gần nhất → trình độ hồ sơ → bài vừa làm → A1. */
 export function capMacDinh(daChon, capHoSo, exercises, hist) {
-  if (CAP_DO.includes(daChon)) return daChon;
+  if (CAP_DO.includes(daChon) || daChon === CAP_TCF) return daChon;
   if (CAP_DO.includes(capHoSo)) return capHoSo;
   const moiNhat = exercises.filter((e) => daLam(hist[e.id]) && CAP_DO.includes(e.level))
     .sort((a, b) => (hist[b.id].at || 0) - (hist[a.id].at || 0))[0];
@@ -125,11 +130,11 @@ export function gopDiemNoi(score, max, diemNoi) {
 }
 
 /* Kỹ năng nhỏ của một bài, kể cả bài mở từ Thư viện: gắn bằng meta.kyNang hoặc id trong cây. */
-export const kyNhoCuaBai = (ex) => ex.kyNang || Object.values(KY_NANG).flatMap((c) => Object.values(c).flat()).find((k) => k.bai.includes(ex.id))?.ma || null;
+export const kyNhoCuaBai = (ex) => ex.kyNang || Object.values(CAY).flatMap((c) => Object.values(c).flat()).find((k) => k.bai.includes(ex.id))?.ma || null;
 
 export const timKyNho = (ma) => {
   const [cap, ky] = ma.split("-");
-  const kn = KY_NANG[cap]?.[ky]?.find((x) => x.ma === ma);
+  const kn = CAY[cap]?.[ky]?.find((x) => x.ma === ma);
   return kn ? { cap, ky, kn } : null;
 };
 
