@@ -74,15 +74,17 @@ function DaiDoiDau({ ban, nen }) {
         <span className="truncate text-sm font-extrabold">{tr("Bạn", "Vous", "You")}</span>
         <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-white/25 ring-2 ring-white/70"><User size={20} /></span>
       </span>
-      <motion.span key={ban?.id ?? "chua"} initial={{ scale: 0.4, rotate: -45 }} animate={{ scale: 1, rotate: 0 }} transition={NAY}
+      {/* Key PHẢI khác key của khối tên bên phải: hai anh em trùng key thì React để sót nút cũ,
+          mỗi lần đổi người lại thừa ra một biểu tượng kiếm (lỗi 16/11). */}
+      <motion.span key={`kiem-${ban?.id ?? "chua"}`} initial={{ scale: 0.4, rotate: -45 }} animate={{ scale: 1, rotate: 0 }} transition={NAY}
         className="relative grid h-10 w-10 place-items-center rounded-full bg-white text-[#111] shadow-lg"><Swords size={18} /></motion.span>
       {ban ? (
-        <motion.span key={ban.id} initial={{ opacity: 0, x: 24 }} animate={{ opacity: 1, x: 0 }} transition={LO_XO} className="relative flex min-w-0 items-center gap-2.5">
+        <motion.span key={`ban-${ban.id}`} initial={{ opacity: 0, x: 24 }} animate={{ opacity: 1, x: 0 }} transition={LO_XO} className="relative flex min-w-0 items-center gap-2.5">
           <span className="shrink-0 rounded-full ring-2 ring-white"><Avatar khoa={ban.avatar || ""} ten={ban.name} size={44} dungYen /></span>
           <span className="truncate text-sm font-extrabold">{ban.name}</span>
         </motion.span>
       ) : (
-        <span className="relative flex min-w-0 items-center gap-2.5">
+        <span key="chua-chon" className="relative flex min-w-0 items-center gap-2.5">
           <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full border-2 border-dashed border-white/70 text-lg font-extrabold">?</span>
           <span className="text-sm font-bold text-white/90">{tr("Chọn một người bạn", "Choisissez un ami", "Pick a friend")}</span>
         </span>

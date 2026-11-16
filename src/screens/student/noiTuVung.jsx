@@ -14,6 +14,9 @@ import { boMaoTu } from "../../content/tuVung/index.js";
  * lượt chấm phát âm AI trong ngày (một chủ đề có tới 22 lượt nói, quá hạn mức 20 lượt/ngày của
  * cham-phat-am). Trình duyệt không có bộ này (Firefox) thì phần nói ẩn và học như cũ.
  * Chấm bằng soCau (không tính dấu, so gần theo âm); KHÔNG hiện điểm số, chỉ tô màu từng từ.
+ * 16/11 (chủ dự án): tô màu NGAY trên câu mẫu trong lúc đọc (kết quả tạm của bộ nhận giọng): từ
+ * nào máy nghe ra thì xanh liền; đọc đủ mọi từ thì TỰ DỪNG, không phải bấm; ngừng nói thì bộ nhận
+ * giọng cũng tự dừng. Dừng xong, từ chưa nghe ra chuyển đỏ.
  * Từ: đạt khi máy nghe ra đủ ≥ 75 % (được bỏ mạo từ, vì máy hay nuốt « le », « la »).
  * Câu: đạt khi ≥ 70 %. */
 
@@ -47,6 +50,7 @@ const chamCau = (cau, nghe) => {
 function LuotNoi({ kieu, mau, xong, dangMo, onDat, onBoQua }) {
   const [tt, setTT] = useState("cho");           // cho | nghe | xong
   const [kq, setKq] = useState(null);
+  const [tam, setTam] = useState(null);          // kết quả tạm trong lúc đang nghe
   const [loi, setLoi] = useState("");
   const rec = useRef(null);
   useEffect(() => () => { try { rec.current?.abort(); } catch { /* bỏ qua */ } }, []);
@@ -54,14 +58,28 @@ function LuotNoi({ kieu, mau, xong, dangMo, onDat, onBoQua }) {
   const batDau = () => {
     const L = LopNhan();
     if (!L) return;
-    setLoi(""); setKq(null);
+    setLoi(""); setKq(null); setTam(null);
     const r = new L();
-    r.lang = "fr-FR"; r.interimResults = false; r.maxAlternatives = 5; r.continuous = false;
-    const nghe = [];
+    r.lang = "fr-FR"; r.interimResults = true; r.maxAlternatives = 5; r.continuous = false;
+    const cham = kieu === "tu" ? chamTu : chamCau;
+    let nghe = [], moiNhat = "";
     let hong = false;
-    r.onresult = (e) => { for (const res of e.results) for (const a of res) nghe.push(a.transcript); };
+    r.onresult = (e) => {
+      /* Sự kiện này bắn nhiều lần (kết quả tạm rồi kết quả chốt), mỗi lần mang CẢ danh sách: dựng lại từ đầu. */
+      nghe = []; moiNhat = "";
+      for (const res of e.results) {
+        moiNhat += " " + (res[0]?.transcript || "");
+        if (res.isFinal) for (const a of res) nghe.push(a.transcript);
+      }
+      moiNhat = moiNhat.trim();
+      if (!moiNhat) return;
+      const k = cham(mau, [moiNhat]);
+      setTam(k);
+      /* Đã nghe ra đủ mọi từ: dừng luôn, không chờ khoảng lặng. */
+      if (k.tu.length && k.tu.every((t) => t.khop !== "thieu")) { try { r.stop(); } catch { /* bỏ qua */ } }
+    };
     r.onerror = (e) => {
-      hong = true; setTT("cho");
+      hong = true; setTT("cho"); setTam(null);
       setLoi(e.error === "not-allowed" || e.error === "service-not-allowed"
         ? tr("Trình duyệt chưa được dùng micro. Cho phép micro rồi thử lại, hoặc bấm « Bỏ qua ».", "Micro non autorisé. Autorisez-le ou passez.", "Microphone blocked. Allow it, or skip.")
         : e.error === "no-speech"
@@ -73,10 +91,11 @@ function LuotNoi({ kieu, mau, xong, dangMo, onDat, onBoQua }) {
     r.onend = () => {
       rec.current = null;
       if (hong) return;
-      if (!nghe.length) { setTT("cho"); setLoi(tr("Chưa nghe thấy gì. Bấm micro rồi nói to, rõ hơn nhé.", "Rien entendu. Parlez plus fort.", "Didn't hear anything. Speak up.")); return; }
-      const k = kieu === "tu" ? chamTu(mau, nghe) : chamCau(mau, nghe);
+      if (moiNhat && !nghe.includes(moiNhat)) nghe.push(moiNhat);
+      if (!nghe.length) { setTT("cho"); setTam(null); setLoi(tr("Chưa nghe thấy gì. Bấm micro rồi nói to, rõ hơn nhé.", "Rien entendu. Parlez plus fort.", "Didn't hear anything. Speak up.")); return; }
+      const k = cham(mau, nghe);
       const dat = k.diem >= (kieu === "tu" ? 0.75 : 0.7);
-      setKq({ ...k, dat }); setTT("xong");
+      setKq({ ...k, dat }); setTam(null); setTT("xong");
       phat(dat ? "dung" : "sai");
       if (dat) onDat();
     };
@@ -88,6 +107,10 @@ function LuotNoi({ kieu, mau, xong, dangMo, onDat, onBoQua }) {
 
   const nhan = kieu === "tu" ? tr("Nói từ", "Dites le mot", "Say the word") : tr("Nói câu ví dụ", "Dites l'exemple", "Say the example");
   const daXong = xong === "dat" || xong === "bo";
+  /* Câu mẫu tô màu: đang nghe thì từ đã nghe ra xanh, từ chưa tới giữ màu chữ; dừng rồi thì từ
+     chưa nghe ra đỏ. */
+  const dangNghe = tt === "nghe";
+  const toMau = dangNghe ? tam : kq;
   return (
     <div className={`grid gap-2.5 rounded-2xl border-2 border-solid p-3.5 transition-colors ${dangMo && !daXong ? "border-primary/40 bg-surface" : "border-transparent bg-surface2"}`}>
       <div className="flex flex-wrap items-center gap-3">
@@ -96,7 +119,13 @@ function LuotNoi({ kieu, mau, xong, dangMo, onDat, onBoQua }) {
         </span>
         <div className="min-w-0 flex-1">
           <p className="m-0 text-[11px] font-extrabold uppercase tracking-[0.1em] text-soft">{nhan}</p>
-          <p lang="fr" className={`m-0 font-bold leading-snug text-ink ${kieu === "tu" ? "text-base" : "text-sm italic"}`}>{mau}</p>
+          {toMau ? (
+            <p lang="fr" aria-label={mau} className={`m-0 flex flex-wrap gap-x-1 gap-y-0.5 font-bold leading-snug ${kieu === "tu" ? "text-base" : "text-sm italic"}`}>
+              {toMau.tu.map((t, j) => (
+                <span key={j} className={`rounded-md px-1 transition-colors duration-200 ${t.khop !== "thieu" ? "bg-ok-soft text-ok" : dangNghe ? "text-ink" : "bg-danger-soft text-danger"}`}>{t.goc}</span>
+              ))}
+            </p>
+          ) : <p lang="fr" className={`m-0 font-bold leading-snug text-ink ${kieu === "tu" ? "text-base" : "text-sm italic"}`}>{mau}</p>}
         </div>
         {xong === "dat" && <span className="rounded-full bg-ok-soft px-3 py-1 text-xs font-extrabold text-ok">{tr("Đạt", "Réussi", "Passed")}</span>}
         {xong === "bo" && <span className="rounded-full bg-surface px-3 py-1 text-xs font-extrabold text-soft">{tr("Đã bỏ qua", "Passé", "Skipped")}</span>}
@@ -104,7 +133,7 @@ function LuotNoi({ kieu, mau, xong, dangMo, onDat, onBoQua }) {
           tt === "nghe" ? (
             <motion.button type="button" onClick={dung} whileTap={{ scale: 0.92 }}
               className="inline-flex cursor-pointer items-center gap-2 rounded-xl border-0 bg-danger px-4 py-2.5 font-sans text-sm font-extrabold text-white">
-              <span className="h-2.5 w-2.5 animate-pulse rounded-full bg-white" /> {tr("Đang nghe… bấm để dừng", "J'écoute…", "Listening…")} <Square size={12} fill="currentColor" />
+              <span className="h-2.5 w-2.5 animate-pulse rounded-full bg-white" /> {tr("Đang nghe, đọc xong tự dừng", "J'écoute, arrêt automatique", "Listening, stops by itself")} <Square size={12} fill="currentColor" />
             </motion.button>
           ) : (
             <motion.button type="button" onClick={batDau} whileTap={{ scale: 0.92 }} whileHover={{ y: -2 }}
@@ -125,13 +154,8 @@ function LuotNoi({ kieu, mau, xong, dangMo, onDat, onBoQua }) {
       <AnimatePresence>
         {kq && (
           <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="grid gap-1.5 overflow-hidden">
-            <p lang="fr" className="m-0 flex flex-wrap gap-1 text-[15px] font-bold">
-              {kq.tu.map((t, j) => (
-                <span key={j} className={`rounded-md px-1 ${t.khop !== "thieu" ? "bg-ok-soft text-ok" : kq.dat ? "bg-surface2 text-soft" : "bg-danger-soft text-danger"}`}>{t.goc}</span>
-              ))}
-            </p>
             <p className="m-0 text-xs text-soft">
-              {kq.dat ? tr("Tốt lắm! ", "Très bien ! ", "Great! ", ) : tr("Từ đỏ là chỗ máy chưa nghe ra: bấm loa nghe mẫu rồi nói lại. ", "Les mots en rouge n'ont pas été reconnus. ", "Red words weren't recognised. ")}
+              {kq.dat ? tr("Tốt lắm! ", "Très bien ! ", "Great! ", ) : tr("Từ xanh là máy nghe ra đúng, từ đỏ là chưa nghe ra: bấm loa nghe mẫu rồi nói lại. ", "Les mots en rouge n'ont pas été reconnus. ", "Red words weren't recognised. ")}
               {tr("Máy nghe ra:", "Entendu :", "Heard:")} <em lang="fr" className="text-ink">« {kq.chu} »</em>
             </p>
           </motion.div>

@@ -25,6 +25,8 @@ import NutTieng from "../../shared/NutTieng.jsx";
 import { lamSachHtml } from "../../shared/lamSachHtml.js";
 import { phat } from "../../shared/amThanh.js";
 import { choTrong } from "../../shared/choTrong.jsx";
+import { motion, MotionConfig } from "framer-motion";
+import { ListChecks as IcCanLam, CheckCircle2 as IcDaNop, RefreshCw as IcLamLai, MessageCircle as IcNhanXet, FileText as IcTep, ClipboardCheck as IcDaChua, ArrowRight as IcMuiTen, ExternalLink as IcMoTep, ChevronDown as IcMo } from "lucide-react";
 
 
 /* ================= Student ================= */
@@ -151,10 +153,12 @@ function Student({ name, exercises, submissions, setSubmissions, accounts, setAc
     const conNgay = ex.deadline ? Math.ceil((new Date(ex.deadline).getTime() - Date.now()) / 86400000) : null;
     const tl = t && t.max ? t.score / t.max : 0;
     return (
-      <div className="mcf-cau-vao rounded-3xl border border-solid border-line bg-surface p-5 shadow-[0_8px_30px_rgba(0,0,0,0.04)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_14px_34px_rgba(0,0,0,0.08)]"
+      <div className={`mcf-cau-vao group relative overflow-hidden rounded-3xl border border-solid bg-surface p-5 shadow-sm transition-[transform,box-shadow,border-color] duration-300 ease-out hover:-translate-y-1 hover:shadow-[0_18px_40px_rgba(0,0,0,0.1)] motion-reduce:transition-none motion-reduce:hover:translate-y-0 ${!sub && late ? "border-danger/40" : !sub && conNgay != null && conNgay <= 2 ? "border-warn/50" : "border-line"}`}
         style={{ animationDelay: `${Math.min(i, 8) * 60}ms` }}>
+        {/* 16/11: vạch màu kỹ năng chạy ra khi rê chuột, cùng kiểu với thẻ ở sảnh Trò chơi. */}
+        <span aria-hidden className={`absolute inset-x-0 top-0 h-1.5 origin-left scale-x-0 bg-gradient-to-r ${MAU_KN[kn] ?? "from-blue-500 to-indigo-600"} transition-transform duration-300 ease-out group-hover:scale-x-100 motion-reduce:transition-none`} />
         <div className="flex flex-wrap items-center gap-4">
-          <span className={`grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-gradient-to-br ${MAU_KN[kn] ?? "from-blue-500 to-indigo-600"} text-white shadow-md`}>
+          <span className={`grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-gradient-to-br ${MAU_KN[kn] ?? "from-blue-500 to-indigo-600"} text-white shadow-md transition-transform duration-300 ease-out group-hover:-rotate-6 group-hover:scale-110 motion-reduce:transition-none motion-reduce:group-hover:transform-none`}>
             <IconKN size={24} />
           </span>
           <div className="min-w-0 flex-1">
@@ -167,6 +171,7 @@ function Student({ name, exercises, submissions, setSubmissions, accounts, setAc
               {ex.timeLimit && <span className="inline-flex items-center gap-1 rounded-full bg-surface2 px-2 py-0.5 text-soft"><Clock size={11} />{ex.timeLimit} {tr("phút", "min", "min")}</span>}
               {ex.deadline && !sub && (
                 <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 ${late ? "bg-danger text-white" : conNgay <= 2 ? "bg-warn-soft text-warn" : "bg-surface2 text-soft"}`}>
+                  {(late || conNgay <= 2) && <span aria-hidden className="h-1.5 w-1.5 animate-pulse rounded-full bg-current motion-reduce:animate-none" />}
                   <Calendar size={11} />
                   {late ? tr("Quá hạn, nộp sẽ tính muộn", "En retard", "Overdue")
                     : conNgay <= 0 ? tr("Hạn hôm nay", "À rendre aujourd'hui", "Due today")
@@ -186,40 +191,50 @@ function Student({ name, exercises, submissions, setSubmissions, accounts, setAc
             <button type="button" onClick={() => { phat("batDau"); setTaking(ex); }}
               className="inline-flex shrink-0 cursor-pointer items-center gap-2 rounded-2xl border-0 border-b-4 border-solid border-blue-800 bg-gradient-to-r from-primary to-indigo-600 px-5 py-2.5 font-sans text-sm font-extrabold text-white shadow-[0_10px_22px_rgba(37,99,235,0.3)] transition-transform hover:-translate-y-0.5 active:translate-y-0.5 active:border-b-0">
               {redo ? tr("Làm lại", "Refaire", "Redo") : tr("Bắt đầu", "Commencer", "Start")}
+              <IcMuiTen size={16} className="transition-transform duration-300 group-hover:translate-x-1" />
             </button>
           )}
         </div>
         {redo && (
-          <div style={{ marginTop: 12, background: C.warnSoft, border: `2px solid ${C.warn}`, borderRadius: 16, padding: "12px 16px", fontSize: 14, fontWeight: 600 }}>
-            🔁 <strong>{tr("Giáo viên yêu cầu bạn làm lại bài này.", "Le professeur te demande de refaire cet exercice.", "Your teacher asks you to redo this exercise.")}</strong>
-            {subRaw.redoNote && <div style={{ marginTop: 4, fontWeight: 400 }}>💬 {subRaw.redoNote}</div>}
+          <div className="mt-3 flex items-start gap-3 rounded-2xl bg-warn-soft px-4 py-3 text-sm">
+            <span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-surface text-warn"><IcLamLai size={16} /></span>
+            <div className="min-w-0">
+              <p className="m-0 font-extrabold text-warn">{tr("Giáo viên yêu cầu bạn làm lại bài này.", "Le professeur te demande de refaire cet exercice.", "Your teacher asks you to redo this exercise.")}</p>
+              {subRaw.redoNote && <p className="m-0 mt-0.5 text-ink">{subRaw.redoNote}</p>}
+            </div>
           </div>
         )}
         {sub?.comment && (
-          <div style={{ marginTop: 12, background: C.warnSoft, border: `1px solid ${C.warn}44`, borderRadius: 12, padding: "10px 14px", fontSize: 14 }}>
-            💬 <strong>{tr("Giáo viên:", "Professeur :", "Teacher:")}</strong> <ChuCoSticker text={sub.comment} />
+          <div className="mt-3 flex items-start gap-3 rounded-2xl bg-surface2 px-4 py-3 text-sm">
+            <span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-primary-soft text-primary"><IcNhanXet size={16} /></span>
+            <div className="min-w-0">
+              <p className="m-0 text-[11px] font-extrabold uppercase tracking-wide text-soft">{tr("Nhận xét của giáo viên", "Commentaire du professeur", "Teacher's comment")}</p>
+              <div className="mt-0.5 text-ink"><ChuCoSticker text={sub.comment} /></div>
+            </div>
           </div>
         )}
         {sub?.feedbackUrl && (
-          <div style={{ marginTop: 10, display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap",
-            background: C.primarySoft, border: `1px solid ${C.primary}33`, borderRadius: 16, padding: "12px 16px" }}>
-            <span style={{ fontSize: 22 }}>📄</span>
-            <div style={{ flex: 1, minWidth: 140 }}>
-              <div style={{ fontSize: 12, fontWeight: 800, color: C.primary, letterSpacing: 0.5, textTransform: "uppercase" }}>{tr("Bài chữa của giáo viên", "Correction du professeur", "Teacher's correction")}</div>
-              <div style={{ fontSize: 13.5, fontWeight: 600, wordBreak: "break-all" }}>{fileNameFromUrl(sub.feedbackUrl)}</div>
+          <div className="mt-3 flex flex-wrap items-center gap-3 rounded-2xl bg-primary-soft px-4 py-3">
+            <span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-surface text-primary"><IcTep size={16} /></span>
+            <div className="min-w-[140px] flex-1">
+              <p className="m-0 text-[11px] font-extrabold uppercase tracking-wide text-primary">{tr("Bài chữa của giáo viên", "Correction du professeur", "Teacher's correction")}</p>
+              <p className="m-0 break-all text-sm font-semibold text-ink">{fileNameFromUrl(sub.feedbackUrl)}</p>
             </div>
             <a href={sub.feedbackUrl} target="_blank" rel="noopener noreferrer"
-              style={{ ...S.btn(true), textDecoration: "none", fontSize: 13, padding: "9px 18px" }}>
-              {tr("Xem file ↗", "Voir le fichier ↗", "Open file ↗")}
+              className="inline-flex items-center gap-1.5 rounded-xl bg-primary px-4 py-2 text-sm font-extrabold text-on-primary no-underline transition-transform hover:-translate-y-0.5">
+              {tr("Xem file", "Voir le fichier", "Open file")} <IcMoTep size={14} />
             </a>
           </div>
         )}
         {sub?.graded && ex.questions.some((q) => q.type === "open" || q.type === "vf" || q.type === "tableau" || q.type === "ordre" || q.type === "fill" || q.type === "conj" || q.type === "qcm" || q.type === "apparier" || q.type === "formulaire") && (
-          <details style={{ marginTop: 10, fontSize: 13.5 }}>
-            <summary style={{ cursor: "pointer", color: C.primary, fontWeight: 700 }}>{tr("📋 Xem bài đã chữa", "📋 Voir ma copie corrigée", "📋 See my corrected work")}</summary>
+          <details className="group/chua mt-3 text-[13.5px]">
+            <summary className="inline-flex cursor-pointer list-none items-center gap-2 rounded-xl bg-surface2 px-3.5 py-2 text-sm font-extrabold text-primary transition-colors hover:bg-primary-soft [&::-webkit-details-marker]:hidden">
+              <IcDaChua size={16} /> {tr("Xem bài đã chữa", "Voir ma copie corrigée", "See my corrected work")}
+              <IcMo size={15} className="transition-transform duration-200 group-open/chua:rotate-180" />
+            </summary>
             <div style={{ marginTop: 10, display: "grid", gap: 12 }}>
               {ex.questions.map((q, i) => {
-                const a = sub.answers[q.id];
+                const a = (sub.answers || {})[q.id];
                 if (q.type === "open") return (
                   <div key={q.id} style={{ background: "var(--mcf-surface2)", borderRadius: 14, padding: "12px 15px", border: `1px solid ${C.line}` }}>
                     <div style={{ fontWeight: 700, marginBottom: 6 }}>{i + 1}. {choTrong(q.prompt)}</div>
@@ -370,14 +385,28 @@ function Student({ name, exercises, submissions, setSubmissions, accounts, setAc
       )}
       {/* « Bài tập được giao » (08/10): Cần làm + Đã nộp là hai tab của một mục. */}
       {(tab === "todo" || tab === "done") && (
-        <div role="tablist" className="mb-3 inline-flex gap-1 rounded-2xl bg-surface2 p-1">
-          {[["todo", t("nav.todo"), todo.length], ["done", t("nav.done"), doneList.length]].map(([k, nhan, n]) => (
-            <button key={k} type="button" role="tab" aria-selected={tab === k} onClick={() => { if (tab !== k) phat("tiep"); setTab(k); }}
-              className={`inline-flex h-9 cursor-pointer items-center gap-2 rounded-xl border-0 px-4 font-sans text-sm font-extrabold transition-all ${tab === k ? "bg-surface text-ink shadow-md" : "bg-transparent text-soft hover:text-ink"}`}>
-              {nhan} <span className={`grid h-6 min-w-6 place-items-center rounded-full px-1.5 text-xs tabular-nums ${tab === k ? "bg-primary text-white" : "bg-surface text-soft"}`}>{n}</span>
-            </button>
-          ))}
-        </div>
+        <MotionConfig reducedMotion="user">
+          <div role="tablist" aria-label={t("nav.assigned")} className="mb-4 grid grid-cols-2 gap-2 rounded-3xl border border-solid border-line bg-surface p-2 shadow-sm">
+            {[["todo", t("nav.todo"), todo.length, IcCanLam, "from-blue-600 to-indigo-600", "bg-primary-soft text-primary"],
+              ["done", t("nav.done"), doneList.length, IcDaNop, "from-emerald-500 to-teal-600", "bg-ok-soft text-ok"]].map(([k, nhan, n, Icon, mau, nen]) => {
+              const chon = tab === k;
+              return (
+                <motion.button key={k} type="button" role="tab" aria-selected={chon} onClick={() => { if (!chon) phat("tiep"); setTab(k); }} whileTap={{ scale: 0.97 }}
+                  className={`relative flex cursor-pointer items-center gap-3 overflow-hidden rounded-2xl border-0 bg-transparent px-3 py-2.5 text-left font-sans transition-colors sm:px-4 ${chon ? "text-white" : "text-ink hover:bg-surface2"}`}>
+                  {chon && (
+                    <motion.span layoutId="bai-giao-tab" transition={{ type: "spring", stiffness: 420, damping: 34 }} aria-hidden className={`absolute inset-0 rounded-2xl bg-gradient-to-br ${mau} shadow-md`}>
+                      <span className="absolute -right-6 -top-8 h-24 w-24 rounded-full bg-white/15" />
+                    </motion.span>
+                  )}
+                  <motion.span key={chon ? "chon" : "khong"} initial={chon ? { scale: 0.6, rotate: -15 } : false} animate={{ scale: 1, rotate: 0 }} transition={{ type: "spring", stiffness: 500, damping: 14 }}
+                    className={`relative grid h-10 w-10 shrink-0 place-items-center rounded-xl ${chon ? "bg-white/25 text-white" : nen}`}><Icon size={20} /></motion.span>
+                  <span className="relative min-w-0 flex-1 truncate text-[15px] font-extrabold">{nhan}</span>
+                  <span className={`relative grid h-7 min-w-7 place-items-center rounded-full px-2 text-xs font-extrabold tabular-nums ${chon ? "bg-white/25 text-white" : "bg-surface2 text-soft"}`}>{n}</span>
+                </motion.button>
+              );
+            })}
+          </div>
+        </MotionConfig>
       )}
       {tab === "todo" && (
         todo.length === 0
@@ -388,7 +417,26 @@ function Student({ name, exercises, submissions, setSubmissions, accounts, setAc
                 <p className="m-0 mt-0.5 text-sm text-soft">{t("todo.empty_body")}</p>
               </div>
             </div>
-          : <div className="grid gap-3.5">{todo.map((ex, i) => <Card key={ex.id} ex={ex} i={i} />)}</div>
+          : (() => {
+              /* 16/11: chia theo mức gấp để thấy ngay bài nào phải làm trước. Chỉ một nhóm thì không hiện tiêu đề. */
+              const conNgayCua = (ex) => (ex.deadline ? Math.ceil((new Date(ex.deadline).getTime() - Date.now()) / 86400000) : null);
+              const nhom = [
+                [tr("Quá hạn", "En retard", "Overdue"), "bg-danger", todo.filter((ex) => isLate(ex))],
+                [tr("Sắp đến hạn", "À rendre bientôt", "Due soon"), "bg-warn", todo.filter((ex) => !isLate(ex) && conNgayCua(ex) != null && conNgayCua(ex) <= 2)],
+                [tr("Chưa gấp", "Plus tard", "Later"), "bg-primary", todo.filter((ex) => !isLate(ex) && !(conNgayCua(ex) != null && conNgayCua(ex) <= 2))],
+              ].filter((g) => g[2].length);
+              let stt = 0;
+              return (
+                <div className="grid gap-6">
+                  {nhom.map(([ten, cham, ds]) => (
+                    <section key={ten} className="grid gap-3.5">
+                      {nhom.length > 1 && <h2 className="m-0 flex items-center gap-2 text-sm font-extrabold text-ink"><span aria-hidden className={`h-2.5 w-2.5 rounded-full ${cham}`} />{ten}</h2>}
+                      {ds.map((ex) => <Card key={ex.id} ex={ex} i={stt++} />)}
+                    </section>
+                  ))}
+                </div>
+              );
+            })()
       )}
       {tab === "done" && (
         doneList.length === 0

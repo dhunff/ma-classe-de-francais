@@ -218,6 +218,35 @@ export function PhatAm({ cau, onXong, anNghe = false }) {
   const [loi, setLoi] = useState("");
   const rec = useRef(null);
   const manh = useRef([]);
+  /* 16/11 (chủ dự án): TỰ DỪNG ghi khi đọc xong. Đo âm lượng micro mỗi 100 ms; đã nghe thấy tiếng
+     nói rồi mà lặng liền 1,4 giây thì dừng và gửi chấm. Ngưỡng tính theo tiếng ồn nền đo ở 0,4 giây
+     đầu, nên phòng ồn không bị cắt sớm cũng không bị treo. Nút Dừng và trần 20 giây vẫn còn. */
+  const do_ = useRef(null);
+  const [mucAm, setMucAm] = useState(0);
+  const ngungDo = () => { const d = do_.current; do_.current = null; if (!d) return; clearInterval(d.h); try { d.ctx.close(); } catch { /* bỏ qua */ } setMucAm(0); };
+  const batDo = (st) => {
+    try {
+      const Ctx = window.AudioContext || window.webkitAudioContext;
+      if (!Ctx) return;
+      const ctx = new Ctx();
+      const an = ctx.createAnalyser(); an.fftSize = 1024;
+      ctx.createMediaStreamSource(st).connect(an);
+      const buf = new window.Uint8Array(an.fftSize);
+      let nen = 0, soNen = 0, daNoi = false, lang = 0, tong = 0;
+      const h = setInterval(() => {
+        an.getByteTimeDomainData(buf);
+        let t = 0; for (const v of buf) { const x = (v - 128) / 128; t += x * x; }
+        const am = Math.sqrt(t / buf.length);
+        tong += 100; setMucAm(Math.min(1, am * 6));
+        if (tong <= 400) { nen += am; soNen++; return; }
+        const nguong = Math.max(0.03, (nen / Math.max(1, soNen)) * 3);
+        if (am > nguong) { daNoi = true; lang = 0; }
+        else if (daNoi) { lang += 100; if (lang >= 1400) dung(); }
+      }, 100);
+      do_.current = { h, ctx };
+    } catch { /* không đo được thì vẫn ghi, dừng bằng nút */ }
+  };
+  useEffect(() => ngungDo, []); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { setTT("cho"); setKq(null); setLoi(""); }, [cau.id]);
   useEffect(() => {
     if (trangThai !== "ghi") return undefined;
@@ -233,8 +262,8 @@ export function PhatAm({ cau, onXong, anNghe = false }) {
       const r = new MediaRecorder(st, loai ? { mimeType: loai } : undefined);
       manh.current = [];
       r.ondataavailable = (e) => { if (e.data.size) manh.current.push(e.data); };
-      r.onstop = () => { st.getTracks().forEach((t) => t.stop()); gui(new Blob(manh.current, { type: r.mimeType || "audio/webm" })); };
-      rec.current = r; r.start(); setGiay(0); setTT("ghi"); phat("bam");
+      r.onstop = () => { ngungDo(); st.getTracks().forEach((t) => t.stop()); gui(new Blob(manh.current, { type: r.mimeType || "audio/webm" })); };
+      rec.current = r; r.start(); batDo(st); setGiay(0); setTT("ghi"); phat("bam");
     } catch {
       setLoi(tr("Không mở được micro. Hãy cho phép trình duyệt dùng micro rồi thử lại.", "Micro inaccessible. Autorisez le micro puis réessayez.", "Can't access the microphone. Allow it and try again."));
     }
@@ -274,7 +303,7 @@ export function PhatAm({ cau, onXong, anNghe = false }) {
           <button type="button" onClick={dung}
             className="inline-flex cursor-pointer items-center gap-2 rounded-2xl border-0 bg-danger px-6 py-3.5 font-sans text-sm font-extrabold text-white">
             <Square size={15} fill="currentColor" /> {tr("Dừng", "Arrêter", "Stop")} · {giay}s
-            <span className="h-2.5 w-2.5 animate-pulse rounded-full bg-white" />
+            <span aria-hidden className="flex h-4 items-center gap-0.5">{[0.5, 1, 0.7, 0.9, 0.4].map((k, i) => <span key={i} className="w-1 rounded-full bg-white transition-[height] duration-100" style={{ height: `${Math.max(18, Math.min(100, mucAm * k * 100))}%` }} />)}</span>
           </button>
         ) : (
           <button type="button" onClick={batDau} disabled={trangThai === "gui"}
@@ -283,7 +312,7 @@ export function PhatAm({ cau, onXong, anNghe = false }) {
             {trangThai === "gui" ? tr("Leon đang nghe…", "Leon écoute…", "Leon is listening…") : kq ? tr("Đọc lại", "Relire", "Read again") : tr("Bấm và đọc câu", "Lire la phrase", "Tap and read")}
           </button>
         )}
-        <span className="text-xs text-soft">{tr("Tối đa 20 giây", "20 secondes max", "Up to 20 seconds")}</span>
+        <span className="text-xs text-soft">{trangThai === "ghi" ? tr("Đọc xong, máy tự dừng và chấm", "L'enregistrement s'arrête tout seul à la fin", "Recording stops by itself when you finish") : tr("Tự dừng khi bạn đọc xong, tối đa 20 giây", "Arrêt automatique, 20 secondes max", "Stops by itself, up to 20 seconds")}</span>
       </div>
       {loi && <p className="mcf-rung m-0 text-sm font-semibold text-danger">{loi}</p>}
       {kq && (
