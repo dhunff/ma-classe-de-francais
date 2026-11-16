@@ -157,6 +157,23 @@ const HS_GIA = Array.from({ length: 31 }, (_, i) => ({ id: null, name: `Học si
 const DAU_MAU = { cau: [{ chieu: "nghia", de: "du coup", luaChon: ["thế là, vậy nên", "tuy nhiên", "ngay lập tức", "dù sao"], dapAn: 0, chon: 0 }, { chieu: "nghia", de: "faire état de", luaChon: ["làm hỏng", "cho biết, nêu ra", "phủ nhận", "đề nghị"], dapAn: 1, chon: 3 }, { chieu: "tu", de: "do, vì (+ danh từ)", luaChon: ["grâce à", "pourtant", "en raison de", "bref"], dapAn: 2, chon: 0 }] };
 const THE_MAU = [["en raison de", "do, vì", "En raison de travaux, la ligne est fermée."], ["du coup", "thế là, vậy nên", "Il pleuvait, du coup je suis resté."], ["faire état de", "cho biết, nêu ra", "Le rapport fait état de retards."]].map(([a, b, c], i) => ({ card_id: "m" + i, matTruoc: a, matSau: b, viDu: c, due_at: "2026-10-15", interval_days: 1, ease: 2.5, reps: 0, lapses: 0 }));
 
+/* Màn « Flashcard » (thẻ của tôi) với thẻ giả: thêm, sửa, xoá chạy trên bộ nhớ, không gọi mạng. */
+function TheCuaToiThu() {
+  const ngay = (n) => { const d = new Date(Date.now() + n * 86400000); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; };
+  const [ds, setDs] = React.useState(() => [
+    ["le billet", "tấm vé", "J'achète un billet de train.", "Du lịch", -1, 0, 0, 0],
+    ["la correspondance", "chuyến nối", "", "Du lịch", 0, 3, 2, 6],
+    ["néanmoins", "tuy nhiên", "Il pleut ; néanmoins, nous sortons.", "Đề B1 · Đề 2", 0, 2, 0, 6],
+    ["se débrouiller", "tự xoay xở", "", "Thẻ tự tạo", 5, 4, 3, 10],
+    ["le quai", "sân ga", "Le train part du quai 3.", "Du lịch", 30, 6, 0, 34],
+    ["en revanche", "ngược lại", "", "Đề B1 · Đề 2", 12, 3, 0, 15],
+    ["le loyer", "tiền thuê nhà", "", "Thẻ tự tạo", 0, 0, 0, 0],
+  ].map(([matTruoc, nghia, ghiChu, nhom, han, reps, lapses, iv], i) => ({ id: "t" + i, card_id: "t" + i, matTruoc, matSau: nghia, nghia, ghiChu, nhom, taoLuc: ngay(-i), due_at: ngay(han), reps, lapses, interval_days: iv, ease: 2.5 })));
+  return <ThuVienBoThe trang="cua-toi" ds={BO_THE_THU} soTu={ds} ten="Linh Nguyễn" onMo={() => {}} onOnSoTu={() => {}} onOnLoc={() => {}}
+    onThemThe={async (m) => { setDs((d) => [{ id: "m" + Date.now(), matTruoc: m.tu.trim(), matSau: m.nghia.trim(), nghia: m.nghia.trim(), ghiChu: m.viDu, nhom: m.nhom || "Thẻ tự tạo", taoLuc: "9999", due_at: ngay(0), reps: 0, lapses: 0, interval_days: 0 }, ...d]); return true; }}
+    onSuaThe={async (x, m) => { setDs((d) => d.map((y) => (y.id === x.id ? { ...y, matTruoc: m.tu, matSau: m.nghia, nghia: m.nghia, ghiChu: m.viDu, nhom: m.nhom } : y))); return true; }}
+    onXoaThe={(x) => setDs((d) => d.filter((y) => y.id !== x.id))} />;
+}
 const BO_THE_THU = [
   { id: "1", ten: "Nghe hiểu: thông báo nhà ga", kyNang: "CO", congKhai: true, soThe: 15,
     moTa: "Các mẫu câu thông báo thường gặp ở sân bay và nhà ga.",
@@ -1185,7 +1202,7 @@ function Preview() {
           <Route path="/etudiant/xem-lai-dau" element={<><Controls /><XemLaiDau tranId="mau" doi="Minh Anh" duMau={DAU_MAU} onDong={() => {}} /></>} />
           <Route path="/etudiant/luyen-the" element={<><Controls /><LuyenBoThe bo={{ id: "mau", ten: "Bộ mẫu" }} theMau={THE_MAU} onThoat={() => {}} /></>} />
           <Route path="/etudiant/bo-the" element={<><Controls /><ThuVienBoThe ds={BO_THE_THU} onMo={() => {}} /></>} />
-          <Route path="/etudiant/the-cua-toi" element={<><Controls /><ThuVienBoThe trang="cua-toi" ds={BO_THE_THU} soTu={[]} onMo={() => {}} /></>} />
+          <Route path="/etudiant/the-cua-toi" element={<><Controls /><TheCuaToiThu /></>} />
           <Route path="/gioi-thieu/doi-ngu" element={<><Controls /><DoiNguThu /></>} />
           <Route path="/etudiant/danh-tinh" element={<><Controls /><DanhTinhThu /></>} />
           <Route path="/etudiant/thong-bao" element={<><Controls /><ThongBaoThu /></>} />

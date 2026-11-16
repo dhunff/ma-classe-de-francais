@@ -9,7 +9,7 @@ import { PAYMENT_KEY, memoSafe } from "../../shared/access.js";
 import { tr } from "../../shared/i18n.jsx";
 import { Leon } from "../../shared/leon.jsx";
 import { phat } from "../../shared/amThanh.js";
-import { docTheSoTu, onTheSoTu, themTu, xoaTu } from "../../shared/soTu.js";
+import { docTheSoTu, onTheSoTu, themTu, xoaTu, suaTu } from "../../shared/soTu.js";
 import { xepLichOn, ngayCong } from "../../shared/sm2.js";
 import { BookMarked, ChevronRight, Plus, ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -108,6 +108,26 @@ export default function BoTheApp({ name, trang = "choi" }) {
     else window.alert(tr("Chưa xoá được, thử lại nhé.", "Échec de la suppression.", "Couldn't delete."));
   };
   const moSoTu = () => { phat("batDau"); setBo({ id: "so-tu", ten: tr("Sổ từ của tôi", "Mon carnet", "My word list"), soTu: true }); setMan("GAME"); };
+  /* 17/11: màn « Flashcard » thêm và sửa thẻ ngay trên trang, và luyện riêng một nhóm thẻ đang lọc.
+     `ids`: chỉ các thẻ đó vào màn luyện; id của bộ đổi theo lần mở để LuyenBoThe nạp lại. */
+  const themThe = async ({ tu, nghia, viDu, nhom }) => {
+    const d = await themTu({ tu, nghia, ghiChu: viDu, tenBai: nhom?.trim() || tr("Thẻ tự tạo", "Carte perso", "My card") });
+    if (d) setSoTu(await docTheSoTu());
+    return !!d;
+  };
+  const suaThe = async (x, moi) => {
+    const ok = await suaTu(x.id, { tu: moi.tu, nghia: moi.nghia, ghiChu: moi.viDu, nhom: moi.nhom });
+    if (ok) setSoTu(await docTheSoTu());
+    return ok;
+  };
+  const moSoTuLoc = (ids, ten) => {
+    if (!ids?.length) return;
+    const chon = new Set(ids);
+    phat("batDau");
+    setBo({ id: "so-tu-" + Date.now(), soTu: true, ten: ten ? tr(`Thẻ của tôi: ${ten}`, `Mes cartes : ${ten}`, `My cards: ${ten}`) : tr("Sổ từ của tôi", "Mon carnet", "My word list"),
+      nguon: { doc: async () => { const v = await docTheSoTu(); return Array.isArray(v) ? v.filter((t) => chon.has(t.id)) : v; }, cham: onTheSoTu } });
+    setMan("GAME");
+  };
   useEffect(() => { if (new URLSearchParams(window.location.search).has("so-tu")) moSoTu(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const [boKhoa, setBoKhoa] = useState(null);
@@ -134,8 +154,8 @@ export default function BoTheApp({ name, trang = "choi" }) {
         {/* 16/11: mục này là tab « Flashcard » của Học tập. */}
         {trang === "cua-toi" && <div className="px-4 pt-4"><HocTapTab /></div>}
         {/* 26/10: « Thẻ của tôi » và « Bộ thẻ có sẵn » là hai tab ngang trong ThuVienBoThe. */}
-        <ThuVienBoThe trang={trang} ds={ds} onMo={moBo} soTu={soTu} onOnSoTu={moSoTu}
-          onTaoThe={() => setTaoThe({ tu: "", nghia: "", viDu: "" })} onXoaThe={xoaThe} />
+        <ThuVienBoThe trang={trang} ds={ds} onMo={moBo} soTu={soTu} onOnSoTu={moSoTu} ten={name}
+          onThemThe={themThe} onSuaThe={suaThe} onOnLoc={moSoTuLoc} onXoaThe={xoaThe} />
       </div>
 
       {/* ── MÀN LUYỆN ──
@@ -148,7 +168,7 @@ export default function BoTheApp({ name, trang = "choi" }) {
           ? "translate-x-0 opacity-100"
           : "pointer-events-none translate-x-full opacity-0"}`}
       >
-        {bo && <LuyenBoThe key={bo.id} bo={bo} nguon={bo.soTu ? NGUON_SO_TU : undefined} onThoat={() => setMan("LIBRARY")} />}
+        {bo && <LuyenBoThe key={bo.id} bo={bo} nguon={bo.nguon ?? (bo.soTu ? NGUON_SO_TU : undefined)} onThoat={() => setMan("LIBRARY")} />}
       </div>
 
       {taoThe && (

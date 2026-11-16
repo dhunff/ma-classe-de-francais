@@ -1,3 +1,4 @@
+import TheCuaToi from "./TheCuaToi.jsx";
 import React, { useMemo, useState } from "react";
 import { ChevronsRight, AlertTriangle, Layers, Lock, Unlock, Plus, Trash2, Swords } from "lucide-react";
 import ThachDau from "./ThachDau.jsx";
@@ -92,60 +93,9 @@ function TheBo({ b, onMo, dau = false, thuTu = 0 }) {
   );
 }
 
-/* Thẻ học sinh TỰ TẠO / ghi từ bài (Sổ từ, migration 151/157). */
-function TheCuaToi({ soTu, onOn, onTao, onXoa }) {
-  if (soTu === undefined) return <p className="m-0 py-10 text-center text-sm text-soft">{tr("Đang tải…", "Chargement…", "Loading…")}</p>;
-  if (soTu === null) return <p className="m-0 rounded-2xl bg-danger-soft p-5 text-center text-sm font-semibold text-danger">{tr("Không đọc được thẻ của bạn. Tải lại trang thử nhé.", "Chargement impossible.", "Couldn't load your cards.")}</p>;
-  const hom = new Date(); const homNay = `${hom.getFullYear()}-${String(hom.getMonth() + 1).padStart(2, "0")}-${String(hom.getDate()).padStart(2, "0")}`;
-  const denHan = soTu.filter((x) => String(x.due_at) <= homNay).length;
-  return (
-    <div className="grid gap-4">
-      <div className="flex flex-wrap items-center gap-3 rounded-2xl bg-surface p-4 ring-1 ring-line">
-        <div className="grid min-w-[7rem] flex-1 grid-cols-2 gap-2">
-          <div className="rounded-xl bg-surface2 px-3 py-2"><p className="m-0 text-xl font-extrabold tabular-nums text-ink">{soTu.length}</p><p className="m-0 text-[11px] font-bold text-soft">{tr("thẻ của tôi", "mes cartes", "my cards")}</p></div>
-          <div className="rounded-xl bg-warn-soft px-3 py-2"><p className="m-0 text-xl font-extrabold tabular-nums text-warn">{denHan}</p><p className="m-0 text-[11px] font-bold text-soft">{tr("cần ôn hôm nay", "à réviser", "due today")}</p></div>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <button type="button" onClick={onOn} disabled={!soTu.length}
-            className="inline-flex cursor-pointer items-center gap-2 rounded-xl border-0 bg-gradient-to-r from-violet-500 to-indigo-600 px-4 py-2.5 font-sans text-sm font-extrabold text-white shadow-md transition-transform duration-150 ease-out active:scale-[0.97] disabled:cursor-default disabled:opacity-50">
-            <Layers size={16} /> {denHan ? tr(`Ôn ${denHan} thẻ`, `Réviser (${denHan})`, `Review ${denHan}`) : tr("Luyện thẻ", "S'entraîner", "Practise")}
-          </button>
-          <button type="button" onClick={onTao}
-            className="inline-flex cursor-pointer items-center gap-2 rounded-xl border-0 bg-gradient-to-r from-emerald-500 to-teal-600 px-4 py-2.5 font-sans text-sm font-extrabold text-white shadow-md transition-transform duration-150 ease-out active:scale-[0.97]">
-            <Plus size={16} /> {tr("Tạo thẻ", "Créer", "Create")}
-          </button>
-        </div>
-      </div>
-      {!soTu.length ? (
-        <div className="rounded-2xl bg-surface p-8 text-center ring-1 ring-line">
-          <Leon cam="hoc" size={84} className="mx-auto block" />
-          <p className="m-0 mt-2 font-bold text-ink">{tr("Bạn chưa có thẻ nào", "Aucune carte pour l'instant", "No cards yet")}</p>
-          <p className="m-0 mt-1 text-sm text-soft">{tr("Bấm « Tạo thẻ », hoặc bôi đen một từ khi làm bài rồi chọn « Ghi vào sổ từ ».", "Créez une carte, ou sélectionnez un mot pendant un exercice.", "Create a card, or select a word while doing an exercise.")}</p>
-        </div>
-      ) : (
-        <ul className="m-0 grid list-none gap-2 p-0 sm:grid-cols-2 lg:grid-cols-3">
-          {soTu.map((x) => (
-            <li key={x.id} className="group flex items-start gap-2 rounded-2xl bg-surface px-3.5 py-3 ring-1 ring-line">
-              <div className="min-w-0 flex-1">
-                <p lang="fr" className="m-0 break-words text-[15px] font-extrabold text-ink">{x.matTruoc}</p>
-                <p className="m-0 mt-0.5 break-words text-sm text-soft">{x.matSau}</p>
-                <p className={"m-0 mt-1.5 text-[11px] font-bold " + (String(x.due_at) <= homNay ? "text-warn" : "text-soft")}>
-                  {String(x.due_at) <= homNay ? tr("Cần ôn hôm nay", "À réviser", "Due today") : tr(`Ôn lại ${x.due_at.split("-").reverse().slice(0, 2).join("/")}`, `Révision le ${x.due_at}`, `Next ${x.due_at}`)}
-                </p>
-              </div>
-              <button type="button" onClick={() => onXoa(x)} title={tr("Xoá thẻ", "Supprimer", "Delete")}
-                className="grid h-8 w-8 shrink-0 cursor-pointer place-items-center rounded-full border-0 bg-transparent text-soft hover:bg-danger-soft hover:text-danger"><Trash2 size={14} /></button>
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
-  );
-}
-
 /* 15/11 (chủ dự án): `trang` = "choi" (trò Flashcard ở sảnh: tab « Luyện thẻ » + « Thách đấu », gộp
    trò Đấu Flashcard cũ vào) hoặc "cua-toi" (mục riêng « Flashcard của tôi » ở thanh bên: tạo và ôn thẻ). */
-export default function ThuVienBoThe({ ds, onMo, soTu, onOnSoTu, onTaoThe, onXoaThe, trang = "choi" }) {
+export default function ThuVienBoThe({ ds, onMo, soTu, onOnSoTu, onThemThe, onSuaThe, onOnLoc, onXoaThe, ten, trang = "choi" }) {
   const [kyNang, setKyNang] = useState("CO");
   /* Tab đang xem: ?tab=dau (liên kết cũ /etudiant/thach-dau) thắng; không thì nhớ trong trình duyệt. */
   const [tab, setTab] = useState(() => {
@@ -179,7 +129,7 @@ export default function ThuVienBoThe({ ds, onMo, soTu, onOnSoTu, onTaoThe, onXoa
           <div className="min-w-0 flex-1">
             <h1 className="m-0 text-2xl font-extrabold tracking-tight">{"Flashcard"}</h1>
             <p className="m-0 text-sm text-white/85">{cuaToi
-              ? tr("Tự tạo thẻ và ôn theo lịch nhắc đúng lúc sắp quên.", "Créez vos cartes, révisez au bon moment.", "Make your own cards, review at the right time.")
+              ? tr("Thẻ của riêng bạn: tự tạo, tự xếp nhóm, ôn theo lịch nhắc đúng lúc sắp quên.", "Vos cartes à vous : créez, classez, révisez au bon moment.", "Your own cards: make, group and review them at the right time.")
               : tr("Luyện các bộ thẻ có sẵn hoặc thách đấu bạn bè.", "Révisez les paquets ou défiez vos amis.", "Practise ready-made decks or duel your friends.")}</p>
           </div>
           <NutTieng className="border-white/30 bg-white/15 text-white hover:border-white hover:text-white" />
@@ -201,7 +151,7 @@ export default function ThuVienBoThe({ ds, onMo, soTu, onOnSoTu, onTaoThe, onXoa
 
       <div className="mt-4">
         {cuaToi ? (
-          <TheCuaToi soTu={soTu} onOn={onOnSoTu} onTao={onTaoThe} onXoa={onXoaThe} />
+          <TheCuaToi soTu={soTu} ten={ten} onOn={onOnSoTu} onOnLoc={onOnLoc} onThem={onThemThe} onSua={onSuaThe} onXoa={onXoaThe} />
         ) : tab === "dau" ? (
           <ThachDau nhung />
         ) : (

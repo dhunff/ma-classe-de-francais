@@ -31,11 +31,21 @@ export async function xoaTu(id) {
  * `null` = không đọc được. */
 export async function docTheSoTu() {
   const { data, error } = await supabase.from("so_tu")
-    .select("id, tu, nghia, ghi_chu, ten_bai, due_at, interval_days, ease, reps, lapses")
+    .select("id, tu, nghia, ghi_chu, ten_bai, tao_luc, due_at, interval_days, ease, reps, lapses")
     .eq("loai", "tu").order("due_at");
   if (error) return null;
   return (data ?? []).map((r) => ({ card_id: r.id, id: r.id, matTruoc: r.tu, matSau: r.nghia || "(chưa ghi nghĩa)", viDu: r.ghi_chu || r.ten_bai || "",
+    /* 17/11: thêm cho màn « Flashcard »: nghĩa thô (để sửa), ghi chú, nhóm (cột ten_bai), ngày tạo. */
+    nghia: r.nghia || "", ghiChu: r.ghi_chu || "", nhom: r.ten_bai || "", taoLuc: r.tao_luc,
     due_at: r.due_at, interval_days: r.interval_days, ease: r.ease, reps: r.reps, lapses: r.lapses }));
+}
+
+/* Sửa chữ trên một thẻ (17/11). KHÔNG đụng lịch ôn. Trả true chỉ khi máy chủ trả lại đúng dòng
+   mang chữ vừa ghi: ghi mà không đối chiếu là lỗi đã giấu lịch ôn ba tuần (CLAUDE.md). */
+export async function suaTu(id, { tu, nghia, ghiChu, nhom }) {
+  const moi = { tu: tu.trim(), nghia: nghia.trim(), ghi_chu: ghiChu?.trim() || null, ten_bai: nhom?.trim() || null };
+  const { data, error } = await supabase.from("so_tu").update(moi).eq("id", id).select("id, tu, nghia");
+  return !error && data?.length === 1 && data[0].tu === moi.tu && data[0].nghia === moi.nghia;
 }
 
 /* Một lần ôn. Ghi xong phải nhận lại đúng dòng đã ghi mới báo ok: ghi im lặng
