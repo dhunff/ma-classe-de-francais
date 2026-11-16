@@ -1,0 +1,113 @@
+/* Lô 51 (16/11/2026), phần A: NỘI DUNG bài Đọc TCF cho cây Luyện thi TCF (kyNangTCF.js), TCF-CE-1 và
+ * TCF-CE-2. Khuôn câu theo đề TCF (lo44_tcf_chung.mjs): mỗi câu một tài liệu riêng (`q.doc`), 4 lựa chọn in sẵn.
+ *   doc(taiLieu, cauHoi, dung, sai, giai): taiLieu là mảng đoạn (HTML gọn: <strong>, <em>), đáp án đúng viết
+ *   đầu, máy dựng trộn vị trí.
+ * Toàn bộ do FRACILE soạn: người, nơi, số liệu là hư cấu cho luyện tập. Không dùng dấu gạch dài.
+ * Lời giải tiếng Việt; đoạn trích trong « » phải có nguyên văn trong tài liệu (máy dựng kiểm).
+ * Máy dựng: lo51_doc_tcf.mjs. */
+
+export const phanA = ({ doc }) => [
+  /* ═══════════ TCF-CE-1 : Biển báo, tin nhắn, thông báo ngắn (A1, A2) ═══════════ */
+  {
+    ma: "TCF-CE-1", vong: "hoc", tieuDe: "Lecture TCF : panneaux et petits messages",
+    cau: [
+      doc(["<strong>BOULANGERIE DU MARCHÉ</strong>", "Fermeture exceptionnelle le mercredi 12 mars.", "Réouverture le jeudi 13 à 7 h."],
+        "Quand la boulangerie est-elle fermée ?", "Le mercredi 12 mars.", ["Tous les mercredis du mois de mars.", "Le jeudi 13 mars.", "Le matin à 7 h."],
+        "Biển ghi « Fermeture exceptionnelle le mercredi 12 mars ». « Exceptionnelle » nghĩa là chỉ lần này, không phải mọi thứ Tư."),
+      doc(["Salut Nora,", "Je suis en retard, mon bus ne passe pas. Commence le film sans moi, j'arrive dans vingt minutes.", "Bises, Karim"],
+        "Que demande Karim à Nora ?", "De ne pas l'attendre.", ["De venir le chercher.", "D'acheter les billets.", "De prendre le bus."],
+        "Karim viết « Commence le film sans moi », tức là đừng chờ anh ấy."),
+      doc(["<strong>PARC DES CYGNES</strong>", "Chiens acceptés en laisse.", "Vélos interdits sur les pelouses.", "Ouvert de 8 h à 19 h."],
+        "Qu'est-ce qui est interdit dans le parc ?", "Rouler à vélo sur l'herbe.", ["Venir avec un chien.", "Entrer le matin.", "Se promener le soir."],
+        "Biển ghi « Vélos interdits sur les pelouses ». Chó vẫn được vào nếu có dây dắt."),
+      doc(["<strong>Petite annonce</strong>", "Vends table en bois et quatre chaises, très bon état. 80 €.", "À venir chercher sur place, 3e étage sans ascenseur.", "Tél. : 06 12 34 56 78"],
+        "Que doit faire l'acheteur ?", "Transporter lui-même les meubles.", ["Payer la livraison.", "Acheter la table et les chaises séparément.", "Réparer la table."],
+        "Người bán ghi « À venir chercher sur place »: người mua tự đến lấy."),
+      doc(["<strong>Médiathèque Jules-Verne</strong>", "Vous pouvez emprunter 5 livres et 2 DVD pendant 3 semaines.", "Carte gratuite pour les moins de 18 ans."],
+        "Combien de temps peut-on garder un livre ?", "Trois semaines.", ["Deux semaines.", "Cinq semaines.", "Dix-huit jours."],
+        "Thư viện cho mượn « pendant 3 semaines ». Số 5 và 2 là số sách và số DVD."),
+      doc(["Chers voisins,", "Des travaux auront lieu dans l'immeuble du 3 au 7 avril. L'eau sera coupée chaque jour de 9 h à 12 h.", "Merci de votre compréhension.", "Le syndic"],
+        "Quel problème les habitants vont-ils avoir ?", "Pas d'eau le matin pendant quelques jours.", ["Pas d'électricité le soir.", "Pas d'ascenseur ni de lumière dans l'escalier pendant un mois.", "Pas de chauffage le week-end."],
+        "Thông báo nói « L'eau sera coupée chaque jour de 9 h à 12 h », từ ngày 3 đến 7 tháng Tư."),
+    ],
+    tu: ["fermeture exceptionnelle : đóng cửa đột xuất (chỉ lần này)", "en laisse : có dây dắt", "la pelouse : bãi cỏ", "emprunter (verbe) : mượn", "le syndic : ban quản lý chung cư"],
+    meo: ["Đọc câu hỏi trước rồi tìm từ khoá trong tài liệu: giờ, ngày, giá, chữ interdit.", "Tài liệu ngắn thường có nhiều con số: kiểm xem con số nào trả lời đúng câu hỏi."],
+  },
+  {
+    ma: "TCF-CE-1", vong: "on", tieuDe: "Lecture TCF : affiches et courriels courts",
+    cau: [
+      doc(["<strong>PISCINE OLYMPE</strong>", "Bonnet de bain obligatoire.", "Short de bain interdit : maillot seulement."],
+        "Que faut-il porter à la piscine ?", "Un bonnet de bain.", ["Un short de bain.", "Des lunettes de soleil.", "Des chaussures de sport."],
+        "Biển ghi « Bonnet de bain obligatoire ». Quần short bơi thì bị cấm."),
+      doc(["Bonjour Madame Leroy,", "Votre fils Lucas a oublié sa veste au club de football hier soir. Elle est à l'accueil.", "Cordialement, Pierre, entraîneur"],
+        "Pourquoi Pierre écrit-il ?", "Pour signaler un objet oublié.", ["Pour annuler l'entraînement.", "Pour inscrire Lucas au club de football du quartier.", "Pour vendre une veste."],
+        "Huấn luyện viên báo Lucas « a oublié sa veste au club »."),
+      doc(["<strong>Restaurant Le Petit Pont</strong>", "Menu du midi : entrée + plat ou plat + dessert : 14 €", "Du lundi au vendredi uniquement."],
+        "Quand peut-on prendre ce menu ?", "Un mardi à midi.", ["Un samedi à midi.", "Un dimanche soir.", "Un vendredi soir."],
+        "Thực đơn là « Menu du midi », chỉ áp dụng « Du lundi au vendredi uniquement »."),
+      doc(["<strong>OBJET TROUVÉ</strong>", "Trouvé dans le bus 12 : un trousseau de clés avec un porte-clés en forme de chat.", "S'adresser à l'agence de la gare."],
+        "Que doit faire la personne qui a perdu ses clés ?", "Aller à l'agence de la gare.", ["Prendre le bus 12.", "Téléphoner au conducteur.", "Attendre à l'arrêt de bus."],
+        "Thông báo ghi « S'adresser à l'agence de la gare »."),
+      doc(["Coucou les filles !", "Pour l'anniversaire de Julie samedi, chacune apporte quelque chose à manger. Moi, je fais le gâteau. Pas de cadeau, Julie préfère qu'on parte en week-end ensemble !", "Anaïs"],
+        "Qu'est-ce qu'Anaïs demande aux amies ?", "D'apporter un plat.", ["D'acheter un cadeau.", "De faire un gâteau.", "De réserver un hôtel."],
+        "Anaïs viết « chacune apporte quelque chose à manger ». Bánh do Anaïs làm, và không mua quà."),
+      doc(["<strong>Pharmacie de garde</strong>", "Ce dimanche, la pharmacie de garde est la Pharmacie Centrale, 4 place de la Mairie.", "Ouverte de 9 h à 20 h. La nuit, appelez le 3237."],
+        "Que faire si on a besoin d'un médicament à 23 h ?", "Téléphoner au 3237.", ["Aller place de la Mairie.", "Attendre lundi.", "Aller à l'hôpital."],
+        "Hiệu thuốc trực mở đến 20 h; ban đêm thì « appelez le 3237 »."),
+    ],
+    tu: ["obligatoire (adjectif) : bắt buộc", "un objet trouvé : đồ nhặt được", "un trousseau de clés : chùm chìa khoá", "la pharmacie de garde : hiệu thuốc trực", "uniquement (adverbe) : chỉ"],
+    meo: ["Chữ obligatoire, interdit, uniquement, sauf thường quyết định đáp án.", "Phương án sai hay lấy một chữ CÓ trong tài liệu nhưng gắn vào sai người, sai thời điểm."],
+  },
+
+  /* ═══════════ TCF-CE-2 : Thư, email, bài viết thông tin (B1) ═══════════ */
+  {
+    ma: "TCF-CE-2", vong: "hoc", tieuDe: "Lecture TCF : lettres et courriels",
+    cau: [
+      doc(["<strong>Objet :</strong> votre commande n° 4527", "Madame,", "Nous sommes désolés : le canapé que vous avez commandé ne sera pas livré le 10 mai comme prévu, car notre fournisseur a pris du retard. Nous pouvons vous le livrer le 24 mai, ou vous rembourser entièrement si vous le souhaitez.", "Le service client"],
+        "Que propose l'entreprise à la cliente ?", "Une nouvelle date ou un remboursement.", ["Un canapé moins cher.", "Une livraison le 10 mai.", "Une réduction sur sa prochaine commande."],
+        "Công ty đề nghị giao « le 24 mai, ou vous rembourser entièrement »: hai lựa chọn."),
+      doc(["Cher Monsieur Blanc,", "J'ai bien reçu votre candidature pour le poste de vendeur. Votre profil nous intéresse. Pourriez-vous venir à un entretien le mardi 14 à 10 h ? Merci d'apporter une copie de vos diplômes.", "Sophie Garnier, responsable des ressources humaines"],
+        "Quel est le but de ce courriel ?", "Inviter le candidat à un entretien.", ["Refuser la candidature.", "Proposer directement le poste.", "Demander une lettre de motivation."],
+        "Bà Garnier hỏi « Pourriez-vous venir à un entretien le mardi 14 à 10 h ? »."),
+      doc(["<strong>Fête des voisins</strong>", "Cette année, la fête aura lieu le 28 juin dans la cour de l'immeuble. Chacun apporte un plat à partager. En cas de pluie, nous nous retrouverons dans la salle commune au rez-de-chaussée.", "L'association des habitants"],
+        "Que se passera-t-il s'il pleut ?", "La fête aura lieu dans une salle de l'immeuble.", ["La fête sera annulée.", "La fête sera reportée au week-end suivant, dans la cour.", "Chacun restera chez soi."],
+        "Thông báo ghi « En cas de pluie, nous nous retrouverons dans la salle commune »."),
+      doc(["Salut Camille,", "Je t'écris de Montréal ! Le travail se passe bien, mais je trouve l'hiver très long. Heureusement, mes collègues m'ont emmené faire du patin sur un lac gelé : une expérience incroyable ! Je rentre en France en avril.", "Bises, Hugo"],
+        "Qu'est-ce qui a plu à Hugo ?", "Une activité sur la glace.", ["Le climat de l'hiver.", "Son nouveau logement.", "Le fait de rentrer bientôt en France."],
+        "Hugo thấy mùa đông dài nhưng việc trượt băng trên hồ là « une expérience incroyable »."),
+      doc(["<strong>Mairie de Saint-Aubin : inscriptions à la cantine</strong>", "Les inscriptions pour l'année prochaine se font uniquement en ligne, du 1er au 30 juin. Les familles sans accès à Internet peuvent se présenter à l'accueil de la mairie, où un agent les aidera."],
+        "Que peuvent faire les familles qui n'ont pas Internet ?", "Se faire aider à la mairie.", ["S'inscrire par courrier.", "S'inscrire en septembre.", "Téléphoner à l'école."],
+        "Gia đình không có Internet « peuvent se présenter à l'accueil de la mairie, où un agent les aidera »."),
+      doc(["Madame, Monsieur,", "J'ai loué un vélo dans votre agence le 3 août. Le vélo est tombé en panne après une heure et j'ai dû rentrer à pied. Je vous demande donc de me rembourser la journée de location.", "Cordialement, Inès Moreau"],
+        "Pourquoi Inès Moreau écrit-elle ?", "Pour se plaindre et demander de l'argent.", ["Pour réserver un vélo.", "Pour remercier l'agence.", "Pour signaler un accident."],
+        "Chị Inès kể xe hỏng rồi viết « Je vous demande donc de me rembourser »: thư khiếu nại."),
+    ],
+    tu: ["un fournisseur : nhà cung cấp", "rembourser (verbe) : hoàn tiền", "une candidature : đơn ứng tuyển", "un entretien : buổi phỏng vấn", "en cas de : trong trường hợp", "tomber en panne : bị hỏng"],
+    meo: ["Đọc dòng « Objet » và câu đầu để biết mục đích bức thư.", "Câu hỏi mục đích (but, pourquoi … écrit) cần ý của CẢ bức thư, không phải một chi tiết."],
+  },
+  {
+    ma: "TCF-CE-2", vong: "on", tieuDe: "Lecture TCF : textes informatifs",
+    cau: [
+      doc(["<strong>Nouveau : le bus à la demande</strong>", "Depuis le 1er septembre, les habitants des villages autour de Mérignac peuvent réserver un minibus la veille, par téléphone ou sur l'application. Le minibus les conduit jusqu'à la gare, au même prix qu'un ticket de bus normal."],
+        "Comment fonctionne ce service ?", "On réserve le trajet à l'avance.", ["Le minibus passe toutes les heures.", "Le trajet est gratuit.", "Le minibus va jusqu'au centre-ville."],
+        "Người dân « peuvent réserver un minibus la veille »: đặt trước một ngày."),
+      doc(["<strong>Le saviez-vous ?</strong>", "Un Français jette en moyenne 30 kg de nourriture par an. Pour lutter contre ce gaspillage, de plus en plus de supermarchés vendent à prix réduit les produits proches de leur date limite."],
+        "Que font certains supermarchés ?", "Ils baissent le prix de certains produits.", ["Ils donnent gratuitement la nourriture invendue aux clients.", "Ils jettent moins de 30 kg par an.", "Ils ferment plus tôt le soir."],
+        "Siêu thị « vendent à prix réduit les produits proches de leur date limite »."),
+      doc(["<strong>Musée des Beaux-Arts</strong>", "Le premier dimanche de chaque mois, l'entrée est gratuite pour tous. Les autres jours, le tarif est de 8 €, sauf pour les étudiants et les demandeurs d'emploi, qui paient 4 €."],
+        "Combien paie un étudiant un mardi ?", "4 €.", ["Rien.", "8 €.", "2 €."],
+        "Giá 8 € « sauf pour les étudiants et les demandeurs d'emploi, qui paient 4 € ». Miễn phí chỉ vào chủ nhật đầu tháng."),
+      doc(["<strong>Offre d'emploi</strong>", "Hôtel du Lac recherche réceptionniste pour la saison d'été (juin à septembre). Anglais exigé, une deuxième langue étrangère est un plus. Travail le week-end. Logement possible sur place."],
+        "Quelle condition est obligatoire pour ce poste ?", "Parler anglais.", ["Parler deux langues étrangères.", "Habiter près de l'hôtel.", "Être libre en semaine."],
+        "Tin tuyển dụng ghi « Anglais exigé ». Ngoại ngữ thứ hai chỉ là điểm cộng (« est un plus »)."),
+      doc(["<strong>Conseil santé</strong>", "Les médecins recommandent aux adultes de marcher au moins trente minutes par jour. Il n'est pas nécessaire de le faire en une seule fois : trois promenades de dix minutes ont le même effet."],
+        "Selon le texte, que peut-on faire ?", "Diviser la marche en plusieurs moments.", ["Marcher seulement le week-end.", "Remplacer la marche par trente minutes de vélo chaque jour.", "Marcher dix minutes par jour."],
+        "Văn bản nói « trois promenades de dix minutes ont le même effet »: có thể chia nhỏ."),
+      doc(["<strong>Fermeture du pont Wilson</strong>", "Pour des travaux de réparation, le pont Wilson sera fermé aux voitures du 15 au 30 novembre. Les piétons et les cyclistes pourront continuer à l'utiliser. Une déviation sera mise en place par le pont Napoléon."],
+        "Qui ne pourra pas traverser le pont Wilson ?", "Les automobilistes.", ["Les piétons.", "Les cyclistes.", "Personne."],
+        "Cầu « sera fermé aux voitures »; người đi bộ và xe đạp vẫn qua được."),
+    ],
+    tu: ["la veille : hôm trước", "le gaspillage : sự lãng phí", "un demandeur d'emploi : người tìm việc", "exigé (participe) : bắt buộc phải có", "une déviation : đường vòng"],
+    meo: ["Chú ý chữ sauf, seulement, au moins: chúng đổi nghĩa cả câu.", "Phân biệt điều kiện « exigé » (bắt buộc) với « un plus » (điểm cộng)."],
+  },
+];

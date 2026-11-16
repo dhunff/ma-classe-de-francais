@@ -8,7 +8,7 @@
  *   1. Kiểm: đủ 4 lựa chọn, đáp án hợp lệ, không bài nào dồn mọi đáp án một vị trí, không dấu gạch dài,
  *      đoạn trích « » trong lời giải có nguyên văn trong lời nghe, không trùng tên file.
  *   2. Audio: gọi tao-audio cho từng câu → `nghe/<tep>-NN.mp3`; file đã có thì dùng lại.
- *   3. Ghi supabase/migrations/215_luyen_nghe_tcf.sql: bài kho `practice`, level « TCF », gắn cây bằng
+ *   3. Ghi supabase/migrations/216_luyen_nghe_tcf.sql: bài kho `practice`, level « TCF », gắn cây bằng
  *      meta.kyNang + thuTu + vong. Bài trong `mienPhi` miễn phí, còn lại VIP 19.000 đ. Chạy lại an toàn.
  *
  * `doan` (kịch bản audio) KHÔNG vào payload (học sinh đọc được payload); lời chép nằm ở `model` (answer_key).
@@ -135,6 +135,6 @@ for (const [i, b] of BAI.entries()) {
   const dong = qRows.map((x) => `  (${q(x.id)}, ${q(x.exercise_id)}, ${x.ord}, ${q(x.type)}, ${q(x.prompt)}, ${j(x.payload)}, ${j(x.answer_key)}, ${q(x.explanation)})`).join(",\n");
   ra.push(`-- ${b.ma} #${thuTu} ${b.tieuDe} (${mienPhi ? "miễn phí" : "VIP"})\nwith e as (insert into public.exercises (${cot.join(", ")}) values (${gt.join(", ")}) on conflict (id) do nothing returning id)\ninsert into public.questions (id, exercise_id, ord, type, prompt, payload, answer_key, explanation)\nselect v.* from e, (values\n${dong}\n) as v(id, exercise_id, ord, type, prompt, payload, answer_key, explanation);`);
 }
-const dau = `-- 215 (16/11/2026, lô 50): ${BAI.length} bài Nghe TCF cho cây Luyện thi TCF, ${soCau} câu, ${mien} miễn phí, ${BAI.length - mien} VIP.\n-- Sinh bởi scripts/nhap/lo50_nghe_tcf.mjs. Mỗi câu một audio riêng (payload.audio). Chạy lại an toàn.\n`;
-writeFileSync("supabase/migrations/215_luyen_nghe_tcf.sql", dau + ra.join("\n\n") + "\n");
-console.error(`Đã ghi supabase/migrations/215_luyen_nghe_tcf.sql: ${BAI.length} bài, ${soCau} câu, ${mien} miễn phí.`);
+const dau = `-- 216 (16/11/2026, lô 50): ${BAI.length} bài Nghe TCF cho cây Luyện thi TCF, ${soCau} câu, ${mien} miễn phí, ${BAI.length - mien} VIP.\n-- Sinh bởi scripts/nhap/lo50_nghe_tcf.mjs. Mỗi câu một audio riêng (payload.audio). Chạy lại an toàn.\n`;
+writeFileSync("supabase/migrations/216_luyen_nghe_tcf.sql", dau + ra.join("\n\n") + "\n");
+console.error(`Đã ghi supabase/migrations/216_luyen_nghe_tcf.sql: ${BAI.length} bài, ${soCau} câu, ${mien} miễn phí.`);

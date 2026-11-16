@@ -849,6 +849,9 @@ const BAI_TCF_THU = {
   questions: [
     { id: "t1", type: "qcm", prompt: "Écoutez l'extrait et les quatre réponses proposées. Choisissez la bonne réponse.", options: ["A", "B", "C", "D"], audio: "/thu.mp3" },
     { id: "t2", type: "qcm", prompt: "Pourquoi Thomas appelle-t-il Léa ?", options: ["Il veut apprendre le piano.", "Il ne peut pas aller au cours.", "Il a perdu son téléphone.", "Il invite Léa au concert."], audio: "/thu.mp3" },
+    /* Câu Đọc TCF (lô 51): tài liệu riêng của câu ở `doc`. */
+    { id: "t3", type: "qcm", prompt: "Qu'est-ce qui est interdit dans le parc ?", options: ["Venir avec un chien.", "Rouler à vélo sur l'herbe.", "Entrer le matin.", "Se promener le soir."],
+      doc: "<p><strong>PARC DES CYGNES</strong></p><p>Chiens acceptés en laisse.</p><p>Vélos interdits sur les pelouses.</p><p>Ouvert de 8 h à 19 h.</p>" },
   ],
 };
 const BAI_DOC_THU = {

@@ -1485,6 +1485,12 @@ export function PracticeWorkspace({ ex, back, onFinish, soTu = false, chamBang =
         </div>
         {/* 16/11 (Luyện thi TCF): câu có đoạn nghe riêng (`q.audio`), nghe một lần như đề TCF. */}
         {q.audio && <div className="mb-3"><NgheMotLan src={q.audio} moLai={!!graded} mau={dam} /></div>}
+        {/* 16/11 (Đọc TCF, lô 51): câu có tài liệu riêng (`q.doc`, HTML do máy dựng soạn, cùng mức tin cậy với
+            readingText), như đề Đọc TCF trên máy. Câu hỏi ở trên, tài liệu ở dưới: đọc câu hỏi trước rồi tìm. */}
+        {q.doc && (
+          <div className="mb-3 rounded-2xl border border-solid border-line bg-surface2 px-4 py-3 text-[15px] leading-relaxed text-ink [&_p]:m-0 [&_p+p]:mt-2"
+            dangerouslySetInnerHTML={{ __html: q.doc }} />
+        )}
 
         {q.type === "qcm" ? (
           <div style={oNgan ? { display: "grid", gap: 8, gridTemplateColumns: `repeat(${q.options.length === 4 ? 2 : q.options.length}, minmax(0, 1fr))` } : { display: "grid", gap: 6 }}>
