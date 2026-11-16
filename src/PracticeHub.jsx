@@ -149,6 +149,7 @@ function PracticeHubInner({ role = "eleve", name = "", accounts = [], onRequireL
   /* 16/11 (chủ dự án): mới vào Luyện thi chỉ thấy hai ô DELF · DALF và TCF; chọn rồi mới vào cây.
      Không nhớ qua lần vào sau: mỗi lần mở mục Luyện thi lại bắt đầu ở cửa chọn. */
   const [kyThi, setKyThi] = useState(null);
+  const oCuaChon = !teacher && !kyThi;
   const chonKyThi = (k) => { setKyThi(k); doiCap(k === "tcf" ? CAP_TCF : capDelfDaXem(capHoSo)); };
   const [canhBaoLt, setCanhBaoLt] = useState(null);
   const doiCap = (c) => { setCapChon(c); setCanhBaoLt(null); try { localStorage.setItem("mcf-luyen-cap", c); } catch { /* bỏ qua */ } };
@@ -982,7 +983,9 @@ ${r.error?.message ?? ""}`); return; }
     <div className="mx-auto max-w-5xl">
       {MatModal()}
       {/* Khung đầu (10/10): Leon + số liệu THẬT từ exercises / hist. */}
+      {/* 16/11 (chủ dự án): ở cửa chọn kỳ thi KHÔNG hiện khối đầu lẫn khối VIP, chọn xong mới hiện. */}
       {(() => {
+        if (oCuaChon) return null;
         const tong = exercises.length;
         const daLam = exercises.filter((e) => hist[e.id]).length;
         const pct = tong ? Math.round((daLam / tong) * 100) : 0;
@@ -1028,7 +1031,7 @@ ${r.error?.message ?? ""}`); return; }
         </div>
       )}
       {teacher && topTab === "suivi" ? renderSuivi() : null}
-      {role === "eleve" && (
+      {role === "eleve" && !oCuaChon && (
         <VipBanner vipDen={vipDen} toanQuyen={toanQuyen} t={t}
           onMua={() => { if (isGuest) return requireLogin(); setPayFor(goiVip(t("vip.pay_title"))); }} />
       )}
@@ -1048,7 +1051,7 @@ ${r.error?.message ?? ""}`); return; }
         ]} />
       )}
       {!teacher && !kyThi ? (
-        <ChonKyThi onChon={chonKyThi} lanTruoc={capChon === CAP_TCF ? "tcf" : CAP_DO.includes(capChon) ? "delf" : null} />
+        <ChonKyThi tour onChon={chonKyThi} lanTruoc={capChon === CAP_TCF ? "tcf" : CAP_DO.includes(capChon) ? "delf" : null} />
       ) : (<>
       {!teacher && <TabLuyenTap tab={thuVien} onDoi={setThuVien} />}
       {!teacher && thuVien === true && (

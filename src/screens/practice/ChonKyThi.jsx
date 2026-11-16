@@ -1,6 +1,6 @@
 import React from "react";
 import { motion, MotionConfig } from "framer-motion";
-import { ArrowRight, Headphones, BookOpen, PenLine, Mic } from "lucide-react";
+import { ArrowRight, ChevronLeft, Headphones, BookOpen, PenLine, Mic } from "lucide-react";
 import { tr } from "../../shared/i18n.jsx";
 import { Leon } from "../../shared/leon.jsx";
 import { phat } from "../../shared/amThanh.js";
@@ -17,11 +17,11 @@ const LO_XO = { type: "spring", stiffness: 260, damping: 24 };
 const CAP = ["A1", "A2", "B1", "B2", "C1", "C2"];
 
 /* Sáu tấm bằng xoè quạt, rê chuột thì xoè rộng hơn. */
-function HinhDelf({ dam }) {
+export function HinhQuat({ dam, nhan = CAP }) {
   return (
     <span aria-hidden className="flex h-28 items-end justify-center pb-1">
-      {CAP.map((c, i) => {
-        const lech = i - 2.5;
+      {nhan.map((c, i) => {
+        const lech = i - (nhan.length - 1) / 2;
         return (
           <motion.span key={c} style={{ color: dam, transformOrigin: "50% 160%" }}
             variants={{
@@ -39,12 +39,12 @@ function HinhDelf({ dam }) {
 }
 
 /* Sáu cột cao dần: một bài thi, câu hỏi khó dần từ A1 tới C2. */
-function HinhTcf() {
+export function HinhCot({ nhan = CAP }) {
   return (
     <span aria-hidden className="flex h-28 items-end justify-center gap-2">
-      {CAP.map((c, i) => (
+      {nhan.map((c, i) => (
         <span key={c} className="flex h-full w-9 flex-col items-center justify-end gap-1">
-          <motion.span style={{ height: `${26 + i * 12}%`, transformOrigin: "50% 100%" }}
+          <motion.span style={{ height: `${26 + i * (60 / Math.max(1, nhan.length - 1))}%`, transformOrigin: "50% 100%" }}
             variants={{
               an: { scaleY: 0, opacity: 0 },
               hien: { scaleY: 1, opacity: 1, transition: { ...LO_XO, delay: 0.1 + i * 0.06 } },
@@ -60,42 +60,56 @@ function HinhTcf() {
 }
 
 const KY_THI = () => [
-  { k: "delf", ten: "DELF · DALF", tu: -48,
-    nen: "linear-gradient(150deg,#3B82F6 0%,#1D4ED8 55%,#1E3A8A 100%)", dam: "#1D4ED8",
+  { k: "delf", ten: "DELF · DALF", ...MAU_KY_THI.delf,
     y: tr("Sáu bằng riêng, từ A1 đến C2", "Six diplômes, de A1 à C2", "Six diplomas, from A1 to C2"),
     phu: tr("Chọn trình độ của bạn rồi luyện lần lượt từng kỹ năng, đúng khung đề thi.", "Choisissez votre niveau, puis entraînez-vous compétence par compétence, au format de l'examen.", "Pick your level, then practise skill by skill in the exam format."),
     vao: tr("Vào luyện DELF · DALF", "S'entraîner au DELF · DALF", "Practise DELF · DALF"),
-    Hinh: HinhDelf },
-  { k: "tcf", ten: "TCF", tu: 48,
-    nen: "linear-gradient(150deg,#FB7185 0%,#E11D48 55%,#9F1239 100%)", dam: "#BE123C",
+    Hinh: HinhQuat },
+  { k: "tcf", ten: "TCF", ...MAU_KY_THI.tcf,
     y: tr("Một bài thi, câu hỏi khó dần", "Un seul test, de difficulté croissante", "One test of rising difficulty"),
     phu: tr("Luyện từng phần của đề TCF: trắc nghiệm Nghe và Đọc, ba bài Viết, ba phần Nói.", "Entraînez-vous à chaque épreuve du TCF : QCM d'écoute et de lecture, trois tâches écrites, trois tâches orales.", "Practise each part of the TCF: listening and reading questions, three writing tasks, three speaking tasks."),
     vao: tr("Vào luyện TCF", "S'entraîner au TCF", "Practise TCF"),
-    Hinh: HinhTcf },
+    Hinh: HinhCot },
 ];
 
 const KY_NANG = [Headphones, BookOpen, PenLine, Mic];
 
-/* `lanTruoc`: "delf" | "tcf" | null, kỳ thi học sinh luyện lần gần nhất trên máy này. */
-export default function ChonKyThi({ onChon, lanTruoc = null }) {
+/* Màu nhận dạng dùng chung cho các cửa chọn (Luyện thi, Thi thử). */
+export const MAU_KY_THI = {
+  delf: { nen: "linear-gradient(150deg,#3B82F6 0%,#1D4ED8 55%,#1E3A8A 100%)", dam: "#1D4ED8" },
+  tcf: { nen: "linear-gradient(150deg,#FB7185 0%,#E11D48 55%,#9F1239 100%)", dam: "#BE123C" },
+  tcfTp: { nen: "linear-gradient(150deg,#A78BFA 0%,#7C3AED 55%,#5B21B6 100%)", dam: "#6D28D9" },
+};
+
+/* `muc`: danh sách ô (mặc định hai ô của Luyện thi), mỗi ô { k, ten, nen, dam, y, phu, vao, Hinh, nhan? }.
+   `lanTruoc`: khoá của ô học sinh chọn lần gần nhất trên máy này. `onLui`: có thì hiện nút quay lại
+   (bước chọn thứ hai). `tour`: gắn hai id của tour XP (chỉ cửa Luyện thi). */
+export default function ChonKyThi({ onChon, lanTruoc = null, muc = null, tieuDe = null, moTa = null, onLui = null, nhanLui = null, leon = "chao", tour = false }) {
+  const ds = muc || KY_THI();
   return (
     <MotionConfig reducedMotion="user">
       <div>
+        {onLui && (
+          <button type="button" onClick={() => { phat("bam"); onLui(); }}
+            className="group mb-4 inline-flex cursor-pointer items-center gap-1 rounded-full border border-solid border-line bg-surface py-2 pl-2.5 pr-4 font-sans text-sm font-bold text-ink transition-colors hover:border-primary hover:text-primary">
+            <ChevronLeft size={17} className="transition-transform group-hover:-translate-x-0.5" /> {nhanLui || tr("Quay lại", "Retour", "Back")}
+          </button>
+        )}
         <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} transition={LO_XO} className="mb-5 flex items-center gap-3">
-          <Leon cam="chao" size={56} className="shrink-0" />
+          <Leon cam={leon} size={56} className="shrink-0" />
           <div className="min-w-0">
-            <h2 className="m-0 text-xl font-extrabold leading-tight text-ink sm:text-2xl">{tr("Bạn luyện cho kỳ thi nào?", "Quel examen préparez-vous ?", "Which exam are you preparing?")}</h2>
-            <p className="m-0 mt-0.5 text-sm text-soft">{tr("Mỗi kỳ thi có lộ trình luyện riêng. Bạn đổi lại được bất cứ lúc nào.", "Chaque examen a son propre parcours. Vous pouvez changer à tout moment.", "Each exam has its own path. You can switch at any time.")}</p>
+            <h2 className="m-0 text-xl font-extrabold leading-tight text-ink sm:text-2xl">{tieuDe || tr("Bạn luyện cho kỳ thi nào?", "Quel examen préparez-vous ?", "Which exam are you preparing?")}</h2>
+            <p className="m-0 mt-0.5 text-sm text-soft">{moTa || tr("Mỗi kỳ thi có lộ trình luyện riêng. Bạn đổi lại được bất cứ lúc nào.", "Chaque examen a son propre parcours. Vous pouvez changer à tout moment.", "Each exam has its own path. You can switch at any time.")}</p>
           </div>
         </motion.div>
 
-        <div id="tour-xp-grid" className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-5">
-          {KY_THI().map(({ k, ten, tu, nen, dam, y, phu, vao, Hinh }, i) => (
-            <motion.button key={k} id={i === 0 ? "tour-xp-start" : undefined} type="button"
+        <div id={tour ? "tour-xp-grid" : undefined} className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-5">
+          {ds.map(({ k, ten, nen, dam, y, phu, vao, Hinh, nhan }, i) => (
+            <motion.button key={k} id={tour && i === 0 ? "tour-xp-start" : undefined} type="button"
               onClick={() => { phat("bam"); onChon(k); }}
               initial="an" animate="hien" whileHover="re" whileFocus="re" whileTap={{ scale: 0.98 }}
               variants={{
-                an: { opacity: 0, x: tu },
+                an: { opacity: 0, x: i % 2 ? 48 : -48 },
                 hien: { opacity: 1, x: 0, y: 0, transition: { ...LO_XO, delay: i * 0.08 } },
                 re: { opacity: 1, x: 0, y: -6, transition: LO_XO },
               }}
@@ -117,7 +131,7 @@ export default function ChonKyThi({ onChon, lanTruoc = null }) {
                 )}
               </span>
 
-              <span className="relative my-auto block py-6"><Hinh dam={dam} /></span>
+              <span className="relative my-auto block py-6"><Hinh dam={dam} nhan={nhan} /></span>
 
               <span className="relative block">
                 <span className="block text-4xl font-extrabold leading-none tracking-tight md:text-5xl">{ten}</span>
