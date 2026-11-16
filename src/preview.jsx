@@ -35,6 +35,9 @@ import DoVui from "./screens/student/doVui/DoVui.jsx";
 import PhienToa from "./screens/student/phienToa/PhienToa.jsx";
 import TroChoiNhanh from "./screens/student/TroChoiNhanh.jsx";
 /* Trận PvP giả cho Đấu trường ở sảnh trò chơi (migration 214). */
+/* Bạn bè giả cho lưới « Thách ai? » (chỉ trang xem thử). */
+const BAN_TC_MAU = ["Ninja Rùa", "Hoàng Thu Trang", "Nguyễn Thành Đạt", "Hồng Hà Phạm", "rosie", "bhan", "Tram Ta", "Bảo Ngọc", "Lê Minh Khôi", "Đỗ Khánh Linh", "Phạm Gia Huy"]
+  .map((name, i) => ({ id: "ban" + i, name, username: i % 3 ? "ban" + i : "", avatar: "" }));
 const DAU_TC_MAU = [
   { id: "d1", tro_choi: "mua_chu", muc: "vua", toi_moi: false, xong: false, diem_moi: 1240, dung_moi: 18, tong_moi: 22, doi_phuong: { name: "Nguyễn Minh Anh", avatar: "" } },
   { id: "d2", tro_choi: "tham_tu", muc: "kho", toi_moi: false, xong: false, diem_moi: 860, dung_moi: 7, tong_moi: 9, doi_phuong: { name: "Trần Quốc Bảo", avatar: "" } },
@@ -1192,7 +1195,7 @@ function Preview() {
           <Route path="/etudiant/tham-tu-de" element={<><Controls /><ThamTu muc="de" onXong={() => {}} /></>} />
           <Route path="/etudiant/tham-tu-mau" element={<><Controls /><ThamTu muc="vua" onXong={() => {}} /></>} />
           <Route path="/etudiant/sanh-tro-choi" element={<><Controls /><TroChoiNhanh dauMau={DAU_TC_MAU} /></>} />
-          <Route path="/etudiant/tro-choi/:ma" element={<><Controls /><TroChoiNhanh /></>} />
+          <Route path="/etudiant/tro-choi/:ma" element={<><Controls /><TroChoiNhanh banMau={BAN_TC_MAU} /></>} />
           <Route path="/etudiant/phien-toa" element={<><Controls /><div className="mx-auto max-w-5xl"><PhienToa muc={new URLSearchParams(window.location.search).get("muc") ?? "vua"} he={{ gio: 1 }} onXong={(r) => { window.__phienToa = r; }} /></div></>} />
           <Route path="/etudiant/do-vui" element={<><Controls /><div className="mx-auto max-w-5xl"><DoVui muc={new URLSearchParams(window.location.search).get("muc") ?? "de"} he={{ gio: 1 }} onXong={(r) => { window.__doVui = r; }} /></div></>} />
           <Route path="/etudiant/mot-nam" element={<><Controls /><MotNam onXong={() => {}} kho={KHO_PN_GIA} /></>} />

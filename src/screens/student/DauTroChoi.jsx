@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { motion, MotionConfig } from "framer-motion";
 import { Swords, User, Users, Search, Check, Loader2, Trophy, Handshake, Hourglass, Send, ChevronRight } from "lucide-react";
 import { tr } from "../../shared/i18n.jsx";
 import { phat } from "../../shared/amThanh.js";
@@ -13,17 +14,23 @@ import { ketCucDau } from "../../shared/troChoiDau.js";
 export const tenMuc = (m) => ({ de: tr("Dễ", "Facile", "Easy"), vua: tr("Vừa", "Moyen", "Medium"), kho: tr("Khó", "Difficile", "Hard") }[m] ?? m);
 const tenNguoi = (d) => d?.doi_phuong?.name || tr("Một bạn học", "Un camarade", "A classmate");
 
-/* Lưới chọn bạn để thách (16/11, chủ dự án: dải cuộn ngang cũ giấu thanh cuộn nên trên máy tính
-   bạn bè phía sau bị che, không kéo tới được). Nay là LƯỚI xuống dòng, thấy hết tên; nhiều bạn thì
-   có ô tìm theo tên (không phân biệt dấu) và khung cuộn DỌC có thanh cuộn thật. */
-const boDau = (x) => String(x ?? "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/gi, "d").toLowerCase();
-function LuoiBan({ ds, ban, setBan }) {
+/* Màn chuẩn bị ván chơi (16/11, chủ dự án: « làm lại cho đẹp, đồng nhất với website, thêm animation »).
+   MỘT màu nhấn duy nhất là dải màu của chính trò đó (`nen`): ô đang chọn được một vệt màu TRƯỢT tới
+   (layoutId, cùng kiểu với thanh tab Luyện thi), ô không chọn là thẻ nền trắng như phần còn lại
+   của website. Mọi chuyển động theo MotionConfig reducedMotion="user". */
+const LO_XO = { type: "spring", stiffness: 420, damping: 32 };
+const NAY = { type: "spring", stiffness: 500, damping: 14 };
+const boDau = (x) => String(x ?? "").normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/đ/gi, "d").toLowerCase();
+
+/* Lưới chọn bạn: xuống dòng (không cuộn ngang), có ô tìm khi nhiều bạn, khung cuộn dọc. */
+function LuoiBan({ ds, ban, setBan, nen }) {
   const [tim, setTim] = useState("");
-  const loc = tim.trim() ? ds.filter((b) => boDau(b.name).includes(boDau(tim.trim())) || boDau(b.username).includes(boDau(tim.trim()))) : ds;
+  const khoa = boDau(tim.trim());
+  const loc = khoa ? ds.filter((b) => boDau(b.name).includes(khoa) || boDau(b.username).includes(khoa)) : ds;
   return (
     <div>
       {ds.length > 8 && (
-        <label className="mb-2 flex items-center gap-2 rounded-xl border border-solid border-line bg-surface2 px-3 py-2 focus-within:border-primary">
+        <label className="mb-2 flex items-center gap-2 rounded-2xl border border-solid border-line bg-surface2 px-3 py-2 transition-colors focus-within:border-primary">
           <Search size={15} className="shrink-0 text-soft" />
           <input type="search" value={tim} onChange={(e) => setTim(e.target.value)} placeholder={tr("Tìm theo tên", "Chercher un nom", "Search by name")}
             aria-label={tr("Tìm bạn theo tên", "Chercher un ami par son nom", "Search a friend by name")}
@@ -31,18 +38,24 @@ function LuoiBan({ ds, ban, setBan }) {
         </label>
       )}
       {!loc.length ? <p className="m-0 px-1 py-2 text-sm text-soft">{tr("Không có bạn nào khớp tên này.", "Aucun ami ne correspond.", "No friend matches this name.")}</p> : (
-        <div className="grid max-h-[13.5rem] grid-cols-2 gap-2 overflow-y-auto p-1 sm:grid-cols-3">
-          {loc.map((b) => {
+        <div className="grid max-h-[15rem] grid-cols-2 gap-2 overflow-y-auto p-1 sm:grid-cols-3">
+          {loc.map((b, i) => {
             const dang = ban?.id === b.id;
             return (
-              <button key={b.id} type="button" onClick={() => { phat("bam"); setBan(b); }} aria-pressed={dang} title={b.name}
-                className={`relative flex min-w-0 cursor-pointer items-center gap-2.5 rounded-2xl border-2 border-solid px-2.5 py-2 text-left font-sans transition-colors duration-200 ${dang ? "border-primary bg-primary-soft" : "border-line bg-surface hover:border-primary/40"}`}>
-                <span className="relative shrink-0">
-                  <Avatar khoa={b.avatar || ""} ten={b.name} size={36} dungYen />
-                  {dang && <span className="mcf-nay absolute -bottom-1 -right-1 grid h-[18px] w-[18px] place-items-center rounded-full bg-primary text-white ring-2 ring-surface"><Check size={11} strokeWidth={3} /></span>}
+              <motion.button key={b.id} type="button" onClick={() => { phat("bam"); setBan(b); }} aria-pressed={dang} title={b.name}
+                initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ ...LO_XO, delay: Math.min(i, 12) * 0.03 }}
+                whileHover={{ y: -2 }} whileTap={{ scale: 0.96 }}
+                className={`relative flex min-w-0 cursor-pointer items-center gap-2.5 overflow-hidden rounded-2xl border border-solid px-2.5 py-2 text-left font-sans transition-colors duration-200 ${dang ? "border-transparent text-white shadow-md" : "border-line bg-surface text-ink hover:border-primary/40"}`}>
+                {dang && <motion.span layoutId="ban-chon" transition={LO_XO} aria-hidden className={`absolute inset-0 bg-gradient-to-br ${nen}`} />}
+                <span className={`relative shrink-0 rounded-full ${dang ? "ring-2 ring-white" : ""}`}>
+                  <Avatar khoa={b.avatar || ""} ten={b.name} size={38} dungYen />
+                  {dang && <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} transition={NAY} className="absolute -bottom-1 -right-1 grid h-[18px] w-[18px] place-items-center rounded-full bg-white text-[#111]"><Check size={11} strokeWidth={3.5} /></motion.span>}
                 </span>
-                <span className="min-w-0 flex-1 truncate text-sm font-bold text-ink">{b.name}</span>
-              </button>
+                <span className="relative min-w-0 flex-1">
+                  <span className="block truncate text-sm font-bold">{b.name}</span>
+                  {b.username && <span className={`block truncate text-xs ${dang ? "text-white/85" : "text-soft"}`}>@{b.username}</span>}
+                </span>
+              </motion.button>
             );
           })}
         </div>
@@ -51,45 +64,149 @@ function LuoiBan({ ds, ban, setBan }) {
   );
 }
 
-/* Chọn chế độ: một mình | thách bạn. Khi thách bạn thì hiện dải bạn bè (người mình theo dõi). */
-export function ChonCheDo({ cheDo, setCheDo, ban, setBan, nen }) {
-  const [ds, setDs] = useState(undefined);
-  useEffect(() => { if (cheDo === "dau" && ds === undefined) docDangTheoDoi().then((x) => setDs(x)); }, [cheDo, ds]);
-  const Nut = ({ ma, Icon, ten, mo }) => {
-    const dang = cheDo === ma;
-    return (
-      <button type="button" onClick={() => { phat("bam"); setCheDo(ma); }} aria-pressed={dang}
-        className={`flex flex-1 cursor-pointer items-center gap-3 rounded-2xl border-0 p-3 text-left font-sans transition-all duration-200 ${dang ? `bg-gradient-to-br ${nen} -translate-y-0.5 text-white shadow-lg` : "bg-surface text-ink shadow-sm hover:-translate-y-0.5"}`}>
-        <span className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl ${dang ? "bg-white/25" : "bg-surface2 text-soft"}`}><Icon size={19} /></span>
-        <span className="min-w-0">
-          <span className="block text-sm font-extrabold">{ten}</span>
-          <span className={`block text-xs ${dang ? "text-white/90" : "text-soft"}`}>{mo}</span>
-        </span>
-      </button>
-    );
-  };
+/* Dải « Bạn ⚔ đối thủ »: thấy ngay mình sắp thách ai; hai thanh kiếm bật lại mỗi lần đổi người. */
+function DaiDoiDau({ ban, nen }) {
   return (
-    <div className="mx-auto mb-6 max-w-2xl text-left">
-      <div className="flex flex-col gap-2 sm:flex-row">
-        <Nut ma="mot" Icon={User} ten={tr("Chơi một mình", "En solo", "Solo")} mo={tr("Phá kỷ lục của chính bạn", "Battez votre record", "Beat your own record")} />
-        <Nut ma="dau" Icon={Swords} ten={tr("Thách bạn bè", "Défier un ami", "Challenge a friend")} mo={tr("Bạn chơi trước, bạn bè chơi đúng đề đó", "Vous jouez, votre ami rejoue la même partie", "You play, your friend replays the same round")} />
-      </div>
-      {cheDo === "dau" && (
-        <div className="mcf-cau-vao mt-3 rounded-2xl bg-surface p-3 shadow-sm">
-          <p className="m-0 mb-2 flex items-center gap-1.5 text-xs font-bold text-soft"><Users size={13} /> {tr("Thách ai?", "Qui défier ?", "Who to challenge?")}</p>
-          {ds === undefined ? <p className="m-0 flex items-center gap-2 text-sm text-soft"><Loader2 size={14} className="mcf-spin" /> {tr("Đang tải bạn bè…", "Chargement…", "Loading friends…")}</p>
-            : ds === null ? <p className="m-0 text-sm text-danger">{tr("Không tải được danh sách bạn bè.", "Impossible de charger vos amis.", "Couldn't load your friends.")}</p>
-            : !ds.length ? (
-              <div className="flex items-center gap-3">
-                <Leon cam="hum" size={48} />
-                <p className="m-0 text-sm text-soft">{tr("Bạn chưa theo dõi ai. Tìm bạn ở ", "Vous ne suivez personne. Trouvez des amis sur ", "You don't follow anyone yet. Find friends on ")}<Link to="/etudiant/dashboard" className="font-bold text-primary">{tr("trang chủ", "l'accueil", "the home page")}</Link>.</p>
-              </div>
-            ) : (
-              <LuoiBan ds={ds} ban={ban} setBan={setBan} />
-            )}
-        </div>
+    <div className={`relative grid grid-cols-[1fr_auto_1fr] items-center gap-3 overflow-hidden bg-gradient-to-br ${nen} px-4 py-4 text-white`}>
+      <span aria-hidden className="absolute -left-10 -top-12 h-32 w-32 rounded-full bg-white/10" />
+      <span aria-hidden className="absolute -bottom-14 -right-8 h-36 w-36 rounded-full bg-white/10" />
+      <span className="relative flex min-w-0 items-center justify-end gap-2.5">
+        <span className="truncate text-sm font-extrabold">{tr("Bạn", "Vous", "You")}</span>
+        <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-white/25 ring-2 ring-white/70"><User size={20} /></span>
+      </span>
+      <motion.span key={ban?.id ?? "chua"} initial={{ scale: 0.4, rotate: -45 }} animate={{ scale: 1, rotate: 0 }} transition={NAY}
+        className="relative grid h-10 w-10 place-items-center rounded-full bg-white text-[#111] shadow-lg"><Swords size={18} /></motion.span>
+      {ban ? (
+        <motion.span key={ban.id} initial={{ opacity: 0, x: 24 }} animate={{ opacity: 1, x: 0 }} transition={LO_XO} className="relative flex min-w-0 items-center gap-2.5">
+          <span className="shrink-0 rounded-full ring-2 ring-white"><Avatar khoa={ban.avatar || ""} ten={ban.name} size={44} dungYen /></span>
+          <span className="truncate text-sm font-extrabold">{ban.name}</span>
+        </motion.span>
+      ) : (
+        <span className="relative flex min-w-0 items-center gap-2.5">
+          <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full border-2 border-dashed border-white/70 text-lg font-extrabold">?</span>
+          <span className="text-sm font-bold text-white/90">{tr("Chọn một người bạn", "Choisissez un ami", "Pick a friend")}</span>
+        </span>
       )}
     </div>
+  );
+}
+
+/* Chọn chế độ: một mình | thách bạn. Khi thách bạn thì hiện dải đối đầu và lưới bạn bè (người mình
+   theo dõi). `banMau`: danh sách bạn giả, CHỈ /preview.html truyền vào. */
+export function ChonCheDo({ cheDo, setCheDo, ban, setBan, nen, banMau }) {
+  const [ds, setDs] = useState(banMau);
+  useEffect(() => { if (cheDo === "dau" && ds === undefined) docDangTheoDoi().then((x) => setDs(x)); }, [cheDo, ds]);
+  const CHE_DO = [
+    ["mot", User, tr("Chơi một mình", "En solo", "Solo"), tr("Phá kỷ lục của chính bạn", "Battez votre record", "Beat your own record")],
+    ["dau", Swords, tr("Thách bạn bè", "Défier un ami", "Challenge a friend"), tr("Bạn chơi trước, bạn bè chơi đúng đề đó", "Vous jouez, votre ami rejoue la même partie", "You play, your friend replays the same round")],
+  ];
+  return (
+    <MotionConfig reducedMotion="user">
+      <div className="mx-auto mb-7 max-w-2xl text-left">
+        <div role="tablist" aria-label={tr("Chế độ chơi", "Mode de jeu", "Play mode")} className="grid grid-cols-1 gap-1 rounded-3xl border border-solid border-line bg-surface p-1.5 shadow-sm sm:grid-cols-2">
+          {CHE_DO.map(([ma, Icon, ten, mo]) => {
+            const dang = cheDo === ma;
+            return (
+              <motion.button key={ma} type="button" role="tab" aria-selected={dang} onClick={() => { if (!dang) phat("bam"); setCheDo(ma); }} whileTap={{ scale: 0.97 }}
+                className={`relative flex cursor-pointer items-center gap-3 overflow-hidden rounded-2xl border-0 bg-transparent p-3 text-left font-sans transition-colors ${dang ? "text-white" : "text-ink hover:bg-surface2"}`}>
+                {dang && (
+                  <motion.span layoutId="che-do-chon" transition={LO_XO} aria-hidden className={`absolute inset-0 rounded-2xl bg-gradient-to-br ${nen} shadow-md`}>
+                    <span className="absolute -right-6 -top-8 h-24 w-24 rounded-full bg-white/15" />
+                  </motion.span>
+                )}
+                <motion.span key={dang ? "chon" : "khong"} initial={dang ? { scale: 0.6, rotate: -15 } : false} animate={{ scale: 1, rotate: 0 }} transition={NAY}
+                  className={`relative grid h-11 w-11 shrink-0 place-items-center rounded-xl ${dang ? "bg-white/25" : "bg-surface2 text-soft"}`}><Icon size={20} /></motion.span>
+                <span className="relative min-w-0">
+                  <span className="block text-[15px] font-extrabold leading-tight">{ten}</span>
+                  <span className={`mt-0.5 block text-xs font-medium ${dang ? "text-white/90" : "text-soft"}`}>{mo}</span>
+                </span>
+              </motion.button>
+            );
+          })}
+        </div>
+        {cheDo === "dau" && (
+          <motion.div initial={{ opacity: 0, y: -10, scale: 0.98 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={LO_XO}
+            className="mt-3 overflow-hidden rounded-3xl border border-solid border-line bg-surface shadow-sm">
+            <DaiDoiDau ban={ban} nen={nen} />
+            <div className="p-3">
+              <p className="m-0 mb-2 flex items-center gap-1.5 px-1 text-xs font-extrabold uppercase tracking-wide text-soft"><Users size={13} /> {tr("Thách ai?", "Qui défier ?", "Who to challenge?")}</p>
+              {ds === undefined ? <p className="m-0 flex items-center gap-2 px-1 py-2 text-sm text-soft"><Loader2 size={14} className="mcf-spin" /> {tr("Đang tải bạn bè…", "Chargement…", "Loading friends…")}</p>
+                : ds === null ? <p className="m-0 px-1 py-2 text-sm text-danger">{tr("Không tải được danh sách bạn bè.", "Impossible de charger vos amis.", "Couldn't load your friends.")}</p>
+                : !ds.length ? (
+                  <div className="flex items-center gap-3 px-1 py-1">
+                    <Leon cam="hum" size={48} />
+                    <p className="m-0 text-sm text-soft">{tr("Bạn chưa theo dõi ai. Tìm bạn ở ", "Vous ne suivez personne. Trouvez des amis sur ", "You don't follow anyone yet. Find friends on ")}<Link to="/etudiant/dashboard" className="font-bold text-primary">{tr("trang chủ", "l'accueil", "the home page")}</Link>.</p>
+                  </div>
+                ) : <LuoiBan ds={ds} ban={ban} setBan={setBan} nen={nen} />}
+            </div>
+          </motion.div>
+        )}
+      </div>
+    </MotionConfig>
+  );
+}
+
+/* Chọn cách chơi (trò có nhiều lối chơi): thẻ trắng, vệt màu trượt tới ô đang chọn. */
+export function ChonKieu({ ds, kieu, setKieu, nen }) {
+  return (
+    <MotionConfig reducedMotion="user">
+      <div className="mx-auto mb-7 mt-3 grid max-w-2xl gap-2 sm:grid-cols-3">
+        {ds.map((k, j) => {
+          const chon = kieu === k.ma;
+          return (
+            <motion.button key={k.ma} type="button" onClick={() => { if (!chon) phat("bam"); setKieu(k.ma); }} aria-pressed={chon}
+              initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ ...LO_XO, delay: j * 0.05 }} whileHover={{ y: -3 }} whileTap={{ scale: 0.97 }}
+              className={`relative cursor-pointer overflow-hidden rounded-2xl border border-solid px-3.5 py-3 text-left font-sans transition-colors ${chon ? "border-transparent text-white shadow-lg" : "border-line bg-surface text-ink shadow-sm"}`}>
+              {chon && <motion.span layoutId="kieu-chon" transition={LO_XO} aria-hidden className={`absolute inset-0 bg-gradient-to-br ${nen}`} />}
+              <span className="relative block text-sm font-extrabold">{k.ten}</span>
+              <span className={`relative mt-0.5 block text-xs ${chon ? "text-white/90" : "text-soft"}`}>{k.mo}</span>
+            </motion.button>
+          );
+        })}
+      </div>
+    </MotionConfig>
+  );
+}
+
+/* Chọn mức độ: ba thẻ trắng có Léon, vạch cường độ theo màu ngữ nghĩa (xanh, vàng, đỏ); thẻ đang
+   chọn nhận vệt màu của trò trượt tới, Léon nảy lên. */
+const MUC = () => [
+  ["de", tr("Dễ", "Facile", "Easy"), "A1–A2", tr("Từ quen, nhiều thời gian", "Mots courants, plus de temps", "Common words, more time"), "mim-cuoi", "bg-ok"],
+  ["vua", tr("Vừa", "Moyen", "Medium"), "A2–B1", tr("Nhịp chuẩn, có bẫy nhẹ", "Rythme normal, quelques pièges", "Normal pace, light traps"), "nhay-mat", "bg-warn"],
+  ["kho", tr("Khó", "Difficile", "Hard"), "B1–B2", tr("Nhanh hơn, từ khó, ít gợi ý", "Plus rapide, moins d'aide", "Faster, harder, fewer hints"), "quyet-tam", "bg-danger"],
+];
+export function ChonMuc({ muc, setMuc, nen }) {
+  return (
+    <MotionConfig reducedMotion="user">
+      <div className="mx-auto mt-3 grid max-w-2xl gap-3 sm:grid-cols-3">
+        {MUC().map(([m, ten, cap, mo, cam, mau], j) => {
+          const chon = muc === m;
+          return (
+            <motion.button key={m} type="button" onClick={() => { if (!chon) phat("bam"); setMuc(m); }} aria-pressed={chon}
+              initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ ...LO_XO, delay: j * 0.06 }} whileHover={{ y: -4 }} whileTap={{ scale: 0.97 }}
+              className={`relative flex cursor-pointer items-center gap-3 overflow-hidden rounded-3xl border border-solid p-3 text-left font-sans transition-[color,border-color,box-shadow] duration-200 sm:flex-col sm:items-center sm:px-4 sm:pb-5 sm:pt-6 sm:text-center ${chon ? "border-transparent text-white shadow-xl" : "border-line bg-surface text-ink shadow-sm hover:border-primary/40"}`}>
+              {chon && (
+                <motion.span layoutId="muc-chon" transition={LO_XO} aria-hidden className={`absolute inset-0 bg-gradient-to-br ${nen}`}>
+                  <span className="absolute -right-8 -top-10 h-28 w-28 rounded-full bg-white/15" />
+                  <span className="absolute -bottom-12 -left-8 h-28 w-28 rounded-full bg-white/10" />
+                </motion.span>
+              )}
+              {chon && <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} transition={NAY} className="absolute right-2.5 top-2.5 grid h-6 w-6 place-items-center rounded-full bg-white text-[#111]"><Check size={14} strokeWidth={3.5} /></motion.span>}
+              <motion.span animate={chon ? { scale: [1, 1.22, 1], rotate: [0, -10, 0] } : { scale: 1, rotate: 0 }} transition={{ duration: 0.5, ease: "easeOut" }}
+                className={`relative grid h-16 w-16 shrink-0 place-items-center rounded-full ${chon ? "bg-white/25" : "bg-surface2"}`}><Leon cam={cam} size={52} /></motion.span>
+              <span className="relative min-w-0 flex-1 sm:flex-none">
+                <span className="flex items-center gap-2 sm:justify-center">
+                  <span className="text-lg font-extrabold">{ten}</span>
+                  <span aria-hidden className="flex items-end gap-0.5">{[0, 1, 2].map((k) => <span key={k} className={`w-1.5 rounded-sm ${["h-2", "h-3", "h-4"][k]} ${k <= j ? (chon ? "bg-white" : mau) : (chon ? "bg-white/30" : "bg-surface2")}`} />)}</span>
+                </span>
+                <span className={`mt-1 inline-block rounded-full px-2.5 py-0.5 text-xs font-extrabold ${chon ? "bg-white/20" : "bg-surface2 text-soft"}`}>{cap}</span>
+                <span className={`mt-1.5 block text-xs leading-snug ${chon ? "text-white/90" : "text-soft"}`}>{mo}</span>
+              </span>
+            </motion.button>
+          );
+        })}
+      </div>
+    </MotionConfig>
   );
 }
 

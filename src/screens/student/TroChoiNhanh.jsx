@@ -21,17 +21,17 @@ import { MUC_CHOI, khopCap, docDanhTuGioi, docMuaChu, phuongAnNghia, docCauNghe,
 
 import { ngauNhien, datHat, boHat, hatMoi } from "../../shared/ngauNhien.js";
 import { dsDauTroChoi, taoDauTroChoi, nopDauTroChoi, loiDau } from "../../shared/troChoiDau.js";
-import { ChonCheDo, TheLoiThach, KetQuaDau, DauTruong } from "./DauTroChoi.jsx";
+import { ChonCheDo, ChonKieu, ChonMuc, TheLoiThach, KetQuaDau, DauTruong } from "./DauTroChoi.jsx";
 /* Ba trò chơi nhanh (27/10, migration 168). /etudiant/tro-choi là sảnh, /etudiant/tro-choi/:ma
  * là một trò. Câu hỏi dựng từ kho có sẵn (xem shared/troChoiNhanh.js); điểm, kỷ lục và XP
  * ghi qua RPC ghi_tro_choi, mỗi lượt cũng tính một ngày học cho chuỗi. */
 
 /* `dauMau`: danh sách trận giả, CHỈ /preview.html truyền vào. */
-export default function TroChoiNhanh({ dauMau }) {
+export default function TroChoiNhanh({ dauMau, banMau }) {
   const { ma } = useParams();
   const ds = TRO_CHOI();
   const tc = ds.find((x) => x.ma === ma && !x.den);
-  if (tc) return <ManChoi tc={tc} />;
+  if (tc) return <ManChoi tc={tc} banMau={banMau} />;
   return <Sanh ds={ds} dauMau={dauMau} />;
 }
 
@@ -210,7 +210,7 @@ function LeonBinhLuan() {
 
 /* PvP (15/11, migration 214): « Thách bạn bè » → chơi với hạt giống mới, nộp thì tạo trận và báo bạn.
    ?dau=<id> → nhận lời: khoá mức + cách chơi theo trận, chơi đúng hạt giống, nộp một lần, so điểm. */
-function ManChoi({ tc }) {
+function ManChoi({ tc, banMau }) {
   const nav = useNavigate();
   const [tham] = useSearchParams();
   const maDau = tham.get("dau");
@@ -294,44 +294,14 @@ function ManChoi({ tc }) {
           {nhan === undefined && <p className="m-0 mb-6 flex items-center justify-center gap-2 text-sm text-soft"><Loader2 size={14} className="mcf-spin" /> {tr("Đang mở lời thách…", "Ouverture du défi…", "Opening the challenge…")}</p>}
           {nhan === false && <p className="m-0 mb-6 rounded-2xl bg-warn-soft px-4 py-3 text-sm font-bold text-warn">{tr("Lời thách này không còn (đã chơi hoặc không dành cho bạn). Bạn vẫn chơi được như thường.", "Ce défi n'est plus disponible. Vous pouvez jouer normalement.", "This challenge is no longer available. You can still play normally.")}</p>}
           {nhan && <TheLoiThach d={nhan} nen={tc.nen} tenKieu={tc.kieu?.find((k) => k.ma === nhan.kieu)?.ten} />}
-          {!nhan && nhan !== undefined && <ChonCheDo cheDo={cheDo} setCheDo={(m) => { setCheDo(m); setBaoLoi(""); }} ban={ban} setBan={(b) => { setBan(b); setBaoLoi(""); }} nen={tc.nen} />}
+          {!nhan && nhan !== undefined && <ChonCheDo cheDo={cheDo} setCheDo={(m) => { setCheDo(m); setBaoLoi(""); }} ban={ban} setBan={(b) => { setBan(b); setBaoLoi(""); }} nen={tc.nen} banMau={banMau} />}
           {!nhan && tc.kieu && <>
             <p className="m-0 text-sm font-extrabold text-ink">{tr("Cách chơi", "Mode", "Mode")}</p>
-            <div className="mb-6 mt-3 grid gap-2 sm:grid-cols-3">
-              {tc.kieu.map((k) => (
-                <button key={k.ma} type="button" onClick={() => setKieu(k.ma)} aria-pressed={kieu === k.ma}
-                  className={`cursor-pointer rounded-2xl border-0 px-3 py-3 text-left font-sans transition-transform duration-200 ${kieu === k.ma ? `bg-gradient-to-br ${tc.nen} -translate-y-0.5 text-white shadow-lg` : "bg-surface text-ink shadow-sm hover:-translate-y-0.5"}`}>
-                  <span className="block text-sm font-extrabold">{k.ten}</span>
-                  <span className={`mt-0.5 block text-xs ${kieu === k.ma ? "text-white/90" : "text-soft"}`}>{k.mo}</span>
-                </button>
-              ))}
-            </div>
+            <ChonKieu ds={tc.kieu} kieu={kieu} setKieu={setKieu} nen={tc.nen} />
           </>}
           {tc.ma !== "phieu_luu" && !nhan && <>
           <p className="m-0 text-sm font-extrabold text-ink">{tr("Mức độ", "Difficulté", "Difficulty")}</p>
-          {/* Chọn mức: ba thẻ màu, vạch cường độ 1–3, thẻ đang chọn nổi lên có viền và dấu tích. */}
-          <div className="mx-auto mt-3 grid max-w-2xl gap-3 sm:grid-cols-3">
-            {[["de", tr("Dễ", "Facile", "Easy"), "A1–A2", tr("Từ quen, nhiều thời gian", "Mots courants, plus de temps", "Common words, more time"), "from-emerald-500 to-teal-600", "text-white", "text-white/90", "ring-emerald-400", "bg-white", "text-teal-700", "mim-cuoi"],
-              ["vua", tr("Vừa", "Moyen", "Medium"), "A2–B1", tr("Nhịp chuẩn, có bẫy nhẹ", "Rythme normal, quelques pièges", "Normal pace, light traps"), "from-amber-300 to-orange-400", "text-amber-950", "text-amber-950/80", "ring-amber-400", "bg-amber-950", "text-amber-200", "nhay-mat"],
-              ["kho", tr("Khó", "Difficile", "Hard"), "B1–B2", tr("Nhanh hơn, từ khó, ít gợi ý", "Plus rapide, moins d'aide", "Faster, harder, fewer hints"), "from-rose-500 to-fuchsia-600", "text-white", "text-white/90", "ring-rose-400", "bg-white", "text-rose-600", "quyet-tam"]].map(([m, ten, cap, mo, nen, chu, chuPhu, vien, dau, chuDau, cam], j) => {
-              const chon = muc === m;
-              return (
-                <button key={m} type="button" onClick={() => setMuc(m)} aria-pressed={chon}
-                  className={`relative flex cursor-pointer items-center gap-3 rounded-2xl border-0 bg-gradient-to-br ${nen} ${chu} p-3 text-left font-sans transition-[transform,box-shadow,opacity] duration-200 sm:flex-col sm:items-center sm:p-4 sm:text-center ${chon ? `-translate-y-1 shadow-xl ring-4 ${vien} ring-offset-2 ring-offset-surface` : "opacity-80 shadow-sm hover:-translate-y-0.5 hover:opacity-100"}`}>
-                  {chon && <span className={`mcf-nay absolute right-2 top-2 grid h-6 w-6 place-items-center rounded-full ${dau} ${chuDau}`}><Check size={14} strokeWidth={3} /></span>}
-                  <span className="grid h-14 w-14 shrink-0 place-items-center rounded-full bg-white/30"><Leon cam={cam} size={48} /></span>
-                  <span className="min-w-0 flex-1 sm:flex-none">
-                    <span className="flex items-center gap-2 sm:justify-center">
-                      <span className="text-lg font-extrabold">{ten}</span>
-                      <span aria-hidden className="flex items-end gap-0.5">{[0, 1, 2].map((k) => <span key={k} className={`w-1.5 rounded-sm ${["h-2", "h-3", "h-4"][k]} ${k <= j ? dau : "bg-black/20"}`} />)}</span>
-                    </span>
-                    <span className={`mt-0.5 block text-xs font-bold ${chuPhu}`}>{cap}</span>
-                    <span className={`mt-1 block text-xs leading-snug ${chuPhu}`}>{mo}</span>
-                  </span>
-                </button>
-              );
-            })}
-          </div>
+          <ChonMuc muc={muc} setMuc={setMuc} nen={tc.nen} />
           </>}
           {tc.ma === "phieu_luu" && laDau && <p className="m-0 mx-auto max-w-md text-xs text-soft">{tr("Ván đấu Một năm ở Paris là MỘT tháng chơi từ đầu, không đụng tới năm bạn đang chơi dở.", "Le duel dure UN mois, sans toucher à votre année en cours.", "The duel is ONE month from scratch; your saved year is untouched.")}</p>}
           {baoLoi && <p className="m-0 mt-4 text-sm font-bold text-danger">{baoLoi}</p>}
