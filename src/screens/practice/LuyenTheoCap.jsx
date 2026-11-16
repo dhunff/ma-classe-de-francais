@@ -150,17 +150,19 @@ export function ManKhoaThuTu({ khoa, onDi, onBack, laVip, onMuaVip, giaVip }) {
   );
 }
 
+/* Trình độ DELF vừa xem trên máy này (để chọn lại DELF thì không nhảy về A1). */
+export function capDelfDaXem(capHoSo) {
+  let c = null;
+  try { c = localStorage.getItem("mcf-luyen-cap-delf"); } catch { /* bỏ qua */ }
+  return CAP_DO.includes(c) ? c : CAP_DO.includes(capHoSo) ? capHoSo : CAP_DO[0];
+}
+
 /* Trang một trình độ: chọn trình độ, bước tiếp theo, bốn kỹ năng lớn. */
-export function LuyenTheoCap({ cap, capHoSo, onDoiCap, exercises, hist, biKhoa, onMoKyNho, canhBao, laVip, onMuaVip, giaVip, onThanhTuu }) {
+export function LuyenTheoCap({ cap, capHoSo, onDoiCap, onDoiKyThi, exercises, hist, biKhoa, onMoKyNho, canhBao, laVip, onMuaVip, giaVip, onThanhTuu }) {
   const moiCap = useMemo(() => Object.fromEntries([...CAP_DO, CAP_TCF].map((c) => [c, tongCap(c, exercises, hist, biKhoa, laVip)])), [exercises, hist, biKhoa, laVip]);
   const laTcf = cap === CAP_TCF;
   /* Về lại DELF thì mở đúng trình độ DELF vừa xem, không nhảy về A1. */
   useEffect(() => { if (!laTcf) { try { localStorage.setItem("mcf-luyen-cap-delf", cap); } catch { /* bỏ qua */ } } }, [cap, laTcf]);
-  const veDelf = () => {
-    let c = null;
-    try { c = localStorage.getItem("mcf-luyen-cap-delf"); } catch { /* bỏ qua */ }
-    onDoiCap(CAP_DO.includes(c) ? c : CAP_DO.includes(capHoSo) ? capHoSo : CAP_DO[0]);
-  };
   const tong = moiCap[cap];
   const KYN = KY();
   const tiep = tong.tiepTheo;
@@ -173,18 +175,18 @@ export function LuyenTheoCap({ cap, capHoSo, onDoiCap, exercises, hist, biKhoa, 
   const kyTiep = tiep ? KYN[tiep.kn.ma.split("-")[1]] : null;
   return (
     <div>
-      {/* 16/11 (chủ dự án): Luyện thi chia hai kỳ thi. Mỗi bên một cây kỹ năng theo đúng format đề thi thử. */}
-      <div role="tablist" aria-label={tr("Kỳ thi", "Examen", "Exam")} className="mb-4 grid grid-cols-2 gap-1 rounded-2xl bg-surface2 p-1 sm:inline-grid sm:min-w-[22rem]">
-        {[[false, "DELF · DALF", tr("Theo trình độ A1 đến C2", "Par niveau, de A1 à C2", "By level, A1 to C2")], [true, "TCF", tr("Một bài thi, khó dần A1 đến C2", "Un seul test, de A1 à C2", "One test, A1 to C2")]].map(([tcf, ten, phu]) => {
-          const dang = laTcf === tcf;
-          return (
-            <button key={ten} type="button" role="tab" aria-selected={dang} onClick={() => { if (dang) return; phat("bam"); if (tcf) onDoiCap(CAP_TCF); else veDelf(); }}
-              className={`flex cursor-pointer flex-col items-center rounded-xl border-0 px-3 py-2 font-sans transition-all ${dang ? "bg-surface text-ink shadow-sm" : "bg-transparent text-soft hover:text-ink"}`}>
-              <span className="text-sm font-extrabold">{ten}</span>
-              <span className="text-[11px] font-semibold">{phu}</span>
-            </button>
-          );
-        })}
+      {/* 16/11 (chủ dự án): Luyện thi chia hai kỳ thi, chọn ở cửa vào (ChonKyThi). Ở đây chỉ còn
+          nhãn kỳ thi đang luyện và lối quay lại cửa đó. */}
+      <div className="mcf-cau-vao mb-4 flex flex-wrap items-center gap-3">
+        {onDoiKyThi && (
+          <button type="button" onClick={() => { phat("bam"); onDoiKyThi(); }}
+            className="group inline-flex cursor-pointer items-center gap-1 rounded-full border border-solid border-line bg-surface py-2 pl-2.5 pr-4 font-sans text-sm font-bold text-ink transition-colors hover:border-primary hover:text-primary">
+            <ChevronLeft size={17} className="transition-transform group-hover:-translate-x-0.5" /> {tr("Đổi kỳ thi", "Changer d'examen", "Switch exam")}
+          </button>
+        )}
+        <span className="inline-flex items-center rounded-full px-4 py-2 text-sm font-extrabold text-white shadow-sm" style={{ background: laTcf ? "linear-gradient(135deg,#FB7185,#BE123C)" : "linear-gradient(135deg,#3B82F6,#1D4ED8)" }}>
+          {laTcf ? "TCF" : "DELF · DALF"}
+        </span>
       </div>
 
       {laTcf ? (

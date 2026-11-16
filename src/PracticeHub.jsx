@@ -50,9 +50,10 @@ import { anhMacDinh } from "./shared/anhMacDinh.js";
 import { choTrong } from "./shared/choTrong.jsx";
 import OTraLoi from "./screens/practice/OTraLoi.jsx";
 import NgheMotLan from "./screens/practice/NgheMotLan.jsx";
-import { LuyenTheoCap, ChiTietKyNho, MeoKyNho, ManKhoaThuTu } from "./screens/practice/LuyenTheoCap.jsx";
+import { LuyenTheoCap, ChiTietKyNho, MeoKyNho, ManKhoaThuTu, capDelfDaXem } from "./screens/practice/LuyenTheoCap.jsx";
+import ChonKyThi from "./screens/practice/ChonKyThi.jsx";
 import ThanhTuu from "./screens/practice/ThanhTuu.jsx";
-import { capMacDinh, duongKyLon, timKyNho, kyNhoCuaBai, khoaThuTu, gopDiemNoi, baiTiepTheo, NGUONG_F } from "./shared/tienTrinhLuyenTap.js";
+import { CAP_DO, CAP_TCF, capMacDinh, duongKyLon, timKyNho, kyNhoCuaBai, khoaThuTu, gopDiemNoi, baiTiepTheo, NGUONG_F } from "./shared/tienTrinhLuyenTap.js";
 
 /* ============================================================
    PRACTICE HUB v3 — Tự luyện tập
@@ -145,6 +146,10 @@ function PracticeHubInner({ role = "eleve", name = "", accounts = [], onRequireL
   const [capHoSo, setCapHoSo] = useState(null);
   const [capChon, setCapChon] = useState(() => { try { return localStorage.getItem("mcf-luyen-cap"); } catch { return null; } });
   const [thuVien, setThuVien] = useState(false);
+  /* 16/11 (chủ dự án): mới vào Luyện thi chỉ thấy hai ô DELF · DALF và TCF; chọn rồi mới vào cây.
+     Không nhớ qua lần vào sau: mỗi lần mở mục Luyện thi lại bắt đầu ở cửa chọn. */
+  const [kyThi, setKyThi] = useState(null);
+  const chonKyThi = (k) => { setKyThi(k); doiCap(k === "tcf" ? CAP_TCF : capDelfDaXem(capHoSo)); };
   const [canhBaoLt, setCanhBaoLt] = useState(null);
   const doiCap = (c) => { setCapChon(c); setCanhBaoLt(null); try { localStorage.setItem("mcf-luyen-cap", c); } catch { /* bỏ qua */ } };
   const biKhoa = useCallback((ex) => !teacher && !fullAccess && isPremium(ex) && !hasAccess(access, name, ex.id), [teacher, fullAccess, access, name]);
@@ -1042,6 +1047,9 @@ ${r.error?.message ?? ""}`); return; }
           { target: "#tour-xp-start", title: t("tour.xp3_title"), content: t("tour.xp3_body"), finishLabel: t("home.start") },
         ]} />
       )}
+      {!teacher && !kyThi ? (
+        <ChonKyThi onChon={chonKyThi} lanTruoc={capChon === CAP_TCF ? "tcf" : CAP_DO.includes(capChon) ? "delf" : null} />
+      ) : (<>
       {!teacher && <TabLuyenTap tab={thuVien} onDoi={setThuVien} />}
       {!teacher && thuVien === true && (
         <p className="m-0 mb-5 text-sm text-soft">{tr("Bài tập bổ sung theo chủ đề: ngữ pháp, từ vựng, dịch. Làm tự do, không tính vào lộ trình theo trình độ.", "Exercices complémentaires par thème : grammaire, vocabulaire, traduction. Libres, ils ne comptent pas dans le parcours par niveau.", "Extra exercises by topic: grammar, vocabulary, translation. Do them freely, they don't count toward the level path.")}</p>
@@ -1049,7 +1057,7 @@ ${r.error?.message ?? ""}`); return; }
       {!teacher && thuVien === "thanhTuu" ? (
         <ThanhTuu exercises={exercises} hist={hist} biKhoa={biKhoa} ten={name} />
       ) : !teacher && !thuVien ? (
-        <LuyenTheoCap cap={capMacDinh(capChon, capHoSo, exercises, hist)} capHoSo={capHoSo} onDoiCap={doiCap}
+        <LuyenTheoCap cap={capMacDinh(capChon, capHoSo, exercises, hist)} capHoSo={capHoSo} onDoiCap={doiCap} onDoiKyThi={() => { setKyThi(null); setThuVien(false); }}
           exercises={exercises} hist={hist} biKhoa={biKhoa} onMoKyNho={moKyNho} canhBao={canhBaoLt} laVip={fullAccess} onMuaVip={muaVip} giaVip={fmtPrice(VIP.gia)} onThanhTuu={() => setThuVien("thanhTuu")} />
       ) : (
       <div id="tour-xp-grid" className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -1111,6 +1119,7 @@ ${r.error?.message ?? ""}`); return; }
         })}
       </div>
       )}
+      </>)}
       </>)}
     </div>
   );

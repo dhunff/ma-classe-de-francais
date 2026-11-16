@@ -221,7 +221,8 @@ const LOI_NGHE_THU = {
   loi: [{ giong: "alloy", chu: "Dialogue un." }, { giong: "shimmer", chu: "Un aller simple pour Lyon, s'il vous plaît." }, { giong: "onyx", chu: "Ça fait quarante euros." }, { giong: "alloy", chu: "Dialogue deux." }, { giong: "echo", chu: "Pardon, ce bus va à la mairie ?" }],
   phan_tich: { loai: "Bốn đoạn hội thoại ngắn", chu_de: "Hỏi đường và đi lại bằng tàu, xe buýt, taxi.", y_chinh: ["Hội thoại 1: mua vé tàu một chiều đi Lyon, 40 euro.", "Hội thoại 2: hỏi xe buýt có đến toà thị chính không."] },
 };
-import { LuyenTheoCap, ChiTietKyNho, MeoKyNho } from "./screens/practice/LuyenTheoCap.jsx";
+import { LuyenTheoCap, ChiTietKyNho, MeoKyNho, capDelfDaXem } from "./screens/practice/LuyenTheoCap.jsx";
+import ChonKyThi from "./screens/practice/ChonKyThi.jsx";
 import ThanhTuu from "./screens/practice/ThanhTuu.jsx";
 import { KY_NANG } from "./content/luyenTap/kyNang.js";
 import { Lightbulb, PenLine } from "lucide-react";
@@ -904,11 +905,13 @@ function LuyenCapThu() {
   const biKhoa = (ex) => ex.id === b1.CE[1].bai[0];
   /* Màn Thành tựu: A1 làm đủ mỗi kỹ năng một bài, điểm trải đủ các hạng, Viết và Nói không điểm. */
   const [thanhTuu, setThanhTuu] = useState(false);
+  const [kyThi, setKyThi] = useState(null);
   const [loiNghe, setLoiNghe] = useState(false);
   const a1 = Object.values(KY_NANG.A1).flat().map((k) => ({ id: "tt" + k.ma, level: "A1", kyNang: k.ma, questions: [] }));
   const histTt = Object.fromEntries(a1.map((e, i) => [e.id, /-(PE|PO)-/.test(e.kyNang) ? { best: 0, max: 0, tries: 1, at: Date.now() } : { best: [20, 18, 15, 19, 17][i % 5], max: 20, tries: 1, at: Date.now() }]));
   const tabLt = <TabLuyenTap tab={thanhTuu ? "thanhTuu" : false} onDoi={(k) => setThanhTuu(k === "thanhTuu")} />;
   if (thanhTuu) return <div className="mx-auto max-w-5xl p-4">{tabLt}<ThanhTuu exercises={a1} hist={histTt} biKhoa={() => false} ten="Linh Nguyễn" /></div>;
+  if (!kyThi) return <div className="mx-auto max-w-5xl p-4"><ChonKyThi onChon={(k) => { setKyThi(k); setCap(k === "tcf" ? "TCF" : capDelfDaXem("B1")); }} lanTruoc="delf" /></div>;
   const the = (ex) => <div className="flex h-44 items-end rounded-3xl border border-solid border-line bg-surface p-4 text-sm font-bold text-ink">{ex.title}</div>;
   return (
     <div className="mx-auto max-w-5xl p-4">
@@ -924,7 +927,7 @@ function LuyenCapThu() {
       {lamBai ? null :      <>
       {ma && <div className="mb-4"><MeoKyNho ma={ma} /></div>}
       {ma ? <ChiTietKyNho ma={ma} exercises={ids} hist={hist} biKhoa={biKhoa} onBack={() => { setBaoKhoa(null); setMa(null); }} onMoKyNho={moBuoc} canhBao={baoKhoa} laVip={vipThu} onMuaVip={() => {}} giaVip="99.000 ₫" onLam={() => {}} renderThe={the} />
-        : <LuyenTheoCap cap={cap} capHoSo="B1" onDoiCap={setCap} exercises={ids} hist={hist} biKhoa={biKhoa} canhBao={baoKhoa} laVip={vipThu} onMuaVip={() => {}} giaVip="99.000 ₫" onThanhTuu={() => setThanhTuu(true)}
+        : <LuyenTheoCap cap={cap} capHoSo="B1" onDoiCap={setCap} exercises={ids} hist={hist} biKhoa={biKhoa} canhBao={baoKhoa} laVip={vipThu} onMuaVip={() => {}} giaVip="99.000 ₫" onThanhTuu={() => setThanhTuu(true)} onDoiKyThi={() => setKyThi(null)}
             onMoKyNho={moBuoc} />}
       </>}
     </div>
