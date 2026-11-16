@@ -14,7 +14,10 @@ import { writeFileSync } from "node:fs";
 import { toRows } from "../../src/shared/exerciseMap.js";
 import { KY_NANG_TCF } from "../../src/content/luyenTap/kyNangTCF.js";
 import { demTu } from "../../supabase/functions/_shared/chamTcf.js";
-import { BAI } from "./lo53_noi_tcf_noi_dung.mjs";
+import { BAI as BAI1 } from "./lo53_noi_tcf_noi_dung.mjs";
+import { BAI2 } from "./lo53_noi_tcf_noi_dung_2.mjs";
+/* Đợt 2 (cho đủ kế hoạch 5/6/6) nối vào CUỐI: id lo53tcfpoNN của 6 bài đợt 1 giữ nguyên. */
+const BAI = [...BAI1, ...BAI2];
 
 const CHI_KIEM = process.argv.includes("--kho");
 const CAY = Object.values(KY_NANG_TCF.TCF).flat();

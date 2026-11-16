@@ -1,0 +1,186 @@
+/* Lô 53 (16/11/2026), đợt 2: soạn TIẾP bài Nói TCF cho đủ kế hoạch (PO-1 bài 3 đến 5, PO-2 và PO-3 bài 3
+ * đến 6). Cùng khuôn và quy ước với lo53_noi_tcf_noi_dung.mjs; máy dựng nối vào CUỐI danh sách.
+ * Toàn bộ do FRACILE soạn, nhân vật hư cấu. Không dùng dấu gạch dài. */
+
+const T2 = (canh, vai) => `Tâche 2 du TCF. Situation : ${canh} L'examinateur joue le rôle ${vai}. Posez-lui des questions pour obtenir toutes les informations utiles. C'est VOUS qui posez les questions.`;
+const T3 = (de) => `Tâche 3 du TCF. Sujet : « ${de} » Donnez votre opinion de manière claire et argumentée. Il n'y a pas de préparation.`;
+
+export const BAI2 = [
+  /* ═══════════ TCF-PO-1 : Entretien dirigé ═══════════ */
+  {
+    ma: "TCF-PO-1", vong: "on", tieuDe: "Oral TCF : logement et quartier",
+    tinhHuong: "Tâche 1 du TCF : l'examinateur vous pose des questions sur votre logement, votre quartier et votre vie quotidienne. Répondez à chaque question en 3 ou 4 phrases.",
+    cau: [
+      { giay: 60, prompt: "Pouvez-vous décrire votre logement ?",
+        model: "J'habite dans un appartement de trois pièces, au cinquième étage d'un immeuble récent. Il y a un salon assez grand, deux chambres et une petite cuisine. Ce que je préfère, c'est le balcon : le soir, on voit toute la ville. Le seul problème, c'est qu'il n'y a pas d'ascenseur." },
+      { giay: 60, prompt: "Qu'est-ce que vous aimez dans votre quartier ?",
+        model: "Mon quartier est calme mais bien équipé. Il y a un marché deux fois par semaine, une bibliothèque et un grand parc où je cours le dimanche. Les voisins sont sympathiques, on se dit bonjour dans la rue. C'est rare dans une grande ville." },
+      { giay: 60, prompt: "Comment allez-vous au travail ou à l'école ?",
+        model: "D'habitude, je prends le métro, c'est rapide : vingt minutes environ. Quand il fait beau, je préfère y aller à vélo, ça me fait du sport. Je n'ai pas de voiture, car le stationnement est difficile et cher en ville." },
+      { giay: 60, prompt: "Que faites-vous le week-end ?",
+        model: "Le samedi matin, je fais les courses et le ménage. L'après-midi, je retrouve souvent des amis pour boire un café ou voir un film. Le dimanche, je me repose et j'appelle ma famille au Vietnam par vidéo. Parfois, nous partons à la campagne." },
+      { giay: 60, prompt: "Est-ce que vous aimez cuisiner ?",
+        model: "Oui, beaucoup ! Je cuisine presque tous les soirs, surtout des plats vietnamiens, comme les nems ou la soupe de nouilles. Depuis que j'habite en France, j'apprends aussi des recettes françaises. Ma spécialité maintenant, c'est la quiche aux légumes." },
+      { giay: 60, prompt: "Où aimeriez-vous habiter dans dix ans ?",
+        model: "Dans dix ans, j'aimerais habiter dans une petite ville près de la mer, peut-être en Bretagne. Je voudrais une maison avec un jardin pour cultiver des légumes. La vie y est plus calme, et je pourrais travailler en partie à distance." },
+    ],
+    tu: ["une pièce : phòng (trong căn hộ)", "bien équipé (adjectif) : đủ tiện ích", "le stationnement : việc đỗ xe", "le ménage : việc dọn nhà", "à distance : từ xa"],
+    meo: ["Mô tả nơi ở: kích thước, số phòng, điều thích, điều chưa thích.", "Câu về tương lai: « j'aimerais », « je voudrais » + lý do ngắn."],
+  },
+  {
+    ma: "TCF-PO-1", vong: "on", tieuDe: "Oral TCF : études et travail",
+    tinhHuong: "Tâche 1 du TCF : l'examinateur vous pose des questions sur vos études, votre travail et vos compétences. Répondez à chaque question en 3 ou 4 phrases, avec des exemples.",
+    cau: [
+      { giay: 60, prompt: "Quelles études avez-vous faites ?",
+        model: "J'ai fait des études d'économie à l'université de Hanoï pendant quatre ans. Ensuite, j'ai obtenu un master en gestion. Ce que j'ai le plus aimé, ce sont les projets en groupe avec des entreprises réelles. Ils m'ont appris à travailler en équipe." },
+      { giay: 60, prompt: "Pouvez-vous décrire une journée de travail typique ?",
+        model: "J'arrive au bureau vers huit heures et je commence par lire mes courriels. Le matin, j'ai souvent des réunions avec mon équipe. L'après-midi, je prépare des rapports et je parle avec des clients au téléphone. Je finis généralement vers dix-huit heures." },
+      { giay: 60, prompt: "Quelles sont vos qualités principales au travail ?",
+        model: "Je pense que je suis organisée et patiente. Je prépare toujours une liste des tâches pour la journée, et je respecte les délais. Mes collègues disent aussi que je sais écouter. Par contre, je dois apprendre à dire non quand on me demande trop de choses." },
+      { giay: 60, prompt: "Avez-vous déjà travaillé avec des personnes d'autres pays ?",
+        model: "Oui, dans mon entreprise actuelle, l'équipe est très internationale : il y a des Français, des Canadiens et des Marocains. Au début, c'était difficile de comprendre les différentes façons de travailler. Mais c'est très enrichissant, j'apprends beaucoup de choses chaque jour." },
+      { giay: 60, prompt: "Qu'est-ce qui est le plus important pour vous dans un emploi ?",
+        model: "Pour moi, le plus important, c'est l'ambiance entre collègues. Un bon salaire, c'est bien, mais si on n'est pas heureux au travail, on se fatigue vite. J'aime aussi avoir des responsabilités et apprendre de nouvelles choses régulièrement." },
+      { giay: 60, prompt: "Quel métier rêviez-vous de faire quand vous étiez enfant ?",
+        model: "Quand j'étais petite, je voulais être pilote d'avion. Je regardais les avions passer au-dessus de notre maison et je rêvais de voyager partout. Finalement, je suis devenue comptable, mais je voyage beaucoup pendant mes vacances. Le rêve n'est pas complètement perdu !" },
+    ],
+    tu: ["un master : bằng thạc sĩ", "respecter les délais : đúng hạn", "enrichissant (adjectif) : bổ ích", "une responsabilité : trách nhiệm", "rêver de : mơ ước"],
+    meo: ["Câu về phẩm chất: nêu phẩm chất + một ví dụ cụ thể chứng minh.", "Câu về tuổi thơ: imparfait (« je voulais », « je regardais »)."],
+  },
+  {
+    ma: "TCF-PO-1", vong: "chot", tieuDe: "Oral TCF : entretien complet, révision",
+    tinhHuong: "Tâche 1 du TCF : l'examinateur mène un entretien complet de deux minutes. Répondez naturellement, en développant chaque réponse.",
+    cau: [
+      { giay: 60, prompt: "Bonjour. Présentez-vous en quelques mots.",
+        model: "Bonjour. Je m'appelle Minh, j'ai trente-cinq ans et je suis né à Đà Nẵng, au Vietnam. Je suis marié et j'ai deux enfants. Je travaille comme technicien informatique dans une entreprise de logiciels. J'habite à Lyon depuis trois ans." },
+      { giay: 60, prompt: "Pourquoi avez-vous choisi de vivre en France ?",
+        model: "Mon entreprise m'a proposé un poste à Lyon il y a trois ans, et c'était une belle occasion de découvrir un autre pays. Ma femme était aussi intéressée par la culture française. Aujourd'hui, nous nous sentons bien ici, même si notre famille nous manque." },
+      { giay: 60, prompt: "Quelles difficultés avez-vous rencontrées à votre arrivée ?",
+        model: "Au début, la langue était le plus grand obstacle : je comprenais mal les gens qui parlaient vite. Les démarches administratives étaient aussi compliquées, surtout pour trouver un logement. Heureusement, des collègues m'ont beaucoup aidé." },
+      { giay: 60, prompt: "Qu'est-ce qui vous manque de votre pays ?",
+        model: "Ce qui me manque le plus, c'est ma famille, bien sûr, et aussi la nourriture de rue. À Đà Nẵng, on peut manger un bol de soupe délicieux pour presque rien à n'importe quelle heure. Ici, je cuisine moi-même, mais ce n'est pas pareil." },
+      { giay: 60, prompt: "Avez-vous des loisirs ou des passions ?",
+        model: "Je suis passionné de photographie. Le week-end, je me promène avec mon appareil et je prends des photos de la ville, surtout des vieux quartiers. J'ai même participé à une petite exposition l'année dernière avec un club de photographes amateurs." },
+      { giay: 60, prompt: "Comment voyez-vous votre avenir ?",
+        model: "J'espère obtenir la nationalité française dans quelques années, c'est pour cela que je passe le TCF. Professionnellement, j'aimerais devenir chef de projet. Et pour mes enfants, je souhaite qu'ils grandissent en parlant le français et le vietnamien." },
+    ],
+    tu: ["une occasion : cơ hội", "manquer à quelqu'un : (ai) nhớ", "un obstacle : trở ngại", "les démarches administratives : thủ tục hành chính", "passionné de : đam mê"],
+    meo: ["Bài ôn: nói liên tục, mỗi câu khoảng 20 giây; giám khảo thật sẽ hỏi tiếp từ câu bạn vừa nói.", "« X me manque » (tôi nhớ X): chủ ngữ là thứ mình nhớ, dễ nhầm."],
+  },
+
+  /* ═══════════ TCF-PO-2 : Exercice en interaction ═══════════ */
+  {
+    ma: "TCF-PO-2", vong: "hoc", tieuDe: "Oral TCF : organiser un voyage",
+    tinhHuong: T2("vous voulez partir quatre jours en voyage organisé et vous entrez dans une agence de voyages.", "de l'employé de l'agence"),
+    cau: [
+      { giay: 90, prompt: "Saluez, expliquez votre projet, puis posez des questions sur les destinations et les dates possibles.",
+        model: "Bonjour monsieur. Je voudrais partir quatre jours en voyage organisé, en mai, avec mon mari. Quelles destinations est-ce que vous proposez pour cette période ? Est-ce qu'il y a des voyages en Europe, par exemple en Italie ou en Espagne ? Et quelles sont les dates de départ possibles ?" },
+      { giay: 90, prompt: "Posez des questions sur le prix, ce qui est compris (transport, hôtel, repas) et les réductions.",
+        model: "Combien coûte ce voyage par personne ? Est-ce que le vol et l'hôtel sont compris dans le prix ? Et les repas, c'est en demi-pension ou en pension complète ? Est-ce qu'il y a des visites guidées incluses ? Faites-vous une réduction si on réserve deux mois à l'avance ?" },
+      { giay: 90, prompt: "Posez des questions sur les conditions d'annulation et le paiement, puis concluez poliment.",
+        model: "Si nous devons annuler, est-ce que nous serons remboursés ? Jusqu'à quelle date peut-on annuler sans frais ? Est-ce qu'il est possible de payer en plusieurs fois ? Très bien, merci pour toutes ces informations. Je vais en parler avec mon mari et je vous rappelle demain. Au revoir, monsieur." },
+    ],
+    tu: ["un voyage organisé : tour du lịch", "la demi-pension : bao hai bữa", "la pension complète : bao ba bữa", "annuler sans frais : huỷ không mất phí", "payer en plusieurs fois : trả góp"],
+    meo: ["Nhóm câu hỏi theo chủ đề (điểm đến, giá, điều kiện) để không lặp lại.", "Câu hỏi « Est-ce que… compris ? » rất hữu ích khi hỏi giá."],
+  },
+  {
+    ma: "TCF-PO-2", vong: "on", tieuDe: "Oral TCF : s'inscrire à l'université",
+    tinhHuong: T2("vous voulez vous inscrire à un cours de français à l'université pour adultes. Vous allez au bureau des inscriptions.", "de la secrétaire"),
+    cau: [
+      { giay: 90, prompt: "Présentez-vous et posez des questions sur les niveaux et le contenu des cours.",
+        model: "Bonjour madame. Je m'appelle Lan et je voudrais m'inscrire à un cours de français pour adultes. Quels niveaux proposez-vous ? Est-ce qu'il faut passer un test avant de s'inscrire ? Et dans les cours, on travaille surtout l'oral ou aussi l'écrit ? Est-ce qu'il y a une préparation au TCF ?" },
+      { giay: 90, prompt: "Posez des questions sur les horaires, la durée et le nombre d'étudiants par classe.",
+        model: "Les cours ont lieu à quels moments de la semaine ? Je travaille la journée : est-ce qu'il y a des cours le soir ou le samedi ? Combien d'heures par semaine faut-il compter ? La session dure combien de temps ? Et combien d'étudiants y a-t-il dans chaque groupe ?" },
+      { giay: 90, prompt: "Posez des questions sur le prix, les aides possibles et les documents à fournir, puis remerciez.",
+        model: "Quel est le prix de la session ? Est-ce qu'il existe des aides ou des réductions pour les demandeurs d'emploi ? Quels documents dois-je apporter pour l'inscription ? Une pièce d'identité suffit, ou faut-il aussi un justificatif de domicile ? Parfait, merci beaucoup, madame. Je reviens lundi avec mon dossier." },
+    ],
+    tu: ["un test de niveau : bài kiểm tra trình độ", "une session : khoá học, đợt", "un demandeur d'emploi : người tìm việc", "un justificatif de domicile : giấy tờ chứng minh nơi ở", "un dossier : hồ sơ"],
+    meo: ["Nói hoàn cảnh của mình (« Je travaille la journée ») trước khi hỏi giúp câu hỏi tự nhiên.", "Cuối mỗi lượt có thể hỏi thêm một câu tiếp nối từ câu trả lời của giám khảo."],
+  },
+  {
+    ma: "TCF-PO-2", vong: "on", tieuDe: "Oral TCF : adopter un animal",
+    tinhHuong: T2("vous voulez adopter un chien dans un refuge pour animaux.", "du bénévole du refuge"),
+    cau: [
+      { giay: 90, prompt: "Saluez, présentez votre situation, puis posez des questions sur les chiens disponibles.",
+        model: "Bonjour. J'aimerais adopter un chien. J'habite dans un appartement avec un petit balcon, et je travaille à mi-temps. Quels chiens avez-vous en ce moment ? Est-ce qu'il y a des chiens de petite taille, calmes, qui s'entendent bien avec les enfants ? Quel âge ont-ils ?" },
+      { giay: 90, prompt: "Posez des questions sur la santé, le caractère et les besoins du chien choisi.",
+        model: "Ce chien est-il en bonne santé ? Est-ce qu'il est vacciné et identifié ? Quel est son caractère : il aboie beaucoup ? Est-ce qu'il supporte de rester seul quelques heures ? Combien de promenades faut-il prévoir par jour ? Et qu'est-ce qu'il mange ?" },
+      { giay: 90, prompt: "Posez des questions sur la procédure d'adoption et le coût, puis concluez.",
+        model: "Comment se passe l'adoption ? Faut-il remplir un dossier ou avoir un entretien ? Est-ce qu'il y a des frais d'adoption ? Si cela se passe mal, est-ce qu'on peut vous le ramener ? Merci beaucoup pour vos explications. Est-ce que je peux revenir samedi avec ma fille pour le rencontrer ? Au revoir !" },
+    ],
+    tu: ["un refuge : trại cứu hộ", "à mi-temps : bán thời gian", "vacciné (adjectif) : đã tiêm phòng", "aboyer (verbe) : sủa", "les frais d'adoption : phí nhận nuôi"],
+    meo: ["Đặt câu hỏi phù hợp hoàn cảnh mình đã nêu (căn hộ nhỏ → chó nhỏ, ở một mình được không).", "Đa dạng câu hỏi: đảo ngữ (« Est-il vacciné ? »), « Est-ce que », từ để hỏi."],
+  },
+  {
+    ma: "TCF-PO-2", vong: "chot", tieuDe: "Oral TCF : réparer son téléphone",
+    tinhHuong: T2("l'écran de votre téléphone est cassé. Vous entrez dans un magasin de réparation.", "du réparateur"),
+    cau: [
+      { giay: 90, prompt: "Expliquez le problème et posez des questions sur la réparation possible et sa durée.",
+        model: "Bonjour. Mon téléphone est tombé hier et l'écran est cassé. Le tactile fonctionne encore un peu, mais on voit mal. Est-ce que vous pouvez le réparer ? Vous avez la pièce en stock pour ce modèle ? Combien de temps dure la réparation ? Je peux attendre sur place ?" },
+      { giay: 90, prompt: "Posez des questions sur le prix, la garantie et la qualité des pièces.",
+        model: "Combien coûte le changement d'écran ? Est-ce que c'est une pièce d'origine ou une pièce compatible ? Y a-t-il une différence de prix entre les deux ? La réparation est-elle garantie ? Pendant combien de temps ? Et si le problème revient, je dois payer à nouveau ?" },
+      { giay: 90, prompt: "Posez des questions sur vos données personnelles et le paiement, puis prenez une décision et concluez.",
+        model: "Est-ce que je risque de perdre mes photos et mes contacts pendant la réparation ? Dois-je vous donner mon code ? Est-ce que je peux payer par carte ? D'accord, je choisis la pièce d'origine avec la garantie d'un an. Je reviens le chercher à dix-sept heures. Merci beaucoup !" },
+    ],
+    tu: ["un écran cassé : màn hình vỡ", "le tactile : cảm ứng", "une pièce d'origine : linh kiện chính hãng", "une garantie : bảo hành", "les données personnelles : dữ liệu cá nhân"],
+    meo: ["Kết lượt cuối bằng một QUYẾT ĐỊNH (« je choisis… ») cho thấy bạn đã dùng thông tin nhận được.", "Tâche 2 chấm sự phong phú câu hỏi: tránh lặp « Est-ce que » liên tục."],
+  },
+
+  /* ═══════════ TCF-PO-3 : Expression d'un point de vue ═══════════ */
+  {
+    ma: "TCF-PO-3", vong: "hoc", tieuDe: "Oral TCF : l'uniforme scolaire",
+    tinhHuong: T3("L'uniforme devrait-il être obligatoire à l'école ?"),
+    cau: [
+      { giay: 90, prompt: "Présentez le sujet, donnez clairement votre position et un premier argument.",
+        model: "La question de l'uniforme à l'école revient régulièrement en débat. Pour ma part, je suis plutôt favorable à l'uniforme. Mon premier argument, c'est l'égalité : quand tout le monde porte la même tenue, on ne juge plus les élèves sur les marques de leurs vêtements, et les familles modestes ne se sentent pas exclues." },
+      { giay: 90, prompt: "Donnez un deuxième argument, avec un exemple concret.",
+        model: "Ensuite, l'uniforme crée un sentiment d'appartenance. Par exemple, au Vietnam, j'ai porté l'uniforme pendant toute ma scolarité. Nous étions fiers de représenter notre école lors des compétitions. Et le matin, je ne perdais pas de temps à choisir mes vêtements, je pouvais me concentrer sur mes cours." },
+      { giay: 90, prompt: "L'examinateur réagit : « Mais les adolescents ont besoin d'exprimer leur personnalité. » Répondez, puis concluez.",
+        model: "C'est vrai, l'adolescence est une période où l'on construit son identité. Mais la personnalité ne se limite pas aux vêtements : elle s'exprime par les idées, les activités, les amitiés. Et en dehors de l'école, chacun reste libre de s'habiller comme il veut. En conclusion, je pense que l'uniforme apporte plus d'avantages que d'inconvénients, à condition qu'il soit simple et peu cher." },
+    ],
+    tu: ["une tenue : trang phục", "exclu (adjectif) : bị loại ra ngoài", "un sentiment d'appartenance : cảm giác thuộc về", "la scolarité : thời đi học", "un inconvénient : bất lợi"],
+    meo: ["Đáp phản bác: thừa nhận (« C'est vrai ») → giới hạn (« Mais… ne se limite pas à… ») → kết.", "Kết luận có điều kiện (« à condition que… ») cho thấy lập luận cân nhắc."],
+  },
+  {
+    ma: "TCF-PO-3", vong: "on", tieuDe: "Oral TCF : vivre en ville ou à la campagne",
+    tinhHuong: T3("Vaut-il mieux vivre en ville ou à la campagne ?"),
+    cau: [
+      { giay: 90, prompt: "Présentez le sujet, donnez clairement votre position et un premier argument.",
+        model: "Beaucoup de gens se demandent aujourd'hui s'il vaut mieux vivre en ville ou à la campagne. Personnellement, je préfère la ville, du moins à cette période de ma vie. Mon premier argument, c'est l'accès aux services : en ville, on trouve facilement un hôpital, des écoles, des transports et des offres d'emploi variées." },
+      { giay: 90, prompt: "Donnez un deuxième argument, avec un exemple concret.",
+        model: "Ensuite, la ville offre une vie culturelle très riche. Par exemple, à Lyon, je peux aller au cinéma, au théâtre ou à un concert plusieurs fois par mois, souvent à pied. Mes cousins qui vivent à la campagne doivent faire une heure de voiture pour voir un spectacle, alors ils sortent rarement." },
+      { giay: 90, prompt: "L'examinateur réagit : « Mais en ville, il y a la pollution, le bruit et le stress. » Répondez, puis concluez.",
+        model: "Je suis d'accord, ce sont de vrais inconvénients. C'est pourquoi j'essaie de compenser : je vais dans les parcs, je fais du vélo, et je pars à la campagne le week-end quand je peux. Je pense aussi qu'après la retraite, je choisirai peut-être une vie plus calme. En conclusion, le meilleur choix dépend de l'âge et des besoins de chacun, mais pour une personne active, la ville reste plus pratique." },
+    ],
+    tu: ["l'accès aux services : khả năng tiếp cận dịch vụ", "une offre d'emploi : cơ hội việc làm", "compenser (verbe) : bù lại", "la retraite : nghỉ hưu", "une personne active : người đang đi làm"],
+    meo: ["« du moins à cette période de ma vie » giúp ý kiến tinh tế, không tuyệt đối.", "Nói cách mình bù lại điểm yếu (« j'essaie de compenser ») là câu trả lời phản bác hay."],
+  },
+  {
+    ma: "TCF-PO-3", vong: "on", tieuDe: "Oral TCF : apprendre avec l'intelligence artificielle",
+    tinhHuong: T3("Les élèves devraient-ils pouvoir utiliser l'intelligence artificielle pour faire leurs devoirs ?"),
+    cau: [
+      { giay: 90, prompt: "Présentez le sujet, donnez clairement votre position et un premier argument.",
+        model: "Avec l'arrivée des outils d'intelligence artificielle, beaucoup d'élèves les utilisent pour leurs devoirs. Faut-il l'autoriser ? À mon avis, oui, mais avec des règles. Mon premier argument, c'est que ces outils peuvent expliquer une notion difficile de plusieurs façons, comme un professeur particulier disponible à toute heure." },
+      { giay: 90, prompt: "Donnez un deuxième argument, avec un exemple concret.",
+        model: "Ensuite, les élèves vont utiliser ces outils dans leur futur travail, donc il vaut mieux leur apprendre à s'en servir intelligemment. Par exemple, mon neveu utilise une application pour vérifier ses exercices de mathématiques. Quand il se trompe, l'outil ne donne pas la réponse, il l'aide à trouver son erreur. Il a beaucoup progressé." },
+      { giay: 90, prompt: "L'examinateur réagit : « Mais certains élèves vont simplement copier les réponses sans réfléchir. » Répondez, puis concluez.",
+        model: "C'est un vrai risque, je le reconnais. C'est pour cela que les professeurs doivent changer leur façon d'évaluer : plus d'exercices en classe, plus d'oral, où l'élève doit expliquer son raisonnement. Copier ne sert à rien si l'on doit ensuite justifier sa réponse. En conclusion, interdire ces outils serait inutile ; il vaut mieux apprendre aux élèves à les utiliser comme une aide, et non comme une béquille." },
+    ],
+    tu: ["une notion : khái niệm", "un professeur particulier : gia sư", "évaluer (verbe) : đánh giá", "le raisonnement : lập luận", "une béquille : cái nạng (chỗ dựa)"],
+    meo: ["Ý kiến « oui, mais avec des règles » cho phép bạn trả lời phản bác dễ dàng.", "Đề xuất giải pháp (thay cách đánh giá) mạnh hơn chỉ phủ nhận phản bác."],
+  },
+  {
+    ma: "TCF-PO-3", vong: "chot", tieuDe: "Oral TCF : le bénévolat obligatoire ?",
+    tinhHuong: T3("Faut-il rendre le bénévolat obligatoire pour les jeunes ?"),
+    cau: [
+      { giay: 90, prompt: "Présentez le sujet, donnez clairement votre position et un premier argument.",
+        model: "Certains proposent d'obliger les jeunes à faire quelques semaines de bénévolat, par exemple dans une association. Je suis plutôt contre l'obligation, même si j'apprécie beaucoup le bénévolat. Mon premier argument, c'est que le bénévolat repose sur la volonté : si on l'impose, il perd son sens et devient une simple corvée." },
+      { giay: 90, prompt: "Donnez un deuxième argument, avec un exemple concret.",
+        model: "Ensuite, les associations ont besoin de personnes motivées. Par exemple, ma sœur est responsable dans une association d'aide aux devoirs. Elle m'a raconté qu'un lycéen envoyé par son école arrivait toujours en retard et regardait son téléphone. Il ne voulait pas être là, et les enfants le sentaient. Un bénévole forcé peut faire plus de mal que de bien." },
+      { giay: 90, prompt: "L'examinateur réagit : « Mais sans obligation, beaucoup de jeunes ne découvriront jamais le bénévolat. » Répondez, puis concluez.",
+        model: "C'est un argument juste : beaucoup de jeunes ne connaissent pas les associations. Mais la solution, c'est de faire découvrir, pas d'obliger. L'école pourrait organiser des rencontres avec des associations, ou proposer une journée de découverte. Ceux qui aiment continueront d'eux-mêmes. En conclusion, je préfère encourager l'engagement plutôt que de l'imposer, car un engagement choisi dure plus longtemps." },
+    ],
+    tu: ["le bénévolat : công việc tình nguyện", "la volonté : ý chí, sự tự nguyện", "une corvée : việc vặt bắt buộc", "forcé (adjectif) : bị ép buộc", "l'engagement (nom masculin) : sự dấn thân"],
+    meo: ["Đứng phía phản đối vẫn nên tỏ ra hiểu giá trị của vấn đề (« même si j'apprécie… »).", "Câu kết hay đối lập hai động từ: « encourager plutôt que imposer »."],
+  },
+];
