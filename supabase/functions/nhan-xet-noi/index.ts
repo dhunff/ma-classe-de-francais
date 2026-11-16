@@ -141,7 +141,9 @@ Deno.serve(async (req) => {
   if (doMoc && gonChu(chepLoi).includes(gonChu(GOI_Y_CHEP_TU_DEM))) {
     return json(422, { ok: false, ma: "KHONG_NGHE_RO", thong_bao: "Không nghe được lời nói nào trong bản ghi." });
   }
-  const troiChay: any = doMoc ? doTroiChay(banChep?.words, ex?.level) : { du_lieu: false };
+  /* Bài luyện TCF (16/11, lô 53): TCF không chia trình độ trước khi thi, nên đo trôi chảy theo mốc B1 như cham-tcf. */
+  const laTcf = ["TCF", "TCF_TP"].includes(String(ex?.level ?? ""));
+  const troiChay: any = doMoc ? doTroiChay(banChep?.words, laTcf ? "B1" : ex?.level) : { du_lieu: false };
   if (chepLoi.length < (cau ? 2 : 5)) return json(422, { ok: false, ma: "KHONG_NGHE_RO", thong_bao: "Không nghe được lời nói nào trong bản ghi." });
 
   if (docTheo) {
@@ -158,8 +160,14 @@ Deno.serve(async (req) => {
   // 2. Nhận xét
   const model = Deno.env.get("PE_AI_MODEL") || MODEL_CHU;
   const heThong = [
-    "Bạn là giáo viên luyện thi DELF, nhận xét phần Production orale của học viên.",
-    `Trình độ đề: ${ex?.level ?? "B1"}.`,
+    ...(laTcf ? [
+      "Bạn là giáo viên luyện thi TCF (France Éducation international), nhận xét phần Expression orale của học viên.",
+      "Đề luyện thi TCF: thí sinh không thi theo một trình độ cố định. Chấm theo mức độ hoàn thành yêu cầu của câu (đòi hỏi tương đương B1, B2), và trong tong_quat ƯỚC LƯỢNG mức CECRL (A2, B1, B2 hoặc C1) mà câu trả lời thể hiện, nói rõ đó là ước lượng.",
+      "Tiêu chí TCF: từ vựng, ngữ pháp, độ trôi chảy, cách tổ chức và phát triển ý, phù hợp tình huống (với câu đóng vai: đặt câu hỏi đúng, lịch sự, đủ thông tin cần hỏi).",
+    ] : [
+      "Bạn là giáo viên luyện thi DELF, nhận xét phần Production orale của học viên.",
+      `Trình độ đề: ${ex?.level ?? "B1"}.`,
+    ]),
     "Bạn chỉ có BẢN CHÉP LỜI do máy tạo ra, không nghe được giọng. Vì vậy:",
     ...(cau ? [
       "- Đây là MỘT câu luyện tập. Cho điểm nguyên từ 0 đến 10 vào trường diem, theo thang:",

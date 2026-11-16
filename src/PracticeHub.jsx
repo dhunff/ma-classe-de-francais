@@ -1617,7 +1617,7 @@ export function PracticeWorkspace({ ex, back, onFinish, soTu = false, chamBang =
                     <Volume2 size={16} /> {tr("Nghe câu mẫu", "Écouter le modèle", "Listen to the model")}
                   </button>
                 )}
-                <GhiAmBaiNoi key={luotLai} gon mau={dam} exerciseId={ex.id} cauId={q.id} gioiHanGiay={120} tuLuc={luotLai} khoa={!!graded} onDiem={baoDiem} />
+                <GhiAmBaiNoi key={luotLai} gon mau={dam} exerciseId={ex.id} cauId={q.id} gioiHanGiay={q.giay > 0 ? Math.min(q.giay, 300) : 120} tuLuc={luotLai} khoa={!!graded} onDiem={baoDiem} />
               </div>
             ) : <>
               {!graded && banTruoc[q.id] && <GoiYVietLai banTruoc={banTruoc[q.id]} />}
