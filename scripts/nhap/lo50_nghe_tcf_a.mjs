@@ -1,0 +1,113 @@
+/* Lô 50 (16/11/2026), phần A: NỘI DUNG bài Nghe TCF cho cây Luyện thi TCF (kyNangTCF.js), TCF-CO-1 và
+ * TCF-CO-2. Khuôn câu theo đề TCF (lo44_tcf_chung.mjs): mỗi câu một tài liệu riêng, nghe MỘT lần, 4 lựa chọn.
+ *   dap(noi, loi, dung, giai): nghe một câu nói rồi 4 lời đáp đọc to, lựa chọn KHÔNG in (ô chỉ ghi A, B, C, D).
+ *   hoi(taiLieu, cauHoi, dung, sai, giai): nghe tài liệu + câu hỏi đọc to, 4 lựa chọn in sẵn (đúng viết đầu).
+ * Toàn bộ do FRACILE soạn: người, nơi, số liệu là hư cấu cho luyện tập. Không dùng dấu gạch dài.
+ * Lời giải tiếng Việt; đoạn trích trong « » phải có nguyên văn trong lời nghe (máy dựng kiểm).
+ * Máy dựng: lo50_nghe_tcf.mjs. */
+
+export const phanA = ({ d, dap, hoi, DT, AN, RA, QC }) => [
+  /* ═══════════ TCF-CO-1 : Hội thoại, tin nhắn đời thường (A1, A2) ═══════════ */
+  {
+    ma: "TCF-CO-1", vong: "hoc", tieuDe: "Écoute TCF : petites phrases du quotidien", tep: "tcf-luyen-co1-1",
+    cau: [
+      dap([d("nova", DT, "Bonjour, je voudrais un croissant, s'il vous plaît.")],
+        ["Oui, il fait beau aujourd'hui.", "Voilà, ça fait un euro vingt.", "Je m'appelle Paul.", "Le métro est à droite."], 1,
+        "Người khách mua bánh, lời đáp hợp lý là người bán đưa bánh và báo giá."),
+      dap([d("echo", DT, "Tu as quel âge ?")],
+        ["J'habite à Lyon.", "Il est midi.", "J'ai vingt-trois ans.", "Je suis étudiant."], 2,
+        "Câu hỏi « Tu as quel âge ? » hỏi tuổi, nên đáp bằng « J'ai … ans »."),
+      dap([d("shimmer", DT, "On se retrouve à quelle heure devant le cinéma ?")],
+        ["Vers dix-neuf heures, ça te va ?", "Le film est très long.", "J'aime les films français.", "Oui, j'ai deux billets."], 0,
+        "Câu hỏi « à quelle heure » cần một giờ hẹn."),
+      hoi([d("onyx", DT, "Salut Léa, c'est Thomas. Je suis malade, je ne peux pas venir au cours de piano demain. Tu peux prévenir le professeur ? Merci !")],
+        "Pourquoi Thomas appelle-t-il Léa ?", "Il ne peut pas aller au cours.", ["Il veut apprendre le piano.", "Il a perdu son téléphone.", "Il invite Léa au concert."],
+        "Thomas nói « je ne peux pas venir au cours de piano demain » vì bị ốm."),
+      hoi([d("coral", AN, "Mesdames et messieurs, le train pour Bordeaux partira du quai numéro sept. Départ prévu à quatorze heures dix.")],
+        "De quel quai part le train ?", "Du quai sept.", ["Du quai dix.", "Du quai quatorze.", "Du quai deux."],
+        "Thông báo nói « du quai numéro sept ». Số 14 và 10 là giờ khởi hành, không phải số sân ga."),
+      hoi([d("ash", DT + QC, "Allô, Marie ? C'est maman. J'arrive chez toi samedi matin, pas vendredi soir. Ma voiture est au garage.")],
+        "Quand la mère arrive-t-elle ?", "Samedi matin.", ["Vendredi soir.", "Samedi soir.", "Vendredi matin."],
+        "Bà mẹ đổi lịch: « J'arrive chez toi samedi matin, pas vendredi soir »."),
+    ],
+    tu: ["prévenir (verbe) : báo trước", "le quai (nom masculin) : sân ga", "être malade : bị ốm", "un billet (nom masculin) : vé"],
+    meo: ["Câu chỉ nghe (ô ghi A, B, C, D): nghe từ hỏi đầu câu (quel âge, à quelle heure, où) rồi chờ lời đáp trả lời đúng từ hỏi đó.", "Tin nhắn thoại hay có một chi tiết bị sửa lại (« samedi, pas vendredi »): thông tin sau chữ « pas » là thông tin bị bỏ."],
+  },
+  {
+    ma: "TCF-CO-1", vong: "on", tieuDe: "Écoute TCF : messages et rendez-vous", tep: "tcf-luyen-co1-2",
+    cau: [
+      dap([d("fable", DT, "Excusez-moi, où sont les toilettes ?")],
+        ["Au fond du couloir, à gauche.", "Elles sont propres.", "À huit heures.", "Non merci, ça va."], 0,
+        "Câu hỏi « où » hỏi nơi chốn: « Au fond du couloir, à gauche »."),
+      dap([d("nova", DT, "Vous payez comment, madame ?")],
+        ["Deux kilos de pommes.", "Je viens de Montréal.", "Demain, je pense.", "Par carte, s'il vous plaît."], 3,
+        "Người bán hỏi cách trả tiền (« comment »), lời đáp hợp lý là « Par carte »."),
+      dap([d("echo", DT, "Je suis désolé, je suis en retard.")],
+        ["Ce n'est pas grave, entre.", "Oui, il est en retard.", "Le bus est rouge.", "J'ai faim."], 0,
+        "Đáp lại một lời xin lỗi: « Ce n'est pas grave »."),
+      hoi([d("shimmer", DT, "Bonjour, ici le cabinet du docteur Martin. Votre rendez-vous de mardi est déplacé à jeudi, même heure, dix heures trente. Merci de rappeler pour confirmer.")],
+        "Quel est le nouveau jour du rendez-vous ?", "Jeudi.", ["Mardi.", "Mercredi.", "Lundi."],
+        "Lịch hẹn « de mardi est déplacé à jeudi », giờ giữ nguyên."),
+      hoi([d("onyx", AN, "Bienvenue au supermarché Prixdoux. Aujourd'hui, toutes les fraises sont à moitié prix au rayon fruits et légumes.")],
+        "Qu'est-ce qui est moins cher aujourd'hui ?", "Les fraises.", ["Les légumes verts.", "Le pain.", "Les boissons."],
+        "Thông báo nói « toutes les fraises sont à moitié prix »: dâu tây giảm nửa giá."),
+      hoi([d("coral", DT + QC, "Salut Karim ! On fait un pique-nique au parc dimanche. Apporte des boissons, moi je m'occupe des sandwichs. À dimanche !")],
+        "Que doit apporter Karim ?", "Des boissons.", ["Des sandwichs.", "Une couverture.", "Un gâteau."],
+        "Người nói dặn « Apporte des boissons », còn bánh mì kẹp thì « moi je m'occupe des sandwichs »."),
+    ],
+    tu: ["déplacer un rendez-vous : dời lịch hẹn", "à moitié prix : giảm nửa giá", "le rayon (nom masculin) : quầy hàng", "s'occuper de (verbe) : lo việc gì"],
+    meo: ["Đọc câu hỏi và bốn lựa chọn TRƯỚC khi bấm nghe: biết trước mình cần nghe một ngày, một món hay một nơi.", "Khi tin nhắn nhắc hai người (« apporte… », « moi je… »), để ý ai làm việc gì."],
+  },
+
+  /* ═══════════ TCF-CO-2 : Thông báo, trao đổi nơi công cộng và công việc (B1) ═══════════ */
+  {
+    ma: "TCF-CO-2", vong: "hoc", tieuDe: "Écoute TCF : annonces et lieux publics", tep: "tcf-luyen-co2-1",
+    cau: [
+      hoi([d("fable", AN, "En raison de travaux sur la ligne, aucun métro ne circulera entre les stations Berri et Jean-Talon ce week-end. Des autobus remplaceront le service toutes les dix minutes.")],
+        "Que propose la société de transport ?", "Des autobus à la place du métro.", ["Des billets gratuits pour le week-end.", "Des taxis à prix réduit.", "Un métro toutes les dix minutes."],
+        "Thông báo nói « Des autobus remplaceront le service »: xe buýt thay tàu điện ngầm."),
+      hoi([d("coral", AN, "Chers visiteurs, la bibliothèque fermera ses portes dans quinze minutes. Les personnes qui souhaitent emprunter des livres sont priées de se présenter dès maintenant à l'accueil.")],
+        "Que doivent faire les personnes qui veulent emprunter un livre ?", "Aller tout de suite à l'accueil.", ["Revenir le lendemain matin.", "Utiliser les machines automatiques.", "Attendre quinze minutes."],
+        "Người muốn mượn sách được mời « se présenter dès maintenant à l'accueil »."),
+      hoi([d("onyx", DT, "Bon, pour la réunion de lundi, je propose qu'on la fasse en visio. La moitié de l'équipe est en déplacement et la salle de conférence est réservée."), d("shimmer", DT, "D'accord, j'envoie le lien à tout le monde ce soir.")],
+        "Pourquoi la réunion se fera-t-elle à distance ?", "Beaucoup de collègues ne sont pas au bureau.", ["Le directeur est malade.", "La connexion internet est meilleure.", "Les employés préfèrent travailler chez eux."],
+        "Người nói giải thích « La moitié de l'équipe est en déplacement »: nửa nhóm đang đi công tác."),
+      hoi([d("echo", DT, "Bonjour, j'ai acheté ce grille-pain la semaine dernière, mais il ne marche plus. J'aimerais être remboursé."), d("nova", DT, "Je suis désolée, nous ne remboursons pas, mais je peux vous l'échanger contre un appareil neuf.")],
+        "Que propose la vendeuse ?", "Un échange contre un appareil neuf.", ["Un remboursement complet.", "Une réparation gratuite.", "Un bon d'achat."],
+        "Người bán nói « nous ne remboursons pas, mais je peux vous l'échanger »."),
+      hoi([d("ash", RA + QC, "Bonne nouvelle pour les cyclistes : la ville ouvrira trois nouvelles pistes cyclables au printemps. Elles relieront le centre-ville aux quartiers du nord, où les habitants demandaient ces aménagements depuis plusieurs années.")],
+        "Qu'apprend-on sur les nouvelles pistes cyclables ?", "Les habitants les attendaient depuis longtemps.", ["Elles seront ouvertes cet hiver.", "Elles traverseront les quartiers du sud.", "Elles remplaceront une ligne d'autobus."],
+        "Bản tin nói người dân « demandaient ces aménagements depuis plusieurs années »."),
+      hoi([d("shimmer", DT, "Tu as vu ? Le cours de cuisine du jeudi passe au mardi à partir du mois prochain."), d("onyx", DT, "Ah zut, le mardi je travaille tard. Je vais devoir m'inscrire au cours du samedi.")],
+        "Que va faire l'homme ?", "Changer de cours pour le samedi.", ["Arrêter les cours de cuisine.", "Demander à finir plus tôt le mardi.", "Garder le cours du jeudi."],
+        "Anh ấy nói « Je vais devoir m'inscrire au cours du samedi » vì thứ Ba làm muộn."),
+    ],
+    tu: ["en raison de : do, vì", "emprunter (verbe) : mượn", "être en déplacement : đi công tác", "rembourser (verbe) : hoàn tiền", "une piste cyclable : làn xe đạp"],
+    meo: ["Thông báo B1 hay nêu nguyên nhân trước (« En raison de… ») rồi mới tới giải pháp: câu hỏi thường hỏi giải pháp.", "Trong hội thoại, câu hỏi hay rơi vào lời của người thứ hai (lời đáp, lời từ chối, lời đề nghị)."],
+  },
+  {
+    ma: "TCF-CO-2", vong: "on", tieuDe: "Écoute TCF : au travail et au service client", tep: "tcf-luyen-co2-2",
+    cau: [
+      hoi([d("nova", AN, "Votre attention, s'il vous plaît. Le vol AF 342 à destination de Montréal est retardé d'environ deux heures en raison des conditions météo. Les passagers peuvent retirer un bon repas au comptoir de la compagnie.")],
+        "Que peuvent faire les passagers ?", "Obtenir un repas offert.", ["Changer de vol sans frais.", "Monter dans l'avion tout de suite.", "Récupérer leurs bagages."],
+        "Hành khách có thể « retirer un bon repas »: nhận phiếu ăn miễn phí."),
+      hoi([d("onyx", DT, "Madame Diallo, j'ai lu votre rapport. Il est très clair, mais il manque les chiffres du dernier trimestre."), d("shimmer", DT, "Oui, le service comptable ne me les a pas encore envoyés. Je les ajoute dès que je les reçois.")],
+        "Pourquoi le rapport est-il incomplet ?", "Un autre service n'a pas encore transmis les chiffres.", ["Madame Diallo a manqué de temps.", "Le directeur a perdu une partie du rapport.", "Les chiffres étaient faux."],
+        "Bà Diallo giải thích « le service comptable ne me les a pas encore envoyés »."),
+      hoi([d("fable", DT, "Service client, bonjour. Que puis-je faire pour vous ?"), d("echo", DT, "Bonjour, ma commande devait arriver lundi et je n'ai toujours rien reçu. On est jeudi !")],
+        "Pourquoi le client appelle-t-il ?", "Sa commande n'est pas arrivée.", ["Il veut annuler sa commande.", "Il a reçu le mauvais produit.", "Il souhaite changer d'adresse."],
+        "Khách nói « je n'ai toujours rien reçu »: hàng chưa tới."),
+      hoi([d("coral", AN + QC, "La piscine municipale sera fermée du premier au quinze août pour le nettoyage annuel. Pendant cette période, les abonnés pourront utiliser gratuitement la piscine du centre sportif Laval.")],
+        "Que pourront faire les abonnés en août ?", "Nager gratuitement dans une autre piscine.", ["Obtenir un remboursement.", "Se baigner seulement le matin.", "Prolonger leur abonnement."],
+        "Người có thẻ « pourront utiliser gratuitement la piscine du centre sportif Laval »."),
+      hoi([d("ash", DT, "Alors, ce nouveau poste, ça te plaît ?"), d("nova", DT, "Le travail est intéressant, mais je passe presque deux heures par jour dans les transports. Je commence à chercher un appartement plus près du bureau.")],
+        "Quel est le problème de la femme ?", "Le trajet jusqu'au travail est trop long.", ["Son travail ne l'intéresse pas.", "Son salaire est trop bas.", "Elle ne s'entend pas avec ses collègues."],
+        "Cô ấy nói « je passe presque deux heures par jour dans les transports »."),
+      hoi([d("echo", RA, "Selon une enquête menée auprès de mille salariés, sept sur dix aimeraient travailler quatre jours par semaine, même avec des journées plus longues. Les plus jeunes sont les plus favorables à ce changement.")],
+        "Que révèle l'enquête ?", "La majorité des salariés aimerait une semaine de quatre jours.", ["Les salariés veulent des journées plus courtes.", "Les jeunes refusent la semaine de quatre jours.", "Mille entreprises ont changé leurs horaires."],
+        "Khảo sát cho biết « sept sur dix aimeraient travailler quatre jours par semaine »."),
+    ],
+    tu: ["retardé (adjectif) : bị hoãn", "le trimestre (nom masculin) : quý (ba tháng)", "une commande (nom féminin) : đơn hàng", "un abonné (nom masculin) : người có thẻ, thuê bao", "le trajet (nom masculin) : quãng đường đi"],
+    meo: ["Câu hỏi « Pourquoi… ? » thường có đáp án nằm sau « parce que », « en raison de » hoặc trong lời giải thích của người thứ hai.", "Lựa chọn sai hay dùng đúng một từ có trong audio (remboursement, abonnement) nhưng sai ý: so cả ý, đừng so từ."],
+  },
+];

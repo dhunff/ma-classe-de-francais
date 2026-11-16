@@ -48,6 +48,7 @@ import { Lock } from "lucide-react";
 import { anhMacDinh } from "./shared/anhMacDinh.js";
 import { choTrong } from "./shared/choTrong.jsx";
 import OTraLoi from "./screens/practice/OTraLoi.jsx";
+import NgheMotLan from "./screens/practice/NgheMotLan.jsx";
 import { LuyenTheoCap, ChiTietKyNho, MeoKyNho, ManKhoaThuTu } from "./screens/practice/LuyenTheoCap.jsx";
 import ThanhTuu from "./screens/practice/ThanhTuu.jsx";
 import { capMacDinh, duongKyLon, timKyNho, kyNhoCuaBai, khoaThuTu, gopDiemNoi, baiTiepTheo, NGUONG_F } from "./shared/tienTrinhLuyenTap.js";
@@ -1482,6 +1483,8 @@ export function PracticeWorkspace({ ex, back, onFinish, soTu = false, chamBang =
           <p className="m-0 min-w-0 flex-1 self-center text-base font-bold leading-snug text-ink">{choTrong(q.prompt)}</p>
           <span className="shrink-0 pt-1 text-xs font-semibold text-soft">{laNoi && q.type === "open" ? tr("Nói", "À l'oral", "Speak") : QTYPES[q.type]}</span>
         </div>
+        {/* 16/11 (Luyện thi TCF): câu có đoạn nghe riêng (`q.audio`), nghe một lần như đề TCF. */}
+        {q.audio && <div className="mb-3"><NgheMotLan src={q.audio} moLai={!!graded} mau={dam} /></div>}
 
         {q.type === "qcm" ? (
           <div style={oNgan ? { display: "grid", gap: 8, gridTemplateColumns: `repeat(${q.options.length === 4 ? 2 : q.options.length}, minmax(0, 1fr))` } : { display: "grid", gap: 6 }}>
@@ -1522,7 +1525,7 @@ export function PracticeWorkspace({ ex, back, onFinish, soTu = false, chamBang =
                        nên ô họ chọn bị gạch cả khi làm đúng — chữ gạch ngang
                        trên một ô đang tô xanh đọc ra hai nghĩa trái nhau. */
                     textDecoration: graded && j === a && !isGood(q) ? "line-through" : "none" }}>
-                  <span className={"grid h-6 w-6 shrink-0 place-items-center rounded-md text-[11px] font-extrabold " + (j === a ? (graded ? (isGood(q) ? "bg-ok text-white" : "bg-danger text-white") : "bg-white/25 text-white") : "bg-surface text-soft")}>{String.fromCharCode(65 + j)}</span> <AnhLuaChon q={q} j={j} /> {o}<span style={oNgan ? { position: "absolute", top: "50%", right: 6, transform: "translateY(-50%)" } : { marginLeft: "auto" }}>{icon}</span>
+                  <span className={"grid h-6 w-6 shrink-0 place-items-center rounded-md text-[11px] font-extrabold " + (j === a ? (graded ? (isGood(q) ? "bg-ok text-white" : "bg-danger text-white") : "bg-white/25 text-white") : "bg-surface text-soft")}>{String.fromCharCode(65 + j)}</span> <AnhLuaChon q={q} j={j} /> {o === String.fromCharCode(65 + j) ? null : o}<span style={oNgan ? { position: "absolute", top: "50%", right: 6, transform: "translateY(-50%)" } : { marginLeft: "auto" }}>{icon}</span>
                 </button>
               );
             })}

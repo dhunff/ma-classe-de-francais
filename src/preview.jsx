@@ -842,6 +842,15 @@ const BAI_THU = {
     { id: "c8", type: "open", prompt: "Écrivez votre message.", model: "Salut Thomas ! Samedi, c'est mon anniversaire." },
   ],
 };
+/* 16/11: bài Nghe TCF, mỗi câu một audio riêng (q.audio), câu « chỉ nghe » có ô A, B, C, D. */
+const BAI_TCF_THU = {
+  id: "thu-nghe-tcf", title: "Écoute TCF : petites phrases du quotidien", level: "TCF", skills: ["Écoute"], skill: "Écoute", audioUrl: "",
+  consigne: "<p><strong>Comme au TCF :</strong> chaque document est diffusé <strong>une seule fois</strong>.</p>",
+  questions: [
+    { id: "t1", type: "qcm", prompt: "Écoutez l'extrait et les quatre réponses proposées. Choisissez la bonne réponse.", options: ["A", "B", "C", "D"], audio: "/thu.mp3" },
+    { id: "t2", type: "qcm", prompt: "Pourquoi Thomas appelle-t-il Léa ?", options: ["Il veut apprendre le piano.", "Il ne peut pas aller au cours.", "Il a perdu son téléphone.", "Il invite Léa au concert."], audio: "/thu.mp3" },
+  ],
+};
 const BAI_DOC_THU = {
   id: "thu-bai-doc", title: "Lecture A1 : pour aller à la poste", level: "A1", skills: ["Lecture"], skill: "Lecture",
   consigne: "<p>Lisez ce plan et ces indications, puis répondez aux questions.</p>",
@@ -875,6 +884,7 @@ function LuyenCapThu() {
   const [vipThu, setVipThu] = useState(false);
   const [lamBai, setLamBai] = useState(false);
   const [baiDoc, setBaiDoc] = useState(false);
+  const [baiTcf, setBaiTcf] = useState(false);
   const [baiNoi, setBaiNoi] = useState(false);
   const moBuoc = (o) => (o.buoc === "khoa" ? setBaoKhoa("Làm xong bước trước để mở bước này.") : (setBaoKhoa(null), setMa(o.kn.ma)));
   const ids = Object.values(KY_NANG).flatMap((c) => Object.values(c).flat()).flatMap((k) => k.bai.map((id) => ({ id, level: k.ma.slice(0, 2), title: "Écoute " + k.ma.slice(0, 2) + " : bài mẫu " + id.slice(-4), questions: [{}, {}, {}, {}, {}], price: 19000, vong: "hoc" })));
@@ -900,10 +910,11 @@ function LuyenCapThu() {
       <label className="mb-4 flex items-center gap-2 text-sm font-bold text-ink"><input type="checkbox" checked={vipThu} onChange={(e) => setVipThu(e.target.checked)} /> Xem như VIP</label>
       <label className="mb-4 flex items-center gap-2 text-sm font-bold text-ink"><input type="checkbox" checked={lamBai} onChange={(e) => setLamBai(e.target.checked)} /> Xem màn làm bài</label>
       <label className="mb-4 flex items-center gap-2 text-sm font-bold text-ink"><input type="checkbox" checked={baiDoc} onChange={(e) => setBaiDoc(e.target.checked)} /> Bài đọc</label>
+      <label className="mb-4 flex items-center gap-2 text-sm font-bold text-ink"><input type="checkbox" checked={baiTcf} onChange={(e) => setBaiTcf(e.target.checked)} /> Bài nghe TCF</label>
       <label className="mb-4 flex items-center gap-2 text-sm font-bold text-ink"><input type="checkbox" checked={baiNoi} onChange={(e) => setBaiNoi(e.target.checked)} /> Bài nói</label>
       <label className="mb-4 flex items-center gap-2 text-sm font-bold text-ink"><input type="checkbox" checked={loiNghe} onChange={(e) => setLoiNghe(e.target.checked)} /> Lời nghe và phân tích</label>
       {loiNghe && <LoiNgheBai key={String(vipThu)} exId="thu" onMuaVip={() => {}} thu={vipThu ? LOI_NGHE_THU : { khoa: "vip" }} cau={CAU_NGHE_THU} />}
-      {lamBai && <React.Suspense fallback={null}><PracticeWorkspaceThu key={`${baiDoc}${baiNoi}`} ex={baiNoi ? BAI_NOI_THU : baiDoc ? BAI_DOC_THU : BAI_THU} back={() => setLamBai(false)} onFinish={() => {}} chamBang={chamThu} kyNho="A1-CO-1" baiTiep={{ title: "Bài thử tiếp theo", mo: () => setLamBai(false) }} /></React.Suspense>}
+      {lamBai && <React.Suspense fallback={null}><PracticeWorkspaceThu key={`${baiDoc}${baiNoi}${baiTcf}`} ex={baiTcf ? BAI_TCF_THU : baiNoi ? BAI_NOI_THU : baiDoc ? BAI_DOC_THU : BAI_THU} back={() => setLamBai(false)} onFinish={() => {}} chamBang={chamThu} kyNho="A1-CO-1" baiTiep={{ title: "Bài thử tiếp theo", mo: () => setLamBai(false) }} /></React.Suspense>}
       {lamBai ? null :      <>
       {ma && <div className="mb-4"><MeoKyNho ma={ma} /></div>}
       {ma ? <ChiTietKyNho ma={ma} exercises={ids} hist={hist} biKhoa={biKhoa} onBack={() => { setBaoKhoa(null); setMa(null); }} onMoKyNho={moBuoc} canhBao={baoKhoa} laVip={vipThu} onMuaVip={() => {}} giaVip="99.000 ₫" onLam={() => {}} renderThe={the} />
