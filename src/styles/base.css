@@ -350,6 +350,12 @@ html.mcf-dark-root .de-ban, .mcf-dark .de-ban {
 mark.de-to { background: #fde047; color: inherit; cursor: pointer; padding: 0 1px; border-radius: 2px; }
 mark.de-to:hover { background: #facc15; }
 
+/* Xem lại bài thi (17/11): chỗ chứa đáp án trong tài liệu, tô xanh kèm số câu. Màu cố định như tờ đề. */
+mark.de-dap { background: #bbf7d0; color: inherit; cursor: pointer; padding: 0 1px; border-radius: 2px; -webkit-box-decoration-break: clone; box-decoration-break: clone; transition: background-color .2s; }
+mark.de-dap:hover { background: #86efac; }
+mark.de-dap sup { margin-left: 2px; font-size: 10px; font-weight: 800; color: #166534; }
+mark.de-dap.de-dap-nhay { background: #4ade80; outline: 2px solid #166534; }
+
 /* Ô nhập TRÊN TỜ ĐỀ và giấy nháp luôn chữ đen (14/10). Luật « .mcf-dark textarea »
    ở trên đổi chữ ô nhập sang màu sáng khi bật nền tối, và nó mạnh hơn .de-dong-ke,
    nên trên giấy trắng chữ gõ vào thành xám nhạt. Đặt độ ưu tiên cao hơn hẳn. */

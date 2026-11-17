@@ -1149,7 +1149,7 @@ function Preview() {
           <Route path="/etudiant/mung-chuoi" element={<><Controls /><MungChuoiThu /></>} />
           {/* 14/11: xem lại bài thi (dữ liệu giả). */}
           <Route path="/etudiant/xem-lai-thi" element={<><Controls /><XemLaiBaiThi tieuDe="DELF B1 · Đề 1" onDong={() => {}} duLieu={[
-            { attempt_id: "a1", code: "CE", title: "Lecture : un musée ouvert la nuit", reading_text: "<p>Depuis mai, le musée reste ouvert jusqu'à 22 heures le vendredi.</p>", questions: [
+            { attempt_id: "a1", code: "CE", title: "Lecture : un musée ouvert la nuit", consigne: "<p>Lisez l'article puis répondez aux questions.</p>", reading_text: "<p><strong>Un musée qui ne dort plus</strong></p><p>Depuis mai, le musée des Beaux-Arts reste ouvert jusqu'à 22 heures le vendredi. La direction veut attirer un public qui travaille la journée et ne vient jamais le week-end.</p><p>L'entrée coûte 8 euros. Après trois mois, la fréquentation du vendredi soir a doublé, surtout chez les moins de trente ans.</p>", questions: [
               { id: "q1", type: "qcm", prompt: "Le musée ferme à quelle heure le vendredi ?", payload: { options: ["18 h", "20 h", "22 h"] }, answer_key: { answer: 2 }, raw: 0, correct: false, explanation: "« jusqu'à 22 heures le vendredi »." },
               { id: "q2", type: "qcm", prompt: "Depuis quand ?", payload: { options: ["mars", "mai", "juin"] }, answer_key: { answer: 1 }, raw: 1, correct: true, explanation: "« Depuis mai »." },
               { id: "q3", type: "vf", prompt: "Le musée est gratuit le vendredi soir.", payload: {}, answer_key: { answer: 1, justification: "« L'entrée coûte 8 euros. »" }, raw: { choice: 0, just: "gratuit" }, correct: false },
