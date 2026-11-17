@@ -131,7 +131,7 @@ for (const [k, b] of DE.CE.entries()) {
   const ten = `Đọc ${k + 1}`, so = laBang ? demTu(b.cau[0]._bang.taiLieu.map((x) => x.texte).join(" ")) : demTu(b.readingText), [id, kieu] = khung.CE[k] || [];
   if (b.id !== id) loi.push(`${ten}: id ${b.id}, khung là ${id}`);
   /* giuVanBan: văn bản THẬT trích nguyên (không được sửa), chỉ viết lại câu hỏi: bỏ ngưỡng số từ, không ghi đè reading_text. */
-  const can = b.toiThieu || (laBang ? 240 : TOI_THIEU[CAP].CE[k]);   // toiThieu: bài lệch khuôn (B1 Đề 2 chỉ có một bài báo)
+  const can = b.toiThieu || (laBang ? 380 : TOI_THIEU[CAP].CE[k]);   // toiThieu: bài lệch khuôn (B1 Đề 2 chỉ có một bài báo)
   if (!b.giuVanBan && so < can) loi.push(`${ten}: văn bản ${so} từ, cần từ ${can}`);
   kiemCau(ten, b.cau, b.readingText || "", kieu);
   console.error(`  ${ten}: ${so} từ, ${b.cau.length} câu`);
