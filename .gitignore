@@ -33,3 +33,6 @@ dist-ssr
 
 # Bài chuẩn tự thêm cho npm run check:chamai (bài mẫu có bản quyền hoặc bài học sinh): giữ ở máy.
 scripts/chamai/
+
+# Hồ sơ đăng ký bản quyền (17/11): chứa bản sao toàn bộ mã nguồn, không đưa lên git
+ho-so-ban-quyen/

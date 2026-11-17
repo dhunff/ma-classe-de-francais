@@ -27,7 +27,7 @@
 
    Muốn kiểm loại màn đó thì dựng riêng phần giao diện với hàm truyền vào —
    như `ONhapUsername` nhận `hoiConTrong` thay vì tự import. */
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import ReactDOM from "react-dom/client";
 import ThamTu from "./screens/student/thamTu/ThamTu.jsx";
 import MotNam from "./screens/student/paris/MotNam.jsx";
@@ -956,14 +956,24 @@ function LuyenCapThu() {
   );
 }
 
+/* 17/11 (hồ sơ bản quyền): chụp màn hình tự động bằng trình duyệt chạy ẩn.
+   ?man=/etudiant/tu-vung mở thẳng màn đó, ?vai=prof dựng vỏ giáo viên, ?chup ẩn thanh điều khiển xem thử. */
+const THAM_XT = new URLSearchParams(typeof window === "undefined" ? "" : window.location.search);
+const MAN_DAU_XT = THAM_XT.get("man");
+const CHUP_XT = THAM_XT.has("chup");
+
 function Preview() {
   const [dark, setDark] = useState(false);
   const [lang, setLang] = useState("vi");
-  const [role, setRole] = useState("eleve");
+  const [role, setRole] = useState(THAM_XT.get("vai") === "prof" ? "prof" : "eleve");
   const [empty, setEmpty] = useState(false);
   /* Hai công tắc riêng cho trang chủ chung: mở nó ra, và xem nó dưới con mắt
      người chưa đăng nhập — đó là trạng thái dễ quên kiểm nhất. */
   const [home, setHome] = useState(false);
+  /* ?man=… chỉ áp cho lần dựng đầu; đổi vai hay đổi màn hình chung thì về trang chủ như cũ. */
+  const daDoiVai = useRef(false);
+  const lanDau = useRef(true);
+  useEffect(() => { if (lanDau.current) { lanDau.current = false; return; } daDoiVai.current = true; }, [role, home]);
   const [guest, setGuest] = useState(false);
 
   const toggleDark = () =>
@@ -1041,7 +1051,7 @@ function Preview() {
     );
   };
 
-  const Controls = () => (
+  const Controls = () => (CHUP_XT ? null :
     <div className="mb-4 flex flex-wrap gap-2">
       <button type="button" onClick={() => setRole((r) => (r === "prof" ? "eleve" : "prof"))}
         className="rounded-md border border-solid border-line bg-surface px-4 py-2 text-sm font-bold text-ink shadow-sm">
@@ -1088,7 +1098,7 @@ function Preview() {
   );
 
   return (
-    <MemoryRouter initialEntries={[home ? "/decouvrir" : ROLE_HOME[role]]} key={`${role}-${home}`}>
+    <MemoryRouter initialEntries={[MAN_DAU_XT && !daDoiVai.current ? MAN_DAU_XT : home ? "/decouvrir" : ROLE_HOME[role]]} key={`${role}-${home}`}>
       <Routes>
         <Route element={shell}>
           {/* Trang chủ chung. `practice` truyền thẳng fixture nên component
