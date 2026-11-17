@@ -8,6 +8,10 @@
  * Xong:  npx supabase db push --remote */
 import { readdirSync } from "node:fs";
 import { spawnSync } from "node:child_process";
+import { fileURLToPath } from "node:url";
+
+/* Tự về gốc dự án (17/11: người dùng hai lần chạy từ E:\dev, terminal mở sẵn ở đó). Tiến trình con thừa hưởng thư mục này. */
+process.chdir(fileURLToPath(new URL("../../", import.meta.url)));
 
 const DE = [
   ...[1, 2, 3, 4, 5, 6].map((n) => ({ ma: `b2_de${n}`, ten: `DELF B2 · Đề ${n}`, lenh: ["scripts/nhap/lo54_b2_kho.mjs", "--de", String(n), "--nghe"] })),
