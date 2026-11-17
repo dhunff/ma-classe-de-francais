@@ -250,6 +250,8 @@ import { Avatar, DS_AVATAR } from "./shared/avatars.jsx";
 import NhanXetCauNgan from "./screens/student/NhanXetCauNgan.jsx";
 import NhanXetTCF from "./screens/exam/NhanXetTCF.jsx";
 import XemLaiBaiThi from "./screens/exam/XemLaiBaiThi.jsx";
+import PaymentModal from "./screens/student/PaymentModal.jsx";
+import { goiVip } from "./shared/vip.js";
 import MungChuoi from "./screens/dashboard/MungChuoi.jsx";
 
 const VI = {
@@ -1002,6 +1004,7 @@ function Preview() {
     ["/etudiant/phan-thi-tcf", "Một phần thi TCF"],
     ["/etudiant/cham-tcf", "Phiếu AI chấm TCF"],
     ["/etudiant/xem-lai-thi", "Xem lại bài thi"],
+    ["/etudiant/mua-vip", "Mua VIP (chuyển khoản, MoMo)"],
     ["/etudiant/mung-chuoi", "Mừng mốc chuỗi"],
     ["/etudiant/nhan-xet-ngan", "Nhận xét AI câu trả lời ngắn"],
     ["/etudiant/nhan-xet-ai", "Phiếu nhận xét AI"],
@@ -1146,6 +1149,8 @@ function Preview() {
           <Route path="/etudiant/phan-thi" element={<><Controls /><PhanThiThu /></>} />
           <Route path="/etudiant/phan-thi-tcf" element={<><Controls /><PhanThiTcfThu /></>} />
           {/* 14/11: mừng mốc chuỗi, bấm các nút để xem từng mốc. */}
+          {/* 17/11: hộp mua VIP có thẻ « Ví MoMo » (bấm nút sẽ gọi máy chủ thật và báo lỗi vì chưa đăng nhập). */}
+          <Route path="/etudiant/mua-vip" element={<><Controls /><PaymentModal ex={goiVip("Gói VIP 1 tháng")} student="Hoc Sinh Thu" config={{ bank: "MB", account: "0000000000", accountName: "FRACILE" }} onClose={() => {}} /></>} />
           <Route path="/etudiant/mung-chuoi" element={<><Controls /><MungChuoiThu /></>} />
           {/* 14/11: xem lại bài thi (dữ liệu giả). */}
           <Route path="/etudiant/xem-lai-thi" element={<><Controls /><XemLaiBaiThi tieuDe="DELF B1 · Đề 1" onDong={() => {}} duLieu={[

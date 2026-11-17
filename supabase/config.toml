@@ -56,6 +56,15 @@ project_id = "cdszvnuaibnnkrvynyck"
 [functions.grade]
 verify_jwt = false
 
+# MoMo (17/11/2026). momo-ipn: MoMo gọi máy chủ tới máy chủ, KHÔNG có JWT nào; cổng vào bật thì trả 401 và
+# MoMo không bao giờ báo được kết quả. Hàm không cấp gì dựa trên nội dung gọi tới: nó tự tra cứu đơn ở MoMo.
+# momo-don: cùng lý do với `grade` ở trên, hàm tự đọc JWT bằng auth.getUser(token) và từ chối khi không có.
+[functions.momo-ipn]
+verify_jwt = false
+
+[functions.momo-don]
+verify_jwt = false
+
 # Hai hàm còn lại GIỮ NGUYÊN mặc định (verify_jwt = true):
 #
 #   grant-access   tự kiểm bằng `x-teacher-token`, không cần đọc JWT người gọi

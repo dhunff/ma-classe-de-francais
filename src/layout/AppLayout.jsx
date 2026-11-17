@@ -5,6 +5,7 @@ import Topbar from "./Topbar.jsx";
 import { titleKeyFor } from "./navItems.js";
 import { LeonTheoTrang } from "../shared/leon.jsx";
 import CuaHetLuot from "../shared/HetLuot.jsx";
+import KetQuaMoMo from "../shared/KetQuaMoMo.jsx";
 
 /* Vỏ ứng dụng — kiểu "thẻ lồng": nền xanh đặc làm khung, nội dung là một tấm
    thẻ trắng lớn đặt lên trên, thanh bên nằm thẳng trên nền xanh.
@@ -106,6 +107,8 @@ export default function AppLayout({
       </div>
       {/* Cửa sổ hết lượt dùng thử (18/10): chỉ học sinh, các màn gọi baoHetLuot(). */}
       {session?.role === "eleve" && <CuaHetLuot session={session} />}
+      {/* 17/11: quay về từ trang thanh toán MoMo (?orderId=FRM…): máy chủ tra lại đơn rồi báo kết quả. */}
+      {session && <KetQuaMoMo />}
     </div>
   );
 }
