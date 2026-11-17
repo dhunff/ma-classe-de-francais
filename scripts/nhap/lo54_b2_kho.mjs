@@ -1,4 +1,4 @@
-/* Lô 54 (17/11/2026): MÁY DỰNG « DELF B2 · Đề 1 » NÂNG ĐỘ KHÓ. Nội dung: lo54_b2_de1_kho_noi_dung.mjs.
+/* Lô 54 (17/11/2026): MÁY DỰNG các đề DELF B2 NÂNG ĐỘ KHÓ. Nội dung: lo54_b2_de<N>_kho_noi_dung.mjs.
  *
  * SỬA THẲNG 6 bài Nghe, Đọc của đề (giữ id bài, giữ id câu: cập nhật theo `ord`), nên đề thi,
  * exam_sections và lượt thi cũ không phải đổi gì. Câu trả lời cũ của các câu này vẫn nằm trong
@@ -7,23 +7,24 @@
  *   1. Kiểm (không cần mạng): số từ tối thiểu của văn bản và kịch bản, 3 phương án khác nhau, không
  *      bài nào dồn đáp án một vị trí, tỉ lệ đáp án đúng là phương án dài nhất ≤ 40 %, không dấu gạch
  *      dài, đoạn trích « » trong lời giải có nguyên văn trong văn bản/kịch bản, thang điểm 9 + 9 + 7.
- *   2. PHẦN ĐỌC: ghi supabase/migrations/219_b2_de1_doc_kho.sql. Không cần token.
+ *   2. PHẦN ĐỌC: ghi supabase/migrations/<số>_b2_de<N>_doc_kho.sql. Không cần token.
  *   3. PHẦN NGHE (cờ --nghe, cần TTS_ADMIN_TOKEN và ffmpeg): đọc kịch bản ở tốc độ nhanh (`toc`),
  *      ghép file kiểu phòng thi như lô 20, tải lên kho `nghe` với tên MỚI (b2k-…, file cũ còn
- *      nguyên để lùi), rồi ghi migration <số lớn nhất + 1>_b2_de1_nghe_kho.sql: audio, câu hỏi,
+ *      nguyên để lùi), rồi ghi migration <số lớn nhất + 1>_b2_de<N>_nghe_kho.sql: audio, câu hỏi,
  *      lời nghe + phân tích (bảng loi_nghe).
  *
- * Chạy:  node scripts/nhap/lo54_b2_de1_kho.mjs            (kiểm + ghi phần Đọc)
- *        node scripts/nhap/lo54_b2_de1_kho.mjs --kho      (chỉ kiểm)
- *        node scripts/nhap/lo54_b2_de1_kho.mjs --nghe     (thêm phần Nghe; PowerShell:
- *            $env:TTS_ADMIN_TOKEN = Read-Host "Token"  rồi chạy lệnh; ffmpeg lấy từ biến FFMPEG
- *            hoặc gói ffmpeg-static: npm i -D ffmpeg-static) */
+ * Chạy:  node scripts/nhap/lo54_b2_kho.mjs --de 2            (kiểm + ghi phần Đọc của Đề 2)
+ *        node scripts/nhap/lo54_b2_kho.mjs --de 2 --kho      (chỉ kiểm)
+ *        node scripts/nhap/lo54_b2_kho.mjs --de 2 --nghe     (thêm phần Nghe: máy HỎI token ngay
+ *            khi chạy, không cần đặt biến; ffmpeg lấy từ gói ffmpeg-static đã cài) */
 import { readFileSync, writeFileSync, mkdtempSync, readdirSync } from "node:fs";
 import { execFileSync } from "node:child_process";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { toRows } from "../../src/shared/exerciseMap.js";
-import { noiDung } from "./lo54_b2_de1_kho_noi_dung.mjs";
+/* --de N: đề nào (1 đến 6). Nội dung mỗi đề ở lo54_b2_de<N>_kho_noi_dung.mjs. */
+const SO = Number((process.argv.find((x) => /^--de=\d$/.test(x)) || "").slice(5)) || Number(process.argv[process.argv.indexOf("--de") + 1]) || 1;
+const { noiDung } = await import(`./lo54_b2_de${SO}_kho_noi_dung.mjs`);
 
 const CHI_KIEM = process.argv.includes("--kho");
 const LAM_NGHE = process.argv.includes("--nghe");
@@ -109,20 +110,41 @@ const sqlBai = (ex, them) => {
 {
   const ra = DE.CE.map((b, k) => {
     const consigne = k === 2 ? `${b.consigne}<p>À quelle personne associez-vous chaque point de vue ? Pour chaque affirmation, cochez la bonne réponse.</p>` : `${b.consigne}<p>Pour répondre aux questions, cochez la bonne réponse.</p>`;
-    const ex = { ...chung, id: b.id, title: `Lecture B2 · Đề 1 · Exercice ${k + 1}`, level: "B2", skills: ["Lecture"], consigne, readingText: b.readingText,
+    const ex = { ...chung, id: b.id, title: `Lecture B2 · Đề ${SO} · Exercice ${k + 1}`, level: "B2", skills: ["Lecture"], consigne, readingText: b.readingText,
       questions: b.cau.map(({ ghep, ...c }, i) => ({ ...c, id: `${b.id}_${i}` })) };
     return sqlBai(ex, (r) => ({ consigne: s(r.consigne), reading_text: s(r.reading_text) }));
   });
-  const tep = "supabase/migrations/219_b2_de1_doc_kho.sql";
-  writeFileSync(tep, `-- 219 (17/11/2026, lô 54): « DELF B2 · Đề 1 », phần ĐỌC viết lại khó hơn (bài báo 500 đến 600 từ, câu hỏi về hàm ý).\n-- Sinh bởi scripts/nhap/lo54_b2_de1_kho.mjs. Sửa thẳng 3 bài, giữ id bài và id câu (cập nhật theo ord). Chạy lại an toàn.\n` + ra.join("\n\n") + "\n");
+  const dsM = readdirSync("supabase/migrations").filter((f) => /^\d+_.*\.sql$/.test(f));
+  const cuM = dsM.find((f) => f.endsWith(`_b2_de${SO}_doc_kho.sql`));
+  const soM = cuM ? Number(cuM.split("_")[0]) : Math.max(...dsM.map((f) => Number(f.split("_")[0]))) + 1;
+  const tep = `supabase/migrations/${soM}_b2_de${SO}_doc_kho.sql`;
+  writeFileSync(tep, `-- ${soM} (17/11/2026, lô 54): « DELF B2 · Đề ${SO} », phần ĐỌC viết lại khó hơn (bài báo 500 đến 600 từ, câu hỏi về hàm ý).\n-- Sinh bởi scripts/nhap/lo54_b2_de1_kho.mjs. Sửa thẳng 3 bài, giữ id bài và id câu (cập nhật theo ord). Chạy lại an toàn.\n` + ra.join("\n\n") + "\n");
   console.error(`Đã ghi ${tep}.`);
 }
-if (!LAM_NGHE) { console.error("Phần Nghe chưa làm: chạy lại với --nghe (cần TTS_ADMIN_TOKEN và ffmpeg)."); process.exit(0); }
+if (!LAM_NGHE) { console.error("Phần Nghe chưa làm: chạy lại với --nghe (máy sẽ hỏi token)."); process.exit(0); }
 
 /* ── 3. Phần Nghe ── */
 const env = Object.fromEntries(readFileSync(".env", "utf8").split(/\r?\n/).filter((l) => l.includes("=")).map((l) => [l.slice(0, l.indexOf("=")), l.slice(l.indexOf("=") + 1)]));
 const URL_FN = `${env.VITE_SUPABASE_URL}/functions/v1/tao-audio`, ANON = env.VITE_SUPABASE_ANON_KEY;
-const TOKEN = process.env.TTS_ADMIN_TOKEN;
+/* Token: lấy từ biến môi trường, không có thì HỎI NGAY TẠI ĐÂY (chữ gõ không hiện). Hỏi ở đây vì cách
+   « $env:… = Read-Host » dễ gõ nhầm: 17/11 token bị gõ vào chỗ lời nhắc còn câu lệnh thành giá trị. */
+const hoiToken = () => new Promise((xong) => {
+  process.stderr.write("Dán token TTS rồi nhấn Enter (chữ không hiện): ");
+  const vao = process.stdin; let chu = "";
+  vao.setRawMode?.(true); vao.resume(); vao.setEncoding("utf8");
+  const nhan = (c) => {
+    for (const k of c) {
+      const ma = k.charCodeAt(0);
+      if (ma === 13 || ma === 10) { vao.setRawMode?.(false); vao.pause(); vao.off("data", nhan); process.stderr.write(String.fromCharCode(10)); xong(chu.trim()); return; }
+      if (ma === 3) process.exit(1);
+      if (ma === 127 || ma === 8) chu = chu.slice(0, -1); else if (ma >= 32) chu += k;
+    }
+  };
+  vao.on("data", nhan);
+});
+let TOKEN = process.env.TTS_ADMIN_TOKEN;
+if (TOKEN && /\s/.test(TOKEN.trim())) { console.error("Biến TTS_ADMIN_TOKEN đang chứa khoảng trắng (có vẻ là một câu lệnh gõ nhầm): bỏ qua, hỏi lại."); TOKEN = ""; }
+if (!TOKEN) TOKEN = await hoiToken();
 let FFMPEG = process.env.FFMPEG;
 if (!FFMPEG) { try { FFMPEG = (await import("ffmpeg-static")).default; } catch { /* báo dưới */ } }
 if (!TOKEN) { console.error("Thiếu TTS_ADMIN_TOKEN."); process.exit(1); }
@@ -177,15 +199,15 @@ for (const [k, b] of DE.CO.entries()) {
     cau = b.docs.flatMap((doc, t) => doc.cau.map((c) => ({ ...c, nhom: `Document ${t + 1}` })));
     loiChep = b.docs.flatMap((doc) => doc.doan);
   }
-  const ex = { ...chung, id: b.id, title: `Écoute B2 · Đề 1 · Exercice ${k + 1}`, level: "B2", skills: ["Écoute"], ngheKieuThi: true, ...(luyen ? { audioLuyen: luyen } : {}), audioUrl: thi,
+  const ex = { ...chung, id: b.id, title: `Écoute B2 · Đề ${SO} · Exercice ${k + 1}`, level: "B2", skills: ["Écoute"], ngheKieuThi: true, ...(luyen ? { audioLuyen: luyen } : {}), audioUrl: thi,
     consigne: "", questions: cau.map(({ ghep: _g, ...c }, i) => ({ ...c, id: `${b.id}_${i}` })) };
   /* Chỉ đổi audio_url và audioLuyen trong meta; consigne giữ nguyên bản đang có. */
   raNghe.push(sqlBai(ex, (r) => ({ audio_url: s(r.audio_url), meta: `meta || ${j(luyen ? { audioLuyen: luyen } : {})}` })));
   raNghe.push(`insert into public.loi_nghe (exercise_id, loi, phan_tich) values (${s(b.id)}, ${j(loiChep.map((x) => ({ giong: x.giong, chu: x.chu })))}, ${j(b.phanTich)})\non conflict (exercise_id) do update set loi = excluded.loi, phan_tich = excluded.phan_tich, cap_nhat = now();`);
 }
 const ds = readdirSync("supabase/migrations").filter((f) => /^\d+_.*\.sql$/.test(f));
-const cu = ds.find((f) => f.endsWith("_b2_de1_nghe_kho.sql"));
+const cu = ds.find((f) => f.endsWith(`_b2_de${SO}_nghe_kho.sql`));
 const so = cu ? Number(cu.split("_")[0]) : Math.max(...ds.map((f) => Number(f.split("_")[0]))) + 1;
-const tepNghe = `supabase/migrations/${so}_b2_de1_nghe_kho.sql`;
-writeFileSync(tepNghe, `-- ${so} (17/11/2026, lô 54): « DELF B2 · Đề 1 », phần NGHE viết lại khó hơn (kịch bản dài hơn, đọc nhanh hơn, có ngập ngừng).\n-- Sinh bởi scripts/nhap/lo54_b2_de1_kho.mjs --nghe. Audio mới ở kho nghe (b2k-de1-…), file cũ còn nguyên. Chạy lại an toàn.\n` + raNghe.join("\n\n") + "\n");
+const tepNghe = `supabase/migrations/${so}_b2_de${SO}_nghe_kho.sql`;
+writeFileSync(tepNghe, `-- ${so} (17/11/2026, lô 54): « DELF B2 · Đề ${SO} », phần NGHE viết lại khó hơn (kịch bản dài hơn, đọc nhanh hơn, có ngập ngừng).\n-- Sinh bởi scripts/nhap/lo54_b2_de1_kho.mjs --nghe. Audio mới ở kho nghe (b2k-de${SO}-…), file cũ còn nguyên. Chạy lại an toàn.\n` + raNghe.join("\n\n") + "\n");
 console.error(`Đã ghi ${tepNghe}. Chạy « npx supabase db push --remote » để áp dụng.`);
