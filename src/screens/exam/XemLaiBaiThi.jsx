@@ -4,6 +4,7 @@ import { X, Check, Minus, Sparkles, Loader2, Headphones, Lightbulb, MapPin, Chev
 import { tr } from "../../shared/i18n.jsx";
 import { docBaiThi } from "../../shared/xemLaiThi.js";
 import LoiNgheBai from "../practice/LoiNgheBai.jsx";
+import { BangOuiNon } from "./ToDe.jsx";
 
 /* « Xem lại bài thi » (14/11, chủ dự án): sau khi thi (DELF, DALF, TCF) xem lại từng câu: mình chọn gì,
  * đúng hay sai, đáp án đúng, VÌ SAO (lời giải CỐ ĐỊNH của đề). 14/11 (chủ dự án): trắc nghiệm, điền từ KHÔNG
@@ -92,19 +93,8 @@ function NoiDungCau({ q }) {
     );
   }
   if (q.type === "tableau") {
-    const dongs = p.criteres ?? [], cots = p.colonnes ?? [], dap = k.answers ?? {}, ban = q.raw ?? {};
-    return (
-      <div className="mt-3 overflow-x-auto">
-        <table className="w-full border-collapse text-xs">
-          <thead><tr><th className="border border-solid border-line p-1.5" />{cots.map((c) => <th key={c.id} className="border border-solid border-line bg-surface2 p-1.5">{c.titre}</th>)}</tr></thead>
-          <tbody>{dongs.map((cr) => (
-            <tr key={cr.id}><td className="border border-solid border-line p-1.5 text-ink">{cr.texte}</td>
-              {cots.map((co) => { const key = `${cr.id}_${co.id}`; const d = dap[key], b = ban[key];
-                return <td key={co.id} className={`border border-solid border-line p-1.5 text-center font-bold ${b == null ? "text-soft" : b === d ? "bg-ok-soft text-ok" : "bg-danger-soft text-danger"}`}>{b ?? "—"}{b !== d && d ? <span className="block text-[10px] text-ok">→ {d}</span> : null}</td>; })}
-            </tr>))}</tbody>
-        </table>
-      </div>
-    );
+    /* 17/11: cùng cách trình bày với màn thi (ToDe.jsx), ô đúng tô xanh, ô chọn sai tô đỏ. */
+    return <BangOuiNon colonnes={p.colonnes ?? []} criteres={p.criteres ?? []} value={q.raw ?? {}} xemLai={{ dapAn: k.answers ?? {} }} />;
   }
   if (q.type === "apparier") {
     const items = p.items ?? [], choix = Object.fromEntries((p.choix ?? []).map((c) => [c.id, c.texte])), dap = k.answers ?? {}, ban = q.raw ?? {};

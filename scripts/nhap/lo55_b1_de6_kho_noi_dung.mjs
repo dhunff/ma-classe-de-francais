@@ -3,7 +3,7 @@
  * Bài báo (Đọc 2) soạn TỪ NGUỒN THẬT: giữ nguyên mọi dữ kiện, con số và dòng ghi nguồn của bản cũ,
  * KHÔNG thêm dữ kiện mới; phần dài thêm chỉ là lập luận nêu chung. Không dùng dấu gạch dài (quy tắc 7). */
 
-export function noiDung({ q, v, p, d }) {
+export function noiDung({ q, v, p, d, bang }) {
   const RADIO = "Parle en français de France comme une journaliste de radio locale en reportage : débit naturel et vivant, sans ralentir pour des apprenants.";
   const DIR = "Parle en français de France comme un directeur d'école interviewé à la radio : débit naturel, chaleureux, quelques hésitations.";
   const MERE = "Parle en français de France comme une mère d'élève qui donne son avis au micro : débit rapide et spontané, ton franc.";
@@ -53,20 +53,16 @@ export function noiDung({ q, v, p, d }) {
 
   const CE1 = {
     id: "lo22mvemyhx902j",
-    consigne: "<p>C'est l'été et il fait très chaud. Lisez les annonces et répondez aux questions.</p>",
-    readingText: p(
-      "<strong>A. Musée des Beaux-Arts</strong> : salles climatisées, ouvert jusqu'à 21 h tous les jours en juillet et en août. Entrée 8 €, gratuite le premier dimanche du mois et pour les moins de 18 ans. Visites guidées « Peintres du soleil » le jeudi à 18 h, sur réservation. Café en terrasse ombragée dans le jardin du musée.",
-      "<strong>B. Baignade au lac de Vassy</strong> : plage surveillée de 11 h à 19 h. Parking payant à l'entrée, mais une navette gratuite part de la gare toutes les trente minutes. Location de parasols sur place. Chiens interdits sur la plage. Baignade interdite en dehors des horaires de surveillance.",
-      "<strong>C. Cinéma en plein air</strong> : chaque vendredi à 22 h, dans le parc municipal. Films en version originale sous-titrée. Gratuit. Pensez à apporter votre couverture et un vêtement chaud : la nuit, la température baisse vite près de la rivière. Annulé en cas d'orage. Programme complet affiché à l'entrée du parc chaque lundi.",
-      "<strong>D. Grottes du Val-Noir</strong> : 13 °C toute l'année ! Départ toutes les heures, de 10 h à 17 h. Durée : 1 h 15. 9 € par adulte, 5 € par enfant. Chaussures fermées obligatoires, un pull conseillé. Visite déconseillée aux personnes qui ont peur des espaces fermés.",
-      "<strong>E. Balade à vélo de nuit</strong> : le mercredi à 21 h 30, départ place du Marché. Parcours de 15 km sur pistes cyclables, à allure tranquille. Vélo, casque et lumières prêtés. 5 €. Âge minimum : 12 ans, accompagné d'un adulte jusqu'à 16 ans.",
-    ),
+    consigne: p("C'est l'été et il fait très chaud. Vous voulez sortir avec votre fille de 8 ans. Vous choisissez une activité en fonction des critères suivants :", "• dans un lieu frais, à l'abri du soleil ;<br>• accessible sans voiture ;<br>• adaptée aux enfants de son âge ;<br>• gratuite pour toute la famille.", "Vous comparez ces quatre annonces. Pour chaque annonce, cochez (☒) OUI si cela correspond au critère ou NON si cela ne correspond pas."),
+    readingText: "",
     cau: [
-      q("Vous voulez avoir frais et découvrir de la peinture avec un guide. Vous choisissez…", "A", ["C", "D"], "A: « salles climatisées » và « Visites guidées « Peintres du soleil » »."),
-      q("Vous voulez nager, mais vous n'avez pas de voiture. Vous choisissez…", "B", ["D", "E"], "B: « une navette gratuite part de la gare toutes les trente minutes »."),
-      q("Votre fille de 13 ans adore le vélo, mais vous n'en avez pas. Vous choisissez…", "E", ["A", "B"], "E: « Vélo, casque et lumières prêtés » và « Âge minimum : 12 ans »."),
-      q("Quelle activité ne convient pas à quelqu'un qui a peur d'être enfermé ?", "D", ["C", "E"], "D: « Visite déconseillée aux personnes qui ont peur des espaces fermés »."),
-      q("Pourquoi faut-il un vêtement chaud au cinéma en plein air ?", "Il fait frais la nuit près de la rivière.", ["Les films durent souvent plus de trois heures.", "Le parc ne propose pas de sièges."], "« la nuit, la température baisse vite près de la rivière »."),
+      bang("Pour chaque annonce, cochez OUI ou NON.", [
+        { titre: "Musée des Beaux-Arts", texte: p("Ses salles climatisées sont ouvertes jusqu'à 21 h en juillet et en août. Le musée se trouve à deux pas de la station de tramway Hôtel-de-Ville. Un livret-jeu permet aux enfants de 6 à 12 ans de découvrir les tableaux en s'amusant. Entrée gratuite pour les moins de 18 ans, 8 € pour les adultes. Un café avec terrasse ombragée accueille les visiteurs dans le jardin du musée.") },
+        { titre: "Baignade au lac de Vassy", texte: p("Plage surveillée de 11 h à 19 h. Le lac n'est desservi par aucun bus : un grand parking attend les visiteurs à l'entrée. Une zone peu profonde est réservée aux enfants. L'accès à la plage est gratuit. Attention : la plage n'a pas d'arbres, pensez à vos parasols. Les chiens ne sont pas acceptés sur la plage, même tenus en laisse.") },
+        { titre: "Grottes du Val-Noir", texte: p("13 °C toute l'année ! Visites guidées toutes les heures, de 10 h à 17 h. Une navette gratuite relie la gare aux grottes toutes les trente minutes. La visite, longue et difficile, est interdite aux enfants de moins de 10 ans. Tarif : 9 € par adulte. Prévoyez un pull et des chaussures fermées : le sol est humide et glissant.") },
+        { titre: "Atelier d'été de la médiathèque", texte: p("Tous les mercredis de juillet, de 14 h à 16 h, la médiathèque propose des lectures et des jeux pour les 6-10 ans dans sa salle climatisée. L'atelier est gratuit, mais il faut s'inscrire. La médiathèque est située en périphérie, loin des transports en commun : prévoyez votre voiture. Chaque séance se termine par un goûter offert par l'association des amis de la médiathèque.") },
+      ], ["Fraîcheur", "Transport", "Enfants", "Prix"], ["OOON", "NNOO", "OONN", "ONOO"],
+      "Musée: « salles climatisées » (OUI), « à deux pas de la station de tramway » (OUI), « Un livret-jeu permet aux enfants de 6 à 12 ans » (OUI), « 8 € pour les adultes » (NON). Lac: « la plage n'a pas d'arbres » (NON), « n'est desservi par aucun bus » (NON), « Une zone peu profonde est réservée aux enfants » (OUI), « L'accès à la plage est gratuit » (OUI). Grottes: « 13 °C toute l'année » (OUI), « Une navette gratuite relie la gare aux grottes » (OUI), « interdite aux enfants de moins de 10 ans » (NON), « 9 € par adulte » (NON). Médiathèque: « sa salle climatisée » (OUI), « prévoyez votre voiture » (NON), « pour les 6-10 ans » (OUI), « L'atelier est gratuit » (OUI)."),
     ],
   };
 

@@ -17,6 +17,7 @@ import FormatDe from "./FormatDe.jsx";
 import BocThamNoi, { deDaChon, khoaBoc } from "./BocThamNoi.jsx";
 import GiayNhap from "./GiayNhap.jsx";
 import VanBanToSang from "./VanBanToSang.jsx";
+import { BangOuiNon, ThuDen, OSoTu, chuSoTu, boSoTuCuoi } from "./ToDe.jsx";
 import { chanDan } from "../../shared/chanDan.js";
 import { GhepCap, DienPhieu, AnhLuaChon } from "../student/dangMoi.jsx";
 import NhanXetTCF from "./NhanXetTCF.jsx";
@@ -405,7 +406,8 @@ function ManCho({ dsDe, chon, paper, onStart, dangTai, lamPhanNoi, setLamPhanNoi
 
 /* Điểm hiển thị trên tờ đề (15/10): câu có `heSo` (số nửa điểm) thì đáng heSo/2,
    câu thường 1 điểm. Viết kiểu Pháp: « 1,5 point », « 9 points ». */
-const diemCauHien = (q) => (Number.isInteger(q?.heSo) && q.heSo > 0 ? q.heSo / 2 : 1);
+/* Bảng OUI/NON: mỗi ô là một câu trả lời, 0,5 điểm như đề DELF B1 (« 0,5 point par bonne réponse »). */
+const diemCauHien = (q) => (q?.type === "tableau" ? ((q.colonnes ?? []).length * (q.criteres ?? []).length) / 2 : Number.isInteger(q?.heSo) && q.heSo > 0 ? q.heSo / 2 : 1);
 const chuDiem = (d) => `${String(d).replace(".", ",")} ${d > 1 ? "points" : "point"}`;
 
 /* ───────────────────── Audio giới hạn 2 lượt ───────────────────── */
@@ -820,7 +822,7 @@ export function PhanThi({ section, attemptId, attemptTheoBai = {}, answers, setA
             <div className="mb-1 flex items-start gap-3">
               <span aria-hidden className="mt-1 text-[22px] leading-none">▶</span>
               <h2 className="m-0 flex-1 text-[24px] font-extrabold uppercase leading-none text-[#111]">Exercice {baiIdx + 1}</h2>
-              <span className="text-xs font-bold italic">{chuDiem((ex.questions ?? []).filter((q) => q.type !== "open").reduce((n, q) => n + diemCauHien(q), 0))}</span>
+              <span className="text-xs font-bold italic">{chuDiem((ex.questions ?? []).filter((q) => q.type !== "open").reduce((n, q) => n + diemCauHien(q), 0))}{(ex.questions ?? []).some((q) => q.type === "tableau") ? " (0,5 point par bonne réponse)" : ""}</span>
             </div>
           )}
 
@@ -884,7 +886,8 @@ export function PhanThi({ section, attemptId, attemptTheoBai = {}, answers, setA
           )}
           {laTcfDe && q.type === "qcm" ? cauTCF(q, i) : (
           <li className="flex gap-3">
-            <span className="de-tron mt-0.5 grid h-[22px] w-[22px] shrink-0 place-items-center rounded-full text-[12px] font-bold">{i + 1}</span>
+            {/* Bảng OUI/NON tự đánh số 1 đến 16 từng tiêu chí, không cần số câu ngoài. */}
+            {q.type !== "tableau" && <span className="de-tron mt-0.5 grid h-[22px] w-[22px] shrink-0 place-items-center rounded-full text-[12px] font-bold">{i + 1}</span>}
             <div className="min-w-0 flex-1">
             {/* TCF (14/11, lô 44): MỖI câu có ngữ liệu riêng như đề trên máy. `q.audio` = đoạn nghe của
                 câu, phát MỘT lần (exam_play_audio nhận ra câu có audio); `q.anh` = hình của câu nghe tả
@@ -904,9 +907,16 @@ export function PhanThi({ section, attemptId, attemptTheoBai = {}, answers, setA
             {q.doc && (
               <div className="de-van mb-3 p-4 text-[15px] leading-[1.45] [&_p]:m-0 [&_p+p]:mt-2" dangerouslySetInnerHTML={{ __html: q.doc }} />
             )}
+            {/* 17/11 (bản mẫu đề B1): phần Viết trả lời một thư / bài diễn đàn thì in nó trong khung thư. */}
+            {q.type === "open" && q.thu?.noiDung && (
+              <>
+                {q.thu.gioiThieu && <p className="m-0 font-bold">{q.thu.gioiThieu}</p>}
+                <ThuDen thu={q.thu} />
+              </>
+            )}
             <div className="flex gap-3">
-              <div className="m-0 min-w-0 flex-1 whitespace-pre-line">{choTrong(q.type === "vf" ? q.prompt.replace(/\s*Cochez la bonne réponse.*$/s, "") : q.prompt)}</div>
-              {q.type !== "open" && <span className="shrink-0 pt-0.5 text-[11.5px] italic">{laTcfDe ? `${diemCauTCF(Math.floor((i * SO_CAU_TCF) / (ex.questions.length || 1)))} pt` : chuDiem(diemCauHien(q))}</span>}
+              <div className={`m-0 min-w-0 flex-1 whitespace-pre-line ${q.type === "open" && q.thu?.noiDung ? "font-bold" : ""}`}>{choTrong(q.type === "vf" ? q.prompt.replace(/\s*Cochez la bonne réponse.*$/s, "") : q.type === "open" && chuSoTu(q, ex.consigne) ? boSoTuCuoi(q.prompt) : q.prompt)}</div>
+              {q.type !== "open" && q.type !== "tableau" && <span className="shrink-0 pt-0.5 text-[11.5px] italic">{laTcfDe ? `${diemCauTCF(Math.floor((i * SO_CAU_TCF) / (ex.questions.length || 1)))} pt` : chuDiem(diemCauHien(q))}</span>}
             </div>
 
             {/* KHÔNG có tô màu đúng/sai ở đây — cố ý. Xem chú thích đầu file. */}
@@ -960,10 +970,12 @@ export function PhanThi({ section, attemptId, attemptTheoBai = {}, answers, setA
 
             {q.type === "open" && (
               <>
+                {/* Ô « 160 mots minimum » giữa trang rồi các dòng chấm để viết, như tờ đề in. */}
+                <OSoTu chu={chuSoTu(q, ex.consigne)} />
                 <textarea lang="fr" rows={14} value={answers[q.id] ?? ""}
                   onChange={(e) => dat(q.id, e.target.value)} {...chanDan(() => setCanhDan(true))}
                   aria-label={tr("Bài viết của bạn", "Votre texte", "Your text")}
-                  className="de-dong-ke mt-4 block w-full resize-y text-[15.5px]" />
+                  className="de-dong-cham mt-2 block w-full resize-y text-[15.5px]" />
                 {canhDan && <p className="m-0 mt-2 text-[13px] font-bold text-[#c00]">{tr("Không được dán chữ vào bài viết: hãy tự gõ câu trả lời.", "Coller du texte est interdit : rédigez vous-même votre réponse.", "Pasting is not allowed: type your answer yourself.")}</p>}
                 <div className="mt-2 text-right text-[14px]">
                   Nombre de mots : <strong className="tabular-nums">{String(answers[q.id] ?? "").trim().split(/\s+/).filter(Boolean).length}</strong>
@@ -979,41 +991,10 @@ export function PhanThi({ section, attemptId, attemptTheoBai = {}, answers, setA
               <div className="mt-3"><DienPhieu q={q} value={answers[q.id] ?? {}} onChange={(v) => dat(q.id, v)} /></div>
             )}
 
+            {/* 17/11 (bản mẫu đề B1 format mới): mỗi tài liệu một khung, bên phải bảng nhỏ OUI / NON đánh số
+                liên tục. Chung lược đồ cũ (colonnes = tài liệu, criteres = tiêu chí), xem ToDe.jsx. */}
             {q.type === "tableau" && (
-              <div className="mt-3 overflow-x-auto">
-                <table className="w-full border-collapse text-[14.5px]">
-                  <thead>
-                    <tr>
-                      <th className="border border-solid border-[#111] p-2" />
-                      {(q.colonnes ?? []).map((c) => (
-                        <th key={c.id} className="border border-solid border-[#111] bg-[#efefef] p-2 text-xs font-bold">{c.titre}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {(q.criteres ?? []).map((cr) => (
-                      <tr key={cr.id}>
-                        <td className="border border-solid border-[#111] p-2">{cr.texte}</td>
-                        {(q.colonnes ?? []).map((co) => {
-                          const key = `${cr.id}_${co.id}`;
-                          const cur = answers[q.id]?.[key];
-                          return (
-                            <td key={co.id} className="border border-solid border-[#111] p-2 text-center">
-                              {["OUI", "NON"].map((v) => (
-                                <button key={v} type="button"
-                                  onClick={() => dat(q.id, { ...(answers[q.id] ?? {}), [key]: v })}
-                                  className="mx-1 inline-flex cursor-pointer items-center gap-1 border-0 bg-transparent p-0 text-xs font-bold text-[#111]">
-                                  <O chon={cur === v} /> {v}
-                                </button>
-                              ))}
-                            </td>
-                          );
-                        })}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+              <BangOuiNon colonnes={q.colonnes ?? []} criteres={q.criteres ?? []} value={answers[q.id] ?? {}} onChange={(v) => dat(q.id, v)} />
             )}
             </div>
           </li>)}

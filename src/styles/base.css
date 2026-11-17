@@ -340,6 +340,15 @@ html.mcf-dark-root .de-ban, .mcf-dark .de-ban {
 @media (min-width: 768px) { .de-van-cot { column-count: 2; column-gap: 28px; column-rule: 1px solid #ddd; } }
 .de-giay .de-nhat { color: #555; }
 .de-chan-trang { border-top: 1.5px solid #111; color: #222; }
+/* 17/11 (bản mẫu đề B1 format mới): khung tài liệu của bảng OUI/NON (viền mảnh, bóng lệch phải dưới như
+ * trang in), cửa sổ thư nhận được ở phần Viết, và vùng viết kẻ dòng CHẤM. */
+.de-tai-lieu { background: #fff; border: 1px solid #d6d6d6; box-shadow: 3px 3px 0 #cfcfcf; }
+.de-thu { background: #b9d7ea; border: 1px solid #8db7d4; color: #111; }
+.de-thu, .de-thu * { font-family: "Courier New", Courier, monospace !important; }
+.de-thu-o { background: #fff; border: 1px solid #8db7d4; font-size: 13px; }
+.de-dong-cham { border: 0; color: #111; outline: none; line-height: 34px; padding: 0 4px; background-color: transparent;
+  background-image: radial-gradient(circle, #777 0.8px, transparent 1.1px); background-size: 6px 34px; background-position: 0 30px; background-attachment: local; }
+.de-dong-cham:focus { background-color: #f7f9ff; }
 
 /* Thanh cuộn mảnh (13/10): dải chủ đề Lộ trình cần thấy được là cuộn được. */
 .mcf-cuon-mong { scrollbar-width: thin; scrollbar-color: rgb(var(--mcf-line-rgb)) transparent; }

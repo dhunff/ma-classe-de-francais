@@ -3,7 +3,7 @@
  * Bài báo (Đọc 2) soạn TỪ NGUỒN THẬT: giữ nguyên mọi dữ kiện, con số và dòng ghi nguồn của bản cũ,
  * KHÔNG thêm dữ kiện mới; phần dài thêm chỉ là lập luận nêu chung. Không dùng dấu gạch dài (quy tắc 7). */
 
-export function noiDung({ q, v, p, d }) {
+export function noiDung({ q, v, p, d, bang }) {
   const RADIO = "Parle en français de France comme un animateur de radio étudiante : débit naturel et rapide, ton chaleureux, sans ralentir pour des apprenants.";
   const INES = "Parle en français de France comme une étudiante bénévole interviewée à la radio : débit naturel, spontané, quelques hésitations.";
   const KARIM = "Parle en français de France comme un jeune étudiant qui raconte un souvenir personnel : débit naturel, un peu hésitant, ton sincère.";
@@ -52,20 +52,16 @@ export function noiDung({ q, v, p, d }) {
 
   const CE1 = {
     id: "lo22mvemxyoo02c",
-    consigne: "<p>Vous cherchez une activité pour vous détendre. Lisez les annonces et répondez aux questions.</p>",
-    readingText: p(
-      "<strong>A. Yoga au parc</strong> : le dimanche à 10 h, en plein air, tous niveaux. Gratuit et sans inscription : il suffit d'apporter son tapis. En cas de pluie, la séance est annulée et un message est publié le matin même sur la page de l'association.",
-      "<strong>B. Groupe de parole étudiant</strong> : le jeudi à 19 h, à la maison des étudiants. Un temps d'échange animé par une psychologue, pour parler du stress, de la solitude ou de la vie loin de sa famille. Huit personnes au maximum. Gratuit, mais inscription obligatoire ; ce que chacun dit reste confidentiel.",
-      "<strong>C. Chorale du quartier</strong> : le lundi à 20 h, salle des fêtes. Aucun niveau demandé, aucune connaissance de la musique nécessaire : on apprend les chants à l'oreille. 40 € l'année. Deux concerts sont donnés chaque année, mais personne n'est obligé d'y participer. Les répétitions se terminent toujours par un moment convivial autour d'une boisson chaude.",
-      "<strong>D. Jardin partagé</strong> : le samedi matin, rue des Lilas. Venez planter, arroser et récolter avec vos voisins. Aucune expérience du jardinage n'est nécessaire : les plus anciens conseillent les nouveaux. Outils prêtés, gants à apporter. Les légumes sont partagés entre les participants. Adhésion libre : chacun donne ce qu'il veut.",
-      "<strong>E. Méditation en ligne</strong> : une application pour apprendre à respirer et à se concentrer, dix minutes par jour, où et quand vous voulez. 5 € par mois, gratuite pendant deux semaines. Déconseillée aux personnes qui souffrent de troubles graves : parlez-en d'abord à un médecin.",
-    ),
+    consigne: p("Vous êtes étudiant(e) et vous vous sentez très stressé(e) en période d'examens. Vous cherchez une activité pour vous détendre en fonction des critères suivants :", "• le soir, après les cours ;<br>• gratuite ;<br>• sans inscription à l'avance ;<br>• avec d'autres personnes.", "Vous comparez ces quatre annonces. Pour chaque annonce, cochez (☒) OUI si cela correspond au critère ou NON si cela ne correspond pas."),
+    readingText: "",
     cau: [
-      q("Vous voulez parler de vos difficultés avec un professionnel, en petit groupe. Vous choisissez…", "B", ["C", "E"], "B: « animé par une psychologue » và « Huit personnes au maximum »."),
-      q("Vous aimez chanter, mais vous ne savez pas lire la musique. Vous choisissez…", "C", ["A", "D"], "C: « aucune connaissance de la musique nécessaire : on apprend les chants à l'oreille »."),
-      q("Vous avez peu de temps, vous voulez pratiquer chez vous et ne rien payer au début. Vous choisissez…", "E", ["A", "B"], "E: « dix minutes par jour, où et quand vous voulez » và « gratuite pendant deux semaines ». A miễn phí nhưng ở ngoài trời."),
-      q("Quelle activité permet de repartir avec de la nourriture ?", "D", ["A", "C"], "D: « Les légumes sont partagés entre les participants »."),
-      q("Pour le yoga, comment sait-on qu'une séance est annulée ?", "sur la page de l'association", ["par un appel de l'animateur", "par un SMS envoyé la veille au soir"], "« un message est publié le matin même sur la page de l'association »."),
+      bang("Pour chaque annonce, cochez OUI ou NON.", [
+        { titre: "Yoga au parc", texte: p("Le dimanche matin à 10 h, venez pratiquer le yoga en plein air avec d'autres amateurs, tous niveaux confondus. La séance est gratuite et sans inscription : il suffit d'apporter son tapis. En cas de pluie, elle est annulée et un message est publié sur la page de l'association. Après la séance, ceux qui le souhaitent prennent souvent un café ensemble au kiosque du parc.") },
+        { titre: "Groupe de parole étudiant", texte: p("Le jeudi à 19 h, à la maison des étudiants, une psychologue anime un temps d'échange sur le stress et la solitude. Les groupes sont limités à huit personnes et l'inscription est obligatoire une semaine avant. La participation est gratuite pour les étudiants, sur présentation de la carte. Ce qui se dit pendant la séance reste confidentiel, et personne n'est obligé de prendre la parole.") },
+        { titre: "Piscine du campus", texte: p("La piscine du campus ouvre ses bassins aux étudiants du lundi au vendredi, de 12 h à 14 h. L'entrée coûte 2 €, sans réservation : présentez simplement votre carte d'étudiant à l'accueil. Les nageurs pratiquent chacun dans leur couloir, en silence. Des serviettes et des bonnets de bain sont en vente à l'accueil pour ceux qui les ont oubliés.") },
+        { titre: "Chorale du quartier", texte: p("Chaque lundi à 20 h, une trentaine d'habitants se retrouvent à la salle des fêtes pour chanter ensemble. Aucun niveau n'est demandé et vous pouvez venir à n'importe quelle répétition sans prévenir. L'adhésion coûte 40 € pour l'année, partitions comprises. Deux concerts sont donnés chaque année, mais personne n'est obligé d'y participer, et les débutants sont toujours bien accueillis par les anciens.") },
+      ], ["Horaires", "Prix", "Inscription", "Groupe"], ["NOOO", "OONO", "NNON", "ONOO"],
+      "Yoga: « Le dimanche matin à 10 h » (NON), « La séance est gratuite et sans inscription » (OUI cho giá và cho đăng ký), « avec d'autres amateurs » (OUI). Groupe de parole: « Le jeudi à 19 h » (OUI), « La participation est gratuite » (OUI), « l'inscription est obligatoire une semaine avant » (NON), « Les groupes sont limités à huit personnes » (OUI). Piscine: « de 12 h à 14 h » (NON), « L'entrée coûte 2 € » (NON), « sans réservation » (OUI), « chacun dans leur couloir, en silence » (NON). Chorale: « Chaque lundi à 20 h » (OUI), « L'adhésion coûte 40 € » (NON), « sans prévenir » (OUI), « une trentaine d'habitants » (OUI)."),
     ],
   };
 

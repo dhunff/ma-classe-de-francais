@@ -29,14 +29,16 @@ const SO = Number(thamSo("--de") || 0);
 const CHI_KIEM = process.argv.includes("--kho");
 const LAM_NGHE = process.argv.includes("--nghe");
 
-/* KHUNG từng đề: id bài theo thứ tự, và loại câu theo ord (q = qcm, v = vf). */
+/* KHUNG từng đề: id bài theo thứ tự, và loại câu theo ord (q = qcm, v = vf, t = bảng OUI/NON).
+   17/11 (chủ dự án, theo bản mẫu đề B1 format mới): Đọc 1 của B1 Đề 3 đến 6 đổi từ 5 câu chọn chữ cái
+   thành MỘT bảng OUI/NON 4 tài liệu × 4 tiêu chí (16 ô, 8 điểm); các câu cũ thừa bị xoá (ord > số câu mới). */
 const KHUNG = {
   B1: {
     2: { CO: [["b1d2mv268e3y00h", "qqqqqqqq"]], CE: [["b1d2mv268e3y00i", "qqqqqqqq"]] },
-    3: { CO: [["lo18mv42gdao04l", "qqqqqqq"], ["lo18mv42gok004m", "qqqqq"]], CE: [["lo18mv42gok004n", "qqqqq"], ["lo18mv42gok004o", "qvqqvqqq"]] },
-    4: { CO: [["lo22mvemx6ox023", "qqqqqqq"], ["lo22mvemxfqi024", "qqqqq"]], CE: [["lo22mvemxfqi025", "qqqqq"], ["lo22mvemxfqj026", "qvqvqqqq"]] },
-    5: { CO: [["lo22mvemxpdq02a", "qqqqqqq"], ["lo22mvemxyon02b", "qqqqq"]], CE: [["lo22mvemxyoo02c", "qqqqq"], ["lo22mvemxyoo02d", "qqqvqqvq"]] },
-    6: { CO: [["lo22mvemy7r602h", "qqqqqqq"], ["lo22mvemyhx902i", "qqqqq"]], CE: [["lo22mvemyhx902j", "qqqqq"], ["lo22mvemyhx902k", "qqvqqqvq"]] },
+    3: { CO: [["lo18mv42gdao04l", "qqqqqqq"], ["lo18mv42gok004m", "qqqqq"]], CE: [["lo18mv42gok004n", "t"], ["lo18mv42gok004o", "qvqqvqqq"]] },
+    4: { CO: [["lo22mvemx6ox023", "qqqqqqq"], ["lo22mvemxfqi024", "qqqqq"]], CE: [["lo22mvemxfqi025", "t"], ["lo22mvemxfqj026", "qvqvqqqq"]] },
+    5: { CO: [["lo22mvemxpdq02a", "qqqqqqq"], ["lo22mvemxyon02b", "qqqqq"]], CE: [["lo22mvemxyoo02c", "t"], ["lo22mvemxyoo02d", "qqqvqqvq"]] },
+    6: { CO: [["lo22mvemy7r602h", "qqqqqqq"], ["lo22mvemyhx902i", "qqqqq"]], CE: [["lo22mvemyhx902j", "t"], ["lo22mvemyhx902k", "qqvqqqvq"]] },
   },
   C1: {
     2: { CO: [["lo18mv42huue04z", "qqqqqqqqqq"], ["lo18mv42i4da050", "qqqqq"]], CE: [["lo18mv42i4db051", "qqvqqqvqqqqq"]] },
@@ -60,8 +62,23 @@ const q = (prompt, dung, sai, explanation) => {
 };
 const v = (prompt, dung, justification) => ({ type: "vf", prompt, answer: dung ? 0 : 1, justification });
 const p = (...ds) => ds.map((x) => `<p>${x}</p>`).join("");
+/* Bảng OUI/NON: taiLieu = [{ titre, texte }], tieuChi = [nhãn], dapAn = mỗi tài liệu một chuỗi 4 chữ O/N theo thứ tự
+   tiêu chí ("ONNO"). id cột/hàng gắn sau theo id bài (xem dungBang). */
+const bang = (prompt, taiLieu, tieuChi, dapAn, explanation) => ({ type: "tableau", prompt, taiLieu, tieuChi, dapAn, explanation });
 const d = (giong, cach, chu) => ({ giong, cach, chu, toc: TOC });
-const DE = noiDung({ q, v, p, d });
+const DE = noiDung({ q, v, p, d, bang });
+for (const b of DE.CE) b.cau = b.cau.map((c) => (c.type !== "tableau" ? c : {
+  type: "tableau", prompt: c.prompt, explanation: c.explanation,
+  colonnes: c.taiLieu.map((t, j) => ({ id: `${b.id}c${j + 1}`, titre: t.titre, texte: t.texte })),
+  criteres: c.tieuChi.map((t, i) => ({ id: `${b.id}t${i + 1}`, texte: t })),
+  answers: Object.fromEntries(c.taiLieu.flatMap((_, j) => c.tieuChi.map((_, i) => [`${b.id}t${i + 1}_${b.id}c${j + 1}`, c.dapAn[j][i] === "O" ? "OUI" : "NON"]))),
+  _bang: c,
+}));
+/* Thang điểm như đề thật: bảng 16 ô × 0,5 = 8 điểm; Đọc 2 phải là 17 điểm để cả phần Đọc đủ 25. heSo tính
+   bằng NỬA điểm: QCM 2 điểm (4), Vrai/Faux 2,5 điểm (5). Chỉ áp cho đề có bảng. */
+if (CAP === "B1" && DE.CE[0]?.cau?.[0]?.type === "tableau" && DE.CE[1]) {
+  for (const c of DE.CE[1].cau) c.heSo = c.type === "vf" ? 5 : 4;
+}
 /* Bài nào có quá nửa đáp án QCM cùng một vị trí thì xáo lại phương án của bài đó (vẫn theo hạt cố định). */
 const xao = (c) => { const dung = c.options[c.answer], o = [...c.options];
   for (let i = o.length - 1; i > 0; i--) { const k = Math.floor(nn() * (i + 1)); [o[i], o[k]] = [o[k], o[i]]; }
@@ -81,10 +98,19 @@ const trichCo = (ten, chu, van) => {
     if (!chuan(van).includes(chuan(manh))) loi.push(`${ten}: « ${manh} » không có trong bài`);
 };
 const kiemCau = (ten, cau, van, kieu) => {
-  const thuc = cau.map((c) => (c.type === "vf" ? "v" : "q")).join("");
+  const thuc = cau.map((c) => (c.type === "vf" ? "v" : c.type === "tableau" ? "t" : "q")).join("");
   if (thuc !== kieu) loi.push(`${ten}: khung câu ${thuc}, cần ${kieu}`);
   for (const [i, c] of cau.entries()) {
     const t = `${ten} câu ${i + 1}`;
+    if (c.type === "tableau") {
+      const g = c._bang, n = g.taiLieu.length * g.tieuChi.length, oui = g.dapAn.join("").split("").filter((x) => x === "O").length;
+      if (g.taiLieu.length !== 4 || g.tieuChi.length !== 4) loi.push(`${t}: bảng phải 4 tài liệu × 4 tiêu chí`);
+      if (g.dapAn.length !== g.taiLieu.length || g.dapAn.some((x) => !/^[ON]{4}$/.test(x))) loi.push(`${t}: đáp án bảng hỏng`);
+      if (oui < 5 || oui > 11) loi.push(`${t}: ${oui}/${n} ô OUI, nên cân bằng hơn`);
+      if (!/«/.test(c.explanation || "")) loi.push(`${t}: lời giải không trích nguyên văn`);
+      trichCo(t, c.explanation || "", g.taiLieu.map((x) => `${x.titre} ${x.texte}`).join(" "));
+      continue;
+    }
     if (c.type === "vf") {
       if (!c.justification || !chuan(van).includes(chuan(c.justification))) loi.push(`${t}: câu trích Vrai/Faux không nằm nguyên văn trong bài`);
       continue;
@@ -101,12 +127,13 @@ const kiemCau = (ten, cau, van, kieu) => {
 };
 if (DE.CE.length !== khung.CE.length || DE.CO.length !== khung.CO.length) loi.push("Số bài khác khung");
 for (const [k, b] of DE.CE.entries()) {
-  const ten = `Đọc ${k + 1}`, so = demTu(b.readingText), [id, kieu] = khung.CE[k] || [];
+  const laBang = b.cau[0]?.type === "tableau";
+  const ten = `Đọc ${k + 1}`, so = laBang ? demTu(b.cau[0]._bang.taiLieu.map((x) => x.texte).join(" ")) : demTu(b.readingText), [id, kieu] = khung.CE[k] || [];
   if (b.id !== id) loi.push(`${ten}: id ${b.id}, khung là ${id}`);
   /* giuVanBan: văn bản THẬT trích nguyên (không được sửa), chỉ viết lại câu hỏi: bỏ ngưỡng số từ, không ghi đè reading_text. */
-  const can = b.toiThieu || TOI_THIEU[CAP].CE[k];   // toiThieu: bài lệch khuôn (B1 Đề 2 chỉ có một bài báo)
+  const can = b.toiThieu || (laBang ? 240 : TOI_THIEU[CAP].CE[k]);   // toiThieu: bài lệch khuôn (B1 Đề 2 chỉ có một bài báo)
   if (!b.giuVanBan && so < can) loi.push(`${ten}: văn bản ${so} từ, cần từ ${can}`);
-  kiemCau(ten, b.cau, b.readingText, kieu);
+  kiemCau(ten, b.cau, b.readingText || "", kieu);
   console.error(`  ${ten}: ${so} từ, ${b.cau.length} câu`);
 }
 for (const [k, b] of DE.CO.entries()) {
@@ -132,9 +159,9 @@ const sqlBai = (ex, them) => {
   for (const r of qRows) if ("answer" in r.payload) throw new Error("Đáp án lọt vào payload: " + ex.id);
   const dat = Object.entries(them(exRow)).map(([k, x]) => `${k} = ${x}`).join(", ");
   const dong = qRows.map((x) => `(${x.ord}, ${s(x.type)}, ${s(x.prompt)}, ${j(x.payload)}, ${j(x.answer_key)}, ${s(x.explanation)})`).join(",\n  ");
-  return `-- ${ex.id}\nupdate public.exercises set ${dat} where id = ${s(ex.id)};\nupdate public.questions q set type = v.type, prompt = v.prompt, payload = v.payload, answer_key = v.answer_key, explanation = v.explanation\nfrom (values\n  ${dong}\n) as v(ord, type, prompt, payload, answer_key, explanation)\nwhere q.exercise_id = ${s(ex.id)} and q.ord = v.ord;`;
+  return `-- ${ex.id}\nupdate public.exercises set ${dat} where id = ${s(ex.id)};\nupdate public.questions q set type = v.type, prompt = v.prompt, payload = v.payload, answer_key = v.answer_key, explanation = v.explanation\nfrom (values\n  ${dong}\n) as v(ord, type, prompt, payload, answer_key, explanation)\nwhere q.exercise_id = ${s(ex.id)} and q.ord = v.ord;\ndelete from public.questions where exercise_id = ${s(ex.id)} and ord > ${qRows.length};`;
 };
-const cauRa = (id, cau) => cau.map((c, i) => ({ ...c, id: `${id}_${i}` }));
+const cauRa = (id, cau) => cau.map(({ _bang, ...c }, i) => ({ ...c, id: `${id}_${i}` }));
 const ds = () => readdirSync("supabase/migrations").filter((f) => /^\d+_.*\.sql$/.test(f));
 const soMoi = (duoi) => { const f = ds(); const cu = f.find((x) => x.endsWith(duoi)); return cu ? Number(cu.split("_")[0]) : Math.max(...f.map((x) => Number(x.split("_")[0]))) + 1; };
 const ma = `${CAP.toLowerCase()}_de${SO}`, tenDe = `${CAP === "C1" ? "DALF" : "DELF"} ${CAP} · Đề ${SO}`;
@@ -143,8 +170,11 @@ const ma = `${CAP.toLowerCase()}_de${SO}`, tenDe = `${CAP === "C1" ? "DALF" : "D
 {
   const ra = DE.CE.map((b) => sqlBai({ ...chung, id: b.id, title: "", level: CAP, skills: ["Lecture"], consigne: b.consigne, readingText: b.readingText, questions: cauRa(b.id, b.cau) },
     (r) => (b.giuVanBan ? { consigne: s(r.consigne) } : { consigne: s(r.consigne), reading_text: s(r.reading_text) })));
-  const so = soMoi(`_${ma}_doc_kho.sql`), tep = `supabase/migrations/${so}_${ma}_doc_kho.sql`;
-  writeFileSync(tep, `-- ${so} (17/11/2026, lô 55): « ${tenDe} », phần ĐỌC viết lại khó hơn (văn bản dài hơn, câu hỏi về hàm ý).\n-- Sinh bởi scripts/nhap/lo55_kho.mjs --cap ${CAP} --de ${SO}. Sửa thẳng, giữ id bài và id câu (cập nhật theo ord). Chạy lại an toàn.\n` + ra.join("\n\n") + "\n");
+  /* Đề đã đổi Đọc 1 thành bảng OUI/NON (17/11) ghi ra file RIÊNG: file _doc_kho.sql của các đề này đã chạy
+     trên database, sửa nó thì db push không chạy lại. */
+  const duoi = DE.CE[0]?.cau?.[0]?.type === "tableau" ? "doc_oui_non" : "doc_kho";
+  const so = soMoi(`_${ma}_${duoi}.sql`), tep = `supabase/migrations/${so}_${ma}_${duoi}.sql`;
+  writeFileSync(tep, `-- ${so} (17/11/2026, lô 55): « ${tenDe} », phần ĐỌC ${duoi === "doc_oui_non" ? "theo khung đề B1 format mới: Đọc 1 là bảng OUI/NON 16 ô (8 điểm, câu cũ thừa bị xoá), Đọc 2 chia lại điểm (17 điểm)" : "viết lại khó hơn (văn bản dài hơn, câu hỏi về hàm ý)"}.\n-- Sinh bởi scripts/nhap/lo55_kho.mjs --cap ${CAP} --de ${SO}. Sửa thẳng, giữ id bài và id câu (cập nhật theo ord). Chạy lại an toàn.\n` + ra.join("\n\n") + "\n");
   console.error(`Đã ghi ${tep}.`);
 }
 if (!LAM_NGHE) { console.error("Phần Nghe chưa làm: chạy lại với --nghe (máy sẽ hỏi token)."); process.exit(0); }

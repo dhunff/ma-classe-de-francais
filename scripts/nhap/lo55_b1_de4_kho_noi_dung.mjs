@@ -4,7 +4,7 @@
  * Bài báo (Đọc 2) soạn TỪ NGUỒN THẬT: giữ nguyên mọi dữ kiện, ngày tháng và dòng ghi nguồn của bản cũ,
  * KHÔNG thêm dữ kiện mới; phần dài thêm chỉ là lập luận nêu chung. Không dùng dấu gạch dài (quy tắc 7). */
 
-export function noiDung({ q, v, p, d }) {
+export function noiDung({ q, v, p, d, bang }) {
   const RADIO = "Parle en français de France comme une journaliste de radio locale : débit naturel, vivant, sans ralentir pour des apprenants.";
   const PROF = "Parle en français de France comme une enseignante interviewée à la radio : débit naturel, spontané, avec de petites hésitations.";
   const ADO = "Parle en français de France comme un collégien de 13 ans un peu intimidé au micro : débit rapide, familier, quelques hésitations.";
@@ -54,20 +54,16 @@ export function noiDung({ q, v, p, d }) {
 
   const CE1 = {
     id: "lo22mvemxfqi025",
-    consigne: "<p>Vous cherchez une activité pour votre neveu de 14 ans. Lisez les annonces et répondez aux questions.</p>",
-    readingText: p(
-      "<strong>A. Club de robotique « Les Bricodeurs »</strong> : le mercredi de 14 h à 16 h, pour les 12-16 ans. Les jeunes construisent et programment de petits robots, puis les présentent à un concours régional en mai. 80 € l'année, matériel fourni. Aucune connaissance en informatique n'est exigée, mais une présence régulière est indispensable.",
-      "<strong>B. Atelier photo au smartphone</strong> : dix séances le samedi de 10 h à 12 h. Apprenez à cadrer, à jouer avec la lumière et à retoucher vos images. Chaque participant vient avec son propre téléphone. 60 € le cycle. Les meilleures photos seront exposées à la médiathèque en fin d'année. À partir de 15 ans.",
-      "<strong>C. Théâtre d'improvisation</strong> : le mardi de 18 h à 19 h 30, groupes de dix jeunes au maximum pour que chacun ait le temps de jouer. Spectacle en juin devant les familles. 150 € l'année, possibilité de payer en trois fois. Une séance d'essai gratuite est proposée en septembre.",
-      "<strong>D. Randonnée nature</strong> : un dimanche par mois, départ à 8 h devant la mairie. Gratuit, mais inscription obligatoire la semaine précédente. Les téléphones sont rassemblés dans une boîte au départ et rendus au retour : une journée entière pour se déconnecter. Prévoir chaussures de marche et pique-nique. Mineurs accompagnés d'un adulte.",
-      "<strong>E. Cours de guitare en ligne</strong> : des vidéos courtes et un professeur qui répond à vos questions par message sous 48 heures. Horaires libres, 15 € par mois, premier mois offert, sans engagement. Une guitare est nécessaire ; possibilité d'en louer une auprès de notre partenaire.",
-    ),
+    consigne: p("Votre neveu de 14 ans vient passer les vacances de printemps chez vous et vous lui cherchez une activité. Vous choisissez en fonction des critères suivants :", "• adaptée à son âge ;<br>• activité en groupe ;<br>• pendant la journée, en semaine ;<br>• gratuite.", "Vous comparez ces quatre annonces. Pour chaque annonce, cochez (☒) OUI si cela correspond au critère ou NON si cela ne correspond pas."),
+    readingText: "",
     cau: [
-      q("Votre neveu n'a pas de budget, et son père peut l'accompagner. Il choisit…", "D", ["A", "E"], "D: « Gratuit » và « Mineurs accompagnés d'un adulte ». E chỉ miễn phí tháng đầu (« premier mois offert »)."),
-      q("Il veut essayer avant de s'engager pour l'année, et il aime jouer devant un public. Il choisit…", "C", ["B", "E"], "C có « Une séance d'essai gratuite » và « Spectacle en juin devant les familles »."),
-      q("Quelle activité lui est interdite à cause de son âge ?", "B", ["A", "D"], "Cháu 14 tuổi, còn B ghi « À partir de 15 ans »."),
-      q("Il aimerait participer à une compétition. Il choisit…", "A", ["B", "C"], "A: « les présentent à un concours régional en mai ». B chỉ triển lãm ảnh, không thi."),
-      q("Pour le cours de guitare, un jeune qui n'a pas d'instrument…", "peut en louer une.", ["ne peut pas s'inscrire.", "en reçoit une le premier mois."], "« possibilité d'en louer une auprès de notre partenaire »."),
+      bang("Pour chaque annonce, cochez OUI ou NON.", [
+        { titre: "Stage de robotique", texte: p("Pendant les vacances de printemps, le club Les Bricodeurs propose un stage de cinq matinées, du lundi au vendredi, de 9 h à 12 h. Par équipes de trois, les jeunes de 12 à 16 ans construisent un petit robot qu'ils programment eux-mêmes. Le stage coûte 80 €, matériel compris ; une réduction est accordée aux familles nombreuses. Le vendredi, les familles sont invitées à venir voir les robots en action.") },
+        { titre: "Atelier photo au smartphone", texte: p("Deux samedis matin pour apprendre à faire de belles photos avec son téléphone : cadrage, lumière, retouche. L'atelier est gratuit grâce au soutien de la mairie, mais il est réservé aux jeunes de 15 à 18 ans. Chacun travaille sur son propre projet, avec les conseils individuels d'un photographe professionnel. Les plus belles images seront exposées dans le hall de la mairie.") },
+        { titre: "Sortie nature", texte: p("La maison de la nature organise chaque mercredi des vacances une sortie à la journée, de 9 h à 17 h, pour les 10-15 ans. Les jeunes partent à douze avec deux animateurs pour observer les oiseaux et apprendre à s'orienter avec une carte. La sortie est entièrement gratuite ; il suffit d'apporter un pique-nique et de bonnes chaussures.") },
+        { titre: "Tournois de jeux vidéo", texte: p("Le cybercafé Le Pixel organise des tournois en équipe le vendredi et le samedi soir, de 19 h à 23 h, sur grand écran. Ils sont ouverts aux joueurs à partir de 16 ans, sur présentation d'une pièce d'identité. Entrée : 5 € la soirée, boissons comprises. Les meilleures équipes gagnent des bons d'achat.") },
+      ], ["Âge", "Groupe", "Horaires", "Prix"], ["OOON", "NNNO", "OOOO", "NONN"],
+      "Robotique: « les jeunes de 12 à 16 ans » (OUI), « Par équipes de trois » (OUI), « du lundi au vendredi, de 9 h à 12 h » (OUI), « Le stage coûte 80 € » (NON). Photo: « réservé aux jeunes de 15 à 18 ans » (NON), « Chacun travaille sur son propre projet » (NON), « Deux samedis matin » (NON), « L'atelier est gratuit » (OUI). Sortie nature: « pour les 10-15 ans » (OUI), « Les jeunes partent à douze » (OUI), « chaque mercredi des vacances » (OUI), « entièrement gratuite » (OUI). Jeux vidéo: « à partir de 16 ans » (NON), « tournois en équipe » (OUI), « le vendredi et le samedi soir » (NON), « 5 € la soirée » (NON)."),
     ],
   };
 

@@ -5,7 +5,7 @@
  * Không dùng dấu gạch dài (quy tắc 7). */
 import { B1 as CU } from "./lo18_noi_dung.mjs";
 
-export function noiDung({ q, v, p, d }) {
+export function noiDung({ q, v, p, d, bang }) {
   const RADIO = "Parle en français de France comme un journaliste de radio locale en reportage : débit naturel et vivant, sans ralentir pour des apprenants.";
   const NATH = "Parle en français de France comme une bénévole enthousiaste interviewée à la radio : débit naturel et rapide, quelques hésitations.";
   const AMAN = "Parle en français de France comme une jeune femme qui raconte une anecdote au micro : débit rapide, spontané, ton amusé.";
@@ -52,20 +52,16 @@ export function noiDung({ q, v, p, d }) {
 
   const CE1 = {
     id: "lo18mv42gok004n",
-    consigne: "<p>Vous voulez suivre un cours le soir ou le week-end. Lisez les annonces et répondez aux questions.</p>",
-    readingText: p(
-      "<strong>A. Photo numérique</strong> : le mardi de 19 h à 21 h, dix séances. Apprenez à régler votre appareil, à composer une image et à travailler la lumière. Apporter son propre appareil : les téléphones ne sont pas acceptés. 120 € le cycle, paiement à l'inscription. Sortie photo en ville le dernier dimanche, pour ceux qui le souhaitent. Une exposition des meilleurs travaux est organisée à la fin du cycle.",
-      "<strong>B. Espagnol débutant</strong> : le lundi et le jeudi à 18 h 30, entièrement en ligne, en petits groupes de six. 90 € le trimestre. Un ordinateur avec caméra et micro est indispensable. Un test gratuit de vingt minutes permet de vérifier votre niveau avant l'inscription. Les cours enregistrés restent disponibles pendant une semaine.",
-      "<strong>C. Théâtre amateur</strong> : le mercredi à 20 h, salle Molière. Exercices de voix, improvisation, puis préparation d'une pièce présentée au public en juin. 150 € l'année. Les répétitions supplémentaires de mai sont obligatoires pour participer au spectacle.",
-      "<strong>D. Cuisine du monde</strong> : le vendredi à 19 h, quatre participants maximum pour que chacun cuisine vraiment. Chaque mois, un pays différent. 35 € la séance, ingrédients compris ; on repart avec ce qu'on a préparé. Réservation au moins une semaine à l'avance. Signalez vos allergies au moment de l'inscription.",
-      "<strong>E. Yoga doux</strong> : le samedi à 9 h, adapté aux débutants et aux personnes qui ont mal au dos. Premier cours gratuit, ensuite 8 € la séance ou 70 € la carte de dix. Tapis prêtés, mais pensez à apporter une serviette et une bouteille d'eau.",
-    ),
+    consigne: p("Vous travaillez à plein temps et vous voulez suivre un cours pour vous détendre et apprendre quelque chose de nouveau. Vous choisissez le cours en fonction des critères suivants :", "• cours le soir ou le week-end ;<br>• moins de 100 € au total ;<br>• petit groupe (10 personnes maximum) ;<br>• possibilité d'essayer avant de s'inscrire.", "Vous comparez ces quatre annonces. Pour chaque annonce, cochez (☒) OUI si cela correspond au critère ou NON si cela ne correspond pas."),
+    readingText: "",
     cau: [
-      q("Vous voulez apprendre depuis chez vous et connaître votre niveau avant de payer. Vous choisissez…", "B", ["A", "D"], "B: « entièrement en ligne » và « Un test gratuit de vingt minutes permet de vérifier votre niveau »."),
-      q("Vous voulez essayer gratuitement une activité physique douce. Vous choisissez…", "E", ["A", "C"], "E: « Premier cours gratuit », « adapté aux débutants et aux personnes qui ont mal au dos »."),
-      q("Vous aimez cuisiner en très petit groupe et rapporter votre repas. Vous choisissez…", "D", ["B", "C"], "D: « quatre participants maximum » và « on repart avec ce qu'on a préparé »."),
-      q("Quel cours oblige à venir en dehors de l'horaire habituel ?", "C", ["A", "E"], "C: « Les répétitions supplémentaires de mai sont obligatoires ». Buổi chụp ảnh ngoài phố của A không ghi là bắt buộc."),
-      q("Dans le cours de photo, on ne peut pas…", "utiliser un téléphone.", ["suivre le cours le mardi.", "participer à une sortie en ville."], "« les téléphones ne sont pas acceptés »."),
+      bang("Pour chaque annonce, cochez OUI ou NON.", [
+        { titre: "Atelier de photographie", texte: p("Envie de réussir enfin vos photos ? Notre atelier vous apprend à maîtriser la lumière et le cadrage avec votre propre appareil. Les séances ont lieu le mardi de 19 h à 21 h, après le travail. Le cycle de dix séances coûte 120 €, matériel non compris. Pour que chacun puisse poser ses questions, nous accueillons huit participants au maximum. Attention : l'inscription se fait pour le cycle complet, sans séance de découverte.") },
+        { titre: "Cours de cuisine du monde", texte: p("Chaque mois, un pays à l'honneur : le Maroc en septembre, le Japon en octobre. Le cours a lieu le samedi matin, de 9 h 30 à midi, dans la cuisine de la maison de quartier. Vous cuisinez dans des groupes de douze personnes et vous repartez avec vos plats. Prix : 25 € la séance, ou 90 € pour les quatre séances du trimestre. La première séance peut être réservée seule : si elle ne vous plaît pas, vous ne vous engagez pas pour la suite.") },
+        { titre: "Espagnol pour débutants", texte: p("Apprenez l'espagnol en douceur avec une professeure native. Les cours se déroulent en ligne le lundi et le jeudi, de 12 h 15 à 13 h, pendant la pause-déjeuner. Les classes réunissent cinq élèves au maximum, ce qui permet de beaucoup parler. Le trimestre coûte 85 €. Un premier cours gratuit est proposé à toute personne qui le souhaite, sans obligation de s'inscrire ensuite.") },
+        { titre: "Théâtre d'improvisation", texte: p("Vous êtes timide ? Le théâtre d'improvisation est fait pour vous. Rendez-vous le mercredi à 20 h, salle Molière, pour deux heures de jeux et d'exercices. Nos groupes comptent entre quinze et vingt comédiens amateurs, pour que les scènes soient variées. L'adhésion annuelle est de 150 €, payable en trois fois. Venez assister gratuitement à une séance en septembre avant de vous décider !") },
+      ], ["Horaires", "Prix", "Groupe", "Essai"], ["ONON", "OONO", "NOOO", "ONNO"],
+      "Photographie: « le mardi de 19 h à 21 h » (OUI), « 120 € » (NON), « huit participants au maximum » (OUI), « sans séance de découverte » (NON). Cuisine: « le samedi matin » (OUI), « 90 € pour les quatre séances » (OUI), « groupes de douze personnes » (NON), « La première séance peut être réservée seule » (OUI). Espagnol: « de 12 h 15 à 13 h, pendant la pause-déjeuner » (NON), « Le trimestre coûte 85 € » (OUI), « cinq élèves au maximum » (OUI), « Un premier cours gratuit » (OUI). Théâtre: « le mercredi à 20 h » (OUI), « 150 € » (NON), « entre quinze et vingt comédiens » (NON), « assister gratuitement à une séance » (OUI)."),
     ],
   };
 

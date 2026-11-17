@@ -506,7 +506,32 @@ PHAN_THI_MAU.exercises = [PHAN_THI_MAU.exercise, {
     { id: "q5", ord: 3, type: "qcm", doc: "<p><strong>PISCINE MUNICIPALE</strong></p><p>Fermée le lundi.</p><p>Du mardi au dimanche : de 7 h à 20 h.</p>", prompt: "Quand la piscine est-elle fermée ?", options: ["Le lundi.", "Le dimanche.", "Le matin.", "Le soir."] },
     { id: "q6", ord: 4, type: "qcm", anh: "https://ouch-prod-var-cdn.icons8.com/rh/illustrations/previews/faWP68YLZ2-CC9Ih.webp", prompt: "Écoutez les quatre propositions. Choisissez celle qui correspond à l'image.", options: ["", "", "", ""] },
   ],
+}, {
+  /* 17/11: bảng OUI/NON như đề B1 format mới, mỗi tài liệu một khung (ToDe.jsx › BangOuiNon). */
+  id: "xem-thu-3", title: "Activité 3", level: "B1", imageUrl: "", audioUrl: "", readingText: "",
+  consigne: "<p>Vous voulez suivre un cours. Vous choisissez en fonction des critères suivants :</p><p>• cours le soir ou le week-end ;<br>• moins de 100 € au total ;<br>• petit groupe ;<br>• possibilité d'essayer.</p><p>Pour chaque annonce, cochez (☒) OUI ou NON.</p>",
+  questions: [{ id: "q7", ord: 0, type: "tableau", prompt: "",
+    colonnes: [
+      { id: "c1", titre: "Atelier de photographie", texte: "<p>Les séances ont lieu le mardi de 19 h à 21 h. Le cycle de dix séances coûte 120 €. Huit participants au maximum, sans séance de découverte.</p>" },
+      { id: "c2", titre: "Cours de cuisine du monde", texte: "<p>Le samedi matin, groupes de douze personnes. 90 € pour les quatre séances. La première séance peut être réservée seule.</p>" },
+      { id: "c3", titre: "Espagnol pour débutants", texte: "<p>En ligne, de 12 h 15 à 13 h. Cinq élèves au maximum. Le trimestre coûte 85 €, premier cours gratuit.</p>" },
+      { id: "c4", titre: "Théâtre d'improvisation", texte: "<p>Le mercredi à 20 h. Groupes de quinze à vingt comédiens. 150 € l'année. Séance gratuite en septembre.</p>" },
+    ],
+    criteres: [{ id: "h", texte: "Horaires" }, { id: "p", texte: "Prix" }, { id: "g", texte: "Groupe" }, { id: "e", texte: "Essai" }] }],
 }];
+/* 17/11: phần Viết trả lời một thư, thư in trong khung « Nouveau message » (ToDe.jsx › ThuDen). */
+const PHAN_VIET_MAU = {
+  code: "PE", label: "Production écrite", minutes: 45, points: 25,
+  exercises: [{
+    id: "xem-viet", title: "Production écrite", level: "A2", imageUrl: "", audioUrl: "", readingText: "",
+    consigne: "<p><strong>Production écrite : 45 minutes.</strong></p>",
+    questions: [{ id: "v1", ord: 0, type: "open", soTu: 60,
+      prompt: "Vous ne pouvez pas venir. Vous répondez à Marie : vous la remerciez, vous expliquez pourquoi vous ne pouvez pas venir et vous proposez une autre sortie.",
+      thu: { kieu: "mail", gioiThieu: "Votre collègue Marie vous envoie ce message.", de: "marie.lefort@mail.fr", objet: "Mon pot de départ",
+        noiDung: "Bonjour à tous,\nJe quitte l'entreprise à la fin du mois. Je vous invite à mon pot de départ vendredi soir, à 18 h 30, dans la salle de réunion du deuxième étage. J'espère vous voir nombreux !\nMarie" } }],
+  }],
+};
+PHAN_VIET_MAU.exercise = PHAN_VIET_MAU.exercises[0];
 
 /* Thẻ lật 3D — chỉ dựng phần TRÌNH BÀY.
  *
@@ -692,6 +717,15 @@ function PhanThiTcfThu() {
   return (
     <div className="mx-auto max-w-4xl py-6">
       <PhanThi section={PHAN_THI_TCF} attemptId="xem-thu" answers={ans} setAnswers={setAns} xemThu onDone={() => {}} onBlur={() => {}} />
+    </div>
+  );
+}
+
+function PhanVietThu() {
+  const [ans, setAns] = useState({});
+  return (
+    <div className="mx-auto max-w-4xl py-6">
+      <PhanThi section={PHAN_VIET_MAU} attemptId="xem-thu" answers={ans} setAnswers={setAns} onDone={() => {}} onBlur={() => {}} />
     </div>
   );
 }
@@ -1011,6 +1045,7 @@ function Preview() {
     ["/etudiant/tai-khoan-moi", "Trang Tài khoản"],
     ["/etudiant/phan-nghe", "Phần nghe 2 bài (thi thử)"],
     ["/etudiant/phan-thi", "Một phần thi thử"],
+    ["/etudiant/phan-viet", "Phần Viết (khung thư)"],
     ["/etudiant/phan-thi-tcf", "Một phần thi TCF"],
     ["/etudiant/cham-tcf", "Phiếu AI chấm TCF"],
     ["/etudiant/xem-lai-thi", "Xem lại bài thi"],
@@ -1157,6 +1192,7 @@ function Preview() {
               { code: "CE", exercise_id: "xem-thu-2", minutes: 0, points: 0, ord: 1 },
               { code: "PO", exercise_id: "xem-thu", minutes: 15, points: 25, ord: 2 }] }} />} />
           <Route path="/etudiant/phan-thi" element={<><Controls /><PhanThiThu /></>} />
+          <Route path="/etudiant/phan-viet" element={<><Controls /><PhanVietThu /></>} />
           <Route path="/etudiant/phan-thi-tcf" element={<><Controls /><PhanThiTcfThu /></>} />
           {/* 14/11: mừng mốc chuỗi, bấm các nút để xem từng mốc. */}
           {/* 17/11: hộp mua VIP có thẻ « Ví MoMo » (bấm nút sẽ gọi máy chủ thật và báo lỗi vì chưa đăng nhập). */}
