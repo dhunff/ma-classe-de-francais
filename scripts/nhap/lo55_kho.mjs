@@ -103,7 +103,9 @@ if (DE.CE.length !== khung.CE.length || DE.CO.length !== khung.CO.length) loi.pu
 for (const [k, b] of DE.CE.entries()) {
   const ten = `Đọc ${k + 1}`, so = demTu(b.readingText), [id, kieu] = khung.CE[k] || [];
   if (b.id !== id) loi.push(`${ten}: id ${b.id}, khung là ${id}`);
-  if (so < TOI_THIEU[CAP].CE[k]) loi.push(`${ten}: văn bản ${so} từ, cần từ ${TOI_THIEU[CAP].CE[k]}`);
+  /* giuVanBan: văn bản THẬT trích nguyên (không được sửa), chỉ viết lại câu hỏi: bỏ ngưỡng số từ, không ghi đè reading_text. */
+  const can = b.toiThieu || TOI_THIEU[CAP].CE[k];   // toiThieu: bài lệch khuôn (B1 Đề 2 chỉ có một bài báo)
+  if (!b.giuVanBan && so < can) loi.push(`${ten}: văn bản ${so} từ, cần từ ${can}`);
   kiemCau(ten, b.cau, b.readingText, kieu);
   console.error(`  ${ten}: ${so} từ, ${b.cau.length} câu`);
 }
@@ -140,7 +142,7 @@ const ma = `${CAP.toLowerCase()}_de${SO}`, tenDe = `${CAP === "C1" ? "DALF" : "D
 /* ── 2. Phần Đọc ── */
 {
   const ra = DE.CE.map((b) => sqlBai({ ...chung, id: b.id, title: "", level: CAP, skills: ["Lecture"], consigne: b.consigne, readingText: b.readingText, questions: cauRa(b.id, b.cau) },
-    (r) => ({ consigne: s(r.consigne), reading_text: s(r.reading_text) })));
+    (r) => (b.giuVanBan ? { consigne: s(r.consigne) } : { consigne: s(r.consigne), reading_text: s(r.reading_text) })));
   const so = soMoi(`_${ma}_doc_kho.sql`), tep = `supabase/migrations/${so}_${ma}_doc_kho.sql`;
   writeFileSync(tep, `-- ${so} (17/11/2026, lô 55): « ${tenDe} », phần ĐỌC viết lại khó hơn (văn bản dài hơn, câu hỏi về hàm ý).\n-- Sinh bởi scripts/nhap/lo55_kho.mjs --cap ${CAP} --de ${SO}. Sửa thẳng, giữ id bài và id câu (cập nhật theo ord). Chạy lại an toàn.\n` + ra.join("\n\n") + "\n");
   console.error(`Đã ghi ${tep}.`);
