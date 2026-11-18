@@ -251,6 +251,7 @@ import NhanXetCauNgan from "./screens/student/NhanXetCauNgan.jsx";
 import NhanXetTCF from "./screens/exam/NhanXetTCF.jsx";
 import XemLaiBaiThi from "./screens/exam/XemLaiBaiThi.jsx";
 import PaymentModal from "./screens/student/PaymentModal.jsx";
+import HoiLeon from "./shared/HoiLeon.jsx";
 import { goiVip } from "./shared/vip.js";
 import MungChuoi from "./screens/dashboard/MungChuoi.jsx";
 
@@ -1050,6 +1051,8 @@ function Preview() {
     ["/etudiant/cham-tcf", "Phiếu AI chấm TCF"],
     ["/etudiant/xem-lai-thi", "Xem lại bài thi"],
     ["/etudiant/mua-vip", "Mua VIP (chuyển khoản, MoMo)"],
+    ["/etudiant/hoi-leon", "Hỏi Leon: khung trống có gợi ý"],
+    ["/etudiant/hoi-leon-ls", "Hỏi Leon: có lịch sử"],
     ["/etudiant/mung-chuoi", "Mừng mốc chuỗi"],
     ["/etudiant/nhan-xet-ngan", "Nhận xét AI câu trả lời ngắn"],
     ["/etudiant/nhan-xet-ai", "Phiếu nhận xét AI"],
@@ -1196,6 +1199,12 @@ function Preview() {
           <Route path="/etudiant/phan-thi-tcf" element={<><Controls /><PhanThiTcfThu /></>} />
           {/* 14/11: mừng mốc chuỗi, bấm các nút để xem từng mốc. */}
           {/* 17/11: hộp mua VIP có thẻ « Ví MoMo » (bấm nút sẽ gọi máy chủ thật và báo lỗi vì chưa đăng nhập). */}
+          {/* 18/11: khung chat Hỏi Leon (dữ liệu giả, trả lời giả, không gọi máy chủ). */}
+          <Route path="/etudiant/hoi-leon" element={<><Controls /><HoiLeon thu={{ mo: true, tin: [], level: "B1", conLai: 7, traLoi: "**Passé composé** dùng cho hành động đã xong, có mốc rõ: *Hier, j'ai mangé une pizza.*\n**Imparfait** tả bối cảnh, thói quen trong quá khứ: *Quand j'étais petit, je mangeais souvent des pizzas.*\n- Mẹo: hỏi « hành động này kết thúc chưa, hay đang làm nền? »" }} /></>} />
+          <Route path="/etudiant/hoi-leon-ls" element={<><Controls /><HoiLeon thu={{ mo: true, level: "B2", conLai: null, traLoi: "Très bien !", tin: [
+            { ai: "hs", chu: "Giải thích subjonctif: khi nào bắt buộc, khi nào không?" },
+            { ai: "leon", cam: "hoc", chu: "**Subjonctif** đi sau các động từ, cụm từ diễn tả mong muốn, cảm xúc, nghi ngờ, bắt buộc:\n- *Il faut que tu viennes.*\n- *Je veux qu'il parte.*\nSau *penser que, croire que* ở thể khẳng định thì dùng **indicatif**." },
+          ] }} /></>} />
           <Route path="/etudiant/mua-vip" element={<><Controls /><PaymentModal ex={goiVip("Gói VIP 1 tháng")} student="Hoc Sinh Thu" config={{ bank: "MB", account: "0000000000", accountName: "FRACILE" }} onClose={() => {}} /></>} />
           <Route path="/etudiant/mung-chuoi" element={<><Controls /><MungChuoiThu /></>} />
           {/* 14/11: xem lại bài thi (dữ liệu giả). */}
