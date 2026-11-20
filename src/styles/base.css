@@ -641,7 +641,7 @@ html.mcf-dark-root .leon-chat[data-chu-de="keo-ngot"], .mcf-dark .leon-chat[data
 .leon-dau { left: -18px; right: -18px;
   -webkit-mask: radial-gradient(circle 29px at 50% calc(100% - 29px), #000 98%, transparent 100%), linear-gradient(#000, #000) top / 100% calc(100% - 29px) no-repeat;
           mask: radial-gradient(circle 29px at 50% calc(100% - 29px), #000 98%, transparent 100%), linear-gradient(#000, #000) top / 100% calc(100% - 29px) no-repeat; }
-.leon-lac { border-radius: 46% 46% 0 0 / 38% 38% 0 0; transform-origin: 50% 90%; animation: leonLac 9s ease-in-out 3s infinite; }
+.leon-lac { clip-path: inset(0 17% 0 0); translate: 8.5% 0; transform-origin: 42% 90%; animation: leonLac 9s ease-in-out 3s infinite; }
 @keyframes leonLac { 0%, 86%, 100% { transform: rotate(0); } 89% { transform: rotate(-9deg); } 93% { transform: rotate(7deg); } 96% { transform: rotate(-3deg); } }
 .leon-chao { background: rgb(var(--mcf-surface-rgb)); color: rgb(var(--mcf-ink-rgb)); border: 1px solid rgb(var(--mcf-line-rgb)); box-shadow: 0 10px 24px -8px rgb(0 0 0 / .25); }
 @media (prefers-reduced-motion: reduce) { .leon-vong, .leon-lac { animation: none; } }

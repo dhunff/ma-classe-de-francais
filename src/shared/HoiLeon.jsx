@@ -401,9 +401,9 @@ export default function HoiLeon({ thu = null }) {
           <span aria-hidden className="absolute inset-[4px] rounded-full bg-surface" />
           <motion.span aria-hidden variants={{ re: { y: -6, rotate: -6 } }} transition={{ type: "spring", stiffness: 380, damping: 14 }}
             className="leon-dau absolute inset-x-[4px] bottom-[4px] grid h-[86px] place-items-end justify-center">
-            <Leon cam="dau" size={76} alt="" className="leon-lac block" />
+            <Leon cam="mim-cuoi" size={76} alt="" className="leon-lac block" />
           </motion.span>
-          {moiHomNay && !mo && <span aria-hidden className="leon-diem-moi absolute right-0 top-0 z-10 h-4 w-4 rounded-full border-2 border-solid border-white bg-danger" />}
+          {moiHomNay && !mo && <span aria-hidden className="leon-diem-moi absolute -right-2 top-2.5 z-10 h-4 w-4 rounded-full border-2 border-solid border-white bg-danger" />}
         </motion.button>
       </div>
     </MotionConfig>
