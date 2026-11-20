@@ -434,7 +434,7 @@ export function TrangBaoMat() {
       </Muc>
 
       <Muc ten={tr("3. Quyền của bạn", "3. Vos droits", "3. Your rights")}>
-        <P>{tr("Bạn có quyền xem, sửa, yêu cầu xoá dữ liệu cá nhân và rút lại sự đồng ý. Nhiều thông tin bạn tự sửa được ở trang Tài khoản; với yêu cầu khác, liên hệ", "Vous pouvez consulter, corriger, faire supprimer vos données et retirer votre consentement. Beaucoup se modifient dans « Mon compte » ; sinon, contactez", "You can view, correct and delete your personal data and withdraw consent. Much of it can be edited in your Account page; otherwise contact")}: <LienHe />.</P>
+        <P>{tr("Bạn có quyền xem, sửa, yêu cầu xoá dữ liệu cá nhân và rút lại sự đồng ý. Nhiều thông tin bạn tự sửa được ở trang Tài khoản, và học sinh tự xoá được tài khoản cùng toàn bộ dữ liệu ở Tài khoản › Bảo mật; với yêu cầu khác, liên hệ", "Vous pouvez consulter, corriger, faire supprimer vos données et retirer votre consentement. Beaucoup se modifient dans « Mon compte », et un élève peut supprimer son compte et toutes ses données dans Mon compte › Sécurité ; sinon, contactez", "You can view, correct and delete your personal data and withdraw consent. Much of it can be edited in your Account page, and students can delete their account and all its data under Account › Security; otherwise contact")}: <LienHe />.</P>
       </Muc>
     </Khung>
   );

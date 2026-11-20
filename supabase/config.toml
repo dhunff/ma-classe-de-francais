@@ -65,6 +65,11 @@ verify_jwt = false
 [functions.momo-don]
 verify_jwt = false
 
+# xoa-tai-khoan (20/11/2026): học sinh tự xoá tài khoản. Cùng lý do với `grade`: hàm tự đọc JWT bằng
+# auth.getUser(token), không có token hợp lệ thì trả 401, và chỉ xoá đúng người đang đăng nhập.
+[functions.xoa-tai-khoan]
+verify_jwt = false
+
 # Hai hàm còn lại GIỮ NGUYÊN mặc định (verify_jwt = true):
 #
 #   grant-access   tự kiểm bằng `x-teacher-token`, không cần đọc JWT người gọi

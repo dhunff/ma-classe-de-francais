@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { User, Lock, LogOut, Calendar, Pencil, CheckCircle2, Loader2, AlertTriangle, AtSign, IdCard, Phone, GraduationCap, ShieldCheck, Mail } from "lucide-react";
 import CaiDatMail from "./CaiDatMail.jsx";
+import XoaTaiKhoan from "./XoaTaiKhoan.jsx";
 import { useT, tr } from "../../shared/i18n.jsx";
 import { Leon } from "../../shared/leon.jsx";
 import { loadHoSo, luuHoSo } from "../../shared/profileStore.js";
@@ -528,7 +529,10 @@ export default function AccountPage({ name, role, email, emailVerified, onLogout
         ) : tab === "mail" ? (
           <CaiDatMail />
         ) : (
-          <SecurityTab changePw={changePw} />
+          <div className="grid gap-5">
+            <SecurityTab changePw={changePw} />
+            <XoaTaiKhoan role={role} onLogout={onLogout} />
+          </div>
         )}
       </section>
 
