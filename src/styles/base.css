@@ -632,3 +632,16 @@ html.mcf-dark-root .leon-chat[data-chu-de="keo-ngot"], .mcf-dark .leon-chat[data
 @keyframes leonCham2 { 0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, .55); } 50% { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); } }
 .leon-diem-moi { animation: leonCham2 1.8s ease-out infinite; }
 @media (prefers-reduced-motion: reduce) { .leon-cham span, .leon-diem-moi { animation: none; } }
+/* 20/11: nút mở Hỏi Leon. Vòng ba màu cờ Pháp (màu cố định có chủ đích, không theo token: đây là dấu hiệu
+   nhận diện của Léon, giống nhau ở chế độ sáng và tối) quay chậm; đầu Léon được che bằng mask: nửa dưới theo
+   hình tròn bên trong vòng, nửa trên để hở nên tai và đầu nhô lên khỏi mép. Cứ 9 s Léon nghiêng đầu một lần. */
+.leon-nut-mo { filter: drop-shadow(0 8px 14px rgb(0 0 0 / .22)); }
+.leon-vong { background: conic-gradient(from 0deg, #002395 0 30%, #ffffff 30% 36%, #c8102e 36% 66%, #ffffff 66% 72%, #002395 72% 100%); animation: leonVong 10s linear infinite; }
+@keyframes leonVong { to { transform: rotate(360deg); } }
+.leon-dau { left: -18px; right: -18px;
+  -webkit-mask: radial-gradient(circle 29px at 50% calc(100% - 29px), #000 98%, transparent 100%), linear-gradient(#000, #000) top / 100% calc(100% - 29px) no-repeat;
+          mask: radial-gradient(circle 29px at 50% calc(100% - 29px), #000 98%, transparent 100%), linear-gradient(#000, #000) top / 100% calc(100% - 29px) no-repeat; }
+.leon-lac { border-radius: 46% 46% 0 0 / 38% 38% 0 0; transform-origin: 50% 90%; animation: leonLac 9s ease-in-out 3s infinite; }
+@keyframes leonLac { 0%, 86%, 100% { transform: rotate(0); } 89% { transform: rotate(-9deg); } 93% { transform: rotate(7deg); } 96% { transform: rotate(-3deg); } }
+.leon-chao { background: rgb(var(--mcf-surface-rgb)); color: rgb(var(--mcf-ink-rgb)); border: 1px solid rgb(var(--mcf-line-rgb)); box-shadow: 0 10px 24px -8px rgb(0 0 0 / .25); }
+@media (prefers-reduced-motion: reduce) { .leon-vong, .leon-lac { animation: none; } }

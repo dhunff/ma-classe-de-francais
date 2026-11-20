@@ -153,6 +153,18 @@ export default function HoiLeon({ thu = null }) {
   const [co, setCo] = useState(() => doc("mcf-leon-co", "vua"));
   const [moiHomNay, setMoiHomNay] = useState(() => doc("mcf-leon-mo", "") !== homNay());
   const cuon = useRef(null);
+  /* Bóng thoại chào cạnh nút mở: tự hiện một lần mỗi phiên (sau 2,5 s, trong 5 s), và khi rê chuột. */
+  const [chao, setChao] = useState(!!thu?.chao);
+  const [re, setRe] = useState(false);
+  useEffect(() => {
+    if (thu) return undefined;
+    let daChao = false;
+    try { daChao = sessionStorage.getItem("mcf-leon-chao") === "1"; } catch { /* trình duyệt chặn lưu trữ */ }
+    if (daChao) return undefined;
+    const t1 = setTimeout(() => { setChao(true); try { sessionStorage.setItem("mcf-leon-chao", "1"); } catch { /* bỏ qua */ } }, 2500);
+    const t2 = setTimeout(() => setChao(false), 7500);
+    return () => { clearTimeout(t1); clearTimeout(t2); };
+  }, [thu]);
 
   /* Theo dõi chế độ làm bài tập trung. */
   useEffect(() => {
@@ -370,12 +382,30 @@ export default function HoiLeon({ thu = null }) {
           </motion.section>
         )}
       </AnimatePresence>
-      <motion.button type="button" onClick={mo_} aria-label={tr("Hỏi Leon", "Demande à Leon", "Ask Leon")} title={tr("Hỏi Leon", "Demande à Leon", "Ask Leon")}
-        whileHover={{ y: -4 }} whileTap={{ scale: 0.9 }}
-        className={`mcf-leon-nut fixed bottom-5 right-4 z-[55] h-16 w-16 cursor-pointer place-items-center rounded-full border-0 bg-transparent p-0 drop-shadow-[0_8px_16px_rgb(0,0,0,0.25)] ${mo ? "hidden sm:grid" : "grid"}`}>
-        <Leon cam="dau" size={64} />
-        {moiHomNay && !mo && <span aria-hidden className="leon-diem-moi absolute right-1 top-1 h-3.5 w-3.5 rounded-full border-2 border-solid border-white bg-danger" />}
-      </motion.button>
+      {/* Nút mở: ô cửa tròn có vòng ba màu quay chậm, đầu Léon nhô lên khỏi mép trên. */}
+      <div className={`fixed bottom-5 right-4 z-[55] ${mo ? "hidden sm:block" : "block"}`}>
+        <AnimatePresence>
+          {!mo && (chao || re) && (
+            <motion.div key="chao" initial={{ opacity: 0, scale: 0.6, x: 12 }} animate={{ opacity: 1, scale: 1, x: 0 }} exit={{ opacity: 0, scale: 0.7, x: 8 }}
+              transition={{ type: "spring", stiffness: 420, damping: 26 }}
+              className="leon-chao pointer-events-none absolute bottom-5 right-[78px] w-max max-w-[220px] origin-right rounded-2xl rounded-br-md px-3.5 py-2 font-sans text-[13px] font-semibold leading-snug">
+              {chao && !re ? tr("Bí bài? Hỏi Léon nè!", "Une question ? Demande à Léon !", "Stuck? Ask Léon!") : tr("Hỏi Léon", "Demande à Léon", "Ask Léon")}
+            </motion.div>
+          )}
+        </AnimatePresence>
+        <motion.button type="button" onClick={mo_} aria-label={tr("Hỏi Leon", "Demande à Leon", "Ask Leon")}
+          onHoverStart={() => setRe(true)} onHoverEnd={() => setRe(false)} onFocus={() => setRe(true)} onBlur={() => setRe(false)}
+          whileHover="re" whileTap={{ scale: 0.92 }} initial={false}
+          className="leon-nut-mo relative grid h-[66px] w-[66px] cursor-pointer place-items-center rounded-full border-0 bg-transparent p-0">
+          <span aria-hidden className="leon-vong absolute inset-0 rounded-full" />
+          <span aria-hidden className="absolute inset-[4px] rounded-full bg-surface" />
+          <motion.span aria-hidden variants={{ re: { y: -6, rotate: -6 } }} transition={{ type: "spring", stiffness: 380, damping: 14 }}
+            className="leon-dau absolute inset-x-[4px] bottom-[4px] grid h-[86px] place-items-end justify-center">
+            <Leon cam="dau" size={76} alt="" className="leon-lac block" />
+          </motion.span>
+          {moiHomNay && !mo && <span aria-hidden className="leon-diem-moi absolute right-0 top-0 z-10 h-4 w-4 rounded-full border-2 border-solid border-white bg-danger" />}
+        </motion.button>
+      </div>
     </MotionConfig>
   );
 }
