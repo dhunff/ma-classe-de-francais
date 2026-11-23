@@ -35,6 +35,8 @@ export const TEACHER_NAV = [
   { to: "/professeur/exercices", nhom: "noi_dung", labelKey: "nav.exercises", Icon: BookOpen, view: "list" },
   { to: "/professeur/eleves", nhom: "lop", labelKey: "nav.students", Icon: Users, view: "students" },
   { to: "/professeur/statistiques", nhom: "tong", labelKey: "nav.stats", Icon: BarChart3, view: "stats" },
+  /* Tăng trưởng (23/11, migration 239): số liệu thật để phân tích thị trường trước khai trương. */
+  { to: "/professeur/tang-truong", nhom: "tong", labelKey: "nav.growth", Icon: TrendingUp },
   /* Gửi thông báo (08/10): trang riêng thay hộp nổi ở trang Bài tập. */
   { to: "/professeur/thong-bao", nhom: "lop", labelKey: "nav.notify", Icon: Megaphone },
   /* Khiếu nại điểm AI chấm bài viết (06/11, migration 196): xem lại, chấm lại hoặc giữ nguyên. */
