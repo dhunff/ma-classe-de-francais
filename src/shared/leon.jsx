@@ -3,9 +3,10 @@ import { tr } from "./i18n.jsx";
 
 /* Leon (09/10): linh vật FRACILE, bulldog Pháp áo sọc, khăn đỏ.
  *
- * Ảnh ở public/leon/*.webp, cắt từ bảng sticker của chủ dự án (đã bỏ nền và
- * bỏ chữ in sẵn, để nhãn đổi được theo 3 ngôn ngữ). `leon` là dáng đứng,
- * `dau` là phần đầu dùng làm logo và favicon.
+ * Ảnh ở public/leon/*.webp, cắt từ bảng sticker 6 × 4 của chủ dự án (bảng mới
+ * 23/11, nền trong suốt, không chữ, nên nhãn đổi được theo 3 ngôn ngữ).
+ * `leon` là dáng đứng (ảnh cũ), `dau` là phần đầu cắt từ `mim-cuoi`, dùng làm
+ * ảnh đại diện trong khung chat. Logo + favicon là ảnh icon riêng (logo-fracile.webp).
  *
  * Nhãn sticker là HÀM: tr() đọc ngôn ngữ lúc gọi, không gọi ở cấp module. */
 export const STICKER = [
