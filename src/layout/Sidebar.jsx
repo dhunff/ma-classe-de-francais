@@ -174,9 +174,9 @@ function Huy({ onBlue, size = "h-11 w-11" }) {
   return (
     /* 04/11: logo mới của chủ dự án đã là một ô vuông bo góc, nên không bọc thêm nền. */
     <span className={`relative grid ${size} shrink-0 -rotate-6 place-items-center transition-transform duration-300 ease-[cubic-bezier(.23,1,.32,1)] group-hover:rotate-0`}>
-      {/* 23/11: logo xanh nằm trên nền khung xanh nên chìm; viền trắng 2px vẽ bằng bốn drop-shadow lệch
-          (bám đúng góc bo của ảnh, khung bọc ngoài thì lệch bán kính). Trắng thẳng như phần còn lại của thanh bên. */}
-      <img src="/logo-fracile.webp" alt="" width={44} height={44} className={`h-full w-full object-contain ${onBlue ? "logo-vien-trang" : ""}`} />
+      {/* 23/11: logo xanh nằm trên nền khung xanh nên chìm. Viền trắng VẼ SẴN trong ảnh (logo-fracile-vien.webp, nở
+          kênh alpha rồi khử răng cưa): bản vẽ bằng bốn drop-shadow lệch cho viền dày mỏng không đều và góc vuông cạnh. */}
+      <img src={onBlue ? "/logo-fracile-vien.webp" : "/logo-fracile.webp"} alt="" width={44} height={44} className={`h-full w-full object-contain ${onBlue ? "drop-shadow-[0_6px_14px_rgba(0,0,0,0.25)]" : ""}`} />
     </span>
   );
 }
