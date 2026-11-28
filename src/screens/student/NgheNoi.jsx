@@ -312,7 +312,6 @@ export function PhatAm({ cau, onXong, anNghe = false }) {
             {trangThai === "gui" ? tr("Léon đang nghe…", "Léon écoute…", "Léon is listening…") : kq ? tr("Đọc lại", "Relire", "Read again") : tr("Bấm và đọc câu", "Lire la phrase", "Tap and read")}
           </button>
         )}
-        <span className="text-xs text-soft">{trangThai === "ghi" ? tr("Đọc xong, máy tự dừng và chấm", "L'enregistrement s'arrête tout seul à la fin", "Recording stops by itself when you finish") : tr("Tự dừng khi bạn đọc xong, tối đa 20 giây", "Arrêt automatique, 20 secondes max", "Stops by itself, up to 20 seconds")}</span>
       </div>
       {loi && <p className="mcf-rung m-0 text-sm font-semibold text-danger">{loi}</p>}
       {kq && (
