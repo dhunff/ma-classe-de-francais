@@ -9,14 +9,14 @@ import { baoHetLuot } from "./HetLuot.jsx";
 import { Leon, BangSticker, nhanSticker } from "./leon.jsx";
 import { goiYTheoTrang, cauTiepTheo } from "../content/goiYLeon.js";
 
-/* Hỏi Leon (09/10): khung chat nổi góc phải dưới, chỉ cho học sinh.
+/* Hỏi Léon (09/10): khung chat nổi góc phải dưới, chỉ cho học sinh.
  *
  * Ẩn ở màn thi thử và khi đang làm bài (FocusShell gắn .mcf-focus lên body):
  * hỏi AI giữa giờ thi là gian lận, dù chỉ hỏi ngữ pháp.
  * Lịch sử đọc từ leon_hoi (migration 125, chỉ đọc dòng của mình). Câu trả lời
  * do Edge Function `hoi-leon` sinh và ghi.
  *
- * Sticker học sinh gửi KHÔNG gọi AI và không tốn lượt: Leon đáp lại bằng một
+ * Sticker học sinh gửi KHÔNG gọi AI và không tốn lượt: Léon đáp lại bằng một
  * sticker hợp cảm xúc, chỉ trong phiên này.
  *
  * 18/11 (chủ dự án): câu hỏi gợi ý bấm là gửi (content/goiYLeon.js, theo trình độ hồ sơ và trang đang mở),
@@ -100,13 +100,13 @@ function GoChu({ text, chay }) {
 
 const loiMa = (ma, d) => ({
   HET_LUOT_VIP: loiTranVip(),
-  HET_LUOT: tr(`Ohlala, hôm nay bạn đã hỏi đủ ${d?.han_muc ?? 10} câu rồi! Mai Leon trả lời tiếp nhé. Gói VIP được tới 100 lượt AI mỗi ngày.`,
-    `Ohlala, tu as posé tes ${d?.han_muc ?? 10} questions du jour ! Leon te répond demain. Avec le VIP : jusqu'à 100 requêtes IA par jour.`,
-    `Ohlala, you've used your ${d?.han_muc ?? 10} questions for today! Leon will answer again tomorrow. VIP gets up to 100 AI requests a day.`),
-  CHUA_CAU_HINH_KHOA: tr("Leon chưa được bật trên máy chủ. Đây là việc của người quản trị.", "Leon n'est pas encore activé sur le serveur.", "Leon isn't enabled on the server yet."),
+  HET_LUOT: tr(`Ohlala, hôm nay bạn đã hỏi đủ ${d?.han_muc ?? 10} câu rồi! Mai Léon trả lời tiếp nhé. Gói VIP được tới 100 lượt AI mỗi ngày.`,
+    `Ohlala, tu as posé tes ${d?.han_muc ?? 10} questions du jour ! Léon te répond demain. Avec le VIP : jusqu'à 100 requêtes IA par jour.`,
+    `Ohlala, you've used your ${d?.han_muc ?? 10} questions for today! Léon will answer again tomorrow. VIP gets up to 100 AI requests a day.`),
+  CHUA_CAU_HINH_KHOA: tr("Léon chưa được bật trên máy chủ. Đây là việc của người quản trị.", "Léon n'est pas encore activé sur le serveur.", "Léon isn't enabled on the server yet."),
   QUA_DAI: tr("Câu hỏi dài quá, bạn rút gọn dưới 1000 ký tự nhé.", "Question trop longue (1000 caractères max).", "Question too long (1000 characters max)."),
   CHUA_DANG_NHAP: tr("Phiên đăng nhập đã hết hạn. Đăng nhập lại nhé.", "Session expirée. Reconnecte-toi.", "Session expired. Please sign in again."),
-}[ma] ?? tr("Leon chưa trả lời được. Thử lại sau ít phút nhé.", "Leon n'a pas pu répondre. Réessaie dans un instant.", "Leon couldn't answer. Try again in a moment."));
+}[ma] ?? tr("Léon chưa trả lời được. Thử lại sau ít phút nhé.", "Léon n'a pas pu répondre. Réessaie dans un instant.", "Léon couldn't answer. Try again in a moment."));
 
 /* Danh sách câu gợi ý theo nhóm. `gon`: bản thu gọn mở bằng nút « Gợi ý » khi đã có lịch sử. */
 function GoiY({ nhom, onChon, gon = false }) {
@@ -248,7 +248,7 @@ export default function HoiLeon({ thu = null }) {
     <MotionConfig reducedMotion="user">
       <AnimatePresence>
         {mo && (
-          <motion.section key="khung" role="dialog" aria-label={tr("Hỏi Leon", "Demande à Leon", "Ask Leon")} data-chu-de={chuDe}
+          <motion.section key="khung" role="dialog" aria-label={tr("Hỏi Léon", "Demande à Léon", "Ask Léon")} data-chu-de={chuDe}
             initial={{ opacity: 0, scale: 0.6, y: 40 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.7, y: 30 }}
             transition={{ type: "spring", stiffness: 380, damping: 30 }} style={{ transformOrigin: "100% 100%", "--l-co": CO_CHU[co] ?? CO_CHU.vua }}
             className="leon-chat fixed inset-0 z-[55] flex flex-col overflow-hidden shadow-[0_20px_60px_rgb(0,0,0,0.25)] sm:inset-auto sm:bottom-24 sm:right-4 sm:h-[min(600px,calc(100dvh-8rem))] sm:w-[min(400px,calc(100vw-2rem))] sm:rounded-3xl">
@@ -257,7 +257,7 @@ export default function HoiLeon({ thu = null }) {
                 <Leon cam="dau" size={42} />
               </motion.span>
               <div className="min-w-0 flex-1">
-                <p className="m-0 flex items-center gap-1.5 text-sm font-extrabold">Leon <span className="h-2 w-2 rounded-full bg-ok" aria-hidden /></p>
+                <p className="m-0 flex items-center gap-1.5 text-sm font-extrabold">Léon <span className="h-2 w-2 rounded-full bg-ok" aria-hidden /></p>
                 <p className="m-0 text-[11px] opacity-90">
                   {conLai === null ? <span className="inline-flex items-center gap-1"><Crown size={11} /> {tr("VIP: tới 100 lượt AI/ngày", "VIP : jusqu'à 100 requêtes IA/jour", "VIP: up to 100 AI requests/day")}</span>
                     : conLai !== undefined ? tr(`Còn ${conLai} câu hỏi hôm nay`, `Encore ${conLai} question(s) aujourd'hui`, `${conLai} question(s) left today`)
@@ -304,9 +304,9 @@ export default function HoiLeon({ thu = null }) {
                 <motion.div initial="an" animate="hien" variants={vao} className="flex items-end gap-2">
                   <Leon cam="chao" size={44} className="shrink-0" />
                   <div className="rounded-2xl rounded-bl-md bg-[var(--l-leon)] px-3.5 py-2.5 leading-relaxed text-[var(--l-chu-leon)]">
-                    {tr(<>Gâu! <em>Bonjour</em>! Leon đây 🐾 Bạn muốn hỏi gì về ngữ pháp, từ vựng hay bài DELF nào? Gửi một câu tiếng Pháp, Leon sửa giúp cho!</>,
-                      <>Ouaf ! <em>Bonjour</em> ! C'est Leon 🐾 Une question de grammaire, de vocabulaire ou sur le DELF ? Envoie-moi une phrase, je la corrige !</>,
-                      <>Woof! <em>Bonjour</em>! It's Leon 🐾 Any question about grammar, vocabulary or the DELF? Send me a French sentence and I'll fix it!</>)}
+                    {tr(<>Gâu! <em>Bonjour</em>! Léon đây 🐾 Bạn muốn hỏi gì về ngữ pháp, từ vựng hay bài DELF nào? Gửi một câu tiếng Pháp, Léon sửa giúp cho!</>,
+                      <>Ouaf ! <em>Bonjour</em> ! C'est Léon 🐾 Une question de grammaire, de vocabulaire ou sur le DELF ? Envoie-moi une phrase, je la corrige !</>,
+                      <>Woof! <em>Bonjour</em>! It's Léon 🐾 Any question about grammar, vocabulary or the DELF? Send me a French sentence and I'll fix it!</>)}
                   </div>
                 </motion.div>
 
@@ -314,7 +314,7 @@ export default function HoiLeon({ thu = null }) {
 
                 {trong && (
                   <motion.div initial="an" animate="hien" variants={vao} transition={{ delay: 0.12 }} className="rounded-2xl bg-[var(--l-o)] p-3">
-                    <p className="m-0 mb-2 text-[12px] font-extrabold text-[var(--l-chu)]">{tr("Chưa biết hỏi gì? Bấm một câu là Leon trả lời ngay:", "Pas d'idée ? Clique sur une question :", "Not sure what to ask? Tap a question:")}</p>
+                    <p className="m-0 mb-2 text-[12px] font-extrabold text-[var(--l-chu)]">{tr("Chưa biết hỏi gì? Bấm một câu là Léon trả lời ngay:", "Pas d'idée ? Clique sur une question :", "Not sure what to ask? Tap a question:")}</p>
                     <GoiY nhom={nhomGoiY} onChon={gui} />
                   </motion.div>
                 )}
@@ -339,7 +339,7 @@ export default function HoiLeon({ thu = null }) {
                 {cho && (
                   <motion.div initial="an" animate="hien" variants={vao} className="flex items-end gap-2">
                     <Leon cam="suy-nghi" size={44} className="shrink-0" />
-                    <div className="leon-cham flex items-center gap-1.5 rounded-2xl rounded-bl-md bg-[var(--l-leon)] px-4 py-3.5" aria-label={tr("Leon đang nghĩ…", "Leon réfléchit…", "Leon is thinking…")}>
+                    <div className="leon-cham flex items-center gap-1.5 rounded-2xl rounded-bl-md bg-[var(--l-leon)] px-4 py-3.5" aria-label={tr("Léon đang nghĩ…", "Léon réfléchit…", "Léon is thinking…")}>
                       <span /><span /><span />
                     </div>
                   </motion.div>
@@ -374,7 +374,7 @@ export default function HoiLeon({ thu = null }) {
                 className={`grid h-10 w-10 shrink-0 cursor-pointer place-items-center rounded-full border-0 ${moSticker ? "bg-[var(--l-chip)] text-[var(--l-chu-chip)]" : "bg-transparent text-[var(--l-mo)] hover:bg-[var(--l-o)]"}`}><Smile size={19} /></button>
               <textarea value={go} onChange={(e) => setGo(e.target.value.slice(0, 1000))} rows={1}
                 onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); gui(); } }}
-                placeholder={tr("Hỏi Leon…", "Demande à Leon…", "Ask Leon…")}
+                placeholder={tr("Hỏi Léon…", "Demande à Léon…", "Ask Léon…")}
                 className="max-h-28 min-h-10 flex-1 resize-none rounded-2xl border border-solid border-[var(--l-vien)] bg-[var(--l-o)] px-3 py-2.5 font-sans text-[13px] text-[var(--l-chu)] outline-none focus:border-[var(--l-nhan)]" />
               <motion.button type="submit" disabled={!go.trim() || cho} aria-label={tr("Gửi", "Envoyer", "Send")} whileTap={{ scale: 0.88 }}
                 className="grid h-10 w-10 shrink-0 cursor-pointer place-items-center rounded-full border-0 bg-[var(--l-nhan)] text-[var(--l-chu-nhan)] disabled:cursor-not-allowed disabled:opacity-40"><Send size={17} /></motion.button>
@@ -393,7 +393,7 @@ export default function HoiLeon({ thu = null }) {
             </motion.div>
           )}
         </AnimatePresence>
-        <motion.button type="button" onClick={mo_} aria-label={tr("Hỏi Leon", "Demande à Leon", "Ask Leon")}
+        <motion.button type="button" onClick={mo_} aria-label={tr("Hỏi Léon", "Demande à Léon", "Ask Léon")}
           onHoverStart={() => setRe(true)} onHoverEnd={() => setRe(false)} onFocus={() => setRe(true)} onBlur={() => setRe(false)}
           whileHover="re" whileTap={{ scale: 0.92 }} initial={false}
           className="leon-nut-mo relative grid h-[66px] w-[66px] cursor-pointer place-items-center rounded-full border-0 bg-transparent p-0">

@@ -10,7 +10,7 @@ import PaymentModal from "../screens/student/PaymentModal.jsx";
 /* Màn hình hết lượt dùng thử (18/10, việc B3 trong kế hoạch quảng bá).
  *
  * Trước đây mỗi chỗ chạm giới hạn (AI chấm bài viết, AI nhận xét bài nói, hỏi
- * Leon, chấm phát âm, đề thi thử ngoài Đề 1) tự in một dòng chữ đỏ riêng, và
+ * Léon, chấm phát âm, đề thi thử ngoài Đề 1) tự in một dòng chữ đỏ riêng, và
  * không chỗ nào cho bấm mua VIP ngay. Nay chúng gọi baoHetLuot(), một cửa sổ
  * chung nói rõ: hết cái gì, khi nào có lại, VIP được gì, và nút đăng ký.
  *
@@ -27,7 +27,7 @@ export function baoHetLuot({ loai = "khac", hanMuc, cuaSoGio } = {}) {
 const TEN = () => ({
   pe: tr("lượt AI chấm bài Viết", "corrections IA de l'écrit", "AI writing reviews"),
   po: tr("lượt AI nhận xét bài Nói", "commentaires IA de l'oral", "AI speaking feedback"),
-  leon: tr("câu hỏi Leon", "questions à Leon", "questions to Leon"),
+  leon: tr("câu hỏi Léon", "questions à Léon", "questions to Léon"),
   phat_am: tr("lượt chấm phát âm", "corrections de prononciation", "pronunciation checks"),
 });
 
@@ -64,7 +64,7 @@ export default function CuaHetLuot({ session }) {
 
   const LOI = [
     tr("Mọi đề thi thử DELF A1 đến DALF C1", "Tous les examens blancs DELF A1 à DALF C1", "Every DELF A1 to DALF C1 mock exam"),
-    tr("Tới 100 lượt AI mỗi ngày (chấm Viết, nhận xét Nói, hỏi Leon…)", "Jusqu'à 100 requêtes IA par jour", "Up to 100 AI requests per day"),
+    tr("Tới 100 lượt AI mỗi ngày (chấm Viết, nhận xét Nói, hỏi Léon…)", "Jusqu'à 100 requêtes IA par jour", "Up to 100 AI requests per day"),
     tr("Bài viết mẫu từ chính bài của bạn", "Version modèle de votre propre texte", "Model version of your own text"),
     tr("Báo cáo tiến bộ tuần và ôn lại câu sai", "Bilan hebdomadaire et révision des erreurs", "Weekly progress report and mistake review"),
   ];

@@ -18,7 +18,7 @@ import { choTrong } from "../../shared/choTrong.jsx";
  * lúc gọi layDe(), và chấm khi nộp (migration 111). Đồng hồ trên màn hình chỉ
  * để người chơi nhìn — con số tính thắng thua là con số máy chủ trả về.
  *
- * Làm lại 09/10: đấu trường có Leon, chọn bạn bằng ảnh đại diện, đếm ngược
+ * Làm lại 09/10: đấu trường có Léon, chọn bạn bằng ảnh đại diện, đếm ngược
  * 3-2-1 trước trận (gọi layDe() SAU khi đếm xong, để 3 giây đếm ngược không
  * bị máy chủ tính vào giờ làm bài), phím 1–4, màn kết quả có pháo giấy, âm
  * thanh dùng chung shared/amThanh.js.

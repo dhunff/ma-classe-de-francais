@@ -995,9 +995,9 @@ function Progress({ ex, submissions, setSubmissions, accounts, back }) {
                       value={drafts[name] ?? sub.comment ?? ""}
                       placeholder="ex. Très bon travail ! Revois l'accord du participe passé."
                       onChange={(e) => setDrafts({ ...drafts, [name]: e.target.value })} />
-                    {/* Sticker Leon (09/10): chèn mã [leon:…], học sinh thấy thành ảnh. */}
+                    {/* Sticker Léon (09/10): chèn mã [leon:…], học sinh thấy thành ảnh. */}
                     <details style={{ marginTop: 6 }}>
-                      <summary style={{ cursor: "pointer", fontSize: 12, fontWeight: 700, color: C.primary }}>{tr("Chèn sticker Leon", "Ajouter un autocollant Leon", "Add a Leon sticker")}</summary>
+                      <summary style={{ cursor: "pointer", fontSize: 12, fontWeight: 700, color: C.primary }}>{tr("Chèn sticker Léon", "Ajouter un autocollant Léon", "Add a Léon sticker")}</summary>
                       <BangSticker className="mt-2 max-w-sm" onChon={(id) => setDrafts({ ...drafts, [name]: `${(drafts[name] ?? sub.comment ?? "").trimEnd()} ${maSticker(id)}`.trim() })} />
                     </details>
 

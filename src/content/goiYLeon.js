@@ -1,6 +1,6 @@
 import { tr } from "../shared/i18n.jsx";
 
-/* Câu hỏi gợi ý của « Hỏi Leon » (18/11, chủ dự án: « có sẵn mấy câu hỏi, người dùng muốn hỏi thì bấm vào »).
+/* Câu hỏi gợi ý của « Hỏi Léon » (18/11, chủ dự án: « có sẵn mấy câu hỏi, người dùng muốn hỏi thì bấm vào »).
  * Mọi chữ qua tr() và viết thành HÀM (không gọi tr() ở cấp module). Phần tiếng Pháp trong câu giữ nguyên.
  * `cap`: dải trình độ đọc từ profiles.level (« A1 », « B2 »…): "co_ban" (A0–A2), "trung" (B1), "cao" (B2 trở lên).
  * Gợi ý chỉ dựa trên thứ đọc được thật (trình độ trong hồ sơ, trang đang mở), không bịa gì về người học. */

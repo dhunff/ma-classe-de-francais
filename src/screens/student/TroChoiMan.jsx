@@ -8,9 +8,9 @@ import { choTrong } from "../../shared/choTrong.jsx";
 
 /* Một màn chơi của Lộ trình — phủ kín màn hình, dựng từ thẻ THẬT của bộ.
  *
- * Làm lại 09/10 (chủ dự án: « còn đơn điệu »): Leon đứng cạnh câu hỏi và phản
+ * Làm lại 09/10 (chủ dự án: « còn đơn điệu »): Léon đứng cạnh câu hỏi và phản
  * ứng theo từng câu, câu mới trượt vào, chọn đúng thì nảy + pháo giấy, sai thì
- * rung + tim rơi, dải phản hồi trồi lên kèm lời Leon. Phím 1–4 chọn phương án,
+ * rung + tim rơi, dải phản hồi trồi lên kèm lời Léon. Phím 1–4 chọn phương án,
  * Enter để tiếp tục. Mọi hoạt ảnh tắt khi bật giảm chuyển động (base.css).
  *
  * Không import storageShim: nhận thẻ và hàm `onXong` từ cha, nên xem thử được
@@ -22,7 +22,7 @@ import { choTrong } from "../../shared/choTrong.jsx";
 const chonNgauNhien = (ds) => ds[Math.floor(Math.random() * ds.length)];
 const LOI_DUNG = () => [
   ["tuyet-voi", tr("C'est super !", "C'est super !", "C'est super!")],
-  ["yeah", tr("Chính xác! Leon vẫy đuôi rồi nè.", "Exact ! Leon remue la queue.", "Exactly! Leon is wagging his tail.")],
+  ["yeah", tr("Chính xác! Léon vẫy đuôi rồi nè.", "Exact ! Léon remue la queue.", "Exactly! Léon is wagging his tail.")],
   ["duoc-do", tr("Bravo ! Giỏi lắm!", "Bravo ! Bien joué !", "Bravo! Well done!")],
   ["haha", tr("Dễ như ăn bánh croissant!", "Facile comme un croissant !", "Easy as a croissant!")],
   ["ok", tr("Parfait ! Tiếp nào!", "Parfait ! On continue !", "Parfait! Keep going!")],
@@ -160,7 +160,7 @@ export default function TroChoiMan({ tieuDe, the, kho, soCau = 8, ghep = true, o
         )}
       </div>
 
-      {/* Dải phản hồi trồi lên từ đáy, có Leon */}
+      {/* Dải phản hồi trồi lên từ đáy, có Léon */}
       {!ketThuc && chon && (
         <PhanHoi key={`${hat}-${i}`} dung={dungCau} dapAn={cau?.dung} leon={loiLeon} onTiep={tiep} t={t} />
       )}
@@ -206,7 +206,7 @@ function CauChon({ cau, chon, onChon, chuoi, so, tong, t }) {
         <Combo chuoi={chuoi} t={t} />
       </div>
 
-      {/* Leon + bong bóng chứa câu hỏi */}
+      {/* Léon + bong bóng chứa câu hỏi */}
       <div className="flex items-end gap-3 sm:gap-5">
         <Leon key={camLeon} cam={camLeon} size={112} className="mcf-nay shrink-0 drop-shadow-[0_10px_16px_rgba(0,0,0,0.12)] max-sm:h-20 max-sm:w-20" />
         <div className="relative mb-4 min-w-0 flex-1 rounded-3xl rounded-bl-md border-2 border-solid border-line bg-surface px-6 py-5 shadow-[0_10px_30px_rgba(0,0,0,0.05)]">
@@ -300,7 +300,7 @@ function CauGhep({ cau, onSai, onXong, chuoi, t }) {
 }
 
 /* Dải phản hồi sau mỗi câu, làm lại 23/10 (theo chủ dự án: « đơn điệu »):
-   nền chuyển màu đậm, Leon nhô lên khỏi mép dải, đốm sáng khi đúng, đáp án
+   nền chuyển màu đậm, Léon nhô lên khỏi mép dải, đốm sáng khi đúng, đáp án
    đúng trong ô trắng nổi khi sai, nút trắng chữ màu. */
 const DOM = [[6, 30, 0], [14, 70, 120], [26, 20, 260], [44, 78, 60], [62, 18, 200], [78, 64, 320], [90, 28, 140]];
 function PhanHoi({ dung, dapAn, leon, onTiep, t }) {

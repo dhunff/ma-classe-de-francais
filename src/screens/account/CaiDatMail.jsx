@@ -40,7 +40,7 @@ export default function CaiDatMail() {
     <div className="grid gap-5">
       <div>
         <h1 className="m-0 text-2xl font-extrabold tracking-tight text-ink">{tr("Thông báo email", "Notifications e-mail", "Email notifications")}</h1>
-        <p className="m-0 mt-1 text-sm text-soft">{tr("Leon gửi tối đa một mail mỗi loại mỗi ngày, từ leon@fracile.vn.", "Leon envoie au plus un e-mail par type et par jour, depuis leon@fracile.vn.", "Leon sends at most one email per type per day, from leon@fracile.vn.")}</p>
+        <p className="m-0 mt-1 text-sm text-soft">{tr("Léon gửi tối đa một mail mỗi loại mỗi ngày, từ leon@fracile.vn.", "Léon envoie au plus un e-mail par type et par jour, depuis leon@fracile.vn.", "Léon sends at most one email per type per day, from leon@fracile.vn.")}</p>
       </div>
       {cd === null ? <p className="m-0 text-sm text-soft">{tr("Đang tải…", "Chargement…", "Loading…")}</p> : (
         <div className="grid gap-3">

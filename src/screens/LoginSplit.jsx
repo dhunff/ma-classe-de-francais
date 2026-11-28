@@ -129,7 +129,7 @@ export default function LoginSplit({ accounts = [], onLogin }) {
             {/* Nửa phải của dải — hiện khi đang ở ĐĂNG NHẬP: mời đăng ký */}
             <div className={`absolute inset-y-0 right-0 flex w-1/2 flex-col items-center justify-center px-14 text-center ${chuyen}
               ${dangKy ? "translate-x-[20%]" : "translate-x-0"}`}>
-              <img src="/leon/leon-lon.webp" alt="Leon" width={170} height={270} className="mcf-leon-bay mb-4 h-56 w-auto object-contain drop-shadow-[0_14px_20px_rgb(0,0,0,0.25)]" />
+              <img src="/leon/leon-lon.webp" alt="Léon" width={170} height={270} className="mcf-leon-bay mb-4 h-56 w-auto object-contain drop-shadow-[0_14px_20px_rgb(0,0,0,0.25)]" />
               <h2 className="m-0 text-3xl font-extrabold tracking-tight">{t("login.slide_register_title")}</h2>
               <p className="m-0 mb-8 mt-4 text-sm leading-relaxed text-white/85">{t("login.slide_register_body")}</p>
               <button type="button" className={NUT_MA} onClick={() => setMode("register")}>{t("login.go_register")}</button>

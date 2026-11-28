@@ -431,8 +431,8 @@ function KhungTrinhDuyet({ src, alt }) {
   );
 }
 
-/* Leon mời khách vào web (09/10, theo chủ dự án): GIỮ ảnh chụp màn hình,
-   Leon cỡ lớn đứng chồng ở góc phải dưới như đang mời vào, kèm bong bóng lời. */
+/* Léon mời khách vào web (09/10, theo chủ dự án): GIỮ ảnh chụp màn hình,
+   Léon cỡ lớn đứng chồng ở góc phải dưới như đang mời vào, kèm bong bóng lời. */
 function LeonMoi({ src }) {
   return (
     <div className="relative pb-24 sm:pb-16 lg:pb-20">

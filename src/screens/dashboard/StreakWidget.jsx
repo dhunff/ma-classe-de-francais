@@ -127,7 +127,7 @@ export default function StreakWidget({ t, fixture, ten = "" }) {
 
         {d?.chuoi === 0 && <p className="m-0 mt-3 text-xs text-soft">{t("dash.streak_zero")}</p>}
 
-        {/* Leon (09/10): khen khi hôm nay đã học, lo lắng khi chuỗi sắp đứt. */}
+        {/* Léon (09/10): khen khi hôm nay đã học, lo lắng khi chuỗi sắp đứt. */}
         {d && d.homNay != null && (d.tuan?.[d.homNay] ? (
           <LeonNoi cam="yeah" size={52} className="mt-4">
             {tr(<><em>C'est super !</em> Hôm nay xong rồi 🐾</>, <><em>C'est super !</em> C'est fait pour aujourd'hui 🐾</>, <><em>C'est super!</em> Done for today 🐾</>)}

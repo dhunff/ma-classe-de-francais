@@ -129,7 +129,7 @@ export function Ring({ pct = 0, size = 116, stroke = 10, label, className = "" }
    trình đọc màn hình mất mốc điều hướng. Ở /decouvrir Topbar không có tiêu
    đề, nên lời chào chính là <h1>. */
 /* 15/10 (chủ dự án): làm lại cho bớt đơn điệu. Lời chào theo buổi trong
-   ngày, Leon cổ vũ bên phải, chip mục tiêu / trình độ, hai nút (học tiếp +
+   ngày, Léon cổ vũ bên phải, chip mục tiêu / trình độ, hai nút (học tiếp +
    thi thử), nền có lưới chấm và quầng sáng. Mọi chữ đi qua t()/tr(). */
 const loiChaoBuoi = () => {
   const h = new Date().getHours();

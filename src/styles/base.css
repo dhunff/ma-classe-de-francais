@@ -175,13 +175,13 @@ body {
 .mcf-bang th, .mcf-bang td { padding: 6px 10px; border: 1px solid var(--mcf-line); text-align: left; }
 .mcf-bang th { background: var(--mcf-surface2); font-weight: 700; }
 
-/* Leon (09/10): thông báo chúc mừng trồi lên, nút Hỏi Leon nhún nhẹ. */
+/* Léon (09/10): thông báo chúc mừng trồi lên, nút Hỏi Léon nhún nhẹ. */
 @keyframes mcfLeonVao { from { opacity: 0; transform: translate(-50%, 24px) scale(.96); } to { opacity: 1; transform: translate(-50%, 0) scale(1); } }
 .mcf-leon-vao { animation: mcfLeonVao .4s cubic-bezier(.34,1.56,.64,1) both; }
 @keyframes mcfLeonNhun { 0%, 92%, 100% { transform: translateY(0); } 95% { transform: translateY(-6px); } }
 .mcf-leon-nut { animation: mcfLeonNhun 6s ease-in-out infinite; }
 @media (prefers-reduced-motion: reduce) { .mcf-leon-vao, .mcf-leon-nut { animation: none; } }
-/* Leon ở trang giới thiệu: bay nhẹ, bong bóng lời trồi lên sau. */
+/* Léon ở trang giới thiệu: bay nhẹ, bong bóng lời trồi lên sau. */
 @keyframes mcfLeonBay { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
 .mcf-leon-bay { animation: mcfLeonBay 4s ease-in-out infinite; }
 @keyframes mcfBongVao { from { opacity: 0; transform: translateY(12px) scale(.9); } to { opacity: 1; transform: none; } }
@@ -426,7 +426,7 @@ mark.de-dap.de-dap-nhay { background: #4ade80; outline: 2px solid #166534; }
 .mcf-pt-canh { transform-box: fill-box; transform-origin: 80% 10%; animation: mcfPtCanh 2.2s ease-in-out infinite; }
 @media (prefers-reduced-motion: reduce) { .mcf-dong, .mcf-song, .mcf-toa-vao, .mcf-tau-chay, .mcf-dv-mach, .mcf-dv-ve, .mcf-dv-co, .mcf-dv-bay, .mcf-dv-bang, .mcf-dv-meo, .mcf-dv-duoi, .mcf-dv-cot, .mcf-pt-bua, .mcf-pt-tho, .mcf-pt-phieu, .mcf-pt-canh { animation: none; } .mcf-pt-obj { display: none; } .mcf-dv-dua { transition: none; } .mcf-dv-tau { animation-duration: 1ms; } }
 
-/* ── Bong bóng Leon (LeonNoi, 30/10) ── bật ra, ba chấm đang gõ, chữ hiện, Leon gật một cái. */
+/* ── Bong bóng Léon (LeonNoi, 30/10) ── bật ra, ba chấm đang gõ, chữ hiện, Léon gật một cái. */
 @keyframes mcfBongBat { 0% { opacity: 0; transform: scale(.5) rotate(-4deg); } 65% { opacity: 1; transform: scale(1.05) rotate(1deg); } 100% { opacity: 1; transform: none; } }
 @keyframes mcfBongCham { 0%, 100% { transform: translateY(0); opacity: .45; } 50% { transform: translateY(-4px); opacity: 1; } }
 @keyframes mcfBongChamTat { to { opacity: 0; visibility: hidden; } }
@@ -603,7 +603,7 @@ mark.de-dap.de-dap-nhay { background: #4ade80; outline: 2px solid #166534; }
   .mcf-tt-chay { animation: none; filter: grayscale(1); opacity: .4; }
 }
 
-/* ── Hỏi Leon: chủ đề màu (18/11, chủ dự án: « giao diện đơn điệu, thêm animation và đổi được theme ») ──
+/* ── Hỏi Léon: chủ đề màu (18/11, chủ dự án: « giao diện đơn điệu, thêm animation và đổi được theme ») ──
  * Mỗi chủ đề chỉ là một bộ biến đặt trên .leon-chat; component dùng var(--l-…), không viết màu cứng.
  * « mac-dinh » đi theo token của app nên tự đảo ở bản tối; các chủ đề khác có bản sáng và bản tối riêng.
  * Cặp chữ / nền đã chọn để đạt WCAG AA (≥ 4,5 với chữ thường), đo bằng scripts/check-leon-theme.mjs. */
@@ -625,7 +625,7 @@ html.mcf-dark-root .leon-chat[data-chu-de="tricolore"], .mcf-dark .leon-chat[dat
 html.mcf-dark-root .leon-chat[data-chu-de="hoang-hon"], .mcf-dark .leon-chat[data-chu-de="hoang-hon"] { --l-nen:#1c1210; --l-chu:#fbe9df; --l-mo:#d1a993; --l-vien:#3a2620; --l-dau1:#9a3412; --l-dau2:#9d174d; --l-hs:#9d174d; --l-leon:#2c1c17; --l-chu-leon:#fbe9df; --l-nhan:#fb923c; --l-chu-nhan:#1c1210; --l-chip:#3a2620; --l-chu-chip:#fdba74; --l-o:#261915; }
 html.mcf-dark-root .leon-chat[data-chu-de="rung"], .mcf-dark .leon-chat[data-chu-de="rung"] { --l-nen:#0f1a14; --l-chu:#e3f2e8; --l-mo:#9cc2aa; --l-vien:#1f3328; --l-dau1:#14532d; --l-dau2:#115e59; --l-hs:#15803d; --l-leon:#18281e; --l-chu-leon:#e3f2e8; --l-nhan:#4ade80; --l-chu-nhan:#0f1a14; --l-chip:#1f3328; --l-chu-chip:#86efac; --l-o:#142219; }
 html.mcf-dark-root .leon-chat[data-chu-de="keo-ngot"], .mcf-dark .leon-chat[data-chu-de="keo-ngot"] { --l-nen:#1d0f19; --l-chu:#fde7f3; --l-mo:#e0a9c8; --l-vien:#3a1d31; --l-dau1:#9d174d; --l-dau2:#5b21b6; --l-hs:#6d28d9; --l-leon:#2c1626; --l-chu-leon:#fde7f3; --l-nhan:#f472b6; --l-chu-nhan:#1d0f19; --l-chip:#3a1d31; --l-chu-chip:#f9a8d4; --l-o:#261420; }
-/* Ba chấm « Leon đang nghĩ » và nhịp « thở » của nút mở. */
+/* Ba chấm « Léon đang nghĩ » và nhịp « thở » của nút mở. */
 @keyframes leonCham { 0%, 80%, 100% { transform: translateY(0); opacity: .45; } 40% { transform: translateY(-5px); opacity: 1; } }
 .leon-cham span { display: inline-block; width: 7px; height: 7px; border-radius: 999px; background: var(--l-chu-leon); animation: leonCham 1.1s ease-in-out infinite; }
 .leon-cham span:nth-child(2) { animation-delay: .15s; } .leon-cham span:nth-child(3) { animation-delay: .3s; }

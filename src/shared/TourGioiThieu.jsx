@@ -31,7 +31,7 @@ function TooltipRieng({ index, size, step, isLastStep, backProps, primaryProps, 
   return (
     <div {...tooltipProps}
       className={`relative w-[min(26rem,calc(100vw-2rem))] overflow-hidden rounded-2xl border border-solid bg-surface p-5 font-sans shadow-2xl ${xp ? "border-amber-100 ring-1 ring-amber-500/20 dark:border-amber-900/30" : "border-line"}`}>
-      {/* Leon dẫn tour (09/10): bước đầu chào, bước cuối reo, giữa đổi cảm xúc. */}
+      {/* Léon dẫn tour (09/10): bước đầu chào, bước cuối reo, giữa đổi cảm xúc. */}
       <div className="flex items-start gap-3">
         <Leon cam={index === 0 ? "chao" : isLastStep ? "yeah" : CAM_TOUR[index % CAM_TOUR.length]} size={76} className="-ml-1 shrink-0" />
         <div className="min-w-0 flex-1">

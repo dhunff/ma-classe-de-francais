@@ -309,7 +309,7 @@ export function PhatAm({ cau, onXong, anNghe = false }) {
           <button type="button" onClick={batDau} disabled={trangThai === "gui"}
             className="inline-flex cursor-pointer items-center gap-2 rounded-2xl border-0 border-b-4 border-solid border-red-800 bg-gradient-to-r from-rose-500 to-red-600 px-6 py-3.5 font-sans text-sm font-extrabold text-white transition-transform hover:-translate-y-0.5 disabled:opacity-60">
             {trangThai === "gui" ? <Loader2 size={16} className="animate-spin" /> : <Mic size={16} />}
-            {trangThai === "gui" ? tr("Leon đang nghe…", "Leon écoute…", "Leon is listening…") : kq ? tr("Đọc lại", "Relire", "Read again") : tr("Bấm và đọc câu", "Lire la phrase", "Tap and read")}
+            {trangThai === "gui" ? tr("Léon đang nghe…", "Léon écoute…", "Léon is listening…") : kq ? tr("Đọc lại", "Relire", "Read again") : tr("Bấm và đọc câu", "Lire la phrase", "Tap and read")}
           </button>
         )}
         <span className="text-xs text-soft">{trangThai === "ghi" ? tr("Đọc xong, máy tự dừng và chấm", "L'enregistrement s'arrête tout seul à la fin", "Recording stops by itself when you finish") : tr("Tự dừng khi bạn đọc xong, tối đa 20 giây", "Arrêt automatique, 20 secondes max", "Stops by itself, up to 20 seconds")}</span>

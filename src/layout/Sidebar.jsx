@@ -167,8 +167,8 @@ function NavList({ role, t, expanded, onNavigate, onBlue = true }) {
 /* Ô « Cần trợ giúp? » cuối thanh GỠ 28/10 (chủ dự án): thay bằng nhóm menu « Trợ giúp »
    (mục FAQ) dồn xuống đáy nav bằng mt-auto. */
 
-/* Logo (09/10): đầu Leon + chữ FRACILE. Thu gọn thì chỉ còn đầu Leon. */
-/* 27/10: Leon trong huy hiệu trắng bo góc (nghiêng nhẹ, rê chuột thì thẳng lại),
+/* Logo (09/10): đầu Léon + chữ FRACILE. Thu gọn thì chỉ còn đầu Léon. */
+/* 27/10: Léon trong huy hiệu trắng bo góc (nghiêng nhẹ, rê chuột thì thẳng lại),
    chữ FRACILE đậm kèm chấm đỏ. */
 function Huy({ onBlue, size = "h-11 w-11" }) {
   return (

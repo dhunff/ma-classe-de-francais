@@ -114,7 +114,7 @@ export function kiemGoiY(tho, rubric, van = null) {
       so_tieu_chi: rubric.criteria.length,
       tong_quat: String(tho.tong_quat ?? tho.overall ?? "").trim().slice(0, 1500),
       /* Mở rộng 08/10, đều tuỳ chọn và bị cắt độ dài. */
-      /* 09/10: lời động viên của Leon, tuỳ chọn. */
+      /* 09/10: lời động viên của Léon, tuỳ chọn. */
       loi_leon: gonLoiLeon(tho.loi_leon),
       nhan_dinh_trinh_do: String(tho.nhan_dinh_trinh_do ?? "").trim().slice(0, 400),
       uu_tien: (Array.isArray(tho.uu_tien) ? tho.uu_tien : []).map((x) => String(x).trim().slice(0, 300)).filter(Boolean).slice(0, 3),
@@ -138,7 +138,7 @@ function phanLoiVaYeuCau(tho, van) {
    tự do vốn không chấm điểm). Phải có ít nhất tổng quát hoặc một lỗi hoặc một yêu cầu, không thì
    coi như mô hình trả rỗng. */
 /* Lời Léon: giao diện đã có ảnh và tên Léon, nên bỏ chữ ký mô hình hay tự thêm ở cuối
-   (« — Leon », « - Léon »). Nội dung học không dùng « — » (quy ước FRACILE): đổi thành dấu phẩy. */
+   (« — Léon », « - Léon »). Nội dung học không dùng « — » (quy ước FRACILE): đổi thành dấu phẩy. */
 export function gonLoiLeon(v) {
   return String(v ?? "").trim()
     .replace(/\s*[—–-]\s*L[ée]on\s*[.!]?\s*$/i, "")

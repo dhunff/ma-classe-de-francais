@@ -86,7 +86,7 @@ export default function NhanXetAI({ answerId, rubric, level, feedback, mau, baiL
         )}
         {g.loi_leon && (
           <LeonNoi size={64} cam={g.tong_toi_da && g.tong / g.tong_toi_da >= 0.7 ? "tuyet-voi" : g.tong_toi_da && g.tong / g.tong_toi_da >= 0.5 ? "duoc-do" : "co-len"}>
-            <span className="block text-[11px] font-extrabold uppercase tracking-wide text-primary">{tr("Leon nhắn bạn", "Le mot de Leon", "A note from Leon")}</span>
+            <span className="block text-[11px] font-extrabold uppercase tracking-wide text-primary">{tr("Léon nhắn bạn", "Le mot de Léon", "A note from Léon")}</span>
             {g.loi_leon}
           </LeonNoi>
         )}

@@ -286,7 +286,7 @@ function ManChoi({ tc, banMau }) {
       {buoc === "chon" && (
         <div className="relative mt-6 overflow-clip rounded-3xl bg-surface p-6 text-center shadow-[0_8px_30px_rgb(0,0,0,0.06)]">
           {/* 15/11: overflow-clip chứ không overflow-hidden: quầng màu tràn 64px, và overflow-hidden vẫn để trình duyệt cuộn ngang thẻ khi bấm nút bên trong (nội dung lệch sang trái). */}
-          {/* 31/10: nền mang màu của chính trò đó, bong bóng Leon có đuôi, thẻ mức tô màu đầy đủ. */}
+          {/* 31/10: nền mang màu của chính trò đó, bong bóng Léon có đuôi, thẻ mức tô màu đầy đủ. */}
           <div aria-hidden className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${tc.nen} opacity-[0.14]`} />
           <div aria-hidden className={`pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-gradient-to-br ${tc.nen} opacity-30 blur-2xl`} />
           <div className="relative">

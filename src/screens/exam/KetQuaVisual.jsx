@@ -60,7 +60,7 @@ export function VongDiem({ diem, toiDa, passed, size = 168 }) {
   );
 }
 
-/* Băng kết luận lớn: vòng điểm + Leon + chữ Đạt/Chưa đạt/Chưa kết luận. */
+/* Băng kết luận lớn: vòng điểm + Léon + chữ Đạt/Chưa đạt/Chưa kết luận. */
 export function BangKetLuan({ tieuDe, phu, diem, toiDa, passed, children }) {
   const nen = passed === true ? "from-emerald-500 via-green-500 to-teal-600"
     : passed === false ? "from-rose-500 via-red-500 to-orange-500"

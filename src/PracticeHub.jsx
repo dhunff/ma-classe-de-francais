@@ -982,7 +982,7 @@ ${r.error?.message ?? ""}`); return; }
   return (
     <div className="mx-auto max-w-5xl">
       {MatModal()}
-      {/* Khung đầu (10/10): Leon + số liệu THẬT từ exercises / hist. */}
+      {/* Khung đầu (10/10): Léon + số liệu THẬT từ exercises / hist. */}
       {/* 16/11 (chủ dự án): ở cửa chọn kỳ thi KHÔNG hiện khối đầu lẫn khối VIP, chọn xong mới hiện. */}
       {(() => {
         if (oCuaChon) return null;

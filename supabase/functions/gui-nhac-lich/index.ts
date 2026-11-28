@@ -6,7 +6,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.112.4";
 import { CORS, json } from "../_shared/cors.ts";
 
 const WEB = "https://www.fracile.vn";
-const NGUOI_GUI = "Leon từ FRACILE <leon@fracile.vn>";
+const NGUOI_GUI = "Léon từ FRACILE <leon@fracile.vn>";
 const DUONG: Record<string, [string, string]> = {
   "lo-trinh": ["/etudiant/lo-trinh", "Lộ trình học tập"], "luyen-tap": ["/etudiant/entrainement", "Luyện tập"],
   flashcard: ["/etudiant/bo-the", "Flashcard"], "thi-thu": ["/etudiant/examen", "Thi thử DELF"],
@@ -24,13 +24,13 @@ function soan(l: Lich) {
   const html = `<!doctype html><html lang="vi"><body style="margin:0;background:#eef3fb;font-family:'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#1c2333">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="padding:24px 12px"><tr><td align="center">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background:#ffffff;border-radius:24px;padding:32px 28px">
-<tr><td align="center"><img src="${WEB}/leon/mail/chao.png?v=2" width="120" height="120" alt="Leon" style="display:block;border:0"></td></tr>
+<tr><td align="center"><img src="${WEB}/leon/mail/chao.png?v=2" width="120" height="120" alt="Léon" style="display:block;border:0"></td></tr>
 <tr><td style="padding-top:16px;font-size:22px;font-weight:700;text-align:center">Còn ${phut} phút nữa là tới giờ học!</td></tr>
-<tr><td style="padding-top:12px;font-size:15px;line-height:1.6;text-align:center;color:#4a5468">Chào ${thoat(l.ten)}, bạn đã hẹn với Leon: <b>${thoat(l.tieu_de)}</b><br>lúc <b>${thoat(gio)}</b>. Chuẩn bị một chỗ yên tĩnh rồi vào học thôi!</td></tr>
+<tr><td style="padding-top:12px;font-size:15px;line-height:1.6;text-align:center;color:#4a5468">Chào ${thoat(l.ten)}, bạn đã hẹn với Léon: <b>${thoat(l.tieu_de)}</b><br>lúc <b>${thoat(gio)}</b>. Chuẩn bị một chỗ yên tĩnh rồi vào học thôi!</td></tr>
 <tr><td align="center" style="padding-top:24px"><a href="${WEB}${duong}" style="display:inline-block;background:#2563eb;color:#ffffff;text-decoration:none;font-weight:700;font-size:16px;padding:14px 32px;border-radius:999px">Mở ${thoat(tenMuc)}</a></td></tr>
 </table>
 <p style="max-width:520px;font-size:12px;line-height:1.5;color:#7a8499;text-align:center;margin:16px auto 0">
-Bạn nhận mail này vì đã bật « Leon nhắc qua mail » khi đặt lịch.<br><a href="${WEB}/etudiant/calendrier" style="color:#7a8499">Sửa hoặc tắt nhắc trong Lịch</a></p>
+Bạn nhận mail này vì đã bật « Léon nhắc qua mail » khi đặt lịch.<br><a href="${WEB}/etudiant/calendrier" style="color:#7a8499">Sửa hoặc tắt nhắc trong Lịch</a></p>
 </td></tr></table></body></html>`;
   return { from: NGUOI_GUI, to: [l.email], subject: `⏰ ${phut} phút nữa: ${l.tieu_de}`, html };
 }

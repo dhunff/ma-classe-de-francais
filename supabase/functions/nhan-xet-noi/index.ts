@@ -191,7 +191,7 @@ Deno.serve(async (req) => {
     '  "can_sua": [{ "trich": "<tiếng Pháp trong bài>", "goi_y": "<cách nói đúng hơn, kèm giải thích ngắn>" }], ',
     '  "phat_am": "<lưu ý phát âm gián tiếp, hoặc chuỗi rỗng>", "luyen_tiep": "<1 việc nên luyện tiếp>", ',
     ...(troiChay.du_lieu ? ['  "troi_chay": "<1-2 câu về độ trôi chảy, không con số>", '] : []),
-    '  "loi_leon": "<1-2 câu động viên ấm áp, giọng Leon (linh vật chó bulldog Pháp của FRACILE), nêu một điểm mạnh THẬT, có thể chen một câu tiếng Pháp đơn giản như Allez, courage !>" }',
+    '  "loi_leon": "<1-2 câu động viên ấm áp, giọng Léon (linh vật chó bulldog Pháp của FRACILE), nêu một điểm mạnh THẬT, có thể chen một câu tiếng Pháp đơn giản như Allez, courage !>" }',
   ].join("\n");
   const mau = cau?.answer_key?.model ? ["", "CÂU MẪU THAM KHẢO:", String(cau.answer_key.model)] : [];
   const dongTC = dongTroiChay(troiChay);

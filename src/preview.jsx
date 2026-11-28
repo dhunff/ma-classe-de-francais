@@ -1072,9 +1072,9 @@ function Preview() {
     ["/etudiant/cham-tcf", "Phiếu AI chấm TCF"],
     ["/etudiant/xem-lai-thi", "Xem lại bài thi"],
     ["/etudiant/mua-vip", "Mua VIP (chuyển khoản, MoMo)"],
-    ["/etudiant/hoi-leon", "Hỏi Leon: khung trống có gợi ý"],
-    ["/etudiant/hoi-leon-ls", "Hỏi Leon: có lịch sử"],
-    ["/etudiant/hoi-leon-nut", "Hỏi Leon: nút mở và bóng thoại chào"],
+    ["/etudiant/hoi-leon", "Hỏi Léon: khung trống có gợi ý"],
+    ["/etudiant/hoi-leon-ls", "Hỏi Léon: có lịch sử"],
+    ["/etudiant/hoi-leon-nut", "Hỏi Léon: nút mở và bóng thoại chào"],
     ["/etudiant/mung-chuoi", "Mừng mốc chuỗi"],
     ["/etudiant/nhan-xet-ngan", "Nhận xét AI câu trả lời ngắn"],
     ["/etudiant/nhan-xet-ai", "Phiếu nhận xét AI"],
@@ -1222,7 +1222,7 @@ function Preview() {
           <Route path="/etudiant/phan-thi-tcf" element={<><Controls /><PhanThiTcfThu /></>} />
           {/* 14/11: mừng mốc chuỗi, bấm các nút để xem từng mốc. */}
           {/* 17/11: hộp mua VIP có thẻ « Ví MoMo » (bấm nút sẽ gọi máy chủ thật và báo lỗi vì chưa đăng nhập). */}
-          {/* 18/11: khung chat Hỏi Leon (dữ liệu giả, trả lời giả, không gọi máy chủ). */}
+          {/* 18/11: khung chat Hỏi Léon (dữ liệu giả, trả lời giả, không gọi máy chủ). */}
           <Route path="/etudiant/hoi-leon" element={<><Controls /><HoiLeon thu={{ mo: true, tin: [], level: "B1", conLai: 7, traLoi: "**Passé composé** dùng cho hành động đã xong, có mốc rõ: *Hier, j'ai mangé une pizza.*\n**Imparfait** tả bối cảnh, thói quen trong quá khứ: *Quand j'étais petit, je mangeais souvent des pizzas.*\n- Mẹo: hỏi « hành động này kết thúc chưa, hay đang làm nền? »" }} /></>} />
           <Route path="/etudiant/hoi-leon-nut" element={<><Controls /><HoiLeon thu={{ mo: false, chao: true, tin: [], level: "B1", conLai: 7, traLoi: "Bonjour !" }} /></>} />
           <Route path="/etudiant/hoi-leon-ls" element={<><Controls /><HoiLeon thu={{ mo: true, level: "B2", conLai: null, traLoi: "Très bien !", tin: [

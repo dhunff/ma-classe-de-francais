@@ -79,7 +79,7 @@ export function DeXuatBai({ dsDeXuat, onMo, coHoSo, level, goal, gon = false }) 
         <div className="flex items-center gap-3">
           <Leon cam="hoc" size={60} className="shrink-0" />
           <div>
-            <p className="m-0 flex items-center gap-1.5 text-xs font-bold uppercase tracking-[0.14em] text-primary">{tr("Leon chọn cho bạn", "Leon a choisi pour vous", "Leon picked for you")}</p>
+            <p className="m-0 flex items-center gap-1.5 text-xs font-bold uppercase tracking-[0.14em] text-primary">{tr("Léon chọn cho bạn", "Léon a choisi pour vous", "Léon picked for you")}</p>
             <h2 className="m-0 mt-1 text-lg font-extrabold text-ink">{tr("Bài tập đề xuất", "Exercices recommandés", "Recommended exercises")}</h2>
           </div>
         </div>

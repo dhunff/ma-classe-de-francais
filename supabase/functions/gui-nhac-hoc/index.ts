@@ -11,7 +11,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.112.4";
 import { CORS, json } from "../_shared/cors.ts";
 
 const WEB = "https://www.fracile.vn";
-const NGUOI_GUI = "Leon từ FRACILE <leon@fracile.vn>";
+const NGUOI_GUI = "Léon từ FRACILE <leon@fracile.vn>";
 const TRA_LOI = "contact.fracile@gmail.com";
 
 type Nguoi = { uid: string; email: string; ten: string; token: string; chuoi: number; ngay_tuan: number; xp_tuan: number };
@@ -22,7 +22,7 @@ function khung(anh: string, tieuDe: string, than: string, nut: string, link: str
   return `<!doctype html><html lang="vi"><body style="margin:0;background:#eef3fb;font-family:'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#1c2333">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="padding:24px 12px"><tr><td align="center">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background:#ffffff;border-radius:24px;padding:32px 28px">
-<tr><td align="center"><img src="${WEB}/leon/mail/${anh}.png?v=2" width="120" height="120" alt="Leon" style="display:block;border:0"></td></tr>
+<tr><td align="center"><img src="${WEB}/leon/mail/${anh}.png?v=2" width="120" height="120" alt="Léon" style="display:block;border:0"></td></tr>
 <tr><td style="padding-top:16px;font-size:22px;font-weight:700;text-align:center">${tieuDe}</td></tr>
 <tr><td style="padding-top:12px;font-size:15px;line-height:1.6;text-align:center;color:#4a5468">${than}</td></tr>
 <tr><td align="center" style="padding-top:24px"><a href="${link}" style="display:inline-block;background:#2563eb;color:#ffffff;text-decoration:none;font-weight:700;font-size:16px;padding:14px 32px;border-radius:999px">${nut}</a></td></tr>
@@ -40,15 +40,15 @@ function soanMail(loai: string, n: Nguoi) {
     return {
       subject: `🔥 Chuỗi ${n.chuoi} ngày của bạn sắp mất`,
       html: khung("buon", `Chuỗi ${n.chuoi} ngày đang chờ bạn!`,
-        `Chào ${ten}, hôm nay bạn chưa học buổi nào. Chỉ cần làm một bài ngắn trước nửa đêm là giữ được chuỗi <b>${n.chuoi} ngày</b>. Leon tin bạn làm được!`,
+        `Chào ${ten}, hôm nay bạn chưa học buổi nào. Chỉ cần làm một bài ngắn trước nửa đêm là giữ được chuỗi <b>${n.chuoi} ngày</b>. Léon tin bạn làm được!`,
         "Học 5 phút ngay", `${WEB}/etudiant/dashboard`, huy),
       huy,
     };
   }
   const coHoc = n.ngay_tuan > 0;
   return {
-    subject: coHoc ? `📅 Tuần qua bạn học ${n.ngay_tuan}/7 ngày` : "📅 Tuần mới, bắt đầu lại cùng Leon nhé",
-    html: khung(coHoc ? "tuyet-voi" : "chao", coHoc ? "Tóm tắt tuần của bạn" : "Leon nhớ bạn!",
+    subject: coHoc ? `📅 Tuần qua bạn học ${n.ngay_tuan}/7 ngày` : "📅 Tuần mới, bắt đầu lại cùng Léon nhé",
+    html: khung(coHoc ? "tuyet-voi" : "chao", coHoc ? "Tóm tắt tuần của bạn" : "Léon nhớ bạn!",
       coHoc
         ? `Chào ${ten}, tuần qua bạn học <b>${n.ngay_tuan}/7 ngày</b> và nhận <b>${n.xp_tuan} XP</b>. Chuỗi hiện tại: <b>${n.chuoi} ngày</b>. Tuần này mình làm tốt hơn nữa nhé!`
         : `Chào ${ten}, tuần qua bạn chưa học buổi nào. Một tuần mới vừa bắt đầu: chỉ 10 phút mỗi ngày là đủ để tiến bộ.`,
