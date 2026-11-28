@@ -48,12 +48,22 @@ const khoangCach = (a, b) => {
 let amDangPhat = null;
 const phatAm = (khoa) => phatUrl(AM[khoa]);
 /* Âm thanh câu ví dụ / câu đúng A1–A2 (17/10, scripts/ngu-phap/tao-am-vidu.mjs):
-   tra theo chính câu tiếng Pháp; câu chưa có âm thanh thì không hiện nút loa. */
+   tra theo chính câu tiếng Pháp. Câu chưa có file (28/11, chủ dự án: « có loa mà không
+   bấm được ») thì đọc bằng giọng fr-FR của trình duyệt; trình duyệt không có thì bấm không ra tiếng. */
+function docBangTrinhDuyet(cau) {
+  try {
+    const s = window.speechSynthesis; if (!s) return;
+    amDangPhat?.pause(); s.cancel();
+    const u = new window.SpeechSynthesisUtterance(cau); u.lang = "fr-FR"; u.rate = 0.9;
+    const giong = s.getVoices().find((v) => /^fr/i.test(v.lang)); if (giong) u.voice = giong;
+    s.speak(u);
+  } catch { /* không hỗ trợ */ }
+}
 function NutNghe({ cau }) {
   const url = AM_VD[cau];
-  if (!url) return null;
+  if (!cau) return null;
   return (
-    <button type="button" onClick={() => phatUrl(url)} aria-label={tr("Nghe câu này", "Écouter", "Listen")} title={tr("Nghe câu này", "Écouter", "Listen")}
+    <button type="button" onClick={() => (url ? phatUrl(url) : docBangTrinhDuyet(cau))} aria-label={tr("Nghe câu này", "Écouter", "Listen")} title={tr("Nghe câu này", "Écouter", "Listen")}
       className="ml-1.5 inline-grid h-6 w-6 shrink-0 cursor-pointer place-items-center rounded-full border-0 bg-primary-soft align-middle text-primary hover:bg-primary hover:text-on-primary">
       <Volume2 size={13} />
     </button>
@@ -61,7 +71,7 @@ function NutNghe({ cau }) {
 }
 function phatUrl(url) {
   if (!url) return;
-  try { amDangPhat?.pause(); amDangPhat = new Audio(url); amDangPhat.play().catch(() => {}); } catch { /* bỏ qua */ }
+  try { window.speechSynthesis?.cancel(); amDangPhat?.pause(); amDangPhat = new Audio(url); amDangPhat.play().catch(() => {}); } catch { /* bỏ qua */ }
 };
 
 /* Danh sách bài, chia phần: content/nguPhap/index.js. */
